@@ -5,8 +5,10 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -527,7 +529,7 @@ public class ProjectUserServiceTest {
         // Define borrowed role
         final Long borrowedRoleId = 99L;
         final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
-        final List<ResourcesAccess> borrowedRolePermissions = new ArrayList<>();
+        final Set<ResourcesAccess> borrowedRolePermissions = new HashSet<>();
         borrowedRolePermissions.add(new ResourcesAccess(11L));
         borrowedRolePermissions.add(new ResourcesAccess(10L));
         borrowedRolePermissions.add(new ResourcesAccess(14L));
@@ -539,7 +541,7 @@ public class ProjectUserServiceTest {
         // Mock the repository
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
-        Mockito.when(roleService.retrieveRoleResourcesAccessList(borrowedRoleId)).thenReturn(borrowedRolePermissions);
+        Mockito.when(roleService.retrieveRoleResourcesAccesses(borrowedRoleId)).thenReturn(borrowedRolePermissions);
 
         // Make sure the borrowed role is hierarchically inferior
         Mockito.when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(true);
@@ -569,7 +571,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve all permissions a of user.")
     public void retrieveProjectUserAccessRights() throws EntityException {
         // Define the user's role permissions
-        final List<ResourcesAccess> permissions = new ArrayList<>();
+        final Set<ResourcesAccess> permissions = new HashSet<>();
         permissions.add(new ResourcesAccess(11L));
         permissions.add(new ResourcesAccess(10L));
         permissions.add(new ResourcesAccess(14L));
@@ -579,8 +581,7 @@ public class ProjectUserServiceTest {
 
         // Mock the repository
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
-        Mockito.when(roleService.retrieveRoleResourcesAccessList(projectUser.getRole().getId()))
-                .thenReturn(permissions);
+        Mockito.when(roleService.retrieveRoleResourcesAccesses(projectUser.getRole().getId())).thenReturn(permissions);
 
         // Define expected permissions
         final List<ResourcesAccess> expected = new ArrayList<>();

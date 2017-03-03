@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -103,7 +104,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
 
     /**
      *
-     * Retrieve the ResourceAccess list of all microservices
+     * Retrieve the resource accesses available to the user
      *
      * @param pPageable
      *            pagination informations
@@ -112,7 +113,8 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
+            role = DefaultRole.PUBLIC)
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(final Pageable pPageable,
             final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) {
@@ -122,20 +124,22 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
 
     /**
      *
-     * Retrieve the ResourceAccess list of the given microservice
+     * Retrieve the resource accesses available to the user of the given microservice
      *
      * @param pPageable
      *            pagination informations
      *
      * @return {@link Page} of {@link ResourceAccess}
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/microservices/{microservice}", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
+            role = DefaultRole.PUBLIC)
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(
             @PathVariable("microservice") final String pMicroserviceName, final Pageable pPageable,
-            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) {
+            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws EntityNotFoundException {
         return new ResponseEntity<>(
                 toPagedResources(service.retrieveMicroserviceRessources(pMicroserviceName, pPageable),
                                  pPagedResourcesAssembler),
@@ -270,7 +274,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
             @PathVariable("role_id") final Long pRoleId) throws EntityNotFoundException {
-        final List<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccessList(pRoleId);
+        final Set<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccesses(pRoleId);
         return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
     }
 
@@ -285,15 +289,17 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      * @return {@link Void} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     * @throws EntityOperationForbiddenException
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Incrementally update the list of permissions of the role with role_id",
+    @ResourceAccess(description = "Totally update the list of permissions of the role with role_id",
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final List<ResourcesAccess> pResourcesAccessList) throws EntityNotFoundException {
+            @Valid @RequestBody final Set<ResourcesAccess> pResourcesAccessList)
+            throws EntityNotFoundException, EntityOperationForbiddenException {
         roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -308,11 +314,51 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Clear the list of permissions of the", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Clear the list of permissions of the given role", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
             throws EntityNotFoundException {
         roleService.clearRoleResourcesAccess(pRoleId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Define the endpoint allowing the addition of a given resource access to the role of given role_id
+     *
+     * @param pRoleId
+     *            The {@link Role} <code>id</code>
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.POST)
+    @ResourceAccess(description = "Add the given resource access to the role of given role_id",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> addRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
+            @RequestBody @Valid final ResourcesAccess pNewResourcesAccess) throws EntityNotFoundException {
+        roleService.addResourceAccesses(pRoleId, pNewResourcesAccess);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Define the endpoint removing the given {@link ResourcesAccess} of the {@link Role} with passed <code>id</code>.
+     *
+     * @param pRoleId
+     *            The {@link Role} <code>id</code>
+     * @return {@link Void} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     * @throws EntityOperationForbiddenException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/roles/{role_id}/{resources_access_id}", method = RequestMethod.DELETE)
+    @ResourceAccess(description = "Remove resource access of given resources_access_id from the role of given role_id",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> removeRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
+            @PathVariable("resources_access_id_id") final Long pResourcesAccessId)
+            throws EntityNotFoundException, EntityOperationForbiddenException {
+        service.removeRoleResourcesAccess(pRoleId, pResourcesAccessId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -328,7 +374,7 @@ public class ResourcesController implements IResourceController<ResourcesAccess>
     @ResponseBody
     public ResponseEntity<Void> registerMicroserviceEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
-            @RequestBody final List<ResourceMapping> pResourcesToRegister) {
+            @RequestBody @Valid final List<ResourceMapping> pResourcesToRegister) {
         service.registerResources(pResourcesToRegister, pMicroserviceName);
         return new ResponseEntity<>(HttpStatus.OK);
     }

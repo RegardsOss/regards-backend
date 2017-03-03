@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -68,14 +69,14 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @since 1.0-SNAPSHOT
      */
     @Query("select distinct r from Role r left join fetch r.permissions where r.parentRole.name=:pName")
-    List<Role> findByParentRoleName(@Param("pName") final String pName);
+    Set<Role> findByParentRoleName(@Param("pName") final String pName);
 
     /**
      * Find all {@link Role} all load the permissions attributes.
-     * 
+     *
      * @return a {@link List} of {@link Role}
      */
     @Query("select distinct r from Role r left join fetch r.permissions")
-    List<Role> findAllDistinctLazy();
+    Set<Role> findAllDistinctLazy();
 
 }

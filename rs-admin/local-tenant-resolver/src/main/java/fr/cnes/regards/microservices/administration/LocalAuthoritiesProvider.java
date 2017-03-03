@@ -5,10 +5,18 @@ package fr.cnes.regards.microservices.administration;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+
+import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -63,17 +71,32 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      */
     @Override
     public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
-        final List<ResourceMapping> results = new ArrayList<>();
         resourcesService.registerResources(pLocalEndpoints, microserviceName);
-        final List<ResourcesAccess> configuredResources = resourcesService.retrieveRessources();
-        configuredResources.forEach(r -> results.add(r.toResourceMapping()));
-        return results;
+        // get a map that for each ResourcesAccess ra links the roles containing ra
+        Set<Role> roles = roleService.retrieveRoles();
+        SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
+
+        roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
+
+        // create ResourceMappings
+        return multimap.asMap().entrySet().stream().map(entry -> buildResourceMapping(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+    }
+
+    private ResourceMapping buildResourceMapping(ResourcesAccess pRa, Collection<Role> pRoles) {
+        ResourceMapping mapping = new ResourceMapping(
+                ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
+                RequestMethod.valueOf(pRa.getVerb().toString()));
+        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
+                .collect(Collectors.toList()));
+        return mapping;
     }
 
     @Override
     public List<RoleAuthority> getRoleAuthorities() {
         final List<RoleAuthority> results = new ArrayList<>();
-        final List<Role> roles = roleService.retrieveRoleList();
+        final Set<Role> roles = roleService.retrieveRoles();
         for (final Role role : roles) {
             final RoleAuthority roleAuth = new RoleAuthority(role.getName());
             boolean access = role.isCorsRequestsAuthorized();

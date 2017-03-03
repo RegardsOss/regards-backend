@@ -36,7 +36,6 @@
 		class="fr.cnes.regards.modules.accessrights.domain.projects.Role">
 		<property name="name" value="INSTANCE_ADMIN"></property>
 		<property name="native" value="true"></property>
-		<property name="parentRole" ref="projectAdmin"></property>
 	</bean>
 	
 </beans>

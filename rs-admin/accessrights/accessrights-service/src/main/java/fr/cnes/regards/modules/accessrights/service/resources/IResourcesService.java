@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
@@ -47,7 +48,7 @@ public interface IResourcesService {
     /**
      *
      * Retrieve a {@link ResourcesAccess}
-     * 
+     *
      * @param pResourceId
      *            the if of the {@link ResourcesAccess} to retrieve
      *
@@ -79,7 +80,8 @@ public interface IResourcesService {
      * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    Page<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName, final Pageable pPageable);
+    Page<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName, final Pageable pPageable)
+            throws EntityNotFoundException;
 
     /**
      *
@@ -93,5 +95,16 @@ public interface IResourcesService {
      * @since 1.0-SNAPSHOT
      */
     void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName);
+
+    /**
+     * remove a resource access from a role and its descendants
+     *
+     * @param pRoleId
+     * @param pResourcesAccessId
+     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException
+     */
+    void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId)
+            throws EntityNotFoundException, EntityOperationForbiddenException;
 
 }

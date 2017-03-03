@@ -25,30 +25,6 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
 
     /**
      *
-     * find all resources accessible for every role given
-     *
-     * @param pRolesName
-     *            Roles name
-     * @param pPageable
-     *            pagination information
-     * @return {@link Page} of {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
-     */
-    Page<ResourcesAccess> findDistinctByRolesNameIn(List<String> pRolesName, Pageable pPageable);
-
-    /**
-     *
-     * find all resources accessible for every role given
-     *
-     * @param pRolesName
-     *            Roles name
-     * @return {@link Page} of {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
-     */
-    List<ResourcesAccess> findDistinctByRolesNameIn(List<String> pRolesName);
-
-    /**
-     *
      * Retrieve one resource by microservice, resource path and http verb
      *
      * @param pMicroservice
@@ -86,21 +62,5 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @since 1.0-SNAPSHOT
      */
     Page<ResourcesAccess> findByMicroservice(String pMicroservice, Pageable pPageable);
-
-    /**
-     *
-     * Retrieve paginated resources for a given microservice and a list of roles.
-     *
-     * @param pMicroservice
-     *            resources owner to retrieve
-     * @param pRolesName
-     *            a {@link List} of role name
-     * @param pPageable
-     *            pagination information
-     * @return {@link Page} of {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
-     */
-    Page<ResourcesAccess> findDistinctByMicroserviceAndRolesNameIn(String pMicroservice, List<String> pRolesName,
-            Pageable pPageable);
 
 }
