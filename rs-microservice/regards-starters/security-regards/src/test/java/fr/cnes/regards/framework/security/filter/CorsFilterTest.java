@@ -72,11 +72,11 @@ public class CorsFilterTest {
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
         final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole(ROLE_NAME);
         final UserDetails user = new UserDetails();
         user.setName("test-user");
         user.setTenant(TENANT_NAME);
         token.setUser(user);
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final RoleAuthority role = new RoleAuthority(ROLE_NAME);
@@ -100,8 +100,8 @@ public class CorsFilterTest {
             Assert.assertTrue(errorMessage, mockedResponse.getHeader(CorsFilter.ALLOW_METHOD)
                     .equals("POST, PUT, GET, OPTIONS, DELETE"));
 
-            Assert.assertTrue(errorMessage,
-                              mockedResponse.getHeader(CorsFilter.ALLOW_HEADER).equals("authorization, content-type, scope"));
+            Assert.assertTrue(errorMessage, mockedResponse.getHeader(CorsFilter.ALLOW_HEADER)
+                    .equals("authorization, content-type, scope"));
 
             Assert.assertTrue(errorMessage, mockedResponse.getHeader(CorsFilter.CONTROL_MAX_AGE).equals("3600"));
         } catch (ServletException | IOException e) {
@@ -126,11 +126,11 @@ public class CorsFilterTest {
     public void corsFilterRoleAccessDeniedTest() throws SecurityException {
 
         final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole(ROLE_NAME);
         final UserDetails user = new UserDetails();
         user.setName("test-user");
         user.setTenant(TENANT_NAME);
         token.setUser(user);
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);

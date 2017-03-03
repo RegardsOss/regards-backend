@@ -64,7 +64,9 @@ public class JWTAuthentication implements Authentication {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+        List<RoleAuthority> role = new ArrayList<>();
+        role.add(new RoleAuthority(user.getRole()));
+        return role;
     }
 
     @Override
@@ -105,7 +107,7 @@ public class JWTAuthentication implements Authentication {
 
     /**
      * Abstraction on how to set the tenant
-     * 
+     *
      * @param pTenant
      *            the new tenant
      */
@@ -127,11 +129,10 @@ public class JWTAuthentication implements Authentication {
      *            the role name
      */
     public void setRole(String pRoleName) {
-        if (roles == null) {
-            roles = new ArrayList<>();
+        if (user == null) {
+            throw new IllegalStateException("role cannot be set while user has not been set!");
         }
-        roles.clear();
-        roles.add(new RoleAuthority(pRoleName));
+        user.setRole(pRoleName);
     }
 
     /**

@@ -66,7 +66,8 @@ public class JWTService {
 
     /**
      *
-     * Return the role for the current connected user
+     *
+     * .
      *
      * @return role
      * @since 1.0-SNAPSHOT
