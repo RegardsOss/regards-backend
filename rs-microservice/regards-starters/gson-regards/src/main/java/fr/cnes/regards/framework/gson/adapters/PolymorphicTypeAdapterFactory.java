@@ -102,10 +102,10 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         this.discriminatorFieldName = pDiscriminatorFieldName;
         this.injectField = pInjectField;
 
-        LOGGER.info("Managing polymorphic adapter for class \"{}\" and discriminator field \"{}\".", baseType.getName(),
-                    discriminatorFieldName);
+        LOGGER.debug("Managing polymorphic adapter for class \"{}\" and discriminator field \"{}\".",
+                     baseType.getName(), discriminatorFieldName);
         if (injectField) {
-            LOGGER.info("Discriminator field will be injected dynamically.");
+            LOGGER.debug("Discriminator field will be injected dynamically.");
         }
     }
 
@@ -186,7 +186,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
             throw new IllegalArgumentException(errorMessage);
         }
 
-        LOGGER.info("Subtype \"{}\" mapped to \"{}\" value", pType, pDiscriminatorFieldValue);
+        LOGGER.debug("Subtype \"{}\" mapped to \"{}\" value", pType, pDiscriminatorFieldValue);
 
         // Check if map not already contains value with a different mapping
         if (discriminatorToSubtype.containsKey(pDiscriminatorFieldValue)
@@ -224,7 +224,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         GSONUtils.assertNotNull(pType, "Sub type is required.");
         GSONUtils.assertNotNull(pDiscriminatorFieldValue, "Discriminator field value is required.");
 
-        LOGGER.info("Subtype \"{}\" unmapped to \"{}\" value", pType, pDiscriminatorFieldValue);
+        LOGGER.debug("Subtype \"{}\" unmapped to \"{}\" value", pType, pDiscriminatorFieldValue);
 
         discriminatorToSubtype.remove(pDiscriminatorFieldValue);
         if (injectField) {
