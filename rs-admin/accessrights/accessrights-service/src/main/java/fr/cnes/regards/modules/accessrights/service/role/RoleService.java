@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -382,7 +384,7 @@ public class RoleService implements IRoleService {
             } else {
                 // case none of the native roles has the same accesses:
                 List<Role> nativeCandidates = pNativeDescendants.stream()
-                        .filter(nativeRole -> pDescendant.getPermissions().contains(nativeRole.getPermissions()))
+                        .filter(nativeRole -> pDescendant.getPermissions().containsAll(nativeRole.getPermissions()))
                         .collect(Collectors.toList());
                 if (!nativeCandidates.isEmpty()) {
                     pDescendant.setParentRole(getRightCandidate(nativeCandidates));
@@ -537,6 +539,52 @@ public class RoleService implements IRoleService {
             changeParent(descendant, nativeDescendants);
             roleRepository.save(descendant);
         }
+    }
+
+    @Override
+    public Set<Role> retrieveBorrowableRoles() throws JwtException {
+        // get User
+        JWTAuthentication authentication = jwtService.getCurrentToken();
+        String email = authentication.getName();
+        ProjectUser user = projectUserRepository.findOneByEmail(email).get();
+        // get Original Role of the user
+        Role originalRole = user.getRole();
+        List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
+                                                                   DefaultRole.PROJECT_ADMIN.toString());
+        // It is impossible to borrow a role if your original role is not ADMIN or PROJECT_ADMIN or one of their sons
+        if (!roleNamesAllowedToBorrow.contains(originalRole.getName()) && ((originalRole.getParentRole() == null)
+                || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
+            return Sets.newHashSet();
+        }
+        // get ascendants of the original Role
+        Set<Role> ascendants = new HashSet<>();
+        if (originalRole.getParentRole() != null) {
+            // only adds the ascendants of my role's parent as my role's brotherhood is not part of my role's ascendants
+            ascendants.addAll(getAscendants(originalRole.getParentRole()));
+        }
+        // add my original role because i can always borrow my own role
+        ascendants.add(originalRole);
+        return ascendants;
+    }
+
+    /**
+     * Retrieve ascendants(parent and uncles) and brotherhood of the given role
+     *
+     * @param pRole
+     * @return All ascendants of the given role
+     */
+    private Set<Role> getAscendants(Role pRole) {
+        Set<Role> ascendants = Sets.newHashSet(pRole);
+        // if pRole doesn't have parent then it's finished
+        if (pRole.getParentRole() == null) {
+            return ascendants;
+        }
+        // otherwise lets get pRole's parent and look for his children: Brotherhood
+        Role parent = pRole.getParentRole();
+        ascendants.addAll(roleRepository.findByParentRoleName(pRole.getParentRole().getName()));
+        // now lets add the ascendants of parent
+        ascendants.addAll(getAscendants(parent));
+        return ascendants;
     }
 
 }

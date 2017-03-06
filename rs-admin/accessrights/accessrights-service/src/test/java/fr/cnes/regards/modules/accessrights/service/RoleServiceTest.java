@@ -27,7 +27,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -163,6 +166,29 @@ public class RoleServiceTest {
         checkRolesEqual((Role) expected.toArray()[0], (Role) actual.toArray()[0]);
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).findAllDistinctLazy();
+    }
+
+    @Test
+    @Requirement("PM003") // FIXME
+    @Purpose("Check that the system retrieve the good roles that can be borrowed")
+    public void retrieveBorrowableRoles() throws JwtException {
+        // mock JWTAuthentication
+        JWTAuthentication token = new JWTAuthentication("");
+        UserDetails user = new UserDetails();
+        user.setName("test@test.test");
+        user.setRole("ADMIN");
+        token.setUser(user);
+        Mockito.when(jwtService.getCurrentToken()).thenReturn(token);
+        // mock project user
+        ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new ArrayList<>());
+        Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
+        Set<Role> result = roleService.retrieveBorrowableRoles();
+        Assert.assertTrue(result.contains(rolePublic));
+        Assert.assertTrue(result.contains(roleRegisteredUser));
+        Assert.assertTrue(result.contains(roleAdmin));
+        projectUser.setRole(rolePublic);
+        result = roleService.retrieveBorrowableRoles();
+        Assert.assertTrue(result.isEmpty());
     }
 
     /**
@@ -582,8 +608,6 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).findOne(idParent);
         Mockito.verify(projectUserRepository).findByRoleNameIn(roleNames, pageable);
     }
-
-    // @Requirement("REGARDS_DSL_ADM_ADM_210") that's just a getter, should we still add a test?
 
     /**
      * Check that the system is able to hierarchically compare two roles.

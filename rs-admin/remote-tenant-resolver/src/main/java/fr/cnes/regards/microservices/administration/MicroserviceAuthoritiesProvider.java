@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * IAuthoritiesProvider implementation for all microservices exception administration.
  *
  * @author Sébastien Binda
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {

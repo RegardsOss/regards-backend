@@ -33,7 +33,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
-import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublicOrInstanceAdmin;
+import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
 
 /**
  * Models a user's role.
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParent
 @EntityListeners(UpdateAuthoritiesListener.class)
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
-@HasParentOrPublicOrInstanceAdmin
+@HasValidParent
 @NamedEntityGraph(name = "graph.role.permissions",
         attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
 public class Role implements IIdentifiable<Long> {
@@ -68,8 +68,7 @@ public class Role implements IIdentifiable<Long> {
     /**
      * The parent role.
      * <p/>
-     * Must not be null except if current role is PUBLIC. Validated via type-level
-     * {@link HasParentOrPublicOrInstanceAdmin} annotation.
+     * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasValidParent} annotation.
      */
     @ManyToOne
     @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
