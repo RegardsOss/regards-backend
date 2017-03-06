@@ -53,6 +53,7 @@ public class PluginParameterIT extends PluginDaoUtility {
 
         Assert.assertEquals(nPluginParameter + 1 + PARAMETERS2.size(), pluginParameterRepository.count());
 
+        pluginConfigurationRepository.deleteAll();
     }
 
     /**
@@ -71,6 +72,9 @@ public class PluginParameterIT extends PluginDaoUtility {
 
         final PluginParameter paramFound = pluginParameterRepository.findOne(paramJpa.getId());
         Assert.assertEquals(paramFound.getName(), paramJpa.getName());
+
+        pluginParameterRepository.deleteAll();
+        pluginConfigurationRepository.deleteAll();
     }
 
     /**

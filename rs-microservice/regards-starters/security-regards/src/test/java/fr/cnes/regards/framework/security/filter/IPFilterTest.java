@@ -85,10 +85,10 @@ public class IPFilterTest {
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
         final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole(ROLE_NAME);
         final UserDetails user = new UserDetails();
         user.setTenant(TENANT_NAME);
         token.setUser(user);
+        token.setRole(ROLE_NAME);
 
         SecurityContextHolder.getContext().setAuthentication(token);
 
@@ -148,10 +148,10 @@ public class IPFilterTest {
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
         final JWTAuthentication token = new JWTAuthentication("token");
-        token.setRole(ROLE_NAME);
         final UserDetails user = new UserDetails();
         user.setTenant(TENANT_NAME);
         token.setUser(user);
+        token.setRole(ROLE_NAME);
         SecurityContextHolder.getContext().setAuthentication(token);
 
         final List<String> results = new ArrayList<>();

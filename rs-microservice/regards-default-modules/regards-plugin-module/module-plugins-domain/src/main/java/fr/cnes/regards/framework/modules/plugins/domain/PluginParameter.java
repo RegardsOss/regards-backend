@@ -16,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -61,9 +62,10 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * {@link PluginConfiguration} parameter is optional
      */
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "id", unique = true, nullable = true, insertable = true,
-            updatable = true, foreignKey = @javax.persistence.ForeignKey(name = "FK_PLUGIN_CONF"))
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinTable(name = "TA_PLUGINCONF_PARAMETER",
+            joinColumns = @JoinColumn(name = "PARAM_ID", referencedColumnName = "ID"),
+            inverseJoinColumns = @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "ID"))
     private PluginConfiguration pluginConfiguration;
 
     /**
@@ -142,7 +144,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     public final PluginConfiguration getPluginConfiguration() {
         return pluginConfiguration;
     }
-    
+
     public final void setPluginConfiguration(PluginConfiguration pPluginConfiguration) {
         pluginConfiguration = pPluginConfiguration;
     }
