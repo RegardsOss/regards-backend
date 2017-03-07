@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenR
  */
 @Service
 @Transactional
-public class TokensPurgeTask {
+public class VerificationTokensPurgeTask {
 
     /**
      * The verification token repository

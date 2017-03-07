@@ -26,7 +26,7 @@ public interface IVerificationTokenRepository extends JpaRepository<Verification
 
     Optional<VerificationToken> findByToken(String pToken);
 
-    VerificationToken findByAccount(Account pAccount);
+    Optional<VerificationToken> findByAccount(Account pAccount);
 
     Stream<VerificationToken> findAllByExpiryDateLessThan(LocalDateTime pNow);
 

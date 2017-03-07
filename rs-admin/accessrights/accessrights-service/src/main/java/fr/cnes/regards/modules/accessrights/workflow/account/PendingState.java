@@ -3,15 +3,13 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.registration.OnAcceptAccountEvent;
+import fr.cnes.regards.modules.accessrights.registration.IRegistrationService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status PENDING.
@@ -28,10 +26,9 @@ public class PendingState implements IAccountTransitions {
     private final IAccountRepository accountRepository;
 
     /**
-     * Use this to publish the event triggering the verification email on registration
+     * The registration service
      */
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private IRegistrationService registrationService;
 
     /**
      * Creates a new PENDING state
@@ -52,11 +49,11 @@ public class PendingState implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void acceptAccount(final Account pAccount, final String pValidationUrl) throws EntityException {
+    public void acceptAccount(final Account pAccount) throws EntityException {
         pAccount.setStatus(AccountStatus.ACCEPTED);
         accountRepository.save(pAccount);
 
-        eventPublisher.publishEvent(new OnAcceptAccountEvent(pAccount, pValidationUrl));
+        registrationService.sendValidationEmail(pAccount);
     }
 
 }

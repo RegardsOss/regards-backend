@@ -69,7 +69,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
 
     @Override
     public void onApplicationEvent(final OnPasswordResetEvent pEvent) {
-        this.sendPasswordResetEmail(pEvent);
+        sendPasswordResetEmail(pEvent);
     }
 
     /**

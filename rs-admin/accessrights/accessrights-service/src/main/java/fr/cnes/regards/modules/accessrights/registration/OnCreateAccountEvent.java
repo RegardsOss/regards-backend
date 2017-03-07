@@ -8,32 +8,43 @@ import org.springframework.context.ApplicationEvent;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
- * Event transporting the logic needed for account email validation.
+ * When an account was successfully created in status PENDING, we want to store the data passed from the fronted
+ * (originUrl and requestLink) in the verification token in order to put them in the email validation link once the
+ * account is accepted by admin.
  *
  * @author Xavier-Alexandre Brochard
  */
-public class OnAcceptAccountEvent extends ApplicationEvent {
+public class OnCreateAccountEvent extends ApplicationEvent {
 
     /**
-     * Generated serial
+     * Serial
      */
-    private static final long serialVersionUID = -7099682370525387294L;
+    private static final long serialVersionUID = 2224468625344390929L;
 
     /**
-     * The registered account
+     * The account
      */
     private Account account;
 
+    /**
+     * The origin url
+     */
     private String originUrl;
 
+    /**
+     * The redirection link when the user clicks on the link in the mail
+     */
     private String requestLink;
 
     /**
      * @param pAccount
+     *            The account
      * @param pOriginUrl
+     *            The origin url
      * @param pRequestLink
+     *            The redirection link when the user clicks on the link in the mail
      */
-    public OnAcceptAccountEvent(final Account pAccount, final String pOriginUrl, final String pRequestLink) {
+    public OnCreateAccountEvent(final Account pAccount, final String pOriginUrl, final String pRequestLink) {
         super(pAccount);
         account = pAccount;
         originUrl = pOriginUrl;
