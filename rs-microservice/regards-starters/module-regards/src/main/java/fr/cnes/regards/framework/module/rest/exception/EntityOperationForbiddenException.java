@@ -18,7 +18,7 @@ public class EntityOperationForbiddenException extends EntityException {
     private static final long serialVersionUID = 1056576133397279032L;
 
     /**
-     * Creates a new {@link OperationForbiddenException} with passed params.
+     * Creates a new {@link EntityOperationForbiddenException} with passed params.
      *
      * @param pEntityIdentifier
      *            Entity identifier
@@ -32,6 +32,15 @@ public class EntityOperationForbiddenException extends EntityException {
             final String pMessage) {
         super(String.format("Operation on entity %s with id: %s is forbidden: %s", pEntityClass.getName(),
                             pEntityIdentifier, pMessage));
+    }
+
+    /**
+     * Creates a new EntityForbiddenException witht he given string as message
+     * 
+     * @param pString
+     */
+    public EntityOperationForbiddenException(String pString) {
+        super(pString);
     }
 
 }

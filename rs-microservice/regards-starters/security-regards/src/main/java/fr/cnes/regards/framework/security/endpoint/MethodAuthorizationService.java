@@ -290,14 +290,16 @@ public class MethodAuthorizationService {
      *            tenant name
      * @param pUrlPath
      *            resource path
+     * @param pControllerSimpleName
+     *            controller simple name
      * @param pMethod
      *            resource Method
      * @param pRoleNames
      *            resource role names
      * @since 1.0-SNAPSHOT
      */
-    public void setAuthorities(final String pTenant, final String pUrlPath, final RequestMethod pMethod,
-            final String... pRoleNames) {
+    public void setAuthorities(final String pTenant, final String pUrlPath, final String pControllerSimpleName,
+            final RequestMethod pMethod, final String... pRoleNames) {
         // Validate
         Assert.notNull(pUrlPath, "Path to resource cannot be null.");
         Assert.notNull(pMethod, "HTTP method cannot be null.");
@@ -309,7 +311,7 @@ public class MethodAuthorizationService {
             newAuthorities.add(new RoleAuthority(role));
         }
 
-        final ResourceMapping resource = new ResourceMapping(pUrlPath, pMethod);
+        final ResourceMapping resource = new ResourceMapping(pUrlPath, pControllerSimpleName, pMethod);
         resource.setAutorizedRoles(newAuthorities);
 
         setAuthorities(pTenant, resource);

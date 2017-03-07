@@ -169,14 +169,15 @@ public class MethodAuthorizationServiceTest {
         final String resourcePath = "new/path";
         final int expectedResult = 6;
         methodAuthService.init();
-        methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, RequestMethod.GET, "TEST_ROLE",
-                                         "TEST_ROLE_2");
+        methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, "Controller", RequestMethod.GET,
+                                         "TEST_ROLE", "TEST_ROLE_2");
 
         final Map<String, ArrayList<GrantedAuthority>> authorities = methodAuthService
                 .getTenantAuthorities(TestConfiguration.TENANT_1);
         Assert.assertEquals(authorities.size(), expectedResult);
         final Optional<List<GrantedAuthority>> roles = methodAuthService
-                .getAuthorities(TestConfiguration.TENANT_1, new ResourceMapping(resourcePath, RequestMethod.GET));
+                .getAuthorities(TestConfiguration.TENANT_1,
+                                new ResourceMapping(resourcePath, "Controller", RequestMethod.GET));
         Assert.assertEquals(roles.get().size(), 2);
         Assert.assertEquals(roles.get().get(0).getAuthority(), "ROLE_TEST_ROLE");
 

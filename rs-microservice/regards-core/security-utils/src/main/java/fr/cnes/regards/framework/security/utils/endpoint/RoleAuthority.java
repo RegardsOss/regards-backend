@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
  *
  * @author Marc Sordi
  * @author Sébastien Binda
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  *
  */
@@ -22,6 +23,12 @@ public class RoleAuthority implements GrantedAuthority {
      * Virtual Instance administrator ROLE name
      */
     public static final String INSTANCE_ADMIN_VIRTUAL_ROLE = "INSTANCE_ADMIN";
+
+    /**
+     * Virtual Project administrator ROLE name
+     */
+
+    public static final String PROJECT_ADMIN_VIRTUAL_ROLE = "PROJECT_ADMIN";
 
     /**
      * Role prefix
@@ -64,9 +71,9 @@ public class RoleAuthority implements GrantedAuthority {
      */
     public RoleAuthority(final String pRoleName) {
         if (!pRoleName.startsWith(ROLE_PREFIX)) {
-            this.autority = getRoleAuthority(pRoleName);
+            autority = getRoleAuthority(pRoleName);
         } else {
-            this.autority = pRoleName;
+            autority = pRoleName;
         }
     }
 
@@ -146,6 +153,19 @@ public class RoleAuthority implements GrantedAuthority {
             isInstanceAdminRole = true;
         }
         return isInstanceAdminRole;
+    }
+
+    /**
+     *
+     * Is the given role the virtual project admin role ?
+     *
+     * @param pRoleName
+     *            The role name
+     * @return [true|false]
+     * @since 1.0-SNAPSHOT
+     */
+    public static boolean isProjectAdminRole(final String pRoleName) {
+        return pRoleName.equals(getRoleAuthority(PROJECT_ADMIN_VIRTUAL_ROLE));
     }
 
     @Override

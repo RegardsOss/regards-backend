@@ -53,8 +53,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class,
-        DefaultTestFeignConfiguration.class })
+@ContextConfiguration(
+        classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class, DefaultTestFeignConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles({ "default", "test" })
 public abstract class AbstractRegardsIT {
@@ -429,7 +429,7 @@ public abstract class AbstractRegardsIT {
      *            list of roles
      */
     protected void setAuthorities(final String pUrlPath, final RequestMethod pMethod, final String... pRoleNames) {
-        authService.setAuthorities(DEFAULT_TENANT, pUrlPath, pMethod, pRoleNames);
+        authService.setAuthorities(DEFAULT_TENANT, pUrlPath, "osef", pMethod, pRoleNames);
     }
 
     /**
