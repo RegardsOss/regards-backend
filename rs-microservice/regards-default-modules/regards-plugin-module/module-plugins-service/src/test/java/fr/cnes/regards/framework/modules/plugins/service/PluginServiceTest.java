@@ -284,7 +284,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_120")
     @Purpose("Load a plugin from a specific type with a configuration and execute a method.")
-    public void getFirstPluginByType() throws ModuleException {
+    public void getFirstPluginInstanceByType() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
@@ -307,6 +307,32 @@ public class PluginServiceTest extends PluginServiceUtility {
         Assert.assertTrue(result > 0);
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(HELLO));
     }
+    
+    
+    @Test
+    public void getAPluginInstance() throws ModuleException {
+        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
+        aPluginConfiguration.setId(AN_ID);
+
+        pluginConfs.add(aPluginConfiguration);
+        pluginConfs.add(getPluginConfigurationWithDynamicParameter());
+
+        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+                .thenReturn(pluginConfs);
+        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
+
+        pluginServiceMocked.addPluginPackage(pluginsPackage);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getPlugin(aPluginConfiguration);
+
+        Assert.assertNotNull(aSamplePlugin);
+
+        final int result = aSamplePlugin.add(QUATRE, CINQ);
+        LOGGER.debug(RESULT + result);
+        Assert.assertTrue(result > 0);
+        Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(HELLO));
+    }    
 
     /**
      * Get twice a specific Plugin with the same PluginConfiguration
@@ -316,7 +342,7 @@ public class PluginServiceTest extends PluginServiceUtility {
      */
     @Test
     @Purpose("Load twice a plugin with the same configuration.")
-    public void getExistingFirstPluginByType() throws ModuleException {
+    public void getExistingFirstPluginInstanceByType() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
@@ -350,7 +376,7 @@ public class PluginServiceTest extends PluginServiceUtility {
      */
     @Test
     @Purpose("Load a plugin twice from a specific type with a configuration.")
-    public void getExistingFirstPluginByTypeWithDynamicParameter() throws ModuleException {
+    public void getExistingFirstPluginInstanceByTypeWithDynamicParameter() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
@@ -386,7 +412,7 @@ public class PluginServiceTest extends PluginServiceUtility {
      */
     @Test
     @Purpose("Load a plugin twice from a specific type with a configuration.")
-    public void getExistingFirstPluginByTypeWithDynamicParameter2() throws ModuleException {
+    public void getExistingFirstPluginInstanceByTypeWithDynamicParameter2() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
@@ -423,7 +449,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_120"), @Requirement("REGARDS_DSL_CMP_PLG_120"),
             @Requirement("REGARDS_DSL_CMP_PLG_310") })
     @Purpose("Load a plugin with a dynamic parameter from a specific type with a configuration and execute a method.")
-    public void getFirstPluginByTypeWithADynamicParameter() throws ModuleException {
+    public void getFirstPluginInstanceByTypeWithADynamicParameter() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
@@ -463,7 +489,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_120"), @Requirement("REGARDS_DSL_CMP_PLG_310") })
     @Purpose("Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and execute a method.")
-    public void getFirstPluginByTypeWithADynamicParameterWithAListOfValue() throws ModuleException {
+    public void getFirstPluginInstanceByTypeWithADynamicParameterWithAListOfValue() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
@@ -492,7 +518,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_SYS_ARC_120"), @Requirement("REGARDS_DSL_CMP_PLG_310") })
     @Purpose("Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and set a parameter value and execute a method.")
-    public void getFirstPluginByTypeWithADynamicParameterWithAListOfValueAndSetAValue() throws ModuleException {
+    public void getFirstPluginInstanceByTypeWithADynamicParameterWithAListOfValueAndSetAValue() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
@@ -525,7 +551,7 @@ public class PluginServiceTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test
-    public void getAPluginWithBadVersionConfiguration() throws ModuleException {
+    public void getAPluginInstanceWithBadVersionConfiguration() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setVersion(BLUE);
@@ -553,7 +579,7 @@ public class PluginServiceTest extends PluginServiceUtility {
      *             throw if an error occurs
      */
     @Test
-    public void getFirstPluginTheMostPrioritary() throws ModuleException {
+    public void getFirstPluginInstanceTheMostPrioritary() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();

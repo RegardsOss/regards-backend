@@ -264,6 +264,12 @@ public class PluginService implements IPluginService {
         return resultPlugin;
     }
 
+    @Override
+    public <T> T getPlugin(PluginConfiguration pPluginConfiguration) throws ModuleException {
+        return getPlugin(pPluginConfiguration.getId(),
+                         pPluginConfiguration.getParameters().toArray(new PluginParameter[0]));
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pPluginParameters)
@@ -307,8 +313,8 @@ public class PluginService implements IPluginService {
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
         Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
-        if (confs==null) {
-            Collections.emptyList(); 
+        if (confs == null) {
+            Collections.emptyList();
         }
         return Lists.newArrayList(confs);
     }
