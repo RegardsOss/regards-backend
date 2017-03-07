@@ -3,18 +3,21 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.google.gson.Gson;
+
 import feign.Contract;
 import feign.Feign;
+import feign.Logger;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
-import feign.hystrix.HystrixFeign;
 
 /**
  *
@@ -30,6 +33,16 @@ import feign.hystrix.HystrixFeign;
  */
 @Configuration
 public class FeignClientConfiguration {
+
+    /**
+     * Basic log
+     *
+     * @return loggin level
+     */
+    @Bean
+    Logger.Level feignLoggerLevel() {
+        return Logger.Level.BASIC;
+    }
 
     /**
      *
@@ -53,7 +66,10 @@ public class FeignClientConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public Decoder getDecoder() {
+    public Decoder getDecoder(@Autowired(required = false) Gson pGson) {
+        if (pGson != null) {
+            return new ResponseEntityDecoder(new GsonDecoder(pGson));
+        }
         return new ResponseEntityDecoder(new GsonDecoder());
     }
 
@@ -67,7 +83,10 @@ public class FeignClientConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public Encoder getEncoder() {
+    public Encoder getEncoder(@Autowired(required = false) Gson pGson) {
+        if (pGson != null) {
+            return new GsonEncoder(pGson);
+        }
         return new GsonEncoder();
     }
 
@@ -90,7 +109,7 @@ public class FeignClientConfiguration {
      */
     @Bean
     public Feign.Builder builder() {
-        final Feign.Builder builder = new HystrixFeign.Builder();
+        Feign.Builder builder = Feign.builder();
         builder.decode404();
         return builder;
     }

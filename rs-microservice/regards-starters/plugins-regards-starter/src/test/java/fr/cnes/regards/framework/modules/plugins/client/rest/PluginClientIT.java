@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
@@ -20,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.hystrix.HystrixFeign;
-import fr.cnes.regards.framework.feign.annotation.TokenClientProvider;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 
@@ -39,6 +41,9 @@ public class PluginClientIT extends AbstractRegardsWebIT {
     @Value("${server.address}")
     private String serverAddress;
 
+    @Autowired
+    private FeignSecurityManager feignSecurityManager;
+
     @Test
     public void testRetrievePluginTypes() {
         try {
@@ -47,8 +52,8 @@ public class PluginClientIT extends AbstractRegardsWebIT {
             jwtService.injectToken(DEFAULT_TENANT, RoleAuthority.getSysRole(""), "");
             final IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                    .target(new TokenClientProvider<>(IPluginClient.class,
-                            "http://" + serverAddress + ":" + getPort()));
+                    .target(new TokenClientProvider<>(IPluginClient.class, "http://" + serverAddress + ":" + getPort(),
+                            feignSecurityManager));
             final ResponseEntity<List<Resource<String>>> pluginTypes = pluginClient.getPluginTypes();
             Assert.assertTrue(pluginTypes.getStatusCode().equals(HttpStatus.OK));
         } catch (final Exception e) {

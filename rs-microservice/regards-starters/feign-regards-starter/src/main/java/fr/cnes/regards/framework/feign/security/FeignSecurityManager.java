@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.feign;
+package fr.cnes.regards.framework.feign.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +29,14 @@ public class FeignSecurityManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeignSecurityManager.class);
 
     /**
+     * Thread safe flag holder to activate system call<br/>
+     *
+     * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done (with a system token)<br/>
+     * Else the user token within security context holder will be used.
+     */
+    private static final ThreadLocal<Boolean> systemFlagHolder = new ThreadLocal<>();
+
+    /**
      * Instance of JWT for internal call
      */
     private String sysJwt;
@@ -51,7 +59,22 @@ public class FeignSecurityManager {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    public String getUserToken() {
+    /**
+     * If system flag is enabled, this method return a system (i.e. internal) token else propagate the
+     * {@link SecurityContextHolder} user token.
+     *
+     * @return a JWT according to thread context
+     */
+    public String getToken() {
+        Boolean asSysCall = systemFlagHolder.get();
+        if ((asSysCall != null) && asSysCall) {
+            return getSystemToken();
+        } else {
+            return getUserToken();
+        }
+    }
+
+    private String getUserToken() {
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
         if (authentication != null) {
@@ -70,7 +93,7 @@ public class FeignSecurityManager {
      *
      * @return a system token.
      */
-    public String getSystemToken() {
+    private String getSystemToken() {
         if (sysJwt == null) {
             String tenant = runtimeTenantResolver.getTenant();
             String role = RoleAuthority.getSysRole(appName);
@@ -79,5 +102,20 @@ public class FeignSecurityManager {
             sysJwt = jwtService.generateToken(tenant, appName, role);
         }
         return sysJwt;
+    }
+
+    /**
+     * Enable system mode call. Following client requests will be done as a system call. It's equivalent to an internal
+     * call that bypasses user authorizations. To disable this mode, call {@link #reset()}.
+     */
+    public static void asSystem() {
+        systemFlagHolder.set(Boolean.TRUE);
+    }
+
+    /**
+     * Disable system mode call enabled in {{@link #asSystem()}
+     */
+    public static void reset() {
+        systemFlagHolder.remove();
     }
 }

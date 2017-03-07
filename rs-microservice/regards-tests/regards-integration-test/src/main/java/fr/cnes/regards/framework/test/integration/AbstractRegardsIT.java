@@ -38,8 +38,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultTestConfiguration;
-import fr.cnes.regards.framework.security.domain.HttpConstants;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**

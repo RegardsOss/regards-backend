@@ -13,7 +13,7 @@ import org.springframework.core.annotation.AliasFor;
 
 import feign.Headers;
 import fr.cnes.regards.framework.feign.FeignClientConfiguration;
-import fr.cnes.regards.framework.feign.SysSecurityConfiguration;
+import fr.cnes.regards.framework.feign.security.FeignSecurityConfiguration;
 
 /**
  *
@@ -24,11 +24,11 @@ import fr.cnes.regards.framework.feign.SysSecurityConfiguration;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@FeignClient(configuration = { FeignClientConfiguration.class, SysSecurityConfiguration.class })
+@FeignClient(configuration = { FeignClientConfiguration.class, FeignSecurityConfiguration.class })
 @Headers({ "Accept: application/json", "Content-Type: application/json" })
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface SysFeignClient {
+public @interface RestClient {
 
     /**
      *
@@ -50,4 +50,9 @@ public @interface SysFeignClient {
     @AliasFor(annotation = FeignClient.class)
     Class<?> fallback() default void.class;
 
+    /**
+     * An absolute URL or resolvable hostname (the protocol is optional).
+     */
+    @AliasFor(annotation = FeignClient.class)
+    String url() default "";
 }

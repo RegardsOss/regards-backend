@@ -22,10 +22,6 @@
 		</dependency>
 		<!-- Regards client core -->
 		<dependency>
-			<groupId>fr.cnes.regards.client</groupId>
-			<artifactId>client-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>hateoas-regards</artifactId>
 		</dependency>

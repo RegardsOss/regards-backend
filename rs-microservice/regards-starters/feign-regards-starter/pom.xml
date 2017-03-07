@@ -18,17 +18,20 @@
 		<!-- REGARDS dependency -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
+			<artifactId>multitenant-regards-starter</artifactId>
 		</dependency>
-		<!-- Business layer -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards</artifactId>
-			</dependency>
+			<artifactId>security-utils</artifactId>
+		</dependency>
 		<!-- Starter feign -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-feign</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
 		</dependency>
 		<!-- Spring Web Mvc -->
 		<dependency>
@@ -39,34 +42,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-<!-- <dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-		</dependency>
-		SPRING HATEOAS
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-		</dependency>
-		Spring Web Mvc
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-		</dependency>
-		Netflix Feign REST Client
+		<!-- Netflix Feign REST Client -->
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-hystrix</artifactId>
@@ -83,10 +59,28 @@
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-slf4j</artifactId>
 		</dependency>
+		<!-- Tests -->
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-feign</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
-	</dependencies> -->
+		<!-- Spring boot config -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jetty</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>
 

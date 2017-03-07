@@ -41,7 +41,6 @@
 		<module>gson-regards-starter</module>
 		<module>gson-regards</module>
 		<module>feign-regards-starter</module>
-		<module>feign-regards</module>
 	</modules>
 
 	<dependencies>

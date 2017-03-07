@@ -10,33 +10,23 @@ import feign.Response;
 import feign.codec.ErrorDecoder;
 
 /**
- *
- * Class ClientErrorDecoder
- *
- * Interceptor for Feign client errors.
+ * Intercept Feign error to write custom log and propagate decoding to default decoder.
  *
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-public class ClientErrorDecoder implements ErrorDecoder {
+public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDecoder {
 
     /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientErrorDecoder.class);
 
-    /**
-     *
-     * Override method
-     *
-     * @see feign.codec.ErrorDecoder#decode(java.lang.String, feign.Response)
-     * @since 1.0-SNAPSHOT
-     */
     @Override
     public Exception decode(final String pMethodKey, final Response pResponse) {
 
         LOGGER.error(String.format("Remote call to %s. Response is : %d - %s", pMethodKey, pResponse.status(),
-                                pResponse.reason()));
-        return new Exception(String.format("%s:%s", pResponse.status(), pResponse.reason()));
+                                   pResponse.reason()));
+        return super.decode(pMethodKey, pResponse);
     }
 }

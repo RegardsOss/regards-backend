@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.security.domain;
+package fr.cnes.regards.framework.security.utils;
 
 /**
  * Security constants

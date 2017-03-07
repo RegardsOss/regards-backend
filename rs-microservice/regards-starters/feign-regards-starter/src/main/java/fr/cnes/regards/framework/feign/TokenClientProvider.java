@@ -6,6 +6,8 @@ package fr.cnes.regards.framework.feign;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Target;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 
 /**
  *
@@ -29,34 +31,24 @@ public class TokenClientProvider<T> implements Target<T> {
     private final Class<T> clazz;
 
     /**
-     * Security interceptor
+     * Feign security manager
      */
-    private final FeignSecurityManager securityManager;
+    private final FeignSecurityManager feignSecurityManager;
 
-    /**
-     *
-     * Constructor
-     *
-     * @param pClass
-     *            interface
-     * @param pUrl
-     *            url
-     * @since 1.0-SNAPSHOT
-     */
-    public TokenClientProvider(final Class<T> pClass, final String pUrl, FeignSecurityManager pSecurityManager) {
+    public TokenClientProvider(final Class<T> pClass, final String pUrl, FeignSecurityManager pFeignSecurityManager) {
         url = pUrl;
         clazz = pClass;
-        this.securityManager = pSecurityManager;
+        this.feignSecurityManager = pFeignSecurityManager;
     }
 
     @Override
-    public Request apply(final RequestTemplate input) {
-        if (input.url().indexOf("http") != 0) {
-            input.insert(0, url);
+    public Request apply(final RequestTemplate pTemplate) {
+        if (pTemplate.url().indexOf("http") != 0) {
+            pTemplate.insert(0, url);
         }
         // Apply security
-        securityInterceptor.apply(input);
-        return input.request();
+        pTemplate.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + feignSecurityManager.getToken());
+        return pTemplate.request();
     }
 
     @Override
