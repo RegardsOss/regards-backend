@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>access</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.access</groupId>
 			<artifactId>access-dao</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -30,6 +30,10 @@
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>module-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>
