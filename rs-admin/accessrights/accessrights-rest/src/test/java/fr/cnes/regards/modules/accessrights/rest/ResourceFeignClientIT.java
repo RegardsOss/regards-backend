@@ -97,7 +97,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
         try {
             jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
             final List<ResourceMapping> resources = new ArrayList<>();
-            resources.add(new ResourceMapping("/register/test", RequestMethod.GET));
+            resources.add(new ResourceMapping("/register/test", "Controller", RequestMethod.GET));
             final ResponseEntity<Void> response = client.registerMicroserviceEndpoints("rs-test", resources);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
         } catch (final Exception e) {

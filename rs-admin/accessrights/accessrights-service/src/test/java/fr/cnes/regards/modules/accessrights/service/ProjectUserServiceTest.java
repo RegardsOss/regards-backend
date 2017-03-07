@@ -125,8 +125,8 @@ public class ProjectUserServiceTest {
         projectUser.setStatus(STATUS);
         projectUser.setMetaData(META_DATA);
         projectUser.setPermissions(PERMISSIONS);
-        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", HttpVerb.GET));
-        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", HttpVerb.PUT));
+        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller", HttpVerb.GET));
+        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller", HttpVerb.PUT));
         projectUser.setRole(ROLE);
 
         // Mock untested services & repos
@@ -464,10 +464,11 @@ public class ProjectUserServiceTest {
         final List<ResourcesAccess> input = new ArrayList<>();
         // Updating an existing one
         final ResourcesAccess updatedPermission = new ResourcesAccess(0L, "updated desc0", "updated ms0",
-                "updated res0", HttpVerb.POST);
+                "updated res0", "Controller", HttpVerb.POST);
         input.add(updatedPermission);
         // Adding a new permission
-        final ResourcesAccess newPermission = new ResourcesAccess(2L, "desc2", "ms2", "res2", HttpVerb.GET);
+        final ResourcesAccess newPermission = new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller",
+                HttpVerb.GET);
         input.add(newPermission);
 
         // Define expected result

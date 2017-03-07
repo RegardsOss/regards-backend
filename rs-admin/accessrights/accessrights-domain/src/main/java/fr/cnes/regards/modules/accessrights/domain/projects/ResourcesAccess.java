@@ -60,6 +60,10 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Column(name = "microservice")
     private String microservice;
 
+    @NotBlank
+    @Column(name = "controller_name")
+    private String controllerSimpleName;
+
     /**
      * Path of the endpoint
      */
@@ -87,21 +91,23 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     }
 
     public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,
-            final String pResource, final HttpVerb pVerb) {
+            final String pResource, final String pControllerSimpleName, final HttpVerb pVerb) {
         super();
         id = pResourcesAccessId;
         description = pDescription;
         microservice = pMicroservice;
         resource = pResource;
+        controllerSimpleName = pControllerSimpleName;
         verb = pVerb;
     }
 
     public ResourcesAccess(final String pDescription, final String pMicroservice, final String pResource,
-            final HttpVerb pVerb) {
+            final String pControllerSimpleName, final HttpVerb pVerb) {
         super();
         description = pDescription;
         microservice = pMicroservice;
         resource = pResource;
+        controllerSimpleName = pControllerSimpleName;
         verb = pVerb;
     }
 
@@ -112,6 +118,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         microservice = pMicroservicename;
         resource = pMapping.getFullPath();
         verb = HttpVerb.valueOf(pMapping.getMethod().toString());
+        controllerSimpleName = pMapping.getControllerSimpleName();
     }
 
     @Override
@@ -197,6 +204,14 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     public void setVerb(final HttpVerb pVerb) {
         verb = pVerb;
+    }
+
+    public String getControllerSimpleName() {
+        return controllerSimpleName;
+    }
+
+    public void setControllerSimpleName(String pControllerSimpleName) {
+        controllerSimpleName = pControllerSimpleName;
     }
 
 }

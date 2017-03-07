@@ -139,7 +139,7 @@ public class RoleServiceTest {
         roleRegisteredUser.setNative(true);
         roleAdmin = new Role(DefaultRole.ADMIN.toString(), roleRegisteredUser);
         roleAdmin.setNative(true);
-        roleProjectAdmin = new Role(DefaultRole.PROJECT_ADMIN.toString(), roleAdmin);
+        roleProjectAdmin = new Role(DefaultRole.PROJECT_ADMIN.toString(), null);
         roleProjectAdmin.setNative(true);
 
         // Set an id in order to simulate it was saved in db
@@ -417,7 +417,7 @@ public class RoleServiceTest {
         // Mock
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(jwtService.getActualRole()).thenReturn(DefaultRole.ADMIN.toString());
-        // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN <- PROJECT ADMIN)
+        // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
             Set<Role> sonsOfPublic = new HashSet<>();
             sonsOfPublic.add(roleRegisteredUser);
@@ -431,7 +431,6 @@ public class RoleServiceTest {
         });
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenAnswer(pInvocation -> {
             Set<Role> sonsOfAdmin = new HashSet<>();
-            sonsOfAdmin.add(roleProjectAdmin);
             return sonsOfAdmin;
         });
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
@@ -443,7 +442,8 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.save(roleProjectAdmin)).thenReturn(roleProjectAdmin);
 
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", HttpVerb.PATCH);
+        final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
+                HttpVerb.PATCH);
         resourcesAccesses.add(addedResourcesAccess);
 
         // Perform the update
@@ -474,7 +474,7 @@ public class RoleServiceTest {
     public void updateRoleResourcesAccessUpdatingResourcesAccess()
             throws EntityNotFoundException, EntityOperationForbiddenException {
         final List<ResourcesAccess> initRAs = new ArrayList<>();
-        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
+        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(jwtService.getActualRole()).thenReturn(DefaultRole.ADMIN.toString());
@@ -499,7 +499,7 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         final Set<ResourcesAccess> passedRAs = new HashSet<>();
-        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", HttpVerb.DELETE));
+        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", HttpVerb.DELETE));
 
         // Ensure new permission's attributes are different from the previous
 
@@ -527,7 +527,7 @@ public class RoleServiceTest {
     public void clearRoleResourcesAccess() throws EntityNotFoundException {
         // Prepare the role by adding some resources accesses
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
+        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock

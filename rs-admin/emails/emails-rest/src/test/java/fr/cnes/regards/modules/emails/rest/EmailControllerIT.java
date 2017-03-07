@@ -21,10 +21,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -47,21 +44,8 @@ public class EmailControllerIT extends AbstractRegardsIT {
     private static final Logger LOG = LoggerFactory.getLogger(EmailControllerIT.class);
 
     /**
-     * Utility service for handling JWT. Autowired by Spring.
-     */
-    @Autowired
-    private JWTService jwtService;
-
-    /**
      * Method authorization service.Autowired by Spring.
      */
-    @Autowired
-    private MethodAuthorizationService authService;
-
-    /**
-     * The JWT string
-     */
-    private String jwt;
 
     /**
      * Email service handling mailing operations
@@ -74,12 +58,6 @@ public class EmailControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void init() {
-        jwt = jwtService.generateToken(DEFAULT_TENANT, "email", DEFAULT_ROLE);
-        authService.setAuthorities(DEFAULT_TENANT, "/emails", RequestMethod.GET, DEFAULT_ROLE);
-        authService.setAuthorities(DEFAULT_TENANT, "/emails", RequestMethod.POST, DEFAULT_ROLE);
-        authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.GET, DEFAULT_ROLE);
-        authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.PUT, DEFAULT_ROLE);
-        authService.setAuthorities(DEFAULT_TENANT, "/emails/{mail_id}", RequestMethod.DELETE, DEFAULT_ROLE);
     }
 
     /**
@@ -92,7 +70,7 @@ public class EmailControllerIT extends AbstractRegardsIT {
     public void retrieveEmails() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet("/emails", jwt, expectations, "Unable to retrieve the emails list");
+        performDefaultGet("/emails", expectations, "Unable to retrieve the emails list");
     }
 
     /**
@@ -107,7 +85,7 @@ public class EmailControllerIT extends AbstractRegardsIT {
         final SimpleMailMessage message = createDummyMessage();
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performPost("/emails", jwt, message, expectations, "Unable to send the email");
+        performDefaultPost("/emails", message, expectations, "Unable to send the email");
     }
 
     /**
@@ -123,14 +101,14 @@ public class EmailControllerIT extends AbstractRegardsIT {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performGet("/emails/{mail_id}", jwt, expectations, "Unable to retrieve email", id);
+        performDefaultGet("/emails/{mail_id}", expectations, "Unable to retrieve email", id);
 
         final Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performGet("/emails/{mail_id}", jwt, expectations, "Unable to retrieve email", wrongId);
+        performDefaultGet("/emails/{mail_id}", expectations, "Unable to retrieve email", wrongId);
     }
 
     /**
@@ -148,13 +126,13 @@ public class EmailControllerIT extends AbstractRegardsIT {
         // Then re-send it
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performPut("/emails/{mail_id}", jwt, null, expectations, "Unable to resend the email", id);
+        performDefaultPut("/emails/{mail_id}", null, expectations, "Unable to resend the email", id);
 
         final Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performPut("/emails/{mail_id}", jwt, null, expectations, "Unable to resend the email", wrongId);
+        performDefaultPut("/emails/{mail_id}", null, expectations, "Unable to resend the email", wrongId);
     }
 
     /**
@@ -171,7 +149,7 @@ public class EmailControllerIT extends AbstractRegardsIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDelete("/emails/{mail_id}", jwt, expectations, "Unable to delete the email", id);
+        performDefaultDelete("/emails/{mail_id}", expectations, "Unable to delete the email", id);
     }
 
     /**

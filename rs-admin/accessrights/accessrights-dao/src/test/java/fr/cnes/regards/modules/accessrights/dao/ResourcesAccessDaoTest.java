@@ -75,23 +75,28 @@ public class ResourcesAccessDaoTest {
          * Create 3 Role
          */
         publicRole = new Role(DefaultRole.PUBLIC.toString(), null);
+        publicRole.setNative(true);
         nRole++;
 
         userRole = new Role(DefaultRole.REGISTERED_USER.toString(), publicRole);
+        userRole.setNative(true);
         nRole++;
 
         adminRole = new Role(DefaultRole.ADMIN.toString(), userRole);
+        adminRole.setNative(true);
         nRole++;
 
         /*
          * Create 3 ResourcesAcces
          */
-        final ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL,
+        final ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL, "controller",
                 HttpVerb.GET);
 
-        final ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, HttpVerb.GET);
+        final ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, "controller",
+                HttpVerb.GET);
 
-        final ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, HttpVerb.GET);
+        final ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, "controller",
+                HttpVerb.GET);
 
         /*
          * Set Permission to Role and persist the Role

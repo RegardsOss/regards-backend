@@ -577,6 +577,8 @@ public class RoleService implements IRoleService {
         Set<Role> ascendants = Sets.newHashSet(pRole);
         // if pRole doesn't have parent then it's finished
         if (pRole.getParentRole() == null) {
+            // TODO: handle ProjectAdmin by considering that ADMIN is its parent(projectAdmin is not considered admin's
+            // son so no resources accesses are added or removed from him but has to be considered for role borrowing)
             return ascendants;
         }
         // otherwise lets get pRole's parent and look for his children: Brotherhood

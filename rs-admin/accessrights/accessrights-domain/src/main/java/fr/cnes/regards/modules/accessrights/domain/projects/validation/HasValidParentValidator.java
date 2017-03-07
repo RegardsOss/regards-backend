@@ -33,7 +33,7 @@ public class HasValidParentValidator implements ConstraintValidator<HasValidPare
                 || roleName.equals(DefaultRole.PROJECT_ADMIN.toString()));
         if (shouldHaveParentRole) {
             Role parentRole = pRole.getParentRole();
-            if (!parentRole.isNative()) {
+            if ((parentRole == null) || !parentRole.isNative()) {
                 return false;
             }
             // INSTANCE_ADMIN and PROJECT_ADMIN cannot have any children

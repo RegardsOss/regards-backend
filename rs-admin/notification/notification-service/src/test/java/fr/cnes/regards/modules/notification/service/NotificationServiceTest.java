@@ -14,6 +14,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,7 +23,7 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -37,6 +39,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
  * Test class for {@link NotificationService}.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sylvain Vissiere-Guerinet
  */
 public class NotificationServiceTest {
 
@@ -113,7 +116,7 @@ public class NotificationServiceTest {
     /**
      * The tested service
      */
-    private INotificationService notificationService;
+    private NotificationService notificationService;
 
     /**
      * Service handle CRUD operations on {@link ProjectUser}s. Autowired by Spring.
@@ -136,9 +139,9 @@ public class NotificationServiceTest {
     private IRoleRepository roleRepository;
 
     /**
-     * Feign client for {@link Role}s. Autowired by Spring.
+     * Feign client for {@link ProjectUser}s. Autowired by Spring.
      */
-    private IRolesClient rolesClient;
+    private IProjectUsersClient projectUserClient;
 
     /**
      * Do some setup before each test
@@ -205,11 +208,11 @@ public class NotificationServiceTest {
         notificationRepository = Mockito.mock(INotificationRepository.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleRepository = Mockito.mock(IRoleRepository.class);
-        rolesClient = Mockito.mock(IRolesClient.class);
+        projectUserClient = Mockito.mock(IProjectUsersClient.class);
 
         // Instanciate the tested service
         notificationService = new NotificationService(projectUserService, notificationRepository, projectUserRepository,
-                roleRepository, rolesClient);
+                roleRepository, projectUserClient);
     }
 
     /**
@@ -481,9 +484,10 @@ public class NotificationServiceTest {
         expected.add(projectUser2); // Expected from the notif roleRecipients attribute via parent role
 
         // Mock
-        Mockito.when(rolesClient.retrieveRoleProjectUserList(role1.getId()))
-                .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(expected), HttpStatus.OK));
-
+        PagedResources<Resource<ProjectUser>> expectedFromClient = HateoasUtils.wrapToPagedResources(expected);
+        Mockito.when(projectUserClient.retrieveRoleProjectUserList(Mockito.anyLong(), Mockito.anyInt(),
+                                                                   Mockito.anyInt()))
+                .thenReturn(new ResponseEntity<>(expectedFromClient, HttpStatus.OK));
         // Result
         final List<ProjectUser> actual = notificationService.findRecipients(notification).collect(Collectors.toList());
 

@@ -106,7 +106,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
-                HttpVerb.GET);
+                "Controller", HttpVerb.GET);
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
         roleRepository.save(publicRole);
@@ -116,8 +116,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
-        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
-        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
+        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
+                HttpVerb.GET);
+        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
                 HttpVerb.DELETE);
 
         resourcesAccess.add(aResourcesAccess);
@@ -248,10 +249,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         final Set<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccesses(roleTest.getId());
 
-        newPermissionList
-                .add(resourcesAccessRepository.save(new ResourcesAccess(0L, "new", "new", "new", HttpVerb.PUT)));
-        newPermissionList
-                .add(resourcesAccessRepository.save(new ResourcesAccess(1L, "neww", "neww", "neww", HttpVerb.DELETE)));
+        newPermissionList.add(resourcesAccessRepository
+                .save(new ResourcesAccess(0L, "new", "new", "new", "Controller", HttpVerb.PUT)));
+        newPermissionList.add(resourcesAccessRepository
+                .save(new ResourcesAccess(1L, "neww", "neww", "neww", "Controller", HttpVerb.DELETE)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());

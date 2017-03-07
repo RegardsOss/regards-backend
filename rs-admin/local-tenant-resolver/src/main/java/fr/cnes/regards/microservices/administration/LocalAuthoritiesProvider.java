@@ -88,7 +88,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     private ResourceMapping buildResourceMapping(ResourcesAccess pRa, Collection<Role> pRoles) {
         ResourceMapping mapping = new ResourceMapping(
                 ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
-                RequestMethod.valueOf(pRa.getVerb().toString()));
+                pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
         mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
                 .collect(Collectors.toList()));
         return mapping;
