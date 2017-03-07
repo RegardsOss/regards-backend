@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -34,6 +35,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  * @author Christophe Mertz
  * @author Sébastien Binda
  */
+@MultitenantTransactional
 public class PluginService implements IPluginService {
 
     /**
@@ -79,7 +81,7 @@ public class PluginService implements IPluginService {
             List<String> pPackagesToScan) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
-        if (pPackagesToScan != null && !pPackagesToScan.isEmpty()) {
+        if ((pPackagesToScan != null) && !pPackagesToScan.isEmpty()) {
             if (pluginPackage == null) {
                 pluginPackage = new ArrayList<>();
             }
@@ -247,7 +249,7 @@ public class PluginService implements IPluginService {
 
         if (configuration != null) {
             if (!instantiatePlugins.containsKey(configuration.getId())
-                    || (instantiatePlugins.containsKey(configuration.getId()) && pPluginParameters.length > 0)) {
+                    || (instantiatePlugins.containsKey(configuration.getId()) && (pPluginParameters.length > 0))) {
 
                 resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
 
@@ -278,7 +280,7 @@ public class PluginService implements IPluginService {
         T resultPlugin;
 
         if (!instantiatePlugins.containsKey(pPluginConfigurationId)
-                || (instantiatePlugins.containsKey(pPluginConfigurationId) && pPluginParameters.length > 0)) {
+                || (instantiatePlugins.containsKey(pPluginConfigurationId) && (pPluginParameters.length > 0))) {
 
             // Get last saved plugin configuration
             final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
