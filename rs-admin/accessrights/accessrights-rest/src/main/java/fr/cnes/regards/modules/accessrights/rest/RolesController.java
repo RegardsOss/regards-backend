@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
@@ -53,6 +54,10 @@ public class RolesController implements IResourceController<Role> {
      */
     public static final String REQUEST_MAPPING_ROOT = "/roles";
 
+    public static final String PATH_BORROWABLE = "/borrowables";
+
+    public static final String PATH_BORROWABLE_TARGET = PATH_BORROWABLE + "/{target}";
+
     @Autowired
     private IRoleService roleService;
 
@@ -70,8 +75,23 @@ public class RolesController implements IResourceController<Role> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
+    public ResponseEntity<List<Resource<Role>>> retrieveRoles() {
         final Set<Role> roles = roleService.retrieveRoles();
+        return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for retrieving the list of borrowable Roles for the current user.
+     *
+     * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
+     * @throws JwtException
+     */
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, path = PATH_BORROWABLE)
+    @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<List<Resource<Role>>> retrieveBorrowableRoles() throws JwtException {
+        final Set<Role> roles = roleService.retrieveBorrowableRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
     }
 
@@ -165,7 +185,7 @@ public class RolesController implements IResourceController<Role> {
                                     MethodParamFactory.build(Role.class));
             resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
-            resourceService.addLink(resource, this.getClass(), "retrieveRoleList", LinkRels.LIST);
+            resourceService.addLink(resource, this.getClass(), "retrieveRoles", LinkRels.LIST);
         }
         return resource;
     }

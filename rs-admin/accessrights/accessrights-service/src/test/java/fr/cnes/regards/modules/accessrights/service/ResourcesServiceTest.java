@@ -101,10 +101,11 @@ public class ResourcesServiceTest {
     public void init() throws EntityNotFoundException {
 
         resourcesRepo = Mockito.mock(IResourcesAccessRepository.class);
-        ra0 = new ResourcesAccess(0L, "ResourceAccess 0", "Microservice 0", "Resource 0", HttpVerb.GET);
-        ra1 = new ResourcesAccess(1L, "ResourceAccess 1", "Microservice 1", "Resource 1", HttpVerb.PUT);
-        ra2 = new ResourcesAccess(2L, "ResourceAccess 2", "Microservice 2", "Resource 2", HttpVerb.DELETE);
-        ra3 = new ResourcesAccess(3L, "ResourceAccess 3", "Microservice 3", "Resource 3", HttpVerb.GET);
+        ra0 = new ResourcesAccess(0L, "ResourceAccess 0", "Microservice 0", "Resource 0", "Controller", HttpVerb.GET);
+        ra1 = new ResourcesAccess(1L, "ResourceAccess 1", "Microservice 1", "Resource 1", "Controller", HttpVerb.PUT);
+        ra2 = new ResourcesAccess(2L, "ResourceAccess 2", "Microservice 2", "Resource 2", "Controller",
+                HttpVerb.DELETE);
+        ra3 = new ResourcesAccess(3L, "ResourceAccess 3", "Microservice 3", "Resource 3", "Controller", HttpVerb.GET);
         ras = new HashSet<>();
         ras.add(ra0);
         ras.add(ra1);
@@ -172,15 +173,15 @@ public class ResourcesServiceTest {
         attributs.put("description", "premier test");
         attributs.put("role", DefaultRole.ADMIN);
         ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/premier", RequestMethod.GET));
+        resources.add(new ResourceMapping(resourceAccess, "/test/premier", "Controller", RequestMethod.GET));
         attributs.put("name", "/test/second");
         attributs.put("description", "second test");
         resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/second", RequestMethod.POST));
+        resources.add(new ResourceMapping(resourceAccess, "/test/second", "Controller", RequestMethod.POST));
         attributs.put("name", "/test/third");
         attributs.put("description", "third test");
         resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/third", RequestMethod.DELETE));
+        resources.add(new ResourceMapping(resourceAccess, "/test/third", "Controller", RequestMethod.DELETE));
 
         final List<String> services = new ArrayList<>();
         services.add("test-service");
@@ -202,13 +203,17 @@ public class ResourcesServiceTest {
 
         final String ms = "rs-test";
 
-        ResourcesAccess raTest1 = new ResourcesAccess("description", ms, "/resource/test/1", HttpVerb.GET);
+        ResourcesAccess raTest1 = new ResourcesAccess("description", ms, "/resource/test/1", "Controller",
+                HttpVerb.GET);
         roleAdmin.addPermission(raTest1);
-        ResourcesAccess raTest2 = new ResourcesAccess("description", ms, "/resource/test/2", HttpVerb.GET);
+        ResourcesAccess raTest2 = new ResourcesAccess("description", ms, "/resource/test/2", "Controller",
+                HttpVerb.GET);
         roleAdmin.addPermission(raTest2);
-        ResourcesAccess raTest3 = new ResourcesAccess("description", ms, "/resource/test/3", HttpVerb.GET);
+        ResourcesAccess raTest3 = new ResourcesAccess("description", ms, "/resource/test/3", "Controller",
+                HttpVerb.GET);
         roleAdmin.addPermission(raTest3);
-        ResourcesAccess raTest4 = new ResourcesAccess("description", ms, "/resource/test/4", HttpVerb.GET);
+        ResourcesAccess raTest4 = new ResourcesAccess("description", ms, "/resource/test/4", "Controller",
+                HttpVerb.GET);
         roleAdmin.addPermission(raTest4);
 
         final Page<ResourcesAccess> page = resourcesService.retrieveMicroserviceRessources(ms, new PageRequest(0, 20));

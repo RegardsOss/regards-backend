@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublicOrInstanceAdmin;
+import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
 
 /**
  * Helper classs for creating Roles implemented as a fluent API.
@@ -41,7 +41,7 @@ public class RoleFactory {
      * The parent role.
      * <p/>
      * Must not be null except if current role is PUBLIC. Validated via type-level
-     * {@link HasParentOrPublicOrInstanceAdmin} annotation.
+     * {@link HasValidParent} annotation.
      */
     private Role parentRole;
 

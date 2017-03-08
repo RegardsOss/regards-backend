@@ -217,10 +217,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to update a user's permissions.")
     public void updateUserPermissions() {
         final List<ResourcesAccess> newPermissionList = new ArrayList<>();
-        newPermissionList
-                .add(resourcesAccessRepository.save(new ResourcesAccess("desc0", "ms0", "res0", HttpVerb.GET)));
-        newPermissionList
-                .add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", HttpVerb.DELETE)));
+        newPermissionList.add(resourcesAccessRepository
+                .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", HttpVerb.GET)));
+        newPermissionList.add(resourcesAccessRepository
+                .save(new ResourcesAccess("desc1", "ms1", "res1", "Controller", HttpVerb.DELETE)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());

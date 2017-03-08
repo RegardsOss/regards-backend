@@ -55,7 +55,7 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
         try {
-            authService.setAuthorities(DEFAULT_TENANT, "/projects", RequestMethod.GET,
+            authService.setAuthorities(DEFAULT_TENANT, "/projects", "fakeControler", RequestMethod.GET,
                                        DefaultRole.INSTANCE_ADMIN.toString());
             jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
             final IProjectsClient projectsClient = HystrixFeign.builder().contract(new SpringMvcContract())

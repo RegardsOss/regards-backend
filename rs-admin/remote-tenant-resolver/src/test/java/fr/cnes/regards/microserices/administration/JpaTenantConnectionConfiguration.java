@@ -104,7 +104,7 @@ public class JpaTenantConnectionConfiguration {
     @Primary
     public IRolesClient roleClient() {
         final IRolesClient rolesClientMock = Mockito.mock(IRolesClient.class);
-        Mockito.when(rolesClientMock.retrieveRoleList()).thenReturn(ResponseEntity.ok(new ArrayList<>()));
+        Mockito.when(rolesClientMock.retrieveRoles()).thenReturn(ResponseEntity.ok(new ArrayList<>()));
         return rolesClientMock;
     }
 

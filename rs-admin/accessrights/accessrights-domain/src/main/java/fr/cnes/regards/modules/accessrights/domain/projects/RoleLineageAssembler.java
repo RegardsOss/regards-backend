@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.util.ArrayList;
@@ -6,7 +9,7 @@ import java.util.List;
 
 /**
  * Crawls through a role's {@link Role#getParentRole()} streak and builds the list of all visited roles like so,
- * establishing the passed role's lineage.
+ * establishing the given role's lineage.
  *
  * @author xbrochard
  * @author Sébastien Binda

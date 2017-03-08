@@ -46,9 +46,11 @@ public class ResourcesAccessTest {
      */
     private final HttpVerb verb = HttpVerb.HEAD;
 
+    private final String controller = "controller";
+
     @Before
     public void setUp() {
-        resourcesAccess = new ResourcesAccess(id, description, microservice, resource, verb);
+        resourcesAccess = new ResourcesAccess(id, description, microservice, resource, controller, verb);
     }
 
     /**
@@ -85,7 +87,8 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccessWithEverything() {
-        final ResourcesAccess testResources = new ResourcesAccess(id, description, microservice, resource, verb);
+        final ResourcesAccess testResources = new ResourcesAccess(id, description, microservice, resource, controller,
+                verb);
 
         Assert.assertEquals(id, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
@@ -99,7 +102,8 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccessWithoutID() {
-        final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, verb);
+        final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, controller,
+                verb);
 
         Assert.assertEquals(null, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());

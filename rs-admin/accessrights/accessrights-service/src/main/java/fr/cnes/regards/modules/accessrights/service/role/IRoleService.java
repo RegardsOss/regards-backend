@@ -14,6 +14,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -180,8 +181,8 @@ public interface IRoleService {
 
     /**
      *
-     * Retrieve the inherited roles of the given role. For exemple this method return PUBLIC, REGISTERED_USER and ADMIN
-     * for role PROJECT_ADMIN.
+     * Retrieve the inherited roles of the given role. For exemple this method return PUBLIC, REGISTERED_USER for role
+     * ADMIN.
      *
      * @param pRole
      *            role to retrieve inherited roles
@@ -206,7 +207,7 @@ public interface IRoleService {
     Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
 
     /**
-     * remove given resources accesses from the given role and its descendancy
+     * Remove given resources accesses from the given role and its descendancy
      *
      * @param pRole
      * @param pResourcesAccess
@@ -217,10 +218,19 @@ public interface IRoleService {
             throws EntityOperationForbiddenException;
 
     /**
+     * Add given resources accesses to the role of given role id
      *
      * @param pRoleId
      * @param pNewOnes
      * @throws EntityNotFoundException
      */
     void addResourceAccesses(Long pRoleId, ResourcesAccess... pNewOnes) throws EntityNotFoundException;
+
+    /**
+     * Retrieve roles that a user can borrow.
+     *
+     * @return roles which are borrowable for the current user
+     * @throws JwtException
+     */
+    Set<Role> retrieveBorrowableRoles() throws JwtException;
 }

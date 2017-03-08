@@ -14,12 +14,14 @@ import javax.validation.Payload;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
- * Can only annotate the field <code>parentRole</code> of a {@link Role}.
+ * Allow to validate the field <code>parentRole</code> of a {@link Role}.
  * <p/>
  * Specifies that the annotated role must:
  * <ul>
- * <li>have a non <code>null</code> <code>parentRole</code> if not the role "PUBLIC"</li>
- * <li>have a <code>null</code> <code>parentRole</code> if the role "PUBLIC" or "INSTANCE_ADMIN"</li>
+ * <li>have a <code>null</code> <code>parentRole</code> if it is the role "PUBLIC" or "INSTANCE_ADMIN" or
+ * "PROJECT_ADMIN"</li>
+ * <li>have a non <code>null</code> which is not "INSTANCE_ADMIN" or "PROJECT_ADMIN" <code>parentRole</code>
+ * otherwise</li>
  * </ul>
  *
  * @author Xavier-Alexandre Brochard
@@ -27,10 +29,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
-@Constraint(validatedBy = HasParentOrPublicOrInstanceAdminValidator.class)
-public @interface HasParentOrPublicOrInstanceAdmin {
+@Constraint(validatedBy = HasValidParentValidator.class)
+public @interface HasValidParent {
 
-    String message() default "Role should have a parent role";
+    String message() default "Role should have a parent role which is native unless it is one of the following roles: PUBLIC, INSTANCE_ADMIN, PROJECT_ADMIN";
 
     Class<?>[] groups() default {};
 

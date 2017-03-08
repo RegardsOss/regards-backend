@@ -106,7 +106,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.toString());
 
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                HttpVerb.GET);
+                "Controller", HttpVerb.GET);
         resource = resourcesAccessRepository.save(resource);
         final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);
@@ -129,13 +129,13 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void initialMicroserviceEndpointsRegistration() {
         final List<ResourceMapping> mapping = new ArrayList<>();
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                "/endpoint/test", RequestMethod.GET));
+                "/endpoint/test", "Controller", RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.REGISTERED_USER),
-                "/endpoint/test2", RequestMethod.GET));
+                "/endpoint/test2", "Controller", RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.INSTANCE_ADMIN),
-                "/endpoint/test3", RequestMethod.GET));
+                "/endpoint/test3", "Controller", RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                CONFIGURED_ENDPOINT_URL, RequestMethod.GET));
+                CONFIGURED_ENDPOINT_URL, "Controller", RequestMethod.GET));
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
