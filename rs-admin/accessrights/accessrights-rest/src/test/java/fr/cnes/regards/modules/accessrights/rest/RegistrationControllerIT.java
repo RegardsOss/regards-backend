@@ -44,9 +44,34 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationControllerIT.class);
 
     /**
-     * An email
+     * Dummy email
      */
-    private static final String EMAIL = "email@test.com";
+    private static final String EMAIL = "RegistrationControllerIT@test.com";
+
+    /**
+     * Dummy first name
+     */
+    private static final String FIRST_NAME = "Firstname";
+
+    /**
+     * Dummy last name
+     */
+    private static final String LAST_NAME = "Lastname";
+
+    /**
+     * Dummy password
+     */
+    private static final String PASSWORD = "password";
+
+    /**
+     * Dummy origin url
+     */
+    private static final String ORIGIN_URL = "originUrl";
+
+    /**
+     * Dummy request link
+     */
+    private static final String REQUEST_LINK = "requestLink";
 
     /**
      * A project user.<br>
@@ -117,8 +142,6 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         errorMessage = "Cannot reach model attributes";
 
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
     }
 
     /**
@@ -142,13 +165,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccess() {
-        final AccessRequestDto newAccessRequest = new AccessRequestDto();
-        newAccessRequest.setEmail("login@test.com");
-        newAccessRequest.setFirstName("Firstname");
-        newAccessRequest.setLastName("Lastname");
-        newAccessRequest.setPassword("password");
-        newAccessRequest.setRoleName(DefaultRole.PUBLIC.toString());
-        newAccessRequest.setPermissions(new ArrayList<>());
+        final AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, new ArrayList<>(),
+                PASSWORD, ORIGIN_URL, REQUEST_LINK);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isCreated());
@@ -168,6 +186,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to reactivate access to an access denied project user.")
     public void acceptAccessRequest() {
         // Prepare the test conditions
+        projectUser = projectUserRepository
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
         projectUser.setStatus(UserStatus.ACCESS_DENIED);
         projectUserRepository.save(projectUser);
 
@@ -195,6 +215,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to deny access to an already access granted project user.")
     public void denyAccessRequest() {
         // Prepare the test conditions
+        projectUser = projectUserRepository
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         projectUserRepository.save(projectUser);
 
@@ -220,10 +242,14 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to delete a registration request.")
     public void deleteAccessRequest() {
+        // Prepare the test
+        projectUser = projectUserRepository
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+
         // Case not found
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultDelete(apiAccessId, expectations, errorMessage, 1L);
+        performDefaultDelete(apiAccessId, expectations, errorMessage, 12345678L);
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());

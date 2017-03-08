@@ -19,6 +19,15 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 public interface IAccountService {
 
     /**
+     * Create an account.
+     *
+     * @param pAccount
+     *            The {@link Account}
+     * @return The account
+     */
+    Account createAccount(Account pAccount);
+
+    /**
      * Retrieve the list of all {@link Account}s.
      *
      * @param pPageable

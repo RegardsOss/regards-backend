@@ -10,10 +10,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
@@ -46,7 +44,7 @@ public class AccessRequestDTOTest {
     /**
      * Test MetaData
      */
-    private List<MetaData> metaDatas;
+    private final List<MetaData> metaDatas = new ArrayList<>();
 
     /**
      * Test password
@@ -54,36 +52,21 @@ public class AccessRequestDTOTest {
     private final String password = "password";
 
     /**
-     * Test permissions
+     * The origin url
      */
-    private List<ResourcesAccess> permissions;
+    private String originUrl;
 
     /**
-     * Test role
+     * The request link
      */
-    private Role role;
+    private String requestLink;
 
     /**
      * Setup
      */
     @Before
     public void setUp() {
-        access = new AccessRequestDto();
-        metaDatas = new ArrayList<MetaData>();
-        metaDatas.add(new MetaData());
-
-        permissions = new ArrayList<ResourcesAccess>();
-        permissions.add(new ResourcesAccess());
-
-        access.setEmail(email);
-        access.setFirstName(firstName);
-        access.setLastName(lastName);
-        access.setPassword(password);
-        access.setMetaData(metaDatas);
-        access.setPermissions(permissions);
-
-        role = new Role(DefaultRole.ADMIN.toString(), null);
-        access.setRoleName(role.getName());
+        access = new AccessRequestDto(email, firstName, lastName, metaDatas, password, originUrl, requestLink);
     }
 
     /**
@@ -127,23 +110,8 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getPermissions()}.
-     */
-    @Test
-    public void testGetPermissions() {
-        Assert.assertEquals(permissions, access.getPermissions());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getRole()}.
-     */
-    @Test
-    public void testGetRoleName() {
-        Assert.assertEquals(role.getName(), access.getRoleName());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setEmail(java.lang.String)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setEmail(java.lang.String)}.
      */
     @Test
     public void testSetEmail() {
@@ -175,7 +143,8 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setMetaData(java.util.List)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setMetaData(java.util.List)}.
      */
     @Test
     public void testSetMetaData() {
@@ -194,28 +163,6 @@ public class AccessRequestDTOTest {
         final String newPassword = "newPassword";
         access.setPassword(newPassword);
         Assert.assertEquals(newPassword, access.getPassword());
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setPermissions(java.util.List)}.
-     */
-    @Test
-    public void testSetPermissions() {
-        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
-        newPermissions.add(new ResourcesAccess());
-        access.setPermissions(newPermissions);
-        Assert.assertEquals(newPermissions, access.getPermissions());
-    }
-
-    /**
-     * Test method for {@link PerformResetPasswordDto#setRole(Role)}.
-     */
-    @Test
-    public void testSetRoleName() {
-        final String newRoleName = DefaultRole.REGISTERED_USER.toString();
-        access.setRoleName(newRoleName);
-        Assert.assertEquals(newRoleName, access.getRoleName());
     }
 
 }

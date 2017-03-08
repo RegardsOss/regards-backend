@@ -29,7 +29,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
-     * 
+     *
      * @param pPageable
      *            the paging information
      *
@@ -39,7 +39,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s with the given status.
-     * 
+     *
      * @param pStatus
      *            the {@link UserStatus} to retrieve
      * @param pPageable
@@ -181,17 +181,17 @@ public interface IProjectUserService {
     boolean existUser(Long pId);
 
     /**
-     * Return true when {@link ProjectUser} of passed <code>login</code> exists in db.
+     * Return true when {@link ProjectUser} of passed <code>email</code> exists in db.
      *
-     * @param pLogin
-     *            The {@link ProjectUser}'s <code>login</code>
+     * @param pEmail
+     *            The {@link ProjectUser}'s <code>email</code>
      * @return <code>True</code> exists, else <code>False</code>
      */
-    boolean existUser(String pLogin);
+    boolean existUser(String pEmail);
 
     /**
      * Retrieve all access requests.
-     * 
+     *
      * @param pPageable
      *            the pagination information
      *

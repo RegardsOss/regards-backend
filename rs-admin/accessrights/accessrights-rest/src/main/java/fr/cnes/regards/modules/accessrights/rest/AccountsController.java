@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +29,17 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockService;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
-import fr.cnes.regards.modules.accessrights.registration.AppUrlBuilder;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
 
@@ -75,12 +73,6 @@ public class AccountsController implements IResourceController<Account> {
 
     @Autowired
     private IAccountTransitions accountWorkflowManager;
-
-    /**
-     * The service exposing account unlock functionalities
-     */
-    @Autowired
-    private IAccountUnlockService accountUnlockService;
 
     /**
      * The service exposing password reset functionalities
@@ -124,14 +116,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount,
-            final HttpServletRequest pRequest) throws EntityException {
-        // Manually create the expected DTO in order to use the same common interface of account creation
-        final AccessRequestDto dto = new AccessRequestDto(pNewAccount);
-
-        // Build the email validation link
-        final String validationUrl = AppUrlBuilder.buildFrom(pRequest);
-        final Account created = accountWorkflowManager.requestAccount(dto, validationUrl);
+    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
+            throws EntityException {
+        final Account created = accountService.createAccount(pNewAccount);
         final Resource<Account> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -209,49 +196,67 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
-     * Send to the user an email containing a code to unlock the account
+     * Send to the user an email containing a link with limited validity to unlock its account.
      *
-     * @param pId
-     *            The {@link Account}'s <code>id</code>
+     * @param pAccountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing<br>
+     *            - The url of the app from where was issued the query<br>
+     *            - The url to redirect the user to the password reset interface
      * @return void
-     * @throws EntityNotFoundException
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when no account with passed email could be found<br>
+     *             {@link EntityOperationForbiddenException} when the account is not in status LOCKED<br>
      */
     @ResponseBody
-    @RequestMapping(value = "/{account_id}/accountUnlock", method = RequestMethod.GET)
-    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> sendAccountUnlockCode(@RequestParam("email") final Long pId,
-            final HttpServletRequest pRequest) throws EntityNotFoundException {
-        final Account account = accountService.retrieveAccount(pId);
-        final String appUrl = AppUrlBuilder.buildFrom(pRequest);
-        accountUnlockService.sendAccountUnlockEmail(account, appUrl);
+    @RequestMapping(value = "/{account_email}/unlockAccount", method = RequestMethod.POST)
+    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") final String pAccountEmail,
+            @Valid @RequestBody final RequestAccountUnlockDto pDto) throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Request account unlock
+        accountWorkflowManager.requestUnlockAccount(account, pDto.getOriginUrl(), pDto.getRequestLink());
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
+     * Unlock an {@link Account}.
      *
-     * @param pAccountId
-     *            The account id
-     * @param pUnlockCode
-     *            the unlock code
+     * @param pAccountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pToken
+     *            The token
      * @return void
-     * @throws ModuleException
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when no account with passed email could be found or the token could
+     *             not be found<br>
+     *             {@link EntityOperationForbiddenException} when the account is not in status LOCKED or the token is
+     *             invalid<br>
+     *
      */
     @ResponseBody
-    @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET)
-    @ResourceAccess(description = "unlock the account account_id according to the code unlock_code",
-            role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> unlockAccount(@PathVariable("account_id") final Long pAccountId,
-            @PathVariable("unlock_code") final String pUnlockCode) throws ModuleException {
-        final Account account = accountService.retrieveAccount(pAccountId);
-        accountWorkflowManager.unlockAccount(account, pUnlockCode);
+    @RequestMapping(value = "/{account_email}/unlockAccount", method = RequestMethod.PUT)
+    @ResourceAccess(description = "change the passsword of account account_email if provided token is valid",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") final String pAccountEmail,
+            @Valid @RequestBody final String pToken) throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Perform account unlock
+        accountWorkflowManager.performUnlockAccount(account, pToken);
         return ResponseEntity.noContent().build();
     }
 
     /**
      * Send to the user an email containing a link with limited validity to reset its password.
      *
-     * @param pEmail
+     * @param pAccountEmail
      *            The {@link Account}'s <code>email</code>
      * @param pDto
      *            The DTO containing<br>
@@ -262,7 +267,7 @@ public class AccountsController implements IResourceController<Account> {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
-    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final RequestResetPasswordDto pDto) throws EntityNotFoundException {
         // Retrieve the account
@@ -276,12 +281,15 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Change the passord of an {@link Account}.
      *
-     * @param pEmail
+     * @param pAccountEmail
      *            The {@link Account}'s <code>email</code>
      * @param pDto
      *            The DTO containing : 1) the token 2) the new password
      * @return void
      * @throws EntityException
+     *             <br>
+     *             {@link EntityOperationForbiddenException} when the token is invalid<br>
+     *             {@link EntityNotFoundException} when no account could be found<br>
      */
     @ResponseBody
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.PUT)

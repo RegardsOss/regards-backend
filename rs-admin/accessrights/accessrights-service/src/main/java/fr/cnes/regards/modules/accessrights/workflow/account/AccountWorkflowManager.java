@@ -5,20 +5,13 @@ package fr.cnes.regards.modules.accessrights.workflow.account;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 
 /**
  * Class managing the workflow of an account by applying the right transitions according to its status.<br>
@@ -38,63 +31,14 @@ public class AccountWorkflowManager implements IAccountTransitions {
     private final AccountStateProvider accountStateProvider;
 
     /**
-     * CRUD repository handling {@link Account}s. Autowired by Spring.
-     */
-    private final IAccountRepository accountRepository;
-
-    /**
-     * CRUD repository handling {@link AccountSettingst}s. Autowired by Spring.
-     */
-    private final IAccountSettingsService accountSettingsService;
-
-    /**
      * Constructor
      *
      * @param pAccountStateProvider
      *            the state factory
-     * @param pAccountRepository
-     *            the account repository
-     * @param pAccountSettingsService
-     *            the account settings service
      */
-    public AccountWorkflowManager(final AccountStateProvider pAccountStateProvider,
-            final IAccountRepository pAccountRepository, final IAccountSettingsService pAccountSettingsService) {
+    public AccountWorkflowManager(final AccountStateProvider pAccountStateProvider) {
         super();
         accountStateProvider = pAccountStateProvider;
-        accountRepository = pAccountRepository;
-        accountSettingsService = pAccountSettingsService;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#requestAccount(fr.cnes.regards.modules.
-     * accessrights.domain.AccessRequestDTO)
-     */
-    @Override
-    public Account requestAccount(final AccessRequestDto pDto, final String pValidationUrl) throws EntityException {
-        // Check existence
-        if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
-        }
-        // Create the new account
-        final Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                pDto.getPassword());
-        // Check status
-        Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
-                      "Trying to create an Account with other status than PENDING.");
-
-        // Auto-accept if configured so
-        final AccountSettings settings = accountSettingsService.retrieve();
-        if (AccountSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-            acceptAccount(account, pValidationUrl);
-        }
-
-        // Save
-        accountRepository.save(account);
-
-        return account;
     }
 
     /*
@@ -117,8 +61,8 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void acceptAccount(final Account pAccount, final String pValidationUrl) throws EntityException {
-        accountStateProvider.getState(pAccount).acceptAccount(pAccount, pValidationUrl);
+    public void acceptAccount(final Account pAccount) throws EntityException {
+        accountStateProvider.getState(pAccount).acceptAccount(pAccount);
     }
 
     /*
@@ -137,13 +81,25 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * (non-Javadoc)
      *
      * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#unlockAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
+     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#requestUnlockAccount(fr.cnes.regards.
+     * modules.accessrights.accountunlock.OnAccountUnlockEvent)
      */
     @Override
-    public void unlockAccount(final Account pAccount, final String pUnlockCode)
+    public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
             throws EntityOperationForbiddenException {
-        accountStateProvider.getState(pAccount).unlockAccount(pAccount, pUnlockCode);
+        accountStateProvider.getState(pAccount).requestUnlockAccount(pAccount, pOriginUrl, pRequestLink);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#performUnlockAccount(fr.cnes.regards.
+     * modules.accessrights.domain.instance.Account, java.lang.String)
+     */
+    @Override
+    public void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
+        accountStateProvider.getState(pAccount).performUnlockAccount(pAccount, pToken);
     }
 
     /*
