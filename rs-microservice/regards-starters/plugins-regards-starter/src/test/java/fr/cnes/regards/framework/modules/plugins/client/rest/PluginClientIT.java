@@ -47,7 +47,7 @@ public class PluginClientIT extends AbstractRegardsWebIT {
     @Test
     public void testRetrievePluginTypes() {
         try {
-            authService.setAuthorities(DEFAULT_TENANT, IPluginClient.PLUGIN_TYPES, RequestMethod.GET,
+            authService.setAuthorities(DEFAULT_TENANT, IPluginClient.PLUGIN_TYPES, "Controller", RequestMethod.GET,
                                        RoleAuthority.getSysRole(""));
             jwtService.injectToken(DEFAULT_TENANT, RoleAuthority.getSysRole(""), "");
             final IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())

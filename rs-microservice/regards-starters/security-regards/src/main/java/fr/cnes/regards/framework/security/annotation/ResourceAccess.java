@@ -51,4 +51,5 @@ public @interface ResourceAccess {
      * @return default resource role
      */
     DefaultRole role() default DefaultRole.PROJECT_ADMIN;
+
 }

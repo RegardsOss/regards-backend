@@ -4,13 +4,16 @@
 package fr.cnes.regards.framework.hateoas;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,6 +92,18 @@ public final class HateoasUtils {
             result.add(r.getContent());
         }
         return result;
+    }
+
+    /**
+     * Transforms a collection to a paged resources of resource(without links) of one page with all the elements.
+     *
+     * @param pElements
+     *            elements to wrap
+     * @return PagedResources<Resource<?>> of one page containing all base elements
+     */
+    public static <T> PagedResources<Resource<T>> wrapToPagedResources(Collection<T> pElements) {
+        List<Resource<T>> elementResources = pElements.stream().map(Resource<T>::new).collect(Collectors.toList());
+        return new PagedResources<>(elementResources, new PageMetadata(pElements.size(), 0, pElements.size()));
     }
 
     /**

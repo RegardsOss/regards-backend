@@ -45,8 +45,8 @@ public class DefaultPluginManagementTest {
     @Test
     public void defaultPluginResourceManagerTest() {
 
-        Assert.assertTrue(manager.manageMethodResource(new ResourceMapping("resource/path", RequestMethod.GET))
-                .isEmpty());
+        Assert.assertTrue(manager
+                .manageMethodResource(new ResourceMapping("resource/path", "Controller", RequestMethod.GET)).isEmpty());
     }
 
 }

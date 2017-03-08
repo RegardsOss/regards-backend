@@ -210,6 +210,17 @@ public class JWTService {
     }
 
     /**
+     * retrieve the current token in place in the security context
+     * 
+     * @return parsed token which is in the security context
+     * @throws JwtException
+     */
+    public JWTAuthentication getCurrentToken() throws JwtException {
+        JWTAuthentication jwt = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        return parseToken(jwt);
+    }
+
+    /**
      *
      * Method to generate REGARDS JWT Tokens CLAIMS
      *

@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.security.endpoint;
 
 /*
@@ -103,7 +106,7 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
                 final String verb = urlVerb[1];
 
                 final RequestMethod httpVerb = RequestMethod.valueOf(verb);
-                result = new ResourceMapping(null, url, httpVerb);
+                result = new ResourceMapping(url, null, httpVerb);
 
                 // Roles
                 for (int i = 1; i < urlVerbRoles.length; i++) {

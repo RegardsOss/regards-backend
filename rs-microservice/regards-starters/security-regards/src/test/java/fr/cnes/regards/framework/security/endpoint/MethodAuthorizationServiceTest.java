@@ -45,7 +45,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 public class MethodAuthorizationServiceTest {
 
     /**
-     * Role label for tests.
+     * Role label for tests. Defined in a property file
      */
     private static final String ROLE_LABEL = "USER";
 
@@ -82,7 +82,8 @@ public class MethodAuthorizationServiceTest {
         @RequestMapping
         class Controller {
 
-            @ResourceAccess(description = "description")
+            @ResourceAccess(description = "description") // default role here is not important as it is override by a
+                                                         // property file
             @RequestMapping(value = "/endpoint1", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -99,12 +100,12 @@ public class MethodAuthorizationServiceTest {
 
         final ResourceAccessVoter voter = new ResourceAccessVoter(methodAuthService);
         int result = voter.vote(authenticationMock, methodIvoncation, null);
-        Assert.assertEquals(result, AccessDecisionVoter.ACCESS_GRANTED);
+        Assert.assertEquals(AccessDecisionVoter.ACCESS_GRANTED, result);
 
         Mockito.when(authenticationMock.getTenant()).thenReturn("tenant-3");
 
         result = voter.vote(authenticationMock, methodIvoncation, null);
-        Assert.assertEquals(result, AccessDecisionVoter.ACCESS_DENIED);
+        Assert.assertEquals(AccessDecisionVoter.ACCESS_DENIED, result);
 
     }
 
@@ -170,14 +171,15 @@ public class MethodAuthorizationServiceTest {
         final String resourcePath = "new/path";
         final int expectedResult = 6;
         methodAuthService.init();
-        methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, RequestMethod.GET, "TEST_ROLE",
-                                         "TEST_ROLE_2");
+        methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, "Controller", RequestMethod.GET,
+                                         "TEST_ROLE", "TEST_ROLE_2");
 
         final Map<String, ArrayList<GrantedAuthority>> authorities = methodAuthService
                 .getTenantAuthorities(TestConfiguration.TENANT_1);
         Assert.assertEquals(authorities.size(), expectedResult);
         final Optional<List<GrantedAuthority>> roles = methodAuthService
-                .getAuthorities(TestConfiguration.TENANT_1, new ResourceMapping(resourcePath, RequestMethod.GET));
+                .getAuthorities(TestConfiguration.TENANT_1,
+                                new ResourceMapping(resourcePath, "Controller", RequestMethod.GET));
         Assert.assertEquals(roles.get().size(), 2);
         Assert.assertEquals(roles.get().get(0).getAuthority(), "ROLE_TEST_ROLE");
 
