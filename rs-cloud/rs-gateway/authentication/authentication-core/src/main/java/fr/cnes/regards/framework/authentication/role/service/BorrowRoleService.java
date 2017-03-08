@@ -39,10 +39,10 @@ public class BorrowRoleService implements IBorrowRoleService {
 
     private final JWTService jwtService;
 
-    @Value("${spring.application.name}")
     private final String microserviceName;
 
-    public BorrowRoleService(IRolesClient pRolesClient, JWTService pJwtService, String pMicroserviceName) {
+    public BorrowRoleService(IRolesClient pRolesClient, JWTService pJwtService,
+            @Value("${spring.application.name}") String pMicroserviceName) {
         super();
         rolesClient = pRolesClient;
         jwtService = pJwtService;
