@@ -6,14 +6,12 @@ package fr.cnes.regards.cloud.gateway;
 import java.util.Base64;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -38,7 +36,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
+@EnableAutoConfiguration /* (exclude = DataSourceAutoConfiguration.class) */
 public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
@@ -171,7 +169,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "scope2").param(USER_NAME, "name2")
+                    .param(SCOPE, "PROJECT").param(USER_NAME, "name2")
                     .param(PASSWORD, AuthenticationPluginStub.INVALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().is4xxClientError());
             // CHECKSTYLE:OFF
@@ -199,7 +197,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
                     .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "scope3").param(USER_NAME, "test@regards.fr").param(PASSWORD, "plop"))
+                    .param(SCOPE, "PROJECT").param(USER_NAME, "test@regards.fr").param(PASSWORD, "plop"))
                     .andExpect(MockMvcResultMatchers.status().isOk());
             // CHECKSTYLE:OFF
         } catch (final Exception e) {
