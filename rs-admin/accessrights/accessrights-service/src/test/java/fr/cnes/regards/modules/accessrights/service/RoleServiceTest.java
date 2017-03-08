@@ -19,6 +19,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -27,7 +29,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -80,6 +85,8 @@ public class RoleServiceTest {
      */
     private static final String NAME = DefaultRole.PUBLIC.toString();
 
+    private static final Long ADMIN_SON_ID = 4L;
+
     /**
      * The tested service
      */
@@ -113,6 +120,8 @@ public class RoleServiceTest {
 
     private JWTService jwtService;
 
+    private Role adminSon;
+
     /**
      * Do some setup before each test
      */
@@ -136,14 +145,17 @@ public class RoleServiceTest {
         roleRegisteredUser.setNative(true);
         roleAdmin = new Role(DefaultRole.ADMIN.toString(), roleRegisteredUser);
         roleAdmin.setNative(true);
-        roleProjectAdmin = new Role(DefaultRole.PROJECT_ADMIN.toString(), roleAdmin);
+        roleProjectAdmin = new Role(DefaultRole.PROJECT_ADMIN.toString(), null);
         roleProjectAdmin.setNative(true);
+        adminSon = new Role(DefaultRole.ADMIN.toString() + "_SON", roleAdmin);
 
         // Set an id in order to simulate it was saved in db
         rolePublic.setId(PUBLIC_ID);
         roleRegisteredUser.setId(REGISTERED_USER_ID);
         roleAdmin.setId(ADMIN_ID);
         roleProjectAdmin.setId(PROJECT_ADMIN_ID);
+        adminSon.setId(ADMIN_SON_ID);
+        Mockito.when(roleRepository.findOneByName(roleAdmin.getName())).thenReturn(Optional.of(roleAdmin));
     }
 
     /**
@@ -163,6 +175,39 @@ public class RoleServiceTest {
         checkRolesEqual((Role) expected.toArray()[0], (Role) actual.toArray()[0]);
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).findAllDistinctLazy();
+    }
+
+    @Test
+    @Requirement("PM003") // FIXME
+    @Purpose("Check that the system retrieve the good roles that can be borrowed")
+    public void retrieveBorrowableRoles() throws JwtException {
+        // mock JWTAuthentication
+        JWTAuthentication token = new JWTAuthentication("");
+        UserDetails user = new UserDetails();
+        user.setName("test@test.test");
+        user.setRole("ADMIN");
+        token.setUser(user);
+        Mockito.when(jwtService.getCurrentToken()).thenReturn(token);
+        // mock project user
+        ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new ArrayList<>());
+        Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
+        Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
+        Set<Role> result = roleService.retrieveBorrowableRoles();
+        Assert.assertTrue(result.contains(rolePublic));
+        Assert.assertTrue(result.contains(roleRegisteredUser));
+        Assert.assertTrue(result.contains(roleAdmin));
+        Assert.assertFalse(result.contains(adminSon));
+        // PUBLIC cannot borrow roles
+        projectUser.setRole(rolePublic);
+        result = roleService.retrieveBorrowableRoles();
+        Assert.assertTrue(result.isEmpty());
+        // PROJECT_ADMIN can borrow all roles except instance_admin
+        projectUser.setRole(roleProjectAdmin);
+        result = roleService.retrieveBorrowableRoles();
+        Assert.assertTrue(result.contains(rolePublic));
+        Assert.assertTrue(result.contains(roleRegisteredUser));
+        Assert.assertTrue(result.contains(roleAdmin));
+        Assert.assertTrue(result.contains(adminSon));
     }
 
     /**
@@ -391,7 +436,7 @@ public class RoleServiceTest {
         // Mock
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(jwtService.getActualRole()).thenReturn(DefaultRole.ADMIN.toString());
-        // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN <- PROJECT ADMIN)
+        // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
             Set<Role> sonsOfPublic = new HashSet<>();
             sonsOfPublic.add(roleRegisteredUser);
@@ -405,7 +450,6 @@ public class RoleServiceTest {
         });
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenAnswer(pInvocation -> {
             Set<Role> sonsOfAdmin = new HashSet<>();
-            sonsOfAdmin.add(roleProjectAdmin);
             return sonsOfAdmin;
         });
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
@@ -417,7 +461,8 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.save(roleProjectAdmin)).thenReturn(roleProjectAdmin);
 
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", HttpVerb.PATCH);
+        final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
+                HttpVerb.PATCH);
         resourcesAccesses.add(addedResourcesAccess);
 
         // Perform the update
@@ -448,7 +493,7 @@ public class RoleServiceTest {
     public void updateRoleResourcesAccessUpdatingResourcesAccess()
             throws EntityNotFoundException, EntityOperationForbiddenException {
         final List<ResourcesAccess> initRAs = new ArrayList<>();
-        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
+        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(jwtService.getActualRole()).thenReturn(DefaultRole.ADMIN.toString());
@@ -473,7 +518,7 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         final Set<ResourcesAccess> passedRAs = new HashSet<>();
-        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", HttpVerb.DELETE));
+        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", HttpVerb.DELETE));
 
         // Ensure new permission's attributes are different from the previous
 
@@ -501,7 +546,7 @@ public class RoleServiceTest {
     public void clearRoleResourcesAccess() throws EntityNotFoundException {
         // Prepare the role by adding some resources accesses
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", HttpVerb.TRACE));
+        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock
@@ -582,8 +627,6 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).findOne(idParent);
         Mockito.verify(projectUserRepository).findByRoleNameIn(roleNames, pageable);
     }
-
-    // @Requirement("REGARDS_DSL_ADM_ADM_210") that's just a getter, should we still add a test?
 
     /**
      * Check that the system is able to hierarchically compare two roles.

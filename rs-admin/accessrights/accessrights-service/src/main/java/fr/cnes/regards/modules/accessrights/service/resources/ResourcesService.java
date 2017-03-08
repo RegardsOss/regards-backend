@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -132,7 +133,8 @@ public class ResourcesService implements IResourcesService {
         Page<ResourcesAccess> results;
         final String roleName = jwtService.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
-        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
+                || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
             results = resourceAccessRepo.findAll(pPageable);
         } else {
             // Else retrieve only accessible resources
@@ -155,7 +157,8 @@ public class ResourcesService implements IResourcesService {
         List<ResourcesAccess> results;
         final String roleName = jwtService.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
-        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
+                || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
             results = resourceAccessRepo.findAll();
         } else {
             // Else retrieve only accessible resources
@@ -194,8 +197,9 @@ public class ResourcesService implements IResourcesService {
             final Pageable pPageable) throws EntityNotFoundException {
         Page<ResourcesAccess> results;
         final String roleName = jwtService.getActualRole();
-        // If role is System role or InstanceAdminRole retrieve all resources
-        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+        // If role is System role or InstanceAdminRole or ProjectAdmin role retrieve all resources
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
+                || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
             results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
         } else {
             // Else retrieve only accessible resources

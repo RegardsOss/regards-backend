@@ -4,14 +4,14 @@
 package fr.cnes.regards.modules.notification.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -36,7 +37,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
  *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
- *
+ * @author Sylvain Vissiere-Guerinet
  */
 @Service
 @EnableFeignClients(clients = { IRolesClient.class })
@@ -71,7 +72,7 @@ public class NotificationService implements INotificationService {
     /**
      * Feign client for {@link Role}s. Autowired by Spring.
      */
-    private final IRolesClient rolesClient;
+    private final IProjectUsersClient projectUserClient;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -89,13 +90,13 @@ public class NotificationService implements INotificationService {
      */
     public NotificationService(final IProjectUserService pProjectUserService,
             final INotificationRepository pNotificationRepository, final IProjectUserRepository pProjectUserRepository,
-            final IRoleRepository pRoleRepository, final IRolesClient pRolesClient) {
+            final IRoleRepository pRoleRepository, final IProjectUsersClient pRolesClient) {
         super();
         projectUserService = pProjectUserService;
         notificationRepository = pNotificationRepository;
         projectUserRepository = pProjectUserRepository;
         roleRepository = pRoleRepository;
-        rolesClient = pRolesClient;
+        projectUserClient = pRolesClient;
     }
 
     /*
@@ -205,25 +206,29 @@ public class NotificationService implements INotificationService {
         try (final Stream<Role> rolesStream = pNotification.getRoleRecipients().stream();
                 final Stream<ProjectUser> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
-            // Define a function mapping each role to its project users by calling the roles client
-            final Function<Role, Stream<Resource<ProjectUser>>> toProjectUsers = r -> {
-                List<Resource<ProjectUser>> result = new ArrayList<>();
-                final ResponseEntity<List<Resource<ProjectUser>>> response = rolesClient
-                        .retrieveRoleProjectUserList(r.getId());
-
-                if (response.getStatusCode().equals(HttpStatus.OK) && (response.getBody() != null)) {
-                    result = response.getBody();
-                } else {
-                    LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
-                             r.getName(), response.getStatusCode());
-                }
-
-                return result.stream();
-            };
-
             // Merge the two streams
-            return Stream.concat(usersStream, rolesStream.flatMap(toProjectUsers).map(HateoasUtils::unwrap).distinct());
+            return Stream.concat(usersStream,
+                                 rolesStream.flatMap(// Define a function mapping each role to its project users by
+                                                     // calling the roles client
+                                                     r -> HateoasUtils
+                                                             .retrieveAllPages(100,
+                                                                               pageable -> retrieveRoleProjectUserList(r,
+                                                                                                                       pageable))
+                                                             .stream())
+                                         .distinct());
         }
+    }
+
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(Role pRole,
+            Pageable pPageable) {
+        final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = projectUserClient
+                .retrieveRoleProjectUserList(pRole.getId(), pPageable.getPageNumber(), pPageable.getPageSize());
+
+        if (!response.getStatusCode().equals(HttpStatus.OK) || (response.getBody() == null)) {
+            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}", pRole.getName(),
+                     response.getStatusCode());
+        }
+        return response;
     }
 
 }

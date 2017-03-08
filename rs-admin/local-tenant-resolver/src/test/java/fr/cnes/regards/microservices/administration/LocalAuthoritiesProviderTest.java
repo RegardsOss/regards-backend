@@ -106,12 +106,14 @@ public class LocalAuthoritiesProviderTest {
                 .withCorsRequestsAuthorized(false).withCorsRequestsAuthorizationEndDate(null).create());
 
         resourcesAccessRepository.deleteAll();
-        resourcesAccessRepository.save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.GET));
-        resourcesAccessRepository.save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.PUT));
-        resourcesAccessRepository
-                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.POST));
-        resourcesAccessRepository
-                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.DELETE));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", HttpVerb.GET));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", HttpVerb.PUT));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", HttpVerb.POST));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", HttpVerb.DELETE));
     }
 
     /**

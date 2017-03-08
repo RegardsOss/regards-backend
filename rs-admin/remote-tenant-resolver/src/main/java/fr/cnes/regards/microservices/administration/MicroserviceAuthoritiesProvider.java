@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * IAuthoritiesProvider implementation for all microservices exception administration.
  *
  * @author Sébastien Binda
+ * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
@@ -80,7 +81,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
         if (response.getStatusCode().equals(HttpStatus.OK)) {
 
             // get a map that for each ResourcesAccess ra links the roles containing ra
-            List<Role> roles = HateoasUtils.unwrapList(roleClient.retrieveRoleList().getBody());
+            List<Role> roles = HateoasUtils.unwrapList(roleClient.retrieveRoles().getBody());
             SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
 
             roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
@@ -97,7 +98,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     public List<RoleAuthority> getRoleAuthorities() {
         final List<RoleAuthority> roleAuths = new ArrayList<>();
 
-        final ResponseEntity<List<Resource<Role>>> result = roleClient.retrieveRoleList();
+        final ResponseEntity<List<Resource<Role>>> result = roleClient.retrieveRoles();
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {
             final List<Resource<Role>> body = result.getBody();
@@ -134,7 +135,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     private ResourceMapping buildResourceMapping(ResourcesAccess pRa, Collection<Role> pRoles) {
         ResourceMapping mapping = new ResourceMapping(
                 ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
-                RequestMethod.valueOf(pRa.getVerb().toString()));
+                pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
         mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
                 .collect(Collectors.toList()));
         return mapping;

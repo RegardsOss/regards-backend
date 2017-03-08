@@ -83,7 +83,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void registerResourcesFromFeignClient() {
         final List<ResourceMapping> resources = new ArrayList<>();
-        resources.add(new ResourceMapping("/register/test", RequestMethod.GET));
+        resources.add(new ResourceMapping("/register/test", "Controller", RequestMethod.GET));
         final ResponseEntity<Void> response = client.registerMicroserviceEndpoints("rs-test", resources);
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }

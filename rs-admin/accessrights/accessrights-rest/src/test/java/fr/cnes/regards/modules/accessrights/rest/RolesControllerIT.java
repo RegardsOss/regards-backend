@@ -106,7 +106,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
-                HttpVerb.GET);
+                "Controller", HttpVerb.GET);
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
         roleRepository.save(publicRole);
@@ -116,8 +116,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
-        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", HttpVerb.GET);
-        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource",
+        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
+                HttpVerb.GET);
+        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
                 HttpVerb.DELETE);
 
         resourcesAccess.add(aResourcesAccess);
@@ -207,8 +208,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(6)));
         // 6 = 5 roles and the added role TEST_ROLE has two permissions
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
-        // 5 = 5 roles has a parent (public has no parent)
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(4)));
+        // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
         performDefaultGet(apiRoles, expectations, "TODO Error message");
     }
 
@@ -248,10 +249,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         final Set<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccesses(roleTest.getId());
 
-        newPermissionList
-                .add(resourcesAccessRepository.save(new ResourcesAccess(0L, "new", "new", "new", HttpVerb.PUT)));
-        newPermissionList
-                .add(resourcesAccessRepository.save(new ResourcesAccess(1L, "neww", "neww", "neww", HttpVerb.DELETE)));
+        newPermissionList.add(resourcesAccessRepository
+                .save(new ResourcesAccess(0L, "new", "new", "new", "Controller", HttpVerb.PUT)));
+        newPermissionList.add(resourcesAccessRepository
+                .save(new ResourcesAccess(1L, "neww", "neww", "neww", "Controller", HttpVerb.DELETE)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
@@ -287,10 +288,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check hierachy of roles")
     public void retrieveInheritedRoles() {
         final Set<Role> roles = roleService.retrieveInheritedRoles(publicRole);
-        // Number of roles should be all Default roles except PUBLIC plus the default ROLE Create for those tests.
-        Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 2) + 1));
+        // Number of roles should be all Default roles except PUBLIC(which is parent of the hierarchy wanted) and
+        // PROJECT_ADMIN, INSTANCE_ADMIN which has no parent plus the default ROLE Create for those tests.
+        int defaultRoleSize = DefaultRole.values().length;
+        Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 3) + 1));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
-        Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.PROJECT_ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST.toString())));
     }
