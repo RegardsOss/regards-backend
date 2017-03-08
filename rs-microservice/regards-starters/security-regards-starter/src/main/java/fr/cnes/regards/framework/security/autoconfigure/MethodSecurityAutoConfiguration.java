@@ -15,10 +15,9 @@ import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.endpoint.ResourceAccessVoter;
+import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IRoleSysAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 
 /**
  * This class allow to add a security filter on method access. Each time a method is called, the accessDecisionManager
@@ -35,36 +34,30 @@ import fr.cnes.regards.framework.security.utils.endpoint.IRoleSysAccessVoter;
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration {
 
-    /**
-     * Global method authorization service
-     */
     @Autowired
-    private MethodAuthorizationService methodAuthService;
+    private ResourceAccessVoter resourceAccessVoter;
 
-    /**
-     * Access voter for internal SYS roles.
-     */
     @Autowired(required = false)
-    private IRoleSysAccessVoter roleSysAccessVoter;
+    private IInstanceAdminAccessVoter instanceAccessVoter;
 
-    /**
-     * Access voter for specific instance admin user
-     */
     @Autowired(required = false)
-    private IInstanceAdminAccessVoter instanceAdminAccessVoter;
+    private ISystemAccessVoter systemAccessVoter;
 
     @Override
     protected AccessDecisionManager accessDecisionManager() {
         final List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
 
-        if (roleSysAccessVoter != null) {
-            decisionVoters.add(roleSysAccessVoter);
-        }
-        if (instanceAdminAccessVoter != null) {
-            decisionVoters.add(instanceAdminAccessVoter);
+        // Manage system voter
+        if (systemAccessVoter != null) {
+            decisionVoters.add(systemAccessVoter);
         }
 
-        decisionVoters.add(new ResourceAccessVoter(methodAuthService));
+        // Manage instance voter
+        if (instanceAccessVoter != null) {
+            decisionVoters.add(instanceAccessVoter);
+        }
+
+        decisionVoters.add(resourceAccessVoter);
 
         // Access granted if one of the two voter return access granted
         return new AffirmativeBased(decisionVoters);

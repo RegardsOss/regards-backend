@@ -40,6 +40,7 @@
 		<module>plugins-regards-starter</module>
 		<module>gson-regards-starter</module>
 		<module>gson-regards</module>
+		<module>feign-regards-starter</module>
 	</modules>
 
 	<dependencies>

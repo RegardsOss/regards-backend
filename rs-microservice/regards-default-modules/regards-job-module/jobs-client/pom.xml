@@ -13,21 +13,22 @@
 	</parent>
 
 	<dependencies>
-		<!-- Regards client core -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
+		<!-- Module business domain internal -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+			<artifactId>jobs-domain</artifactId>
+		</dependency>
+		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.client</groupId>
-			<artifactId>client-core</artifactId>
-		</dependency>
-		<!-- Microservice internal dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-			<artifactId>jobs-domain</artifactId>
-		</dependency>
+
 	</dependencies>
 
 </project>

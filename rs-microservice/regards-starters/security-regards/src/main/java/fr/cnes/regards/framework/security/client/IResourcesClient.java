@@ -5,11 +5,9 @@ package fr.cnes.regards.framework.security.client;
 
 import java.util.List;
 
-import feign.Feign;
-import feign.RequestLine;
-import feign.Target;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
@@ -26,26 +24,12 @@ public interface IResourcesClient {
 
     /**
      *
-     * Generate client
-     *
-     * @param pTarget
-     *            Target to add informations in header like Autorization.
-     * @return IResourcesClient
-     * @since 1.0-SNAPSHOT
-     */
-    static IResourcesClient build(final Target<IResourcesClient> pTarget) {
-        return Feign.builder() // Feign customization
-                .encoder(new GsonEncoder()).decoder(new GsonDecoder()).target(pTarget);
-    }
-
-    /**
-     *
      * Get all resources from the current microservice.
      *
      * @return List<ResourceMapping>
      * @since 1.0-SNAPSHOT
      */
-    @RequestLine("GET /security/resources")
+    @RequestMapping(value = "/security/resources", method = RequestMethod.GET)
     List<ResourceMapping> getResources();
 
 }
