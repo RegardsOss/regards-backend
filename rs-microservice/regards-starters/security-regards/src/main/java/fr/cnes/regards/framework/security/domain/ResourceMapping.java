@@ -65,6 +65,7 @@ public class ResourceMapping {
         fullPath = pFullPath;
         method = pMethod;
         authorizedRoles.add(pDefaultRole);
+        controllerSimpleName = pSimpleName;
     }
 
     /**
@@ -151,6 +152,11 @@ public class ResourceMapping {
 
     public void setControllerSimpleName(String pControllerSimpleName) {
         controllerSimpleName = pControllerSimpleName;
+    }
+
+    @Override
+    public String toString() {
+        return controllerSimpleName + "\t" + getResourceMappingId();
     }
 
 }
