@@ -6,8 +6,7 @@ package fr.cnes.regards.modules.storage.client;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import fr.cnes.regards.client.core.annotation.RestClient;
-//import fr.cnes.regards.modules.storage.domain.Greeting;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 
 /**
  *
@@ -17,8 +16,7 @@ import fr.cnes.regards.client.core.annotation.RestClient;
  *
  */
 @RestClient(name = "MyMicroServiceName") // TODO: change name
-@RequestMapping(value = "/api", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IGreetingsClient {
 
     // /**
