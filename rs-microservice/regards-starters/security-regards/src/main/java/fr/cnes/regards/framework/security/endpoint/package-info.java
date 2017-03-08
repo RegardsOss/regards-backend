@@ -9,7 +9,7 @@
  * <ul>
  * <li>{@link fr.cnes.regards.framework.security.endpoint.IMethodAuthorizationService} to get, set,
  * collect, retrieve endpoint authorizations.</li>
- * <li>{@link fr.cnes.regards.framework.security.endpoint.ResourceAccessVoter} to filter endpoint
+ * <li>{@link fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter} to filter endpoint
  * according to authorization</li>
  * </ul>
  *

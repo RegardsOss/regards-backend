@@ -14,6 +14,6 @@ import org.springframework.security.access.AccessDecisionVoter;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface IRoleSysAccessVoter extends AccessDecisionVoter<Object> {
+public interface ISystemAccessVoter extends AccessDecisionVoter<Object> {
 
 }
