@@ -119,7 +119,7 @@ public final class DaoUtils {
      * Find all the class who extends {@link CrudRepository}
      * <p>
      * Find all the class who extends {@link JpaRepository}
-     * 
+     *
      * @param rootPackage
      *            the base package
      * @return the {@link Set} of package
@@ -214,16 +214,16 @@ public final class DaoUtils {
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         if (pExcludeAnnotation != null) {
-            LOGGER.info("Excluding JPA entities with {} annotation", pExcludeAnnotation.getName());
+            LOGGER.debug("Excluding JPA entities with {} annotation", pExcludeAnnotation.getName());
             scanner.addExcludeFilter(new AnnotationTypeFilter(pExcludeAnnotation));
         }
         if (pIncludeAnnotation != null) {
-            LOGGER.info("Including JPA entities with {} annotation", pIncludeAnnotation.getName());
+            LOGGER.debug("Including JPA entities with {} annotation", pIncludeAnnotation.getName());
             scanner.addIncludeFilter(new AnnotationTypeFilter(pIncludeAnnotation));
         }
         for (final BeanDefinition def : scanner.findCandidateComponents(pPackageToScan)) {
             try {
-                LOGGER.info("Package {} selected for scanning", def.getBeanClassName());
+                LOGGER.debug("Package {} selected for scanning", def.getBeanClassName());
                 packages.add(Class.forName(def.getBeanClassName()));
             } catch (final ClassNotFoundException e) {
                 LOGGER.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");

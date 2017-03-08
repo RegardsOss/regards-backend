@@ -6,7 +6,6 @@ package fr.cnes.regards.framework.modules.plugins.rest;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Matchers;
@@ -30,6 +29,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
@@ -61,9 +61,9 @@ public class PluginControllerIT extends AbstractRegardsIT {
     private static final Long AN_ID = 050L;
 
     private static final String LABEL = "a plugin configuration for the test";
-    
+
     private static final String TRUE = "true";
-    
+
     private static final String FALSE = "false";
 
     /**
@@ -76,8 +76,12 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     @Before
     public void init() {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
 
         pluginParameters = PluginParametersFactory.build().addParameterDynamic("param31", "value31")
                 .addParameter("param32", "value32").addParameter("param33", "value33")
@@ -215,8 +219,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath("$.[0].content.active", Matchers.hasToString(TRUE)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.[1].content.active", Matchers.hasToString(TRUE)));
-        expectations.add(MockMvcResultMatchers.jsonPath("$.[0].content.parameters[0].dynamic",
-                                                        Matchers.hasToString(TRUE)));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath("$.[0].content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.[1].content.parameters[0].dynamic",
                                                         Matchers.hasToString(FALSE)));
 
@@ -307,8 +311,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.pluginId", Matchers.hasToString(PLUGIN_ID)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
         expectations
                 .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString(FALSE)));
 
@@ -387,8 +390,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.pluginId", Matchers.hasToString(PLUGIN_ID)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
         expectations
                 .add(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic", Matchers.hasToString(FALSE)));
 
@@ -425,7 +427,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(SamplePlugin.class.getCanonicalName());
-//        pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
+        //        pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);

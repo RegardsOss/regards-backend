@@ -7,7 +7,7 @@
 	<groupId>fr.cnes.regards.framework.modules</groupId>
 	<artifactId>module-jobs</artifactId>
 	<description>module Jobs manager</description> 
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>0.0.7-SNAPSHOT</version>
+		<version>1.0.0-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 

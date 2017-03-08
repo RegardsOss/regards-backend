@@ -59,12 +59,28 @@ public interface IPluginService {
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
      *
-     * @return a plugin
+     * @return a plugin instance
      *
      * @throws ModuleException
      *             throw if an error occurs
      */
     <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters) throws ModuleException;
+
+    /**
+     *
+     * Get a plugin instance for a {@link PluginConfiguration}
+     *
+     * @param <T>
+     *            a plugin instance
+     * @param pPluginConfiguration
+     *            a {@link PluginConfiguration}.
+     *
+     * @return a plugin instance
+     *
+     * @throws ModuleException
+     *             throw if an error occurs
+     */
+    <T> T getPlugin(PluginConfiguration pPluginConfiguration) throws ModuleException;
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -77,7 +93,7 @@ public interface IPluginService {
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
      *
-     * @return a plugin
+     * @return a plugin instance
      *
      * @throws ModuleException
      *             throw if an error occurs
