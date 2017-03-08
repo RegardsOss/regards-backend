@@ -15,10 +15,6 @@
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-		</dependency>
 		<!-- REGARDS Framework -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>

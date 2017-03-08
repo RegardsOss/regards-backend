@@ -15,7 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolverAutoConfigure;
+import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolverAutoConfiguration;
 
 /**
  *
@@ -29,7 +29,7 @@ import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolve
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @EnableAutoConfiguration
-@ContextConfiguration(classes = { TenantTestConfiguration.class, LocalTenantConnectionResolverAutoConfigure.class })
+@ContextConfiguration(classes = { TenantTestConfiguration.class, LocalTenantConnectionResolverAutoConfiguration.class })
 public class LocalTenantConnectionTest {
 
     /**

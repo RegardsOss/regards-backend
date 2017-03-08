@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -43,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
  */
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
+@EnableAutoConfiguration
 @ContextConfiguration(classes = { AuthoritiesTestConfiguration.class })
 public class LocalAuthoritiesProviderTest {
 
@@ -104,10 +106,8 @@ public class LocalAuthoritiesProviderTest {
                 .withCorsRequestsAuthorized(false).withCorsRequestsAuthorizationEndDate(null).create());
 
         resourcesAccessRepository.deleteAll();
-        resourcesAccessRepository
-                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.GET));
-        resourcesAccessRepository
-                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.PUT));
+        resourcesAccessRepository.save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.GET));
+        resourcesAccessRepository.save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.PUT));
         resourcesAccessRepository
                 .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.POST));
         resourcesAccessRepository

@@ -4,7 +4,6 @@
 package fr.cnes.regards.microservices.administration;
 
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -16,12 +15,6 @@ import org.springframework.context.annotation.PropertySource;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.microservices.administration.LocalAuthoritiesProvider;
-import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolver;
-import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolverAutoConfigure;
-import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -41,7 +34,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
 @PropertySource("classpath:application-test.properties")
-@EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfigure.class)
+@EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfiguration.class)
 @ImportResource({ "classpath*:defaultRoles.xml" })
 public class AuthoritiesTestConfiguration {
 
@@ -70,15 +63,6 @@ public class AuthoritiesTestConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
-
-    /**
-     * Role service
-     */
-    @Autowired
-    private IRoleService roleService;
-
-    @Autowired
-    private IResourcesService resourcesService;
 
     /**
      *
@@ -132,10 +116,4 @@ public class AuthoritiesTestConfiguration {
 
         return new LocalTenantConnectionResolver(microserviceName, pProjectService, pProjectConnectionService);
     }
-
-    @Bean
-    public IAuthoritiesProvider provider() {
-        return new LocalAuthoritiesProvider(microserviceName, roleService, resourcesService);
-    }
-
 }
