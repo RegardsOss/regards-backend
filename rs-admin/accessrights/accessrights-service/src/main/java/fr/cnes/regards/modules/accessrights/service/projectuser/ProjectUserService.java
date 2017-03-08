@@ -1,8 +1,12 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -291,7 +295,7 @@ public class ProjectUserService implements IProjectUserService {
         final List<ResourcesAccess> fromUser = projectUser.getPermissions();
         merged.addAll(fromUser);
         try {
-            final List<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccessList(returnedRole.getId());
+            final Set<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccesses(returnedRole.getId());
             merged.addAll(fromRole);
         } catch (final EntityNotFoundException e) {
             LOG.debug("Could not retrieve permissions from role", e);

@@ -5,51 +5,55 @@ package fr.cnes.regards.modules.accessrights.workflow;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.workflow.account.ActiveState;
-import fr.cnes.regards.modules.accessrights.workflow.account.PendingState;
+import fr.cnes.regards.modules.accessrights.workflow.account.LockedState;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * Test class for {@link ProjectUserService}.
  *
  * @author xbrochar
  */
-public class AccountWorkflowManagerTest {
+public class LockedStateTest {
 
     /**
      * A dummy account
      */
     private static Account account;
+
+    /**
+     * A dummy account unlock token
+     */
+    private static AccountUnlockToken accountUnlockToken;
 
     /**
      * Dummy id
@@ -77,19 +81,14 @@ public class AccountWorkflowManagerTest {
     private static final String PASSWORD = "password";
 
     /**
-     * Dummy unlock code
+     * Dummy token
      */
-    private static final String CODE = "code";
+    private static final String TOKEN = "token";
 
     /**
      * Dummy tenants
      */
     private static final Set<String> TENANTS = new HashSet<>(Arrays.asList("tenant0", "tenant1"));
-
-    /**
-     * Dummy account settings
-     */
-    private static AccountSettings accountSettings;
 
     /**
      * Tested service
@@ -126,13 +125,23 @@ public class AccountWorkflowManagerTest {
      */
     private IAccountSettingsService accountSettingsService;
 
+    private IAccountService accountService;
+
+    private IAccountUnlockTokenService accountUnlockTokenService;
+
+    private ITemplateService templateService;
+
+    private IEmailClient emailClient;
+
     /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
-        accountSettings = new AccountSettings();
+        account.setId(ID);
+        accountUnlockToken = new AccountUnlockToken(TOKEN, account);
+
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
@@ -140,6 +149,10 @@ public class AccountWorkflowManagerTest {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         accountSettingsService = Mockito.mock(IAccountSettingsService.class);
+        accountService = Mockito.mock(IAccountService.class);
+        accountUnlockTokenService = Mockito.mock(IAccountUnlockTokenService.class);
+        templateService = Mockito.mock(ITemplateService.class);
+        emailClient = Mockito.mock(IEmailClient.class);
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
@@ -153,77 +166,82 @@ public class AccountWorkflowManagerTest {
     }
 
     /**
-     * Check that the system prevents from deleting an account if it is still linked to project users.
+     * Check that the system does unlock not locked accounts and feedbacks the caller.
      *
-     * @throws ModuleException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    @Test(expected = EntityOperationForbiddenException.class)
-    @Purpose("Check that the system prevents from deleting an account if it is still linked to project users.")
-    public void removeAccountNotDeletable() throws ModuleException {
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACTIVE);
-
-        // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
-
-        // Trigger the exception
-        accountWorkflowManager.deleteAccount(account);
-    }
-
-    /**
-     * Check that the system prevents from deleting an account for certain status (ACCEPTED...).
-     *
-     * @throws ModuleException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
+     * @throws EntityException
      */
     @Test(expected = EntityTransitionForbiddenException.class)
-    @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
-    public void removeAccountWrongStatus() throws ModuleException {
-        // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACCEPTED);
-
-        // Trigger the exception
-        accountWorkflowManager.deleteAccount(account);
-    }
-
-    /**
-     * Check that the system allows to delete an account.
-     *
-     * @throws ModuleException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    @Test
-    @Purpose("Check that the system allows to delete an account.")
-    public void removeAccount() throws ModuleException {
-        // Prepare the case
-        account.setId(ID);
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
+    public void performUnlockAccountNotLocked() throws EntityException {
+        // Prepare the error case
         account.setStatus(AccountStatus.ACTIVE);
 
         // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
                 accountRepository, tenantResolver, runtimeTenantResolver));
+        Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
-        // Call the method
-        accountWorkflowManager.deleteAccount(account);
+        // Trigger exception
+        accountWorkflowManager.performUnlockAccount(account, TOKEN);
+    }
 
-        // Verify the repository was correctly called
-        Mockito.verify(accountRepository).delete(ID);
+    /**
+     * Check that the system does not unlock a locked account if the wrong code is passed.
+     *
+     * @throws EntityException
+     */
+    @Test(expected = EntityNotFoundException.class)
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
+    public void performUnlockAccountWrongCode() throws EntityException {
+        // Prepare the case
+        account.setStatus(AccountStatus.LOCKED);
+        final String wrongToken = "wrongToken";
+
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, accountService, accountUnlockTokenService, templateService,
+                        emailClient));
+        Mockito.when(accountUnlockTokenService.findByToken(wrongToken)).thenThrow(new EntityNotFoundException(ID));
+
+        // Trigger exception
+        accountWorkflowManager.performUnlockAccount(account, wrongToken);
+    }
+
+    /**
+     * Check that the system allows a user to unlock its account with a code.
+     *
+     * @throws EntityException
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_450")
+    @Purpose("Check that the system allows a user to unlock its account with a code.")
+    public void performUnlockAccount() throws EntityException {
+        // Mock
+        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, accountService, accountUnlockTokenService, templateService,
+                        emailClient));
+        Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
+
+        // Prepare the case
+        account.setStatus(AccountStatus.LOCKED);
+        account.setCode(TOKEN);
+
+        // Call tested method
+        accountWorkflowManager.performUnlockAccount(account, TOKEN);
+
+        // Check
+        account.setStatus(AccountStatus.ACTIVE);
+        Mockito.verify(accountService).updateAccount(ID, account);
     }
 
 }

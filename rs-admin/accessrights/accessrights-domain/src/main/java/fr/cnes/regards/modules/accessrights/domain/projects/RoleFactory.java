@@ -5,9 +5,10 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublic;
+import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasParentOrPublicOrInstanceAdmin;
 
 /**
  * Helper classs for creating Roles implemented as a fluent API.
@@ -39,14 +40,15 @@ public class RoleFactory {
     /**
      * The parent role.
      * <p/>
-     * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasParentOrPublic} annotation.
+     * Must not be null except if current role is PUBLIC. Validated via type-level
+     * {@link HasParentOrPublicOrInstanceAdmin} annotation.
      */
     private Role parentRole;
 
     /**
      * Role permissions
      */
-    private List<ResourcesAccess> permissions;
+    private Set<ResourcesAccess> permissions;
 
     /**
      * Role associated authorized IP addresses
@@ -251,7 +253,7 @@ public class RoleFactory {
      *            the permissions to set
      * @return this for chaining
      */
-    public RoleFactory withPermissions(final List<ResourcesAccess> pPermissions) {
+    public RoleFactory withPermissions(final Set<ResourcesAccess> pPermissions) {
         permissions = pPermissions;
         return this;
     }

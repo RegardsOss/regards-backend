@@ -85,6 +85,16 @@ public class ProjectUserWorkflowManagerTest {
     private static final Role ROLE = new Role("role name", null);
 
     /**
+     * Dummy origin url
+     */
+    private static final String ORIGIN_URL = "originUrl";
+
+    /**
+     * Dummy request link
+     */
+    private static final String REQUEST_LINK = "requestLink";
+
+    /**
      * Mock repository of tested service
      */
     private IProjectUserRepository projectUserRepository;
@@ -136,18 +146,10 @@ public class ProjectUserWorkflowManagerTest {
         accessSettingsService = Mockito.mock(IAccessSettingsService.class);
 
         // Create the tested service
-        projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider, projectUserRepository,
-                roleService, accountService);
+        projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider);
 
         // Prepare the access request
-        dto = new AccessRequestDto();
-        dto.setEmail(EMAIL);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setMetaData(META_DATA);
-        dto.setPassword(PASSOWRD);
-        dto.setPermissions(PERMISSIONS);
-        dto.setRoleName(ROLE.getName());
+        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, META_DATA, PASSOWRD, ORIGIN_URL, REQUEST_LINK);
 
         // Prepare the project user we expect to be created by the access request
         projectUser = new ProjectUser();
@@ -156,115 +158,6 @@ public class ProjectUserWorkflowManagerTest {
         projectUser.setRole(ROLE);
         projectUser.setMetaData(META_DATA);
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
-    }
-
-    /**
-     * Check that the system fails when receiving an access request with an already used email.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
-     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
-     *             already exists<br>
-     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
-     */
-    @Test(expected = EntityAlreadyExistsException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system fails when receiving an access request with an already used email.")
-    public void requestAccessEmailAlreadyInUse() throws EntityException {
-        // Prepare the duplicate
-        final List<ProjectUser> projectUsers = new ArrayList<>();
-        projectUsers.add(projectUser);
-        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(new ProjectUser()));
-
-        // Make sur they have the same email, in order to throw the expected exception
-        Assert.assertTrue(projectUser.getEmail().equals(dto.getEmail()));
-
-        // Trigger the exception
-        projectUserWorkflowManager.requestProjectAccess(dto);
-    }
-
-    /**
-     * Check that the system allows the user to request a registration.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
-     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
-     *             already exists<br>
-     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system allows the user to request a registration by creating a new project user.")
-    public void requestAccess() throws EntityException {
-        // Mock
-        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
-
-        // Call the service
-        projectUserWorkflowManager.requestProjectAccess(dto);
-
-        // Check that the repository's method was called to create a project user containing values from the DTO and
-        // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
-    }
-
-    /**
-     * Check that the system set PUBLIC role as default when requesting access.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
-     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
-     *             already exists<br>
-     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system set PUBLIC role as default when requesting access.")
-    public void requestAccessNullRoleName() throws EntityException {
-        // Prepare the access request
-        dto.setRoleName(null);
-
-        // Mock
-        final Role publicRole = new Role("Public", null);
-        Mockito.when(roleService.getDefaultRole()).thenReturn(publicRole);
-        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(true);
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-
-        // Prepare expected result
-        projectUser.setRole(publicRole);
-
-        // Call the service
-        projectUserWorkflowManager.requestProjectAccess(dto);
-
-        // Check that the repository's method was called to create a project user containing values from the DTO and
-        // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
-    }
-
-    /**
-     * Check that the system creates an Account when requesting an access if none already exists.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
-     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
-     *             already exists<br>
-     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
-     */
-    @Test(expected = EntityNotFoundException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system creates an Account when requesting an access if none already exists.")
-    public void requestAccessNoAccount() throws EntityException {
-        // Make sure no account exists in order to make the service create a new one
-        Mockito.when(accountService.existAccount(EMAIL)).thenReturn(false);
-
-        // Trigger the exception
-        projectUserWorkflowManager.requestProjectAccess(dto);
     }
 
     /**

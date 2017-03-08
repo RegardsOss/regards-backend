@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author Xavier-Alexandre Brochard
  */
-public interface IAccountUnlockService {
+public interface IAccountUnlockTokenService {
 
     /**
      * Retrieve the {@link AccountUnlockToken} of passed token string
@@ -23,26 +23,14 @@ public interface IAccountUnlockService {
      * @throws EntityNotFoundException
      *             if no {@link AccountUnlockToken} with passed token could be found
      */
-    AccountUnlockToken getAccountUnlockToken(final String pToken) throws EntityNotFoundException;
+    AccountUnlockToken findByToken(final String pToken) throws EntityNotFoundException;
 
     /**
      * Create a {@link AccountUnlockToken} for the passed {@link Account}
      *
      * @param pAccount
      *            the account
-     * @param pToken
-     *            the token
      */
-    void createAccountUnlockToken(Account pAccount, String pToken);
-
-    /**
-     * Send a password reset email based on information stored in the passed event
-     *
-     * @param pAccount
-     *            the account
-     * @param pAppUrl
-     *            the app url
-     */
-    void sendAccountUnlockEmail(Account pAccount, String pAppUrl);
+    void create(Account pAccount);
 
 }

@@ -3,8 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -72,10 +71,8 @@ public class RolesController implements IResourceController<Role> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<Role>>> retrieveRoleList() {
-        final List<Role> roles = roleService.retrieveRoleList();
-        final List<Role> rolesDTO = new ArrayList<>();
-        roles.forEach(r -> rolesDTO.add(new RoleDTO(r)));
-        return new ResponseEntity<>(toResources(rolesDTO), HttpStatus.OK);
+        final Set<Role> roles = roleService.retrieveRoles();
+        return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
     }
 
     /**

@@ -10,18 +10,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
 import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
 
 /**
- * Cron task purging the expired token repositories.
+ * Cron task purging the expired token repository.
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
 @Service
 @Transactional
-public class TokensPurgeTask {
+public class VerificationTokensPurgeTask {
 
     /**
      * The verification token repository
@@ -29,18 +28,9 @@ public class TokensPurgeTask {
     @Autowired
     private IVerificationTokenRepository tokenRepository;
 
-    /**
-     * The password reset token repository
-     */
-    @Autowired
-    private IPasswordResetTokenRepository passwordTokenRepository;
-
     @Scheduled(cron = "${purge.cron.expression}")
     public void purgeExpired() {
-
         final LocalDateTime now = LocalDateTime.now();
-
-        passwordTokenRepository.deleteAllExpiredSince(now);
         tokenRepository.deleteAllExpiredSince(now);
     }
 }

@@ -3,45 +3,45 @@
  */
 package fr.cnes.regards.modules.accessrights.registration;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
+ * Interface defining the service providing registration features.
  *
  * @author Xavier-Alexandre Brochard
  */
 public interface IRegistrationService {
 
     /**
-     * Return the account linked to the passed verification token
+     * Creates a new account if needed and creates a new project user.
      *
-     * @param pVerificationToken
-     *            the token
-     * @return the account
-     * @throws EntityNotFoundException
-     *             if the token could not be found
+     * @param pDto
+     *            The DTO containing all information to create the new {@link Account} and {@link ProjectUser}
+     * @param pValidationUrl
+     *            The validation url for the account confirmation email
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
+     *             exists<br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
+     * @return void
      */
-    Account getAccountByVerificationToken(String pVerificationToken) throws EntityNotFoundException;
+    void requestAccess(final AccessRequestDto pDto) throws EntityException;
 
     /**
-     * Create a {@link VerificationToken} for the passed {@link Account}
+     * Send the email for account validation.
      *
      * @param pAccount
      *            the account
-     * @param pToken
-     *            the token
-     */
-    void createVerificationToken(Account pAccount, String pToken);
-
-    /**
-     * Retrieve the verification token
-     *
-     * @param pVerificationToken
-     *            the token
-     * @return the token
      * @throws EntityNotFoundException
-     *             if the token could not be foud
+     *             when no verification token linked to the account could be found
      */
-    VerificationToken getVerificationToken(String pVerificationToken) throws EntityNotFoundException;
+    void sendValidationEmail(final Account pAccount) throws EntityNotFoundException;
+
 }

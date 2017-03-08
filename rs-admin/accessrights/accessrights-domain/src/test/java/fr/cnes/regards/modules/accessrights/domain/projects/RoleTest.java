@@ -5,7 +5,9 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,17 +43,17 @@ public class RoleTest {
     /**
      * Test permissions
      */
-    private final List<ResourcesAccess> permissions = new ArrayList<ResourcesAccess>();
+    private final Set<ResourcesAccess> permissions = new HashSet<>();
 
     /**
      * Test projectUsers
      */
-    private final List<ProjectUser> projectUsers = new ArrayList<ProjectUser>();
+    private final List<ProjectUser> projectUsers = new ArrayList<>();
 
     /**
      * Test authorizedAddresses
      */
-    private final List<String> authorizedAddresses = new ArrayList<String>();
+    private final List<String> authorizedAddresses = new ArrayList<>();
 
     /**
      * Test isCorsRequestsAuthorized
@@ -101,7 +103,7 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isNative());
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(null, testRole.getParentRole());
-        Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
+        Assert.assertEquals(new HashSet<>(), testRole.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
         Assert.assertEquals(true, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
@@ -118,7 +120,7 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isNative());
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(parentRole, testRole.getParentRole());
-        Assert.assertEquals(new ArrayList<>(), testRole.getPermissions());
+        Assert.assertEquals(new HashSet<>(), testRole.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
         Assert.assertEquals(true, testRole.isCorsRequestsAuthorized());
         Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
@@ -226,7 +228,7 @@ public class RoleTest {
      */
     @Test
     public void testSetPermissions() {
-        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
+        final Set<ResourcesAccess> newPermissions = new HashSet<ResourcesAccess>();
         final Long localId = 8L;
         newPermissions.add(new ResourcesAccess(localId));
         role.setPermissions(newPermissions);

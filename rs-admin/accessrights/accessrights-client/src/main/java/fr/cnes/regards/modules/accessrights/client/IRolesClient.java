@@ -21,7 +21,6 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
 
 /**
  *
@@ -33,7 +32,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleDTO;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/roles", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/roles", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRolesClient {
 
     /**
@@ -43,7 +43,7 @@ public interface IRolesClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<RoleDTO>>> retrieveRoleList();
+    ResponseEntity<List<Resource<Role>>> retrieveRoleList();
 
     /**
      * Define the endpoint for creating a new {@link Role}.

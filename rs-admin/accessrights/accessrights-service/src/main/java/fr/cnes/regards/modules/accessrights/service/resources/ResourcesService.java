@@ -5,7 +5,8 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -19,24 +20,23 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+
 import feign.FeignException;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -84,11 +84,6 @@ public class ResourcesService implements IResourcesService {
     private final JWTService jwtService;
 
     /**
-     * AMQP Event publisher.
-     */
-    private final IPublisher eventPublisher;
-
-    /**
      * Tenant resolver to identify configured tenants
      */
     private final ITenantResolver tenantResolver;
@@ -100,8 +95,7 @@ public class ResourcesService implements IResourcesService {
 
     public ResourcesService(@Value("${spring.application.name}") String pMicroserviceName,
             DiscoveryClient pDiscoveryClient, IResourcesAccessRepository pResourceAccessRepo, IRoleService pRoleService,
-            JWTService pJwtService, ITenantResolver pTenantResolver, IPublisher pEventPublisher,
-            FeignSecurityManager pFeignSecurityManager) {
+            JWTService pJwtService, ITenantResolver pTenantResolver, FeignSecurityManager pFeignSecurityManager) {
         super();
         microserviceName = pMicroserviceName;
         discoveryClient = pDiscoveryClient;
@@ -109,7 +103,6 @@ public class ResourcesService implements IResourcesService {
         roleService = pRoleService;
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
-        eventPublisher = pEventPublisher;
         this.feignSecurityManager = pFeignSecurityManager;
     }
 
@@ -146,10 +139,9 @@ public class ResourcesService implements IResourcesService {
             final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
-                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-                final List<String> rolesName = new ArrayList<>();
-                roles.forEach(r -> rolesName.add(r.getName()));
-                results = resourceAccessRepo.findDistinctByRolesNameIn(rolesName, pPageable);
+                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(getResourcesAccesses(roles));
+                results = new PageImpl<>(accessibleResourcesAccesses, pPageable, accessibleResourcesAccesses.size());
             } catch (final EntityNotFoundException e) {
                 LOG.error(e.getMessage(), e);
                 results = new PageImpl<>(new ArrayList<>(), pPageable, 0);
@@ -170,10 +162,8 @@ public class ResourcesService implements IResourcesService {
             final Role currentRole;
             try {
                 currentRole = roleService.retrieveRole(roleName);
-                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-                final List<String> rolesName = new ArrayList<>();
-                roles.forEach(r -> rolesName.add(r.getName()));
-                results = resourceAccessRepo.findDistinctByRolesNameIn(rolesName);
+                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+                results = Lists.newArrayList(getResourcesAccesses(roles));
             } catch (final EntityNotFoundException e) {
                 LOG.error(e.getMessage(), e);
                 results = new ArrayList<>();
@@ -201,7 +191,7 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public Page<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName,
-            final Pageable pPageable) {
+            final Pageable pPageable) throws EntityNotFoundException {
         Page<ResourcesAccess> results;
         final String roleName = jwtService.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
@@ -210,20 +200,28 @@ public class ResourcesService implements IResourcesService {
         } else {
             // Else retrieve only accessible resources
             final Role currentRole;
-            try {
-                currentRole = roleService.retrieveRole(roleName);
-                final List<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-                final List<String> rolesName = new ArrayList<>();
-                roles.forEach(r -> rolesName.add(r.getName()));
-                results = resourceAccessRepo.findDistinctByMicroserviceAndRolesNameIn(pMicroserviceName, rolesName,
-                                                                                      pPageable);
-            } catch (final EntityNotFoundException e) {
-                LOG.error(e.getMessage(), e);
-                results = new PageImpl<>(new ArrayList<>(), pPageable, 0);
-            }
+
+            currentRole = roleService.retrieveRole(roleName);
+            final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
+            Set<ResourcesAccess> accessibleResourcesAccesses = getResourcesAccesses(roles);
+            // filter to get those for the given microservice and convert as a list for the page
+            List<ResourcesAccess> accessibleResourcesAccessesForMicroservice = accessibleResourcesAccesses.stream()
+                    .filter(ra -> ra.getMicroservice().equals(pMicroserviceName)).collect(Collectors.toList());
+            results = new PageImpl<>(accessibleResourcesAccessesForMicroservice, pPageable,
+                    accessibleResourcesAccessesForMicroservice.size());
 
         }
         return results;
+    }
+
+    /**
+     * Retrieve all the resource accesses contained by a set of roles
+     *
+     * @param pRoles
+     * @return all the resource accesses contained by roles in pRoles
+     */
+    private Set<ResourcesAccess> getResourcesAccesses(Set<Role> pRoles) {
+        return pRoles.stream().flatMap(role -> role.getPermissions().stream()).collect(Collectors.toSet());
     }
 
     @Override
@@ -269,7 +267,6 @@ public class ResourcesService implements IResourcesService {
             try {
                 final Role role = roleService.retrieveRole(roleName);
                 role.addPermission(defaultResource);
-                defaultResource.addRole(role);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
@@ -317,54 +314,15 @@ public class ResourcesService implements IResourcesService {
      * @since 1.0-SNAPSHOT
      */
     private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
-        final List<ResourcesAccess> results = new ArrayList<>();
-        final List<Role> inheritedRoles = new ArrayList<>();
-
-        // First Step is to calculate new associated roles for each resource
-        for (final ResourcesAccess resource : pResourcesToSave) {
-            inheritedRoles.addAll(calculateResourceInheritedRoles(resource));
-        }
-
-        final Iterable<ResourcesAccess> savedResources = resourceAccessRepo.save(pResourcesToSave);
-
-        if (savedResources != null) {
-            final Predicate<Role> filter = RegardsStreamUtils.distinctByKey(r -> r.getId());
-            inheritedRoles.stream().filter(filter).forEach(r -> {
-                try {
-                    roleService.updateRole(r.getId(), r);
-                } catch (EntityException e) {
-                    LOG.error(e.getMessage(), e);
-                }
-            });
-            savedResources.forEach(results::add);
-        }
-
-        eventPublisher.publish(new UpdateAuthoritiesEvent());
-        return results;
+        return resourceAccessRepo.save(pResourcesToSave);
     }
 
-    /**
-     *
-     * Method to update given resource roles with all inherited roles of each role.
-     *
-     * @param pResource
-     *            resource to update
-     * @return the {@link List} of {@link Role} updated
-     * @since 1.0-SNAPSHOT
-     */
-    private List<Role> calculateResourceInheritedRoles(final ResourcesAccess pResource) {
-
-        final List<Role> inheritedRoles = new ArrayList<>();
-        for (final Role role : pResource.getRoles()) {
-            for (final Role inheritedRole : roleService.retrieveInheritedRoles(role)) {
-                inheritedRoles.add(inheritedRole);
-            }
-        }
-        pResource.addRoles(inheritedRoles);
-        inheritedRoles.forEach(r -> r.addPermission(pResource));
-
-        return inheritedRoles;
-
+    @Override
+    public void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId)
+            throws EntityNotFoundException, EntityOperationForbiddenException {
+        Role role = roleService.retrieveRole(pRoleId);
+        ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
+        roleService.removeResourcesAccesses(role, resourcesAccess);
     }
 
 }

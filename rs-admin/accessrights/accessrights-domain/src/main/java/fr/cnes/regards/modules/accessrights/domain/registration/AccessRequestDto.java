@@ -1,13 +1,8 @@
 package fr.cnes.regards.modules.accessrights.domain.registration;
 
 import java.util.List;
-import java.util.Optional;
 
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Dto class wrapping data required for both account and project user creation.
@@ -42,55 +37,35 @@ public class AccessRequestDto {
     private String password;
 
     /**
-     * The list of permissions
+     * The url of the request initiator client, passed from the frontend
      */
-    private List<ResourcesAccess> permissions;
+    private String originUrl;
 
     /**
-     * The role name
+     * The url to redirect after clicking the activation link in the email
      */
-    private String roleName;
+    private String requestLink;
 
     /**
-     * Default constructor
+     * @param pEmail
+     * @param pFirstName
+     * @param pLastName
+     * @param pMetaData
+     * @param pPassword
+     * @param pOriginUrl
+     * @param pRequestLink
      */
-    public AccessRequestDto() {
+    public AccessRequestDto(final String pEmail, final String pFirstName, final String pLastName,
+            final List<MetaData> pMetaData, final String pPassword, final String pOriginUrl,
+            final String pRequestLink) {
         super();
-    }
-
-    /**
-     * Create a dto from the passed account
-     *
-     * @param pAccount
-     *            the account containing values
-     */
-    public AccessRequestDto(final Account pAccount) {
-        super();
-        email = pAccount.getEmail();
-        firstName = pAccount.getFirstName();
-        lastName = pAccount.getLastName();
-        password = pAccount.getPassword();
-    }
-
-    /**
-     * Create a dto from the passed project user
-     *
-     * @param pProjectUser
-     *            the project user containing values
-     */
-    public AccessRequestDto(final ProjectUser pProjectUser) {
-        email = pProjectUser.getEmail();
-        metaData = pProjectUser.getMetaData();
-        permissions = pProjectUser.getPermissions();
-        final Optional<Role> role = Optional.ofNullable(pProjectUser.getRole());
-        roleName = role.orElse(null).getName();
-    }
-
-    /**
-     * @return an account with values from the dto
-     */
-    public Account toAccount() {
-        return new Account(email, firstName, lastName, password);
+        email = pEmail;
+        firstName = pFirstName;
+        lastName = pLastName;
+        metaData = pMetaData;
+        password = pPassword;
+        originUrl = pOriginUrl;
+        requestLink = pRequestLink;
     }
 
     /**
@@ -169,33 +144,33 @@ public class AccessRequestDto {
     }
 
     /**
-     * @return the permissions
+     * @return the originUrl
      */
-    public List<ResourcesAccess> getPermissions() {
-        return permissions;
+    public String getOriginUrl() {
+        return originUrl;
     }
 
     /**
-     * @param pPermissions
-     *            the permissions to set
+     * @param pOriginUrl
+     *            the originUrl to set
      */
-    public void setPermissions(final List<ResourcesAccess> pPermissions) {
-        permissions = pPermissions;
+    public void setOriginUrl(final String pOriginUrl) {
+        originUrl = pOriginUrl;
     }
 
     /**
-     * @return the roleName
+     * @return the requestLink
      */
-    public String getRoleName() {
-        return roleName;
+    public String getRequestLink() {
+        return requestLink;
     }
 
     /**
-     * @param pRoleName
-     *            the roleName to set
+     * @param pRequestLink
+     *            the requestLink to set
      */
-    public void setRoleName(final String pRoleName) {
-        roleName = pRoleName;
+    public void setRequestLink(final String pRequestLink) {
+        requestLink = pRequestLink;
     }
 
 }

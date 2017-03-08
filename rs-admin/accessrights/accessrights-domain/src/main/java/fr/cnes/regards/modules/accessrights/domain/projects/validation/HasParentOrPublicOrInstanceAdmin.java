@@ -19,15 +19,16 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Specifies that the annotated role must:
  * <ul>
  * <li>have a non <code>null</code> <code>parentRole</code> if not the role "PUBLIC"</li>
- * <li>have a <code>null</code> <code>parentRole</code> if the role "PUBLIC"</li>
+ * <li>have a <code>null</code> <code>parentRole</code> if the role "PUBLIC" or "INSTANCE_ADMIN"</li>
  * </ul>
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sylvain Vissiere-Guerinet
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
-@Constraint(validatedBy = HasParentOrPublicValidator.class)
-public @interface HasParentOrPublic {
+@Constraint(validatedBy = HasParentOrPublicOrInstanceAdminValidator.class)
+public @interface HasParentOrPublicOrInstanceAdmin {
 
     String message() default "Role should have a parent role";
 

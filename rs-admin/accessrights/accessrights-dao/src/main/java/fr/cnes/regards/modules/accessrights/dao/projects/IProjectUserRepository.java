@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -73,10 +74,10 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
      * @param pNames
-     *            a {@link List} of role name
+     *            a set of role name
      * @param pPageable
      *            the pagination information
      * @return all project users with this role
      */
-    Page<ProjectUser> findByRoleNameIn(List<String> pNames, Pageable pPageable);
+    Page<ProjectUser> findByRoleNameIn(Set<String> pNames, Pageable pPageable);
 }
