@@ -19,6 +19,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -83,6 +85,8 @@ public class RoleServiceTest {
      */
     private static final String NAME = DefaultRole.PUBLIC.toString();
 
+    private static final Long ADMIN_SON_ID = 4L;
+
     /**
      * The tested service
      */
@@ -116,6 +120,8 @@ public class RoleServiceTest {
 
     private JWTService jwtService;
 
+    private Role adminSon;
+
     /**
      * Do some setup before each test
      */
@@ -141,12 +147,15 @@ public class RoleServiceTest {
         roleAdmin.setNative(true);
         roleProjectAdmin = new Role(DefaultRole.PROJECT_ADMIN.toString(), null);
         roleProjectAdmin.setNative(true);
+        adminSon = new Role(DefaultRole.ADMIN.toString() + "_SON", roleAdmin);
 
         // Set an id in order to simulate it was saved in db
         rolePublic.setId(PUBLIC_ID);
         roleRegisteredUser.setId(REGISTERED_USER_ID);
         roleAdmin.setId(ADMIN_ID);
         roleProjectAdmin.setId(PROJECT_ADMIN_ID);
+        adminSon.setId(ADMIN_SON_ID);
+        Mockito.when(roleRepository.findOneByName(roleAdmin.getName())).thenReturn(Optional.of(roleAdmin));
     }
 
     /**
@@ -182,13 +191,23 @@ public class RoleServiceTest {
         // mock project user
         ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new ArrayList<>());
         Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
+        Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
         Set<Role> result = roleService.retrieveBorrowableRoles();
         Assert.assertTrue(result.contains(rolePublic));
         Assert.assertTrue(result.contains(roleRegisteredUser));
         Assert.assertTrue(result.contains(roleAdmin));
+        Assert.assertFalse(result.contains(adminSon));
+        // PUBLIC cannot borrow roles
         projectUser.setRole(rolePublic);
         result = roleService.retrieveBorrowableRoles();
         Assert.assertTrue(result.isEmpty());
+        // PROJECT_ADMIN can borrow all roles except instance_admin
+        projectUser.setRole(roleProjectAdmin);
+        result = roleService.retrieveBorrowableRoles();
+        Assert.assertTrue(result.contains(rolePublic));
+        Assert.assertTrue(result.contains(roleRegisteredUser));
+        Assert.assertTrue(result.contains(roleAdmin));
+        Assert.assertTrue(result.contains(adminSon));
     }
 
     /**

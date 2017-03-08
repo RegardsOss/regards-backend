@@ -561,6 +561,12 @@ public class RoleService implements IRoleService {
         if (originalRole.getParentRole() != null) {
             // only adds the ascendants of my role's parent as my role's brotherhood is not part of my role's ascendants
             ascendants.addAll(getAscendants(originalRole.getParentRole()));
+        } else {
+            // handle ProjectAdmin by considering that ADMIN is its parent(projectAdmin is not considered admin's
+            // son so no resources accesses are added or removed from him but has to be considered for role borrowing)
+            if (originalRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
+                ascendants.addAll(getAscendants(originalRole));
+            } // INSTANCE_ADMIN and PUBLIC do not have ascendants
         }
         // add my original role because i can always borrow my own role
         ascendants.add(originalRole);
@@ -576,14 +582,17 @@ public class RoleService implements IRoleService {
     private Set<Role> getAscendants(Role pRole) {
         Set<Role> ascendants = Sets.newHashSet(pRole);
         // if pRole doesn't have parent then it's finished
-        if (pRole.getParentRole() == null) {
-            // TODO: handle ProjectAdmin by considering that ADMIN is its parent(projectAdmin is not considered admin's
-            // son so no resources accesses are added or removed from him but has to be considered for role borrowing)
-            return ascendants;
+        Role parent = pRole.getParentRole();
+        if (parent == null) {
+            // except if it's PROJECT_ADMIN
+            if (pRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
+                parent = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
+            } else {
+                return ascendants;
+            }
         }
         // otherwise lets get pRole's parent and look for his children: Brotherhood
-        Role parent = pRole.getParentRole();
-        ascendants.addAll(roleRepository.findByParentRoleName(pRole.getParentRole().getName()));
+        ascendants.addAll(roleRepository.findByParentRoleName(parent.getName()));
         // now lets add the ascendants of parent
         ascendants.addAll(getAscendants(parent));
         return ascendants;
