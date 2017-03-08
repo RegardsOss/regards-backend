@@ -35,9 +35,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 @EnableFeignClients(clients = { IRolesClient.class })
 public class BorrowRoleService implements IBorrowRoleService {
 
-    // @Autowired
-    // private Oauth2AuthenticationManager oauthManager;
-
     private final IRolesClient rolesClient;
 
     private final JWTService jwtService;
@@ -67,7 +64,6 @@ public class BorrowRoleService implements IBorrowRoleService {
 
         JWTAuthentication newToken = new JWTAuthentication(
                 jwtService.generateToken(currentToken.getProject(), currentToken.getName(), pTargetRoleName));
-        // oauthManager.authenticate(newToken);
         return newToken.getJwt();
     }
 
