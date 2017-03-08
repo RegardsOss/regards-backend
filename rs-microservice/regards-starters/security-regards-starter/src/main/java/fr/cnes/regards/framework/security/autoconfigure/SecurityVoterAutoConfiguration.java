@@ -10,9 +10,11 @@ import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.endpoint.voter.InstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.endpoint.voter.ProjectAdminAccessVoter;
 import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
 import fr.cnes.regards.framework.security.endpoint.voter.SystemAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 
 /**
@@ -51,6 +53,18 @@ public class SecurityVoterAutoConfiguration {
     @Bean
     public IInstanceAdminAccessVoter instanceAccessVoter() {
         return new InstanceAdminAccessVoter();
+    }
+
+    /**
+     * Give full access for project admin call
+     *
+     * @return {@link IInstanceAdminAccessVoter}
+     */
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "regards.security", name = "project.admin.voter.enabled", havingValue = "true")
+    @Bean
+    public IProjectAdminAccessVoter adminAccessVoter() {
+        return new ProjectAdminAccessVoter();
     }
 
     /**
