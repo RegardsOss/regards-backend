@@ -38,8 +38,8 @@ public class CatalogPluginClientIT extends AbstractRegardsWebIT {
     @Test
     public void testRetrievePluginTypes() {
         try {
-            authService.setAuthorities(DEFAULT_TENANT, ICatalogPluginClient.PLUGIN_TYPES, RequestMethod.GET,
-                                       RoleAuthority.getSysRole(""));
+            authService.setAuthorities(DEFAULT_TENANT, ICatalogPluginClient.PLUGIN_TYPES, "Controller",
+                                       RequestMethod.GET, RoleAuthority.getSysRole(""));
             jwtService.injectToken(DEFAULT_TENANT, RoleAuthority.getSysRole(""), "");
             final ICatalogPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
