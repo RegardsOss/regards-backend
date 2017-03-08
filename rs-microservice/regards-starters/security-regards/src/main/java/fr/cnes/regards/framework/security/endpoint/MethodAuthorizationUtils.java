@@ -91,7 +91,9 @@ public final class MethodAuthorizationUtils {
 
         // Join path mapping
         final String path = join(classMapping, methodMapping);
-        return new ResourceMapping(access, path, getSingleMethod(pMethod), new RoleAuthority(access.role().name()));
+
+        return new ResourceMapping(access, path, getSingleMethod(pMethod), pMethod.getDeclaringClass().getSimpleName(),
+                new RoleAuthority(access.role().name()));
     }
 
     /**

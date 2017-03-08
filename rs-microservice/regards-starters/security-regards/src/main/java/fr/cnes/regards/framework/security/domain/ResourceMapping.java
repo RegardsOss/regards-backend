@@ -35,6 +35,8 @@ public class ResourceMapping {
      */
     private String fullPath = "/";
 
+    private String controllerSimpleName;
+
     /**
      * HTTP method
      */
@@ -58,11 +60,12 @@ public class ResourceMapping {
      *            default role for resource access
      */
     public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod,
-            final RoleAuthority pDefaultRole) {
+            String pSimpleName, final RoleAuthority pDefaultRole) {
         resourceAccess = pResourceAccess;
         fullPath = pFullPath;
         method = pMethod;
         authorizedRoles.add(pDefaultRole);
+        controllerSimpleName = pSimpleName;
     }
 
     /**
@@ -75,10 +78,12 @@ public class ResourceMapping {
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod) {
+    public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath,
+            final String pControllerSimpleName, final RequestMethod pMethod) {
         resourceAccess = pResourceAccess;
         fullPath = pFullPath;
         method = pMethod;
+        controllerSimpleName = pControllerSimpleName;
     }
 
     /**
@@ -89,8 +94,8 @@ public class ResourceMapping {
      * @param pMethod
      *            the called HTTP method
      */
-    public ResourceMapping(final String pFullPath, final RequestMethod pMethod) {
-        this(null, pFullPath, pMethod);
+    public ResourceMapping(final String pFullPath, final String pControllerSimpleName, final RequestMethod pMethod) {
+        this(null, pFullPath, pControllerSimpleName, pMethod);
     }
 
     /**
@@ -139,6 +144,19 @@ public class ResourceMapping {
 
     public void addAuthorizedRole(final RoleAuthority pRole) {
         authorizedRoles.add(pRole);
+    }
+
+    public String getControllerSimpleName() {
+        return controllerSimpleName;
+    }
+
+    public void setControllerSimpleName(String pControllerSimpleName) {
+        controllerSimpleName = pControllerSimpleName;
+    }
+
+    @Override
+    public String toString() {
+        return controllerSimpleName + "\t" + getResourceMappingId();
     }
 
 }
