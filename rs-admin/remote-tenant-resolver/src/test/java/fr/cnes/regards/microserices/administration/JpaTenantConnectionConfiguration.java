@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
-import fr.cnes.regards.microservices.administration.FeignInitialAdminClients;
 import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -69,15 +68,6 @@ public class JpaTenantConnectionConfiguration {
         final DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
         Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(new ArrayList<>());
         return client;
-    }
-
-    @Bean
-    @Primary
-    public FeignInitialAdminClients initialClients() {
-        final FeignInitialAdminClients adminMocks = new FeignInitialAdminClients(discoveryClient(),
-                adminMicroserviceName);
-        adminMocks.setProjectsClient(new ProjectClientStub());
-        return adminMocks;
     }
 
     /**

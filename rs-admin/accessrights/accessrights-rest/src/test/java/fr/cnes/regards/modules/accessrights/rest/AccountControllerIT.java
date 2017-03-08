@@ -112,12 +112,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IPasswordResetTokenRepository passwordResetTokenRepository;
 
-    @Value("${root.admin.login:admin}")
-    private String rootAdminLogin;
-
-    @Value("${root.admin.password:admin}")
-    private String rootAdminPassword;
-
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminInstanceLogin;
 

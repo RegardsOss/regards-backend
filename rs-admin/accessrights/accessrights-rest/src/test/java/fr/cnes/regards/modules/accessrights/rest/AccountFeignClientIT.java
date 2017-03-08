@@ -13,19 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
-import feign.hystrix.HystrixFeign;
-import fr.cnes.regards.client.core.TokenClientProvider;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -46,16 +39,20 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Autowired
     private IAccountRepository accountRepo;
 
+    // @Autowired
+    // private FeignSecurityManager feignSecurityManager;
+
+    @Autowired
     private IAccountsClient accountsClient;
 
     private static final String MAIL_TEST = "feign@user.com";
 
     @Before
-    public void init() throws JwtException {
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
-        accountsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
-                .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
-                .target(new TokenClientProvider<>(IAccountsClient.class, "http://" + serverAddress + ":" + getPort()));
+    public void init() {
+        // FeignSecurityManager.asSystem();
+        // accountsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
+        // .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
+        // .target(new TokenClientProvider<>(IAccountsClient.class, "http://" + serverAddress + ":" + getPort()));
 
         final Optional<Account> account = accountRepo.findOneByEmail(MAIL_TEST);
         account.ifPresent(accountRepo::delete);

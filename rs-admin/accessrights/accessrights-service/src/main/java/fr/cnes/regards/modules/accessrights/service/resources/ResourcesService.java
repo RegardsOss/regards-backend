@@ -20,8 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import feign.FeignException;
-import fr.cnes.regards.client.core.TokenClientProvider;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -91,10 +93,15 @@ public class ResourcesService implements IResourcesService {
      */
     private final ITenantResolver tenantResolver;
 
-    public ResourcesService(@Value("${spring.application.name}") final String pMicroserviceName,
-            final DiscoveryClient pDiscoveryClient, final IResourcesAccessRepository pResourceAccessRepo,
-            final IRoleService pRoleService, final JWTService pJwtService, final ITenantResolver pTenantResolver,
-            final IPublisher pEventPublisher) {
+    /**
+     * Enable to init a feign client programmatically
+     */
+    private final FeignSecurityManager feignSecurityManager;
+
+    public ResourcesService(@Value("${spring.application.name}") String pMicroserviceName,
+            DiscoveryClient pDiscoveryClient, IResourcesAccessRepository pResourceAccessRepo, IRoleService pRoleService,
+            JWTService pJwtService, ITenantResolver pTenantResolver, IPublisher pEventPublisher,
+            FeignSecurityManager pFeignSecurityManager) {
         super();
         microserviceName = pMicroserviceName;
         discoveryClient = pDiscoveryClient;
@@ -103,6 +110,7 @@ public class ResourcesService implements IResourcesService {
         jwtService = pJwtService;
         tenantResolver = pTenantResolver;
         eventPublisher = pEventPublisher;
+        this.feignSecurityManager = pFeignSecurityManager;
     }
 
     /**
@@ -289,9 +297,9 @@ public class ResourcesService implements IResourcesService {
         try {
             final List<ServiceInstance> instances = discoveryClient.getInstances(pMicroservice);
             if (!instances.isEmpty()) {
-                remoteResources = IResourcesClient
-                        .build(new TokenClientProvider<>(IResourcesClient.class, instances.get(0).getUri().toString()))
-                        .getResources();
+                IResourcesClient resourcesClient = FeignClientBuilder.build(new TokenClientProvider<>(
+                        IResourcesClient.class, instances.get(0).getUri().toString(), feignSecurityManager));
+                remoteResources = resourcesClient.getResources();
             }
         } catch (final FeignException e) {
             LOG.error("Error getting resources from service " + pMicroservice, e);

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.client.core.annotation.RestClient;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
@@ -27,8 +27,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectsClient {
 
     // Projects Requests

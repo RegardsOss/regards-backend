@@ -4,24 +4,21 @@
 package fr.cnes.regards.modules.project.rest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
-import feign.hystrix.HystrixFeign;
-import fr.cnes.regards.client.core.TokenClientProvider;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -47,6 +44,24 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
     private String serverAddress;
 
     /**
+     * Client to test
+     */
+    private IProjectConnectionClient client;
+
+    /**
+     * Feign security manager
+     */
+    @Autowired
+    private FeignSecurityManager feignSecurityManager;
+
+    @Before
+    public void init() {
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectConnectionClient.class,
+                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        FeignSecurityManager.asSystem();
+    }
+
+    /**
      *
      * Check that the projects Feign Client handle the pagination parameters.
      *
@@ -54,21 +69,9 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
      */
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
-        try {
-            authService.setAuthorities(DEFAULT_TENANT, "/project_connections", RequestMethod.GET,
-                                       DefaultRole.INSTANCE_ADMIN.toString());
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.INSTANCE_ADMIN.toString(), "");
-            final IProjectConnectionClient projectsClient = HystrixFeign.builder().contract(new SpringMvcContract())
-                    .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                    .target(new TokenClientProvider<>(IProjectConnectionClient.class,
-                            "http://" + serverAddress + ":" + getPort()));
-            ResponseEntity<PagedResources<Resource<ProjectConnection>>> connections = projectsClient
-                    .retrieveProjectsConnections("test", "rs-test");
-            Assert.assertTrue(connections.getStatusCode().equals(HttpStatus.OK));
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+        ResponseEntity<PagedResources<Resource<ProjectConnection>>> connections = client
+                .retrieveProjectsConnections("test", "rs-test");
+        Assert.assertTrue(connections.getStatusCode().equals(HttpStatus.OK));
     }
 
     @Override

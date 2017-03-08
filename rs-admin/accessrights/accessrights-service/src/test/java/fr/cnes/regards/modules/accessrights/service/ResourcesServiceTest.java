@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -48,7 +49,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 public class ResourcesServiceTest {
@@ -110,8 +111,9 @@ public class ResourcesServiceTest {
         jwtService = Mockito.spy(jwtService);
         Mockito.stub(jwtService.getActualRole()).toReturn("ADMIN");
 
-        resourcesService = Mockito.spy(new ResourcesService("rs-test", discoveryClientMock, resourcesRepo,
-                roleServiceMock, jwtService, tenantResolverMock, Mockito.mock(IPublisher.class)));
+        resourcesService = Mockito
+                .spy(new ResourcesService("rs-test", discoveryClientMock, resourcesRepo, roleServiceMock, jwtService,
+                        tenantResolverMock, Mockito.mock(IPublisher.class), Mockito.mock(FeignSecurityManager.class)));
 
     }
 

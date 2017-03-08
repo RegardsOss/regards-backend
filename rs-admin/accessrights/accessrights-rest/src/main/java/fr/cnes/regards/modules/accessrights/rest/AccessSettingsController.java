@@ -38,8 +38,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping(path = AccessSettingsController.REQUEST_MAPPING_ROOT)
 public class AccessSettingsController implements IResourceController<AccessSettings> {
 
@@ -69,8 +68,7 @@ public class AccessSettingsController implements IResourceController<AccessSetti
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the settings managing the access requests",
-            role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieves the settings managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AccessSettings>> retrieveAccessSettings() throws EntityNotFoundException {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
@@ -83,6 +81,8 @@ public class AccessSettingsController implements IResourceController<AccessSetti
      * @param pAccessSettings
      *            The {@link AccountSettings}
      * @return The updated access settings
+     * @throws EntityNotFoundException
+     *             if no entity found!
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)

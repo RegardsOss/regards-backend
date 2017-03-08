@@ -15,19 +15,14 @@
 	</parent>
 
 	<dependencies>
+			<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-domain</artifactId>
-		</dependency>
-		<!-- Regards client core -->
-		<dependency>
-			<groupId>fr.cnes.regards.client</groupId>
-			<artifactId>client-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

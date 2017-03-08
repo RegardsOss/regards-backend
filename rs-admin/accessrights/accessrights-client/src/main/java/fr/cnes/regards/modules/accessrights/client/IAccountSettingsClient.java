@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.client.core.annotation.RestClient;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 
 /**
@@ -24,8 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountSettingsClient {
 
     /**

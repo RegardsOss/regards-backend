@@ -9,7 +9,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import feign.FeignException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -104,10 +103,6 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
                     pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
 
             projectConnectionService.createProjectConnection(projectConnection);
-        } catch (final FeignException e) {
-            LOG.error("Error during initialization of new tenant connection for microservice {} and tenant {}",
-                      microserviceName, pTenantConnection.getName());
-            LOG.error(e.getMessage(), e);
         } catch (final ModuleException e) {
             LOG.error("Error adding new tenant. Cause : {}", e.getMessage());
             LOG.debug(e.getMessage(), e);

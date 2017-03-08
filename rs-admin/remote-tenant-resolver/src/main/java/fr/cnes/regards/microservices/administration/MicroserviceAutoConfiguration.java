@@ -11,6 +11,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -98,23 +99,7 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    ITenantResolver tenantResolver(final FeignInitialAdminClients pInitClients) {
-        return new RemoteTenantResolver(pInitClients.getProjectsClient(), jwtService, microserviceName);
+    ITenantResolver tenantResolver(DiscoveryClient pDiscoveryClient, FeignSecurityManager pFeignSecurityManager) {
+        return new RemoteTenantResolver(adminMicroserviceName, pDiscoveryClient, pFeignSecurityManager);
     }
-
-    /**
-     *
-     * Bean that contains initial Feign clients that cannot be initialized with feign annotations. Because there are
-     * used too early during the spring boot process.
-     *
-     * @param pDiscoveryClient
-     *            Eureka discovery client to find administration microservice
-     * @return Feign clients for administration service
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    FeignInitialAdminClients initClients(final DiscoveryClient pDiscoveryClient) {
-        return new FeignInitialAdminClients(pDiscoveryClient, adminMicroserviceName);
-    }
-
 }

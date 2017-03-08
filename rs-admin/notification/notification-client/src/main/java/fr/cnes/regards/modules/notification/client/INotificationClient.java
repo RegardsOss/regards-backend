@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.client.core.annotation.RestClient;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -21,8 +21,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/notifications", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/notifications", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface INotificationClient {
 
     /**

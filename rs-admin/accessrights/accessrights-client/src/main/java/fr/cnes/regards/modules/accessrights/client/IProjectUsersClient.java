@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.client.core.annotation.RestClient;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
@@ -28,12 +28,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectUsersClient {
 
     /**
@@ -48,7 +47,7 @@ public interface IProjectUsersClient {
 
     /**
      * Retrieve all users with a pending access requests.
-     * 
+     *
      * @param pPage
      * @param pSize
      *
