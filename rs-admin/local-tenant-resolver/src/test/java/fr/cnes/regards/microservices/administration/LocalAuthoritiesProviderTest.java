@@ -105,13 +105,13 @@ public class LocalAuthoritiesProviderTest {
 
         resourcesAccessRepository.deleteAll();
         resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.GET));
+                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.GET));
         resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.PUT));
+                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.PUT));
         resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.POST));
+                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.POST));
         resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", HttpVerb.DELETE));
+                .save(new ResourcesAccess("description", microserviceName, "/resource", HttpVerb.DELETE));
     }
 
     /**

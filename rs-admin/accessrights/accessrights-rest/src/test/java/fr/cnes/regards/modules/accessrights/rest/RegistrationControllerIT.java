@@ -249,7 +249,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         // Case not found
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultDelete(apiAccessId, expectations, errorMessage, 1L);
+        performDefaultDelete(apiAccessId, expectations, errorMessage, 12345678L);
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
