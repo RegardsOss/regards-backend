@@ -17,7 +17,6 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -45,11 +44,6 @@ public class ResourcesAccessDaoTest {
 
     private static final String ADMIN_URL = "/admin";
 
-    /**
-     * The number of {@link Role} used for the unit testing
-     */
-    private int nRole = 0;
-
     private Role publicRole;
 
     private Role userRole;
@@ -58,9 +52,6 @@ public class ResourcesAccessDaoTest {
 
     @Autowired
     private IRoleRepository roleRepository;
-
-    @Autowired
-    private IResourcesAccessRepository resourcesAccessRespository;
 
     /**
      *
@@ -75,13 +66,8 @@ public class ResourcesAccessDaoTest {
          * Create 3 Role
          */
         publicRole = new Role(DefaultRole.PUBLIC.toString(), null);
-        nRole++;
-
         userRole = new Role(DefaultRole.REGISTERED_USER.toString(), publicRole);
-        nRole++;
-
         adminRole = new Role(DefaultRole.ADMIN.toString(), userRole);
-        nRole++;
 
         /*
          * Create 3 ResourcesAcces
