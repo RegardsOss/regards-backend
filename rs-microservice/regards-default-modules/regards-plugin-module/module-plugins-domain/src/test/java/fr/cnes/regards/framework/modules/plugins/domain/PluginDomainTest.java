@@ -7,12 +7,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 
 /**
  * 
@@ -40,9 +35,6 @@ public class PluginDomainTest extends PluginDomainUtility {
         // Get an unknown parameter value
         final String unknowValue = pluginConfiguration.getParameterValue("unknon");
         Assert.assertNull(unknowValue);
-
-        pluginConfiguration.logParams();
-
     }
 
     @Test
@@ -101,8 +93,17 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
         Assert.assertEquals(plgConf.getParameters().get(0).getId(),
                             aPluginConfiguration.getParameters().get(0).getId());
+    }
 
-        plgConf.logParams();
+    @Test
+    public void pluginParametersFactory() {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
+        final int n = aPluginConfiguration.getParameters().size();
+        final List<PluginParameter> parameters = PluginParametersFactory.build(aPluginConfiguration.getParameters())
+                .addParameterPluginConfiguration("paramWithPluginConf1", aPluginConfiguration)
+                .addParameter("paramIdentifier1", BLUE).removeParameter(aPluginConfiguration.getParameters().get(0))
+                .getParameters();
+        Assert.assertEquals(n + 1, parameters.size());
     }
 
     @Test
