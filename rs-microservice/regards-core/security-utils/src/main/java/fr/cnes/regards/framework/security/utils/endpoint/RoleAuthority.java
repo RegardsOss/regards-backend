@@ -96,7 +96,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      *
-     * Add Authority PREFIX to given Role name
+     * Add Authority PREFIX to given Role name if necessary
      *
      * @param pRoleName
      *            The role name
@@ -104,6 +104,9 @@ public class RoleAuthority implements GrantedAuthority {
      * @since 1.0-SNAPSHOT
      */
     public static String getRoleAuthority(final String pRoleName) {
+        if (pRoleName.startsWith(ROLE_PREFIX)) {
+            return pRoleName;
+        }
         return ROLE_PREFIX + pRoleName;
     }
 
@@ -118,7 +121,7 @@ public class RoleAuthority implements GrantedAuthority {
      * @since 1.0-SNAPSHOT
      */
     public static String getSysRole(final String pMicroserviceName) {
-        return SYS_ROLE_PREFIX + pMicroserviceName;
+        return ROLE_PREFIX + SYS_ROLE_PREFIX + pMicroserviceName;
     }
 
     /**

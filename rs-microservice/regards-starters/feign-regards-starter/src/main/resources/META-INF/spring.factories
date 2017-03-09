@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 fr.cnes.regards.framework.feign.autoconfigure.WebMvcConfiguration,\
-fr.cnes.regards.framework.feign.autoconfigure.FeignAutoConfiguration
+fr.cnes.regards.framework.feign.autoconfigure.FeignAutoConfiguration,\
+fr.cnes.regards.framework.feign.autoconfigure.FeignSecurityAutoConfiguration
