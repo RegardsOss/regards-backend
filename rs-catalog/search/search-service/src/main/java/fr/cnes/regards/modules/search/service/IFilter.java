@@ -9,6 +9,7 @@ import org.springframework.http.HttpRequest;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  *
@@ -31,5 +32,13 @@ public interface IFilter {
      * @return enhancedCriterion plus the one(s) added by the filter implementation
      */
     public List<ICriterion> addFilter(HttpRequest pRequest, List<ICriterion> pEnhencedCriterion);
+
+    /**
+     * allow the caller to know if the given Dataset can be treated by this implementation
+     *
+     * @param pCandidate
+     * @return if this implementation can be applied to the given dataset
+     */
+    public boolean isRelevant(Dataset pCandidate);
 
 }
