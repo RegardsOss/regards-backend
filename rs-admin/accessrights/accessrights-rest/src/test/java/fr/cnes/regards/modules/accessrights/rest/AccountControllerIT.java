@@ -11,10 +11,12 @@ import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -35,6 +37,7 @@ import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetTo
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 
 /**
  * Integration tests for accounts.
@@ -46,6 +49,7 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsServ
  * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
+@ContextConfiguration(classes = { FeignClientConfiguration.class })
 public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -125,6 +129,9 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IAccountUnlockTokenRepository accountUnlockTokenRepository;
+
+    @Autowired
+    private IEmailClient emailClient;
 
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminInstanceLogin;
@@ -237,6 +244,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNoContent());
         performDefaultPost(apiUnlockAccount, dto, expectations, errorMessage, EMAIL_LOCKED);
+
+        Mockito.verify(emailClient, Mockito.only()).sendEmail(Mockito.any());
     }
 
     @Test

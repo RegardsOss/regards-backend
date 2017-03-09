@@ -79,7 +79,7 @@ public class LockedState extends AbstractDeletableState {
     public LockedState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IAccountService pAccountService, final IAccountUnlockTokenService pTokenService,
-            final ITemplateService pTemplateService, final IEmailClient pEmailClient) {
+            final ITemplateService pTemplateService, IEmailClient pEmailClient) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver);
         accountService = pAccountService;
         tokenService = pTokenService;

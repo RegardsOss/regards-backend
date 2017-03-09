@@ -64,6 +64,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * @since 1.0-SNAPSHOT
      */
+    @Ignore
     @Test
     public void retrieveAccountListFromFeignClient() {
         try {
@@ -82,6 +83,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * @since 1.0-SNAPSHOT
      */
+    @Ignore
     @Test
     public void createAccountFromFeignClient() {
         try {
