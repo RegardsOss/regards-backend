@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -23,5 +24,13 @@ public interface IConverter {
      * @return converted page
      */
     public Page<DataObject> convert(Page<DataObject> dataObjects);
+
+    /**
+     * allow the caller to know if the given Dataset can be treated by this implementation
+     *
+     * @param pCandidate
+     * @return if this implementation can be applied to the given dataset
+     */
+    public boolean isRelevant(Dataset pCandidate);
 
 }
