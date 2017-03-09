@@ -16,6 +16,7 @@ import org.apache.lucene.queryparser.flexible.standard.nodes.PointRangeQueryNode
 import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
 
 /**
  * Define the REGARDS specific query nodes building strategies.
@@ -25,10 +26,10 @@ import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
  */
 public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriterionQueryBuilder {
 
-    public RegardsQueryTreeBuilder() {
+    public RegardsQueryTreeBuilder(IAttributeModelService pAttributeModelService) {
 
         // Register builder
-        setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder());
+        setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder(pAttributeModelService));
         setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
         setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
         setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());

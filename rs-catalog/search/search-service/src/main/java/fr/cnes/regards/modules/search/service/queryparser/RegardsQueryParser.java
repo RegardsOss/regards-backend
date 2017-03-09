@@ -28,6 +28,7 @@ import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
 import fr.cnes.regards.modules.search.service.queryparser.builder.RegardsQueryTreeBuilder;
 
 /**
@@ -36,9 +37,12 @@ import fr.cnes.regards.modules.search.service.queryparser.builder.RegardsQueryTr
  */
 public class RegardsQueryParser extends QueryParserHelper implements CommonQueryParserConfiguration {
 
-    public RegardsQueryParser() {
+    /**
+     *
+     */
+    public RegardsQueryParser(IAttributeModelService pAttributeModelService) {
         super(new StandardQueryConfigHandler(), new StandardSyntaxParser(),
-              new StandardQueryNodeProcessorPipeline(null), new RegardsQueryTreeBuilder());
+              new StandardQueryNodeProcessorPipeline(null), new RegardsQueryTreeBuilder(pAttributeModelService));
         setEnablePositionIncrements(true);
     }
 

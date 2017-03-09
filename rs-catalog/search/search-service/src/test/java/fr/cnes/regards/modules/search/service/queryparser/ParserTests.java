@@ -10,6 +10,9 @@ import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.AndCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.BooleanMatchCriterion;
@@ -21,6 +24,8 @@ import fr.cnes.regards.modules.crawler.domain.criterion.OrCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.ValueComparison;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
 
 /**
  * @author Marc Sordi
@@ -29,24 +34,28 @@ import fr.cnes.regards.modules.crawler.domain.criterion.ValueComparison;
  */
 public class ParserTests {
 
-    private static final String DEFAULT_FIELD = "defaultField";
+    private static String DEFAULT_FIELD = "defaultField";
 
     private static RegardsQueryParser parser;
 
+    private static IAttributeModelService attributeModelService;
+
     @BeforeClass
     public static void init() {
-        parser = new RegardsQueryParser();
+        attributeModelService = Mockito.mock(IAttributeModelService.class);
+        Mockito.when(attributeModelService.getAttributeModels()).thenReturn(Lists.newArrayList(new AttributeModel()));
+        parser = new RegardsQueryParser(attributeModelService);
     }
 
     @Test
     public void booleanMatchTest() throws QueryNodeException {
-        final String field = "isCool";
-        final Boolean value = true;
-        final String term = field + ":" + value;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        String field = "isCool";
+        Boolean value = true;
+        String term = field + ":" + value;
+        ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof BooleanMatchCriterion);
-        final BooleanMatchCriterion crit = (BooleanMatchCriterion) criterion;
+        BooleanMatchCriterion crit = (BooleanMatchCriterion) criterion;
         Assert.assertEquals(field, crit.getName());
         Assert.assertEquals(MatchType.EQUALS, crit.getType());
         Assert.assertEquals(value, crit.getValue());
