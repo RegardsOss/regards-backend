@@ -21,7 +21,7 @@ public class UserDetails implements Serializable {
     private static final long serialVersionUID = 4616778806989554358L;
 
     /**
-     * User real name
+     * User email
      */
     private String name;
 
@@ -79,7 +79,7 @@ public class UserDetails implements Serializable {
      *            the role name
      */
     public void setRole(String pRole) {
-        this.role = pRole;
+        role = pRole;
     }
 
 }
