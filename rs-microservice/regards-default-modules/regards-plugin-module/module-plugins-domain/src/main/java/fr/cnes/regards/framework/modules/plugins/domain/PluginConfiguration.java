@@ -55,7 +55,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class.
      */
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     @NotNull
     private String pluginId;
 
@@ -363,6 +363,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = (prime * result) + ((label == null) ? 0 : label.hashCode());
         result = (prime * result) + ((pluginId == null) ? 0 : pluginId.hashCode());
         return result;
     }
@@ -379,6 +380,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             return false;
         }
         PluginConfiguration other = (PluginConfiguration) obj;
+        if (label == null) {
+            if (other.label != null) {
+                return false;
+            }
+        } else if (!label.equals(other.label)) {
+            return false;
+        }
         if (pluginId == null) {
             if (other.pluginId != null) {
                 return false;
