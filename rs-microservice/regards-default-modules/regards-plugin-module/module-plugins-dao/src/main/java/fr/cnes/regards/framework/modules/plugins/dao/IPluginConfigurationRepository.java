@@ -31,7 +31,7 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
      */
     List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId);
 
-    @Query("from PluginConfiguration pc join fetch pc.parameters where id=:id")
+    @Query("from PluginConfiguration pc join fetch pc.parameters where parent_conf_id=:id")
     PluginConfiguration findOneWithPluginParameter(@Param("id") Long pId);
 
 }
