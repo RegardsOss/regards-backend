@@ -19,7 +19,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 @Repository
 public interface IPluginParameterRepository extends CrudRepository<PluginParameter, Long> {
 
-    @Query("from PluginParameter pp join fetch pp.dynamicsValues where id=:id")
+    @Query("from PluginParameter pp join fetch pp.dynamicsValues where pp.id=:id")
     PluginParameter findOneWithDynamicsValues(@Param("id") Long pId);
 
 }

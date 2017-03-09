@@ -7,16 +7,15 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -30,7 +29,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * @author Christophe Mertz
  */
 @Entity
-@Table(name = "T_PLUGIN_PARAMETER_VALUE")
+@Table(name = "t_plugin_parameter")
 @SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
 public class PluginParameter implements IIdentifiable<Long> {
 
@@ -61,11 +60,12 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     /**
      * {@link PluginConfiguration} parameter is optional
+     * This is used when a plugin paramter leads to a plugin configuration.
+     * For example, a datasource (used by Dataset) is a plugin configuration and has a paramater "connection" which is
+     * also a plugin configuration (the connection to database)
      */
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinTable(name = "TA_PLUGINCONF_PARAMETER",
-            joinColumns = @JoinColumn(name = "PARAM_ID", referencedColumnName = "ID"),
-            inverseJoinColumns = @JoinColumn(name = "PLUGIN_CONF_ID", referencedColumnName = "ID"))
+    @ManyToOne
+    @JoinColumn(name = "next_conf_id", foreignKey = @ForeignKey(name = "fk_param_next_conf_id"), nullable = true)
     private PluginConfiguration pluginConfiguration;
 
     /**
@@ -77,7 +77,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      * The list of values for a dynamic parameters
      */
     @ElementCollection
-    @CollectionTable(name = "TA_PLUGIN_PARAM_PLUGIN_DYN_VALUE", joinColumns = @JoinColumn(name = "ID"))
+    @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"))
     private List<PluginDynamicValue> dynamicsValues;
 
     /**
@@ -172,6 +172,40 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public void setId(Long pId) {
         id = pId;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    /**
+     * The name of the parameter is the natural id. Two plugin parameters can have the same name but not within same
+     * plugin configuration
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PluginParameter other = (PluginParameter) obj;
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -44,35 +43,29 @@ public class PluginConfigurationIT extends PluginDaoUtility {
     @Test
     public void createPluginConfiguration() {
         // persist a PluginConfiguration
-        final PluginConfiguration jpaConf = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
+        final PluginConfiguration jpaConf = plgRepository.save(getPlgConfWithParameters());
 
-        Assert.assertEquals(1, pluginConfigurationRepository.count());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
+        Assert.assertEquals(1, plgRepository.count());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
 
-        Assert.assertEquals(getPluginConfigurationWithParameters().getLabel(), jpaConf.getLabel());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getVersion(), jpaConf.getVersion());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getPluginId(), jpaConf.getPluginId());
-        Assert.assertEquals(getPluginConfigurationWithParameters().isActive(), jpaConf.isActive());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getPluginClassName(), jpaConf.getPluginClassName());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
-        getPluginConfigurationWithParameters().getParameters()
-                .forEach(p -> Assert
-                        .assertEquals(getPluginConfigurationWithParameters().getParameterConfiguration(p.getName()),
-                                      jpaConf.getParameterConfiguration(p.getName())));
+        Assert.assertEquals(getPlgConfWithParameters().getLabel(), jpaConf.getLabel());
+        Assert.assertEquals(getPlgConfWithParameters().getVersion(), jpaConf.getVersion());
+        Assert.assertEquals(getPlgConfWithParameters().getPluginId(), jpaConf.getPluginId());
+        Assert.assertEquals(getPlgConfWithParameters().isActive(), jpaConf.isActive());
+        Assert.assertEquals(getPlgConfWithParameters().getPluginClassName(), jpaConf.getPluginClassName());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
+        Assert.assertEquals(getPlgConfWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
+        getPlgConfWithParameters().getParameters()
+                .forEach(p -> Assert.assertEquals(getPlgConfWithParameters().getParameterConfiguration(p.getName()),
+                                                  jpaConf.getParameterConfiguration(p.getName())));
 
         // persist a PluginConfiguration
         resetId();
-        pluginConfigurationRepository.save(getPluginConfigurationWithDynamicParameter());
+        plgRepository.save(getPlgConfWithDynamicParameter());
 
-        Assert.assertEquals(2, pluginConfigurationRepository.count());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size()
-                + getPluginConfigurationWithDynamicParameter().getParameters().size(),
-                            pluginParameterRepository.count());
-
-        pluginConfigurationRepository.deleteAll();
+        Assert.assertEquals(2, plgRepository.count());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size()
+                + getPlgConfWithDynamicParameter().getParameters().size(), paramRepository.count());
     }
 
     /**
@@ -81,15 +74,14 @@ public class PluginConfigurationIT extends PluginDaoUtility {
     @Test
     public void createAndFindPluginConfigurationWithParameters() {
         // save a plugin configuration
-        final PluginConfiguration aPluginConf = pluginConfigurationRepository
-                .save(getPluginConfigurationWithParameters());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
-        Assert.assertEquals(1, pluginConfigurationRepository.count());
+        final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
+        Assert.assertEquals(1, plgRepository.count());
+        
+        plgRepository.save(getPlgConfWithDynamicParameter());
 
         // find it
-        final PluginConfiguration jpaConf = pluginConfigurationRepository
-                .findOneWithPluginParameter(aPluginConf.getId());
+        final PluginConfiguration jpaConf = plgRepository.findOneWithPluginParameter(aPluginConf.getId());
         Assert.assertNotNull(jpaConf.getParameters());
         Assert.assertTrue(!jpaConf.getParameters().isEmpty());
 
@@ -99,14 +91,13 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(aPluginConf.getPluginId(), jpaConf.getPluginId());
         Assert.assertEquals(aPluginConf.isActive(), jpaConf.isActive());
         Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
-        Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
+        Assert.assertEquals(aPluginConf.getParameters().size(), getPlgConfWithParameters().getParameters().size());
         Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
 
         for (PluginParameter p : aPluginConf.getParameters()) {
             Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
                                 jpaConf.getParameterConfiguration(p.getName()));
         }
-        pluginConfigurationRepository.deleteAll();
     }
 
     /**
@@ -115,16 +106,15 @@ public class PluginConfigurationIT extends PluginDaoUtility {
     @Test
     public void updatePluginConfigurationWithParameters() {
         // save a plugin configuration
-        final PluginConfiguration aPluginConf = pluginConfigurationRepository
-                .save(getPluginConfigurationWithParameters());
+        final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
 
         // set two new parameters to the plugin configuration
         aPluginConf.setParameters(PARAMETERS2);
 
         // update the plugin configuration
-        final PluginConfiguration jpaConf = pluginConfigurationRepository.save(aPluginConf);
+        final PluginConfiguration jpaConf = plgRepository.save(aPluginConf);
 
-        Assert.assertEquals(1, pluginConfigurationRepository.count());
+        Assert.assertEquals(1, plgRepository.count());
 
         // compare the initial conf with the results of the search
         Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
@@ -136,51 +126,40 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         aPluginConf.getParameters().forEach(p -> Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
                                                                      jpaConf.getParameterConfiguration(p.getName())));
 
-        INTERFACEPARAMETERS.forEach(p -> pluginParameterRepository.delete(p));
-        Assert.assertEquals(aPluginConf.getParameters().size(), pluginParameterRepository.count());
-
-        pluginConfigurationRepository.deleteAll();
+        INTERFACEPARAMETERS.forEach(p -> paramRepository.delete(p));
+        Assert.assertEquals(aPluginConf.getParameters().size(), paramRepository.count());
     }
 
     @Test
     public void deletePluginConfigurationWithParameters() {
         // save a plugin configuration
-        final PluginConfiguration aPluginConf = pluginConfigurationRepository
-                .save(getPluginConfigurationWithParameters());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
-        Assert.assertEquals(1, pluginConfigurationRepository.count());
+        final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
+        Assert.assertEquals(1, plgRepository.count());
 
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
 
         // delete it
-        pluginConfigurationRepository.delete(aPluginConf.getId());
+        plgRepository.delete(aPluginConf.getId());
 
-        Assert.assertEquals(0, pluginConfigurationRepository.count());
-        Assert.assertEquals(0, pluginParameterRepository.count());
+        Assert.assertEquals(0, plgRepository.count());
+        Assert.assertEquals(0, paramRepository.count());
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
-    public void deletePluginConfigurationWithParametersError() {
+    @Test
+    public void deleteAPluginParameter() {
         // save a plugin configuration
-        pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
-        Assert.assertEquals(1, pluginConfigurationRepository.count());
+        plgRepository.save(getPlgConfWithParameters());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
+        Assert.assertEquals(1, plgRepository.count());
 
-        Assert.assertEquals(getPluginConfigurationWithParameters().getParameters().size(),
-                            pluginParameterRepository.count());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
 
-        // delete it
-        try {
-            pluginParameterRepository.delete(getPluginConfigurationWithParameters().getParameters().get(0));
-        } catch (DataIntegrityViolationException e) {
-            pluginConfigurationRepository.deleteAll();
-            throw e;
-        }
+        // delete a parameter
+        paramRepository.delete(getPlgConfWithParameters().getParameters().get(0));
 
-        Assert.fail();
+        Assert.assertEquals(1, plgRepository.count());
+        Assert.assertEquals(getPlgConfWithParameters().getParameters().size() - 1, paramRepository.count());
     }
 
     @Test
@@ -188,14 +167,13 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         int nbPlgConfs = 0;
 
         // Create 2 PluginConfiguration
-        PluginConfiguration pluginConf1 = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
-        PluginConfiguration pluginConf2 = pluginConfigurationRepository
-                .save(getPluginConfigurationWithDynamicParameter());
+        PluginConfiguration pluginConf1 = plgRepository.save(getPlgConfWithParameters());
+        PluginConfiguration pluginConf2 = plgRepository.save(getPlgConfWithDynamicParameter());
         nbPlgConfs = 2;
 
-        Assert.assertEquals(2, pluginConfigurationRepository.count());
+        Assert.assertEquals(2, plgRepository.count());
         Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size(),
-                            pluginParameterRepository.count());
+                            paramRepository.count());
 
         // Create PluginParameter
         List<PluginParameter> params1 = PluginParametersFactory.build()
@@ -205,15 +183,13 @@ public class PluginConfigurationIT extends PluginDaoUtility {
                 .addParameterPluginConfiguration(BLUE, pluginConf2).getParameters();
 
         // Create 2 PluginConfiguration with the 2 PluginParameter above
-        pluginConfigurationRepository
-                .save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
-        pluginConfigurationRepository
-                .save(new PluginConfiguration(getPluginMetaData(), "forth configuration", params2, 0));
+        plgRepository.save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
+        plgRepository.save(new PluginConfiguration(getPluginMetaData(), "forth configuration", params2, 0));
         nbPlgConfs += 2;
 
         Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size() + 2,
-                            pluginParameterRepository.count());
-        Assert.assertEquals(nbPlgConfs, pluginConfigurationRepository.count());
+                            paramRepository.count());
+        Assert.assertEquals(nbPlgConfs, plgRepository.count());
     }
 
     @Test
@@ -222,30 +198,28 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         int nbPlgConfs = 0;
 
         // Create 2 PluginConfiguration
-        PluginConfiguration pluginConf1 = pluginConfigurationRepository.save(getPluginConfigurationWithParameters());
-        PluginConfiguration pluginConf2 = pluginConfigurationRepository
-                .save(getPluginConfigurationWithDynamicParameter());
+        PluginConfiguration pluginConf1 = plgRepository.save(getPlgConfWithParameters());
+        PluginConfiguration pluginConf2 = plgRepository.save(getPlgConfWithDynamicParameter());
         nbPlgConfs = 2;
         Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size(),
-                            pluginParameterRepository.count());
-        Assert.assertEquals(nbPlgConfs, pluginConfigurationRepository.count());
+                            paramRepository.count());
+        Assert.assertEquals(nbPlgConfs, plgRepository.count());
 
         // Create PluginParameter
         List<PluginParameter> params1 = PluginParametersFactory.build()
                 .addParameterPluginConfiguration(RED, pluginConf1).getParameters();
 
         // Create 2 PluginConfiguration with the same PluginParameter
-        pluginConfigurationRepository
-                .save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
+        plgRepository.save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
         PluginConfiguration plgConf = new PluginConfiguration(getPluginMetaData(), "forth configuration", null, 0);
-        pluginConfigurationRepository.save(plgConf);
+        plgRepository.save(plgConf);
         plgConf.setParameters(params1);
-        pluginConfigurationRepository.save(plgConf);
+        plgRepository.save(plgConf);
 
         nbPlgConfs += 2;
         Assert.assertEquals(pluginConf1.getParameters().size() + pluginConf2.getParameters().size() + 1,
-                            pluginParameterRepository.count());
-        Assert.assertEquals(nbPlgConfs, pluginConfigurationRepository.count());
+                            paramRepository.count());
+        Assert.assertEquals(nbPlgConfs, plgRepository.count());
     }
 
 }

@@ -11,11 +11,13 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.ManyToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -28,7 +30,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
- *
+ * @author cmertz
+ * @author oroussel
  */
 @Entity
 @Table(name = "t_plugin_configuration",
@@ -94,7 +97,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
     private List<PluginParameter> parameters;
 
     /**
@@ -125,6 +129,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         label = pLabel;
         active = Boolean.TRUE;
     }
+
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
      *
@@ -353,4 +358,43 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public void setId(Long pId) {
         id = pId;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((label == null) ? 0 : label.hashCode());
+        result = (prime * result) + ((pluginId == null) ? 0 : pluginId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PluginConfiguration other = (PluginConfiguration) obj;
+        if (label == null) {
+            if (other.label != null) {
+                return false;
+            }
+        } else if (!label.equals(other.label)) {
+            return false;
+        }
+        if (pluginId == null) {
+            if (other.pluginId != null) {
+                return false;
+            }
+        } else if (!pluginId.equals(other.pluginId)) {
+            return false;
+        }
+        return true;
+    }
+
 }
