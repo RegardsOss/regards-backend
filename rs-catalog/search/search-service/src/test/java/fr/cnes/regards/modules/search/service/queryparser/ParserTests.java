@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.AndCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.BooleanMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.ComparisonOperator;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.IntMatchCriterion;
@@ -25,6 +24,7 @@ import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.ValueComparison;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
 
 /**
@@ -43,32 +43,56 @@ public class ParserTests {
     @BeforeClass
     public static void init() {
         attributeModelService = Mockito.mock(IAttributeModelService.class);
-        Mockito.when(attributeModelService.getAttributeModels()).thenReturn(Lists.newArrayList(new AttributeModel()));
+
+        AttributeModel booleanAttributeModel = new AttributeModel();
+        booleanAttributeModel.setName(ParserTestsUtils.booleanField);
+        booleanAttributeModel.setType(AttributeType.BOOLEAN);
+
+        AttributeModel integerAttributeModel = new AttributeModel();
+        integerAttributeModel.setName(ParserTestsUtils.integerField);
+        integerAttributeModel.setType(AttributeType.INTEGER);
+
+        AttributeModel doubleAttributeModel = new AttributeModel();
+        doubleAttributeModel.setName(ParserTestsUtils.doubleField);
+        doubleAttributeModel.setType(AttributeType.DOUBLE);
+
+        AttributeModel longAttributeModel = new AttributeModel();
+        longAttributeModel.setName(ParserTestsUtils.longField);
+        longAttributeModel.setType(AttributeType.LONG);
+
+        AttributeModel stringAttributeModel = new AttributeModel();
+        stringAttributeModel.setName(ParserTestsUtils.stringField);
+        stringAttributeModel.setType(AttributeType.STRING);
+
+        AttributeModel stringAttributeModel1 = new AttributeModel();
+        stringAttributeModel1.setName(ParserTestsUtils.stringField1);
+        stringAttributeModel1.setType(AttributeType.STRING);
+
+        Mockito.when(attributeModelService.getAttributeModels())
+                .thenReturn(Lists.newArrayList(booleanAttributeModel, integerAttributeModel, doubleAttributeModel,
+                                               longAttributeModel, stringAttributeModel, stringAttributeModel1));
+
         parser = new RegardsQueryParser(attributeModelService);
     }
 
-    @Test
+    @Test(expected = QueryNodeException.class)
     public void booleanMatchTest() throws QueryNodeException {
-        String field = "isCool";
+        String field = ParserTestsUtils.booleanField;
         Boolean value = true;
         String term = field + ":" + value;
-        ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
-        Assert.assertNotNull(criterion);
-        Assert.assertTrue(criterion instanceof BooleanMatchCriterion);
-        BooleanMatchCriterion crit = (BooleanMatchCriterion) criterion;
-        Assert.assertEquals(field, crit.getName());
-        Assert.assertEquals(MatchType.EQUALS, crit.getType());
-        Assert.assertEquals(value, crit.getValue());
+        parser.parse(term, DEFAULT_FIELD);
     }
 
     @Test
     public void intMatchTest() throws QueryNodeException {
-        final String field = "altitude";
+        final String field = ParserTestsUtils.integerField;
         final Integer value = 8848;
         final String term = field + ":" + value;
         final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof IntMatchCriterion);
+
         final IntMatchCriterion crit = (IntMatchCriterion) criterion;
         Assert.assertEquals(field, crit.getName());
         Assert.assertEquals(MatchType.EQUALS, crit.getType());
@@ -76,15 +100,15 @@ public class ParserTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void doubleMatchTest() throws QueryNodeException {
-        final String field = "bpm";
+        final String field = ParserTestsUtils.doubleField;
         final Double value = 145.6;
         final String term = field + ":" + value;
         final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
-        @SuppressWarnings("unchecked")
         final RangeCriterion<Double> crit = (RangeCriterion<Double>) criterion;
 
         Assert.assertEquals(field, crit.getName());
@@ -97,37 +121,61 @@ public class ParserTests {
 
     @Test
     public void stringMatchTest() throws QueryNodeException {
-        final String key = "key";
-        final String val = "val";
+        final String key = ParserTestsUtils.stringField;
+        final String val = "HarryPotter";
         final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
-        final StringMatchCriterion smc = (StringMatchCriterion) criterion;
-        Assert.assertEquals(key, smc.getName());
-        Assert.assertEquals(MatchType.EQUALS, smc.getType());
-        Assert.assertEquals(val, smc.getValue());
+
+        final StringMatchCriterion crit = (StringMatchCriterion) criterion;
+        Assert.assertEquals(key, crit.getName());
+        Assert.assertEquals(MatchType.EQUALS, crit.getType());
+        Assert.assertEquals(val, crit.getValue());
     }
 
     @Test
     public void stringPhraseMatchTest() throws QueryNodeException {
-        final String key = "key";
+        final String key = ParserTestsUtils.stringField;
         final String val = "\"a phrase query\"";
+        final String expectedAfterParse = "a phrase query";
         final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+
         Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof StringMatchCriterion);
+
+        final StringMatchCriterion crit = (StringMatchCriterion) criterion;
+        Assert.assertEquals(key, crit.getName());
+        Assert.assertEquals(MatchType.EQUALS, crit.getType());
+        Assert.assertEquals(expectedAfterParse, crit.getValue());
     }
 
     @Test
     public void andMatchTest() throws QueryNodeException {
-        final ICriterion criterion = parser.parse("key1:val1 AND key2:val2", DEFAULT_FIELD);
+        String key0 = ParserTestsUtils.stringField;
+        String key1 = ParserTestsUtils.stringField1;
+        final ICriterion criterion = parser.parse(key0 + ":val1 AND " + key1 + ":val2", DEFAULT_FIELD);
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof AndCriterion);
+
+        final AndCriterion crit = (AndCriterion) criterion;
+        Assert.assertEquals(2, crit.getCriterions().size());
+        Assert.assertTrue(crit.getCriterions().get(0) instanceof StringMatchCriterion);
+        Assert.assertTrue(crit.getCriterions().get(1) instanceof StringMatchCriterion);
     }
 
     @Test
     public void orMatchTest() throws QueryNodeException {
-        final ICriterion criterion = parser.parse("key1:val1 OR key2:val2", DEFAULT_FIELD);
+        String key0 = ParserTestsUtils.stringField;
+        String key1 = ParserTestsUtils.stringField1;
+        final ICriterion criterion = parser.parse(key0 + ":val1 OR " + key1 + ":val2", DEFAULT_FIELD);
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof OrCriterion);
+
+        final OrCriterion crit = (OrCriterion) criterion;
+        Assert.assertEquals(2, crit.getCriterions().size());
+        Assert.assertTrue(crit.getCriterions().get(0) instanceof StringMatchCriterion);
+        Assert.assertTrue(crit.getCriterions().get(1) instanceof StringMatchCriterion);
     }
 
     @Test(expected = QueryNodeException.class)
@@ -149,7 +197,7 @@ public class ParserTests {
     @SuppressWarnings("unchecked")
     @Test
     public void pointRangeIntegerInclusiveTest() throws QueryNodeException {
-        final String field = "duration";
+        final String field = ParserTestsUtils.integerField;
         final String lowerInclusion = "{";
         final Integer lowerValue = 90;
         final Integer upperValue = 120;
@@ -171,7 +219,7 @@ public class ParserTests {
     @SuppressWarnings("unchecked")
     @Test
     public void pointRangeIntegerExclusiveTest() throws QueryNodeException {
-        final String field = "power";
+        final String field = ParserTestsUtils.integerField;
         final String lowerInclusion = "[";
         final Integer lowerValue = 0;
         final Integer upperValue = 2;
@@ -193,7 +241,7 @@ public class ParserTests {
     @SuppressWarnings("unchecked")
     @Test
     public void pointRangeDoubleSemiInclusiveTest() throws QueryNodeException {
-        final String field = "percentage";
+        final String field = ParserTestsUtils.doubleField;
         final String lowerInclusion = "{";
         final Double lowerValue = 0.00001;
         final Double upperValue = 0.99999;
@@ -215,7 +263,7 @@ public class ParserTests {
     @SuppressWarnings("unchecked")
     @Test
     public void pointRangeLongTest() throws QueryNodeException {
-        final String field = "speed_in_mph";
+        final String field = ParserTestsUtils.longField;
         final String lowerInclusion = "{";
         final Long lowerValue = 0L;
         final Long upperValue = 88L;
@@ -234,32 +282,10 @@ public class ParserTests {
         Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void pointRangeFloatTest() throws QueryNodeException {
-        final String field = "rotation";
-        final String lowerInclusion = "{";
-        final Float lowerValue = 0.1f;
-        final Float upperValue = 0.9f;
-        final String upperInclusion = "]";
-        final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
-
-        Assert.assertNotNull(criterion);
-        Assert.assertTrue(criterion instanceof RangeCriterion);
-        final RangeCriterion<Float> crit = (RangeCriterion<Float>) criterion;
-
-        Assert.assertEquals(field, crit.getName());
-        final Set<ValueComparison<Float>> expectedValueComparisons = new HashSet<>();
-        expectedValueComparisons.add(new ValueComparison<Float>(ComparisonOperator.GREATER, lowerValue));
-        expectedValueComparisons.add(new ValueComparison<Float>(ComparisonOperator.LESS_OR_EQUAL, lowerValue));
-        Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
-    }
-
     @Test
     public void parenthesisAroundAllTest() throws QueryNodeException {
-        final String field = "color";
-        final String value = "lime";
+        final String field = ParserTestsUtils.stringField;
+        final String value = "StarWars";
         final String term = "(" + field + ":" + value + ")";
         final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
 
@@ -273,7 +299,8 @@ public class ParserTests {
 
     @Test
     public void parenthesisAroundOrTest() throws QueryNodeException {
-        final String term = "color:(lime OR amber)";
+        final String field = ParserTestsUtils.stringField;
+        final String term = field + ":(StarWars OR HarryPotter)";
         final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
 
         Assert.assertNotNull(criterion);

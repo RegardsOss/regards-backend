@@ -4,12 +4,21 @@
 package fr.cnes.regards.modules.search.service.queryparser;
 
 /**
- * Declares constant usefull for testing
  *
  * @author Xavier-Alexandre Brochard
  */
 public class ParserTestsUtils {
 
-    public static final String FIELD1 = "altitute";
+    public static final String booleanField = "isTrue";
+
+    public static final String integerField = "altitude";
+
+    public static final String doubleField = "bpm";
+
+    public static final String longField = "speed";
+
+    public static final String stringField = "title";
+
+    public static final String stringField1 = "author";
 
 }
