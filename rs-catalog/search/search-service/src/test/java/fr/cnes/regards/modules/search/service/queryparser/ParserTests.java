@@ -122,7 +122,7 @@ public class ParserTests {
     @Test
     public void stringMatchTest() throws QueryNodeException {
         final String key = ParserTestsUtils.stringField;
-        final String val = "HarryPotter";
+        final String val = "harrypotter";
         final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
 
         Assert.assertNotNull(criterion);
@@ -148,6 +148,43 @@ public class ParserTests {
         Assert.assertEquals(key, crit.getName());
         Assert.assertEquals(MatchType.EQUALS, crit.getType());
         Assert.assertEquals(expectedAfterParse, crit.getValue());
+    }
+
+    @Test
+    public void fieldStringLeadingWildcardTest() throws QueryNodeException {
+        final String key = ParserTestsUtils.stringField;
+        final String val = "*potter";
+        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof StringMatchCriterion);
+
+        final StringMatchCriterion crit = (StringMatchCriterion) criterion;
+        Assert.assertEquals(key, crit.getName());
+        Assert.assertEquals(MatchType.STARTS_WITH, crit.getType());
+        Assert.assertEquals("potter", crit.getValue());
+    }
+
+    @Test
+    public void fieldStringTrailingWildcardTest() throws QueryNodeException {
+        final String key = ParserTestsUtils.stringField;
+        final String val = "harry*";
+        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof StringMatchCriterion);
+
+        final StringMatchCriterion crit = (StringMatchCriterion) criterion;
+        Assert.assertEquals(key, crit.getName());
+        Assert.assertEquals(MatchType.ENDS_WITH, crit.getType());
+        Assert.assertEquals("harry", crit.getValue());
+    }
+
+    @Test(expected = QueryNodeException.class)
+    public void fieldStringMiddleWildcardTest() throws QueryNodeException {
+        final String key = ParserTestsUtils.stringField;
+        final String val = "harry*potter";
+        parser.parse(key + ":" + val, DEFAULT_FIELD);
     }
 
     @Test
@@ -179,7 +216,7 @@ public class ParserTests {
     }
 
     @Test(expected = QueryNodeException.class)
-    public void unsupportedSyntaxtTest() throws QueryNodeException {
+    public void proximityTest() throws QueryNodeException {
         parser.parse("field:value~", DEFAULT_FIELD);
     }
 
@@ -279,6 +316,78 @@ public class ParserTests {
         final Set<ValueComparison<Long>> expectedValueComparisons = new HashSet<>();
         expectedValueComparisons.add(new ValueComparison<Long>(ComparisonOperator.GREATER, lowerValue));
         expectedValueComparisons.add(new ValueComparison<Long>(ComparisonOperator.LESS_OR_EQUAL, lowerValue));
+        Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void ltNumberTest() throws QueryNodeException {
+        final String field = ParserTestsUtils.integerField;
+        final Integer upperValue = 1;
+        final String term = field + ":{ * TO " + upperValue + "}";
+        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof RangeCriterion);
+        final RangeCriterion<Integer> crit = (RangeCriterion<Integer>) criterion;
+
+        Assert.assertEquals(field, crit.getName());
+        final Set<ValueComparison<Integer>> expectedValueComparisons = new HashSet<>();
+        expectedValueComparisons.add(new ValueComparison<Integer>(ComparisonOperator.LESS, upperValue));
+        Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void leNumberTest() throws QueryNodeException {
+        final String field = ParserTestsUtils.integerField;
+        final Integer upperValue = 1;
+        final String term = field + ":{ * TO " + upperValue + "]";
+        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof RangeCriterion);
+        final RangeCriterion<Integer> crit = (RangeCriterion<Integer>) criterion;
+
+        Assert.assertEquals(field, crit.getName());
+        final Set<ValueComparison<Integer>> expectedValueComparisons = new HashSet<>();
+        expectedValueComparisons.add(new ValueComparison<Integer>(ComparisonOperator.LESS_OR_EQUAL, upperValue));
+        Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void gtNumberTest() throws QueryNodeException {
+        final String field = ParserTestsUtils.integerField;
+        final Integer lowerValue = 1;
+        final String term = field + ":{" + lowerValue + " TO *}";
+        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof RangeCriterion);
+        final RangeCriterion<Integer> crit = (RangeCriterion<Integer>) criterion;
+
+        Assert.assertEquals(field, crit.getName());
+        final Set<ValueComparison<Integer>> expectedValueComparisons = new HashSet<>();
+        expectedValueComparisons.add(new ValueComparison<Integer>(ComparisonOperator.GREATER, lowerValue));
+        Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void geNumberTest() throws QueryNodeException {
+        final String field = ParserTestsUtils.integerField;
+        final Integer lowerValue = 1;
+        final String term = field + ":[ " + lowerValue + " TO *}";
+        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof RangeCriterion);
+        final RangeCriterion<Integer> crit = (RangeCriterion<Integer>) criterion;
+
+        Assert.assertEquals(field, crit.getName());
+        final Set<ValueComparison<Integer>> expectedValueComparisons = new HashSet<>();
+        expectedValueComparisons.add(new ValueComparison<Integer>(ComparisonOperator.LESS_OR_EQUAL, lowerValue));
         Assert.assertEquals(crit.getValueComparisons(), expectedValueComparisons);
     }
 

@@ -44,6 +44,7 @@ public class RegardsQueryParser extends QueryParserHelper implements CommonQuery
         super(new StandardQueryConfigHandler(), new StandardSyntaxParser(),
               new StandardQueryNodeProcessorPipeline(null), new RegardsQueryTreeBuilder(pAttributeModelService));
         setEnablePositionIncrements(true);
+        setAllowLeadingWildcard(true);
     }
 
     @Override

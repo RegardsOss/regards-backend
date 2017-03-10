@@ -28,4 +28,6 @@ public class RegardsQueryParserMessages extends NLS {
     public static String FIELD_TYPE_UNDETERMINATED;
 
     public static String UNSUPPORTED_ATTRIBUTE_TYPE;
+
+    public static String MIDDLE_WILDCARD_NOT_ALLOWED;;
 }
