@@ -74,6 +74,12 @@ public class Project implements IIdentifiable<Long> {
     @NotNull
     private Boolean isDeleted;
 
+    /**
+     * URL to the project's licence
+     */
+    @Column(columnDefinition = "text")
+    private String licenceLink;
+
     public Project() {
         super();
         name = "undefined";
@@ -143,6 +149,14 @@ public class Project implements IIdentifiable<Long> {
         isPublic = pIsPublic;
     }
 
+    public String getLicenceLink() {
+        return licenceLink;
+    }
+
+    public void setLicenseLink(String pLicenceLink) {
+        licenceLink = pLicenceLink;
+    }
+
     @Override
     public boolean equals(final Object pObject) {
         if (pObject == null) {
@@ -163,8 +177,8 @@ public class Project implements IIdentifiable<Long> {
 
     @Override
     public int hashCode() {
-        if (this.id != null) {
-            return this.id.hashCode();
+        if (id != null) {
+            return id.hashCode();
         } else {
             return 0;
         }

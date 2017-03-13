@@ -199,4 +199,9 @@ public interface IProjectUserService {
      */
     Page<ProjectUser> retrieveAccessRequestList(Pageable pPageable);
 
+    /**
+     * reset the licence for each user from the current project(which is in the SecurityContext)
+     */
+    void resetLicence();
+
 }

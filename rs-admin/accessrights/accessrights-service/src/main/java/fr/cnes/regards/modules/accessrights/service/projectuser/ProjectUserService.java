@@ -334,4 +334,13 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.save(pProjectUser);
     }
 
+    @Override
+    public void resetLicence() {
+        List<ProjectUser> everyone = projectUserRepository.findAll();
+        for (ProjectUser anyone : everyone) {
+            anyone.setLicenseAccepted(false);
+        }
+        projectUserRepository.save(everyone);
+    }
+
 }

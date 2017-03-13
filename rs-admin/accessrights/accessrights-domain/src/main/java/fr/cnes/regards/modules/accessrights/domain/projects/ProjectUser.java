@@ -105,6 +105,11 @@ public class ProjectUser implements IIdentifiable<Long> {
     private List<ResourcesAccess> permissions;
 
     /**
+     * whether the project user accepted the licence or not.
+     */
+    private boolean licenseAccepted;
+
+    /**
      * Create a new {@link ProjectUser} with empty values.
      */
     public ProjectUser() {
@@ -285,6 +290,14 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     public void setEmail(final String pEmail) {
         email = pEmail;
+    }
+
+    public boolean isLicenseAccepted() {
+        return licenseAccepted;
+    }
+
+    public void setLicenseAccepted(boolean pLicenceAccepted) {
+        licenseAccepted = pLicenceAccepted;
     }
 
 }
