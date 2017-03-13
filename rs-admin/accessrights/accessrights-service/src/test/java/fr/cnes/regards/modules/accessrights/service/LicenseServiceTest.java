@@ -74,7 +74,7 @@ public class LicenseServiceTest {
         Assert.assertEquals(currentUser.isLicenseAccepted(), dto.isAccepted());
 
         dto = licenseService.retrieveLicenseState(projectWithoutLicense.getName());
-        Assert.assertEquals(projectWithoutLicense.getLicenceLink(), dto.getLicenceLink());
+        Assert.assertEquals("", dto.getLicenceLink());
         Assert.assertEquals(true, dto.isAccepted());
     }
 

@@ -13,6 +13,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.executable.ValidateOnExecution;
 
+import org.hibernate.annotations.Type;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
@@ -77,7 +79,8 @@ public class Project implements IIdentifiable<Long> {
     /**
      * URL to the project's licence
      */
-    @Column(columnDefinition = "text")
+    @Column
+    @Type(type = "text")
     private String licenceLink;
 
     public Project() {
