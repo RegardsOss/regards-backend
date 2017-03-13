@@ -60,6 +60,7 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
             .put(AttributeType.DATE_INTERVAL, RangeComparison.LE, pFacade -> ICriterion.le(pFacade.getField(), pFacade.getUpperBoundAsLocalDateTime()))
             .put(AttributeType.DATE_INTERVAL, RangeComparison.LT, pFacade -> ICriterion.lt(pFacade.getField(), pFacade.getUpperBoundAsLocalDateTime()))
             .put(AttributeType.DATE_INTERVAL, RangeComparison.BETWEEN, pFacade -> ICriterion.between(pFacade.getField(), pFacade.getLowerBoundAsLocalDateTime(), pFacade.getUpperBoundAsLocalDateTime()))
+            .put(AttributeType.DATE_ARRAY, RangeComparison.BETWEEN, pFacade -> ICriterion.between(pFacade.getField(), pFacade.getLowerBoundAsLocalDateTime(), pFacade.getUpperBoundAsLocalDateTime()))
             .build();
     // @formatter:on
 

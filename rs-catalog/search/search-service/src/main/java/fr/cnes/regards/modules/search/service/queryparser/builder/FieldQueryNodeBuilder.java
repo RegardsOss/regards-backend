@@ -59,15 +59,20 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
 
         switch (attributeModel.getType()) {
             case INTEGER:
+            case INTEGER_ARRAY:
                 return ICriterion.eq(field, Integer.parseInt(value));
             case DOUBLE:
+            case DOUBLE_ARRAY:
                 Double asDouble = Double.parseDouble(value);
                 return ICriterion.eq(field, asDouble, asDouble - Math.nextDown(asDouble));
             case LONG:
+            case LONG_ARRAY:
                 Long asLong = Long.parseLong(value);
                 return ICriterion.eq(field, asLong, asLong - Math.nextDown(asLong));
             case STRING:
                 return ICriterion.equals(field, value);
+            case STRING_ARRAY:
+                return ICriterion.contains(field, value);
             default:
                 throw new QueryNodeException(
                         new MessageImpl(RegardsQueryParserMessages.UNSUPPORTED_ATTRIBUTE_TYPE, field));
