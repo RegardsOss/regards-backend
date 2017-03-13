@@ -17,7 +17,8 @@ import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
 /**
  * Builds a {@link StringMatchCriterion} from a {@link WildcardQueryNode} object<br>
  * If the wildcard is leading (*example), use {@link MatchType#ENDS_WITH}<br>
- * If the wildcard is trailong (example*), use {@link MatchType#STARTS_WITH}<br>
+ * If the wildcard is trailng (example*), use {@link MatchType#STARTS_WITH}<br>
+ * If the wildcard is leading and trailng (*example*), use {@link MatchType#CONTAINS}<br>
  * A wildcard in the middle of the value (ex*mple) is not allowed
  *
  * @author Xavier-Alexandre Brochard
@@ -32,16 +33,18 @@ public class WildcardQueryNodeBuilder implements ICriterionQueryBuilder {
 
         String field = wildcardNode.getFieldAsString();
         String value = wildcardNode.getTextAsString();
+        String val = value.replaceAll("[*]", "");
 
-        if (value.endsWith(WILDCARD_STRING)) {
-            return ICriterion.endsWith(field, value.substring(0, value.length() - 1));
-        } else
-            if (value.startsWith(WILDCARD_STRING)) {
-                return ICriterion.startsWith(field, value.substring(1, value.length()));
-            } else {
-                throw new QueryNodeException(new MessageImpl(QueryParserMessages.LUCENE_QUERY_CONVERSION_ERROR,
-                        pQueryNode.toQueryString(new EscapeQuerySyntaxImpl()), pQueryNode.getClass().getName()));
-            }
+        if (value.endsWith(WILDCARD_STRING) && value.startsWith(WILDCARD_STRING)) {
+            return ICriterion.contains(field, val);
+        } else if (value.endsWith(WILDCARD_STRING)) {
+            return ICriterion.endsWith(field, val);
+        } else if (value.startsWith(WILDCARD_STRING)) {
+            return ICriterion.startsWith(field, val);
+        } else {
+            throw new QueryNodeException(new MessageImpl(QueryParserMessages.LUCENE_QUERY_CONVERSION_ERROR,
+                    pQueryNode.toQueryString(new EscapeQuerySyntaxImpl()), pQueryNode.getClass().getName()));
+        }
     }
 
 }

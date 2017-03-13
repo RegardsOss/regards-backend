@@ -166,6 +166,22 @@ public class ParserTests {
         Assert.assertEquals("harry", crit.getValue());
     }
 
+    @Test
+    @Purpose("Tests queries like title:*rry*")
+    public void wildcardsAound() throws QueryNodeException {
+        final String key = ParserTestsUtils.STRING_FIELD;
+        final String val = "*rry*";
+        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof StringMatchCriterion);
+
+        final StringMatchCriterion crit = (StringMatchCriterion) criterion;
+        Assert.assertEquals(key, crit.getName());
+        Assert.assertEquals(MatchType.CONTAINS, crit.getType());
+        Assert.assertEquals("rry", crit.getValue());
+    }
+
     @Test(expected = QueryNodeException.class)
     @Purpose("Tests queries like title:har*ter")
     public void wildcardMiddleTest() throws QueryNodeException {
