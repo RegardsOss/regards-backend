@@ -3,14 +3,13 @@
  */
 package fr.cnes.regards.modules.search.service.queryparser.builder;
 
-import java.util.List;
-
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 import org.apache.lucene.queryparser.flexible.standard.nodes.PointQueryNode;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.IntMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
@@ -50,11 +49,13 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
         final String field = fieldNode.getFieldAsString();
         final String value = fieldNode.getValue().toString();
 
-        List<AttributeModel> attributeModels = attributeModelService.getAttributeModels();
-
-        AttributeModel attributeModel = attributeModels.stream().filter(el -> el.getName().equals(field)).findFirst()
-                .orElseThrow(() -> new QueryNodeException(
-                        new MessageImpl(RegardsQueryParserMessages.FIELD_TYPE_UNDETERMINATED, field)));
+        AttributeModel attributeModel;
+        try {
+            attributeModel = attributeModelService.getAttributeModelByName(field);
+        } catch (EntityNotFoundException e) {
+            throw new QueryNodeException(new MessageImpl(RegardsQueryParserMessages.FIELD_TYPE_UNDETERMINATED, field),
+                    e);
+        }
 
         switch (attributeModel.getType()) {
             case INTEGER:

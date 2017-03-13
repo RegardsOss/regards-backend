@@ -3,8 +3,7 @@
  */
 package fr.cnes.regards.modules.search.service.attributemodel;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 
 /**
@@ -17,7 +16,10 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 public interface IAttributeModelService {
 
     /**
-     * @return the list of current attribute models
+     * Return the attribute model of passed name
+     *
+     * @param pName
+     * @return
      */
-    List<AttributeModel> getAttributeModels();
+    AttributeModel getAttributeModelByName(String pName) throws EntityNotFoundException;
 }

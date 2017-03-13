@@ -12,6 +12,7 @@ import org.apache.lucene.queryparser.flexible.core.nodes.GroupQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
+import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.WildcardQueryNode;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
@@ -32,7 +33,7 @@ public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriter
         setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
         setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
         setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
-        // setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder());
+        setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(pAttributeModelService));
         // setBuilder(PointRangeQueryNode.class, new PointRangeQueryNodeBuilder());
         setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder());
         setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
@@ -60,4 +61,5 @@ public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriter
     public ICriterion build(final QueryNode queryNode) throws QueryNodeException {
         return (ICriterion) super.build(queryNode);
     }
+
 }

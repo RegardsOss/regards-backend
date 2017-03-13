@@ -3,42 +3,125 @@
  */
 package fr.cnes.regards.modules.search.service.queryparser.builder;
 
+import java.util.function.Function;
+
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
+import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
-import org.apache.lucene.queryparser.flexible.core.util.StringUtils;
+import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 
+import com.google.common.collect.ImmutableTable;
+
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
+import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
+import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParserMessages;
 
 /**
  * Builds a {@link RangeCriterion} from a {@link TermRangeQueryNode} object.
  *
  * @author Xavier-Alexandre Brochard
  */
-public class TermRangeQueryNodeBuilder implements ICriterionQueryBuilder {
+public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICriterionQueryBuilder {
+
+    /**
+     * Service retrieving the up-to-date list of {@link AttributeModel}s. Autowired by Spring.
+     */
+    private final IAttributeModelService attributeModelService;
+
+    // Define a static two-entries table storing the different criterion builders based on the type of attribute and the
+    // type of comparison performed
+    // @formatter:off
+    private static final ImmutableTable<AttributeType, RangeComparison, Function<TermRangeQueryNodeFacade, ICriterion>> CRITERION_TABLE = new ImmutableTable.Builder<AttributeType, RangeComparison, Function<TermRangeQueryNodeFacade, ICriterion>>()
+            .put(AttributeType.INTEGER_INTERVAL, RangeComparison.GE, pFacade -> ICriterion.ge(pFacade.getField(), pFacade.getLowerBoundAsInteger()))
+            .put(AttributeType.INTEGER_INTERVAL, RangeComparison.GT, pFacade -> ICriterion.gt(pFacade.getField(), pFacade.getLowerBoundAsInteger()))
+            .put(AttributeType.INTEGER_INTERVAL, RangeComparison.LE, pFacade -> ICriterion.le(pFacade.getField(), pFacade.getUpperBoundAsInteger()))
+            .put(AttributeType.INTEGER_INTERVAL, RangeComparison.LT, pFacade -> ICriterion.lt(pFacade.getField(), pFacade.getUpperBoundAsInteger()))
+            .put(AttributeType.INTEGER_INTERVAL, RangeComparison.BETWEEN, pFacade -> ICriterion.between(pFacade.getField(), pFacade.getLowerBoundAsInteger(), pFacade.getUpperBoundAsInteger()))
+
+            .put(AttributeType.DOUBLE_INTERVAL, RangeComparison.GE, pFacade -> ICriterion.ge(pFacade.getField(), pFacade.getLowerBoundAsDouble()))
+            .put(AttributeType.DOUBLE_INTERVAL, RangeComparison.GT, pFacade -> ICriterion.gt(pFacade.getField(), pFacade.getLowerBoundAsDouble()))
+            .put(AttributeType.DOUBLE_INTERVAL, RangeComparison.LE, pFacade -> ICriterion.le(pFacade.getField(), pFacade.getUpperBoundAsDouble()))
+            .put(AttributeType.DOUBLE_INTERVAL, RangeComparison.LT, pFacade -> ICriterion.lt(pFacade.getField(), pFacade.getUpperBoundAsDouble()))
+            .put(AttributeType.DOUBLE_INTERVAL, RangeComparison.BETWEEN, pFacade -> ICriterion.between(pFacade.getField(), pFacade.getLowerBoundAsDouble(), pFacade.getUpperBoundAsDouble()))
+
+            .put(AttributeType.LONG_INTERVAL, RangeComparison.GE, pFacade -> ICriterion.ge(pFacade.getField(), pFacade.getLowerBoundAsLong()))
+            .put(AttributeType.LONG_INTERVAL, RangeComparison.GT, pFacade -> ICriterion.gt(pFacade.getField(), pFacade.getLowerBoundAsLong()))
+            .put(AttributeType.LONG_INTERVAL, RangeComparison.LE, pFacade -> ICriterion.le(pFacade.getField(), pFacade.getUpperBoundAsLong()))
+            .put(AttributeType.LONG_INTERVAL, RangeComparison.LT, pFacade -> ICriterion.lt(pFacade.getField(), pFacade.getUpperBoundAsLong()))
+            .put(AttributeType.LONG_INTERVAL, RangeComparison.BETWEEN, pFacade -> ICriterion.between(pFacade.getField(), pFacade.getLowerBoundAsLong(), pFacade.getUpperBoundAsLong()))
+
+            .put(AttributeType.DATE_INTERVAL, RangeComparison.GE, pFacade -> ICriterion.ge(pFacade.getField(), pFacade.getLowerBoundAsLocalDateTime()))
+            .put(AttributeType.DATE_INTERVAL, RangeComparison.GT, pFacade -> ICriterion.gt(pFacade.getField(), pFacade.getLowerBoundAsLocalDateTime()))
+            .put(AttributeType.DATE_INTERVAL, RangeComparison.LE, pFacade -> ICriterion.le(pFacade.getField(), pFacade.getUpperBoundAsLocalDateTime()))
+            .put(AttributeType.DATE_INTERVAL, RangeComparison.LT, pFacade -> ICriterion.lt(pFacade.getField(), pFacade.getUpperBoundAsLocalDateTime()))
+            .put(AttributeType.DATE_INTERVAL, RangeComparison.BETWEEN, pFacade -> ICriterion.between(pFacade.getField(), pFacade.getLowerBoundAsLocalDateTime(), pFacade.getUpperBoundAsLocalDateTime()))
+            .build();
+    // @formatter:on
+
+    /**
+     * @param pAttributeModelService
+     *            Service retrieving the up-to-date list of {@link AttributeModel}s
+     */
+    public TermRangeQueryNodeBuilder(IAttributeModelService pAttributeModelService) {
+        super();
+        attributeModelService = pAttributeModelService;
+    }
 
     @Override
     public ICriterion build(final QueryNode pQueryNode) throws QueryNodeException {
         final TermRangeQueryNode rangeNode = (TermRangeQueryNode) pQueryNode;
-        final FieldQueryNode upper = rangeNode.getUpperBound();
-        final FieldQueryNode lower = rangeNode.getLowerBound();
 
-        final String field = StringUtils.toString(rangeNode.getField());
-        String lowerText = lower.getTextAsString();
-        String upperText = upper.getTextAsString();
+        // Extract info for node
+        TermRangeQueryNodeFacade wrapper = new TermRangeQueryNodeFacade(rangeNode);
 
-        if (lowerText.length() == 0) {
-            lowerText = null;
+        // Retrieve the corresponding model
+        AttributeType attributeType;
+        try {
+            attributeType = attributeModelService.getAttributeModelByName(wrapper.getField()).getType();
+        } catch (EntityNotFoundException e) {
+            throw new QueryNodeException(
+                    new MessageImpl(RegardsQueryParserMessages.FIELD_TYPE_UNDETERMINATED, wrapper.getField()), e);
         }
 
-        if (upperText.length() == 0) {
-            upperText = null;
-        }
+        // Compute the type of range comparison: lower/greater than/equal or between
+        RangeComparison rangeComparison = getRangeComparison(wrapper.getField(), wrapper.getLowerBound(),
+                                                             wrapper.getUpperBound(), wrapper.isLowerInclusive(),
+                                                             wrapper.isUpperInclusive());
 
-        return ICriterion.between(field, lowerText, upperText, rangeNode.isLowerInclusive(),
-                                  rangeNode.isUpperInclusive());
+        return CRITERION_TABLE.get(attributeType, rangeComparison).apply(wrapper);
+    }
+
+    /**
+     * Return the range comparison type based on the lower/upper values and if they are inclusive/exclusive
+     *
+     * @param pLowerText
+     * @param pUpperText
+     * @param pIsLowerInclusive
+     * @param pIsUpperInclusive
+     * @return
+     * @throws QueryNodeException
+     */
+    private RangeComparison getRangeComparison(String pField, String pLowerText, String pUpperText,
+            boolean pIsLowerInclusive, boolean pIsUpperInclusive) throws QueryNodeException {
+        if (pLowerText.isEmpty() && pUpperText.isEmpty()) {
+            throw new QueryNodeException(
+                    new MessageImpl(RegardsQueryParserMessages.RANGE_NUMERIC_CANNOT_BE_EMPTY, pField));
+        } else if (pLowerText.isEmpty() && !pUpperText.isEmpty() && pIsUpperInclusive) {
+            return RangeComparison.LE;
+        } else if (pLowerText.isEmpty() && !pUpperText.isEmpty() && !pIsUpperInclusive) {
+            return RangeComparison.LT;
+        } else if (!pLowerText.isEmpty() && pUpperText.isEmpty() && pIsLowerInclusive) {
+            return RangeComparison.GE;
+        } else if (!pLowerText.isEmpty() && pUpperText.isEmpty() && !pIsLowerInclusive) {
+            return RangeComparison.GT;
+        } else {
+            return RangeComparison.BETWEEN;
+        }
     }
 
 }
