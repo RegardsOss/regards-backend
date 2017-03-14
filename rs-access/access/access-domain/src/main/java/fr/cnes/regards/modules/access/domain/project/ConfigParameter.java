@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.access.domain;
+package fr.cnes.regards.modules.access.domain.project;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

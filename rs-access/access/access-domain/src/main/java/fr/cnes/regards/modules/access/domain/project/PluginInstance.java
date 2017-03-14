@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.access.domain;
+package fr.cnes.regards.modules.access.domain.project;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import javax.persistence.Id;
  * @author Christophe Mertz
  *
  */
-public class ModuleConfiguration {
+public class PluginInstance {
 
     /**
      * Unique id
@@ -23,38 +23,46 @@ public class ModuleConfiguration {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "navCtxProjectSequence")
     private Long id;
 
+    private String name;
+
     private Project project;
 
     private List<ConfigParameter> parameters;
 
-    private Module module;
-
     /**
      * Default constructor
      */
-    public ModuleConfiguration() {
+    public PluginInstance() {
         super();
     }
 
     /**
      * A constructor using fields.
      * 
+     * @param pName
+     *            a name
      * @param pProject
-     *            the project
+     *            a {@link Project}
      * @param pParameters
      *            a list of {@link ConfigParameter}
-     * @param pModule
-     *            a {@link Module}
      */
-    public ModuleConfiguration(Project pProject, List<ConfigParameter> pParameters, Module pModule) {
+    public PluginInstance(String pName, Project pProject, List<ConfigParameter> pParameters) {
         super();
+        name = pName;
         project = pProject;
         parameters = pParameters;
-        module = pModule;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String pName) {
+        name = pName;
     }
 
     public Project getProject() {
@@ -71,14 +79,6 @@ public class ModuleConfiguration {
 
     public void setParameters(List<ConfigParameter> pParameters) {
         parameters = pParameters;
-    }
-
-    public Module getModule() {
-        return module;
-    }
-
-    public void setModule(Module pModule) {
-        module = pModule;
     }
 
 }

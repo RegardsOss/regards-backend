@@ -2,11 +2,11 @@
  * LICENSE_PLACEHOLDER
  */
 
-package fr.cnes.regards.modules.access.dao;
+package fr.cnes.regards.modules.access.dao.project;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.modules.access.domain.NavigationContext;
+import fr.cnes.regards.modules.access.domain.project.NavigationContext;
 
 /**
  * {@link NavigationContext} repository

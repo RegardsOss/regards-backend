@@ -14,6 +14,23 @@
 	</parent>
 
 	<dependencies>
+	<!-- Starters -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards-starter</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.access</groupId>
 			<artifactId>access-service</artifactId>

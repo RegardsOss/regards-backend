@@ -15,12 +15,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.test.repository.RepositoryStub;
-import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
-import fr.cnes.regards.modules.access.domain.ConfigParameter;
-import fr.cnes.regards.modules.access.domain.NavigationContext;
-import fr.cnes.regards.modules.access.domain.Project;
-import fr.cnes.regards.modules.access.domain.Theme;
-import fr.cnes.regards.modules.access.domain.ThemeType;
+import fr.cnes.regards.modules.access.dao.project.INavigationContextRepository;
+import fr.cnes.regards.modules.access.domain.project.ConfigParameter;
+import fr.cnes.regards.modules.access.domain.project.NavigationContext;
+import fr.cnes.regards.modules.access.domain.project.Project;
+import fr.cnes.regards.modules.access.domain.project.Theme;
+import fr.cnes.regards.modules.access.domain.project.ThemeType;
 
 /**
  * 

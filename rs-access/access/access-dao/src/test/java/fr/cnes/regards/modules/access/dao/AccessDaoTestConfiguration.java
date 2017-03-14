@@ -15,6 +15,6 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @EnableAutoConfiguration
 @PropertySource("classpath:tests.properties")
-public class NavigationContextDaoTestConfig {
+public class AccessDaoTestConfiguration {
 
 }

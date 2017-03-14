@@ -8,8 +8,8 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
-import fr.cnes.regards.modules.access.domain.NavigationContext;
+import fr.cnes.regards.modules.access.dao.project.INavigationContextRepository;
+import fr.cnes.regards.modules.access.domain.project.NavigationContext;
 
 /**
  *
