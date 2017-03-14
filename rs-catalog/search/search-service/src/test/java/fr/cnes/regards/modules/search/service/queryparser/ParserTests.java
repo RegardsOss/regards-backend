@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.search.service.queryparser;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
@@ -12,7 +13,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.crawler.domain.criterion.AndCriterion;
@@ -25,9 +29,10 @@ import fr.cnes.regards.modules.crawler.domain.criterion.OrCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.ValueComparison;
-import fr.cnes.regards.modules.search.service.attributemodel.AttributeModelService;
-import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelClient;
-import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
+import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.search.service.cache.AttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
 
 /**
  * @author Marc Sordi
@@ -40,18 +45,20 @@ public class ParserTests {
 
     private static RegardsQueryParser parser;
 
-    private static IAttributeModelService attributeModelService;
+    private static IAttributeModelCache attributeModelCache;
 
     private static IAttributeModelClient attributeModelClient;
 
     @BeforeClass
     public static void init() throws EntityNotFoundException {
         attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        attributeModelService = new AttributeModelService(attributeModelClient);
+        attributeModelCache = new AttributeModelCache(attributeModelClient);
 
-        Mockito.when(attributeModelClient.getAttributeModels()).thenReturn(ParserTestsUtils.LIST);
+        ResponseEntity<List<Resource<AttributeModel>>> clientResponse = ResponseEntity
+                .ok(HateoasUtils.wrapList(ParserTestsUtils.LIST));
+        Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(clientResponse);
 
-        parser = new RegardsQueryParser(attributeModelService);
+        parser = new RegardsQueryParser(attributeModelCache);
     }
 
     @Test(expected = QueryNodeException.class)

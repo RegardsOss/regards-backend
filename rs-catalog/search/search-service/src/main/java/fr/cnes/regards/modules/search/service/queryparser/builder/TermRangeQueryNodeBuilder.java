@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
+import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParserMessages;
 
 /**
@@ -31,7 +31,7 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
     /**
      * Service retrieving the up-to-date list of {@link AttributeModel}s. Autowired by Spring.
      */
-    private final IAttributeModelService attributeModelService;
+    private final IAttributeModelCache attributeModelCache;
 
     // Define a static two-entries table storing the different criterion builders based on the type of attribute and the
     // type of comparison performed
@@ -65,12 +65,12 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
     // @formatter:on
 
     /**
-     * @param pAttributeModelService
+     * @param pAttributeModelCache
      *            Service retrieving the up-to-date list of {@link AttributeModel}s
      */
-    public TermRangeQueryNodeBuilder(IAttributeModelService pAttributeModelService) {
+    public TermRangeQueryNodeBuilder(IAttributeModelCache pAttributeModelCache) {
         super();
-        attributeModelService = pAttributeModelService;
+        attributeModelCache = pAttributeModelCache;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
         // Retrieve the corresponding model
         AttributeType attributeType;
         try {
-            attributeType = attributeModelService.getAttributeModelByName(wrapper.getField()).getType();
+            attributeType = attributeModelCache.findByName(wrapper.getField()).getType();
         } catch (EntityNotFoundException e) {
             throw new QueryNodeException(
                     new MessageImpl(RegardsQueryParserMessages.FIELD_TYPE_UNDETERMINATED, wrapper.getField()), e);

@@ -16,7 +16,7 @@ import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.WildcardQueryNode;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelService;
+import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
 
 /**
  * Define the REGARDS specific query nodes building strategies.
@@ -26,14 +26,14 @@ import fr.cnes.regards.modules.search.service.attributemodel.IAttributeModelServ
  */
 public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriterionQueryBuilder {
 
-    public RegardsQueryTreeBuilder(IAttributeModelService pAttributeModelService) {
+    public RegardsQueryTreeBuilder(IAttributeModelCache pAttributeModelCache) {
 
         // Register builder
-        setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder(pAttributeModelService));
+        setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder(pAttributeModelCache));
         setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
         setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
         setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
-        setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(pAttributeModelService));
+        setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(pAttributeModelCache));
         // setBuilder(PointRangeQueryNode.class, new PointRangeQueryNodeBuilder());
         setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder());
         setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());

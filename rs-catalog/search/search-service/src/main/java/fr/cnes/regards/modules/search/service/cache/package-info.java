@@ -5,4 +5,4 @@
  * 
  * @author Xavier-Alexandre Brochard
  */
-package fr.cnes.regards.modules.search.service.attributemodel;
+package fr.cnes.regards.modules.search.service.cache;
