@@ -112,11 +112,11 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(value = "/{themeId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM theme", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Theme>> updateModule(@PathVariable("themeId") final Long pThemeId,
+    public HttpEntity<Resource<Theme>> updateTheme(@PathVariable("themeId") final Long pThemeId,
             @Valid @RequestBody final Theme pTheme) throws EntityException {
 
         if (!pTheme.getId().equals(pThemeId)) {
-            throw new EntityInvalidException("Invalide application identifier for module");
+            throw new EntityInvalidException("Invalide application identifier for theme");
         }
         final Theme theme = service.updateTheme(pTheme);
         final Resource<Theme> resource = toResource(theme);
