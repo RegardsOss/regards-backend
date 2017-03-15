@@ -18,7 +18,9 @@
 
 	<modules>
 		<module>bootstrap-access</module>
+		<module>bootstrap-access-project</module>
 		<module>access</module>
+		<module>uiconfiguration</module>
 	</modules>
 
 </project>
