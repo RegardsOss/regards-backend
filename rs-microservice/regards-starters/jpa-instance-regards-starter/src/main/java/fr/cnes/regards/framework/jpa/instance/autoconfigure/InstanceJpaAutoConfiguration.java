@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.MultiTenancyStrategy;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -85,6 +87,9 @@ public class InstanceJpaAutoConfiguration {
     @Autowired
     private JpaProperties jpaProperties;
 
+    @Value("${desableInstanceEntityAnnotation:false}")
+    private boolean desableInstanceEntityAnnotation;
+
     /**
      * Instance datasource
      */
@@ -149,7 +154,12 @@ public class InstanceJpaAutoConfiguration {
         hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
 
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
-        final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
+        List<Class<?>> packages;
+        if (desableInstanceEntityAnnotation) {
+            packages = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
+        } else {
+            packages = DaoUtils.scanPackagesForJpa(Entity.class, null, packagesToScan);
+        }
 
         return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
@@ -164,7 +174,7 @@ public class InstanceJpaAutoConfiguration {
      * @return
      */
     @Bean
-    public Void setGsonIntoGsonUtil(Gson pGson) {
+    public Void setGsonIntoGsonUtil(final Gson pGson) {
         GsonUtil.setGson(pGson);
         return null;
     }
