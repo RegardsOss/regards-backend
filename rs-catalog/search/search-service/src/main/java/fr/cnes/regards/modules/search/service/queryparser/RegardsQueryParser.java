@@ -25,22 +25,29 @@ import org.apache.lucene.queryparser.flexible.standard.parser.StandardSyntaxPars
 import org.apache.lucene.queryparser.flexible.standard.processors.StandardQueryNodeProcessorPipeline;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.builder.RegardsQueryTreeBuilder;
 
 /**
+ * Custom implementation of Lucene's {@link QueryParserHelper}.
+ *
  * @author Marc Sordi
+ * @author Xavier-Alexandre Brochard
  *
  */
+@Component
 public class RegardsQueryParser extends QueryParserHelper implements CommonQueryParserConfiguration {
 
     /**
-     *
+     * Default field
      */
-    public RegardsQueryParser(IAttributeModelCache pAttributeModelCache) {
+    private static final String DEFAULT_FIELD = "defaultField";
+
+    public RegardsQueryParser(@Autowired IAttributeModelCache pAttributeModelCache) {
         super(new StandardQueryConfigHandler(), new StandardSyntaxParser(),
               new StandardQueryNodeProcessorPipeline(null), new RegardsQueryTreeBuilder(pAttributeModelCache));
         setEnablePositionIncrements(true);
@@ -53,8 +60,22 @@ public class RegardsQueryParser extends QueryParserHelper implements CommonQuery
     }
 
     /**
-     * Overrides {@link QueryParserHelper#parse(String, String)} so it casts the return object to {@link Query}. For
-     * more reference about this method, check {@link QueryParserHelper#parse(String, String)}.
+     * Call pase with the default field.
+     *
+     * @param query
+     *            the query string
+     * @return the object built from the query
+     *
+     * @throws QueryNodeException
+     *             if something wrong happens along the three phases
+     */
+    public ICriterion parse(final String query) throws QueryNodeException {
+        return (ICriterion) super.parse(query, DEFAULT_FIELD);
+    }
+
+    /**
+     * Overrides {@link QueryParserHelper#parse(String, String)} so it casts the return object to {@link ICriterion}.
+     * For more reference about this method, check {@link QueryParserHelper#parse(String, String)}.
      *
      * @param query
      *            the query string

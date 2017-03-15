@@ -3,8 +3,12 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
@@ -14,21 +18,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.crawler.domain.SearchKey;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.crawler.service.IIndexerService;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
-import fr.cnes.regards.modules.search.service.IIndexService;
-import fr.cnes.regards.modules.search.service.IRepresentation;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
+import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
+import fr.cnes.regards.modules.search.service.representation.IRepresentation;
 
 /**
  * REST controller managing the research of REGARDS entities ({@link Collection}s, {@link Dataset}s, {@link DataObject}s
@@ -47,49 +57,137 @@ import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
  * <ol>
  *
  * @author Xavier-Alexandre Brochard
+ * @param <T>
  */
 @RestController
 @ModuleInfo(name = "search", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/search")
-public class SearchController {
+@RequestMapping("")
+public class SearchController<T extends AbstractEntity> implements IResourceController<T> {
 
-    // @Autowired
-    // private IResourceService resourceService;
+    /**
+     * The custom OpenSearch query parser building {@link ICriterion} from tu string query
+     */
+    @Autowired
+    private RegardsQueryParser queryParser;
 
+    /**
+     * Applies project filters, i.e. the OpenSearch query
+     */
     @Autowired
     private IFilterPlugin filterPlugin;
 
+    /**
+     * Adds user group and data access filters
+     */
     @Autowired
     private IAccessRightFilter accessRightFilter;
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Service perfoming the ElasticSearch search
+     */
+    @Autowired
+    private IIndexerService indexerService;
+
+    /**
+     * Get current tenant at runtime and allows tenant forcing
+     */
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
+     * The resource service
+     */
+    @Autowired
+    private IResourceService resourceService;
+
+    /**
+     * Perform a search in the catalog.
+     *
+     * @param pQ
+     *            the query in OpenSearch format
+     * @param pSearchType
+     *            the type of document to search. Must not be null
+     * @param pResultClass
+     *            the class of result document search. In case search type is null, this class must be compatible with
+     *            all sorts of result objects (ie AbstractEntity for Regards entity types)
+     * @param pFacets
+     *            the applicable facets as a list of attribute names
+     * @param pAscSortMap
+     *            the sort map
+     * @param pPageable
+     *            the pagination information
+     * @param pAssembler
+     *            spring resources assembler
+     * @return
+     * @throws QueryNodeException
+     */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Searches on indexed data.")
-    public <T extends AbstractEntity> ResponseEntity<PagedResources<Resource<T>>> search(@PathVariable final String pQ,
-            final Pageable pPageable, final PagedResourcesAssembler<T> pAssembler) throws QueryNodeException {
+    public ResponseEntity<PagedResources<Resource<T>>> search(@RequestParam("q") String pQ,
+            @RequestParam("searchType") String pSearchType, @RequestParam("resultClass") Class<T> pResultClass,
+            @RequestParam("facets") List<String> pFacets,
+            @RequestParam("sort") LinkedHashMap<String, Boolean> pAscSortMap, final Pageable pPageable,
+            final PagedResourcesAssembler<T> pAssembler) throws QueryNodeException {
+        // Build criterion from query
+        ICriterion criterion = queryParser.parse(pQ);
 
         // Apply project filters
-        ICriterion criterion = filterPlugin.getFilters(pQ);
+        // criterion = filterPlugin.addFilter(pRequest, criterion);
 
         // Apply security filters
-        // criterion = accessRightFilterService.addGroupFilter();
-        // criterion = accessRightFilterService.addAccessRightsFilter();
+        criterion = accessRightFilter.addGroupFilter(criterion);
+        criterion = accessRightFilter.addAccessRightsFilter(criterion);
 
         // Perform the search
-        // final Page<T> entities = (Page<T>) indexService.search(pClass, pPageable, criterion);
+        // TODO: Handle facets instead of null
+        SearchKey<T> searchKey = new SearchKey<>(runtimeTenantResolver.getTenant(), pSearchType, pResultClass);
+        Page<T> entities = indexerService.search(searchKey, pPageable, criterion, null, pAscSortMap);
 
         // Format output response
 
         // Return
-        // return new ResponseEntity<>(toPagedResources(entities, pAssembler), HttpStatus.OK);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(toPagedResources(entities, pAssembler), HttpStatus.OK);
     }
 
-    // @Override
-    // public Resource<T> toResource(final T pElement, final Object... pExtras) {
-    // // TODO add hateoas links
-    // return resourceService.toResource(pElement);
-    // }
+    /**
+     * Perform a search in the catalog.<br>
+     * The only difference with the other search endpoint is that the search type is in the path.
+     *
+     * @param pSearchType
+     *            the type of document to search. Must not be null
+     * @param pQ
+     *            the query in OpenSearch format
+     * @param pResultClass
+     *            the class of result document search. In case search type is null, this class must be compatible with
+     *            all sorts of result objects (ie AbstractEntity for Regards entity types)
+     * @param pFacets
+     *            the applicable facets as a list of attribute names
+     * @param pAcsSortMap
+     *            the sort map
+     * @param pPageable
+     *            the pagination information
+     * @param pAssembler
+     *            spring resources assembler
+     * @return
+     * @throws QueryNodeException
+     */
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Searches on indexed data.")
+    public ResponseEntity<PagedResources<Resource<T>>> searchWithTypeInPath(
+            @PathVariable("searchType") String pSearchType, @RequestParam("q") String pQ,
+            @RequestParam("resultClass") Class<T> pResultClass, @RequestParam("facets") List<String> pFacets,
+            @RequestParam("sort") LinkedHashMap<String, Boolean> pAcsSortMap, final Pageable pPageable,
+            final PagedResourcesAssembler<T> pAssembler) throws QueryNodeException {
+        return search(pQ, pSearchType, pResultClass, pFacets, pAcsSortMap, pPageable, pAssembler);
+    }
+
+    @Override
+    public Resource<T> toResource(T pElement, Object... pExtras) {
+        // TODO: Add links
+        return resourceService.toResource(pElement);
+    }
+
 }

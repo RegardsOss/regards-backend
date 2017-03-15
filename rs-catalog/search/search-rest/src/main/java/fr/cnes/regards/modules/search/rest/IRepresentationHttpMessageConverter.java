@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.search.domain.AbstractIndexedEntity;
-import fr.cnes.regards.modules.search.service.IRepresentation;
+import fr.cnes.regards.modules.search.service.representation.IRepresentation;
 
 /**
  * @author Sylvain Vissiere-Guerinet

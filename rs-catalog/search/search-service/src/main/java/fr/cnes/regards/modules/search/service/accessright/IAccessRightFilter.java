@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.search.service.accessright;
 
+import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+
 /**
  * This service adds adds user group and data access filters to an ElasticSearch request.
  *
@@ -7,4 +9,7 @@ package fr.cnes.regards.modules.search.service.accessright;
  */
 public interface IAccessRightFilter {
 
+    ICriterion addGroupFilter(ICriterion criterion);
+
+    ICriterion addAccessRightsFilter(ICriterion criterion);
 }

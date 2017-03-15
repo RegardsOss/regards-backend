@@ -10,9 +10,6 @@ import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -54,8 +51,8 @@ public class SearchControllerTest {
         final String pQ = "music -video (singer OR songwriter) site:amazon.com ";
         final Pageable pageable = new PageRequest(0, 10);
         final PagedResourcesAssembler<Dataset> assembler = new PagedResourcesAssembler<>(null, null);
-        final ResponseEntity<PagedResources<Resource<Dataset>>> result = searchController.search(pQ, pageable,
-                                                                                                 assembler);
+        // final ResponseEntity<PagedResources<Resource<Dataset>>> result = searchController.search(pQ, pageable,
+        // assembler);
 
         Assert.assertTrue(true);
 

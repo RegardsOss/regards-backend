@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.service;
+package fr.cnes.regards.modules.search.service.representation;
 
 import java.nio.charset.Charset;
 

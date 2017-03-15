@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.service;
+package fr.cnes.regards.modules.search.service.converter;
 
 import org.springframework.data.domain.Page;
 
