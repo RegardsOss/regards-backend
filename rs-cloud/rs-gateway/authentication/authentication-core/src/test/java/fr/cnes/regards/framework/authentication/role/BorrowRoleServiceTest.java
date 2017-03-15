@@ -17,6 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.authentication.role.service.BorrowRoleService;
+import fr.cnes.regards.framework.authentication.role.service.CoupleJwtRole;
 import fr.cnes.regards.framework.authentication.role.service.IBorrowRoleService;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -37,8 +38,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 public class BorrowRoleServiceTest {
 
     private IBorrowRoleService borrowRoleService;
-
-    private final String microserviceName = "rs-gateway-test";
 
     private JWTService JwtService;
 
@@ -65,7 +64,7 @@ public class BorrowRoleServiceTest {
         JwtService = new JWTService();
         JwtService.setSecret("123456789");
         mockedRoleClient = Mockito.mock(IRolesClient.class);
-        borrowRoleService = new BorrowRoleService(mockedRoleClient, JwtService, microserviceName);
+        borrowRoleService = new BorrowRoleService(mockedRoleClient, JwtService);
     }
 
     @Test
@@ -80,9 +79,9 @@ public class BorrowRoleServiceTest {
         // mock JWTAuthentication
         JwtService.injectToken("test", "ADMIN", "test@test.test");
 
-        String newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
+        CoupleJwtRole newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
 
-        JWTAuthentication newAuthentication = new JWTAuthentication(newToken);
+        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getAccess_token());
         newAuthentication = JwtService.parseToken(newAuthentication);
         Assert.assertNotNull(newToken);
         Assert.assertEquals("test@test.test", newAuthentication.getName());
@@ -102,7 +101,7 @@ public class BorrowRoleServiceTest {
         // mock JWTAuthentication
         JwtService.injectToken("test", DefaultRole.PUBLIC.toString(), "test@test.test");
 
-        String newToken = borrowRoleService.switchTo(DefaultRole.ADMIN.toString());
+        CoupleJwtRole newToken = borrowRoleService.switchTo(DefaultRole.ADMIN.toString());
 
         Assert.fail("Exception should have been thrown before here");
     }

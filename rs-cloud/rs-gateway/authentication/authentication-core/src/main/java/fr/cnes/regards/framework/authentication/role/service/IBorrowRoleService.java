@@ -13,11 +13,13 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 public interface IBorrowRoleService {
 
     /**
+     * generate a new JWT for the given role if the current user can switch to this role
+     *
      * @param pTargetRoleName
-     * @return
+     * @return couple (new JWT, Role name wanted)
      * @throws JwtException
      * @throws EntityOperationForbiddenException
      */
-    String switchTo(String pTargetRoleName) throws JwtException, EntityOperationForbiddenException;
+    CoupleJwtRole switchTo(String pTargetRoleName) throws JwtException, EntityOperationForbiddenException;
 
 }
