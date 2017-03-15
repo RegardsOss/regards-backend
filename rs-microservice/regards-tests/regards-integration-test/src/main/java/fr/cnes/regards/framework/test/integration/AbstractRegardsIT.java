@@ -332,7 +332,7 @@ public abstract class AbstractRegardsIT {
 
         try {
             final MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(pFilePath));
-            List<MockMultipartFile> fileList = new ArrayList<>(1);
+            final List<MockMultipartFile> fileList = new ArrayList<>(1);
             fileList.add(file);
             return getMultipartRequestBuilder(pAuthToken, fileList, pUrlTemplate, pUrlVars);
         } catch (final IOException e) {
@@ -347,7 +347,7 @@ public abstract class AbstractRegardsIT {
 
         final MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
                 .fileUpload(pUrlTemplate, pUrlVars);
-        for (MockMultipartFile file : pFiles) {
+        for (final MockMultipartFile file : pFiles) {
             multipartRequestBuilder.file(file);
         }
         addSecurityHeader(multipartRequestBuilder, pAuthToken);
