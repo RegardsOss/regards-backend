@@ -3,9 +3,10 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
 
@@ -41,6 +43,7 @@ import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
  * @since 1.0-SNAPSHOT
  */
 @Service(value = "layoutService")
+@Transactional
 public class LayoutService implements ILayoutService {
 
     /**
@@ -104,8 +107,7 @@ public class LayoutService implements ILayoutService {
     @Override
     public void initProjectLayout(final String pTenant) {
         try {
-            final String layoutConf = new String(
-                    Files.readAllBytes(Paths.get(defaultApplicationLayoutResource.getURI())));
+            final String layoutConf = readDefaultLayoutFileResource();
             final Layout layout = new Layout();
             layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             layout.setLayout(layoutConf);
@@ -128,9 +130,17 @@ public class LayoutService implements ILayoutService {
     }
 
     @Override
-    public Layout saveLayout(final Layout pLayout) throws EntityAlreadyExistsException {
+    public Layout saveLayout(final Layout pLayout) throws EntityAlreadyExistsException, EntityInvalidException {
         if (repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
             throw new EntityAlreadyExistsException(pLayout.getApplicationId());
+        }
+        // Check layut json format
+        final Gson gson = new Gson();
+        try {
+            gson.fromJson(pLayout.getLayout(), Object.class);
+        } catch (final Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new EntityInvalidException("Layout is not a valid json format.");
         }
         return repository.save(pLayout);
     }
@@ -150,6 +160,25 @@ public class LayoutService implements ILayoutService {
             throw new EntityNotFoundException(pLayout.getId(), Layout.class);
         }
         return repository.save(pLayout);
+    }
+
+    /**
+     *
+     * Read the default Layout configuration file as a string.
+     *
+     * @return {@link Layout} as a string
+     * @throws IOException
+     * @since 1.0-SNAPSHOT
+     */
+    private String readDefaultLayoutFileResource() throws IOException {
+        if ((defaultApplicationLayoutResource == null) || !defaultApplicationLayoutResource.exists()) {
+            throw new RuntimeException(
+                    "Error reading layout default configuration file" + defaultApplicationLayoutResource.getFilename());
+        }
+        try (BufferedReader buffer = new BufferedReader(
+                new InputStreamReader(defaultApplicationLayoutResource.getInputStream()))) {
+            return buffer.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
     }
 
 }

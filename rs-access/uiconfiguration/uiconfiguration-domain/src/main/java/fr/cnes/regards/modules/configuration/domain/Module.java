@@ -14,6 +14,15 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 
+/**
+ *
+ * Class Module
+ *
+ * Entity to describe an IHM module configuration.
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 @Entity
 @Table(name = "T_IHM_MODULES")
 public class Module {
@@ -30,34 +39,34 @@ public class Module {
      * Module name. Use to instantiate the right module
      */
     @NotNull
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     /**
      * Module description label.
      */
     @NotNull
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String description;
 
     /**
      * The application where the module must be displayed
      */
     @NotNull
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String applicationId;
 
     /**
      * The container of the application layout where the module must be displayed
      */
     @NotNull
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String container;
 
     /**
      * Module configuration (JSON Object)
      */
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     @Type(type = "text")
     private String conf;
 
@@ -65,8 +74,15 @@ public class Module {
      * Does the module is active ?
      */
     @NotNull
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private boolean active;
+
+    /**
+     * Does the module is to display by default if no module specified ?
+     */
+    @NotNull
+    @Column(nullable = false)
+    private boolean defaultDynamicModule;
 
     public Long getId() {
         return id;
@@ -122,6 +138,14 @@ public class Module {
 
     public void setActive(final boolean pActive) {
         active = pActive;
+    }
+
+    public boolean isDefaultDynamicModule() {
+        return defaultDynamicModule;
+    }
+
+    public void setDefaultDynamicModule(final boolean pDefaultDynamicModule) {
+        defaultDynamicModule = pDefaultDynamicModule;
     }
 
 }

@@ -20,9 +20,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.modules.access.domain.project.ConfigParameter;
-import fr.cnes.regards.modules.access.domain.project.NavigationContext;
-import fr.cnes.regards.modules.access.domain.project.Project;
+import fr.cnes.regards.modules.access.domain.ConfigParameter;
+import fr.cnes.regards.modules.access.domain.NavigationContext;
+import fr.cnes.regards.modules.access.domain.Project;
 import fr.cnes.regards.modules.access.service.INavigationContextService;
 
 /**

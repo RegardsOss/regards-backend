@@ -87,7 +87,8 @@ public class LayoutController implements IResourceController<Layout> {
         final Resource<Layout> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveLayout", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getApplicationId()));
-        resourceService.addLink(resource, this.getClass(), "updateLayout", LinkRels.UPDATE);
+        resourceService.addLink(resource, this.getClass(), "updateLayout", LinkRels.UPDATE,
+                                MethodParamFactory.build(String.class, pElement.getApplicationId()));
         return resource;
     }
 

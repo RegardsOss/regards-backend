@@ -40,7 +40,7 @@ public interface ILayoutService {
      * @return Layout
      * @since 1.0-SNAPSHOT
      */
-    Layout saveLayout(Layout pLayout) throws EntityAlreadyExistsException;
+    Layout saveLayout(Layout pLayout) throws EntityAlreadyExistsException, EntityInvalidException;
 
     /**
      *

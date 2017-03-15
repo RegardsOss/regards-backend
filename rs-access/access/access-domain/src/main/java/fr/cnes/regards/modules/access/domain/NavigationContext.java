@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.access.domain.project;
+package fr.cnes.regards.modules.access.domain;
 
 import java.util.ArrayList;
 import java.util.List;

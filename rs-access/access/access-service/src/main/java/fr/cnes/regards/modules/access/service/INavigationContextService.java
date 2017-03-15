@@ -8,7 +8,7 @@ import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.access.domain.project.NavigationContext;
+import fr.cnes.regards.modules.access.domain.NavigationContext;
 
 /**
  * 

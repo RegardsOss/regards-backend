@@ -5,4 +5,4 @@
  * @author Christophe Mertz
  *
  */
-package fr.cnes.regards.modules.access.domain.project;
+package fr.cnes.regards.modules.access.domain;

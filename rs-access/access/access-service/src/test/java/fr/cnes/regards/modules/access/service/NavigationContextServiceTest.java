@@ -12,9 +12,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.access.dao.project.INavigationContextRepository;
-import fr.cnes.regards.modules.access.domain.project.ConfigParameter;
-import fr.cnes.regards.modules.access.domain.project.NavigationContext;
+import fr.cnes.regards.modules.access.dao.INavigationContextRepository;
+import fr.cnes.regards.modules.access.domain.ConfigParameter;
+import fr.cnes.regards.modules.access.domain.NavigationContext;
 
 /**
  * 

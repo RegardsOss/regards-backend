@@ -5,14 +5,9 @@ package fr.cnes.regards.modules.configuration.dao;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.transaction.BeforeTransaction;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 
 /**
@@ -24,24 +19,10 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { AccessDaoTestConfiguration.class })
-@MultitenantTransactional
-public class LayoutRepositoryTest {
+public class LayoutRepositoryTest extends AbstractDaoTransactionalTest {
 
     @Autowired
     private ILayoutRepository repository;
-
-    /**
-     * Runtime tenant resolver
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @BeforeTransaction
-    public void beforeTransaction() {
-        runtimeTenantResolver.forceTenant("test1");
-    }
 
     @Test
     public void saveLayoutTest() {

@@ -36,8 +36,8 @@
 		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.access</groupId>
-			<artifactId>access-rest</artifactId>
+			<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+			<artifactId>uiconfiguration-rest</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.microservices.administration</groupId>
@@ -45,7 +45,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<artifactId>jpa-instance-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 
