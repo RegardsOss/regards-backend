@@ -124,15 +124,20 @@ public class ModuleController implements IResourceController<Module> {
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{moduleId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Module>> updateModule(@PathVariable("applicationId") final String pApplicationId,
-            @Valid @RequestBody final Module pModule) throws EntityException {
+            @PathVariable("moduleId") final Long pModuleId, @Valid @RequestBody final Module pModule)
+            throws EntityException {
 
         if (!pModule.getApplicationId().equals(pApplicationId)) {
-            throw new EntityInvalidException("Invalide application identifier for new module");
+            throw new EntityInvalidException("Invalide application identifier for module update");
+        }
+
+        if (!pModule.getId().equals(pModuleId)) {
+            throw new EntityInvalidException("Invalide module identifier for module update");
         }
         final Module module = service.updateModule(pModule);
         final Resource<Module> resource = toResource(module);
@@ -146,11 +151,11 @@ public class ModuleController implements IResourceController<Module> {
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{moduleId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Module>> deleteModule(@PathVariable("applicationId") final String pApplicationId,
+    public HttpEntity<Resource<Void>> deleteModule(@PathVariable("applicationId") final String pApplicationId,
             @PathVariable("moduleId") final Long pModuleId) throws EntityNotFoundException {
         service.deleteModule(pModuleId);
         return new ResponseEntity<>(HttpStatus.OK);

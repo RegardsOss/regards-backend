@@ -11,6 +11,15 @@ import org.springframework.data.repository.CrudRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Module;
 
+/**
+ *
+ * Class IModuleRepository
+ *
+ * JPA Repository for Module entities
+ *
+ * @author Sébastien Binda
+ * @since 1.0-SNAPSHOT
+ */
 public interface IModuleRepository extends CrudRepository<Module, Long> {
 
     /**
