@@ -37,9 +37,9 @@ public class FeignSecurityManager {
     private static final ThreadLocal<Boolean> systemFlagHolder = new ThreadLocal<>();
 
     /**
-     * Instance of JWT for internal call
+     * Thread safe JWT holder synchronized with flag holder
      */
-    private String sysJwt;
+    private static final ThreadLocal<String> jwtSystemHolder = new ThreadLocal<>();
 
     /**
      * Application name
@@ -91,17 +91,21 @@ public class FeignSecurityManager {
      * token.<br/>
      * Generate a system JWT once and return it to use for system calls.
      *
-     * @return a system token.
+     * @return a new system token for each call of each thread with its own tenant
      */
     private String getSystemToken() {
-        if (sysJwt == null) {
+        if (jwtSystemHolder.get() == null) {
             String tenant = runtimeTenantResolver.getTenant();
+            if (tenant == null) {
+                // Allows request without tenant for instance entity
+                tenant = "_UNKNOWN_";
+            }
             String role = RoleAuthority.getSysRole(appName);
             LOGGER.info("Generating internal system JWT for application {}, tenant {} and with role {} ", appName,
                         tenant, role);
-            sysJwt = jwtService.generateToken(tenant, appName, role);
+            jwtSystemHolder.set(jwtService.generateToken(tenant, appName, role));
         }
-        return sysJwt;
+        return jwtSystemHolder.get();
     }
 
     /**
@@ -117,5 +121,6 @@ public class FeignSecurityManager {
      */
     public static void reset() {
         systemFlagHolder.remove();
+        jwtSystemHolder.remove();
     }
 }
