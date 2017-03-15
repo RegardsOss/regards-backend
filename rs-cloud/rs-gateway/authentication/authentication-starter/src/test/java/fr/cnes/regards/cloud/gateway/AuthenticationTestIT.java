@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
-@EnableAutoConfiguration /* (exclude = DataSourceAutoConfiguration.class) */
+@EnableAutoConfiguration
 public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**

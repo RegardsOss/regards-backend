@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.authentication.role.service.CoupleJwtRole;
 import fr.cnes.regards.framework.authentication.role.service.IBorrowRoleService;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -19,6 +20,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
+ *
+ * Controller handling the role borrowing feature
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
@@ -35,10 +39,11 @@ public class BorrowRoleController {
 
     @ResponseBody
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "endpoint allowing to switch role")
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<String> switchRole(@PathVariable("target_name") String pTargetRoleName)
+    @RequestMapping(method = RequestMethod.GET, path = PATH_BORROW_ROLE_TARGET)
+    public ResponseEntity<CoupleJwtRole> switchRole(@PathVariable("target_name") String pTargetRoleName)
             throws EntityOperationForbiddenException, JwtException {
-        String newToken = borrowRoleService.switchTo(pTargetRoleName);
+        CoupleJwtRole newToken = borrowRoleService.switchTo(pTargetRoleName);
         return new ResponseEntity<>(newToken, HttpStatus.OK);
+
     }
 }
