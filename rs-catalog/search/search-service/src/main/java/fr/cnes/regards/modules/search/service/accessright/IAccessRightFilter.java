@@ -12,4 +12,12 @@ public interface IAccessRightFilter {
     ICriterion addGroupFilter(ICriterion criterion);
 
     ICriterion addAccessRightsFilter(ICriterion criterion);
+
+    /**
+     * Remove any group criterion that could be found in this criterion
+     * 
+     * @param pCriterion
+     * @return
+     */
+    ICriterion removeGroupFilter(ICriterion pCriterion);
 }

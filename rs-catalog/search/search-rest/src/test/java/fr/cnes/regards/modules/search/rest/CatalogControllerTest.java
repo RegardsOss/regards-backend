@@ -19,17 +19,17 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  *
  * @author Xavier-Alexandre Brochard
  */
-public class SearchControllerTest {
+public class CatalogControllerTest {
 
     /**
      * Controller under test
      */
-    private SearchController searchController;
+    private CatalogController catalogController;
 
     @Before
     public void setUp() {
         // Instanciate the tested class
-        searchController = new SearchController();
+        catalogController = new CatalogController();
     }
 
     /**
@@ -51,7 +51,7 @@ public class SearchControllerTest {
         final String pQ = "music -video (singer OR songwriter) site:amazon.com ";
         final Pageable pageable = new PageRequest(0, 10);
         final PagedResourcesAssembler<Dataset> assembler = new PagedResourcesAssembler<>(null, null);
-        // final ResponseEntity<PagedResources<Resource<Dataset>>> result = searchController.search(pQ, pageable,
+        // final ResponseEntity<PagedResources<Resource<Dataset>>> result = catalogController.search(pQ, pageable,
         // assembler);
 
         Assert.assertTrue(true);

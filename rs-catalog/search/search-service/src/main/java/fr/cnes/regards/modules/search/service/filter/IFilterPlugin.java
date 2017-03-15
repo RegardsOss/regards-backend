@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.search.service.filter;
 
-import java.util.List;
-
 import org.springframework.http.HttpRequest;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -26,11 +24,11 @@ public interface IFilterPlugin {
      *
      * @param pRequest
      *            HttpRequest from which additionnal criterion might be added
-     * @param pEnhencedCriterion
+     * @param pCriterion
      *            list of base criterion from the request plus the ones added by other filters
      * @return enhancedCriterion plus the one(s) added by the filter implementation
      */
-    public List<ICriterion> addFilter(HttpRequest pRequest, List<ICriterion> pEnhencedCriterion);
+    public ICriterion addFilter(HttpRequest pRequest, ICriterion pCriterion);
 
     /**
      * Allow the caller to know if the given Dataset can be treated by this implementation
