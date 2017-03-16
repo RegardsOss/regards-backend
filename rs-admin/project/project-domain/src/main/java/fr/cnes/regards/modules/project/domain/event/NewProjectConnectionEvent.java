@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@Event(target = Target.MICROSERVICE)
+@Event(target = Target.ALL)
 public class NewProjectConnectionEvent implements ISubscribable {
 
     /**
