@@ -15,7 +15,6 @@
 	</parent>
 
 	<dependencies>
-		<!-- Regards client core -->
 		<!-- Module domain -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>

@@ -25,7 +25,12 @@
 			<artifactId>module-plugins-service</artifactId>
 		</dependency>
 		<dependency>
-			<!-- FIXME: is it the right import or should be entities-service? domain is taken for now as we just need the domain -->
+			<groupId>fr.cnes.regards.modules.entities</groupId>
+			<artifactId>entities-client</artifactId>
+		</dependency>
+		<dependency>
+			<!-- FIXME: is it the right import or should be entities-service? domain 
+				is taken for now as we just need the domain -->
 			<groupId>fr.cnes.regards.modules.entities</groupId>
 			<artifactId>entities-domain</artifactId>
 		</dependency>
@@ -38,7 +43,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.crawler</groupId>
 			<artifactId>crawler-dao</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.models</groupId>

@@ -38,13 +38,14 @@ import fr.cnes.regards.modules.crawler.domain.SearchKey;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.facet.FacetType;
-import fr.cnes.regards.modules.crawler.service.IIndexerService;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
+import fr.cnes.regards.modules.search.domain.IFilter;
+import fr.cnes.regards.modules.search.service.ISearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.converter.IConverter;
 import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
@@ -61,7 +62,7 @@ import fr.cnes.regards.modules.search.service.representation.IRepresentation;
  * <li>Receives an OpenSearch format request, for example
  * <code>q=(tags=urn://laCollection)&type=collection&modele=ModelDeCollection</code>.
  * <li>Applies project filters by interpreting the OpenSearch query string and transforming them in ElasticSearch
- * criterion request. This is done with a plugin of type {@link IFilterPlugin}.
+ * criterion request. This is done with a plugin of type {@link IFilter}.
  * <li>Adds user group and data access filters. This is done with {@link IAccessRightFilter} service.
  * <li>Performs the ElasticSearch request on the project index. This is done with {@link IIndexService}.
  * <li>Applies {@link IRepresentation} type plugins to the response.
@@ -97,7 +98,7 @@ public class CatalogController {
      * Service perfoming the ElasticSearch search
      */
     @Autowired
-    private final IIndexerService indexerService;
+    private final ISearchService searchService;
 
     /**
      * Converts entities after search
@@ -130,19 +131,19 @@ public class CatalogController {
      * @param pQueryParser
      * @param pFilterPlugin
      * @param pAccessRightFilter
-     * @param pIndexerService
+     * @param pSearchService
      * @param pConverter
      * @param pRuntimeTenantResolver
      * @param pResourceService
      */
     public CatalogController(RegardsQueryParser pQueryParser, IFilterPlugin pFilterPlugin,
-            IAccessRightFilter pAccessRightFilter, IIndexerService pIndexerService, IConverter pConverter,
+            IAccessRightFilter pAccessRightFilter, ISearchService pSearchService, IConverter pConverter,
             IRuntimeTenantResolver pRuntimeTenantResolver, IResourceService pResourceService) {
         super();
         queryParser = pQueryParser;
         filterPlugin = pFilterPlugin;
         accessRightFilter = pAccessRightFilter;
-        indexerService = pIndexerService;
+        searchService = pSearchService;
         converter = pConverter;
         runtimeTenantResolver = pRuntimeTenantResolver;
         resourceService = pResourceService;
@@ -189,7 +190,7 @@ public class CatalogController {
     @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
-        Collection collection = indexerService.get(pUrn);
+        Collection collection = searchService.get(pUrn);
         Resource<Collection> resource = toResource(collection);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -231,7 +232,7 @@ public class CatalogController {
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
-        Dataset dataset = indexerService.get(pUrn);
+        Dataset dataset = searchService.get(pUrn);
         Resource<Dataset> resource = toResource(dataset);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -273,7 +274,7 @@ public class CatalogController {
     @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.")
     public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
-        DataObject dataobject = indexerService.get(pUrn);
+        DataObject dataobject = searchService.get(pUrn);
         Resource<DataObject> resource = toResource(dataobject);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -317,7 +318,7 @@ public class CatalogController {
     @ResourceAccess(description = "Return the document of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
-        Document document = indexerService.get(pUrn);
+        Document document = searchService.get(pUrn);
         Resource<Document> resource = toResource(document);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -410,11 +411,11 @@ public class CatalogController {
             SearchKey<T> searchKey = new SearchKey<>(runtimeTenantResolver.getTenant(), pSearchType.toString(),
                     resultClass);
             if (!TO_RESULT_CLASS.get(pSearchType).equals(resultClass)) {
-                entities = indexerService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
+                entities = searchService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
             } else {
                 LinkedHashMap<String, Boolean> ascSortMap = null;
                 Map<String, FacetType> facetsMap = null; // Use pFacets
-                entities = indexerService.search(searchKey, pPageable, criterion, facetsMap, ascSortMap);
+                entities = searchService.search(searchKey, pPageable, criterion, facetsMap, ascSortMap);
             }
 
             // Format output response

@@ -22,10 +22,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.crawler.domain.SearchKey;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.service.IIndexerService;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.search.rest.CatalogController.SearchType;
+import fr.cnes.regards.modules.search.service.ISearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.converter.IConverter;
 import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
@@ -61,7 +61,7 @@ public class CatalogControllerTest {
     /**
      * Service perfoming the ElasticSearch search
      */
-    private IIndexerService indexerService;
+    private ISearchService searchService;
 
     /**
      * Converts entities after search
@@ -84,7 +84,7 @@ public class CatalogControllerTest {
         queryParser = Mockito.mock(RegardsQueryParser.class);
         filterPlugin = Mockito.mock(IFilterPlugin.class);
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
-        indexerService = Mockito.mock(IIndexerService.class);
+        searchService = Mockito.mock(ISearchService.class);
         converter = Mockito.mock(IConverter.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
@@ -103,7 +103,7 @@ public class CatalogControllerTest {
                 .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogController = new CatalogController(queryParser, filterPlugin, accessRightFilter, indexerService,
+        catalogController = new CatalogController(queryParser, filterPlugin, accessRightFilter, searchService,
                 converter, runtimeTenantResolver, resourceService);
     }
 
@@ -133,8 +133,8 @@ public class CatalogControllerTest {
 
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(indexerService.search(Mockito.any(SearchKey.class), Mockito.any(Pageable.class),
-                                           Mockito.any(ICriterion.class), Mockito.any(), Mockito.any()))
+        Mockito.when(searchService.search(Mockito.any(SearchKey.class), Mockito.any(Pageable.class),
+                                          Mockito.any(ICriterion.class), Mockito.any(), Mockito.any()))
                 .thenReturn(expectedSearchResult);
         PagedResources<Resource<DataObject>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
@@ -143,8 +143,8 @@ public class CatalogControllerTest {
         catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
 
         // Check
-        Mockito.verify(indexerService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),
-                                              Mockito.refEq(expectedCriterion), Mockito.any(), Mockito.any());
+        Mockito.verify(searchService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),
+                                             Mockito.refEq(expectedCriterion), Mockito.any(), Mockito.any());
     }
 
     /**
@@ -175,8 +175,8 @@ public class CatalogControllerTest {
 
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(indexerService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
-                                                                  Mockito.any(ICriterion.class)))
+        Mockito.when(searchService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
+                                                                 Mockito.any(ICriterion.class)))
                 .thenReturn(expectedSearchResult);
 
         PagedResources<Resource<Dataset>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATASET;
@@ -186,8 +186,8 @@ public class CatalogControllerTest {
         catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
 
         // Check
-        Mockito.verify(indexerService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
-                                                                     Mockito.any(ICriterion.class));
+        Mockito.verify(searchService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
+                                                                    Mockito.any(ICriterion.class));
     }
 
     /**
@@ -218,8 +218,8 @@ public class CatalogControllerTest {
 
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(indexerService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
-                                                                  Mockito.any(ICriterion.class)))
+        Mockito.when(searchService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
+                                                                 Mockito.any(ICriterion.class)))
                 .thenReturn(expectedSearchResult);
 
         PagedResources<Resource<Dataset>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATASET;
@@ -229,8 +229,8 @@ public class CatalogControllerTest {
         catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
 
         // Check
-        Mockito.verify(indexerService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
-                                                                     Mockito.any(ICriterion.class));
+        Mockito.verify(searchService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
+                                                                    Mockito.any(ICriterion.class));
     }
 
     /**
@@ -261,8 +261,8 @@ public class CatalogControllerTest {
 
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(indexerService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
-                                                                  Mockito.any(ICriterion.class)))
+        Mockito.when(searchService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
+                                                                 Mockito.any(ICriterion.class)))
                 .thenReturn(expectedSearchResult);
 
         PagedResources<Resource<Dataset>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATASET;
@@ -272,8 +272,8 @@ public class CatalogControllerTest {
         catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
 
         // Check
-        Mockito.verify(indexerService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
-                                                                     Mockito.any(ICriterion.class));
+        Mockito.verify(searchService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
+                                                                    Mockito.any(ICriterion.class));
     }
 
 }
