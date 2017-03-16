@@ -37,7 +37,6 @@ import fr.cnes.regards.modules.crawler.domain.IIndexable;
 import fr.cnes.regards.modules.crawler.domain.SearchKey;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.crawler.domain.facet.FacetType;
-import fr.cnes.regards.modules.crawler.service.IIndexerService;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -46,6 +45,7 @@ import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.search.domain.IConverter;
 import fr.cnes.regards.modules.search.domain.IFilter;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
+import fr.cnes.regards.modules.search.service.ISearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
@@ -95,7 +95,7 @@ public class CatalogController {
      * Service perfoming the ElasticSearch search
      */
     @Autowired
-    private IIndexerService indexerService;
+    private ISearchService searchService;
 
     /**
      * Converts entities after search
@@ -258,11 +258,11 @@ public class CatalogController {
             BiPredicate<SearchType, Class<T>> searchTypeAndResultClassAreDifferent = (pST, pRC) -> false;
 
             if (searchTypeAndResultClassAreDifferent.test(pSearchType, resultClass)) {
-                entities = indexerService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
+                entities = searchService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
             } else {
                 LinkedHashMap<String, Boolean> ascSortMap = null;
                 Map<String, FacetType> facetsMap = null; // Use pFacets
-                entities = indexerService.search(searchKey, pPageable, criterion, facetsMap, ascSortMap);
+                entities = searchService.search(searchKey, pPageable, criterion, facetsMap, ascSortMap);
             }
 
             // Format output response
