@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -45,11 +44,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 @PropertySource("classpath:dao.properties")
 public class JpaTenantConnectionConfiguration {
 
-    @Value("${regards.microservice.admin.name}")
-    private String adminMicroserviceName;
-
     /**
-     *
      * Stub administration client
      *
      * @return IProjectsClient

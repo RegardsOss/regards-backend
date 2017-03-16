@@ -56,12 +56,11 @@ public class RemoteTenantResolver implements ITenantResolver {
      */
     private final DiscoveryClient discoveryClient;
 
-    public RemoteTenantResolver(String pAdminMicroserviceName, DiscoveryClient pDiscoveryClient,
-            FeignSecurityManager pFeignSecurityManager) {
+    public RemoteTenantResolver(DiscoveryClient pDiscoveryClient, FeignSecurityManager pFeignSecurityManager) {
         discoveryClient = pDiscoveryClient;
         this.feignSecurityManager = pFeignSecurityManager;
 
-        final List<ServiceInstance> instances = discoveryClient.getInstances(pAdminMicroserviceName);
+        final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
         if (instances.isEmpty()) {
             String errorMessage = "No administration instance found. Microservice cannot start.";
             LOGGER.error(errorMessage);

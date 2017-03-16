@@ -41,9 +41,6 @@ public class MicroserviceAutoConfiguration {
     @Value("${spring.application.name}")
     private String microserviceName;
 
-    @Value("${regards.microservice.admin.name}")
-    private String adminMicroserviceName;
-
     /**
      * JWT Security service
      */
@@ -100,6 +97,6 @@ public class MicroserviceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantResolver tenantResolver(DiscoveryClient pDiscoveryClient, FeignSecurityManager pFeignSecurityManager) {
-        return new RemoteTenantResolver(adminMicroserviceName, pDiscoveryClient, pFeignSecurityManager);
+        return new RemoteTenantResolver(pDiscoveryClient, pFeignSecurityManager);
     }
 }
