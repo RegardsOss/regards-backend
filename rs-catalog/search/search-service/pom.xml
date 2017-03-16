@@ -25,7 +25,12 @@
 			<artifactId>module-plugins-service</artifactId>
 		</dependency>
 		<dependency>
-			<!-- FIXME: is it the right import or should be entities-service? domain is taken for now as we just need the domain -->
+			<groupId>fr.cnes.regards.modules.entities</groupId>
+			<artifactId>entities-client</artifactId>
+		</dependency>
+		<dependency>
+			<!-- FIXME: is it the right import or should be entities-service? domain 
+				is taken for now as we just need the domain -->
 			<groupId>fr.cnes.regards.modules.entities</groupId>
 			<artifactId>entities-domain</artifactId>
 		</dependency>
@@ -34,6 +39,19 @@
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.crawler</groupId>
+			<artifactId>crawler-dao</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.models</groupId>
+			<artifactId>models-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
+			<version>0.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>
