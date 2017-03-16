@@ -3,94 +3,277 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.junit.Assert;
+import java.util.List;
+
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.PageRequest;
+import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.crawler.domain.SearchKey;
+import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.crawler.service.IIndexerService;
+import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.search.rest.CatalogController.SearchType;
+import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import fr.cnes.regards.modules.search.service.converter.IConverter;
+import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
+import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
 /**
- * TODO
+ * Unit test for {@link CatalogController}.
  *
  * @author Xavier-Alexandre Brochard
  */
 public class CatalogControllerTest {
 
     /**
-     * Controller under test
+     * Class under test
      */
     private CatalogController catalogController;
 
+    /**
+     * The custom OpenSearch query parser building {@link ICriterion} from tu string query
+     */
+    private RegardsQueryParser queryParser;
+
+    /**
+     * Applies project filters, i.e. the OpenSearch query
+     */
+    private IFilterPlugin filterPlugin;
+
+    /**
+     * Adds user group and data access filters
+     */
+    private IAccessRightFilter accessRightFilter;
+
+    /**
+     * Service perfoming the ElasticSearch search
+     */
+    private IIndexerService indexerService;
+
+    /**
+     * Converts entities after search
+     */
+    private IConverter converter;
+
+    /**
+     * Get current tenant at runtime and allows tenant forcing
+     */
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
+     * The resource service
+     */
+    private IResourceService resourceService;
+
     @Before
     public void setUp() {
+        // Declare mocks
+        queryParser = Mockito.mock(RegardsQueryParser.class);
+        filterPlugin = Mockito.mock(IFilterPlugin.class);
+        accessRightFilter = Mockito.mock(IAccessRightFilter.class);
+        indexerService = Mockito.mock(IIndexerService.class);
+        converter = Mockito.mock(IConverter.class);
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        resourceService = Mockito.mock(IResourceService.class);
+
+        // Globally mock what's mockable yet
+        Mockito.when(filterPlugin.addFilter(Mockito.any(), Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArguments()[1]);
+        Mockito.when(accessRightFilter.removeGroupFilter(Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArguments()[0]);
+        Mockito.when(accessRightFilter.addGroupFilter(Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArguments()[0]);
+        Mockito.when(accessRightFilter.addAccessRightsFilter(Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArguments()[0]);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(CatalogControllerTestUtils.TENANT);
+        Mockito.when(resourceService.toResource(Mockito.any()))
+                .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
+
         // Instanciate the tested class
-        catalogController = new CatalogController();
+        catalogController = new CatalogController(queryParser, filterPlugin, accessRightFilter, indexerService,
+                converter, runtimeTenantResolver, resourceService);
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findAll()}.
+     * Test the main search method
      *
-     * @throws ParseException
+     * @throws SearchException
+     * @throws QueryNodeException
      */
+    @SuppressWarnings("unchecked")
     @Test
-    @Purpose("TODO.")
-    // @Requirement("REGARDS_DSL_ADM_ADM_440")
-    public final void testSearch() throws ParseException {
-        // Mock service
-        // final List<Template> templates = Arrays.asList(template);
-        // Mockito.when(templateService.findAll()).thenReturn(templates);
+    public void doSearch_shouldCallServiceWithRightParams() throws SearchException, QueryNodeException {
+        // Prepare test
+        String q = CatalogControllerTestUtils.Q;
+        SearchType searchType = SearchType.DATAOBJECT;
+        List<String> facets = CatalogControllerTestUtils.FACETS;
+        Sort sort = CatalogControllerTestUtils.SORT;
+        PagedResourcesAssembler<DataObject> assembler = CatalogControllerTestUtils.ASSEMBLER_DATAOBJECT;
+        Pageable pageable = CatalogControllerTestUtils.PAGEABLE;
 
-        // Define actual
-        // final String pQ = "user:kimchy";
-        // final String pQ = "title:(+return +\"pink panther\")";
-        final String pQ = "music -video (singer OR songwriter) site:amazon.com ";
-        final Pageable pageable = new PageRequest(0, 10);
-        final PagedResourcesAssembler<Dataset> assembler = new PagedResourcesAssembler<>(null, null);
-        // final ResponseEntity<PagedResources<Resource<Dataset>>> result = catalogController.search(pQ, pageable,
-        // assembler);
+        // Define expected values
+        Class<DataObject> expectedResultClass = DataObject.class;
+        SearchKey<DataObject> expectedSearchKey = new SearchKey<>(CatalogControllerTestUtils.TENANT,
+                searchType.toString(), expectedResultClass);
+        ICriterion expectedCriterion = CatalogControllerTestUtils.SIMPLE_STRING_MATCH_CRITERION;
+        Page<DataObject> expectedSearchResult = CatalogControllerTestUtils.PAGE_DATAOBJECT;
 
-        Assert.assertTrue(true);
+        // Mock dependencies
+        Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
+        Mockito.when(indexerService.search(Mockito.any(SearchKey.class), Mockito.any(Pageable.class),
+                                           Mockito.any(ICriterion.class), Mockito.any(), Mockito.any()))
+                .thenReturn(expectedSearchResult);
+        PagedResources<Resource<DataObject>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATAOBJECT;
+        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
-        // // Check
-        // Assert.assertEquals(template.getCode(), actual.getBody().get(0).getContent().getCode());
-        // Assert.assertEquals(template.getContent(), actual.getBody().get(0).getContent().getContent());
-        // Assert.assertEquals(template.getDataStructure(), actual.getBody().get(0).getContent().getDataStructure());
-        // Assert.assertEquals(template.getDescription(), actual.getBody().get(0).getContent().getDescription());
-        // Mockito.verify(templateService).findAll();
+        // Perform the test
+        catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
+
+        // Check
+        Mockito.verify(indexerService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),
+                                              Mockito.refEq(expectedCriterion), Mockito.any(), Mockito.any());
     }
 
-    // /**
-    // * Test method for
-    // * {@link
-    // fr.cnes.regards.modules.templates.rest.TemplateController#toResource(fr.cnes.regards.modules.templates.domain.Template,
-    // java.lang.Object[])}.
-    // */
-    // @Test
-    // public final void testToResource() {
-    // // Define expected
-    // template.setId(TemplateTestConstants.ID);
-    // final List<Link> links = new ArrayList<>();
-    // links.add(new Link("/templates/" + TemplateTestConstants.ID, "self"));
-    // links.add(new Link("/templates/" + TemplateTestConstants.ID, "delete"));
-    // links.add(new Link("/templates/" + TemplateTestConstants.ID, "update"));
-    // links.add(new Link("/templates", "create"));
-    // final Resource<Template> expected = new Resource<>(template, links);
-    //
-    // // Define actual
-    // final Resource<Template> actual = templateController.toResource(template);
-    //
-    // // Check
-    // Assert.assertEquals(expected.getContent().getId(), actual.getContent().getId());
-    // Assert.assertEquals(expected.getContent().getCode(), actual.getContent().getCode());
-    // Assert.assertEquals(expected.getContent().getContent(), actual.getContent().getContent());
-    // Assert.assertEquals(expected.getContent().getDataStructure(), actual.getContent().getDataStructure());
-    // Assert.assertEquals(expected.getContent().getDescription(), actual.getContent().getDescription());
-    // Assert.assertEquals(expected.getLinks(), actual.getLinks());
-    // }
+    /**
+     * Check that a search on datasets perfoms a joined search and returns dataobjects when there is a criterion of name
+     * "target" in the query.
+     *
+     * @throws SearchException
+     * @throws QueryNodeException
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    @Purpose("Check that a search on datasets perfoms a joined search and returns dataobjects when there is a criterion of name 'target' in the query.")
+    public void doSearchWithTargetCriterion_shouldChangeTheRequestClass() throws SearchException, QueryNodeException {
+        // Prepare test
+        String q = CatalogControllerTestUtils.Q;
+        SearchType searchType = SearchType.DATAOBJECT;
+        List<String> facets = CatalogControllerTestUtils.FACETS;
+        Sort sort = CatalogControllerTestUtils.SORT;
+        PagedResourcesAssembler<Dataset> assembler = CatalogControllerTestUtils.ASSEMBLER_DATASET;
+        Pageable pageable = CatalogControllerTestUtils.PAGEABLE;
+
+        // Define expected values
+        Class<Dataset> expectedResultClass = Dataset.class;
+        SearchKey<Dataset> expectedSearchKey = new SearchKey<>(CatalogControllerTestUtils.TENANT, searchType.toString(),
+                expectedResultClass);
+        ICriterion expectedCriterion = CatalogControllerTestUtils.CRITERION_WITH_NESTED_TARGET_FIELD;
+        Page<Dataset> expectedSearchResult = CatalogControllerTestUtils.PAGE_DATASET;
+
+        // Mock dependencies
+        Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
+        Mockito.when(indexerService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
+                                                                  Mockito.any(ICriterion.class)))
+                .thenReturn(expectedSearchResult);
+
+        PagedResources<Resource<Dataset>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATASET;
+        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+
+        // Perform the test
+        catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
+
+        // Check
+        Mockito.verify(indexerService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
+                                                                     Mockito.any(ICriterion.class));
+    }
+
+    /**
+     * Check that a search on datasets perfoms a joined search and returns dataobjects when there is a criterion of name
+     * "dataset" in the query.
+     *
+     * @throws SearchException
+     * @throws QueryNodeException
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    @Purpose("Check that a search on datasets perfoms a joined search and returns dataobjects when there is a criterion of name 'dataset' in the query.")
+    public void doSearchWithDatasetCriterion_shouldChangeTheRequestClass() throws SearchException, QueryNodeException {
+        // Prepare test
+        String q = CatalogControllerTestUtils.Q;
+        SearchType searchType = SearchType.DATAOBJECT;
+        List<String> facets = CatalogControllerTestUtils.FACETS;
+        Sort sort = CatalogControllerTestUtils.SORT;
+        PagedResourcesAssembler<Dataset> assembler = CatalogControllerTestUtils.ASSEMBLER_DATASET;
+        Pageable pageable = CatalogControllerTestUtils.PAGEABLE;
+
+        // Define expected values
+        Class<Dataset> expectedResultClass = Dataset.class;
+        SearchKey<Dataset> expectedSearchKey = new SearchKey<>(CatalogControllerTestUtils.TENANT, searchType.toString(),
+                expectedResultClass);
+        ICriterion expectedCriterion = CatalogControllerTestUtils.CRITERION_WITH_NESTED_DATASET_FIELD;
+        Page<Dataset> expectedSearchResult = CatalogControllerTestUtils.PAGE_DATASET;
+
+        // Mock dependencies
+        Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
+        Mockito.when(indexerService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
+                                                                  Mockito.any(ICriterion.class)))
+                .thenReturn(expectedSearchResult);
+
+        PagedResources<Resource<Dataset>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATASET;
+        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+
+        // Perform the test
+        catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
+
+        // Check
+        Mockito.verify(indexerService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
+                                                                     Mockito.any(ICriterion.class));
+    }
+
+    /**
+     * Check that a search on datasets perfoms a joined search and returns dataobjects when there is a criterion of name
+     * "datasets" in the query.
+     *
+     * @throws SearchException
+     * @throws QueryNodeException
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    @Purpose("Check that a search on datasets perfoms a joined search and returns dataobjects when there is a criterion of name 'datasets' in the query.")
+    public void doSearchWithDatasetsCriterion_shouldChangeTheRequestClass() throws SearchException, QueryNodeException {
+        // Prepare test
+        String q = CatalogControllerTestUtils.Q;
+        SearchType searchType = SearchType.DATAOBJECT;
+        List<String> facets = CatalogControllerTestUtils.FACETS;
+        Sort sort = CatalogControllerTestUtils.SORT;
+        PagedResourcesAssembler<Dataset> assembler = CatalogControllerTestUtils.ASSEMBLER_DATASET;
+        Pageable pageable = CatalogControllerTestUtils.PAGEABLE;
+
+        // Define expected values
+        Class<Dataset> expectedResultClass = Dataset.class;
+        SearchKey<Dataset> expectedSearchKey = new SearchKey<>(CatalogControllerTestUtils.TENANT, searchType.toString(),
+                expectedResultClass);
+        ICriterion expectedCriterion = CatalogControllerTestUtils.CRITERION_WITH_NESTED_DATASETS_FIELD;
+        Page<Dataset> expectedSearchResult = CatalogControllerTestUtils.PAGE_DATASET;
+
+        // Mock dependencies
+        Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
+        Mockito.when(indexerService.searchAndReturnJoinedEntities(Mockito.any(SearchKey.class), Mockito.anyInt(),
+                                                                  Mockito.any(ICriterion.class)))
+                .thenReturn(expectedSearchResult);
+
+        PagedResources<Resource<Dataset>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATASET;
+        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+
+        // Perform the test
+        catalogController.doSearch(q, searchType, facets, sort, pageable, assembler);
+
+        // Check
+        Mockito.verify(indexerService).searchAndReturnJoinedEntities(Mockito.refEq(expectedSearchKey), Mockito.anyInt(),
+                                                                     Mockito.any(ICriterion.class));
+    }
 
 }

@@ -79,43 +79,43 @@ public class CatalogController {
      * The custom OpenSearch query parser building {@link ICriterion} from tu string query
      */
     @Autowired
-    private RegardsQueryParser queryParser;
+    private final RegardsQueryParser queryParser;
 
     /**
      * Applies project filters, i.e. the OpenSearch query
      */
     @Autowired
-    private IFilterPlugin filterPlugin;
+    private final IFilterPlugin filterPlugin;
 
     /**
      * Adds user group and data access filters
      */
     @Autowired
-    private IAccessRightFilter accessRightFilter;
+    private final IAccessRightFilter accessRightFilter;
 
     /**
      * Service perfoming the ElasticSearch search
      */
     @Autowired
-    private IIndexerService indexerService;
+    private final IIndexerService indexerService;
 
     /**
      * Converts entities after search
      */
     @Autowired
-    private IConverter converter;
+    private final IConverter converter;
 
     /**
      * Get current tenant at runtime and allows tenant forcing
      */
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * The resource service
      */
     @Autowired
-    private IResourceService resourceService;
+    private final IResourceService resourceService;
 
     /**
      * Map associating a {@link SearchType} and the corresponding class
@@ -123,8 +123,30 @@ public class CatalogController {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static final ImmutableMap<String, Class<?>> TO_RESULT_CLASS = new ImmutableMap.Builder()
             .put(SearchType.ALL, AbstractEntity.class).put(SearchType.COLLECTION, Collection.class)
-            .put(SearchType.DATASET, Dataset.class).put(SearchType.DATAOJECT, DataObject.class)
+            .put(SearchType.DATASET, Dataset.class).put(SearchType.DATAOBJECT, DataObject.class)
             .put(SearchType.DOCUMENT, Document.class).build();
+
+    /**
+     * @param pQueryParser
+     * @param pFilterPlugin
+     * @param pAccessRightFilter
+     * @param pIndexerService
+     * @param pConverter
+     * @param pRuntimeTenantResolver
+     * @param pResourceService
+     */
+    public CatalogController(RegardsQueryParser pQueryParser, IFilterPlugin pFilterPlugin,
+            IAccessRightFilter pAccessRightFilter, IIndexerService pIndexerService, IConverter pConverter,
+            IRuntimeTenantResolver pRuntimeTenantResolver, IResourceService pResourceService) {
+        super();
+        queryParser = pQueryParser;
+        filterPlugin = pFilterPlugin;
+        accessRightFilter = pAccessRightFilter;
+        indexerService = pIndexerService;
+        converter = pConverter;
+        runtimeTenantResolver = pRuntimeTenantResolver;
+        resourceService = pResourceService;
+    }
 
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
@@ -155,7 +177,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the collection of passed URN.
+     * Return the collection of passed URN_COLLECTION.
      *
      * @param pUrn
      *            the Uniform Resource Name of the collection
@@ -164,7 +186,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the collection of passed URN.")
+    @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Collection collection = indexerService.get(pUrn);
@@ -197,7 +219,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the dataset of passed URN.
+     * Return the dataset of passed URN_COLLECTION.
      *
      * @param pUrn
      *            the Uniform Resource Name of the dataset
@@ -206,7 +228,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the dataset of passed URN.")
+    @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Dataset dataset = indexerService.get(pUrn);
@@ -239,7 +261,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the dataobject of passed URN.
+     * Return the dataobject of passed URN_COLLECTION.
      *
      * @param pUrn
      *            the Uniform Resource Name of the dataobject
@@ -248,7 +270,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the dataobject of passed URN.")
+    @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.")
     public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         DataObject dataobject = indexerService.get(pUrn);
@@ -279,11 +301,11 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
             @RequestParam("facets") List<String> pFacets, @RequestParam("sort") Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DATAOJECT, pFacets, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.DATAOBJECT, pFacets, pSort, pPageable, pAssembler);
     }
 
     /**
-     * Return the document of passed URN.
+     * Return the document of passed URN_COLLECTION.
      *
      * @param pUrn
      *            the Uniform Resource Name of the document
@@ -292,7 +314,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the document of passed URN.")
+    @ResourceAccess(description = "Return the document of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Document document = indexerService.get(pUrn);
@@ -344,7 +366,7 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @SuppressWarnings({ "unchecked" })
-    private <T extends IIndexable> ResponseEntity<PagedResources<Resource<T>>> doSearch(String pQ,
+    public <T extends IIndexable> ResponseEntity<PagedResources<Resource<T>>> doSearch(String pQ,
             SearchType pSearchType, List<String> pFacets, Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<T> pAssembler) throws SearchException {
         try {
@@ -355,24 +377,27 @@ public class CatalogController {
             ICriterion criterion;
             criterion = queryParser.parse(pQ);
 
-            // Handle "target" criterion
-            Optional<ICriterion> targetCriterion = criterion.accept(new NamedCriterionFinderVisitor("target"));
-            if (targetCriterion.isPresent()) {
-                StringMatchCriterion crit = (StringMatchCriterion) targetCriterion.get();
-                resultClass = (Class<T>) TO_RESULT_CLASS.get(SearchType.valueOf(crit.getValue()));
-            }
+            // Special case of dataobjects: we might change the return type
+            if (SearchType.DATAOBJECT.equals(pSearchType)) {
+                // Handle "target" criterion
+                Optional<ICriterion> targetCriterion = criterion.accept(new NamedCriterionFinderVisitor("target"));
+                if (targetCriterion.isPresent()) {
+                    StringMatchCriterion crit = (StringMatchCriterion) targetCriterion.get();
+                    resultClass = (Class<T>) TO_RESULT_CLASS.get(SearchType.valueOf(crit.getValue()));
+                }
 
-            // Handle "dataset" criterion
-            Optional<ICriterion> datasetCriterion = criterion.accept(new NamedCriterionFinderVisitor("dataset"));
-            if (datasetCriterion.isPresent()) {
-                criterion = filterPlugin.addFilter(null, criterion);
-                resultClass = (Class<T>) Dataset.class;
-            }
+                // Handle "dataset" criterion
+                Optional<ICriterion> datasetCriterion = criterion.accept(new NamedCriterionFinderVisitor("dataset"));
+                if (datasetCriterion.isPresent()) {
+                    criterion = filterPlugin.addFilter(null, criterion);
+                    resultClass = (Class<T>) Dataset.class;
+                }
 
-            // Handle "dataset" criterion
-            Optional<ICriterion> datasetsCriterion = criterion.accept(new NamedCriterionFinderVisitor("datasets"));
-            if (datasetsCriterion.isPresent()) {
-                resultClass = (Class<T>) Dataset.class;
+                // Handle "dataset" criterion
+                Optional<ICriterion> datasetsCriterion = criterion.accept(new NamedCriterionFinderVisitor("datasets"));
+                if (datasetsCriterion.isPresent()) {
+                    resultClass = (Class<T>) Dataset.class;
+                }
             }
 
             // Apply security filters
@@ -384,7 +409,7 @@ public class CatalogController {
             Page<T> entities;
             SearchKey<T> searchKey = new SearchKey<>(runtimeTenantResolver.getTenant(), pSearchType.toString(),
                     resultClass);
-            if (TO_RESULT_CLASS.get(pSearchType).equals(resultClass)) {
+            if (!TO_RESULT_CLASS.get(pSearchType).equals(resultClass)) {
                 entities = indexerService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
             } else {
                 LinkedHashMap<String, Boolean> ascSortMap = null;
@@ -430,7 +455,7 @@ public class CatalogController {
      * @author Xavier-Alexandre Brochard
      */
     public enum SearchType {
-        ALL("all"), COLLECTION("collection"), DATASET("dataset"), DATAOJECT("dataobject"), DOCUMENT("document");
+        ALL("all"), COLLECTION("collection"), DATASET("dataset"), DATAOBJECT("dataobject"), DOCUMENT("document");
 
         private final String name;
 
