@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.converter.IConverter;
 import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
@@ -153,12 +154,22 @@ public class CatalogController {
         return doSearch(pQ, SearchType.ALL, pFacets, pSort, pPageable, pAssembler);
     }
 
-    @RequestMapping(path = "/collection/{urn}", method = RequestMethod.GET)
+    /**
+     * Return the collection of passed URN.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the collection
+     * @return the collection
+     * @throws SearchException
+     */
+    @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Return the collection of passed URN.")
-    public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        Collection collection = indexerService.get(pUrn);
+        Resource<Collection> resource = toResource(collection);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
@@ -185,12 +196,22 @@ public class CatalogController {
         return doSearch(pQ, SearchType.COLLECTION, null, pSort, pPageable, pAssembler);
     }
 
-    @RequestMapping(path = "/dataset/{urn}", method = RequestMethod.GET)
+    /**
+     * Return the dataset of passed URN.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the dataset
+     * @return the dataset
+     * @throws SearchException
+     */
+    @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Return the dataset of passed URN.")
-    public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        Dataset dataset = indexerService.get(pUrn);
+        Resource<Dataset> resource = toResource(dataset);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
@@ -217,12 +238,22 @@ public class CatalogController {
         return doSearch(pQ, SearchType.DATASET, null, pSort, pPageable, pAssembler);
     }
 
-    @RequestMapping(path = "/dataobject/{urn}", method = RequestMethod.GET)
+    /**
+     * Return the dataobject of passed URN.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the dataobject
+     * @return the dataobject
+     * @throws SearchException
+     */
+    @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Return the dataobject of passed URN.")
-    public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        DataObject dataobject = indexerService.get(pUrn);
+        Resource<DataObject> resource = toResource(dataobject);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
@@ -251,12 +282,22 @@ public class CatalogController {
         return doSearch(pQ, SearchType.DATAOJECT, pFacets, pSort, pPageable, pAssembler);
     }
 
-    @RequestMapping(path = "/document/{urn}", method = RequestMethod.GET)
+    /**
+     * Return the document of passed URN.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the document
+     * @return the document
+     * @throws SearchException
+     */
+    @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Return the document of passed URN.")
-    public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        Document document = indexerService.get(pUrn);
+        Resource<Document> resource = toResource(document);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
