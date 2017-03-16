@@ -41,8 +41,7 @@ import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWork
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
 public class RegistrationController {
 
@@ -107,8 +106,8 @@ public class RegistrationController {
     /**
      * Grants access to the project user
      *
-     * @param pAccessId
-     *            the project user id
+     * @param pAccountEmail
+     *            account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      * @throws EntityException
      *             <br>
@@ -191,6 +190,8 @@ public class RegistrationController {
      * @param pAccessId
      *            the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     *             if error occurs!
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
