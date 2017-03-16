@@ -43,11 +43,11 @@ import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.search.domain.IConverter;
+import fr.cnes.regards.modules.search.domain.IFilter;
+import fr.cnes.regards.modules.search.domain.IRepresentation;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
-import fr.cnes.regards.modules.search.service.converter.IConverter;
-import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
-import fr.cnes.regards.modules.search.service.representation.IRepresentation;
 
 /**
  * REST controller managing the research of REGARDS entities ({@link Collection}s, {@link Dataset}s, {@link DataObject}s
@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.search.service.representation.IRepresentation;
  * <li>Receives an OpenSearch format request, for example
  * <code>q=(tags=urn://laCollection)&type=collection&modele=ModelDeCollection</code>.
  * <li>Applies project filters by interpreting the OpenSearch query string and transforming them in ElasticSearch
- * criterion request. This is done with a plugin of type {@link IFilterPlugin}.
+ * criterion request. This is done with a plugin of type {@link IFilter}.
  * <li>Adds user group and data access filters. This is done with {@link IAccessRightFilter} service.
  * <li>Performs the ElasticSearch request on the project index. This is done with {@link IIndexService}.
  * <li>Applies {@link IRepresentation} type plugins to the response.
@@ -83,7 +83,7 @@ public class CatalogController {
      * Applies project filters, i.e. the OpenSearch query
      */
     @Autowired
-    private IFilterPlugin filterPlugin;
+    private IFilter filterPlugin;
 
     /**
      * Adds user group and data access filters
