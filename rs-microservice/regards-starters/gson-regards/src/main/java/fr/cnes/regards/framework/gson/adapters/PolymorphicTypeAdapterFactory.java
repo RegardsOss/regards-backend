@@ -364,13 +364,13 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     // CHECKSTYLE:OFF
     @Override
     public <T> TypeAdapter<T> create(Gson pGson, TypeToken<T> pType) { // NOSONAR
-        // If factory not already created, refresh not needed
-        refreshMapping = false;
-
         final Class<? super T> requestedType = pType.getRawType();
         if (!baseType.isAssignableFrom(requestedType)) {
             return null;
         }
+
+        // If factory not already created, refresh not needed
+        refreshMapping = false;
 
         final Map<String, TypeAdapter<?>> discriminatorToDelegate = new LinkedHashMap<>();
         final Map<Class<?>, TypeAdapter<?>> subtypeToDelegate = new LinkedHashMap<>();

@@ -20,4 +20,9 @@ public class ModuleException extends Exception {
     public ModuleException(Throwable pCause) {
         super(pCause);
     }
+
+    public ModuleException(String pMessage, Throwable pCause) {
+        super(pMessage, pCause);
+    }
+
 }
