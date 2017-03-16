@@ -43,10 +43,14 @@
 
 	<profiles>
 		<profile>
-			<id>development</id>
+			<id>default</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<properties>
+				<!-- Default properties -->
+				<filter.name>development</filter.name>
+			</properties>
 			<build>
 				<resources>
 					<resource>
@@ -55,7 +59,7 @@
 					</resource>
 				</resources>
 				<filters>
-					<filter>src/main/filters/development.properties</filter>
+					<filter>src/main/filters/${filter.name}.properties</filter>
 				</filters>
 			</build>
 		</profile>

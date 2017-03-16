@@ -13,10 +13,8 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
@@ -43,17 +41,14 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    @Value("${regards.accounts.root.user.login}")
+    private String rootLogin;
+
     /**
      * rs-admin microservice client for accounts
      */
     @Autowired
     private IAccountsClient accountsClient;
-
-    /**
-     * Security JWT service
-     */
-    @Autowired
-    private JWTService jwtService;
 
     @Override
     public AuthenticationPluginResponse authenticate(final String pEmail, final String pPassword, final String pScope) {
@@ -61,31 +56,28 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
         String errorMessage = null;
 
-        try {
-            jwtService.injectToken(pScope, RoleAuthority.getSysRole(microserviceName), microserviceName);
-            final ResponseEntity<AccountStatus> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
-            if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
-                if (validateResponse.getBody().equals(AccountStatus.ACTIVE)) {
-                    status = AuthenticationStatus.ACCESS_GRANTED;
-                } else {
-                    status = AuthenticationStatus.ACCESS_DENIED;
-                    errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Authentication failed.";
-                }
-            } else
-                if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                    status = AuthenticationStatus.ACCOUNT_NOT_FOUND;
-                    errorMessage = String
-                            .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
-                } else {
-                    status = AuthenticationStatus.ACCESS_DENIED;
-                    errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
-                            + validateResponse.getStatusCode().toString();
-                }
-        } catch (final JwtException e) {
-            LOG.error(e.getMessage(), e);
+        // Validate password as system
+        FeignSecurityManager.asSystem();
+        final ResponseEntity<AccountStatus> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+
+        if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
+            if (validateResponse.getBody().equals(AccountStatus.ACTIVE)) {
+                status = AuthenticationStatus.ACCESS_GRANTED;
+            } else {
+                status = AuthenticationStatus.ACCESS_DENIED;
+                errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Authentication failed.";
+            }
+        } else if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            status = AuthenticationStatus.ACCOUNT_NOT_FOUND;
+            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
+                                         pEmail);
+        } else {
+            status = AuthenticationStatus.ACCESS_DENIED;
+            errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
+                    + validateResponse.getStatusCode().toString();
         }
 
-        return new AuthenticationPluginResponse(status, pEmail, errorMessage);
+        return new AuthenticationPluginResponse(status, pEmail, errorMessage, rootLogin.equals(pEmail));
 
     }
 

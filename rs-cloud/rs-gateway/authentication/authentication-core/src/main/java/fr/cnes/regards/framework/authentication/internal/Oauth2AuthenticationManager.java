@@ -296,20 +296,26 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
 
-        // Retrieve account
-        final UserDetails userDetails;
-        try {
-            userDetails = retrieveUserDetails(pUserName, pScope);
-        } catch (final EntityNotFoundException e) {
-            LOG.debug(e.getMessage(), e);
-            throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
+        UserDetails userDetails;
+        List<GrantedAuthority> grantedAuths = new ArrayList<>();
+
+        if (response.isRoot()) {
+            // Manage root login
+            userDetails = new UserDetails();
+            userDetails.setName(pUserName);
+            userDetails.setRole(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE);
+            userDetails.setTenant(pScope);
+        } else {
+            // Retrieve account
+            try {
+                userDetails = retrieveUserDetails(pUserName, pScope);
+            } catch (final EntityNotFoundException e) {
+                LOG.debug(e.getMessage(), e);
+                throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
+            }
         }
-
-        final List<GrantedAuthority> grantedAuths = new ArrayList<>();
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
-
         return new UsernamePasswordAuthenticationToken(userDetails, pUserPassword, grantedAuths);
-
     }
 
     /**

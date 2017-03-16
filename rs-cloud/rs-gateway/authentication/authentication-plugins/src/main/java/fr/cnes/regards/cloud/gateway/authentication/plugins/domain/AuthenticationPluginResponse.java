@@ -40,21 +40,31 @@ public class AuthenticationPluginResponse {
     private final String email;
 
     /**
+     * Identify root user
+     */
+    private final boolean isRoot;
+
+    /**
      * Error message
      */
     private String errorMessage = null;
 
-    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail) {
+    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail, String pErrorMessage,
+            boolean pIsRoot) {
         super();
-        status = pStatus;
-        email = pEmail;
+        this.status = pStatus;
+        this.email = pEmail;
+        this.errorMessage = pErrorMessage;
+        this.isRoot = pIsRoot;
+    }
+
+    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail) {
+        this(pStatus, pEmail, null, false);
     }
 
     public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail,
             final String pErrorMessage) {
-        status = pStatus;
-        email = pEmail;
-        errorMessage = pErrorMessage;
+        this(pStatus, pEmail, pErrorMessage, false);
     }
 
     /**
@@ -103,4 +113,7 @@ public class AuthenticationPluginResponse {
         return email;
     }
 
+    public boolean isRoot() {
+        return isRoot;
+    }
 }
