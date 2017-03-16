@@ -20,8 +20,7 @@ public interface IRuntimeTenantResolver {
     /**
      * Force runtime tenant to a specific value
      *
-     * @param pTenant
-     *            tenatn
+     * @param pTenant tenant
      */
     void forceTenant(String pTenant);
 }

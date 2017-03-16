@@ -44,7 +44,6 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @Override
     public void forceTenant(String pTenant) {
-        LOGGER.info("Forcing tenant to : {}", pTenant);
         tenantHolder.set(pTenant);
     }
 
