@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import fr.cnes.regards.modules.access.domain.project.NavigationContext;
-import fr.cnes.regards.modules.access.domain.project.Project;
-import fr.cnes.regards.modules.access.domain.project.Theme;
-import fr.cnes.regards.modules.access.domain.project.ThemeType;
+import fr.cnes.regards.modules.access.domain.NavigationContext;
+import fr.cnes.regards.modules.access.domain.Project;
+import fr.cnes.regards.modules.access.domain.Theme;
+import fr.cnes.regards.modules.access.domain.ThemeType;
 
 /***
  * Constants and datas for unit testing of NavigationContext's Service.
