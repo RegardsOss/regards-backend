@@ -13,10 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.util.SimpleMethodInvocation;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
@@ -31,24 +34,24 @@ public class DefaultResourceService implements IResourceService {
     /**
      * Logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultResourceService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultResourceService.class);
 
     /**
-     * Method authorization service
+     * Security access decision manager (same as security)
      */
-    private final MethodAuthorizationService authorisationService;
+    private final AccessDecisionManager accessDecisionManager;
 
     /**
      *
      * Constructor
      *
-     * @param pAuthorisationService
-     *            {@link MethodAuthorizationService} Service for method access authorization management
+     * @param pAccessDecisionManager
+     *            {@link AccessDecisionManager} for deciding that an access is granted or denied
      * @since 1.0-SNAPSHOT
      */
-    public DefaultResourceService(final MethodAuthorizationService pAuthorisationService) {
+    public DefaultResourceService(AccessDecisionManager pAccessDecisionManager) {
         super();
-        authorisationService = pAuthorisationService;
+        this.accessDecisionManager = pAccessDecisionManager;
     }
 
     @Override
@@ -85,6 +88,7 @@ public class DefaultResourceService implements IResourceService {
             pResource.add(link);
         } catch (final MethodException e) {
             // Do not insert link
+            LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
         }
     }
 
@@ -114,12 +118,12 @@ public class DefaultResourceService implements IResourceService {
         } catch (final NoSuchMethodException e) {
             final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
                                                         pController.getCanonicalName());
-            LOG.error(message, e);
+            LOGGER.error(message, e);
             throw new MethodException(message);
         } catch (final SecurityException e) {
             final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
                                                         pMethodName, pController.getCanonicalName());
-            LOG.error(message, e);
+            LOGGER.error(message, e);
             throw new MethodException(message);
         }
     }
@@ -134,9 +138,13 @@ public class DefaultResourceService implements IResourceService {
      */
     private void checkAuthorization(final Method pMethod) throws MethodException {
         final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        if (!authorisationService.hasAccess(auth, pMethod)) {
+
+        try {
+            accessDecisionManager.decide(auth, new SimpleMethodInvocation(null, pMethod), null);
+        } catch (AccessDeniedException | InsufficientAuthenticationException e) {
             final String message = MessageFormat.format("Unauthorized method {0}", pMethod.getName());
-            LOG.debug(message);
+            LOGGER.debug(message);
+            LOGGER.trace(message, e);
             throw new MethodException(message);
         }
     }

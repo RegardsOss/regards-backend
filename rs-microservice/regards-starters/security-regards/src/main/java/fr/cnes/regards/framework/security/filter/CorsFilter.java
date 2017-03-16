@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -117,23 +115,17 @@ public class CorsFilter extends OncePerRequestFilter {
         @SuppressWarnings("unchecked")
         final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
-        if (!roles.isEmpty()) {
-            boolean access = false;
-            for (final RoleAuthority role : roles) {
-                final Optional<RoleAuthority> roleAuth = methodAuthService.getRoleAuthority(role.getAuthority(),
-                                                                                            authentication.getTenant());
-                if (roleAuth.isPresent()) {
-                    access = access || roleAuth.get().getCorsAccess();
-                }
-            }
-            if (access) {
-                LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
-                                        authentication.getUser().getName()));
-                allowCorsRequest(pRequest, pResponse, pFilterChain);
-            }
-        } else {
-            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined");
-        }
+        allowCorsRequest(pRequest, pResponse, pFilterChain);
+        // FIXME Manage CORS
+        /**
+         * 
+         * if (!roles.isEmpty()) { boolean access = false; for (final RoleAuthority role : roles) { final
+         * Optional<RoleAuthority> roleAuth = methodAuthService.getRoleAuthority(role.getAuthority(),
+         * authentication.getTenant()); if (roleAuth.isPresent()) { access = access || roleAuth.get().getCorsAccess(); }
+         * } if (access) { LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
+         * authentication.getUser().getName())); allowCorsRequest(pRequest, pResponse, pFilterChain); } } else {
+         * pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined"); }
+         */
     }
 
     /**

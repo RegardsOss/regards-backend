@@ -3,9 +3,12 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +39,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultTestConfiguration;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -53,8 +59,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.MOCK)
-@ContextConfiguration(
-        classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class, DefaultTestFeignConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestConfiguration.class, MockAmqpConfiguration.class,
+        DefaultTestFeignConfiguration.class })
 @AutoConfigureMockMvc
 @ActiveProfiles({ "default", "test" })
 public abstract class AbstractRegardsIT {
@@ -103,6 +109,11 @@ public abstract class AbstractRegardsIT {
      * URL Path separator
      */
     protected static final String URL_PATH_SEPARATOR = "/";
+
+    /**
+     * Contract repository
+     */
+    protected static final Path CONTRACT_REPOSITORY = Paths.get("src", "test", "resources", "contracts");
 
     /**
      * JWT service
@@ -464,5 +475,34 @@ public abstract class AbstractRegardsIT {
 
     protected String getDefaultRole() {
         return DEFAULT_ROLE;
+    }
+
+    /**
+     * Utility method to read an external JSON file and get it as a string to perform a HTTP request
+     *
+     * @param pJSonFileName
+     *            JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
+     * @return JSON as string
+     */
+    protected String readJsonContract(String pJSonFileName) {
+
+        Path contract = CONTRACT_REPOSITORY.resolve(pJSonFileName);
+
+        if (Files.exists(contract)) {
+            JsonReader reader;
+            try {
+                reader = new JsonReader(new FileReader(contract.toFile()));
+                JsonElement el = Streams.parse(reader);
+                return el.toString();
+            } catch (FileNotFoundException e) {
+                String message = "Cannot read JSON contract";
+                getLogger().error(message, e);
+                throw new AssertionError(message, e);
+            }
+        } else {
+            String message = String.format("File does not exist : %s", pJSonFileName);
+            getLogger().error(message);
+            throw new AssertionError(message);
+        }
     }
 }

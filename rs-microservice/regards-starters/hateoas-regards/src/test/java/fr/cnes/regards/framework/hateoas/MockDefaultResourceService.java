@@ -9,11 +9,10 @@ import java.net.URI;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
 import org.springframework.hateoas.core.MappingDiscoverer;
+import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UriTemplate;
-
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
  *
@@ -29,8 +28,8 @@ public class MockDefaultResourceService extends DefaultResourceService {
      */
     private static final MappingDiscoverer DISCOVERER = new AnnotationMappingDiscoverer(RequestMapping.class);
 
-    public MockDefaultResourceService(MethodAuthorizationService pMethodAuthorizationService) {
-        super(pMethodAuthorizationService);
+    public MockDefaultResourceService(AccessDecisionManager pAccessDecisionManager) {
+        super(pAccessDecisionManager);
     }
 
     @Override

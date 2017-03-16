@@ -14,12 +14,12 @@ import org.mockito.Mockito;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDecisionManager;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.domain.Template;
@@ -57,14 +57,14 @@ public class TemplateControllerTest {
     @Before
     public void setUp() {
         // Init a template
-        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA, null);
+        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
+                null);
         template.setId(TemplateTestConstants.ID);
 
         // Mock stuff
         templateService = Mockito.mock(ITemplateService.class);
-        final MethodAuthorizationService authService = Mockito.mock(MethodAuthorizationService.class);
-        Mockito.when(authService.hasAccess(Mockito.any(), Mockito.any())).thenReturn(true);
-        resourceService = new MockDefaultResourceService(authService);
+        AccessDecisionManager accessDecisionManager = Mockito.mock(AccessDecisionManager.class);
+        resourceService = new MockDefaultResourceService(accessDecisionManager);
 
         // Instanciate the tested class
         templateController = new TemplateController(templateService, resourceService);

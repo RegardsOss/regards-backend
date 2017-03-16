@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +15,8 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -66,7 +66,7 @@ public class DefaultResourceServiceTest {
     /**
      * Mocket authorization service
      */
-    private MethodAuthorizationService authServiceMock;
+    private AccessDecisionManager accessDecisionManager;
 
     /**
      * Mocked resource service
@@ -93,8 +93,8 @@ public class DefaultResourceServiceTest {
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Mock service
-        authServiceMock = Mockito.mock(MethodAuthorizationService.class);
-        resourceServiceMock = new MockDefaultResourceService(authServiceMock);
+        accessDecisionManager = Mockito.mock(AccessDecisionManager.class);
+        resourceServiceMock = new MockDefaultResourceService(accessDecisionManager);
     }
 
     /**
@@ -104,9 +104,6 @@ public class DefaultResourceServiceTest {
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Test authorized link creation regarding security restriction.")
     public void testAuthorizedLinkCreation() {
-
-        setMock(GET_METHOD_NAME, Long.class, Boolean.TRUE);
-        setMock(UPDATE_METHOD_NAME, Pojo.class, Boolean.TRUE);
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
         final List<Resource<Pojo>> pojos = pojoController.getPojos();
@@ -122,24 +119,14 @@ public class DefaultResourceServiceTest {
     @Purpose("Test not authorized link creation regarding security restriction.")
     public void testNotAuthorizedLinkCreation() {
 
-        setMock(GET_METHOD_NAME, Long.class, Boolean.FALSE);
-        setMock(UPDATE_METHOD_NAME, Pojo.class, Boolean.FALSE);
+        // Deny all acess
+        Mockito.doThrow(new AccessDeniedException("Mock")).when(accessDecisionManager)
+                .decide(Mockito.eq(jwtAuth), Mockito.anyObject(), Mockito.eq(null));
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
         final List<Resource<Pojo>> pojos = pojoController.getPojos();
         Assert.assertEquals(2, pojos.size());
         Assert.assertEquals(0, pojos.get(0).getLinks().size());
-    }
-
-    private <T> void setMock(String pMethodName, Class<T> pParameterType, Boolean pIsAuthorized) {
-        final Method single;
-        try {
-            single = PojoController.class.getMethod(pMethodName, pParameterType);
-            Mockito.when(authServiceMock.hasAccess(jwtAuth, single)).thenReturn(pIsAuthorized);
-        } catch (NoSuchMethodException | SecurityException e) {
-            LOG.error("Cannot retrieve method", e);
-            Assert.fail();
-        }
     }
 
     /**

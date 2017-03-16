@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
@@ -47,6 +48,7 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
     @Autowired(required = false)
     private IProjectAdminAccessVoter adminAccessVoter;
 
+    @Bean
     @Override
     protected AccessDecisionManager accessDecisionManager() {
         final List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
