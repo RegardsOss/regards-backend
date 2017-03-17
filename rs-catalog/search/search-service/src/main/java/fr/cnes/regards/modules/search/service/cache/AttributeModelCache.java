@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -42,10 +41,9 @@ public class AttributeModelCache implements IAttributeModelCache {
     private final IAttributeModelClient attributeModelClient;
 
     /**
-     * AMPQ messages subscriber
+     * AMPQ messages subscriber. Autowired by Spring.
      */
-    @Autowired
-    private ISubscriber subscriber;
+    private final ISubscriber subscriber;
 
     /**
      * Cached attribute models
@@ -57,10 +55,13 @@ public class AttributeModelCache implements IAttributeModelCache {
      *
      * @param pAttributeModelClient
      *            Service returning the list of attribute models and keeping the list up-to-date
+     * @param pSubscriber
+     *            the AMQP events subscriber
      */
-    public AttributeModelCache(IAttributeModelClient pAttributeModelClient) {
+    public AttributeModelCache(IAttributeModelClient pAttributeModelClient, ISubscriber pSubscriber) {
         super();
         attributeModelClient = pAttributeModelClient;
+        subscriber = pSubscriber;
     }
 
     /**

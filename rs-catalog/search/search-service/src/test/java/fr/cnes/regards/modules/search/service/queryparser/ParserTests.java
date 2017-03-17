@@ -16,7 +16,7 @@ import org.mockito.Mockito;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion;
@@ -49,13 +49,15 @@ public class ParserTests {
 
     private static IAttributeModelClient attributeModelClient;
 
+    private static ISubscriber subscriber;
+
     @BeforeClass
     public static void init() throws EntityNotFoundException {
         attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        attributeModelCache = new AttributeModelCache(attributeModelClient);
+        subscriber = Mockito.mock(ISubscriber.class);
+        attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber);
 
-        ResponseEntity<List<Resource<AttributeModel>>> clientResponse = ResponseEntity
-                .ok(HateoasUtils.wrapList(ParserTestsUtils.LIST));
+        ResponseEntity<List<Resource<AttributeModel>>> clientResponse = ParserTestsUtils.CLIENT_RESPONSE;
         Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(clientResponse);
 
         parser = new RegardsQueryParser(attributeModelCache);

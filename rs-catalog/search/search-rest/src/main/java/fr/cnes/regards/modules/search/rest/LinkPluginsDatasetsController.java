@@ -34,7 +34,7 @@ public class LinkPluginsDatasetsController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset")
     @ResponseBody
-    public ResponseEntity<LinkPluginsDatasets> retrieveLink(@PathVariable("pDatasetId") Long pDatasetId)
+    public ResponseEntity<LinkPluginsDatasets> retrieveLink(@PathVariable("datasetId") Long pDatasetId)
             throws EntityNotFoundException {
         LinkPluginsDatasets link = linkService.retrieveLink(pDatasetId);
         return new ResponseEntity<>(link, HttpStatus.OK);
@@ -43,7 +43,7 @@ public class LinkPluginsDatasetsController {
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset")
     @ResponseBody
-    public ResponseEntity<LinkPluginsDatasets> updateLink(@PathVariable("pDatasetId") Long pDatasetId,
+    public ResponseEntity<LinkPluginsDatasets> updateLink(@PathVariable("datasetId") Long pDatasetId,
             @RequestBody LinkPluginsDatasets pUpdatedLink) throws EntityNotFoundException {
         LinkPluginsDatasets link = linkService.updateLink(pDatasetId, pUpdatedLink);
         return new ResponseEntity<>(link, HttpStatus.OK);

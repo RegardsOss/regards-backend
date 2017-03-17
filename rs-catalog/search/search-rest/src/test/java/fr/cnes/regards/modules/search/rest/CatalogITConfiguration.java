@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  *
  */
 @Configuration
-public class LinkDatasetsPluginsITConfiguration {
+public class CatalogITConfiguration {
 
     @Bean
     public IDatasetClient datasetClient() {

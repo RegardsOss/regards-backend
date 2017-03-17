@@ -3,19 +3,11 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -31,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
@@ -44,10 +35,12 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.search.domain.IConverter;
+import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.IFilter;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
-import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
 /**
  * REST controller managing the research of REGARDS entities ({@link Collection}s, {@link Dataset}s, {@link DataObject}s
@@ -74,205 +67,253 @@ import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 public class CatalogController {
 
     /**
-     * The custom OpenSearch query parser building {@link ICriterion} from tu string query
+     * Service performing the search from the query string
      */
-    @Autowired
-    private RegardsQueryParser queryParser;
+    private final ICatalogSearchService catalogSearchService;
 
     /**
-     * Applies project filters, i.e. the OpenSearch query
+     * Service perfoming the ElasticSearch search directly
      */
-    @Autowired
-    private IFilter filterPlugin;
-
-    /**
-     * Adds user group and data access filters
-     */
-    @Autowired
-    private IAccessRightFilter accessRightFilter;
-
-    /**
-     * Service perfoming the ElasticSearch search
-     */
-    @Autowired
-    private ISearchService searchService;
-
-    /**
-     * Converts entities after search
-     */
-    @Autowired
-    private IConverter converter;
-
-    /**
-     * Get current tenant at runtime and allows tenant forcing
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final ISearchService searchService;
 
     /**
      * The resource service
      */
-    @Autowired
-    private IResourceService resourceService;
+    private final IResourceService resourceService;
 
     /**
-     * Perform a search in the catalog on given search type.<br>
-     * The search returns the same type.
+     * @param pCatalogSearchService
+     * @param pSearchService
+     * @param pResourceService
+     */
+    public CatalogController(ICatalogSearchService pCatalogSearchService, ISearchService pSearchService,
+            IResourceService pResourceService) {
+        super();
+        catalogSearchService = pCatalogSearchService;
+        searchService = pSearchService;
+        resourceService = pResourceService;
+    }
+
+    /**
+     * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
+     * collection, dataset, dataobject and document.
      *
      * @param pQ
-     *            the query in OpenSearch format
-     * @param pSearchType
-     *            the type of document to search. Must not be null
-     * @param pResultClass
-     *            the class of result document search. In case search type is null, this class must be compatible with
-     *            all sorts of result objects (ie AbstractEntity for Regards entity types)
+     *            the OpenSearch-format query
      * @param pFacets
-     *            the applicable facets as a list of attribute names
-     * @param pAscSortMap
-     *            the sort map
+     *            the facets to apply
      * @param pPageable
-     *            the pagination information
+     *            the page
      * @param pAssembler
-     *            spring resources assembler
-     * @return
+     *            injected by Spring
+     * @return the page of entities matching the query
      * @throws SearchException
-     * @throws QueryNodeException
+     *             when an error occurs while parsing the query
      */
-
     @RequestMapping(path = "/search", method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(
-            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collections, datasets, dataobjects and documents.")
+            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam("q") String pQ,
-            @RequestParam("facets") List<String> pFacets, @SortDefault("name") Sort pSort, final Pageable pPageable,
+            @RequestParam(value = "facets", required = false) List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<AbstractEntity> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.all, AbstractEntity.class, pFacets, pSort, pPageable, pAssembler);
+        Page<AbstractEntity> result = catalogSearchService.search(pQ, SearchType.ALL, AbstractEntity.class, pFacets,
+                                                                  pPageable, pAssembler);
+        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
+    /**
+     * Return the collection of passed URN_COLLECTION.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the collection
+     * @return the collection
+     * @throws SearchException
+     */
     @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the collection of passed URN.")
-    public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.")
+    public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        Collection collection = searchService.get(pUrn);
+        Resource<Collection> resource = toResource(collection);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
+    /**
+     * Perform an OpenSearch request on collections.
+     *
+     * @param pQ
+     *            the OpenSearch-format query
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of collections matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
     @RequestMapping(path = "/collections/search", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Perform an OpenSearch request on collections.")
+    @ResourceAccess(description = "Perform an OpenSearch request on collection.")
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(@RequestParam("q") String pQ,
-            @SortDefault("name") Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.collections, Collection.class, null, pSort, pPageable, pAssembler);
+            final Pageable pPageable, final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
+        Page<Collection> result = catalogSearchService.search(pQ, SearchType.COLLECTION, Collection.class, null,
+                                                              pPageable, pAssembler);
+        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
+    /**
+     * Return the dataset of passed URN_COLLECTION.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the dataset
+     * @return the dataset
+     * @throws SearchException
+     */
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the dataset of passed URN.")
-    public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.")
+    public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        Dataset dataset = searchService.get(pUrn);
+        Resource<Dataset> resource = toResource(dataset);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
+    /**
+     * Perform an OpenSearch request on datasets.
+     *
+     * @param pQ
+     *            the OpenSearch-format query
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of datasets matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
     @RequestMapping(path = "/datasets/search", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Perform an OpenSearch request on datasets.")
+    @ResourceAccess(description = "Perform an OpenSearch request on dataset.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam("q") String pQ,
-            @SortDefault("name") Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.datasets, Dataset.class, null, pSort, pPageable, pAssembler);
+            final Pageable pPageable, final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
+        Page<Dataset> result = catalogSearchService.search(pQ, SearchType.DATASET, Dataset.class, null, pPageable,
+                                                           pAssembler);
+        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
+    /**
+     * Return the dataobject of passed URN_COLLECTION.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the dataobject
+     * @return the dataobject
+     * @throws SearchException
+     */
     @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the dataobject of passed URN.")
-    public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.")
+    public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        DataObject dataobject = searchService.get(pUrn);
+        Resource<DataObject> resource = toResource(dataobject);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
+    /**
+     * Perform an OpenSearch request on dataobjects. Only return required facets.
+     *
+     * @param pQ
+     *            the OpenSearch-format query
+     * @param pFacets
+     *            the facets to apply
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of dataobjects matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
     @RequestMapping(path = "/dataobjects/search", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Perform an OpenSearch request on dataobjects. Only return required facets.")
+    @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
-            @RequestParam("facets") List<String> pFacets, @SortDefault("name") Sort pSort, final Pageable pPageable,
+            @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.dataobjects, DataObject.class, pFacets, pSort, pPageable, pAssembler);
+        Page<DataObject> result = catalogSearchService.search(pQ, SearchType.DATAOBJECT, DataObject.class, pFacets,
+                                                              pPageable, pAssembler);
+        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
+    /**
+     * Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the
+     * associated datasets.
+     *
+     * @param pQ
+     *            the OpenSearch-format query
+     * @param pFacets
+     *            the facets to apply
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of datasets matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = "/dataobjects/datasets/search", method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
+    public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
+            @RequestParam("q") String pQ, @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
+            final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
+        Page<Dataset> result = catalogSearchService.search(pQ, SearchType.DATAOBJECT, Dataset.class, pFacets, pPageable,
+                                                           pAssembler);
+        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
+    }
+
+    /**
+     * Return the document of passed URN_COLLECTION.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the document
+     * @return the document
+     * @throws SearchException
+     */
     @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Return the document of passed URN.")
-    public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") String pUrn) throws SearchException {
-        // TODO
-        return null;
+    @ResourceAccess(description = "Return the document of passed URN_COLLECTION.")
+    public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") UniformResourceName pUrn)
+            throws SearchException {
+        Document document = searchService.get(pUrn);
+        Resource<Document> resource = toResource(document);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
+    /**
+     * Perform an OpenSearch request on documents.
+     *
+     * @param pQ
+     *            the OpenSearch-format query
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of documents matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
     @RequestMapping(path = "/documents/search", method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Perform an OpenSearch request on documents.")
+    @ResourceAccess(description = "Perform an OpenSearch request on document.")
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(@RequestParam("q") String pQ,
-            @SortDefault("name") Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.documents, Document.class, null, pSort, pPageable, pAssembler);
-    }
-
-    private <T extends IIndexable> ResponseEntity<PagedResources<Resource<T>>> doSearch(String pQ,
-            SearchType pSearchType, Class<T> pResultClass, List<String> pFacets, Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<T> pAssembler) throws SearchException {
-        try {
-            Class<T> resultClass = pResultClass;
-
-            // Build criterion from query
-            ICriterion criterion;
-            criterion = queryParser.parse(pQ);
-
-            // Handle "target" criterion
-            Predicate<ICriterion> weHaveATargetCriterion = pCriterion -> false;
-            if (weHaveATargetCriterion.test(criterion)) {
-                // resultClass = classe de la valeur du criterion target;
-            }
-
-            // Handle "dataset" criterion
-            Predicate<ICriterion> weHaveADatasetCriterion = pCriterion -> false;
-            if (weHaveADatasetCriterion.test(criterion)) {
-                criterion = filterPlugin.addFilter(null, criterion);
-                // resultClass = classe de la valeur du criterion target;
-            }
-
-            // Handle "datasets" criterion
-            Predicate<ICriterion> weHaveADatasetsCriterion = pCriterion -> false;
-            if (weHaveADatasetsCriterion.test(criterion)) {
-                // resultClass = classe de la valeur du criterion target;
-            }
-
-            // Apply security filters
-            criterion = accessRightFilter.removeGroupFilter(criterion);
-            criterion = accessRightFilter.addGroupFilter(criterion);
-            criterion = accessRightFilter.addAccessRightsFilter(criterion);
-
-            // Perform the search
-            Page<T> entities;
-            SearchKey<T> searchKey = new SearchKey<>(runtimeTenantResolver.getTenant(), pSearchType.toString(),
-                    resultClass);
-            BiPredicate<SearchType, Class<T>> searchTypeAndResultClassAreDifferent = (pST, pRC) -> false;
-
-            if (searchTypeAndResultClassAreDifferent.test(pSearchType, resultClass)) {
-                entities = searchService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
-            } else {
-                LinkedHashMap<String, Boolean> ascSortMap = null;
-                Map<String, FacetType> facetsMap = null; // Use pFacets
-                entities = searchService.search(searchKey, pPageable, criterion, facetsMap, ascSortMap);
-            }
-
-            // Format output response
-            // entities = converter.convert(entities);
-
-            // Return
-            return new ResponseEntity<>(toPagedResources(entities, pAssembler), HttpStatus.OK);
-        } catch (QueryNodeException e) {
-            throw new SearchException(pQ, e);
-        }
+            final Pageable pPageable, final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
+        Page<Document> result = catalogSearchService.search(pQ, SearchType.DOCUMENT, Document.class, null, pPageable,
+                                                            pAssembler);
+        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
     /**
@@ -296,4 +337,5 @@ public class CatalogController {
         // TODO: Add links
         return resourceService.toResource(pElement);
     }
+
 }
