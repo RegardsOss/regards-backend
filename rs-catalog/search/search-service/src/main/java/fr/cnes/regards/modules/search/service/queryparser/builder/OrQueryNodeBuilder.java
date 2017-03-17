@@ -11,8 +11,8 @@ import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.OrCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.OrCriterion;
 
 /**
  * Builds a {@link OrCriterion} from a {@link OrQueryNode} object.

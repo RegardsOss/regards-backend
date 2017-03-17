@@ -6,8 +6,8 @@ package fr.cnes.regards.modules.search.service.filter;
 import org.springframework.http.HttpRequest;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
  * Defines the contract on filtering methods.<br>

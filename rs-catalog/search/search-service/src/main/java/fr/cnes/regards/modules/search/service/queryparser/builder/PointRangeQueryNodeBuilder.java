@@ -12,8 +12,8 @@ import org.apache.lucene.queryparser.flexible.standard.config.PointsConfig;
 import org.apache.lucene.queryparser.flexible.standard.nodes.PointQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.PointRangeQueryNode;
 
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
 
 /**
  * Builds a {@link RangeCriterion} from a {@link PointRangeQueryNode} object.

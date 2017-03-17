@@ -11,7 +11,7 @@ import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.AndQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
  * @author Marc Sordi

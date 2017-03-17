@@ -10,7 +10,7 @@ import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 import org.apache.lucene.queryparser.flexible.standard.parser.EscapeQuerySyntaxImpl;
 
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
  * Set this generic builder in a {@link QueryTreeBuilder} constructor for disabling specific functionalities.
