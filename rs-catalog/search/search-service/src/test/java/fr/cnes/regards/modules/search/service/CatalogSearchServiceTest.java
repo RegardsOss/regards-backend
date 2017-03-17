@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.service;
 
 import java.util.List;
 
@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -22,22 +21,21 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.crawler.domain.SearchKey;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.search.rest.CatalogController.SearchType;
-import fr.cnes.regards.modules.search.service.ISearchService;
+import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
 /**
- * Unit test for {@link CatalogController}.
+ * Unit test for {@link CatalogSearchService}.
  *
  * @author Xavier-Alexandre Brochard
  */
-public class CatalogControllerTest {
+public class CatalogSearchServiceTest {
 
     /**
      * Class under test
      */
-    private CatalogController catalogController;
+    private CatalogSearchService catalogSearchService;
 
     /**
      * The custom OpenSearch query parser building {@link ICriterion} from tu string query
@@ -80,12 +78,12 @@ public class CatalogControllerTest {
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
         Mockito.when(accessRightFilter.addAccessRightsFilter(Mockito.any()))
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(CatalogControllerTestUtils.TENANT);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(CatalogSearchServiceTestUtils.TENANT);
         Mockito.when(resourceService.toResource(Mockito.any()))
                 .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogController = new CatalogController(queryParser, searchService, runtimeTenantResolver, resourceService);
+        catalogSearchService = new CatalogSearchService(searchService, queryParser, runtimeTenantResolver);
     }
 
     /**
@@ -100,28 +98,27 @@ public class CatalogControllerTest {
         // Prepare test
         SearchType searchType = SearchType.DATAOBJECT;
         Class<DataObject> resultClass = DataObject.class;
-        String q = CatalogControllerTestUtils.Q;
-        List<String> facets = CatalogControllerTestUtils.FACETS;
-        Sort sort = CatalogControllerTestUtils.SORT;
-        PagedResourcesAssembler<DataObject> assembler = CatalogControllerTestUtils.ASSEMBLER_DATAOBJECT;
-        Pageable pageable = CatalogControllerTestUtils.PAGEABLE;
+        String q = CatalogSearchServiceTestUtils.Q;
+        List<String> facets = CatalogSearchServiceTestUtils.FACETS;
+        PagedResourcesAssembler<DataObject> assembler = CatalogSearchServiceTestUtils.ASSEMBLER_DATAOBJECT;
+        Pageable pageable = CatalogSearchServiceTestUtils.PAGEABLE;
 
         // Define expected values
-        SearchKey<DataObject> expectedSearchKey = new SearchKey<>(CatalogControllerTestUtils.TENANT,
+        SearchKey<DataObject> expectedSearchKey = new SearchKey<>(CatalogSearchServiceTestUtils.TENANT,
                 searchType.toString(), resultClass);
-        ICriterion expectedCriterion = CatalogControllerTestUtils.SIMPLE_STRING_MATCH_CRITERION;
-        Page<DataObject> expectedSearchResult = CatalogControllerTestUtils.PAGE_DATAOBJECT;
+        ICriterion expectedCriterion = CatalogSearchServiceTestUtils.SIMPLE_STRING_MATCH_CRITERION;
+        Page<DataObject> expectedSearchResult = CatalogSearchServiceTestUtils.PAGE_DATAOBJECT;
 
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
         Mockito.when(searchService.search(Mockito.any(SearchKey.class), Mockito.any(Pageable.class),
                                           Mockito.any(ICriterion.class), Mockito.any(), Mockito.any()))
                 .thenReturn(expectedSearchResult);
-        PagedResources<Resource<DataObject>> pageResources = CatalogControllerTestUtils.PAGED_RESOURCES_DATAOBJECT;
+        PagedResources<Resource<DataObject>> pageResources = CatalogSearchServiceTestUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogController.doSearch(q, searchType, resultClass, facets, pageable, assembler);
+        catalogSearchService.search(q, searchType, resultClass, facets, pageable, assembler);
 
         // Check
         Mockito.verify(searchService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +33,10 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.search.domain.SearchType;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
  */
 @SuppressWarnings("unchecked")
-public class CatalogControllerTestUtils {
+public class CatalogSearchServiceTestUtils {
 
     /**
      * A dummy assembler for collections
@@ -103,13 +102,13 @@ public class CatalogControllerTestUtils {
      * A dummy page of dataobjects
      */
     public static final Page<DataObject> PAGE_DATAOBJECT = new PageImpl<>(
-            Lists.newArrayList(CatalogControllerTestUtils.DATAOBJECT));
+            Lists.newArrayList(CatalogSearchServiceTestUtils.DATAOBJECT));
 
     /**
      * A dummy page of dataobjects
      */
     public static final Page<Dataset> PAGE_DATASET = new PageImpl<>(
-            Lists.newArrayList(CatalogControllerTestUtils.DATASET));
+            Lists.newArrayList(CatalogSearchServiceTestUtils.DATASET));
 
     /**
      * A mock pageable
