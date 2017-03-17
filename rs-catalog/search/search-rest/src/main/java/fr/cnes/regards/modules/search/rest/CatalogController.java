@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -106,7 +105,6 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = "/search", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam("q") String pQ,
@@ -126,7 +124,6 @@ public class CatalogController {
      * @throws SearchException
      */
     @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
@@ -149,7 +146,6 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = "/collections/search", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on collection.")
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(@RequestParam("q") String pQ,
             final Pageable pPageable, final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
@@ -167,7 +163,6 @@ public class CatalogController {
      * @throws SearchException
      */
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
@@ -190,7 +185,6 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = "/datasets/search", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam("q") String pQ,
             final Pageable pPageable, final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
@@ -208,7 +202,6 @@ public class CatalogController {
      * @throws SearchException
      */
     @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.")
     public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
@@ -233,7 +226,6 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = "/dataobjects/search", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
             @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
@@ -260,7 +252,6 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = "/dataobjects/datasets/search", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam("q") String pQ, @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
@@ -279,7 +270,6 @@ public class CatalogController {
      * @throws SearchException
      */
     @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Return the document of passed URN_COLLECTION.")
     public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
@@ -302,7 +292,6 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = "/documents/search", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on document.")
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(@RequestParam("q") String pQ,
             final Pageable pPageable, final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
