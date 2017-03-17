@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableExce
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 
 /**
@@ -191,6 +192,18 @@ public class GlobalControllerAdvice {
             final EntityCorruptByNetworkException pException) {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
                 .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    /**
+     * Exception handler returning the code 4000 when an error occurs while processing an OpenSearch request.<br>
+     *
+     * @param pException
+     *            {@link SearchException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(SearchException.class)
+    public ResponseEntity<ServerErrorResponse> searchException(final SearchException pException) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
     }
 
 }
