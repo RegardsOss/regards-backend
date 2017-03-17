@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -43,12 +41,10 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.IFilter;
+import fr.cnes.regards.modules.search.domain.IRepresentation;
 import fr.cnes.regards.modules.search.service.ISearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
-import fr.cnes.regards.modules.search.service.converter.IConverter;
-import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
-import fr.cnes.regards.modules.search.service.representation.IRepresentation;
 
 /**
  * REST controller managing the research of REGARDS entities ({@link Collection}s, {@link Dataset}s, {@link DataObject}s
@@ -77,43 +73,21 @@ public class CatalogController {
     /**
      * The custom OpenSearch query parser building {@link ICriterion} from tu string query
      */
-    @Autowired
     private final RegardsQueryParser queryParser;
-
-    /**
-     * Applies project filters, i.e. the OpenSearch query
-     */
-    @Autowired
-    private final IFilterPlugin filterPlugin;
-
-    /**
-     * Adds user group and data access filters
-     */
-    @Autowired
-    private final IAccessRightFilter accessRightFilter;
 
     /**
      * Service perfoming the ElasticSearch search
      */
-    @Autowired
     private final ISearchService searchService;
-
-    /**
-     * Converts entities after search
-     */
-    @Autowired
-    private final IConverter converter;
 
     /**
      * Get current tenant at runtime and allows tenant forcing
      */
-    @Autowired
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * The resource service
      */
-    @Autowired
     private final IResourceService resourceService;
 
     /**
@@ -127,22 +101,15 @@ public class CatalogController {
 
     /**
      * @param pQueryParser
-     * @param pFilterPlugin
-     * @param pAccessRightFilter
      * @param pSearchService
-     * @param pConverter
      * @param pRuntimeTenantResolver
      * @param pResourceService
      */
-    public CatalogController(RegardsQueryParser pQueryParser, IFilterPlugin pFilterPlugin,
-            IAccessRightFilter pAccessRightFilter, ISearchService pSearchService, IConverter pConverter,
+    public CatalogController(RegardsQueryParser pQueryParser, ISearchService pSearchService,
             IRuntimeTenantResolver pRuntimeTenantResolver, IResourceService pResourceService) {
         super();
         queryParser = pQueryParser;
-        filterPlugin = pFilterPlugin;
-        accessRightFilter = pAccessRightFilter;
         searchService = pSearchService;
-        converter = pConverter;
         runtimeTenantResolver = pRuntimeTenantResolver;
         resourceService = pResourceService;
     }
@@ -155,8 +122,6 @@ public class CatalogController {
      *            the OpenSearch-format query
      * @param pFacets
      *            the facets to apply
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -170,9 +135,9 @@ public class CatalogController {
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam("q") String pQ,
-            @RequestParam("facets") List<String> pFacets, @RequestParam("sort") Sort pSort, final Pageable pPageable,
+            @RequestParam(value = "facets", required = false) List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<AbstractEntity> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.ALL, AbstractEntity.class, pFacets, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.ALL, AbstractEntity.class, pFacets, pPageable, pAssembler);
     }
 
     /**
@@ -198,8 +163,6 @@ public class CatalogController {
      *
      * @param pQ
      *            the OpenSearch-format query
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -212,9 +175,8 @@ public class CatalogController {
     @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on collection.")
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(@RequestParam("q") String pQ,
-            @RequestParam("sort") Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.COLLECTION, Collection.class, null, pSort, pPageable, pAssembler);
+            final Pageable pPageable, final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
+        return doSearch(pQ, SearchType.COLLECTION, Collection.class, null, pPageable, pAssembler);
     }
 
     /**
@@ -240,8 +202,6 @@ public class CatalogController {
      *
      * @param pQ
      *            the OpenSearch-format query
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -254,9 +214,8 @@ public class CatalogController {
     @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam("q") String pQ,
-            @RequestParam("sort") Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DATASET, Dataset.class, null, pSort, pPageable, pAssembler);
+            final Pageable pPageable, final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
+        return doSearch(pQ, SearchType.DATASET, Dataset.class, null, pPageable, pAssembler);
     }
 
     /**
@@ -284,8 +243,6 @@ public class CatalogController {
      *            the OpenSearch-format query
      * @param pFacets
      *            the facets to apply
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -298,9 +255,9 @@ public class CatalogController {
     @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
-            @RequestParam("facets") List<String> pFacets, @RequestParam("sort") Sort pSort, final Pageable pPageable,
+            @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DATAOBJECT, DataObject.class, pFacets, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.DATAOBJECT, DataObject.class, pFacets, pPageable, pAssembler);
     }
 
     /**
@@ -311,8 +268,6 @@ public class CatalogController {
      *            the OpenSearch-format query
      * @param pFacets
      *            the facets to apply
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -325,10 +280,9 @@ public class CatalogController {
     @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
-            @RequestParam("q") String pQ, @RequestParam("facets") List<String> pFacets,
-            @RequestParam("sort") Sort pSort, final Pageable pPageable,
+            @RequestParam("q") String pQ, @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DATAOBJECT, Dataset.class, pFacets, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.DATAOBJECT, Dataset.class, pFacets, pPageable, pAssembler);
     }
 
     /**
@@ -354,8 +308,6 @@ public class CatalogController {
      *
      * @param pQ
      *            the OpenSearch-format query
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -368,9 +320,8 @@ public class CatalogController {
     @ResponseBody
     @ResourceAccess(description = "Perform an OpenSearch request on document.")
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(@RequestParam("q") String pQ,
-            @RequestParam("sort") Sort pSort, final Pageable pPageable,
-            final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DOCUMENT, Document.class, null, pSort, pPageable, pAssembler);
+            final Pageable pPageable, final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
+        return doSearch(pQ, SearchType.DOCUMENT, Document.class, null, pPageable, pAssembler);
     }
 
     /**
@@ -384,8 +335,6 @@ public class CatalogController {
      *            the returned class. Most of the time, the same as the search type, expect for joint searches.
      * @param pFacets
      *            the facets applicable
-     * @param pSort
-     *            the sort
      * @param pPageable
      *            the page
      * @param pAssembler
@@ -395,7 +344,7 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     public <T extends IIndexable> ResponseEntity<PagedResources<Resource<T>>> doSearch(String pQ,
-            SearchType pSearchType, Class<T> pResultClass, List<String> pFacets, Sort pSort, final Pageable pPageable,
+            SearchType pSearchType, Class<T> pResultClass, List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<T> pAssembler) throws SearchException {
         try {
             // Build criterion from query
@@ -403,9 +352,9 @@ public class CatalogController {
             criterion = queryParser.parse(pQ);
 
             // Apply security filters
-            criterion = accessRightFilter.removeGroupFilter(criterion);
-            criterion = accessRightFilter.addGroupFilter(criterion);
-            criterion = accessRightFilter.addAccessRightsFilter(criterion);
+            // criterion = accessRightFilter.removeGroupFilter(criterion);
+            // criterion = accessRightFilter.addGroupFilter(criterion);
+            // criterion = accessRightFilter.addAccessRightsFilter(criterion);
 
             // Perform the search
             Page<T> entities;

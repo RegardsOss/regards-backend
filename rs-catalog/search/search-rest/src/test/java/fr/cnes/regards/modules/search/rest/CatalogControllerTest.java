@@ -25,8 +25,6 @@ import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.search.rest.CatalogController.SearchType;
 import fr.cnes.regards.modules.search.service.ISearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
-import fr.cnes.regards.modules.search.service.converter.IConverter;
-import fr.cnes.regards.modules.search.service.filter.IFilterPlugin;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
 /**
@@ -47,11 +45,6 @@ public class CatalogControllerTest {
     private RegardsQueryParser queryParser;
 
     /**
-     * Applies project filters, i.e. the OpenSearch query
-     */
-    private IFilterPlugin filterPlugin;
-
-    /**
      * Adds user group and data access filters
      */
     private IAccessRightFilter accessRightFilter;
@@ -60,11 +53,6 @@ public class CatalogControllerTest {
      * Service perfoming the ElasticSearch search
      */
     private ISearchService searchService;
-
-    /**
-     * Converts entities after search
-     */
-    private IConverter converter;
 
     /**
      * Get current tenant at runtime and allows tenant forcing
@@ -80,16 +68,12 @@ public class CatalogControllerTest {
     public void setUp() {
         // Declare mocks
         queryParser = Mockito.mock(RegardsQueryParser.class);
-        filterPlugin = Mockito.mock(IFilterPlugin.class);
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
         searchService = Mockito.mock(ISearchService.class);
-        converter = Mockito.mock(IConverter.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
 
         // Globally mock what's mockable yet
-        Mockito.when(filterPlugin.addFilter(Mockito.any(), Mockito.any()))
-                .thenAnswer(invocation -> invocation.getArguments()[1]);
         Mockito.when(accessRightFilter.removeGroupFilter(Mockito.any()))
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
         Mockito.when(accessRightFilter.addGroupFilter(Mockito.any()))
@@ -101,8 +85,7 @@ public class CatalogControllerTest {
                 .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogController = new CatalogController(queryParser, filterPlugin, accessRightFilter, searchService,
-                converter, runtimeTenantResolver, resourceService);
+        catalogController = new CatalogController(queryParser, searchService, runtimeTenantResolver, resourceService);
     }
 
     /**
@@ -138,7 +121,7 @@ public class CatalogControllerTest {
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogController.doSearch(q, searchType, resultClass, facets, sort, pageable, assembler);
+        catalogController.doSearch(q, searchType, resultClass, facets, pageable, assembler);
 
         // Check
         Mockito.verify(searchService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),

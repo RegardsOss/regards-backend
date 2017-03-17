@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-public class CachingIntegrationTest {
+public class CachingIT {
 
     @Configuration
     @EnableCaching

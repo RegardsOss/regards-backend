@@ -15,15 +15,21 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.search.rest.CatalogController.SearchType;
 
 /**
@@ -58,6 +64,12 @@ public class CatalogControllerTestUtils {
             .mock(PagedResourcesAssembler.class);
 
     /**
+     * A dummy assembler for entities
+     */
+    public static final PagedResourcesAssembler<AbstractEntity> ASSEMBLER_ABSTRACT_ENTITIES = Mockito
+            .mock(PagedResourcesAssembler.class);
+
+    /**
      * A dummy collection
      */
     public static final Collection COLLECTION = new Collection();
@@ -81,6 +93,11 @@ public class CatalogControllerTestUtils {
      * A dummy list of facets
      */
     public static final List<String> FACETS = Lists.newArrayList("faceA", "faceB");
+
+    /**
+     * The dummy list of factes as array
+     */
+    public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
     /**
      * A dummy page of dataobjects
@@ -114,7 +131,7 @@ public class CatalogControllerTestUtils {
     /**
      * Dummy OpenSearch request
      */
-    public static final String Q = "this:(is AND the) OR querys:string";
+    public static final String Q = "integer:(2 AND 3) OR string:hello";
 
     /**
      * A criterion string match
@@ -168,5 +185,17 @@ public class CatalogControllerTestUtils {
      * A dummy urn for a document
      */
     public static final UniformResourceName URN_DOCUMENT = new UniformResourceName();
+
+    private static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build("integer", AttributeType.INTEGER).get();
+
+    private static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build("string", AttributeType.STRING).get();
+
+    private static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL,
+                                                                        STRING_ATTRIBUTE_MODEL);
+
+    public static final ResponseEntity<List<Resource<AttributeModel>>> CLIENT_RESPONSE = ResponseEntity
+            .ok(HateoasUtils.wrapList(LIST));
 
 }

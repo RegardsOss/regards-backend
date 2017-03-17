@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -24,8 +23,7 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@ContextConfiguration(classes = LinkDatasetsPluginsITConfiguration.class)
-@TestPropertySource(locations = "classpath:tests.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(LinkDatasetsPluginsControllerIT.class);

@@ -5,8 +5,12 @@ package fr.cnes.regards.modules.search.service.queryparser;
 
 import java.util.List;
 
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
+
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
@@ -107,5 +111,8 @@ public class ParserTestsUtils {
                           LONG_RANGE_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_RANGE_ATTRIBUTE_MODEL,
                           INTEGER_ARRAY_ATTRIBUTE_MODEL, DOUBLE_ARRAY_ATTRIBUTE_MODEL, LONG_ARRAY_ATTRIBUTE_MODEL,
                           STRING_ARRAY_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL);
+
+    public static final ResponseEntity<List<Resource<AttributeModel>>> CLIENT_RESPONSE = ResponseEntity
+            .ok(HateoasUtils.wrapList(ParserTestsUtils.LIST));
 
 }
