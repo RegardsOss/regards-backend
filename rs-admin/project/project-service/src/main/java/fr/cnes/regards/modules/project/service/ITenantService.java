@@ -24,4 +24,10 @@ public interface ITenantService {
      * @return all tenant managed by the current instance. Tenants are equivalents to projects.
      */
     Set<String> getAllTenants();
+
+    /**
+     *
+     * @return all tenant managed by the current instance and fully configured. Tenants are equivalents to projects.
+     */
+    Set<String> getAllActiveTenants(String pMicroserviceName);
 }

@@ -6,6 +6,7 @@ package fr.cnes.regards.microservices.administration;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.service.ITenantService;
@@ -22,6 +23,12 @@ import fr.cnes.regards.modules.project.service.ITenantService;
 public class LocalTenantResolver implements ITenantResolver {
 
     /**
+     * Microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
+    /**
      * Administration project service
      */
     @Autowired
@@ -30,5 +37,10 @@ public class LocalTenantResolver implements ITenantResolver {
     @Override
     public Set<String> getAllTenants() {
         return tenantService.getAllTenants();
+    }
+
+    @Override
+    public Set<String> getAllActiveTenants() {
+        return tenantService.getAllActiveTenants(microserviceName);
     }
 }

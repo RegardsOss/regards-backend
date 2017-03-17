@@ -34,5 +34,4 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
      * @return A {@link Page} of found {@link ProjectConnection}s
      */
     Page<ProjectConnection> findByProjectName(String pProjectName, Pageable pPageable);
-
 }

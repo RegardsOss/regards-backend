@@ -3,27 +3,20 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.project.client.rest.ITenantClient;
 
 /**
  *
@@ -42,9 +35,15 @@ public class RemoteTenantResolver implements ITenantResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteTenantResolver.class);
 
     /**
+     * Microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
+    /**
      * Initial Feign client to administration service to retrieve informations about projects
      */
-    private final IProjectsClient projectsClient;
+    private final ITenantClient tenantClient;
 
     /**
      * Feign security manager
@@ -68,39 +67,27 @@ public class RemoteTenantResolver implements ITenantResolver {
         }
 
         // Init project client programmatically
-        projectsClient = FeignClientBuilder.build(new TokenClientProvider<>(IProjectsClient.class,
+        tenantClient = FeignClientBuilder.build(new TokenClientProvider<>(ITenantClient.class,
                 instances.get(0).getUri().toString(), feignSecurityManager));
     }
 
     @Override
     public Set<String> getAllTenants() {
-        Set<String> tenants = new HashSet<>();
         try {
             // Bypass authorization for internal request
             FeignSecurityManager.asSystem();
+            return tenantClient.getAllTenants().getBody();
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
 
-            final List<Resource<Project>> resources = new ArrayList<>();
-
-            boolean nextProjectsPage;
-            int projectPage = 0;
-            // Get all tenants with projects clients pageable requests
-            do {
-                final ResponseEntity<PagedResources<Resource<Project>>> response = projectsClient
-                        .retrieveProjectList(projectPage, 100);
-                if ((response != null) && response.getStatusCode().equals(HttpStatus.OK)
-                        && (response.getBody() != null)) {
-                    nextProjectsPage = projectPage++ == response.getBody().getMetadata().getTotalPages();
-                    resources.addAll(response.getBody().getContent());
-                } else {
-                    LOGGER.error("Error during remote request to administration service");
-                    nextProjectsPage = false;
-                }
-            } while (!nextProjectsPage);
-
-            final List<Project> projects = HateoasUtils.unwrapList(resources);
-            projects.forEach(p -> tenants.add(p.getName()));
-
-            return tenants;
+    @Override
+    public Set<String> getAllActiveTenants() {
+        try {
+            // Bypass authorization for internal request
+            FeignSecurityManager.asSystem();
+            return tenantClient.getAllActiveTenants(microserviceName).getBody();
         } finally {
             FeignSecurityManager.reset();
         }
