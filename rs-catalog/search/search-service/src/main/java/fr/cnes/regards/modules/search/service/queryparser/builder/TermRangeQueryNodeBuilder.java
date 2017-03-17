@@ -14,8 +14,8 @@ import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 import com.google.common.collect.ImmutableTable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;

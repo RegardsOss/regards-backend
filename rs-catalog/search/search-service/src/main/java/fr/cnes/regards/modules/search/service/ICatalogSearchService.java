@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
-import fr.cnes.regards.modules.crawler.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.search.domain.SearchType;
 
 /**

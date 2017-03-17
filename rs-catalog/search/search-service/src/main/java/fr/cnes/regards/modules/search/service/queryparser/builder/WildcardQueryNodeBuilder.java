@@ -10,9 +10,8 @@ import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 import org.apache.lucene.queryparser.flexible.standard.nodes.WildcardQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.parser.EscapeQuerySyntaxImpl;
 
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.MatchType;
-import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 
 /**
  * Builds a {@link StringMatchCriterion} from a {@link WildcardQueryNode} object<br>

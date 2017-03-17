@@ -30,12 +30,17 @@ import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.search.domain.IConverter;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.IFilter;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
-import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
-import fr.cnes.regards.modules.search.service.ISearchService;
+import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**

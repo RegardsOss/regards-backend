@@ -41,8 +41,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.crawler</groupId>
-			<artifactId>crawler-dao</artifactId>
+			<groupId>fr.cnes.regards.modules.indexer</groupId>
+			<artifactId>indexer-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.models</groupId>
@@ -51,6 +51,14 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>hateoas-regards-starter</artifactId>
-			</dependency>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.indexer</groupId>
+			<artifactId>indexer-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.search</groupId>
+			<artifactId>search-domain</artifactId>
+		</dependency>
 	</dependencies>
 </project>

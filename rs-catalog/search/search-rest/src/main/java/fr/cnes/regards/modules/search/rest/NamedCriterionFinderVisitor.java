@@ -6,18 +6,18 @@ package fr.cnes.regards.modules.search.rest;
 import java.util.Iterator;
 import java.util.Optional;
 
-import fr.cnes.regards.modules.crawler.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.crawler.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
+import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 
 /**
  * Criterion visitor which tries to find a {@link StringMatchCriterion} with name "target".<br>
