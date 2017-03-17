@@ -11,10 +11,6 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
@@ -29,26 +25,6 @@ public class CatalogControllerTestUtils {
      * Dummy OpenSearch request
      */
     public static final String Q = "integer:(2 AND 3) OR string:hello";
-
-    /**
-     * A dummy collection
-     */
-    public static final Collection COLLECTION = new Collection();
-
-    /**
-     * A dummy dataobject
-     */
-    public static final DataObject DATAOBJECT = new DataObject();
-
-    /**
-     * A dummy dataset
-     */
-    public static final Dataset DATASET = new Dataset();
-
-    /**
-     * A dummy document
-     */
-    public static final Document DOCUMENT = new Document();
 
     /**
      * A dummy list of facets

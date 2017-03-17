@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.search.rest;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -57,8 +59,13 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @RestController
 @ModuleInfo(name = "search", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("")
+@RequestMapping(CatalogController.PATH)
 public class CatalogController {
+
+    /**
+     * The main path
+     */
+    static final String PATH = "";
 
     /**
      * Service performing the search from the query string
@@ -125,7 +132,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.")
-    public ResponseEntity<Resource<Collection>> getCollection(@PathVariable("urn") UniformResourceName pUrn)
+    public ResponseEntity<Resource<Collection>> getCollection(@Valid @PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Collection collection = searchService.get(pUrn);
         Resource<Collection> resource = toResource(collection);
@@ -164,7 +171,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.")
-    public ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName pUrn)
+    public ResponseEntity<Resource<Dataset>> getDataset(@Valid @PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Dataset dataset = searchService.get(pUrn);
         Resource<Dataset> resource = toResource(dataset);
@@ -203,7 +210,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.")
-    public ResponseEntity<Resource<DataObject>> getDataobject(@PathVariable("urn") UniformResourceName pUrn)
+    public ResponseEntity<Resource<DataObject>> getDataobject(@Valid @PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         DataObject dataobject = searchService.get(pUrn);
         Resource<DataObject> resource = toResource(dataobject);
@@ -228,7 +235,7 @@ public class CatalogController {
     @RequestMapping(path = "/dataobjects/search", method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
-            @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
+            @RequestParam(value = "facets", required = false) List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
         Page<DataObject> result = catalogSearchService.search(pQ, SearchType.DATAOBJECT, DataObject.class, pFacets,
                                                               pPageable, pAssembler);
@@ -254,8 +261,8 @@ public class CatalogController {
     @RequestMapping(path = "/dataobjects/datasets/search", method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
-            @RequestParam("q") String pQ, @RequestParam("facets") List<String> pFacets, final Pageable pPageable,
-            final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
+            @RequestParam("q") String pQ, @RequestParam(value = "facets", required = false) List<String> pFacets,
+            final Pageable pPageable, final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
         Page<Dataset> result = catalogSearchService.search(pQ, SearchType.DATAOBJECT, Dataset.class, pFacets, pPageable,
                                                            pAssembler);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
@@ -271,7 +278,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the document of passed URN_COLLECTION.")
-    public ResponseEntity<Resource<Document>> getDocument(@PathVariable("urn") UniformResourceName pUrn)
+    public ResponseEntity<Resource<Document>> getDocument(@Valid @PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Document document = searchService.get(pUrn);
         Resource<Document> resource = toResource(document);

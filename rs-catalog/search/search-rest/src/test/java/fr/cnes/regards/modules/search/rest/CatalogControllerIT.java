@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -22,7 +21,13 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.crawler.dao.IEsRepository;
+import fr.cnes.regards.modules.entities.domain.Collection;
+import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 
 /**
@@ -58,6 +63,26 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
+     * A dummy collection
+     */
+    public static final Collection COLLECTION = new Collection(null, DEFAULT_TENANT, null);
+
+    /**
+     * A dummy dataobject
+     */
+    public static final DataObject DATAOBJECT = new DataObject(null, DEFAULT_TENANT, null);
+
+    /**
+     * A dummy dataset
+     */
+    public static final Dataset DATASET = new Dataset(null, DEFAULT_TENANT, null);
+
+    /**
+     * A dummy document
+     */
+    public static final Document DOCUMENT = new Document(null, DEFAULT_TENANT, null);
+
+    /**
      * @throws java.lang.Exception
      */
     @Before
@@ -68,10 +93,10 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         // Populate the ElasticSearch repository
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         esRepository.createIndex(DEFAULT_TENANT);
-        esRepository.save(DEFAULT_TENANT, CatalogControllerTestUtils.COLLECTION);
-        esRepository.save(DEFAULT_TENANT, CatalogControllerTestUtils.DATASET);
-        esRepository.save(DEFAULT_TENANT, CatalogControllerTestUtils.DATAOBJECT);
-        esRepository.save(DEFAULT_TENANT, CatalogControllerTestUtils.DOCUMENT);
+        esRepository.save(DEFAULT_TENANT, COLLECTION);
+        esRepository.save(DEFAULT_TENANT, DATASET);
+        esRepository.save(DEFAULT_TENANT, DATAOBJECT);
+        esRepository.save(DEFAULT_TENANT, DOCUMENT);
     }
 
     /**
@@ -83,10 +108,25 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Check that the system allows to se
+     * Le système doit permettre de réaliser une recherche par critères sur l’ensemble du catalogue.
      */
     @Test
-    public final void testSearchAll_withAllParams() {
+    @Purpose("Le système doit permettre de réaliser une recherche par critères sur l’ensemble du catalogue.")
+    @Requirement("REGARDS_DSL_DAM_CAT_510")
+    public final void testSearchAll() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        performDefaultGet("/search", expectations, "Error searching all entities", builder);
+    }
+
+    /**
+     * Le système doit permettre de fournir des facettes pour toute recherche dans le catalogue.
+     */
+    @Test
+    @Purpose("Le système doit permettre de fournir des facettes pour toute recherche dans le catalogue.")
+    @Requirement("REGARDS_DSL_DAM_CAT_610")
+    public final void testSearchAll_withFacettes() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q)
@@ -95,30 +135,39 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getCollection(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+     * Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.
      */
     @Test
+    @Purpose("Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.")
+    @Requirement("REGARDS_DSL_DAM_COL_310")
     public final void testGetCollection() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet("/collections/{urn}", expectations, "Error retrieving a collection", COLLECTION.getIpId());
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchCollections(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+     * Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des
+     * éléments du modèle de données.
      */
     @Test
+    @Purpose("Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
+    @Requirement("REGARDS_DSL_DAM_COL_410")
     public final void testSearchCollections() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        performDefaultGet("/collections/search", expectations, "Error searching collections", builder);
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDataset(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+     * Cette fonction permet de récupérer un jeu de données
      */
     @Test
     public final void testGetDataset() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet("/datasets/{urn}", expectations, "Error retrieving a dataset", DATASET.getIpId());
     }
 
     /**
@@ -127,16 +176,22 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDatasets() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDataobject(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+     * Le système doit permettre de consulter les métadonnées d’un objet de données du catalogue.
      */
     @Test
+    @Purpose("Le système doit permettre de consulter les métadonnées d’un objet de données du catalogue.")
+    @Requirement("REGARDS_DSL_DAM_CAT_470")
     public final void testGetDataobject() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet("/dataobjects/{urn}", expectations, "Error retrieving a dataobject", DATAOBJECT.getIpId());
     }
 
     /**
@@ -145,7 +200,10 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjects() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        performDefaultGet("/dataobjects/search", expectations, "Error searching dataobjects", builder);
     }
 
     /**
@@ -154,34 +212,37 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
+                          builder);
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDocument(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+     * Le système doit permettre de manière synchrone d’accéder aux informations d’un document via son IP_ID.
      */
     @Test
+    @Purpose("Le système doit permettre de manière synchrone d’accéder aux informations d’un document via son IP_ID.")
+    @Requirement("REGARDS_DSL_DAM_DOC_310")
     public final void testGetDocument() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet("/documents/{urn}", expectations, "Error retrieving a document", DOCUMENT.getIpId());
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDocuments(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+     * Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des
+     * éléments du modèle de données.
      */
     @Test
+    @Purpose("Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
+    @Requirement("REGARDS_DSL_DAM_DOC_510")
     public final void testSearchDocuments() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#doSearch(java.lang.String, fr.cnes.regards.modules.search.rest.CatalogController.SearchType, java.lang.Class, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testDoSearch() {
-        Assert.fail("Not yet implemented"); // TODO
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        performDefaultGet("/documents/search", expectations, "Error searching documents", builder);
     }
 
     /*
