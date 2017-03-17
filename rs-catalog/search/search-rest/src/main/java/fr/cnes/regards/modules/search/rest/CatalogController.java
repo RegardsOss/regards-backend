@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.search.rest;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.crawler.domain.IIndexable;
 import fr.cnes.regards.modules.crawler.domain.SearchKey;
 import fr.cnes.regards.modules.crawler.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.crawler.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.crawler.domain.facet.FacetType;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
@@ -174,7 +172,7 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam("q") String pQ,
             @RequestParam("facets") List<String> pFacets, @RequestParam("sort") Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<AbstractEntity> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.ALL, pFacets, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.ALL, AbstractEntity.class, pFacets, pSort, pPageable, pAssembler);
     }
 
     /**
@@ -216,7 +214,7 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(@RequestParam("q") String pQ,
             @RequestParam("sort") Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.COLLECTION, null, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.COLLECTION, Collection.class, null, pSort, pPageable, pAssembler);
     }
 
     /**
@@ -258,7 +256,7 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam("q") String pQ,
             @RequestParam("sort") Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DATASET, null, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.DATASET, Dataset.class, null, pSort, pPageable, pAssembler);
     }
 
     /**
@@ -302,7 +300,35 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
             @RequestParam("facets") List<String> pFacets, @RequestParam("sort") Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DATAOBJECT, pFacets, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.DATAOBJECT, DataObject.class, pFacets, pSort, pPageable, pAssembler);
+    }
+
+    /**
+     * Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the
+     * associated datasets.
+     *
+     * @param pQ
+     *            the OpenSearch-format query
+     * @param pFacets
+     *            the facets to apply
+     * @param pSort
+     *            the sort
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of datasets matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = "/dataobjects/datasets/search", method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
+    public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
+            @RequestParam("q") String pQ, @RequestParam("facets") List<String> pFacets,
+            @RequestParam("sort") Sort pSort, final Pageable pPageable,
+            final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
+        return doSearch(pQ, SearchType.DATAOBJECT, Dataset.class, pFacets, pSort, pPageable, pAssembler);
     }
 
     /**
@@ -344,7 +370,7 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(@RequestParam("q") String pQ,
             @RequestParam("sort") Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
-        return doSearch(pQ, SearchType.DOCUMENT, null, pSort, pPageable, pAssembler);
+        return doSearch(pQ, SearchType.DOCUMENT, Document.class, null, pSort, pPageable, pAssembler);
     }
 
     /**
@@ -354,6 +380,8 @@ public class CatalogController {
      *            the OpenSearch-format query
      * @param pSearchType
      *            the indexed type on which we perform the search (not necessary the type returned!)
+     * @param pResultClass
+     *            the returned class. Most of the time, the same as the search type, expect for joint searches.
      * @param pFacets
      *            the facets applicable
      * @param pSort
@@ -366,40 +394,13 @@ public class CatalogController {
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
-    @SuppressWarnings({ "unchecked" })
     public <T extends IIndexable> ResponseEntity<PagedResources<Resource<T>>> doSearch(String pQ,
-            SearchType pSearchType, List<String> pFacets, Sort pSort, final Pageable pPageable,
+            SearchType pSearchType, Class<T> pResultClass, List<String> pFacets, Sort pSort, final Pageable pPageable,
             final PagedResourcesAssembler<T> pAssembler) throws SearchException {
         try {
-
-            Class<T> resultClass = (Class<T>) TO_RESULT_CLASS.get(pSearchType);
-
             // Build criterion from query
             ICriterion criterion;
             criterion = queryParser.parse(pQ);
-
-            // Special case of dataobjects: we might change the return type
-            if (SearchType.DATAOBJECT.equals(pSearchType)) {
-                // Handle "target" criterion
-                Optional<ICriterion> targetCriterion = criterion.accept(new NamedCriterionFinderVisitor("target"));
-                if (targetCriterion.isPresent()) {
-                    StringMatchCriterion crit = (StringMatchCriterion) targetCriterion.get();
-                    resultClass = (Class<T>) TO_RESULT_CLASS.get(SearchType.valueOf(crit.getValue()));
-                }
-
-                // Handle "dataset" criterion
-                Optional<ICriterion> datasetCriterion = criterion.accept(new NamedCriterionFinderVisitor("dataset"));
-                if (datasetCriterion.isPresent()) {
-                    criterion = filterPlugin.addFilter(null, criterion);
-                    resultClass = (Class<T>) Dataset.class;
-                }
-
-                // Handle "dataset" criterion
-                Optional<ICriterion> datasetsCriterion = criterion.accept(new NamedCriterionFinderVisitor("datasets"));
-                if (datasetsCriterion.isPresent()) {
-                    resultClass = (Class<T>) Dataset.class;
-                }
-            }
 
             // Apply security filters
             criterion = accessRightFilter.removeGroupFilter(criterion);
@@ -409,8 +410,8 @@ public class CatalogController {
             // Perform the search
             Page<T> entities;
             SearchKey<T> searchKey = new SearchKey<>(runtimeTenantResolver.getTenant(), pSearchType.toString(),
-                    resultClass);
-            if (!TO_RESULT_CLASS.get(pSearchType).equals(resultClass)) {
+                    pResultClass);
+            if (!TO_RESULT_CLASS.get(pSearchType).equals(pResultClass)) {
                 entities = searchService.searchAndReturnJoinedEntities(searchKey, pPageable.getPageSize(), criterion);
             } else {
                 LinkedHashMap<String, Boolean> ascSortMap = null;
