@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -18,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -41,6 +45,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicroserviceAuthoritiesProvider.class);
+
+    /**
      * Current microservice name
      */
     private final String microserviceName;
@@ -56,28 +65,44 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     private final IRolesClient roleClient;
 
     /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      *
      * Constructor
      *
+     * @param pMicroserviceName
+     *            current microservice name
      * @param pRoleClient
      *            Feign client to query administration service for roles
      * @param pResourcesClient
      *            Feign client to query administration service for resources
+     * @param runtimeTenantResolver
+     *            runtime tenant resolver
      * @since 1.0-SNAPSHOT
      */
     public MicroserviceAuthoritiesProvider(final String pMicroserviceName, final IResourcesClient pResourcesclient,
-            final IRolesClient pRolesClient) {
+            final IRolesClient pRolesClient, IRuntimeTenantResolver runtimeTenantResolver) {
         super();
         microserviceName = pMicroserviceName;
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
+    public List<ResourceMapping> registerEndpoints(String tenant, List<ResourceMapping> localEndpoints) {
+
+        // Specified the working tenant
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.debug("Registering endpoints for tenant {}", tenant);
+
         // Register endpoints to administration service and retrieve configured ones
+        FeignSecurityManager.asSystem();
         final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
-                                                                                            pLocalEndpoints);
+                                                                                            localEndpoints);
         if (response.getStatusCode().equals(HttpStatus.OK)) {
 
             // get a map that for each ResourcesAccess ra links the roles containing ra
@@ -90,14 +115,20 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
             return multimap.asMap().entrySet().stream()
                     .map(entry -> buildResourceMapping(entry.getKey(), entry.getValue())).collect(Collectors.toList());
         } else {
-            throw new ApplicationContextException("Error registring endpoints to administration service");
+            throw new ApplicationContextException("Error registering endpoints to administration service");
         }
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities() {
+    public List<RoleAuthority> getRoleAuthorities(String tenant) {
+
+        // Specified the working tenant
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.debug("Retrieving role authorities for tenant {}", tenant);
+
         final List<RoleAuthority> roleAuths = new ArrayList<>();
 
+        FeignSecurityManager.asSystem();
         final ResponseEntity<List<Resource<Role>>> result = roleClient.retrieveRoles();
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {

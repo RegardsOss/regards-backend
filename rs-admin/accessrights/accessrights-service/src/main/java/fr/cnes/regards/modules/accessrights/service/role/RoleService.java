@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -209,7 +210,7 @@ public class RoleService implements IRoleService {
         };
 
         // For each tenant, inject tenant in context and create (if needed) default roles
-        try (Stream<String> tenantsStream = tenantResolver.getAllTenants().stream()) {
+        try (Stream<String> tenantsStream = tenantResolver.getAllActiveTenants().stream()) {
             tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenant);
         }
     }
@@ -350,7 +351,7 @@ public class RoleService implements IRoleService {
      * @return true if the given role is the one of the user
      */
     private boolean isCurrentUserRole(Role pRole) {
-        return jwtService.getActualRole().equals(pRole.getName());
+        return SecurityUtils.getActualRole().equals(pRole.getName());
     }
 
     /**

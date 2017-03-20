@@ -41,7 +41,8 @@ public class TenantController {
 
     @ResourceAccess(description = "List all fully configured tenants", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET, value = "/{pMicroserviceName}")
-    public ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable String pMicroserviceName) {
+    public ResponseEntity<Set<String>> getAllActiveTenants(
+            @PathVariable("pMicroserviceName") String pMicroserviceName) {
         return ResponseEntity.ok(tenantService.getAllActiveTenants(pMicroserviceName));
     }
 }

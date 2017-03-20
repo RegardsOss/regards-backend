@@ -6,6 +6,8 @@ package fr.cnes.regards.microservices.administration;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +45,7 @@ public class RemoteTenantResolver implements ITenantResolver {
     /**
      * Initial Feign client to administration service to retrieve informations about projects
      */
-    private final ITenantClient tenantClient;
+    private ITenantClient tenantClient;
 
     /**
      * Feign security manager
@@ -58,7 +60,10 @@ public class RemoteTenantResolver implements ITenantResolver {
     public RemoteTenantResolver(DiscoveryClient pDiscoveryClient, FeignSecurityManager pFeignSecurityManager) {
         discoveryClient = pDiscoveryClient;
         this.feignSecurityManager = pFeignSecurityManager;
+    }
 
+    @PostConstruct
+    public void initClient() {
         final List<ServiceInstance> instances = discoveryClient.getInstances("rs-admin");
         if (instances.isEmpty()) {
             String errorMessage = "No administration instance found. Microservice cannot start.";

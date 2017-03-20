@@ -25,5 +25,5 @@ public interface ITenantClient {
     public ResponseEntity<Set<String>> getAllTenants();
 
     @RequestMapping(method = RequestMethod.GET, value = "/{pMicroserviceName}")
-    public ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable String pMicroserviceName);
+    public ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable("pMicroserviceName") String pMicroserviceName);
 }

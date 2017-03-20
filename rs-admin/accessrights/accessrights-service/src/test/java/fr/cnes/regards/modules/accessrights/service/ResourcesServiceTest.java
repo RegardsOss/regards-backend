@@ -4,10 +4,7 @@
 package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -15,27 +12,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.resources.ResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
@@ -71,6 +62,11 @@ public class ResourcesServiceTest {
      * Mock to manage projects resolver
      */
     private ITenantResolver tenantResolverMock;
+
+    /**
+     * Mock
+     */
+    private IRuntimeTenantResolver runtimeTenantResolverMock;
 
     /**
      * Stub for JPA Repository
@@ -131,14 +127,11 @@ public class ResourcesServiceTest {
         tenants.add("tenant1");
         Mockito.when(tenantResolverMock.getAllTenants()).thenReturn(tenants);
 
-        JWTService jwtService = new JWTService();
-        jwtService.setSecret("123456789");
+        SecurityUtils.mockActualRole("ADMIN");
 
-        jwtService = Mockito.spy(jwtService);
-        Mockito.stub(jwtService.getActualRole()).toReturn("ADMIN");
+        runtimeTenantResolverMock = Mockito.mock(IRuntimeTenantResolver.class);
 
-        resourcesService = Mockito.spy(new ResourcesService("rs-test", discoveryClientMock, resourcesRepo,
-                roleServiceMock, jwtService, tenantResolverMock, Mockito.mock(FeignSecurityManager.class)));
+        resourcesService = Mockito.spy(new ResourcesService(resourcesRepo, roleServiceMock));
     }
 
     @Purpose("Check that the collect resources functionnality is well done when no resources are collected")
@@ -147,55 +140,10 @@ public class ResourcesServiceTest {
     public void testEmptyResourcesToCollect() throws EntityNotFoundException {
         resourcesRepo.deleteAll();
         Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
-        resourcesService.init();
         final Page<ResourcesAccess> resultPage = resourcesService.retrieveRessources(new PageRequest(0, 20));
         Assert.assertNotNull(resultPage);
         Assert.assertEquals(resultPage.getNumberOfElements(), 0);
         Assert.assertTrue(resultPage.getContent().isEmpty());
-    }
-
-    /**
-     * Check that the collect resources functionnality is well done for remote services resources.
-     *
-     * @throws EntityNotFoundException
-     *             when no role with passed name could be found
-     */
-    @Purpose("Check that the collect resources functionnality is well done for remote services resources")
-    @Requirement("REGARDS_DSL_ADM_ADM_240")
-    @Test
-    public void testRemoteResourcesToCollect() throws EntityNotFoundException {
-
-        resourcesRepo.deleteAll();
-
-        final List<ResourceMapping> resources = new ArrayList<>();
-        final Map<String, Object> attributs = new HashMap<>();
-        attributs.put("name", "/test/premier");
-        attributs.put("description", "premier test");
-        attributs.put("role", DefaultRole.ADMIN);
-        ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/premier", "Controller", RequestMethod.GET));
-        attributs.put("name", "/test/second");
-        attributs.put("description", "second test");
-        resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/second", "Controller", RequestMethod.POST));
-        attributs.put("name", "/test/third");
-        attributs.put("description", "third test");
-        resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class, null);
-        resources.add(new ResourceMapping(resourceAccess, "/test/third", "Controller", RequestMethod.DELETE));
-
-        final List<String> services = new ArrayList<>();
-        services.add("test-service");
-
-        Mockito.when(discoveryClientMock.getServices()).thenReturn(services);
-
-        final RoleFactory factory = new RoleFactory();
-        Mockito.when(roleServiceMock.retrieveRole(DefaultRole.ADMIN.toString()))
-                .thenReturn(factory.withId(1L).createAdmin());
-
-        Mockito.doReturn(resources).when(resourcesService).getRemoteResources(Mockito.anyString());
-
-        resourcesService.init();
-
     }
 
     @Test

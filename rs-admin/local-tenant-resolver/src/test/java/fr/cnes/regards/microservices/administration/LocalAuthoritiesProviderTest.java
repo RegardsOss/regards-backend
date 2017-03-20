@@ -130,7 +130,7 @@ public class LocalAuthoritiesProviderTest {
     @Purpose("Check cors requests access by role with date limitation")
     @Test
     public void checkCorsRequestsAccessByRole() throws SecurityException {
-        final List<RoleAuthority> roles = provider.getRoleAuthorities();
+        final List<RoleAuthority> roles = provider.getRoleAuthorities(AuthoritiesTestConfiguration.PROJECT_NAME);
         Assert.assertEquals(roles.size(), roleRepository.findAll().size());
         for (final RoleAuthority role : roles) {
             switch (RoleAuthority.getRoleName(role.getAuthority())) {

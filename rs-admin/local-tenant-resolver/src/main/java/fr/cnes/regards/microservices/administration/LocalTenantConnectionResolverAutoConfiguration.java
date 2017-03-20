@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
@@ -72,8 +73,9 @@ public class LocalTenantConnectionResolverAutoConfiguration {
      */
     @Bean
     @Primary
-    IAuthoritiesProvider authoritiesProvider(IRoleService pRoleService, IResourcesService pResourcesService) {
-        return new LocalAuthoritiesProvider(microserviceName, pRoleService, pResourcesService);
+    IAuthoritiesProvider authoritiesProvider(IRoleService pRoleService, IResourcesService pResourcesService,
+            IRuntimeTenantResolver runtimeTenantResolver) {
+        return new LocalAuthoritiesProvider(microserviceName, pRoleService, pResourcesService, runtimeTenantResolver);
     }
 
 }

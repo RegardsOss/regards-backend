@@ -10,12 +10,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -38,6 +41,11 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalAuthoritiesProvider.class);
+
+    /**
      * Current microservice name
      */
     private final String microserviceName;
@@ -52,12 +60,19 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      */
     private final IResourcesService resourcesService;
 
+    /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     public LocalAuthoritiesProvider(@Value("${spring.application.name") final String pMicroserviceName,
-            final IRoleService pRoleService, final IResourcesService pResourcesService) {
+            final IRoleService pRoleService, final IResourcesService pResourcesService,
+            IRuntimeTenantResolver runtimeTenantResolver) {
         super();
         microserviceName = pMicroserviceName;
         roleService = pRoleService;
         resourcesService = pResourcesService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     /**
@@ -65,14 +80,21 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      * Save new endpoints with default configuration if they doesn't exists and return configured endpoints of the
      * administration microservice
      *
-     * @param pLocalEndpoints
+     * @param tenant
+     *            working tenant
+     * @param localEndpoints
      *            Collected endpoints with default configuration
      * @return All configured endpoints of the administration microservice
      * @since 1.0-SNAPSHOT
      */
     @Override
-    public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
-        resourcesService.registerResources(pLocalEndpoints, microserviceName);
+    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> localEndpoints) {
+
+        // Specified the working tenant
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.debug("Registering endpoints for tenant {}", tenant);
+
+        resourcesService.registerResources(localEndpoints, microserviceName);
         // get a map that for each ResourcesAccess ra links the roles containing ra
         Set<Role> roles = roleService.retrieveRoles();
         SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
@@ -95,7 +117,12 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities() {
+    public List<RoleAuthority> getRoleAuthorities(String tenant) {
+
+        // Specified the working tenant
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.debug("Retrieving role authorities for tenant {}", tenant);
+
         final List<RoleAuthority> results = new ArrayList<>();
         final Set<Role> roles = roleService.retrieveRoles();
         for (final Role role : roles) {

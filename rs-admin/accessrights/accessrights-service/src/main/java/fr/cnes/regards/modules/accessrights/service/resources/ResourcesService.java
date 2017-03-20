@@ -8,13 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,18 +17,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 
-import feign.FeignException;
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.client.IResourcesClient;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -48,6 +36,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Sébastien Binda
  * @author Christophe Mertz
  * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
 @Service
@@ -59,17 +48,6 @@ public class ResourcesService implements IResourcesService {
     private static final Logger LOG = LoggerFactory.getLogger(ResourcesService.class);
 
     /**
-     * Current microservice name
-     */
-
-    private final String microserviceName;
-
-    /**
-     * Eureka discovery client to access other microservices.
-     */
-    private final DiscoveryClient discoveryClient;
-
-    /**
      * JPA Repository
      */
     private final IResourcesAccessRepository resourceAccessRepo;
@@ -79,59 +57,16 @@ public class ResourcesService implements IResourcesService {
      */
     private final IRoleService roleService;
 
-    /**
-     * JWT Security service
-     */
-    private final JWTService jwtService;
-
-    /**
-     * Tenant resolver to identify configured tenants
-     */
-    private final ITenantResolver tenantResolver;
-
-    /**
-     * Enable to init a feign client programmatically
-     */
-    private final FeignSecurityManager feignSecurityManager;
-
-    public ResourcesService(@Value("${spring.application.name}") String pMicroserviceName,
-            DiscoveryClient pDiscoveryClient, IResourcesAccessRepository pResourceAccessRepo, IRoleService pRoleService,
-            JWTService pJwtService, ITenantResolver pTenantResolver, FeignSecurityManager pFeignSecurityManager) {
+    public ResourcesService(IResourcesAccessRepository pResourceAccessRepo, IRoleService pRoleService) {
         super();
-        microserviceName = pMicroserviceName;
-        discoveryClient = pDiscoveryClient;
         resourceAccessRepo = pResourceAccessRepo;
         roleService = pRoleService;
-        jwtService = pJwtService;
-        tenantResolver = pTenantResolver;
-        this.feignSecurityManager = pFeignSecurityManager;
-    }
-
-    /**
-     *
-     * Init resources when microservice starts
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @PostConstruct
-    public void init() {
-        try {
-            for (final String tenant : tenantResolver.getAllTenants()) {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole("rs-admin"), "");
-                // Collect resources for each tenant configured
-                for (final String service : discoveryClient.getServices()) {
-                    registerResources(getRemoteResources(service), service);
-                }
-            }
-        } catch (final JwtException e) {
-            LOG.error(e.getMessage(), e);
-        }
     }
 
     @Override
     public Page<ResourcesAccess> retrieveRessources(final Pageable pPageable) {
         Page<ResourcesAccess> results;
-        final String roleName = jwtService.getActualRole();
+        final String roleName = SecurityUtils.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
         if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
                 || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
@@ -155,7 +90,7 @@ public class ResourcesService implements IResourcesService {
     @Override
     public List<ResourcesAccess> retrieveRessources() {
         List<ResourcesAccess> results;
-        final String roleName = jwtService.getActualRole();
+        final String roleName = SecurityUtils.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
         if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
                 || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
@@ -196,7 +131,7 @@ public class ResourcesService implements IResourcesService {
     public Page<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName,
             final Pageable pPageable) throws EntityNotFoundException {
         Page<ResourcesAccess> results;
-        final String roleName = jwtService.getActualRole();
+        final String roleName = SecurityUtils.getActualRole();
         // If role is System role or InstanceAdminRole or ProjectAdmin role retrieve all resources
         if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
                 || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
@@ -230,6 +165,7 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName) {
+
         final List<ResourcesAccess> resources = new ArrayList<>();
 
         // Retrieve already configured resources for the given microservice
@@ -278,34 +214,6 @@ public class ResourcesService implements IResourcesService {
 
         }
         return defaultResource;
-    }
-
-    /**
-     *
-     * Return the managed resource list of the given microservice.
-     *
-     * @param pMicroservice
-     *            microservice name
-     * @return List of {@link ResourceMapping} of the given microservice
-     * @since 1.0-SNAPSHOT
-     */
-    public List<ResourceMapping> getRemoteResources(final String pMicroservice) {
-        // Do not manage local resources
-        List<ResourceMapping> remoteResources = new ArrayList<>();
-        if (pMicroservice.equals(microserviceName)) {
-            return remoteResources;
-        }
-        try {
-            final List<ServiceInstance> instances = discoveryClient.getInstances(pMicroservice);
-            if (!instances.isEmpty()) {
-                IResourcesClient resourcesClient = FeignClientBuilder.build(new TokenClientProvider<>(
-                        IResourcesClient.class, instances.get(0).getUri().toString(), feignSecurityManager));
-                remoteResources = resourcesClient.getResources();
-            }
-        } catch (final FeignException e) {
-            LOG.error("Error getting resources from service " + pMicroservice, e);
-        }
-        return remoteResources;
     }
 
     /**

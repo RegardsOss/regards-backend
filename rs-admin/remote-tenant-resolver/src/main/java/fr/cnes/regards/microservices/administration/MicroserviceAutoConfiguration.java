@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -79,8 +80,10 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAuthoritiesProvider authoritiesProvider(final IResourcesClient pResourcesClient, final IRolesClient pRolesClient) {
-        return new MicroserviceAuthoritiesProvider(microserviceName, pResourcesClient, pRolesClient);
+    IAuthoritiesProvider authoritiesProvider(final IResourcesClient pResourcesClient, final IRolesClient pRolesClient,
+            IRuntimeTenantResolver runtimeTenantResolver) {
+        return new MicroserviceAuthoritiesProvider(microserviceName, pResourcesClient, pRolesClient,
+                runtimeTenantResolver);
     }
 
     /**

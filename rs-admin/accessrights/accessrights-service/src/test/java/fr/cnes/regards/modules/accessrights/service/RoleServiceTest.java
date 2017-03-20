@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -435,7 +436,8 @@ public class RoleServiceTest {
             throws EntityNotFoundException, EntityOperationForbiddenException {
         // Mock
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
-        Mockito.when(jwtService.getActualRole()).thenReturn(DefaultRole.ADMIN.toString());
+        SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
+
         // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
             Set<Role> sonsOfPublic = new HashSet<>();
@@ -496,7 +498,7 @@ public class RoleServiceTest {
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
-        Mockito.when(jwtService.getActualRole()).thenReturn(DefaultRole.ADMIN.toString());
+        SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
         // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN <- PROJECT ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
             Set<Role> sonsOfPublic = new HashSet<>();
