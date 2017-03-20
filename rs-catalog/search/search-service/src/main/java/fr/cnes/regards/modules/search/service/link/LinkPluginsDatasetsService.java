@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
  *
  */
 @Service
-public class LinkPluginsDatasetsService {
+public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
     private final ILinkPluginsDatasetsRepository linkRepo;
 
@@ -41,6 +41,7 @@ public class LinkPluginsDatasetsService {
      * @return
      * @throws EntityNotFoundException
      */
+    @Override
     public LinkPluginsDatasets retrieveLink(Long pDatasetId) throws EntityNotFoundException {
         if (linkRepo.exists(pDatasetId)) {
             return linkRepo.findOne(pDatasetId);
@@ -72,6 +73,7 @@ public class LinkPluginsDatasetsService {
      * @return
      * @throws EntityNotFoundException
      */
+    @Override
     public LinkPluginsDatasets updateLink(Long pDatasetId, LinkPluginsDatasets pUpdatedLink)
             throws EntityNotFoundException {
         if (!existsDataset(pDatasetId)) {

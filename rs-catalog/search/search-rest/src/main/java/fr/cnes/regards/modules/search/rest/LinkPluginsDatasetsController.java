@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
-import fr.cnes.regards.modules.search.service.link.LinkPluginsDatasetsService;
+import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -29,7 +29,7 @@ public class LinkPluginsDatasetsController {
     public static final String PATH_LINK = "/linkplugindataset/{datasetId}";
 
     @Autowired
-    private LinkPluginsDatasetsService linkService;
+    private ILinkPluginsDatasetsService linkService;
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset")
