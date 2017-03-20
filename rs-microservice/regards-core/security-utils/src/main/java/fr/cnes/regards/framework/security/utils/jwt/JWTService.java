@@ -66,24 +66,6 @@ public class JWTService {
 
     /**
      *
-     *
-     * .
-     *
-     * @return role
-     * @since 1.0-SNAPSHOT
-     */
-    public String getActualRole() {
-        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
-        if ((authentication != null) && (authentication.getUser() != null)) {
-            return authentication.getUser().getRole();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     *
      * Inject a generated token in the {@link SecurityContextHolder}
      *
      * @param pTenant
@@ -211,7 +193,7 @@ public class JWTService {
 
     /**
      * retrieve the current token in place in the security context
-     * 
+     *
      * @return parsed token which is in the security context
      * @throws JwtException
      */

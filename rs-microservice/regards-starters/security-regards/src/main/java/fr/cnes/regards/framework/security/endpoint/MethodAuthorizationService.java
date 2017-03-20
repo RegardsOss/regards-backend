@@ -28,16 +28,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
 import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
-import fr.cnes.regards.framework.security.event.handler.UpdateAuthoritiesEventHandler;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * This service allows to set/get the REST resource method access authorizations.<br/>
@@ -73,12 +72,6 @@ public class MethodAuthorizationService {
     private ITenantResolver tenantResolver;
 
     /**
-     * JWT Security service
-     */
-    @Autowired
-    private JWTService jwtService;
-
-    /**
      * AMQP Object to send event on queue.
      */
     @Autowired
@@ -106,45 +99,25 @@ public class MethodAuthorizationService {
      */
     @PostConstruct
     public void init() {
-        refreshAuthorities();
+        // Init all authorities
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            refreshAuthorities(tenant);
+        }
         // Listen for every update authorities message
         // Update authorities event must be provided by administration service when the authorities configuration
         // are updated like resourceAccess or Roles configurations.
-        eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler(this));
+        eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler());
     }
 
     /**
      *
-     * Refresh all authorities configuration information for all tenants of the current microservice
+     * Refresh all authorities configuration information for tenant
      *
      * @since 1.0-SNAPSHOT
      */
-    public void refreshAuthorities() {
-        try {
-            jwtService.injectToken("instance", RoleAuthority.getSysRole(microserviceName), microserviceName);
-            tenantResolver.getAllTenants().forEach(this::refreshTenantAuthorities);
-        } catch (final JwtException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    /**
-     *
-     * Refresh all authorities configuration information for given tenant of the current microservice
-     *
-     * @param pTenant
-     *            tenant to refresh
-     * @since 1.0-SNAPSHOT
-     */
-    private void refreshTenantAuthorities(final String pTenant) {
-        try {
-            jwtService.injectToken(pTenant, RoleAuthority.getSysRole(microserviceName), microserviceName);
-            registerMethodResourcesAccessByTenant(pTenant);
-            collectRolesByTenant(pTenant);
-        } catch (final JwtException e) {
-            LOG.error(String.format("Error during resources access initialization for tenant %s", pTenant));
-            LOG.error(e.getMessage(), e);
-        }
+    private void refreshAuthorities(String tenant) {
+        registerMethodResourcesAccessByTenant(tenant);
+        collectRolesByTenant(tenant);
     }
 
     /**
@@ -155,8 +128,8 @@ public class MethodAuthorizationService {
      *            tenant
      * @since 1.0-SNAPSHOT
      */
-    private void registerMethodResourcesAccessByTenant(final String pTenant) {
-        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(getResources());
+    private void registerMethodResourcesAccessByTenant(String pTenant) {
+        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(pTenant, getResources());
         if (grantedAuthoritiesByTenant.get(pTenant) != null) {
             grantedAuthoritiesByTenant.get(pTenant).clear();
         }
@@ -173,8 +146,8 @@ public class MethodAuthorizationService {
      *            tenant
      * @since 1.0-SNAPSHOT
      */
-    private void collectRolesByTenant(final String pTenant) {
-        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities();
+    private void collectRolesByTenant(String pTenant) {
+        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities(pTenant);
         if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
             grantedRolesIpAddressesByTenant.get(pTenant).clear();
         }
@@ -196,6 +169,7 @@ public class MethodAuthorizationService {
 
         // Check for all RestController classes
         scanner.addIncludeFilter(new AnnotationTypeFilter(RestController.class));
+        // FIXME externalize base package / enable multiple base packages
         for (final BeanDefinition def : scanner.findCandidateComponents("fr.cnes.regards")) {
             try {
                 final Class<?> controller = Class.forName(def.getBeanClassName());
@@ -417,5 +391,20 @@ public class MethodAuthorizationService {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     *
+     * Update local authority cache on authority event by tenant
+     *
+     * @author Marc Sordi
+     *
+     */
+    private class UpdateAuthoritiesEventHandler implements IHandler<UpdateAuthoritiesEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<UpdateAuthoritiesEvent> pT) {
+            refreshAuthorities(pT.getTenant());
+        }
     }
 }
