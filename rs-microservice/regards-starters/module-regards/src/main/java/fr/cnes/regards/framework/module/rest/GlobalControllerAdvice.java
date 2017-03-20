@@ -203,7 +203,8 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(SearchException.class)
     public ResponseEntity<ServerErrorResponse> searchException(final SearchException pException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
+                pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
     }
 
 }
