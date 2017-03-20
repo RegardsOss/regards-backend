@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -98,91 +97,91 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * Test method for
      * {@link fr.cnes.regards.modules.search.rest.CatalogController#getCollection(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
      */
-    @Test
-    public final void testGetCollection() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchCollections(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testSearchCollections() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDataset(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
-     */
-    @Test
-    public final void testGetDataset() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDatasets(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testSearchDatasets() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDataobject(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
-     */
-    @Test
-    public final void testGetDataobject() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(java.lang.String, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testSearchDataobjects() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjectsReturnDatasets(java.lang.String, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testSearchDataobjectsReturnDatasets() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDocument(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
-     */
-    @Test
-    public final void testGetDocument() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDocuments(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testSearchDocuments() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#doSearch(java.lang.String, fr.cnes.regards.modules.search.rest.CatalogController.SearchType, java.lang.Class, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
-     */
-    @Test
-    public final void testDoSearch() {
-        Assert.fail("Not yet implemented"); // TODO
-    }
+    //    @Test
+    //    public final void testGetCollection() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchCollections(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+    //     */
+    //    @Test
+    //    public final void testSearchCollections() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDataset(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+    //     */
+    //    @Test
+    //    public final void testGetDataset() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDatasets(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+    //     */
+    //    @Test
+    //    public final void testSearchDatasets() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDataobject(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+    //     */
+    //    @Test
+    //    public final void testGetDataobject() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(java.lang.String, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+    //     */
+    //    @Test
+    //    public final void testSearchDataobjects() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjectsReturnDatasets(java.lang.String, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+    //     */
+    //    @Test
+    //    public final void testSearchDataobjectsReturnDatasets() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#getDocument(fr.cnes.regards.modules.entities.urn.UniformResourceName)}.
+    //     */
+    //    @Test
+    //    public final void testGetDocument() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDocuments(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+    //     */
+    //    @Test
+    //    public final void testSearchDocuments() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
+    //
+    //    /**
+    //     * Test method for
+    //     * {@link fr.cnes.regards.modules.search.rest.CatalogController#doSearch(java.lang.String, fr.cnes.regards.modules.search.rest.CatalogController.SearchType, java.lang.Class, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+    //     */
+    //    @Test
+    //    public final void testDoSearch() {
+    //        Assert.fail("Not yet implemented"); // TODO
+    //    }
 
     /*
      * (non-Javadoc)
