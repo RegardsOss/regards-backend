@@ -91,7 +91,7 @@ public class FeignSecurityManager {
         String tenant = runtimeTenantResolver.getTenant();
         if (tenant == null) {
             // Allows request without tenant for instance endpoints
-            tenant = "_UNKNOWN_";
+            tenant = "_NOTENANT_";
         }
         String role = RoleAuthority.getSysRole(appName);
         LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ", appName, tenant,
