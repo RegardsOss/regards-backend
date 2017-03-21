@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.security.filter.CorsFilter;
 import fr.cnes.regards.framework.security.filter.IpFilter;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
+import fr.cnes.regards.framework.security.filter.PublicAuthenticationFilter;
 import fr.cnes.regards.framework.security.filter.RequestLogFilter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
@@ -68,8 +69,12 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         pHttp.addFilterBefore(new RequestLogFilter(), UsernamePasswordAuthenticationFilter.class);
 
+        // Add public filter
+        // TODO set in gateway
+        pHttp.addFilterAfter(new PublicAuthenticationFilter(jwtService), RequestLogFilter.class);
+
         // Add JWT Authentication filter
-        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), jwtService), RequestLogFilter.class);
+        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager()), PublicAuthenticationFilter.class);
 
         // Add Ip filter after Authentication filter
         pHttp.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);

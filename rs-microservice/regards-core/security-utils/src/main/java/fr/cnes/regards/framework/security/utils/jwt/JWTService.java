@@ -34,9 +34,9 @@ import io.jsonwebtoken.impl.TextCodec;
 public class JWTService {
 
     /**
-     * Project claim
+     * Tenant claim
      */
-    public static final String CLAIM_PROJECT = "project";
+    public static final String CLAIM_TENANT = "tenant";
 
     /**
      * Role claim
@@ -69,7 +69,7 @@ public class JWTService {
      * Inject a generated token in the {@link SecurityContextHolder}
      *
      * @param pTenant
-     *            Project
+     *            tenant
      * @param pRole
      *            Role name
      * @param pUserName
@@ -102,7 +102,7 @@ public class JWTService {
      * Mock to simulate a token in the {@link SecurityContextHolder}.
      *
      * @param pTenant
-     *            project
+     *            tenant
      * @param pRole
      *            Role name
      * @since 1.0-SNAPSHOT
@@ -137,12 +137,12 @@ public class JWTService {
 
             final UserDetails user = new UserDetails();
 
-            final String project = claims.getBody().get(CLAIM_PROJECT, String.class);
-            if (project == null) {
-                LOG.error("The project cannot be null");
-                throw new MissingClaimException(CLAIM_PROJECT);
+            final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
+            if (tenant == null) {
+                LOG.error("The tenant cannot be null");
+                throw new MissingClaimException(CLAIM_TENANT);
             }
-            user.setTenant(project);
+            user.setTenant(tenant);
 
             final String name = claims.getBody().getSubject();
             if (name == null) {
@@ -172,13 +172,13 @@ public class JWTService {
 
     /**
      *
-     * FIXME : JWT should be completed with expiration date and data access groups
+     * FIXME : JWT should be completed with expiration date
      *
      * FIXME : JWT generate must manage RSA keys
      *
      * Generate a JWT handling the tenant name, the user name and its related role
      *
-     * @param pProject
+     * @param tenant
      *            tenant
      * @param pName
      *            user name
@@ -186,8 +186,8 @@ public class JWTService {
      *            user role
      * @return a Json Web Token
      */
-    public String generateToken(final String pProject, final String pName, final String pRole) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(pProject, pRole, pName)).setSubject(pName)
+    public String generateToken(String tenant, String pName, String pRole) {
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, pRole, pName)).setSubject(pName)
                 .signWith(ALGO, TextCodec.BASE64.encode(secret)).compact();
     }
 
@@ -196,6 +196,7 @@ public class JWTService {
      *
      * @return parsed token which is in the security context
      * @throws JwtException
+     *             if JWT cannot be parsed
      */
     public JWTAuthentication getCurrentToken() throws JwtException {
         JWTAuthentication jwt = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -206,8 +207,8 @@ public class JWTService {
      *
      * Method to generate REGARDS JWT Tokens CLAIMS
      *
-     * @param pProject
-     *            project name
+     * @param tenant
+     *            tenant
      * @param pRole
      *            user role
      * @param pUserName
@@ -215,9 +216,9 @@ public class JWTService {
      * @return claim map
      * @since 1.0-SNAPSHOT
      */
-    public Map<String, Object> generateClaims(final String pProject, final String pRole, final String pUserName) {
+    public Map<String, Object> generateClaims(final String tenant, final String pRole, final String pUserName) {
         final Map<String, Object> claims = new HashMap<>();
-        claims.put(CLAIM_PROJECT, pProject);
+        claims.put(CLAIM_TENANT, tenant);
         claims.put(CLAIM_ROLE, pRole);
         claims.put(CLAIM_SUBJECT, pUserName);
         return claims;
