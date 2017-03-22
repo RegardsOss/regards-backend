@@ -29,10 +29,11 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 public interface ITenantConnectionClient {
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable String microservice,
+    public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice);
+    public ResponseEntity<List<TenantConnection>> getTenantConnections(
+            @PathVariable("microservice") String microservice);
 
 }
