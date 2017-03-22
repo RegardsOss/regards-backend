@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.search.domain.SearchType;
+import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
@@ -97,7 +97,7 @@ public class CatalogSearchServiceTest {
     @Test
     public void doSearch_shouldCallServiceWithRightParams() throws SearchException, QueryNodeException {
         // Prepare test
-        SearchType searchType = SearchType.DATAOBJECT;
+        EntityType searchType = EntityType.DATA;
         Class<DataObject> resultClass = DataObject.class;
         String q = CatalogSearchServiceTestUtils.Q;
         List<String> facets = CatalogSearchServiceTestUtils.FACETS;
@@ -119,7 +119,7 @@ public class CatalogSearchServiceTest {
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogSearchService.search(q, searchType, resultClass, facets, pageable, assembler);
+        catalogSearchService.search(q, searchType, resultClass, facets, pageable);
 
         // Check
         Mockito.verify(searchService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),

@@ -24,7 +24,23 @@ public class CatalogControllerTestUtils {
     /**
      * Dummy OpenSearch request
      */
-    public static final String Q = "integer:(2 AND 3) OR string:hello";
+    // public static final String Q = "integer:(2 AND 3) OR string:hello";
+    public static final String Q = "label:mycollection";
+
+    /**
+     * OpenSearch request expected to find a collection
+     */
+    public static final String Q_FINDS_ONE_COLLECTION = "label:mycollection";
+
+    /**
+     * OpenSearch request expected to find two datasets
+     */
+    public static final String Q_FINDS_TWO_DATASETS = "label:mydataset";
+
+    /**
+     * OpenSearch request expected to find one dataobject
+     */
+    public static final String Q_FINDS_ONE_DATAOBJECT = "label:mydataobject";
 
     /**
      * A dummy list of facets
@@ -40,7 +56,7 @@ public class CatalogControllerTestUtils {
             .build("integer", AttributeType.INTEGER).get();
 
     private static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build("string", AttributeType.STRING).get();
+            .build("label", AttributeType.STRING).get();
 
     private static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL,
                                                                         STRING_ATTRIBUTE_MODEL);
