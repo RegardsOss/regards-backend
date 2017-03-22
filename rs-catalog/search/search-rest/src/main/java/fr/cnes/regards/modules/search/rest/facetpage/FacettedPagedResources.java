@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.search.rest.facetpage;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
@@ -15,10 +15,9 @@ import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
  *
  * @author Xavier-Alexandre Brochard
  */
-@SuppressWarnings("rawtypes")
 public class FacettedPagedResources<T> extends PagedResources<T> {
 
-    private final List<IFacet> facets;
+    private final Set<IFacet<?>> facets;
 
     /**
      * @param pFacets
@@ -26,7 +25,7 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
      * @param pMetadata
      * @param pLinks
      */
-    public FacettedPagedResources(List<IFacet> pFacets, Collection<T> pContent, PageMetadata pMetadata,
+    public FacettedPagedResources(Set<IFacet<?>> pFacets, Collection<T> pContent, PageMetadata pMetadata,
             Iterable<Link> pLinks) {
         super(pContent, pMetadata, pLinks);
         facets = pFacets;
@@ -35,7 +34,7 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
     /**
      * @return the facets
      */
-    public List<IFacet> getFacets() {
+    public Set<IFacet<?>> getFacets() {
         return facets;
     }
 

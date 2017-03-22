@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.search.rest.facetpage;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -36,10 +36,10 @@ public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<
         super(pResolver, pBaseUri);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> pFacetPage) {
         PagedResources<Resource<T>> pagedResources = super.toResource(pFacetPage);
-        List<IFacet> facets = Lists.newArrayList(pFacetPage.getFacetMap().values());
+        Set<IFacet<?>> facets = pFacetPage.getFacets();
         Collection<Resource<T>> content = (Collection<Resource<T>>) HateoasUtils
                 .unwrapList(Lists.newArrayList(pagedResources.getContent()));
         PageMetadata metaData = pagedResources.getMetadata();
