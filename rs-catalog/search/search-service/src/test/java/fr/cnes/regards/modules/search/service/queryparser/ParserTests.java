@@ -617,4 +617,34 @@ public class ParserTests {
         expectedValueComparisons.add(new ValueComparison<LocalDateTime>(ComparisonOperator.LESS_OR_EQUAL, lowerValue));
         Assert.assertEquals(expectedValueComparisons, crit.getValueComparisons());
     }
+
+    @Test
+    @Purpose("Tests queries like tags:plop AND tags:(A\\:A OR B\\:B OR C\\:C)")
+    public void handlesSmallRealLifeQuery() throws QueryNodeException {
+        final String term = ParserTestsUtils.SMALL_REAL_LIFE_QUERY;
+        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof AndCriterion);
+
+        final AndCriterion crit = (AndCriterion) criterion;
+        Assert.assertEquals(2, crit.getCriterions().size());
+        Assert.assertTrue(crit.getCriterions().get(0) instanceof StringMatchCriterion);
+        Assert.assertTrue(crit.getCriterions().get(1) instanceof OrCriterion);
+    }
+
+    @Test
+    @Purpose("Checks that escaping special characters in not needed when using double quotes")
+    public void escapingNotNeededWhenDoubleQuotes() throws QueryNodeException {
+        final String term = ParserTestsUtils.UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE;
+        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+
+        Assert.assertNotNull(criterion);
+        Assert.assertTrue(criterion instanceof StringMatchCriterion);
+
+        final StringMatchCriterion crit = (StringMatchCriterion) criterion;
+        Assert.assertEquals(MatchType.EQUALS, crit.getType());
+        Assert.assertEquals("texte avec:des caractères+spéciaux", crit.getValue());
+    }
+
 }

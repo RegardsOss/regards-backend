@@ -55,6 +55,8 @@ public class ParserTestsUtils {
 
     public static final String LOCAL_DATE_TIME_ARRAY = "releases";
 
+    public static final String TAGS_FIELD = "tags";
+
     // Build some attribute models for all attribute types
     public static final AttributeModel BOOLEAN_ATTRIBUTE_MODEL = AttributeModelBuilder
             .build(BOOLEAN_FIELD, AttributeType.BOOLEAN).get();
@@ -104,15 +106,29 @@ public class ParserTestsUtils {
     public static final AttributeModel LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
             .build(LOCAL_DATE_TIME_ARRAY, AttributeType.DATE_ARRAY).get();
 
+    public static final AttributeModel TAGS_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build(TAGS_FIELD, AttributeType.STRING_ARRAY).get();
+
     public static final List<AttributeModel> LIST = Lists
             .newArrayList(BOOLEAN_ATTRIBUTE_MODEL, INTEGER_ATTRIBUTE_MODEL, DOUBLE_ATTRIBUTE_MODEL,
                           LONG_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL_1,
                           LOCAL_DATE_TIME_ATTRIBUTE_MODEL, INTEGER_RANGE_ATTRIBUTE_MODEL, DOUBLE_RANGE_ATTRIBUTE_MODEL,
                           LONG_RANGE_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_RANGE_ATTRIBUTE_MODEL,
                           INTEGER_ARRAY_ATTRIBUTE_MODEL, DOUBLE_ARRAY_ATTRIBUTE_MODEL, LONG_ARRAY_ATTRIBUTE_MODEL,
-                          STRING_ARRAY_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL);
+                          STRING_ARRAY_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL, TAGS_ATTRIBUTE_MODEL);
 
     public static final ResponseEntity<List<Resource<AttributeModel>>> CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(ParserTestsUtils.LIST));
+
+    /**
+     * A query like the ones the REGARDS frontend is likely to use
+     */
+    public static final String SMALL_REAL_LIFE_QUERY = "tags:plop AND tags:(A\\:A OR B\\:B OR C\\:C)";
+
+    /**
+     * A query with double quotes and special characters
+     */
+    public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE = STRING_FIELD
+            + ":\"texte avec:des caractères+spéciaux\"";
 
 }
