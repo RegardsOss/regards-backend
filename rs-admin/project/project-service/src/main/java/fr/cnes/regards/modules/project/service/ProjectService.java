@@ -79,10 +79,10 @@ public class ProjectService implements IProjectService {
 
         // Create project from properties files it does not exists yet
         for (final TenantConnection tenant : defaultProperties.getTenants()) {
-            if (projectRepository.findOneByName(tenant.getName()) == null) {
+            if (projectRepository.findOneByName(tenant.getTenant()) == null) {
                 LOG.info(String.format("Creating new project %s from static properties configuration",
-                                       tenant.getName()));
-                projectRepository.save(new Project("", "", true, tenant.getName()));
+                                       tenant.getTenant()));
+                projectRepository.save(new Project("", "", true, tenant.getTenant()));
             }
         }
     }

@@ -45,8 +45,7 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping("/project_connections")
 public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
@@ -83,7 +82,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "Retreieve all projects connections", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Retrieve all projects connections", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
             final Pageable pPageable, final PagedResourcesAssembler<ProjectConnection> pAssembler) {
         final Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnections(pPageable);
@@ -124,8 +123,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.GET, value = "?project_name={project_name}", produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant",
-            role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnectionsByProjectName(
             @RequestParam("project_name") final String pProjectName, final Pageable pPageable,
             final PagedResourcesAssembler<ProjectConnection> pAssembler) {
@@ -147,9 +145,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.GET, value = "?project_name={project_name}&microservice={microservice}")
     @ResponseBody
-    @ResourceAccess(
-            description = "retrieve a project connection associated to a given project and a given microservice",
-            role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "retrieve a project connection associated to a given project and a given microservice", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> retrieveProjectConnection(
             @RequestParam("project_name") final String pProjectName,
             @RequestParam("microservice") final String pMicroService) {

@@ -46,17 +46,18 @@ public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectCo
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.project.dao.IProjectConnectionRepository#findByProjectName(java.lang.String,
-     * org.springframework.data.domain.Pageable)
-     */
     @Override
     public Page<ProjectConnection> findByProjectName(final String pProjectName, final Pageable pPageable) {
         final List<ProjectConnection> list = entities.stream()
                 .filter(e -> e.getProject().getName().equals(pProjectName)).collect(Collectors.toList());
         return new PageImpl<>(list);
+    }
+
+    @Override
+    public List<ProjectConnection> findByMicroservice(String pMicroservice) {
+        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(pMicroservice))
+                .collect(Collectors.toList());
+        return list;
     }
 
 }

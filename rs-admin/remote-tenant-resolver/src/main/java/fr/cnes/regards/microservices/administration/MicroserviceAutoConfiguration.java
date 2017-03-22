@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -17,11 +16,9 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResol
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 
 /**
  *
@@ -43,12 +40,6 @@ public class MicroserviceAutoConfiguration {
     private String microserviceName;
 
     /**
-     * JWT Security service
-     */
-    @Autowired
-    private JWTService jwtService;
-
-    /**
      *
      * multintenantResolver
      *
@@ -61,10 +52,8 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    ITenantConnectionResolver multintenantResolver(final IProjectsClient pProjectsClient,
-            final IProjectConnectionClient pProjectConnectionClient, final ITenantResolver pTenantResolver) {
-        return new MicroserviceTenantConnectionResolver(microserviceName, jwtService, pProjectsClient,
-                pProjectConnectionClient, pTenantResolver);
+    ITenantConnectionResolver multintenantResolver(ITenantConnectionClient tenantConnectionClient) {
+        return new MicroserviceTenantConnectionResolver(microserviceName, tenantConnectionClient);
     }
 
     /**

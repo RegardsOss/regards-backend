@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -177,6 +178,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
     public ProjectConnection retrieveProjectConnectionById(final Long pId) throws EntityNotFoundException {
         final Optional<ProjectConnection> result = Optional.ofNullable(projectConnectionRepository.findOne(pId));
         return result.orElseThrow(() -> new EntityNotFoundException(pId, ProjectConnection.class));
+    }
+
+    @Override
+    public List<ProjectConnection> retrieveProjectConnection(String pMicroService) throws EntityNotFoundException {
+        return projectConnectionRepository.findByMicroservice(pMicroService);
     }
 
 }

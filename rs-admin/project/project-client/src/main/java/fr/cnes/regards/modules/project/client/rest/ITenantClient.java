@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 
 /**
+ *
+ * Tenant client
+ * 
  * @author Marc Sordi
  *
  */

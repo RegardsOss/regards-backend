@@ -96,7 +96,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     @Override
     public void addTenantConnection(final TenantConnection pTenantConnection) {
         try {
-            final Project project = projectService.retrieveProject(pTenantConnection.getName());
+            final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 
             final ProjectConnection projectConnection = new ProjectConnection(project, microserviceName,
                     pTenantConnection.getUserName(), pTenantConnection.getPassword(),

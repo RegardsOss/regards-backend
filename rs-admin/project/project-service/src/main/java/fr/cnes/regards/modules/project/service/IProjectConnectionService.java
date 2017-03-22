@@ -6,6 +6,8 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -93,6 +95,15 @@ public interface IProjectConnectionService {
      */
     ProjectConnection retrieveProjectConnection(final String pProjectName, String pMicroService)
             throws EntityNotFoundException;
+
+    /**
+     * Retrieve all tenant connections for a specified microservice
+     *
+     * @param microservice
+     *            microservice name
+     * @return all tenant connections
+     */
+    List<ProjectConnection> retrieveProjectConnection(String microService) throws EntityNotFoundException;
 
     /**
      * Retrieve all project connections from database for a given project/tenant.

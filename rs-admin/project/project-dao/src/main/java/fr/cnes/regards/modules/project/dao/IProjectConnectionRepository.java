@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.project.dao;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,10 +20,20 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author CS
  * @author Xavier-Alexandre Brochard
+ * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
 @InstanceEntity
 public interface IProjectConnectionRepository extends JpaRepository<ProjectConnection, Long> {
+
+    /**
+     * Retrieve all tenant connections for a specified microservice
+     * 
+     * @param microservice
+     *            microservice name
+     * @return all tenant connections
+     */
+    List<ProjectConnection> findByMicroservice(String microservice);
 
     ProjectConnection findOneByProjectNameAndMicroservice(final String pProjectName, final String pMicroService);
 
