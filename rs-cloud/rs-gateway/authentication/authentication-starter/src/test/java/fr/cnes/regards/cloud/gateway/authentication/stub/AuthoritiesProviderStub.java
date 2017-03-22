@@ -23,12 +23,12 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 public class AuthoritiesProviderStub implements IAuthoritiesProvider {
 
     @Override
-    public List<ResourceMapping> registerEndpoints(final List<ResourceMapping> pLocalEndpoints) {
+    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> pLocalEndpoints) {
         return new ArrayList<>();
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities() {
+    public List<RoleAuthority> getRoleAuthorities(String tenant) {
         return new ArrayList<>();
     }
 

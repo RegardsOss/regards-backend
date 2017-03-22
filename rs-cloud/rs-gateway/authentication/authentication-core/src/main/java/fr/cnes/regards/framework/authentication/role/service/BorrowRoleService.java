@@ -53,7 +53,7 @@ public class BorrowRoleService implements IBorrowRoleService {
         }
 
         return new CoupleJwtRole(
-                jwtService.generateToken(currentToken.getProject(), currentToken.getName(), pTargetRoleName),
+                jwtService.generateToken(currentToken.getTenant(), currentToken.getName(), pTargetRoleName),
                 pTargetRoleName);
 
     }
