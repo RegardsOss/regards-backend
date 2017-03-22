@@ -17,9 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -96,17 +98,21 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterPublicAccess() {
 
-        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
+        final MockHttpServletRequest mockedRequest = new MockHttpServletRequest();
+        mockedRequest.addParameter(HttpConstants.SCOPE, "project-test");
+
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
-        Mockito.when(mockedRequest.getParameter(HttpConstants.SCOPE)).thenReturn("project-test");
-
+        PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
 
+        DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
+        MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
+
         try {
-            filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
+            mockedFilterChain.doFilter(mockedRequest, mockedResponse);
+            // filter.doFilter(mockedFilterChain.getRequest(), mockedFilterChain.getResponse(), mockedFilterChain);
             if (mockedResponse.getStatus() != HttpStatus.OK.value()) {
                 Assert.fail("Authentication should be granted.");
             }
@@ -130,17 +136,21 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterPublicAccessWithHeader() {
 
-        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
+        final MockHttpServletRequest mockedRequest = new MockHttpServletRequest();
+        mockedRequest.addHeader(HttpConstants.SCOPE, "project-test");
+
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
-        Mockito.when(mockedRequest.getHeader(HttpConstants.SCOPE)).thenReturn("project-test");
-
+        PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
 
+        DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
+        MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
+
         try {
-            filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
+            mockedFilterChain.doFilter(mockedRequest, mockedResponse);
+            // filter.doFilter(mockedFilterChain.getRequest(), mockedFilterChain.getResponse(), mockedFilterChain);
             if (mockedResponse.getStatus() != HttpStatus.OK.value()) {
                 Assert.fail("Authentication should be granted.");
             }
