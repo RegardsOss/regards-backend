@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.modules.plugins.dao.stubs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
@@ -75,13 +76,13 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     /**
      * A {@link PluginConfiguration}
      */
-    private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
             "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
-    private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
             "second configuration", PARAMETERS2, 0);
 
     public PluginConfigurationRepositoryStub() {
@@ -119,6 +120,17 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
 
     @Override
     public PluginConfiguration findOneWithPluginParameter(Long pId) {
+        return null;
+    }
+
+    @Override
+    public PluginConfiguration findOneByLabel(String pConfigurationLabel) {
+        List<PluginConfiguration> confs = getEntities();
+        Optional<PluginConfiguration> conf = confs.stream().filter(c -> c.getLabel().equals(pConfigurationLabel))
+                .findFirst();
+        if (conf.isPresent()) {
+            return conf.get();
+        }
         return null;
     }
 

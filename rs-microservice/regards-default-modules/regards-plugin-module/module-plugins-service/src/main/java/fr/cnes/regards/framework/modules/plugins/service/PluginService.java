@@ -64,7 +64,7 @@ public class PluginService implements IPluginService {
      * This Map is used because for a {@link PluginConfiguration}, one and only one {@link Plugin} should be
      * instantiate.
      */
-    private Map<Long, Object> instantiatePlugins = new HashMap<Long, Object>();
+    private final Map<Long, Object> instantiatePlugins = new HashMap<Long, Object>();
 
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
@@ -339,7 +339,7 @@ public class PluginService implements IPluginService {
         boolean isFound = false;
 
         // Search all the plugins of type pClass
-        for (PluginMetaData pMd : this.getPluginsByType(pClass)) {
+        for (PluginMetaData pMd : getPluginsByType(pClass)) {
             if (!isFound && pMd.getPluginClassName().equals(pPluginClassName)) {
                 isFound = true;
                 metaData = pMd;
@@ -351,6 +351,16 @@ public class PluginService implements IPluginService {
         }
 
         return metaData;
+    }
+
+    @Override
+    public PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel)
+            throws EntityNotFoundException {
+        PluginConfiguration conf = pluginConfRepository.findOneByLabel(pConfigurationLabel);
+        if (conf == null) {
+            throw new EntityNotFoundException(pConfigurationLabel, PluginConfiguration.class);
+        }
+        return conf;
     }
 
 }

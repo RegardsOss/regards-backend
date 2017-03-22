@@ -65,12 +65,12 @@ public final class PluginUtils {
      *
      * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
      * identifier and value the required plugin metadata.
-     * 
+     *
      * @param pPrefix
      *            a package prefix used for the scan
      * @param pPrefixs
-     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * 
+     *            a {@link List} of package to scan to find the {@link Plugin} and {@link PluginInterface}
+     *
      * @return all class annotated {@link Plugin}
      */
     public static Map<String, PluginMetaData> getPlugins(final String pPrefix, final List<String> pPrefixs) {
@@ -107,10 +107,10 @@ public final class PluginUtils {
     /**
      * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
      * identifier and value the required {@link PluginMetaData}.
-     * 
+     *
      * @param pPrefixs
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * 
+     *
      * @return all class annotated {@link Plugin}
      */
     public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
@@ -131,7 +131,7 @@ public final class PluginUtils {
      *            a class that must contains a {@link Plugin} annotation
      * @param pPrefixs
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * 
+     *
      * @return the {@link PluginMetaData} create
      */
     public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass, final List<String> pPrefixs) {
@@ -185,9 +185,9 @@ public final class PluginUtils {
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
-     * 
+     *
      * @return an instance of a {@link Plugin}
-     * 
+     *
      * @throws PluginUtilsException
      *             if a problem occurs
      */
@@ -239,9 +239,9 @@ public final class PluginUtils {
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional list of {@link PluginParameter}
-     * 
+     *
      * @return an instance of {@link Plugin}
-     * 
+     *
      * @throws PluginUtilsException
      *             if a problem occurs
      */
@@ -288,7 +288,7 @@ public final class PluginUtils {
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters
      *            an optional {@link List} of {@link PluginParameter}
-     * 
+     *
      * @return a {@link Plugin} instance
      * @throws PluginUtilsException
      *             if a problem occurs
@@ -301,9 +301,9 @@ public final class PluginUtils {
     }
 
     /**
-     * 
+     *
      * Create an instance of {@link Plugin} based on its configuration and metadata
-     * 
+     *
      * @param <T>
      *            a {@link Plugin}
      * @param pParameters
@@ -369,7 +369,7 @@ public final class PluginUtils {
      *            the required returned type
      * @param pPrefixs
      *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * 
+     *
      * @return an instance
      * @throws PluginUtilsException
      *             if a problem occurs

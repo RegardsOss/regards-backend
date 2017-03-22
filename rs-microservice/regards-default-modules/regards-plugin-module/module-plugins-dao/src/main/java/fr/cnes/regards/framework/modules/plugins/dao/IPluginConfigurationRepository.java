@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  * {@link PluginConfiguration} repository
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -33,5 +33,7 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
 
     @Query("from PluginConfiguration pc join fetch pc.parameters where parent_conf_id=:id")
     PluginConfiguration findOneWithPluginParameter(@Param("id") Long pId);
+
+    PluginConfiguration findOneByLabel(String pConfigurationLabel);
 
 }

@@ -22,6 +22,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +32,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
+ *
  * @author cmertz
  * @author oroussel
  */
 @Entity
-@Table(name = "t_plugin_configuration",
-        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId") })
+@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+        @Index(name = "idx_plugin_configuration_label", columnList = "label") })
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
@@ -62,6 +65,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Label to identify the configuration.
      */
+    @NotBlank
+    @Length(max = 255)
+    @Column(unique = true, name = "label")
     private String label;
 
     /**
@@ -92,6 +98,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * The interface implemented by the pluginClassName, an interface that implements {@link PluginInterface}
      */
+    @Column(nullable = false)
     private String interfaceName;
 
     /**
@@ -219,6 +226,23 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
+     * Change the value of the parameter which name is pParameterName if and only if such parameter exists and is
+     * dynamic
+     *
+     * @param pParameterName
+     *            Name of the parameter whose value should be setted
+     * @param pValue
+     *            value to be setted
+     */
+    public final void setParameterDynamicValue(String pParameterName, String pValue) {
+        Optional<PluginParameter> parameter = parameters.stream()
+                .filter(p -> p.getName().equals(pParameterName) && p.isDynamic()).findFirst();
+        if (parameter.isPresent()) {
+            parameter.get().setValue(pValue);
+        }
+    }
+
+    /**
      * Return the {@link PluginParameter} of a specific parameter
      *
      * @param pParameterName
@@ -262,15 +286,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public void logParams() {
         LOGGER.info("===> parameters <===");
         LOGGER.info("  ---> number of dynamic parameters : "
-                + this.getParameters().stream().filter(p -> p.isDynamic()).count());
+                + getParameters().stream().filter(p -> p.isDynamic()).count());
 
-        this.getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
+        getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> dynamic parameter : ");
         });
 
         LOGGER.info("  ---> number of no dynamic parameters : "
-                + this.getParameters().stream().filter(p -> !p.isDynamic()).count());
-        this.getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
+                + getParameters().stream().filter(p -> !p.isDynamic()).count());
+        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> parameter : ");
         });
     }
@@ -335,7 +359,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     public void setIsActive(Boolean pIsActive) {
-        this.active = pIsActive;
+        active = pIsActive;
     }
 
     public String getPluginClassName() {
@@ -347,7 +371,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     public void setInterfaceName(String pInterfaceName) {
-        this.interfaceName = pInterfaceName;
+        interfaceName = pInterfaceName;
     }
 
     @Override
@@ -384,16 +408,18 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             if (other.label != null) {
                 return false;
             }
-        } else if (!label.equals(other.label)) {
-            return false;
-        }
+        } else
+            if (!label.equals(other.label)) {
+                return false;
+            }
         if (pluginId == null) {
             if (other.pluginId != null) {
                 return false;
             }
-        } else if (!pluginId.equals(other.pluginId)) {
-            return false;
-        }
+        } else
+            if (!pluginId.equals(other.pluginId)) {
+                return false;
+            }
         return true;
     }
 
