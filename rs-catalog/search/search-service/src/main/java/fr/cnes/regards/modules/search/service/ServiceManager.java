@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -23,6 +24,7 @@ import fr.cnes.regards.modules.search.domain.IService;
  *
  */
 @Service
+@MultitenantTransactional
 public class ServiceManager {
 
     private final IPluginService pluginService;
@@ -43,12 +45,11 @@ public class ServiceManager {
     public Set<DataObject> apply(String pServiceName, Map<String, String> pDynamicParameters, String pQuery)
             throws ModuleException {
         PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
-        if (!conf.getInterfaceName().equals(IService.class)) {
+        if (!conf.getInterfaceName().equals(IService.class.getName())) {
             throw new EntityInvalidException(
                     pServiceName + " is not a label of a " + pServiceName + " plugin configuration");
         }
         pDynamicParameters.forEach(conf::setParameterDynamicValue);
-        @SuppressWarnings("unused")
         IService toExecute = (IService) pluginService.getPlugin(conf);
         return toExecute.apply(pQuery);
     }

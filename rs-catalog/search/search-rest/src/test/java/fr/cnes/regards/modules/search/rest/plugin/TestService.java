@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.search.domain.IService;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Plugin(author = "Sylvain Vissiere-Guerinet")
+@Plugin(author = "Sylvain Vissiere-Guerinet", id = "tata")
 public class TestService implements IService {
 
     public static final String EXPECTED_VALUE = "skydiving";
