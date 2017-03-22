@@ -33,6 +33,12 @@ public class RegardsAmqpAdmin {
      * Default exchange name
      */
     public static final String DEFAULT_EXCHANGE_NAME = "regards";
+    
+    
+    /**
+     * This constant allows to defined a message to send with a high priority
+     */
+    public static final Integer MAX_PRIORITY = 255;
 
     /**
      * Class logger
@@ -133,7 +139,7 @@ public class RegardsAmqpAdmin {
 
     /**
      *
-     * Declare a queue that can handle 255 priority
+     * Declare a queue that can handle priority {@link RegardsAmqpAdmin}{@link #MAX_PRIORITY}
      *
      * @param pTenant
      *            tenant for which the queue is created
@@ -152,8 +158,7 @@ public class RegardsAmqpAdmin {
 
         // Create queue
         final Map<String, Object> args = new HashMap<>();
-        final Integer maxPriority = 255;
-        args.put("x-max-priority", maxPriority);
+        args.put("x-max-priority", MAX_PRIORITY);
         Queue queue = new Queue(getQueueName(pEventType, pWorkerMode, pTarget), true, false, false, args);
 
         rabbitAdmin.declareQueue(queue);
