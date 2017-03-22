@@ -41,6 +41,7 @@
 		<module>gson-regards-starter</module>
 		<module>gson-regards</module>
 		<module>feign-regards-starter</module>
+		<module>amqpappender-regards-starter</module>
 	</modules>
 
 	<dependencies>
