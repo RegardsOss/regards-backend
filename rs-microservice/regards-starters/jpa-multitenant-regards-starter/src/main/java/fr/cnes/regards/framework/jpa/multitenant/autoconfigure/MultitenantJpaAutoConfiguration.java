@@ -111,7 +111,7 @@ public class MultitenantJpaAutoConfiguration {
     /**
      * AMQP Message subscriber
      */
-    @Autowired(required = false)
+    @Autowired
     private ISubscriber subscriber;
 
     /**
