@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
  */
 @Service
 @MultitenantTransactional
-public class ServiceManager {
+public class ServiceManager implements IServiceManager {
 
     private final IPluginService pluginService;
 
@@ -54,6 +54,7 @@ public class ServiceManager {
      * @throws EntityNotFoundException
      *             thrown is the pDatasetId does not represent any Dataset.
      */
+    @Override
     public Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope)
             throws EntityNotFoundException {
         LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
@@ -97,6 +98,7 @@ public class ServiceManager {
         }
     }
 
+    @Override
     public ResponseEntity<?> apply(Long pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
             throws ModuleException {
         PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);

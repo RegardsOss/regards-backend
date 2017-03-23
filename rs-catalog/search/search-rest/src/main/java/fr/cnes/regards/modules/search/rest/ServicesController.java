@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,15 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.search.domain.ServiceScope;
-import fr.cnes.regards.modules.search.service.ServiceManager;
+import fr.cnes.regards.modules.search.service.IServiceManager;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -33,21 +29,19 @@ import fr.cnes.regards.modules.search.service.ServiceManager;
  */
 @RestController
 @RequestMapping(ServicesController.PATH_SERVICES)
-public class ServicesController implements IResourceController<DataObject> {
+public class ServicesController {
 
     public static final String PATH_SERVICES = "/services/{dataset_id}";
 
     public static final String PATH_SERVICE_NAME = "/{service_name}";
 
     @Autowired
-    private IResourceService resourceService;
-
-    @Autowired
-    private ServiceManager serviceManager;
+    private IServiceManager serviceManager;
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "endpoint allowing to retrieve all services configured")
+    @ResourceAccess(
+            description = "endpoint allowing to retrieve all services configured for a dataset and a given scope")
     public ResponseEntity<Set<PluginConfiguration>> retrieveServices(@PathVariable("dataset_id") Long pDatasetId,
             @RequestParam("scope") ServiceScope pServiceScope) throws EntityNotFoundException {
         Set<PluginConfiguration> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
@@ -74,13 +68,6 @@ public class ServicesController implements IResourceController<DataObject> {
             @PathVariable("service_name") String pServiceName, @RequestParam Map<String, String> pQueryParameters)
             throws ModuleException {
         return serviceManager.apply(pDatasetId, pServiceName, pQueryParameters);
-    }
-
-    @Override
-    public Resource<DataObject> toResource(DataObject pElement, Object... pExtras) {
-        Resource<DataObject> resource = resourceService.toResource(pElement);
-        // TODO Auto-generated method stub
-        return resource;
     }
 
 }
