@@ -35,6 +35,7 @@ public final class SecurityUtils {
      * @param role
      *            role to mock
      */
+    // FIXME trouver un autre moyen de mocker le role / Voir powermock
     public static void mockActualRole(String role) {
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
@@ -43,6 +44,8 @@ public final class SecurityUtils {
             details.setRole(role);
             authentication.setUser(details);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            authentication.getUser().setRole(role);
         }
     }
 }
