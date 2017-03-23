@@ -23,25 +23,21 @@ public class TenantConnection {
     /**
      * Tenant datasource url
      */
-    @NotNull
     private String url;
 
     /**
      * Tenant datasource username
      */
-    @NotNull
     private String userName;
 
     /**
      * Tenant datasource password
      */
-    @NotNull
     private String password;
 
     /**
      * Tenant datasource driverClassName
      */
-    @NotNull
     private String driverClassName;
 
     /**
