@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -28,7 +29,9 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.search.domain.IService;
+import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.search.rest.plugin.TestService;
+import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -44,6 +47,9 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private ILinkPluginsDatasetsService linkService;
 
     private PluginConfiguration conf;
 
@@ -69,12 +75,34 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
         pluginService.addPluginPackage(IService.class.getPackage().getName());
         pluginService.savePluginConfiguration(conf);
+        linkService.updateLink(1L, new LinkPluginsDatasets(1L, Sets.newHashSet(conf)));
     }
 
     @Test
-    public void testRetrieveServices() {
+    public void testRetrieveServicesQuery() {
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ServicesController.PATH_SERVICES, expectations, "there should not be any error");
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
+        performDefaultGet(ServicesController.PATH_SERVICES + "?scope=QUERY", expectations,
+                          "there should not be any error", 1L);
+    }
+
+    @Test
+    public void testRetrieveServicesMany() {
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
+        performDefaultGet(ServicesController.PATH_SERVICES + "?scope=MANY", expectations,
+                          "there should not be any error", 1L);
+    }
+
+    @Test
+    public void testRetrieveServicesOne() {
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
+        performDefaultGet(ServicesController.PATH_SERVICES + "?scope=ONE", expectations,
+                          "there should not be any error", 1L);
     }
 
     @Test
@@ -89,7 +117,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", conf.getLabel());
+                          expectations, "there should not be any error", 1L, conf.getLabel());
     }
 
 }

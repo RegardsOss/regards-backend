@@ -6,8 +6,6 @@ package fr.cnes.regards.modules.search.rest;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.QueryParam;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -26,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.ServiceScope;
 import fr.cnes.regards.modules.search.service.ServiceManager;
 
@@ -52,7 +49,7 @@ public class ServicesController implements IResourceController<DataObject> {
     @ResponseBody
     @ResourceAccess(description = "endpoint allowing to retrieve all services configured")
     public ResponseEntity<Set<PluginConfiguration>> retrieveServices(@PathVariable("dataset_id") Long pDatasetId,
-            @QueryParam("scope") ServiceScope pServiceScope) throws EntityNotFoundException {
+            @RequestParam("scope") ServiceScope pServiceScope) throws EntityNotFoundException {
         Set<PluginConfiguration> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
@@ -73,10 +70,10 @@ public class ServicesController implements IResourceController<DataObject> {
     @ResponseBody
     @ResourceAccess(
             description = "endpoint allowing to apply the given service on objects retrieved thanks to the given query")
-    public ResponseEntity<?> applyService(@PathVariable("dataset_urn") UniformResourceName pDatasetUrn,
+    public ResponseEntity<?> applyService(@PathVariable("dataset_id") Long pDatasetId,
             @PathVariable("service_name") String pServiceName, @RequestParam Map<String, String> pQueryParameters)
             throws ModuleException {
-        return serviceManager.apply(pServiceName, pQueryParameters);
+        return serviceManager.apply(pDatasetId, pServiceName, pQueryParameters);
     }
 
     @Override

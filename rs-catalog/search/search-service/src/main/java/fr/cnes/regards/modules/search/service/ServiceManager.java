@@ -97,11 +97,18 @@ public class ServiceManager {
         }
     }
 
-    public ResponseEntity<?> apply(String pServiceName, Map<String, String> pDynamicParameters) throws ModuleException {
+    public ResponseEntity<?> apply(Long pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
+            throws ModuleException {
         PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
+        // is it a Service configuration?
         if (!conf.getInterfaceName().equals(IService.class.getName())) {
             throw new EntityInvalidException(
                     pServiceName + " is not a label of a " + pServiceName + " plugin configuration");
+        }
+        // is it a service applyable to this dataset?
+        if (!linkPluginsDatasetsService.retrieveLink(pDatasetId).getServices().contains(conf)) {
+            throw new EntityInvalidException(
+                    pServiceName + " is not a service applyable to the dataset with id " + pDatasetId);
         }
         pDynamicParameters.forEach(conf::setParameterDynamicValue);
         IService toExecute = (IService) pluginService.getPlugin(conf);

@@ -41,20 +41,17 @@ public class TestService implements IService {
 
     @Override
     public boolean isApplyableOnOneData() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override
     public boolean isApplyableOnManyData() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isApplyableOnQuery() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
 }
