@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.search.domain.IService;
 
 /**
  * Validator enforcing {@link PluginServices} constraints
- * 
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */

@@ -42,8 +42,7 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        LinkPluginsDatasets newLink = new LinkPluginsDatasets(1L, Sets.newHashSet(), Sets.newHashSet(),
-                Sets.newHashSet());
+        LinkPluginsDatasets newLink = new LinkPluginsDatasets(1L, Sets.newHashSet());
         performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink, expectations,
                           "Failed to fetch a specific dataset using its id", 1L);
     }
