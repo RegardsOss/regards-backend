@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.domain.SearchType;
 
 /**
@@ -36,7 +36,7 @@ public interface ICatalogSearchService {
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
-    <T extends IIndexable> Page<T> search(String pQ, SearchType pSearchType, Class<T> pResultClass,
+    <T extends AbstractEntity> Page<T> search(String pQ, SearchType pSearchType, Class<T> pResultClass,
             List<String> pFacets, final Pageable pPageable, final PagedResourcesAssembler<T> pAssembler)
             throws SearchException;
 }

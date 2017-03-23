@@ -9,7 +9,7 @@ package fr.cnes.regards.modules.search.domain;
  * @author Xavier-Alexandre Brochard
  */
 public enum SearchType {
-    ALL("all"), COLLECTION("collection"), DATASET("dataset"), DATAOBJECT("dataobject"), DOCUMENT("document");
+    ALL("all"), COLLECTION("collection"), DATASET("dataset"), DATA("dataobject"), DOCUMENT("document");
 
     private final String name;
 
