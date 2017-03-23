@@ -40,7 +40,7 @@ public class NewTenantHandler implements IHandler<NewTenantEvent> {
     /**
      *
      * Create a new DataSource and add it to the JPA Multitenant connection provider
-     * 
+     *
      * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
      * @since 1.0-SNAPSHOT
      */
@@ -53,7 +53,7 @@ public class NewTenantHandler implements IHandler<NewTenantEvent> {
             final TenantConnection tenantConn = pNewTenant.getContent().getTenant();
             multitenantConnectionProvider.addDataSource(tenantConn.getUrl(), tenantConn.getUserName(),
                                                         tenantConn.getPassword(), tenantConn.getDriverClassName(),
-                                                        tenantConn.getName());
+                                                        tenantConn.getTenant());
         }
     }
 

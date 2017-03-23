@@ -10,6 +10,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
@@ -26,5 +28,15 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 @Documented
 @Transactional(transactionManager = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 public @interface MultitenantTransactional {
+
+    /**
+     * The transaction propagation type.
+     * <p>
+     * Defaults to {@link Propagation#REQUIRED}.
+     * 
+     * @see org.springframework.transaction.interceptor.TransactionAttribute#getPropagationBehavior()
+     */
+    @AliasFor(annotation = Transactional.class)
+    Propagation propagation() default Propagation.REQUIRED;
 
 }

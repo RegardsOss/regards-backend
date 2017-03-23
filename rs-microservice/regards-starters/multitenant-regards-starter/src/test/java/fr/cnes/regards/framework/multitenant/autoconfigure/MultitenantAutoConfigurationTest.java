@@ -117,6 +117,11 @@ public class MultitenantAutoConfigurationTest {
                 set.add(CUSTOM_TENANT);
                 return set;
             }
+
+            @Override
+            public Set<String> getAllActiveTenants() {
+                return getAllTenants();
+            }
         }
     }
 

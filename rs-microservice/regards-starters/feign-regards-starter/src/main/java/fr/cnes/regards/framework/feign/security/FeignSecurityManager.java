@@ -37,11 +37,6 @@ public class FeignSecurityManager {
     private static final ThreadLocal<Boolean> systemFlagHolder = new ThreadLocal<>();
 
     /**
-     * Thread safe JWT holder synchronized with flag holder
-     */
-    private static final ThreadLocal<String> jwtSystemHolder = new ThreadLocal<>();
-
-    /**
      * Application name
      */
     @Value("${spring.application.name}")
@@ -87,30 +82,30 @@ public class FeignSecurityManager {
     }
 
     /**
-     * FIXME : attention à la date d'expiration. Aucune date d'expiration ne doit être utilisée lors de la génération du
-     * token.<br/>
-     * Generate a system JWT once and return it to use for system calls.
+     * Generate a new system JWT for each call
      *
      * @return a new system token for each call of each thread with its own tenant
      */
     private String getSystemToken() {
-        if (jwtSystemHolder.get() == null) {
-            String tenant = runtimeTenantResolver.getTenant();
-            if (tenant == null) {
-                // Allows request without tenant for instance entity
-                tenant = "_UNKNOWN_";
-            }
-            String role = RoleAuthority.getSysRole(appName);
-            LOGGER.info("Generating internal system JWT for application {}, tenant {} and with role {} ", appName,
-                        tenant, role);
-            jwtSystemHolder.set(jwtService.generateToken(tenant, appName, role));
+
+        String tenant = runtimeTenantResolver.getTenant();
+        if (tenant == null) {
+            // Allows request without tenant for instance endpoints
+            tenant = "_NOTENANT_";
         }
-        return jwtSystemHolder.get();
+        String role = RoleAuthority.getSysRole(appName);
+        LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ", appName, tenant,
+                     role);
+        return jwtService.generateToken(tenant, appName, role);
     }
 
     /**
-     * Enable system mode call. Following client requests will be done as a system call. It's equivalent to an internal
-     * call that bypasses user authorizations. To disable this mode, call {@link #reset()}.
+     * Enable system mode call. In this mode, all client requests will be done as a system call. It's equivalent to an
+     * internal call that bypasses user authorizations. To disable this mode, call {@link #reset()}.<br/>
+     * This method uses dynamic tenant resolution through {@link IRuntimeTenantResolver}. If tenant cannot be resolved,
+     * a mock tenant is set that should reach only instance endpoints. <br/>
+     * To set a specific tenant, use {@link IRuntimeTenantResolver#forceTenant(String)} before your first thread client
+     * call.
      */
     public static void asSystem() {
         systemFlagHolder.set(Boolean.TRUE);
@@ -121,6 +116,5 @@ public class FeignSecurityManager {
      */
     public static void reset() {
         systemFlagHolder.remove();
-        jwtSystemHolder.remove();
     }
 }

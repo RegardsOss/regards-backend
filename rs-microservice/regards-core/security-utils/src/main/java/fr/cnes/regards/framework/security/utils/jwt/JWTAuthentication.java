@@ -33,11 +33,6 @@ public class JWTAuthentication implements Authentication {
     private final String jwt;
 
     /**
-     * List contains a single role
-     */
-    private List<RoleAuthority> roles;
-
-    /**
      * Current user info
      */
     private UserDetails user;
@@ -77,8 +72,7 @@ public class JWTAuthentication implements Authentication {
 
     @Override
     public Object getDetails() {
-        // Not used at the moment
-        return null;
+        return getPrincipal();
     }
 
     @Override
@@ -148,12 +142,5 @@ public class JWTAuthentication implements Authentication {
      */
     public void setUser(UserDetails pUser) {
         user = pUser;
-    }
-
-    /**
-     * @return the project
-     */
-    public String getProject() {
-        return user.getTenant();
     }
 }

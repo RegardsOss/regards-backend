@@ -22,10 +22,13 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 @ContextConfiguration(classes = { JwtTestConfiguration.class })
 public class JWTServiceTest {
 
-    /**
-     * Class logger
-     */
-    static final Logger LOG = LoggerFactory.getLogger(JWTServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JWTServiceTest.class);
+
+    private static final String TENANT = "tenant";
+
+    private static final String EMAIL = "marc.sordi@c-s.fr";
+
+    private static final String ROLE = "USER";
 
     /**
      * JWT service
@@ -34,32 +37,28 @@ public class JWTServiceTest {
     private JWTService jwtService;
 
     /**
-     * Test JWT generation
+     * Test JWT generation without group
      */
     @Test
     public void generateJWT() {
-        final String project = "PROJECT";
-        final String email = "marc.sordi@c-s.fr";
-        final String role = "USER";
 
         // Generate token
-        final String jwt = jwtService.generateToken(project, email, role);
-        LOG.debug("JWT = " + jwt);
+        final String jwt = jwtService.generateToken(TENANT, EMAIL, ROLE);
+        LOGGER.debug(jwt);
 
         // Parse token and retrieve user information
         try {
             final JWTAuthentication jwtAuth = jwtService.parseToken(new JWTAuthentication(jwt));
 
-            Assert.assertEquals(project, jwtAuth.getProject());
+            Assert.assertEquals(TENANT, jwtAuth.getTenant());
 
             final UserDetails user = jwtAuth.getPrincipal();
-            Assert.assertEquals(email, user.getName());
-            Assert.assertEquals(project, user.getTenant());
+            Assert.assertEquals(EMAIL, user.getName());
+            Assert.assertEquals(ROLE, user.getRole());
         } catch (JwtException e) {
-            final String message = "JWT test error";
-            LOG.debug(message, e);
+            final String message = "Error while generating JWT without group";
+            LOGGER.debug(message, e);
             Assert.fail(message);
         }
     }
-
 }

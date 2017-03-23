@@ -19,11 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
@@ -38,17 +35,12 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
     /**
      * Default security authentication manager
      */
     private final AuthenticationManager authenticationManager;
-
-    /**
-     * Security JWTService
-     */
-    private final JWTService jwtService;
 
     /**
      *
@@ -60,33 +52,32 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
      *            security JWT Service
      * @since 1.0-SNAPSHOT
      */
-    public JWTAuthenticationFilter(final AuthenticationManager pAuthenticationManager, final JWTService pJwtService) {
-        jwtService = pJwtService;
+    public JWTAuthenticationFilter(final AuthenticationManager pAuthenticationManager) {
         authenticationManager = pAuthenticationManager;
     }
 
     @Override
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
-        final HttpServletRequest request = pRequest;
-        final HttpServletResponse response = pResponse;
 
         // Retrieve authentication header
-        String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
+        String jwt = pRequest.getHeader(HttpConstants.AUTHORIZATION);
         if (jwt == null) {
             // Authorize OPTIONS request
-            if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
+            if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
                 CorsFilter.allowCorsRequest(pRequest, pResponse, pFilterChain);
             } else {
-                generatePublicToken(pRequest, pResponse, pFilterChain);
+                final String message = "[REGARDS JWT FILTER] Missing authentication token";
+                LOGGER.error(message);
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             }
         } else {
 
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
                 final String message = "[REGARDS JWT FILTER] Invalid authentication token";
-                LOG.error(message);
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+                LOGGER.error(message);
+                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
                 jwt = jwt.substring(HttpConstants.BEARER.length()).trim();
 
@@ -97,57 +88,11 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 // Set security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                LOG.debug("[REGARDS JWT FILTER] Access granted");
+                LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 
                 // Continue the filtering chain
-                pFilterChain.doFilter(request, response);
-            }
-        }
-    }
-
-    /**
-     *
-     * Generate a public token
-     *
-     * @param pRequest
-     *            HTTP request
-     * @param pResponse
-     *            HTTP response
-     * @param pFilterChain
-     *            all filters to apply next
-     * @throws IOException
-     *             Error in HTTP response generation
-     * @throws ServletException
-     *             Error token generation
-     * @throws JwtException
-     * @since 1.0-SNAPSHOT
-     */
-    private void generatePublicToken(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
-            final FilterChain pFilterChain) throws IOException {
-
-        String scope = pRequest.getHeader(HttpConstants.SCOPE);
-        if (scope == null) {
-            scope = pRequest.getParameter(HttpConstants.SCOPE);
-        }
-
-        try {
-            if (scope == null) {
-                final String message = "[REGARDS JWT FILTER] Authentication token missing and no scope defined for public access.";
-                LOG.error(message);
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
-            } else {
-                // Generate a token with PUBLIC Role
-                jwtService.injectToken(scope, DefaultRole.PUBLIC.name(), "public@regards.com");
                 pFilterChain.doFilter(pRequest, pResponse);
             }
-        } catch (final JwtException | ServletException e) {
-            final String message = String.format("[REGARDS JWT FILTER] Public token generation failed. %s",
-                                                 e.getMessage());
-            LOG.error(e.getMessage(), e);
-            LOG.error(message);
-            pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
         }
-
     }
-
 }

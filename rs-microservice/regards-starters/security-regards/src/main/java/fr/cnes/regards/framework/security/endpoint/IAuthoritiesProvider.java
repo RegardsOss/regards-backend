@@ -20,17 +20,23 @@ public interface IAuthoritiesProvider {
      *
      * Register microservice given local endpoints to the administration service and retrieve configured endpoints.
      *
+     * @param tenant
+     *            working tenant
+     * @param localEndpoints
+     *            collected end points
      * @return List<ResourceMapping>
      * @since 1.0-SNAPSHOT
      */
-    List<ResourceMapping> registerEndpoints(List<ResourceMapping> pLocalEndpoints);
+    List<ResourceMapping> registerEndpoints(String tenant, List<ResourceMapping> localEndpoints);
 
     /**
      *
-     * Retrieve all roles authorities
-     *
+     * Retrieve all roles authorities for specified tenant
+     * 
+     * @param tenant
+     *            working tenant
      * @return all {@link RoleAuthority}
      * @since 1.0-SNAPSHOT
      */
-    List<RoleAuthority> getRoleAuthorities();
+    List<RoleAuthority> getRoleAuthorities(String tenant);
 }

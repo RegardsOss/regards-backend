@@ -46,4 +46,9 @@ public class LocalTenantResolver implements ITenantResolver {
         return tenants;
     }
 
+    @Override
+    public Set<String> getAllActiveTenants() {
+        return getAllTenants();
+    }
+
 }

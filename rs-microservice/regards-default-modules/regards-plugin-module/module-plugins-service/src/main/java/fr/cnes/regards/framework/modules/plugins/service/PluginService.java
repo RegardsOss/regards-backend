@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
 
 import com.google.common.collect.Lists;
 
@@ -329,6 +330,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
     public void addPluginPackage(final String pPluginPackage) {
         getPluginPackage().add(pPluginPackage);
     }

@@ -4,6 +4,8 @@
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -17,10 +19,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
-    /**
-     * Default tenant
-     */
-    private static final String DEFAULT_TENANT = "default";
+    private static final Logger LOGGER = LoggerFactory.getLogger(CurrentTenantIdentifierResolverImpl.class);
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -30,7 +29,9 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        return runtimeTenantResolver.getTenant() == null ? DEFAULT_TENANT : runtimeTenantResolver.getTenant();
+        String tenant = runtimeTenantResolver.getTenant() != null ? runtimeTenantResolver.getTenant() : "default";
+        LOGGER.debug("Resolved tenant : {}", tenant);
+        return tenant;
     }
 
     @Override

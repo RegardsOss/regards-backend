@@ -21,6 +21,11 @@ public class UserDetails implements Serializable {
     private static final long serialVersionUID = 4616778806989554358L;
 
     /**
+     * Tenant the user is requesting
+     */
+    private String tenant;
+
+    /**
      * User email
      */
     private String name;
@@ -30,54 +35,26 @@ public class UserDetails implements Serializable {
      */
     private String role;
 
-    /**
-     * Tenant the user is requesting
-     */
-    private String tenant;
-
-    /**
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @param pName
-     *            the name to set
-     */
     public void setName(String pName) {
         name = pName;
     }
 
-    /**
-     * @return the tenant
-     */
     public String getTenant() {
         return tenant;
     }
 
-    /**
-     * @param pTenant
-     *            the tenant to set
-     */
     public void setTenant(String pTenant) {
         tenant = pTenant;
     }
 
-    /**
-     *
-     * @return the role name
-     */
     public String getRole() {
         return role;
     }
 
-    /**
-     *
-     * @param pRole
-     *            the role name
-     */
     public void setRole(String pRole) {
         role = pRole;
     }

@@ -11,8 +11,16 @@ import java.util.Set;
  * @author msordi
  *
  */
-@FunctionalInterface
 public interface ITenantResolver {
 
+    /**
+     * @return all tenants regardless its configuration
+     */
     Set<String> getAllTenants();
+
+    /**
+     *
+     * @return all tenants fully configured
+     */
+    Set<String> getAllActiveTenants();
 }
