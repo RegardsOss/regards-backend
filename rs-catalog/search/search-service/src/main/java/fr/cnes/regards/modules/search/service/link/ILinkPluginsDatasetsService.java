@@ -12,19 +12,8 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
  */
 public interface ILinkPluginsDatasetsService {
 
-    /**
-     * @param pDatasetId
-     * @return
-     * @throws EntityNotFoundException
-     */
     LinkPluginsDatasets retrieveLink(Long pDatasetId) throws EntityNotFoundException;
 
-    /**
-     * @param pDatasetId
-     * @param pUpdatedLink
-     * @return
-     * @throws EntityNotFoundException
-     */
     LinkPluginsDatasets updateLink(Long pDatasetId, LinkPluginsDatasets pUpdatedLink) throws EntityNotFoundException;
 
 }

@@ -49,8 +49,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         if (!existsDataset(pDatasetId)) {
             throw new EntityNotFoundException(pDatasetId, Dataset.class);
         }
-        return linkRepo
-                .save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet(), Sets.newHashSet(), Sets.newHashSet()));
+        return linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
     }
 
     /**

@@ -6,6 +6,8 @@ package fr.cnes.regards.modules.search.rest.plugin;
 import java.util.Set;
 
 import org.assertj.core.util.Sets;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -27,14 +29,32 @@ public class TestService implements IService {
     private String para;
 
     @Override
-    public Set<DataObject> apply(String pQuery) {
+    public ResponseEntity<?> apply() {
         if (!para.equals(EXPECTED_VALUE)) {
-            return Sets.newHashSet();
+            return new ResponseEntity<Set<DataObject>>(Sets.newHashSet(), HttpStatus.OK);
         }
         Model model = Model.build("pName", "pDescription", EntityType.DATA);
         DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
         DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
-        return Sets.newLinkedHashSet(do1, do2);
+        return new ResponseEntity<Set<DataObject>>(Sets.newLinkedHashSet(do1, do2), HttpStatus.OK);
+    }
+
+    @Override
+    public boolean isApplyableOnOneData() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isApplyableOnManyData() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isApplyableOnQuery() {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

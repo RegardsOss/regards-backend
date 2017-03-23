@@ -3,30 +3,43 @@
  */
 package fr.cnes.regards.modules.search.domain;
 
-import java.util.Set;
+import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  *
- * Plugin applying processus on a {@link Dataset} or one of its subset
+ * Plugin applying processus according to its parameters.
  *
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@PluginInterface(description = "Plugin applying processus on a {@link Dataset} or one of its subset")
+@PluginInterface(description = "Plugin applying processus on a query")
 public interface IService {
 
     /**
      *
      * apply the processus described by this instance of IService
      *
-     * @param pQuery
-     *            request string to be interpreted
-     * @return processed results
+     * @return response HTTP including the content-type and the body wanted
      */
-    public Set<DataObject> apply(String pQuery);
+    public ResponseEntity<?> apply();
+
+    /**
+     * Can this implementation be used with only one datum's id? Should have a PluginParameter representing this datum
+     */
+    boolean isApplyableOnOneData();
+
+    /**
+     * Can this implementation be used with a list of data's id? Should have a PluginParameter corresponding to this
+     * list
+     */
+    boolean isApplyableOnManyData();
+
+    /**
+     * Can this implementation be used with a query similar to the ones used by searches endpoint? Should have a
+     * PluginParameter for the query
+     */
+    boolean isApplyableOnQuery();
 
 }
