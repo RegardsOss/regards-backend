@@ -242,7 +242,7 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
             @RequestParam(value = "facets", required = false) List<String> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        Page<DataObject> result = catalogSearchService.search(pQ, SearchType.DATAOBJECT, DataObject.class, pFacets,
+        Page<DataObject> result = catalogSearchService.search(pQ, SearchType.DATA, DataObject.class, pFacets,
                                                               pPageable, pAssembler);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
@@ -268,7 +268,7 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam("q") String pQ, @RequestParam(value = "facets", required = false) List<String> pFacets,
             final Pageable pPageable, final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
-        Page<Dataset> result = catalogSearchService.search(pQ, SearchType.DATAOBJECT, Dataset.class, pFacets, pPageable,
+        Page<Dataset> result = catalogSearchService.search(pQ, SearchType.DATA, Dataset.class, pFacets, pPageable,
                                                            pAssembler);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
