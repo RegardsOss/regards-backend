@@ -14,11 +14,12 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.jpa.multitenant.event.NewTenantEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -60,6 +61,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
     private final IPublisher publisher;
 
     /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      * The constructor.
      *
      * @param pProjectRepository
@@ -74,11 +80,13 @@ public class ProjectConnectionService implements IProjectConnectionService {
      *            Amqp publisher
      */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
-            final IProjectConnectionRepository pProjectConnectionRepository, final IPublisher pPublisher) {
+            final IProjectConnectionRepository pProjectConnectionRepository, final IPublisher pPublisher,
+            IRuntimeTenantResolver runtimeTenantResolver) {
         super();
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
         publisher = pPublisher;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -99,7 +107,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection)
+    public ProjectConnection createProjectConnection(ProjectConnection pProjectConnection, boolean silent)
             throws ModuleException {
         final ProjectConnection connection;
         final Project project = pProjectConnection.getProject();
@@ -118,9 +126,15 @@ public class ProjectConnectionService implements IProjectConnectionService {
         }
 
         // Send event to all microservices that a new connection is available for a new project
-        final TenantConnection tenant = new TenantConnection(connection.getProject().getName(), connection.getUrl(),
-                connection.getUserName(), connection.getPassword(), connection.getDriverClassName());
-        publisher.publish(new NewTenantEvent(tenant, connection.getMicroservice()));
+        final TenantConnection tenantConnection = new TenantConnection(connection.getProject().getName(),
+                connection.getUrl(), connection.getUserName(), connection.getPassword(),
+                connection.getDriverClassName());
+
+        if (!silent) {
+            // Publish on tenant queue
+            runtimeTenantResolver.forceTenant(tenantConnection.getTenant());
+            publisher.publish(new TenantConnectionCreatedEvent(tenantConnection, connection.getMicroservice()));
+        }
 
         return connection;
     }

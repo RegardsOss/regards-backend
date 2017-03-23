@@ -16,6 +16,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -123,7 +124,7 @@ public class ProjectConnectionServiceTest {
 
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
-                mockPublisher);
+                mockPublisher, Mockito.mock(IRuntimeTenantResolver.class));
 
         final Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
@@ -156,13 +157,13 @@ public class ProjectConnectionServiceTest {
         final ProjectConnection connection = new ProjectConnection(600L, project, "microservice-test",
                 COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
         try {
-            projectConnectionService.createProjectConnection(connection);
+            projectConnectionService.createProjectConnection(connection, true);
         } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
 
         try {
-            projectConnectionService.createProjectConnection(connection);
+            projectConnectionService.createProjectConnection(connection, true);
             Assert.fail("Impossible to add two project connection for same project and microservice");
         } catch (final EntityAlreadyExistsException e) {
             // Noting to do

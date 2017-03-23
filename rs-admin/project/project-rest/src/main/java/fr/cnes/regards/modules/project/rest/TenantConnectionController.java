@@ -62,7 +62,8 @@ public class TenantConnectionController {
         projectConnection.setUrl(tenantConnection.getUrl());
         projectConnection.setUserName(tenantConnection.getUserName());
 
-        return ResponseEntity.ok(toTenantConnection(connectionService.createProjectConnection(projectConnection)));
+        return ResponseEntity
+                .ok(toTenantConnection(connectionService.createProjectConnection(projectConnection, true)));
     }
 
     @ResourceAccess(description = "List all tenant connections for a specified microservice", role = DefaultRole.INSTANCE_ADMIN)

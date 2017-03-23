@@ -184,7 +184,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
             @Valid @RequestBody final ProjectConnection pProjectConnection) {
         ResponseEntity<Resource<ProjectConnection>> response;
         try {
-            final ProjectConnection pConn = projectConnectionService.createProjectConnection(pProjectConnection);
+            final ProjectConnection pConn = projectConnectionService.createProjectConnection(pProjectConnection, false);
             response = new ResponseEntity<>(toResource(pConn), HttpStatus.CREATED);
         } catch (final ModuleException e) {
             LOG.error(e.getMessage(), e);

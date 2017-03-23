@@ -102,7 +102,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
                     pTenantConnection.getUserName(), pTenantConnection.getPassword(),
                     pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
 
-            projectConnectionService.createProjectConnection(projectConnection);
+            projectConnectionService.createProjectConnection(projectConnection, true);
         } catch (final ModuleException e) {
             LOG.error("Error adding new tenant. Cause : {}", e.getMessage());
             LOG.debug(e.getMessage(), e);

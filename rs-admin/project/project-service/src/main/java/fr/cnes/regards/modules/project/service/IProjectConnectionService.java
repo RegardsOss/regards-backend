@@ -45,6 +45,8 @@ public interface IProjectConnectionService {
      *
      * @param pProjectConnection
      *            ProjectConnection to create
+     * @param silent
+     *            create a project silently without publishing any event
      * @return Created ProjectConnection
      * @throws ModuleException
      *             <br/>
@@ -53,7 +55,8 @@ public interface IProjectConnectionService {
      *             {@link AlreadyExistingException} ModuleEntityNotFoundException The Project referenced doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection) throws ModuleException;
+    ProjectConnection createProjectConnection(ProjectConnection pProjectConnection, boolean silent)
+            throws ModuleException;
 
     /**
      *
