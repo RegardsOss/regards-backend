@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.microservices.access</groupId>
-	<artifactId>bootstrap-access</artifactId>
+	<artifactId>bootstrap-access-instance</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
 	<parent>
@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<fr.cnes.regards.docker.image.name>rs-access</fr.cnes.regards.docker.image.name>
+		<fr.cnes.regards.docker.image.name>rs-access-instance</fr.cnes.regards.docker.image.name>
 	</properties>
 
 	<dependencies>
