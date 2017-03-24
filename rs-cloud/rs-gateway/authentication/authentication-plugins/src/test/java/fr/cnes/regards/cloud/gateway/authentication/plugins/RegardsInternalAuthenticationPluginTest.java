@@ -20,7 +20,6 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.Authenticatio
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards.RegardsInternalAuthenticationPlugin;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
@@ -60,7 +59,16 @@ public class RegardsInternalAuthenticationPluginTest {
                     .getPlugin(parameters, RegardsInternalAuthenticationPlugin.class,
                                Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"));
             Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsException e) {
+
+            Field privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("microserviceName");
+            privateField.setAccessible(true);
+            privateField.set(plugin, "test");
+
+            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("rootLogin");
+            privateField.setAccessible(true);
+            privateField.set(plugin, "root");
+        } catch (final PluginUtilsException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+                | SecurityException e) {
             Assert.fail();
         }
 
@@ -82,15 +90,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
         Field privateField;
         try {
-            final JWTService service = new JWTService();
-            service.setSecret("123456789");
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("jwtService");
-            privateField.setAccessible(true);
-            privateField.set(plugin, service);
-
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("microserviceName");
-            privateField.setAccessible(true);
-            privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<AccountStatus> response = new ResponseEntity<>(AccountStatus.ACTIVE, HttpStatus.OK);
@@ -128,15 +127,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
         Field privateField;
         try {
-            final JWTService service = new JWTService();
-            service.setSecret("123456789");
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("jwtService");
-            privateField.setAccessible(true);
-            privateField.set(plugin, service);
-
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("microserviceName");
-            privateField.setAccessible(true);
-            privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<AccountStatus> response = new ResponseEntity<>(AccountStatus.INACTIVE,
@@ -173,15 +163,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
         Field privateField;
         try {
-            final JWTService service = new JWTService();
-            service.setSecret("123456789");
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("jwtService");
-            privateField.setAccessible(true);
-            privateField.set(plugin, service);
-
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("microserviceName");
-            privateField.setAccessible(true);
-            privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<AccountStatus> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
@@ -218,15 +199,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
         Field privateField;
         try {
-            final JWTService service = new JWTService();
-            service.setSecret("123456789");
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("jwtService");
-            privateField.setAccessible(true);
-            privateField.set(plugin, service);
-
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("microserviceName");
-            privateField.setAccessible(true);
-            privateField.set(plugin, "test");
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<AccountStatus> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);

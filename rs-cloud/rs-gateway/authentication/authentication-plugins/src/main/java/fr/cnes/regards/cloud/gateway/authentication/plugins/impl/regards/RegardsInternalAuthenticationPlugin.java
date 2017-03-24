@@ -53,7 +53,7 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
     @Override
     public AuthenticationPluginResponse authenticate(final String pEmail, final String pPassword, final String pScope) {
 
-        AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
+        AuthenticationStatus status;
         String errorMessage = null;
 
         // Validate password as system
