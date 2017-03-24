@@ -80,6 +80,11 @@ public class TestConfiguration {
                 tenants.add(TENANT_2);
                 return tenants;
             }
+
+            @Override
+            public Set<String> getAllActiveTenants() {
+                return getAllTenants();
+            }
         };
     }
 

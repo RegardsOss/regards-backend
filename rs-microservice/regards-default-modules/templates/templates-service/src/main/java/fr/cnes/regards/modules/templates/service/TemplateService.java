@@ -134,7 +134,7 @@ public class TemplateService implements ITemplateService {
      */
     private void initDefaultTemplates() {
 
-        for (String tenant : tenantResolver.getAllTenants()) {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             if (!templateRepository.findOneByCode(emailValidationTemplate.getCode()).isPresent()) {
                 templateRepository.save(emailValidationTemplate);

@@ -18,7 +18,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * @since 1.0-SNAPSHOT
  */
 @Event(target = Target.ALL)
-public class NewTenantEvent implements ISubscribable {
+public class TenantConnectionCreatedEvent implements ISubscribable {
 
     /**
      * New tenant
@@ -30,11 +30,11 @@ public class NewTenantEvent implements ISubscribable {
      */
     private String microserviceName;
 
-    public NewTenantEvent() {
+    public TenantConnectionCreatedEvent() {
         super();
     }
 
-    public NewTenantEvent(final TenantConnection pTenant, final String pMicroserviceName) {
+    public TenantConnectionCreatedEvent(final TenantConnection pTenant, final String pMicroserviceName) {
         super();
         tenant = pTenant;
         microserviceName = pMicroserviceName;

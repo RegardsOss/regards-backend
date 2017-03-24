@@ -79,20 +79,20 @@ public class DataSourcesAutoConfiguration {
         for (final TenantConnection tenant : daoProperties.getTenants()) {
             DataSource datasource;
             if (daoProperties.getEmbedded()) {
-                datasource = DataSourceHelper.createEmbeddedDataSource(tenant.getName(),
+                datasource = DataSourceHelper.createEmbeddedDataSource(tenant.getTenant(),
                                                                        daoProperties.getEmbeddedPath());
 
             } else {
                 datasource = DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
                                                                tenant.getUserName(), tenant.getPassword());
             }
-            if (!datasources.containsKey(tenant.getName())) {
+            if (!datasources.containsKey(tenant.getTenant())) {
                 // Initialize connection in administration service
                 multitenantResolver.addTenantConnection(tenant);
                 // Add datasource to managed datasources pool
-                datasources.put(tenant.getName(), datasource);
+                datasources.put(tenant.getTenant(), datasource);
             } else {
-                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));
+                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getTenant()));
             }
         }
 
@@ -113,17 +113,17 @@ public class DataSourcesAutoConfiguration {
         final Map<String, DataSource> datasources = new HashMap<>();
 
         for (final TenantConnection tenant : pTenants) {
-            if (!datasources.containsKey(tenant.getName())) {
+            if (!datasources.containsKey(tenant.getTenant())) {
                 if (daoProperties.getEmbedded()) {
-                    datasources.put(tenant.getName(), DataSourceHelper
-                            .createEmbeddedDataSource(tenant.getName(), daoProperties.getEmbeddedPath()));
+                    datasources.put(tenant.getTenant(), DataSourceHelper
+                            .createEmbeddedDataSource(tenant.getTenant(), daoProperties.getEmbeddedPath()));
                 } else {
-                    datasources.put(tenant.getName(),
+                    datasources.put(tenant.getTenant(),
                                     DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
                                                                       tenant.getUserName(), tenant.getPassword()));
                 }
             } else {
-                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getName()));
+                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getTenant()));
             }
         }
         return datasources;

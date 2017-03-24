@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.test.integration;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -28,6 +29,7 @@ public class MockAmqpConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Primary
     public ISubscriber eventSubscriber() {
         return Mockito.mock(ISubscriber.class);
     }
