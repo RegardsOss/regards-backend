@@ -19,11 +19,11 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.multitenant.event.NewTenantEvent;
-import fr.cnes.regards.framework.jpa.multitenant.event.handler.NewTenantHandler;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -35,13 +35,9 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
+@SuppressWarnings("serial")
 public class DataSourceBasedMultiTenantConnectionProviderImpl
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
-
-    /**
-     * Serial UID
-     */
-    private static final long serialVersionUID = 8168907057647334460L;
 
     /**
      * Current microservice name
@@ -51,7 +47,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     /**
      * AMQP Message subscriber
      */
-    private transient ISubscriber amqpSubscriber;
+    private transient ISubscriber subscriber;
 
     /**
      * Microservice global configuration
@@ -69,7 +65,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         super();
         daoProperties = pDaoProperties;
         dataSources = pDataSources;
-        amqpSubscriber = pAmqpSubscriber;
+        subscriber = pAmqpSubscriber;
         microserviceName = pMicroserviceName;
     }
 
@@ -92,9 +88,6 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      *
      * Initialize configured datasources
      *
-     * @throws RabbitMQVhostException
-     *             Unrecoverable error during AMQP initialization
-     *
      * @since 1.0-SNAPSHOT
      */
     @PostConstruct
@@ -105,24 +98,8 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
             updateDataSourceSchema(selectDataSource(tenant));
         }
 
-        listenForNewTenant();
-    }
-
-    /**
-     *
-     * Add a listener to all tenant creation event. If a new tenant is created, we have to dynamically add the
-     * dataSource to the connection pool
-     *
-     * @throws RabbitMQVhostException
-     *             Unrecoverable error during AMQP initialization
-     * @since 1.0-SNAPSHOT
-     */
-    private void listenForNewTenant() {
-        // FIXME this subscriber must not be null
-        if (amqpSubscriber != null) {
-            final IHandler<NewTenantEvent> tenantHandler = new NewTenantHandler(this, microserviceName);
-            amqpSubscriber.subscribeTo(NewTenantEvent.class, tenantHandler);
-        }
+        // Listen for new tenant connections
+        subscriber.subscribeTo(TenantConnectionCreatedEvent.class, new TenantConnectionHandler());
     }
 
     /**
@@ -192,4 +169,32 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         }
     }
 
+    /**
+     * Register new tenant connections as new datasources
+     *
+     * @author Sébastien Binda
+     * @since 1.0-SNAPSHOT
+     */
+    private class TenantConnectionHandler implements IHandler<TenantConnectionCreatedEvent> {
+
+        /**
+         *
+         * Create a new DataSource and add it to the JPA Multitenant connection provider
+         *
+         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
+         * @since 1.0-SNAPSHOT
+         */
+        @Override
+        public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pNewTenant) {
+            // Add a new datasource to the current pool of datasource if the current microservice is the target of the
+            // new
+            // tenant connection
+            if ((pNewTenant.getContent() != null)
+                    && microserviceName.equals(pNewTenant.getContent().getMicroserviceName())) {
+                final TenantConnection tenantConn = pNewTenant.getContent().getTenant();
+                addDataSource(tenantConn.getUrl(), tenantConn.getUserName(), tenantConn.getPassword(),
+                              tenantConn.getDriverClassName(), tenantConn.getTenant());
+            }
+        }
+    }
 }
