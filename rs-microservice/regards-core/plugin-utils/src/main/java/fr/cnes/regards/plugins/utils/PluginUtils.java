@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.UUID;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -379,7 +380,7 @@ public final class PluginUtils {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
-        return new PluginConfiguration(pluginMetadata, "", pParameters);
+        return new PluginConfiguration(pluginMetadata, UUID.randomUUID().toString(), pParameters);
     }
 
 }

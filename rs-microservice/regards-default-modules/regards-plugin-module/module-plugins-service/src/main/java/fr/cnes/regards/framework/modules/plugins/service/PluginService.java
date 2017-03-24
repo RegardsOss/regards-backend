@@ -149,6 +149,9 @@ public class PluginService implements IPluginService {
             msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throwError = true;
         }
+        if (!throwError && ((pPluginConfiguration.getLabel() == null) || pPluginConfiguration.getLabel().isEmpty())) {
+            msg.append(String.format(" <%s> without label.", pPluginConfiguration.getPluginId()));
+        }
 
         if (throwError) {
             throw new ModuleException(msg.toString());
@@ -330,7 +333,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     public void addPluginPackage(final String pPluginPackage) {
         getPluginPackage().add(pPluginPackage);
     }
