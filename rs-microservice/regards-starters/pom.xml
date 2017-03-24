@@ -16,6 +16,7 @@
 	</parent>
 
 	<modules>
+		<module>amqp-monitoring-regards-starter</module>
 		<module>amqp-regards</module>
 		<module>amqp-regards-starter</module>
 		<module>swagger-regards-starter</module>
@@ -41,7 +42,6 @@
 		<module>gson-regards-starter</module>
 		<module>gson-regards</module>
 		<module>feign-regards-starter</module>
-		<module>amqpappender-regards-starter</module>
 	</modules>
 
 	<dependencies>

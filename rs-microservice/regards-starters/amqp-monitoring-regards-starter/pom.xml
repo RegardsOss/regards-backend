@@ -4,8 +4,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>amqpappender-regards-starter</artifactId>
-	<description>REGARDS Logback AMQP appender starter</description>
+	<artifactId>amqp-monitoring-regards-starter</artifactId>
+	<description>REGARDS AMQP monitoring starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
