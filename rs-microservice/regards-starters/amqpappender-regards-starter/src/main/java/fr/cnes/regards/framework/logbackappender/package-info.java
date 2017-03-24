@@ -3,9 +3,9 @@
  */
 /**
  *
- * Multitenant autoconfigure package
+ * REGARDS logback appender to send log as event ona queue.
  * 
- * @author msordi
+ * @author Christophe Mertz
  *
  */
 package fr.cnes.regards.framework.logbackappender;

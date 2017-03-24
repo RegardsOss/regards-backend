@@ -3,9 +3,9 @@
  */
 /**
  *
- * Multitenant autoconfigure package
+ * The Spring's autoconfiguration for the REGARDS logback appender. 
  * 
- * @author msordi
+ * @author Christophe Mertz
  *
  */
 package fr.cnes.regards.framework.logbackappender.autoconfigure;
