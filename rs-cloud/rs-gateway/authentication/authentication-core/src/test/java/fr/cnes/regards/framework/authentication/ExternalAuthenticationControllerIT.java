@@ -18,15 +18,15 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -43,7 +43,8 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 @ComponentScan("fr.cnes.regards.framework.authentication")
-public class ExternalAuthenticationControllerIT extends AbstractRegardsIT {
+@MultitenantTransactional
+public class ExternalAuthenticationControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
@@ -107,8 +108,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void init() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
@@ -116,14 +115,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsIT {
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);
-
-        manageDefaultSecurity(SPS_URL, RequestMethod.GET);
-        manageDefaultSecurity(SPS_URL, RequestMethod.POST);
-
-        manageDefaultSecurity(SP_URL, RequestMethod.GET);
-        manageDefaultSecurity(SP_URL, RequestMethod.PUT);
-        manageDefaultSecurity(SP_URL, RequestMethod.DELETE);
-        manageDefaultSecurity(AUTHENTICATE_URL, RequestMethod.POST);
     }
 
     /**
