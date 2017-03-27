@@ -112,6 +112,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsIT {
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
+        metadata.setInterfaceName("fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);

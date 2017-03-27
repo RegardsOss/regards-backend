@@ -105,6 +105,7 @@ public class AuthenticationControllerIT extends AbstractRegardsIT {
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_LDAP);
         metadata.setPluginClassName(LdapAuthenticationPlugin.class.getName());
+        metadata.setInterfaceName("fr.cnes.regards.framework.some.modules.MyDomain");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);
