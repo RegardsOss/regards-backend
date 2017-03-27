@@ -64,6 +64,24 @@
 			</build>
 		</profile>
 		<profile>
+			<id>docker</id>
+			<properties> 
+				<!-- Default properties -->
+				<filter.name>docker</filter.name>
+			</properties>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/${filter.name}.properties</filter>
+				</filters>
+			</build>
+		</profile>
+		<profile>
 			<id>delivery</id>
 		</profile>
 	</profiles>
