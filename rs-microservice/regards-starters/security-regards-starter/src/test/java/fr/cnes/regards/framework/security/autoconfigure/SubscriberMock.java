@@ -32,5 +32,4 @@ public class SubscriberMock implements ISubscriber {
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
         // Nothing to do
     }
-
 }

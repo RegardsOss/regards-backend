@@ -17,7 +17,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -47,7 +47,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     /**
      * AMQP Message subscriber
      */
-    private transient ISubscriber subscriber;
+    private transient IInstanceSubscriber instanceSubscriber;
 
     /**
      * Microservice global configuration
@@ -60,12 +60,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     private transient Map<String, DataSource> dataSources;
 
     public DataSourceBasedMultiTenantConnectionProviderImpl(final MultitenantDaoProperties pDaoProperties,
-            final Map<String, DataSource> pDataSources, final ISubscriber pAmqpSubscriber,
+            final Map<String, DataSource> pDataSources, final IInstanceSubscriber pAmqpSubscriber,
             final String pMicroserviceName) {
         super();
         daoProperties = pDaoProperties;
         dataSources = pDataSources;
-        subscriber = pAmqpSubscriber;
+        instanceSubscriber = pAmqpSubscriber;
         microserviceName = pMicroserviceName;
     }
 
@@ -99,7 +99,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         }
 
         // Listen for new tenant connections
-        subscriber.subscribeTo(TenantConnectionCreatedEvent.class, new TenantConnectionHandler());
+        instanceSubscriber.subscribeTo(TenantConnectionCreatedEvent.class, new TenantConnectionHandler());
     }
 
     /**
