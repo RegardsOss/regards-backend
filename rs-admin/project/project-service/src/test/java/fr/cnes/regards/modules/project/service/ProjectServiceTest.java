@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -65,11 +65,10 @@ public class ProjectServiceTest {
     @Before
     public void init() {
 
-        final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
-
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(), mockPublisher);
+        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(),
+                Mockito.mock(IInstancePublisher.class));
 
         projectRepoStub.save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
         projectRepoStub.save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false, PROJECT_TEST_2));

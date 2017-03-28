@@ -11,12 +11,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -116,15 +115,14 @@ public class ProjectConnectionServiceTest {
      */
     @Before
     public void init() {
-        final IPublisher mockPublisher = Mockito.mock(IPublisher.class);
-
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(), mockPublisher);
+        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(),
+                Mockito.mock(IInstancePublisher.class));
 
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
-                mockPublisher, Mockito.mock(IRuntimeTenantResolver.class));
+                Mockito.mock(IInstancePublisher.class));
 
         final Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
