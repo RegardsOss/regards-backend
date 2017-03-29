@@ -11,10 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonDiscriminator;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
@@ -38,16 +40,15 @@ public final class GsonAnnotationProcessor {
     /**
      * Process all object annotated with {@link Gsonable} to dynamically create
      * {@link PolymorphicTypeAdapterFactory}.<br/>
-     * Process all {@link GsonTypeAdapterFactory} to register this factories.
+     * Process all {@link GsonTypeAdapterFactory} and {@link GsonTypeAdapter} to register this factories.
      *
-     * @param pBuilder
-     *            {@link GsonBuilder}
-     * @param pPrefix
-     *            base package to scan
+     * @param pBuilder {@link GsonBuilder}
+     * @param pPrefix base package to scan
      */
     public static void process(GsonBuilder pBuilder, String pPrefix) {
         processGsonable(pBuilder, pPrefix);
         processGsonAdapterFactory(pBuilder, pPrefix);
+        processGsonAdapter(pBuilder, pPrefix);
     }
 
     /**
@@ -175,6 +176,48 @@ public final class GsonAnnotationProcessor {
                 } catch (InstantiationException | IllegalAccessException e) {
                     String format = "Factory % cannot be instanciated. No arg public constructor must exist.";
                     final String errorMessage = String.format(format, factoryClass);
+                    LOGGER.error(errorMessage, e);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+            }
+        }
+    }
+
+    /**
+     * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
+     * {@link TypeAdapterFactory}.
+     *
+     * @param pBuilder
+     *            {@link GsonBuilder}
+     * @param pPrefix
+     *            base package to scan
+     */
+    public static void processGsonAdapter(GsonBuilder pBuilder, String pPrefix) {
+
+        // Scan for Gsonable
+        final Reflections reflections = new Reflections(pPrefix);
+        final Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonTypeAdapter.class, true);
+
+        if (factoryTypes != null) {
+            for (Class<?> factoryType : factoryTypes) {
+
+                if (!TypeAdapter.class.isAssignableFrom(factoryType)) {
+                    final String errorMessage = String.format("Factory %s must be an implementation of %s", factoryType,
+                                                              TypeAdapter.class);
+                    LOGGER.error(errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+
+                // Create an instance
+                @SuppressWarnings("unchecked")
+                Class<? extends TypeAdapter<?>> typeAdapterClass = (Class<? extends TypeAdapter<?>>) factoryType;
+                GsonTypeAdapter annotation = typeAdapterClass.getAnnotation(GsonTypeAdapter.class);
+                try {
+                    TypeAdapter<?> adapter = typeAdapterClass.newInstance();
+                    pBuilder.registerTypeAdapter(annotation.adapted(), adapter);
+                } catch (InstantiationException | IllegalAccessException e) {
+                    String format = "Factory % cannot be instanciated. No arg public constructor must exist.";
+                    final String errorMessage = String.format(format, typeAdapterClass);
                     LOGGER.error(errorMessage, e);
                     throw new IllegalArgumentException(errorMessage);
                 }
