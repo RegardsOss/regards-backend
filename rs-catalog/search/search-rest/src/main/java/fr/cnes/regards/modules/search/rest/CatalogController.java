@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.search.domain.IFilter;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
 import fr.cnes.regards.modules.search.rest.facet.FacettedPagedResources;
 import fr.cnes.regards.modules.search.rest.facet.FacettedPagedResourcesAssembler;
@@ -67,7 +66,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @RestController
 @ModuleInfo(name = "search", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(CatalogController.PATH)
+@RequestMapping(path = CatalogController.PATH)
 public class CatalogController {
 
     /**

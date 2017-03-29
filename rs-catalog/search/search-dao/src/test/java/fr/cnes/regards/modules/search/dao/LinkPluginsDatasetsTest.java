@@ -12,8 +12,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.search.domain.IConverter;
-import fr.cnes.regards.modules.search.domain.IFilter;
 import fr.cnes.regards.modules.search.domain.IService;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 
@@ -32,8 +30,7 @@ public class LinkPluginsDatasetsTest extends AbstractDaoTransactionalTest {
 
     @Test
     public void testMapping() {
-        LinkPluginsDatasets link1 = new LinkPluginsDatasets(1L, Sets.newHashSet(), Sets.newHashSet(),
-                Sets.newHashSet());
+        LinkPluginsDatasets link1 = new LinkPluginsDatasets(1L, Sets.newHashSet());
         linkRepo.save(link1);
         linkRepo.findOne(link1.getDatasetId());
 
@@ -44,22 +41,7 @@ public class LinkPluginsDatasetsTest extends AbstractDaoTransactionalTest {
         confService.setInterfaceName(IService.class.getName());
         confService = pluginRepo.save(confService);
 
-        PluginConfiguration confFilter = new PluginConfiguration();
-        confFilter.setPluginId("pPluginId");
-        confFilter.setVersion("pVersion");
-        confFilter.setPriorityOrder(0);
-        confFilter.setInterfaceName(IFilter.class.getName());
-        confFilter = pluginRepo.save(confFilter);
-
-        PluginConfiguration confConverter = new PluginConfiguration();
-        confConverter.setPluginId("pPluginId");
-        confConverter.setVersion("pVersion");
-        confConverter.setPriorityOrder(0);
-        confConverter.setInterfaceName(IConverter.class.getName());
-        confConverter = pluginRepo.save(confConverter);
-
-        LinkPluginsDatasets link2 = new LinkPluginsDatasets(2L, Sets.newHashSet(confConverter),
-                Sets.newHashSet(confService), Sets.newHashSet(confFilter));
+        LinkPluginsDatasets link2 = new LinkPluginsDatasets(2L, Sets.newHashSet(confService));
         linkRepo.save(link2);
     }
 

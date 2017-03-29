@@ -15,8 +15,6 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.search.domain.IConverter;
-import fr.cnes.regards.modules.search.domain.IFilter;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
@@ -40,18 +38,8 @@ public class CatalogITConfiguration {
     }
 
     @Bean
-    public IFilter filter() {
-        return Mockito.mock(IFilter.class);
-    }
-
-    @Bean
     public IAccessRightFilter accessRightFilter() {
         return Mockito.mock(IAccessRightFilter.class);
-    }
-
-    @Bean
-    public IConverter converter() {
-        return Mockito.mock(IConverter.class);
     }
 
     @Bean

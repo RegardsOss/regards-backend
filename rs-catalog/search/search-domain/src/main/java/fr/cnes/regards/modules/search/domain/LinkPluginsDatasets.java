@@ -17,8 +17,6 @@ import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.search.validation.PluginConverters;
-import fr.cnes.regards.modules.search.validation.PluginFilters;
 import fr.cnes.regards.modules.search.validation.PluginServices;
 
 /**
@@ -39,14 +37,6 @@ public class LinkPluginsDatasets {
     private Long datasetId;
 
     /**
-     * Ids of plugin configuration of type IConverter
-     */
-    @ManyToMany
-    @JoinTable(name = "ta_link_dataset_converters", joinColumns = @JoinColumn(name = "dataset_id"),
-            inverseJoinColumns = @JoinColumn(name = "converter_configuration_id"))
-    private Set<PluginConfiguration> converters;
-
-    /**
      * Ids of plugin configuration of type IService
      */
     @ManyToMany
@@ -54,25 +44,14 @@ public class LinkPluginsDatasets {
             inverseJoinColumns = @JoinColumn(name = "service_configuration_id"))
     private Set<PluginConfiguration> services;
 
-    /**
-     * Ids of plugin configuration of type IFilter
-     */
-    @ManyToMany
-    @JoinTable(name = "ta_link_dataset_filters", joinColumns = @JoinColumn(name = "dataset_id"),
-            inverseJoinColumns = @JoinColumn(name = "filter_configuration_id"))
-    private Set<PluginConfiguration> filters;
-
     protected LinkPluginsDatasets() {
         // only there for (de)serialization purpose and hibernate
     }
 
-    public LinkPluginsDatasets(Long pDatasetId, @PluginConverters Set<PluginConfiguration> pConverters,
-            @PluginServices Set<PluginConfiguration> pServices, @PluginFilters Set<PluginConfiguration> pFilters) {
+    public LinkPluginsDatasets(Long pDatasetId, @PluginServices Set<PluginConfiguration> pServices) {
         super();
         datasetId = pDatasetId;
-        converters = pConverters;
         services = pServices;
-        filters = pFilters;
     }
 
     public Long getDatasetId() {
@@ -83,28 +62,12 @@ public class LinkPluginsDatasets {
         datasetId = pDatasetId;
     }
 
-    public Set<PluginConfiguration> getConverters() {
-        return converters;
-    }
-
-    public void setConverters(@PluginConverters Set<PluginConfiguration> pConverters) {
-        converters = pConverters;
-    }
-
     public Set<PluginConfiguration> getServices() {
         return services;
     }
 
     public void setServices(@PluginServices Set<PluginConfiguration> pServices) {
         services = pServices;
-    }
-
-    public Set<PluginConfiguration> getFilters() {
-        return filters;
-    }
-
-    public void setFilters(@PluginFilters Set<PluginConfiguration> pFilters) {
-        filters = pFilters;
     }
 
 }
