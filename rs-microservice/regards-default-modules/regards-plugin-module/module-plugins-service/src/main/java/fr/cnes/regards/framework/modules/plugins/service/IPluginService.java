@@ -7,6 +7,7 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -198,7 +199,7 @@ public interface IPluginService {
     /**
      * Get {@link PluginMetaData} for a plugin of a specific plugin type.</br>
      * If the plugin class name does not match a plugin of the plugin type, a exception is thrown.
-     * 
+     *
      * @param pClass
      *            the plugin type
      * @param pPluginClassName
@@ -208,5 +209,12 @@ public interface IPluginService {
      *             Any plugin of plugin type is find.
      */
     public PluginMetaData checkPluginClassName(Class<?> pClass, String pPluginClassName) throws EntityInvalidException;
+
+    /**
+     * get a PluginConfiguration according to its unique label
+     * 
+     * @throws EntityNotFoundException
+     */
+    PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel) throws EntityNotFoundException;
 
 }

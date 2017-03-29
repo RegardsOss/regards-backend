@@ -117,6 +117,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
+        pluginMetaData.setInterfaceName("TestInterface");
         pluginMetaData.setPluginId("plugin-id");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

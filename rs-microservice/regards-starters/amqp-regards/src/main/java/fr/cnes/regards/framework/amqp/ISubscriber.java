@@ -3,39 +3,27 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-
 /**
+ * {@link ISubscriber} allows to subscribe to multitenant events.
  *
- * {@link ISubscriber} allows to subscribe to {@link ISubscribable} events.
- *
- * @author Sylvain Vissière-Guérinet
- * @author Sébastien Binda
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
+ *
  */
-public interface ISubscriber {
+public interface ISubscriber extends ISubscriberContract {
 
     /**
-     * Subscribe to this {@link ISubscribable} event
+     * Add new tenant listener
      *
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param pEvent
-     *            {@link ISubscribable} event
-     * @param pReceiver
-     *            event {@link IHandler}
+     * @param tenant
+     *            new tenant to manage
      */
-    <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
+    void addTenant(String tenant);
 
     /**
-     * Unsubscribte from this {@link ISubscribable} event.
+     * Remove tenant listener
      * 
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param pEvent
-     *            {@link ISubscribable} event
+     * @param tenant
+     *            tenant to manage
      */
-    <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
+    void removeTenant(String tenant);
 }
