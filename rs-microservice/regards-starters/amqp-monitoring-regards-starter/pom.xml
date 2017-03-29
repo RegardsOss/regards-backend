@@ -25,11 +25,6 @@
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.logback-extensions/logback-ext-spring -->
 		<dependency>
-			<groupId>org.logback-extensions</groupId>
-			<artifactId>logback-ext-spring</artifactId>
-			<version>0.1.4</version>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
 		</dependency>
@@ -38,6 +33,10 @@
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.logback-extensions</groupId>
+			<artifactId>logback-ext-spring</artifactId>
 		</dependency>
 	</dependencies>
 </project>
