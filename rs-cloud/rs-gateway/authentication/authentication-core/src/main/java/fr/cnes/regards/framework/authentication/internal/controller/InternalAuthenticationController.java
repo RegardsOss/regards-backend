@@ -40,8 +40,13 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@RequestMapping("/authentication/idps")
+@RequestMapping(InternalAuthenticationController.TYPE_MAPPING)
 public class InternalAuthenticationController implements IResourceController<PluginConfiguration> {
+
+    /**
+     * Type mapping
+     */
+    public static final String TYPE_MAPPING = "/authentication/idps";
 
     /**
      * Class logger
@@ -61,7 +66,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
 
     /**
      * Constructor to specify a particular {@link IPluginService}.
-     * 
+     *
      * @param pService
      *            The {@link PluginService} used
      */
@@ -77,9 +82,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * @return List for PluginConfiguration (Hateoas formated)
      * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(
-            description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication",
-            role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<List<Resource<PluginConfiguration>>> retrieveIdentityProviderPlugins() {
         final List<PluginConfiguration> plugins = service.retrieveIdentityProviderPlugins();

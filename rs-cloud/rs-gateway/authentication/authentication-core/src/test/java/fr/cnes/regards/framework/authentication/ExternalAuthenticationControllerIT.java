@@ -168,8 +168,8 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     public void retrieveInexistantServiceProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performDefaultGet(SPS_URL + "/123", expectations,
-                          "retrieveInexistantServiceProvider : Error getting Service provider");
+        performDefaultGet(SP_URL, expectations, "retrieveInexistantServiceProvider : Error getting Service provider",
+                          123);
     }
 
     /**
@@ -220,8 +220,8 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".version",
                                                         org.hamcrest.Matchers.is(newVersion)));
-        performDefaultPut(SPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), aPluginConfSaved,
-                          expectations, "updateServiceProvider : Error getting Service provider");
+        performDefaultPut(SP_URL, aPluginConfSaved, expectations,
+                          "updateServiceProvider : Error getting Service provider", aPluginConfSaved.getId());
     }
 
     /**
@@ -243,8 +243,9 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         unSavedPluginConf.setId(12345L);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performDefaultPut(SPS_URL + URL_PATH_SEPARATOR + unSavedPluginConf.getId().toString(), unSavedPluginConf,
-                          expectations, "updateInexistantServiceProvider : Error getting Service provider");
+        performDefaultPut(SP_URL, unSavedPluginConf, expectations,
+                          "updateInexistantServiceProvider : Error getting Service provider",
+                          unSavedPluginConf.getId());
     }
 
     /**
@@ -266,8 +267,8 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         conf.setId(123L);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.BAD_REQUEST_400));
-        performDefaultPut(SPS_URL + "/12", conf, expectations,
-                          "updateInvalidServiceProvider : Error getting Service provider");
+        performDefaultPut(SP_URL, conf, expectations, "updateInvalidServiceProvider : Error getting Service provider",
+                          12);
     }
 
     /**
@@ -284,13 +285,14 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
+        metadata.setInterfaceName("fr.cnes.regards.framework.some.modules.PluginToDelete");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(SPS_URL + URL_PATH_SEPARATOR + aPluginConfToDelete.getId().toString(), expectations,
-                             "deleteIdentityProvider : Error getting Service provider");
+        performDefaultDelete(SP_URL, expectations, "deleteIdentityProvider : Error getting Service provider",
+                             aPluginConfToDelete.getId());
     }
 
     /**
@@ -306,7 +308,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     public void deleteInexistantIndentityProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
-        performDefaultDelete(SPS_URL + "/1000", expectations, "Error getting Service provider");
+        performDefaultDelete(SP_URL, expectations, "Error getting Service provider", 1000);
 
     }
 

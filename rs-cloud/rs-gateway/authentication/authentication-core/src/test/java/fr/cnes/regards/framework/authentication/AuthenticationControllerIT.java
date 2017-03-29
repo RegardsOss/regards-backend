@@ -19,11 +19,11 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
+import fr.cnes.regards.framework.authentication.internal.controller.InternalAuthenticationController;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -52,12 +52,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Access route
      */
-    private static final String IDPS_URL = "/authentication/idps";
-
-    /**
-     * Access route
-     */
-    private static final String IDP_URL = "/authentication/idps/{idp_id}";
+    private static final String IDP_URL = InternalAuthenticationController.TYPE_MAPPING + "/{idp_id}";
 
     /**
      * Default plugin version
@@ -84,9 +79,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
      * A {@link PluginConfiguration} used in the test
      */
     private PluginConfiguration aPluginConfSaved;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
     protected Logger getLogger() {
@@ -125,7 +117,8 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        performDefaultGet(IDPS_URL, expectations, "Error getting identity providers");
+        performDefaultGet(InternalAuthenticationController.TYPE_MAPPING, expectations,
+                          "Error getting identity providers");
     }
 
     /**
@@ -188,7 +181,8 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        performDefaultPost(IDPS_URL, conf, expectations, "createIdentityProvider : Error getting identity provider");
+        performDefaultPost(InternalAuthenticationController.TYPE_MAPPING, conf, expectations,
+                           "createIdentityProvider : Error getting identity provider");
     }
 
     /**
@@ -277,13 +271,14 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_LDAP);
         metadata.setPluginClassName(LdapAuthenticationPlugin.class.getName());
+        metadata.setInterfaceName("fr.cnes.regards.framework.some.modules.PluginToDelete");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(IDPS_URL + URL_PATH_SEPARATOR + aPluginConfToDelete.getId().toString(), expectations,
-                             "deleteIdentityProvider : Error getting identity provider");
+        performDefaultDelete(IDP_URL, expectations, "deleteIdentityProvider : Error getting identity provider",
+                             aPluginConfToDelete.getId());
     }
 
     /**
