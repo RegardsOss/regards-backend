@@ -7,6 +7,8 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 
@@ -36,6 +38,19 @@ public class MockAmqpConfiguration {
 
     /**
      *
+     * Subscriber mock
+     *
+     * @return {@link IInstanceSubscriber}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    @Primary
+    public IInstanceSubscriber eventInstanceSubscriber() {
+        return Mockito.mock(IInstanceSubscriber.class);
+    }
+
+    /**
+     *
      * Publisher mock
      *
      * @return {@link IPublisher}
@@ -44,6 +59,18 @@ public class MockAmqpConfiguration {
     @Bean
     public IPublisher eventPublisher() {
         return Mockito.mock(IPublisher.class);
+    }
+
+    /**
+     *
+     * Publisher mock
+     *
+     * @return {@link IPublisher}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public IInstancePublisher eventInstancePublisher() {
+        return Mockito.mock(IInstancePublisher.class);
     }
 
 }
