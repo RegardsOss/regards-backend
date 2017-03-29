@@ -5,7 +5,7 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import javax.annotation.PostConstruct;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -13,7 +13,8 @@ import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 
 /**
- * This class helps to configure virtual hosts at runtime listening to tenant events.
+ * This class helps to configure virtual hosts at runtime listening to tenant events. The system uses the AMQP manager
+ * virtual host no to be tenant dependent.
  *
  * @author Marc Sordi
  *
@@ -28,11 +29,11 @@ public class AmqpEventHandler {
     /**
      * Used to listen to tenant events
      */
-    private final ISubscriber subscriber;
+    private final IInstanceSubscriber instanceSubscriber;
 
-    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, ISubscriber pSubscriber) {
+    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, IInstanceSubscriber pInstanceSubscriber) {
         this.virtualHostAdmin = pVirtualHostAdmin;
-        this.subscriber = pSubscriber;
+        this.instanceSubscriber = pInstanceSubscriber;
     }
 
     /**
@@ -41,8 +42,8 @@ public class AmqpEventHandler {
     @PostConstruct
     public void init() {
         // Listen to tenant events
-        subscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreationHandler());
-        subscriber.subscribeTo(TenantDeletedEvent.class, new TenantDeletionHandler());
+        instanceSubscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreationHandler());
+        instanceSubscriber.subscribeTo(TenantDeletedEvent.class, new TenantDeletionHandler());
     }
 
     /**

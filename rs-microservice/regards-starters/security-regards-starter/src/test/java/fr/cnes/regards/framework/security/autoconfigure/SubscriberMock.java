@@ -33,4 +33,25 @@ public class SubscriberMock implements ISubscriber {
         // Nothing to do
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.framework.amqp.ISubscriber#addTenant(java.lang.String)
+     */
+    @Override
+    public void addTenant(String pTenant) {
+        // Nothing to do
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.framework.amqp.ISubscriber#removeTenant(java.lang.String)
+     */
+    @Override
+    public void removeTenant(String pTenant) {
+        // Nothing to do
+
+    }
 }

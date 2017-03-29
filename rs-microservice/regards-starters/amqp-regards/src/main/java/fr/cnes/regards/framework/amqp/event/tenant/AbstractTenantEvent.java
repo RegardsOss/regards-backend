@@ -14,13 +14,16 @@ public abstract class AbstractTenantEvent {
     /**
      * Event tenant
      */
-    private final String tenant;
+    private String tenant;
 
-    public AbstractTenantEvent(String pTenant) {
-        this.tenant = pTenant;
+    public AbstractTenantEvent() {
     }
 
     public String getTenant() {
         return tenant;
+    }
+
+    public void setTenant(String pTenant) {
+        this.tenant = pTenant;
     }
 }

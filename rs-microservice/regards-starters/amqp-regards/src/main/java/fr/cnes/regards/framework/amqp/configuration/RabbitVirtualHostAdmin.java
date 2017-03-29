@@ -150,6 +150,9 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     @PostConstruct
     public void init() {
+        // Initialize AMQP manager VHOST
+        addVhost(AmqpConstants.AMQP_MANAGER);
+
         // Retrieve already configured tenant
         Set<String> tenants = tenantResolver.getAllTenants();
         if (tenants != null) {
