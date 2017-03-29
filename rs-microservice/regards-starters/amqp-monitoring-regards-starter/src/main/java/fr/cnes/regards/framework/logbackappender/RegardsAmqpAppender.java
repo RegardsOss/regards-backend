@@ -57,7 +57,7 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent eventObject) {
         LOGGER.debug("Send message for app name : " + microserviceName);
-        String user = "Unknow user";
+        String user = "";
         try {
             user = jwtService.getCurrentToken().getName();
         } catch (JwtException e) {

@@ -19,34 +19,37 @@ public class LogEvent implements ISubscribable {
     /**
      * The message sends with the event
      */
-    private String msg;
+    protected String msg;
 
     /**
      * The microservice name that send the event
      */
-    private String microService;
+    protected String microService;
 
     /**
      * The class name that sends the event
      */
-    private String caller;
+    protected String caller;
 
     /**
      * The method name that sends the event
      */
-    private String method;
+    protected String method;
 
     /**
      * The event's date
      */
-    private String date;
+    protected String date;
 
     /**
      * The log level
      */
-    private String level;
+    protected String level;
 
-    private String user;
+    /**
+     * The user
+     */
+    protected String username;
 
     public LogEvent() {
         super();
@@ -77,7 +80,7 @@ public class LogEvent implements ISubscribable {
         this.method = method;
         this.date = date;
         this.level = level;
-        this.user = user;
+        this.username = user;
     }
 
     public String getMsg() {
@@ -104,8 +107,20 @@ public class LogEvent implements ISubscribable {
         return level;
     }
 
-    public String getUser() {
-        return user;
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = microService != null ? microService.hashCode() : 0;
+        result = prime * result + (caller != null ? caller.hashCode() : 0);
+        result = prime * result + (method != null ? method.hashCode() : 0);
+        result = prime * result + (username != null ? username.hashCode() : 0);
+        result = prime * result + (date != null ? date.hashCode() : 0);
+        result = prime * result + (msg != null ? msg.hashCode() : 0);
+        return result;
     }
 
 }

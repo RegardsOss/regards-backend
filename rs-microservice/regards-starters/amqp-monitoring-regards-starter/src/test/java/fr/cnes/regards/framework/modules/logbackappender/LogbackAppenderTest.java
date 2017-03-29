@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.modules.logbackappender;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -218,7 +219,7 @@ public class LogbackAppenderTest {
         Assert.assertNotNull(event);
         Assert.assertEquals(this.getClass().getCanonicalName(), event.getCaller());
         Assert.assertEquals(microserviceName, event.getMicroService());
-        Assert.assertEquals(DEFAULT_USER, event.getUser());
+        Assert.assertEquals(DEFAULT_USER, event.getUsername());
     }
 
 }

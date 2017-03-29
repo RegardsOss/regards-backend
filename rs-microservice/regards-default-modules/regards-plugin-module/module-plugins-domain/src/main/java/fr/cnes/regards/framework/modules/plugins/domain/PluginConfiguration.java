@@ -46,6 +46,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfiguration.class);
+    
+    /**
+     * A constant used to define a {@link String} constraint with length 255
+     */
+    private static final int MAX_STRING_LENGTH = 255;
 
     /**
      * Unique id
@@ -66,8 +71,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Label to identify the configuration.
      */
     @NotBlank
-    @Length(max = 255)
-    @Column(unique = true, name = "label")
+    @Column(unique = true, name = "label", length=MAX_STRING_LENGTH)
     private String label;
 
     /**
