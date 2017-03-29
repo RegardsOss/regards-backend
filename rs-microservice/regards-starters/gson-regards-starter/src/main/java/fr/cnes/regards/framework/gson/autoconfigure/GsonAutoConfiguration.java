@@ -24,6 +24,7 @@ import org.springframework.http.converter.json.GsonHttpMessageConverter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 
 import fr.cnes.regards.framework.gson.adapters.LocalDateTimeAdapter;
@@ -65,7 +66,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     public GsonBuilder gsonBuilder() {
         final GsonBuilder builder = new GsonBuilder();
         customizeBuilder(builder);
-        addFactories(builder);
+        addTypeAdapters(builder);
         addBeanFactories(builder);
         return builder;
     }
@@ -120,12 +121,11 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     }
 
     /**
-     * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory}
+     * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated with {@link GsonTypeAdapter}
      *
-     * @param pBuilder
-     *            GSON builder to customize
+     * @param pBuilder GSON builder to customize
      */
-    private void addFactories(GsonBuilder pBuilder) {
+    private void addTypeAdapters(GsonBuilder pBuilder) {
         GsonAnnotationProcessor.process(pBuilder, properties.getScanPrefix());
     }
 

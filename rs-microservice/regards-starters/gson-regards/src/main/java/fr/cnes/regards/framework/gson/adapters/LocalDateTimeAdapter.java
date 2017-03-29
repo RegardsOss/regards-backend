@@ -15,9 +15,9 @@ import com.google.gson.stream.JsonWriter;
 /**
  *
  * ISO 8601 date adapter
+ * This TypeAdapter is used in method GsonAutoConfiguration#customizeBuilder.
  *
  * @author Marc Sordi
- *
  */
 public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
 
