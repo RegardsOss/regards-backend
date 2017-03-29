@@ -46,4 +46,16 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
         return tenantResolver.getAllTenants();
     }
 
+    @Override
+    public void addTenant(String pTenant) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void removeTenant(String pTenant) {
+        // TODO Auto-generated method stub
+
+    }
+
 }

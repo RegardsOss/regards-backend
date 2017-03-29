@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -109,12 +109,6 @@ public class MultitenantJpaAutoConfiguration {
     private JpaProperties jpaProperties;
 
     /**
-     * AMQP Message subscriber
-     */
-    @Autowired
-    private ISubscriber subscriber;
-
-    /**
      * Multitenant connection provider
      */
     @Autowired
@@ -160,8 +154,9 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
-        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, subscriber,
+    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider(
+            IInstanceSubscriber instanceSubscriber) {
+        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, instanceSubscriber,
                 microserviceName);
     }
 
