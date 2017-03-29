@@ -21,7 +21,7 @@ public interface ISubscriber extends ISubscriberContract {
 
     /**
      * Remove tenant listener
-     * 
+     *
      * @param tenant
      *            tenant to manage
      */

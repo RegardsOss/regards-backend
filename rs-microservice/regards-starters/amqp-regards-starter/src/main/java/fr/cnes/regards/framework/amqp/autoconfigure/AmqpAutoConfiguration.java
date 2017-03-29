@@ -188,7 +188,7 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public AmqpEventHandler amqpEventHandler(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            IInstanceSubscriber pSubscriber) {
-        return new AmqpEventHandler(pRabbitVirtualHostAdmin, pSubscriber);
+            IInstanceSubscriber pInstanceSubscriber, ISubscriber pSubscriber) {
+        return new AmqpEventHandler(pRabbitVirtualHostAdmin, pInstanceSubscriber, pSubscriber);
     }
 }

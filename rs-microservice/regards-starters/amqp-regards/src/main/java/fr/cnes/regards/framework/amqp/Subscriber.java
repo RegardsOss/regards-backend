@@ -48,14 +48,12 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
 
     @Override
     public void addTenant(String pTenant) {
-        // TODO Auto-generated method stub
-
+        addTenantListeners(pTenant);
     }
 
     @Override
     public void removeTenant(String pTenant) {
-        // TODO Auto-generated method stub
-
+        removeTenantListeners(pTenant);
     }
 
 }
