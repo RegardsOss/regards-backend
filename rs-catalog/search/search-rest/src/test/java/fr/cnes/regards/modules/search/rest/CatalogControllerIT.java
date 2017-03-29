@@ -131,9 +131,14 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     public final void testSearchAll_withFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                        Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                        Matchers.hasItem(Matchers.hasEntry("type", "STRING"))));
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q)
                 .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
-        performDefaultGet("/search", expectations, "Error searching all entities", builder);
+        performDefaultGet("/searchwithfacets", expectations, "Error searching all entities", builder);
     }
 
     /**
@@ -145,6 +150,10 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     public final void testGetCollection() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mycollection")));
         performDefaultGet("/collections/{urn}", expectations, "Error retrieving a collection", COLLECTION.getIpId());
     }
 
@@ -175,6 +184,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     public final void testGetDataset() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydataset")));
         performDefaultGet("/datasets/{urn}", expectations, "Error retrieving a dataset", DATASET.getIpId());
     }
 
@@ -227,8 +239,13 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
                                                         Matchers.is("mydataobject")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                        Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                        Matchers.hasItem(Matchers.hasEntry("type", "STRING"))));
         RequestParamBuilder builder = RequestParamBuilder.build()
-                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT);
+                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT)
+                .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
         performDefaultGet("/dataobjects/search", expectations, "Error searching dataobjects", builder);
     }
 
@@ -254,6 +271,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     public final void testGetDocument() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydocument")));
         performDefaultGet("/documents/{urn}", expectations, "Error retrieving a document", DOCUMENT.getIpId());
     }
 
@@ -267,7 +287,12 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     public final void testSearchDocuments() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+                                                        Matchers.is("mydocument")));
+        RequestParamBuilder builder = RequestParamBuilder.build()
+                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DOCUMENT);
         performDefaultGet("/documents/search", expectations, "Error searching documents", builder);
     }
 

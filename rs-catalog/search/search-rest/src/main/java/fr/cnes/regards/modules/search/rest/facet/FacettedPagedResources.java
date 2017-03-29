@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest.facetpage;
+package fr.cnes.regards.modules.search.rest.facet;
 
 import java.util.Collection;
 import java.util.Set;
@@ -70,5 +70,16 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
         int result = super.hashCode();
         result += this.facets == null ? 0 : 31 * this.facets.hashCode();
         return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.hateoas.ResourceSupport#toString()
+     */
+    @Override
+    public String toString() {
+        return String.format("FacettedPagedResources { content: %s, metadata: %s, links: %s, facets: %s }",
+                             getContent(), getMetadata(), getLinks(), getFacets());
     }
 }

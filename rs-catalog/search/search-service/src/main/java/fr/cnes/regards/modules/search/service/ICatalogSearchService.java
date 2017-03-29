@@ -1,13 +1,14 @@
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.models.domain.EntityType;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 
 /**
  * Performs an OpenSearch request with the passed string query.
@@ -21,11 +22,8 @@ public interface ICatalogSearchService {
      *
      * @param pQ
      *            the OpenSearch-format query
-     * @param pSearchType
-     *            the indexed type on which we perform the search (not necessary the type returned!). Use
-     *            <code>null</code> if search on all types.
-     * @param pResultClass
-     *            the returned class. Most of the time, the same as the search type, expect for joint searches.
+     * @param pSearchKey
+     *            the search key containing the search type and the result type
      * @param pFacets
      *            the facets applicable
      * @param pPageable
@@ -34,6 +32,6 @@ public interface ICatalogSearchService {
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
-    <T extends IIndexable> Page<T> search(String pQ, EntityType pSearchType, Class<T> pResultClass,
-            List<String> pFacets, final Pageable pPageable) throws SearchException;
+    <S, R extends IIndexable> Page<R> search(String pQ, SearchKey<S, R> pSearchKey, Map<String, FacetType> pFacets,
+            final Pageable pPageable) throws SearchException;
 }

@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.junit.Before;
@@ -19,9 +19,11 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
@@ -84,7 +86,7 @@ public class CatalogSearchServiceTest {
                 .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogSearchService = new CatalogSearchService(searchService, queryParser, runtimeTenantResolver);
+        catalogSearchService = new CatalogSearchService(searchService, queryParser);
     }
 
     /**
@@ -95,35 +97,32 @@ public class CatalogSearchServiceTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void doSearch_shouldCallServiceWithRightParams() throws SearchException, QueryNodeException {
+    public void doSearch_shouldPerformASimpleSearch() throws SearchException, QueryNodeException {
         // Prepare test
-        EntityType searchType = EntityType.DATA;
-        Class<DataObject> resultClass = DataObject.class;
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(CatalogSearchServiceTestUtils.TENANT,
+                                                                        EntityType.DATA);
         String q = CatalogSearchServiceTestUtils.Q;
-        List<String> facets = CatalogSearchServiceTestUtils.FACETS;
+        Map<String, FacetType> facets = CatalogSearchServiceTestUtils.FACETS;
         PagedResourcesAssembler<DataObject> assembler = CatalogSearchServiceTestUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = CatalogSearchServiceTestUtils.PAGEABLE;
 
         // Define expected values
-        SearchKey<DataObject> expectedSearchKey = new SearchKey<>(CatalogSearchServiceTestUtils.TENANT,
-                searchType.toString(), resultClass);
         ICriterion expectedCriterion = CatalogSearchServiceTestUtils.SIMPLE_STRING_MATCH_CRITERION;
         Page<DataObject> expectedSearchResult = CatalogSearchServiceTestUtils.PAGE_DATAOBJECT;
 
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(searchService.search(Mockito.any(SearchKey.class), Mockito.any(Pageable.class),
+        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
                                           Mockito.any(ICriterion.class), Mockito.any(), Mockito.any()))
                 .thenReturn(expectedSearchResult);
         PagedResources<Resource<DataObject>> pageResources = CatalogSearchServiceTestUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogSearchService.search(q, searchType, resultClass, facets, pageable);
+        catalogSearchService.search(q, searchKey, facets, pageable);
 
         // Check
-        Mockito.verify(searchService).search(Mockito.refEq(expectedSearchKey), Mockito.refEq(pageable),
-                                             Mockito.refEq(expectedCriterion), Mockito.any(), Mockito.any());
+        Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets, null);
     }
 
 }

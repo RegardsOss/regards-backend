@@ -43,12 +43,17 @@ public class CatalogControllerTestUtils {
     public static final String Q_FINDS_ONE_DATAOBJECT = "label:mydataobject";
 
     /**
-     * A dummy list of facets
+     * OpenSearch request expected to find one document
      */
-    public static final List<String> FACETS = Lists.newArrayList("faceA", "faceB");
+    public static final String Q_FINDS_ONE_DOCUMENT = "label:mydocument";
 
     /**
-     * The dummy list of factes as array
+     * A dummy list of facets
+     */
+    public static final List<String> FACETS = Lists.newArrayList("integer", "label", "date");
+
+    /**
+     * The dummy list of facets as array
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
@@ -58,8 +63,11 @@ public class CatalogControllerTestUtils {
     private static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
             .build("label", AttributeType.STRING).get();
 
-    private static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL,
-                                                                        STRING_ATTRIBUTE_MODEL);
+    private static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build("date", AttributeType.DATE_ISO8601).get();
+
+    private static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL,
+                                                                        DATE_ATTRIBUTE_MODEL);
 
     public static final ResponseEntity<List<Resource<AttributeModel>>> CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));

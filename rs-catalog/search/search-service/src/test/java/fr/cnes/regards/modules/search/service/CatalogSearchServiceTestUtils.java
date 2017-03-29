@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.search.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
@@ -27,6 +29,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
@@ -91,12 +94,8 @@ public class CatalogSearchServiceTestUtils {
     /**
      * A dummy list of facets
      */
-    public static final List<String> FACETS = Lists.newArrayList("faceA", "faceB");
-
-    /**
-     * The dummy list of factes as array
-     */
-    public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
+    public static final Map<String, FacetType> FACETS = new ImmutableMap.Builder<String, FacetType>()
+            .put("integer", FacetType.NUMERIC).put("string", FacetType.STRING).build();
 
     /**
      * A dummy page of dataobjects
