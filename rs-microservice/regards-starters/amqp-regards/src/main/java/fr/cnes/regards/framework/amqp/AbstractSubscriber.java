@@ -60,9 +60,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
     /**
-     * Reference to running listeners by event and tenant
+     * Reference to running listeners per event and tenant
      */
     private final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
+
+    /**
+     * Reference to handler per event to register new tenant listener at runtime
+     */
+    private final Map<Class<?>, IHandler<?>> handlers;
 
     public AbstractSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
             Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
@@ -71,6 +76,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
         pJackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
         listeners = new HashMap<>();
+        handlers = new HashMap<>();
     }
 
     @Override
@@ -120,6 +126,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         Map<String, SimpleMessageListenerContainer> tenantContainers = new HashMap<>();
         listeners.put(pEvt, tenantContainers);
+        handlers.put(pEvt, pReceiver);
 
         for (final String tenant : tenants) {
             // CHECKSTYLE:OFF
@@ -141,8 +148,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      *
-     * @param <T>
-     *            event type to which we subscribe
      * @param pEvt
      *            event we want to listen to
      * @param pTenant
@@ -155,8 +160,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      *            communication scope
      * @return a container fully parameterized to listen to the corresponding event for the specified tenant
      */
-    public <T> SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<T> pEvt,
-            final String pTenant, final IHandler<T> pReceiver, final WorkerMode pWorkerMode, final Target pTarget) {
+    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<?> pEvt,
+            final String pTenant, final IHandler<?> pReceiver, final WorkerMode pWorkerMode, final Target pTarget) {
 
         // Retrieve tenant vhost connection factory
         ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(pTenant);
@@ -180,5 +185,43 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         container.setMessageListener(messageListener);
         container.addQueues(queue);
         return container;
+    }
+
+    /**
+     * Add tenant listener to existing subscribers
+     *
+     * @param tenant
+     *            new tenant to manage
+     */
+    protected void addTenantListeners(String tenant) {
+        if (listeners != null) {
+            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+                Class<?> eventClass = entry.getKey();
+                SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(eventClass, tenant,
+                                                                                                    handlers.get(eventClass),
+                                                                                                    WorkerMode.ALL,
+                                                                                                    EventUtils
+                                                                                                            .getCommunicationTarget(eventClass));
+                entry.getValue().put(tenant, container);
+                container.start();
+            }
+        }
+    }
+
+    /**
+     * Remove tenant listener from existing subscribers
+     *
+     * @param tenant
+     *            tenant to discard
+     */
+    protected void removeTenantListeners(String tenant) {
+        if (listeners != null) {
+            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+                SimpleMessageListenerContainer container = entry.getValue().remove(tenant);
+                if (container != null) {
+                    container.stop();
+                }
+            }
+        }
     }
 }

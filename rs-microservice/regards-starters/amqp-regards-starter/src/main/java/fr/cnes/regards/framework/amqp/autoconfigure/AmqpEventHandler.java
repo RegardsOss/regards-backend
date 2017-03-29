@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 import javax.annotation.PostConstruct;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -31,9 +32,16 @@ public class AmqpEventHandler {
      */
     private final IInstanceSubscriber instanceSubscriber;
 
-    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, IInstanceSubscriber pInstanceSubscriber) {
+    /**
+     * Used to update tenant listeners
+     */
+    private final ISubscriber subscriber;
+
+    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, IInstanceSubscriber pInstanceSubscriber,
+            ISubscriber pSubscriber) {
         this.virtualHostAdmin = pVirtualHostAdmin;
         this.instanceSubscriber = pInstanceSubscriber;
+        this.subscriber = pSubscriber;
     }
 
     /**
@@ -58,6 +66,7 @@ public class AmqpEventHandler {
         public void handle(TenantWrapper<TenantCreatedEvent> pWrapper) {
             TenantCreatedEvent tce = pWrapper.getContent();
             virtualHostAdmin.addVhost(tce.getTenant());
+            subscriber.addTenant(tce.getTenant());
         }
     }
 
@@ -73,6 +82,7 @@ public class AmqpEventHandler {
         public void handle(TenantWrapper<TenantDeletedEvent> pWrapper) {
             TenantDeletedEvent tde = pWrapper.getContent();
             virtualHostAdmin.removeVhost(tde.getTenant());
+            subscriber.removeTenant(tde.getTenant());
         }
     }
 }
