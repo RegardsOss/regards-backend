@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.modules.logbackappender;
 
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,6 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.logbackappender.domain.ILogEventHandler;
 import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -43,10 +41,13 @@ public class LogbackAppenderTest {
     private static final String DEFAULT_USER = "John Doe";
 
     /**
-     * Static default tenant
+     * Static default defaultTenant
      */
-    @Value("${regards.tenant}")
-    private String tenant;
+    private String defaultTenant;
+
+    private String otherTenant;
+
+    private List<String> tenants;
 
     /**
      * The microservice name
@@ -67,29 +68,38 @@ public class LogbackAppenderTest {
     private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     @Autowired
-    ILogEventHandler logEventHandler;
+    private JWTService jwtService;
 
     @Autowired
-    private JWTService jwtService;
+    SubscriberLogEvent receiverLogEvent;
 
     @Before
     public void init() throws JwtException {
+        // Get all tenants
+        tenants = Lists.newArrayList(tenantResolver.getAllTenants());
+
+        defaultTenant = tenants.get(0);
+        otherTenant = tenants.get(1);
+
         // initialize the runtime tenant for the message to publish
-        runtimeTenantResolver.forceTenant(tenant);
-        rabbitVirtualHostAdmin.addVhost(tenant);
-        jwtService.injectToken(tenant, DEFAULT_ROLE, DEFAULT_USER);
+        runtimeTenantResolver.forceTenant(defaultTenant);
+        rabbitVirtualHostAdmin.addVhost(defaultTenant);
+        jwtService.injectToken(defaultTenant, DEFAULT_ROLE, DEFAULT_USER);
+
+        // before each test, reset the LogEvent received
+        receiverLogEvent.reset();
     }
 
     @Test
     public void getOneLogInfo() throws InterruptedException {
-        final String message = "Hello info message : ";
-        LOGGER.info(message + "{}", tenant);
+        final String message = "Hello info message : " + defaultTenant;
+        LOGGER.info(message);
         LOGGER.debug("Hello");
 
         // wait and get all the received log events
         Thread.sleep(SLEEP_TIME); // NOSONAR : passive test so we have to wait for the message to be sent
 
-        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = logEventHandler.getMessages();
+        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
 
         // control the uniq log event received
@@ -99,21 +109,21 @@ public class LogbackAppenderTest {
         Assert.assertNotNull(wrapperReceived);
         final LogEvent received = wrapperReceived.getContent();
         controlLogEvent(received);
-        Assert.assertEquals(message + tenant, received.getMsg());
+        Assert.assertEquals(message, received.getMsg());
     }
 
     @Test
     public void getManyLogInfo() throws InterruptedException {
-        LOGGER.info("Hello info message : {}", tenant);
-        LOGGER.info("Hello another info message : {}", tenant);
-        LOGGER.info("Hello third info message : {}", tenant);
+        LOGGER.info("Hello info message : {}", defaultTenant);
+        LOGGER.info("Hello another info message : {}", defaultTenant);
+        LOGGER.info("Hello third info message : {}", defaultTenant);
 
         LOGGER.debug("Hello");
 
         // wait and get all the received log events
         Thread.sleep(SLEEP_TIME); // NOSONAR : passive test so we have to wait for the message to be sent
 
-        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = logEventHandler.getMessages();
+        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
 
         // control the log event
@@ -149,7 +159,7 @@ public class LogbackAppenderTest {
         // wait and get all the received log events
         Thread.sleep(SLEEP_TIME); // NOSONAR : passive test so we have to wait for the message to be sent
 
-        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = logEventHandler.getMessages();
+        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
         Assert.assertEquals(0, wrapperReceivedEvents.size());
     }
@@ -159,8 +169,6 @@ public class LogbackAppenderTest {
         final String msg2Send = "Hello I'am an event";
         LOGGER.info(msg2Send);
 
-        List<String> tenants = Lists.newArrayList(tenantResolver.getAllTenants());
-        String otherTenant = tenants.get(1);
         runtimeTenantResolver.forceTenant(otherTenant);
         rabbitVirtualHostAdmin.addVhost(otherTenant);
 
@@ -170,13 +178,13 @@ public class LogbackAppenderTest {
         // wait and get all the received log events
         Thread.sleep(SLEEP_TIME); // NOSONAR : passive test so we have to wait for the message to be sent
 
-        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = logEventHandler.getMessages();
+        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
 
         // first event
         TenantWrapper<LogEvent> wrapperReceived = wrapperReceivedEvents.get(0);
         Assert.assertNotNull(wrapperReceived);
-        Assert.assertEquals(wrapperReceived.getTenant(), tenant);
+        Assert.assertEquals(wrapperReceived.getTenant(), defaultTenant);
         LogEvent received = wrapperReceived.getContent();
         controlLogEvent(received);
         Assert.assertEquals(Thread.currentThread().getStackTrace()[1].getMethodName(), received.getMethod());
@@ -202,14 +210,14 @@ public class LogbackAppenderTest {
         // wait and get all the received log events
         Thread.sleep(3000); // NOSONAR : passive test so we have to wait for the message to be sent
 
-        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = logEventHandler.getMessages();
+        final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
         Assert.assertEquals(n, wrapperReceivedEvents.size());
 
         // first event
         TenantWrapper<LogEvent> wrapperReceived = wrapperReceivedEvents.get(0);
         Assert.assertNotNull(wrapperReceived);
-        Assert.assertEquals(wrapperReceived.getTenant(), tenant);
+        Assert.assertEquals(wrapperReceived.getTenant(), defaultTenant);
         LogEvent received = wrapperReceived.getContent();
         controlLogEvent(received);
         Assert.assertEquals(Thread.currentThread().getStackTrace()[1].getMethodName(), received.getMethod());

@@ -8,12 +8,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.google.common.collect.ImmutableSet;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.logbackappender.domain.ILogEventHandler;
@@ -32,10 +31,20 @@ public class DefaultTestConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTestConfiguration.class);
 
+    private List<TenantWrapper<LogEvent>> wrappers = new ArrayList<>();
+
     @Bean
     public ILogEventHandler logEventHandler() {
         return new LogEventHandlerTest();
     }
+
+    @Bean(name="receiverLogEvent")
+    public SubscriberLogEvent createSubscriberLogEvent() {
+        return new SubscriberLogEvent();
+    }
+
+    @Autowired
+    private SubscriberLogEvent receiverLogEvent;
 
     /**
      * This class is used to test the publish and subscribe of the {@link LogEvent}.
@@ -45,30 +54,11 @@ public class DefaultTestConfiguration {
      */
     private class LogEventHandlerTest implements ILogEventHandler {
 
-        private List<TenantWrapper<LogEvent>> wrappers = new ArrayList<>();
-
         private Boolean lock = Boolean.TRUE;
 
         public void handle(TenantWrapper<LogEvent> pWrapper) {
             LOGGER.debug("a new event received : " + pWrapper.getTenant() + "-" + pWrapper.getContent());
-            synchronized (lock) {
-                getMessage().add(pWrapper);
-            }
-
-        }
-
-        public List<TenantWrapper<LogEvent>> getMessage() {
-            return this.wrappers;
-        }
-
-        @Override
-        synchronized public List<TenantWrapper<LogEvent>> getMessages() {
-            List<TenantWrapper<LogEvent>> result;
-            synchronized (lock) {
-                result = ImmutableSet.copyOf(getMessage()).asList();
-                this.wrappers.clear();
-            }
-            return result;
+            receiverLogEvent.addLogEvent(pWrapper);
         }
 
     }
