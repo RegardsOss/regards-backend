@@ -32,8 +32,8 @@ import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ValueComparison;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.search.service.cache.AttributeModelCache;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.AttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**

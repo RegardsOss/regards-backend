@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 
 /**
  * Test verifying {@link IAttributeModelCache} caching facilities.<br>

@@ -16,7 +16,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 
 /**
  * Teaches Spring how to convert a list of attribute names into a map of facet types.

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.service.cache;
+package fr.cnes.regards.modules.search.service.cache.attributemodel;
 
 import java.util.List;
 

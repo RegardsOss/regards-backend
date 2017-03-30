@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParserMessages;
 
 /**

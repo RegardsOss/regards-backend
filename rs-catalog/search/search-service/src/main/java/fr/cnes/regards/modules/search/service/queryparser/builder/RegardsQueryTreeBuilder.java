@@ -16,7 +16,7 @@ import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.WildcardQueryNode;
 
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 
 /**
  * Define the REGARDS specific query nodes building strategies.
