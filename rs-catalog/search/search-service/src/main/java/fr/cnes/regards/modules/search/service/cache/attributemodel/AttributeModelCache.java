@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -75,31 +76,34 @@ public class AttributeModelCache implements IAttributeModelCache {
         subscriber.subscribeTo(AttributeModelDeleted.class, new DeletedHandler());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findAll()
-     */
     @Override
     public List<AttributeModel> getAttributeModels(String pTenant) {
-        return HateoasUtils.unwrapList(attributeModelClient.getAttributes(null, null).getBody());
+        return doGetAttributeModels();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findAllAndCache()
-     */
     @Override
     public List<AttributeModel> getAttributeModelsThenCache(String pTenant) {
-        return HateoasUtils.unwrapList(attributeModelClient.getAttributes(null, null).getBody());
+        return doGetAttributeModels();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findByName(java.lang.String)
+    /**
+     * Use the feign client to retrieve all attribute models.<br>
+     * The method is private because it is not expected to be used directly, but via its cached facade "getAttributeModels" method.
+     * @return the list of user's access groups
      */
+    private List<AttributeModel> doGetAttributeModels() {
+        // Enable system call as follow (thread safe action)
+        FeignSecurityManager.asSystem();
+
+        // Perform client call
+        List<AttributeModel> result = HateoasUtils.unwrapList(attributeModelClient.getAttributes(null, null).getBody());
+
+        // Disable system call if necessary after client request(s)
+        FeignSecurityManager.reset();
+
+        return result;
+    }
+
     @Override
     public AttributeModel findByName(String pName) throws EntityNotFoundException {
         String tenant = runtimeTenantResolver.getTenant();

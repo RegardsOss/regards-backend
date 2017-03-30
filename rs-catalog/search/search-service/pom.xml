@@ -34,6 +34,11 @@
 			<groupId>fr.cnes.regards.modules.entities</groupId>
 			<artifactId>entities-domain</artifactId>
 		</dependency>
+		<!-- COTS -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
@@ -59,6 +64,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.dataaccess</groupId>
+			<artifactId>dataaccess-client</artifactId>
 		</dependency>
 	</dependencies>
 </project>
