@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.search.service.cache;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -17,13 +16,15 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.event.AttributeModelCreated;
 import fr.cnes.regards.modules.models.domain.event.AttributeModelDeleted;
 
 /**
- * {@link IAttributeModelCache} implementation
+ * In this implementation, we choose to repopulate (and not only evict) the cache for a tenant in response to "create" and "delete" events.<br>
+ * This way the cache "anticipates" by repopulating immediately instead of waiting for the next user call.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -46,22 +47,23 @@ public class AttributeModelCache implements IAttributeModelCache {
     private final ISubscriber subscriber;
 
     /**
-     * Cached attribute models
+     * Retrieve the current tenant at runtime. Autowired by Spring.
      */
-    Optional<List<AttributeModel>> attributeModels;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Creates a new instance of the service with passed services/repos
      *
-     * @param pAttributeModelClient
-     *            Service returning the list of attribute models and keeping the list up-to-date
-     * @param pSubscriber
-     *            the AMQP events subscriber
+     * @param pAttributeModelClient Service returning the list of attribute models and keeping the list up-to-date
+     * @param pSubscriber the AMQP events subscriber
+     * @param pRuntimeTenantResolver the runtime tenant resolver
      */
-    public AttributeModelCache(IAttributeModelClient pAttributeModelClient, ISubscriber pSubscriber) {
+    public AttributeModelCache(IAttributeModelClient pAttributeModelClient, ISubscriber pSubscriber,
+            IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         attributeModelClient = pAttributeModelClient;
         subscriber = pSubscriber;
+        runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
     /**
@@ -79,7 +81,7 @@ public class AttributeModelCache implements IAttributeModelCache {
      * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findAll()
      */
     @Override
-    public List<AttributeModel> getAttributeModels() {
+    public List<AttributeModel> getAttributeModels(String pTenant) {
         return HateoasUtils.unwrapList(attributeModelClient.getAttributes(null, null).getBody());
     }
 
@@ -89,7 +91,7 @@ public class AttributeModelCache implements IAttributeModelCache {
      * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findAllAndCache()
      */
     @Override
-    public List<AttributeModel> getAttributeModelsThenCache() {
+    public List<AttributeModel> getAttributeModelsThenCache(String pTenant) {
         return HateoasUtils.unwrapList(attributeModelClient.getAttributes(null, null).getBody());
     }
 
@@ -98,14 +100,10 @@ public class AttributeModelCache implements IAttributeModelCache {
      *
      * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findByName(java.lang.String)
      */
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.search.service.cache.IAttributeModelCache#findByName(java.lang.String)
-     */
     @Override
     public AttributeModel findByName(String pName) throws EntityNotFoundException {
-        return getAttributeModels().stream().filter(el -> el.getName().equals(pName)).findFirst()
+        String tenant = runtimeTenantResolver.getTenant();
+        return getAttributeModels(tenant).stream().filter(el -> el.getName().equals(pName)).findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(pName, AttributeModel.class));
     }
 
@@ -113,14 +111,13 @@ public class AttributeModelCache implements IAttributeModelCache {
      * Handle {@link AttributeModel} creation
      *
      * @author Xavier-Alexandre Brochard
-     *
      */
     private class CreatedHandler implements IHandler<AttributeModelCreated> {
 
         @Override
         public void handle(TenantWrapper<AttributeModelCreated> pWrapper) {
             LOGGER.info("New attribute model created, refreshing the cache", pWrapper.getContent().getAttributeName());
-            getAttributeModelsThenCache();
+            getAttributeModelsThenCache(pWrapper.getTenant());
         }
     }
 
@@ -128,14 +125,13 @@ public class AttributeModelCache implements IAttributeModelCache {
      * Handle {@link AttributeModel} deletion
      *
      * @author Xavier-Alexandre Brochard
-     *
      */
     private class DeletedHandler implements IHandler<AttributeModelDeleted> {
 
         @Override
         public void handle(TenantWrapper<AttributeModelDeleted> pWrapper) {
             LOGGER.info("New attribute model deleted, refreshing the cache", pWrapper.getContent().getAttributeName());
-            getAttributeModelsThenCache();
+            getAttributeModelsThenCache(pWrapper.getTenant());
         }
     }
 

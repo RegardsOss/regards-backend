@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ComparisonOperator;
@@ -47,11 +48,19 @@ public class RegardsQueryParserTest {
 
     private static RegardsQueryParser parser;
 
+    /**
+     * The tenant
+     */
+    private static final String TENANT = "tenant";
+
     @BeforeClass
     public static void init() throws EntityNotFoundException {
         ISubscriber subscriber = Mockito.mock(ISubscriber.class);
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber);
+        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
+        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
+                runtimeTenantResolver);
 
         ResponseEntity<List<Resource<AttributeModel>>> clientResponse = SampleDataUtils.CLIENT_RESPONSE;
         Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(clientResponse);

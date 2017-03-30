@@ -15,6 +15,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
@@ -50,13 +51,21 @@ public class AccessRightFilterTest {
     private static NamedCriterionFinderVisitor GROUPS_FINDER = new NamedCriterionFinderVisitor(GROUPS_TERM);
 
     /**
+     * The tenant
+     */
+    private static final String TENANT = "tenant";
+
+    /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
         ISubscriber subscriber = Mockito.mock(ISubscriber.class);
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber);
+        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
+        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
+                runtimeTenantResolver);
 
         ResponseEntity<List<Resource<AttributeModel>>> clientResponse = SampleDataUtils.CLIENT_RESPONSE;
         Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(clientResponse);
