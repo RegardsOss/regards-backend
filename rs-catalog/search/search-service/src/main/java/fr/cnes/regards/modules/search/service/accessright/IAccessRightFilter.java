@@ -7,17 +7,14 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
  *
  * @author Xavier-Alexandre Brochard
  */
+@FunctionalInterface
 public interface IAccessRightFilter {
 
-    ICriterion addGroupFilter(ICriterion criterion);
-
-    ICriterion addAccessRightsFilter(ICriterion criterion);
-
     /**
-     * Remove any group criterion that could be found in this criterion
-     * 
-     * @param pCriterion
-     * @return
+     * Add the current user's groups to the criterion.
+     *
+     * @param criterion
+     * @return the passed criterion agremented of the current user's groups
      */
-    ICriterion removeGroupFilter(ICriterion pCriterion);
+    ICriterion addUserGroups(ICriterion criterion);
 }

@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 
 /**
@@ -37,13 +38,21 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final RegardsQueryParser queryParser;
 
     /**
+     * Service handling the access groups in criterion
+     */
+    private final IAccessRightFilter accessRightFilter;
+
+    /**
      * @param pSearchService
      * @param pQueryParser
+     * @param pAccessRightFilter
      */
-    public CatalogSearchService(ISearchService pSearchService, RegardsQueryParser pQueryParser) {
+    public CatalogSearchService(ISearchService pSearchService, RegardsQueryParser pQueryParser,
+            IAccessRightFilter pAccessRightFilter) {
         super();
         searchService = pSearchService;
         queryParser = pQueryParser;
+        accessRightFilter = pAccessRightFilter;
     }
 
     /*
@@ -59,17 +68,15 @@ public class CatalogSearchService implements ICatalogSearchService {
             Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
         try {
             // Build criterion from query
-            ICriterion criterion;
-            criterion = queryParser.parse(pQ);
+            ICriterion criterion = queryParser.parse(pQ);
 
-            // Apply security filters
-            // criterion = accessRightFilter.removeGroupFilter(criterion);
-            // criterion = accessRightFilter.addGroupFilter(criterion);
-            // criterion = accessRightFilter.addAccessRightsFilter(criterion);
+            // Apply security filter
+            criterion = accessRightFilter.addUserGroups(criterion);
 
             // Sort
             LinkedHashMap<String, Boolean> ascSortMap = null;
 
+            // Perform search
             if (pSearchKey instanceof SimpleSearchKey) {
                 return searchService.search((SimpleSearchKey<R>) pSearchKey, pPageable, criterion, pFacets, ascSortMap);
             } else {

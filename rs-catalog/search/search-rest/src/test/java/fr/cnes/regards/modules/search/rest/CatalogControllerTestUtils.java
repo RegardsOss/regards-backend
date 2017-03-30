@@ -24,7 +24,7 @@ public class CatalogControllerTestUtils {
     /**
      * Dummy OpenSearch request
      */
-    // public static final String Q = "integer:(2 AND 3) OR string:hello";
+    // public static final String QUERY = "integer:(2 AND 3) OR string:hello";
     public static final String Q = "label:mycollection";
 
     /**

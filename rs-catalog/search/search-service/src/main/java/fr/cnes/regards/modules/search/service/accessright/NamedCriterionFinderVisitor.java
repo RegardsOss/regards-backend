@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.service.accessright;
 
 import java.util.Iterator;
 import java.util.Optional;
