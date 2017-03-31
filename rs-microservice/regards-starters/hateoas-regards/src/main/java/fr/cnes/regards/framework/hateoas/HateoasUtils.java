@@ -95,6 +95,19 @@ public final class HateoasUtils {
     }
 
     /**
+     * Unwraps a {@link Collection} of {@link Resource}s.
+     *
+     * @param pWrapped
+     *            A collection of resources
+     * @param <T>
+     *            The wrapped resource type
+     * @return The unwrapped list of resources
+     */
+    public static <T> List<T> unwrapCollection(Collection<Resource<T>> pWrapped) {
+        return unwrapList(new ArrayList<>(pWrapped));
+    }
+
+    /**
      * Transforms a collection to a paged resources of resource(without links) of one page with all the elements.
      *
      * @param pElements
@@ -142,4 +155,5 @@ public final class HateoasUtils {
         } while (newPage);
         return results;
     }
+
 }
