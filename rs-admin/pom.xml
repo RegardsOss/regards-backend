@@ -21,6 +21,7 @@
 		<module>accessrights</module>
 		<module>emails</module>
 		<module>notification</module>
+		<module>metrics</module>
 		<module>remote-tenant-resolver</module>
 		<module>local-tenant-resolver</module>
 	</modules>
