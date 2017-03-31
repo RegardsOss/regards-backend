@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.configuration.dao;
 
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Layout;
 
@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface ILayoutRepository extends CrudRepository<Layout, Long> {
+public interface ILayoutRepository extends JpaRepository<Layout, Long> {
 
     /**
      *

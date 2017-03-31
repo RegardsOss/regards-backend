@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Module;
 
@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.configuration.domain.Module;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface IModuleRepository extends CrudRepository<Module, Long> {
+public interface IModuleRepository extends JpaRepository<Module, Long> {
 
     /**
      *

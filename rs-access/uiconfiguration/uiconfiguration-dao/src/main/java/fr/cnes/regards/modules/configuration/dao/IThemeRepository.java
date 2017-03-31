@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Theme;
 
@@ -20,9 +20,7 @@ import fr.cnes.regards.modules.configuration.domain.Theme;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface IThemeRepository extends CrudRepository<Theme, Long> {
-
-    Page<Theme> findAll(Pageable pPageable);
+public interface IThemeRepository extends JpaRepository<Theme, Long> {
 
     List<Theme> findByActiveTrue();
 
