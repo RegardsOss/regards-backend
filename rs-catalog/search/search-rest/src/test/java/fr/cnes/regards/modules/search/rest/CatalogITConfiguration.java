@@ -16,7 +16,6 @@ import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
  * Module-wide configuration for integration tests.
@@ -43,11 +42,6 @@ public class CatalogITConfiguration {
     @Bean
     public IUserClient userClient() {
         return Mockito.mock(IUserClient.class);
-    }
-
-    @Bean
-    public IAccessRightFilter accessRightFilter() {
-        return Mockito.mock(IAccessRightFilter.class);
     }
 
     @Bean

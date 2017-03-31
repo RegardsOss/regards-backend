@@ -4,13 +4,18 @@
 package fr.cnes.regards.modules.search.rest;
 
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.dataaccess.client.IUserClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
@@ -69,7 +74,39 @@ public class CatalogControllerTestUtils {
     private static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL,
                                                                         DATE_ATTRIBUTE_MODEL);
 
-    public static final ResponseEntity<List<Resource<AttributeModel>>> CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
+
+    /**
+     * A dummy access group name
+     */
+    public static final String ACCESS_GROUP_NAME_0 = "accessGroup0";
+
+    /**
+     * A dummy access group name
+     */
+    public static final String ACCESS_GROUP_NAME_1 = "accessGroup1";
+
+    /**
+     * The previous access group name as a {@link Set}
+     */
+    public static final Set<String> ACCESS_GROUP_NAMES_AS_SET = Sets.newHashSet(ACCESS_GROUP_NAME_0,
+                                                                                ACCESS_GROUP_NAME_1);
+
+    /**
+     * A dummy access group
+     */
+    public static final AccessGroup ACCESS_GROUP_0 = new AccessGroup(ACCESS_GROUP_NAME_0);
+
+    /**
+     * A dummy access group
+     */
+    public static final AccessGroup ACCESS_GROUP_1 = new AccessGroup(ACCESS_GROUP_NAME_1);
+
+    /**
+     * Sample response from the {@link IUserClient}
+     */
+    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
+            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
 }

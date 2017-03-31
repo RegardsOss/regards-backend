@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.junit.Assert;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -72,6 +73,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
             // Apply security filter
             criterion = accessRightFilter.addUserGroups(criterion);
+            Assert.assertNotNull(criterion);
 
             // Sort
             LinkedHashMap<String, Boolean> ascSortMap = null;
