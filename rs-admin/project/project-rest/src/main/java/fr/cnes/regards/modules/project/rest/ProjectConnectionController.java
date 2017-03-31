@@ -46,13 +46,18 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
  */
 @RestController
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
-@RequestMapping("/project_connections")
+@RequestMapping(ProjectConnectionController.TYPE_MAPPING)
 public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectConnectionController.class);
+    
+    /**
+     * Type mapping
+     */
+    public static final String TYPE_MAPPING = "/project_connections";
 
     /**
      * Business service for Project entities. Autowired.

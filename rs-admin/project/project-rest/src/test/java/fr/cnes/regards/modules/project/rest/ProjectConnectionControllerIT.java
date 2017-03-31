@@ -110,7 +110,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     public void retrieveProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet("/project_connections?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
+        performGet(ProjectConnectionController.TYPE_MAPPING+ "?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
                    instanceAdmintoken, expectations, "error");
     }
 
@@ -126,7 +126,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet("/project_connections", instanceAdmintoken, expectations, "error");
+        performGet(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, expectations, "error");
     }
 
     /**
@@ -145,7 +145,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                 "newPassword", "newDriver", "newUrl");
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isCreated());
-        performPost("/project_connections", instanceAdmintoken, connection, expectations,
+        performPost(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, connection, expectations,
                     "Error there must be project results");
     }
 
@@ -164,8 +164,8 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                                                                                                  MICROSERVICE_TEST);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut("/project_connections", instanceAdmintoken, connection, expectations,
-                   "Error there must be project results");
+        performPut(ProjectConnectionController.TYPE_MAPPING+ "/{project_connection_id}", instanceAdmintoken, connection, expectations,
+                   "Error there must be project results", connection.getId());
     }
 
     /**
@@ -181,7 +181,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     public void deleteProjectConnection() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete("/project_connections?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
+        performDelete(ProjectConnectionController.TYPE_MAPPING+ "?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
                       instanceAdmintoken, expectations, "Error there must be project results");
     }
 
@@ -202,7 +202,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet("/project_connections?project_name=" + PROJECT_TEST, instanceAdmintoken, expectations, "error");
+        performGet(ProjectConnectionController.TYPE_MAPPING+ "?project_name=" + PROJECT_TEST, instanceAdmintoken, expectations, "error");
     }
 
     /**
@@ -217,7 +217,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/project_connections/" + connection.getId(), instanceAdmintoken, expectations, "error");
+        performGet(ProjectConnectionController.TYPE_MAPPING+ "/" + connection.getId(), instanceAdmintoken, expectations, "error");
     }
 
 }
