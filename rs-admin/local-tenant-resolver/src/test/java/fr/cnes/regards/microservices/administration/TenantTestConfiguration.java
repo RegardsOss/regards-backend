@@ -12,11 +12,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolver;
-import fr.cnes.regards.microservices.administration.LocalTenantConnectionResolverAutoConfiguration;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -63,6 +63,11 @@ public class TenantTestConfiguration {
         return Mockito.mock(IPublisher.class);
     }
 
+    @Bean
+    public IInstancePublisher mockInstancePublisher() {
+        return Mockito.mock(IInstancePublisher.class);
+    }
+
     /**
      *
      * Initialize a Mock for AMQP Subsriber
@@ -73,6 +78,11 @@ public class TenantTestConfiguration {
     @Bean
     public ISubscriber mockSubscriber() {
         return Mockito.mock(ISubscriber.class);
+    }
+
+    @Bean
+    public IInstanceSubscriber mockInstanceSubscriber() {
+        return Mockito.mock(IInstanceSubscriber.class);
     }
 
     /**

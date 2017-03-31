@@ -12,14 +12,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -58,12 +57,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     /**
      * AMQP message publisher
      */
-    private final IPublisher publisher;
-
-    /**
-     * Runtime tenant resolver
-     */
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    private final IInstancePublisher instancePublisher;
 
     /**
      * The constructor.
@@ -76,17 +70,15 @@ public class ProjectConnectionService implements IProjectConnectionService {
      *            multitenant DAO properties form config file
      * @param pMicroserviceName
      *            current microservice name
-     * @param pPublisher
+     * @param pInstancePublisher
      *            Amqp publisher
      */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
-            final IProjectConnectionRepository pProjectConnectionRepository, final IPublisher pPublisher,
-            IRuntimeTenantResolver runtimeTenantResolver) {
+            final IProjectConnectionRepository pProjectConnectionRepository, final IInstancePublisher pInstancePublisher) {
         super();
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
-        publisher = pPublisher;
-        this.runtimeTenantResolver = runtimeTenantResolver;
+        instancePublisher = pInstancePublisher;
     }
 
     @Override
@@ -131,9 +123,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 connection.getDriverClassName());
 
         if (!silent) {
-            // Publish on tenant queue
-            runtimeTenantResolver.forceTenant(tenantConnection.getTenant());
-            publisher.publish(new TenantConnectionCreatedEvent(tenantConnection, connection.getMicroservice()));
+            instancePublisher.publish(new TenantConnectionCreatedEvent(tenantConnection, connection.getMicroservice()));
         }
 
         return connection;

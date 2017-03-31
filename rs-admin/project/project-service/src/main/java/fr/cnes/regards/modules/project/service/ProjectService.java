@@ -13,7 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
@@ -58,7 +58,7 @@ public class ProjectService implements IProjectService {
     /**
      * AMQP message publisher
      */
-    private final IPublisher publisher;
+    private final IInstancePublisher instancePublisher;
 
     /**
      * The constructor.
@@ -67,11 +67,11 @@ public class ProjectService implements IProjectService {
      *            The JPA repository.
      */
     public ProjectService(final IProjectRepository pProjectRepository,
-            final MultitenantDaoProperties pDefaultProperties, IPublisher pPublisher) {
+            final MultitenantDaoProperties pDefaultProperties, IInstancePublisher instancePublisher) {
         super();
         projectRepository = pProjectRepository;
         defaultProperties = pDefaultProperties;
-        this.publisher = pPublisher;
+        this.instancePublisher = instancePublisher;
     }
 
     @PostConstruct
@@ -101,7 +101,10 @@ public class ProjectService implements IProjectService {
         final Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
         projectRepository.save(deleted);
-        publisher.publish(new TenantDeletedEvent(pProjectName));
+        // Publish tenant deletion
+        TenantDeletedEvent tde = new TenantDeletedEvent();
+        tde.setTenant(pProjectName);
+        instancePublisher.publish(tde);
     }
 
     @Override
@@ -142,7 +145,12 @@ public class ProjectService implements IProjectService {
         }
 
         Project project = projectRepository.save(pNewProject);
-        publisher.publish(new TenantCreatedEvent(project.getName()));
+
+        // Publish tenant creation
+        TenantCreatedEvent tce = new TenantCreatedEvent();
+        tce.setTenant(pNewProject.getName());
+        instancePublisher.publish(tce);
+
         return project;
     }
 
