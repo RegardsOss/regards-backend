@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.dataaccess.client.IUserClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -30,10 +32,12 @@ import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.search.domain.SearchType;
+import fr.cnes.regards.modules.search.domain.Terms;
 
 /**
  * Define sample data for tests.
@@ -140,8 +144,37 @@ public class SampleDataUtils {
                           INTEGER_ARRAY_ATTRIBUTE_MODEL, DOUBLE_ARRAY_ATTRIBUTE_MODEL, LONG_ARRAY_ATTRIBUTE_MODEL,
                           STRING_ARRAY_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL, TAGS_ATTRIBUTE_MODEL);
 
-    public static final ResponseEntity<List<Resource<AttributeModel>>> CLIENT_RESPONSE = ResponseEntity
+    /**
+     * Sample response from the {@link IAttributeModelClient}
+     */
+    public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(SampleDataUtils.LIST));
+
+    /**
+     * A dummy access group name
+     */
+    public static final String ACCESS_GROUP_NAME_0 = "accessGroup0";
+
+    /**
+     * A dummy access group name
+     */
+    public static final String ACCESS_GROUP_NAME_1 = "accessGroup1";
+
+    /**
+     * A dummy access group
+     */
+    public static final AccessGroup ACCESS_GROUP_0 = new AccessGroup(ACCESS_GROUP_NAME_0);
+
+    /**
+     * A dummy access group
+     */
+    public static final AccessGroup ACCESS_GROUP_1 = new AccessGroup(ACCESS_GROUP_NAME_1);
+
+    /**
+     * Sample response from the {@link IUserClient}
+     */
+    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
+            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
     /**
      * Dummy OpenSearch request
@@ -156,7 +189,7 @@ public class SampleDataUtils {
     /**
      * A query with a term "groups"
      */
-    public static final String QUERY_WITH_GROUPS = INTEGER_FIELD + ":(2 AND 3) OR " + "groups:admin";
+    public static final String QUERY_WITH_GROUPS = INTEGER_FIELD + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
 
     /**
      * A query like the ones the REGARDS frontend is likely to use
@@ -255,25 +288,28 @@ public class SampleDataUtils {
     /**
      * A criterion string match
      */
-    public static final ICriterion SIMPLE_STRING_MATCH_CRITERION = ICriterion.equals("field", "value");
+    public static final ICriterion SIMPLE_STRING_MATCH_CRITERION = ICriterion.eq("field", "value");
 
     /**
      * Define a criterion with a nested criterion of name "target" (this must be detected and properly handled)
      */
-    public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion
-            .or(ICriterion.equals("target", SearchType.DATASET.toString()), ICriterion.equals("field", "value"));
+    public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion.or(
+                                                                                      ICriterion.eq("target",
+                                                                                                    SearchType.DATASET
+                                                                                                            .toString()),
+                                                                                      ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "dataset" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_DATASET_FIELD = ICriterion
-            .or(ICriterion.equals("dataset", "whatever"), ICriterion.equals("field", "value"));
+            .or(ICriterion.eq("dataset", "whatever"), ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "datasets" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_DATASETS_FIELD = ICriterion
-            .or(ICriterion.equals("datasets", "whatever"), ICriterion.equals("field", "value"));
+            .or(ICriterion.eq("datasets", "whatever"), ICriterion.eq("field", "value"));
 
     /**
      * A dummy sort
@@ -304,5 +340,10 @@ public class SampleDataUtils {
      * A dummy urn for a document
      */
     public static final UniformResourceName URN_DOCUMENT = new UniformResourceName();
+
+    /**
+     * A sample email representing the current user
+     */
+    public static final String EMAIL = "user@email.com";
 
 }

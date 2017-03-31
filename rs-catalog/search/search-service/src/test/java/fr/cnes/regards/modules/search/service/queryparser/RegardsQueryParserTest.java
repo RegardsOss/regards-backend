@@ -62,7 +62,7 @@ public class RegardsQueryParserTest {
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
 
-        ResponseEntity<List<Resource<AttributeModel>>> clientResponse = SampleDataUtils.CLIENT_RESPONSE;
+        ResponseEntity<List<Resource<AttributeModel>>> clientResponse = SampleDataUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE;
         Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(clientResponse);
 
         parser = new RegardsQueryParser(attributeModelCache);

@@ -3,8 +3,11 @@
  */
 package fr.cnes.regards.modules.search.service.accessright;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Optional;
+
+import org.assertj.core.util.Lists;
 
 import fr.cnes.regards.modules.indexer.domain.IMapping;
 import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
@@ -23,12 +26,12 @@ import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 
 /**
- * Criterion visitor which tries to find a ICriterion concerning the sepcified attribute name.<br>
- * Returns the {@link Optional} criterion if it found one somewhere in the hierarchy, else optional of null.
+ * Criterion visitor which tries to find all ICriterion concerning the specified attribute name.<br>
+ * Returns a {@link Collection} of criterion.
  *
  * @author Xavier-Alexandre Brochard
  */
-public class NamedCriterionFinderVisitor implements ICriterionVisitor<Optional<ICriterion>> {
+public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection<ICriterion>> {
 
     /**
      * The name of the criterion we are looking for
@@ -44,106 +47,78 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Optional<I
     }
 
     @Override
-    public Optional<ICriterion> visitEmptyCriterion(EmptyCriterion pCriterion) {
-        return Optional.empty();
+    public Collection<ICriterion> visitEmptyCriterion(EmptyCriterion pCriterion) {
+        return new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitAndCriterion(AbstractMultiCriterion pCriterion) {
-        Optional<ICriterion> result = Optional.empty();
+    public Collection<ICriterion> visitAndCriterion(AbstractMultiCriterion pCriterion) {
+        Collection<ICriterion> result = new ArrayList<>();
         Iterator<ICriterion> criterionIterator = pCriterion.getCriterions().iterator();
-        while (!result.isPresent() && criterionIterator.hasNext()) {
-            result = criterionIterator.next().accept(this);
+        while (criterionIterator.hasNext()) {
+            result.addAll(criterionIterator.next().accept(this));
         }
         return result;
     }
 
     @Override
-    public Optional<ICriterion> visitOrCriterion(AbstractMultiCriterion pCriterion) {
-        Optional<ICriterion> result = Optional.empty();
+    public Collection<ICriterion> visitOrCriterion(AbstractMultiCriterion pCriterion) {
+        Collection<ICriterion> result = new ArrayList<>();
         Iterator<ICriterion> criterionIterator = pCriterion.getCriterions().iterator();
-        while (!result.isPresent() && criterionIterator.hasNext()) {
-            result = criterionIterator.next().accept(this);
+        while (criterionIterator.hasNext()) {
+            result.addAll(criterionIterator.next().accept(this));
         }
         return result;
     }
 
     @Override
-    public Optional<ICriterion> visitNotCriterion(NotCriterion pCriterion) {
+    public Collection<ICriterion> visitNotCriterion(NotCriterion pCriterion) {
         return pCriterion.getCriterion().accept(this);
     }
 
     @Override
-    public Optional<ICriterion> visitStringMatchCriterion(StringMatchCriterion pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public Collection<ICriterion> visitStringMatchCriterion(StringMatchCriterion pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitStringMatchAnyCriterion(StringMatchAnyCriterion pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public Collection<ICriterion> visitStringMatchAnyCriterion(StringMatchAnyCriterion pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitIntMatchCriterion(IntMatchCriterion pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public Collection<ICriterion> visitIntMatchCriterion(IntMatchCriterion pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitLongMatchCriterion(LongMatchCriterion pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public Collection<ICriterion> visitLongMatchCriterion(LongMatchCriterion pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public <U extends Comparable<? super U>> Optional<ICriterion> visitRangeCriterion(RangeCriterion<U> pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public <U extends Comparable<? super U>> Collection<ICriterion> visitRangeCriterion(RangeCriterion<U> pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitDateRangeCriterion(DateRangeCriterion pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public Collection<ICriterion> visitDateRangeCriterion(DateRangeCriterion pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitBooleanMatchCriterion(BooleanMatchCriterion pCriterion) {
-        if (searchedName.equals(pCriterion.getName())) {
-            return Optional.of(pCriterion);
-        } else {
-            return Optional.empty();
-        }
+    public Collection<ICriterion> visitBooleanMatchCriterion(BooleanMatchCriterion pCriterion) {
+        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitPolygonCriterion(PolygonCriterion pCriterion) {
-        return (searchedName.equals(IMapping.GEOMETRY)) ? Optional.of(pCriterion) : Optional.empty();
+    public Collection<ICriterion> visitPolygonCriterion(PolygonCriterion pCriterion) {
+        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
     @Override
-    public Optional<ICriterion> visitCircleCriterion(CircleCriterion pCriterion) {
-        return (searchedName.equals(IMapping.GEOMETRY)) ? Optional.of(pCriterion) : Optional.empty();
+    public Collection<ICriterion> visitCircleCriterion(CircleCriterion pCriterion) {
+        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
     }
 
 }
