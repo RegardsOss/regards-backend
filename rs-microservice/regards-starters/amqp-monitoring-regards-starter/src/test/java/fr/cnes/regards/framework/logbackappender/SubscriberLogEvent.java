@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.modules.logbackappender;
+package fr.cnes.regards.framework.logbackappender;
 
 import java.util.ArrayList;
 import java.util.List;

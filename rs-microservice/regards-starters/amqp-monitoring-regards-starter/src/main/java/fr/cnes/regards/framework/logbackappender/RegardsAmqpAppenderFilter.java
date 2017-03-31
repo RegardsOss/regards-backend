@@ -23,6 +23,7 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
      */
     private final List<String> includes = Arrays.asList("fr.cnes.regards.framework.modules",
                                                         "fr.cnes.regards.framework.security",
+                                                        "fr.cnes.regards.framework.logbackappender",
                                                         "fr.cnes.regards.modules");
 
     /**
@@ -37,6 +38,10 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
 
     @Override
     public FilterReply decide(ILoggingEvent event) {
+
+        if (event.getLevel() != level)
+            return FilterReply.DENY;
+
         accept = false;
         String loggerName = event.getLoggerName().toLowerCase();
 

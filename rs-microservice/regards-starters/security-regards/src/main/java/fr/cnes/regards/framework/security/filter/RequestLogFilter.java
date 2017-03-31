@@ -21,6 +21,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * Filter to log request received by a microservice
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
+ * 
  * @since 1.0-SNAPSHOT
  */
 public class RequestLogFilter extends OncePerRequestFilter {
@@ -33,8 +35,15 @@ public class RequestLogFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
-        LOG.info("Request received : {}@{} from {}.", pRequest.getRequestURI(), pRequest.getMethod(),
-                 pRequest.getRemoteAddr());
+        String xForwardedFor = pRequest.getHeader("X-FORWARDED-FOR");
+
+        if (xForwardedFor != null) {
+            LOG.info("Request received : {}@{} from {}", pRequest.getRequestURI(), pRequest.getMethod(),
+                     xForwardedFor);
+        } else {
+            LOG.info("Request received : {}@{} from {}", pRequest.getRequestURI(), pRequest.getMethod(), pRequest.getRemoteAddr());
+        }
+
         pFilterChain.doFilter(pRequest, pResponse);
     }
 

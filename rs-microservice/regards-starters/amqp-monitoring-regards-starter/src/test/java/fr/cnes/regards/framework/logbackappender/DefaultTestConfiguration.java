@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.modules.logbackappender;
+package fr.cnes.regards.framework.logbackappender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class DefaultTestConfiguration {
         private Boolean lock = Boolean.TRUE;
 
         public void handle(TenantWrapper<LogEvent> pWrapper) {
-            LOGGER.debug("a new event received : " + pWrapper.getTenant() + "-" + pWrapper.getContent());
+            LOGGER.debug("a new event received : [" + pWrapper.getTenant() + "] - <" + pWrapper.getContent().getMsg()+">");
             receiverLogEvent.addLogEvent(pWrapper);
         }
 

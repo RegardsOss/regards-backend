@@ -24,7 +24,7 @@ public class LogEvent implements ISubscribable {
     /**
      * The microservice name that send the event
      */
-    protected String microService;
+    protected String microservice;
 
     /**
      * The class name that sends the event
@@ -49,7 +49,7 @@ public class LogEvent implements ISubscribable {
     /**
      * The user
      */
-    protected String username;
+    protected String userName;
 
     public LogEvent() {
         super();
@@ -71,24 +71,24 @@ public class LogEvent implements ISubscribable {
      * @param level
      *            The log level
      */
-    public LogEvent(String msg, String microServiceName, String caller, String method, String date, String level,
+    public LogEvent(String msg, String microserviceName, String caller, String method, String date, String level,
             String user) {
         super();
         this.msg = msg;
-        this.microService = microServiceName;
+        this.microservice = microserviceName;
         this.caller = caller;
         this.method = method;
         this.date = date;
         this.level = level;
-        this.username = user;
+        this.userName = user;
     }
 
     public String getMsg() {
         return msg;
     }
 
-    public String getMicroService() {
-        return microService;
+    public String getMicroservice() {
+        return microservice;
     }
 
     public String getCaller() {
@@ -107,20 +107,42 @@ public class LogEvent implements ISubscribable {
         return level;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public void setMicroservice(String microservice) {
+        this.microservice = microservice;
+    }
+
+    public void setCaller(String caller) {
+        this.caller = caller;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = microService != null ? microService.hashCode() : 0;
-        result = prime * result + (caller != null ? caller.hashCode() : 0);
-        result = prime * result + (method != null ? method.hashCode() : 0);
-        result = prime * result + (username != null ? username.hashCode() : 0);
-        result = prime * result + (date != null ? date.hashCode() : 0);
-        result = prime * result + (msg != null ? msg.hashCode() : 0);
-        return result;
+    public String toString() {
+        return "LogEvent : [" + date + "] microservice=" + getMicroservice() + ", user=" + getUserName() + ", msg="
+                + getMsg();
     }
 
 }
