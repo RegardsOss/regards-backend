@@ -17,6 +17,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
@@ -33,8 +36,7 @@ public class RegardsAmqpAdmin {
      * Default exchange name
      */
     public static final String DEFAULT_EXCHANGE_NAME = "regards";
-    
-    
+
     /**
      * This constant allows to defined a message to send with a high priority
      */
@@ -164,6 +166,26 @@ public class RegardsAmqpAdmin {
         rabbitAdmin.declareQueue(queue);
 
         return queue;
+    }
+
+    /**
+     * Purge the queue that manages the specified event
+     *
+     * @param pEventType
+     *            event to purge (queue name will be retrieve automatically based on the event name)
+     * @param noWait
+     *            true to not await completion of the purge
+     */
+    public void purgeQueue(Class<?> pEventType, boolean noWait) {
+        WorkerMode mode;
+        if (ISubscribable.class.isAssignableFrom(pEventType)) {
+            mode = WorkerMode.ALL;
+        } else if (IPollable.class.isAssignableFrom(pEventType)) {
+            mode = WorkerMode.SINGLE;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+        rabbitAdmin.purgeQueue(getQueueName(pEventType, mode, EventUtils.getCommunicationTarget(pEventType)), noWait);
     }
 
     /**
