@@ -41,8 +41,8 @@ public class AttributeModelCacheIT {
     static class Config {
 
         // Simulating the caching configuration.
-        //         Actually, Spring auto-configures a suitable CacheManager according to the implementation
-        //         as long as the caching support is enabled via the @EnableCaching annotation.
+        // Actually, Spring auto-configures a suitable CacheManager according to the implementation
+        // as long as the caching support is enabled via the @EnableCaching annotation.
         @Bean
         CacheManager cacheManager() {
             return new ConcurrentMapCacheManager("attributemodels");
