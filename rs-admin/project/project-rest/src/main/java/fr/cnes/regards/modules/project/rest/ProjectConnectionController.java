@@ -202,10 +202,10 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      * @return updated pProjectConnection
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_connection_id}",)
     @ResponseBody
     @ResourceAccess(description = "update a project connection", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
+    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable("project_connection_id") final Long pId,
             @Valid @RequestBody final ProjectConnection pProjectConnection) {
         ResponseEntity<Resource<ProjectConnection>> response;
         try {
