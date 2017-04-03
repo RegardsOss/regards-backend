@@ -16,6 +16,7 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
+import fr.cnes.regards.modules.search.rest.converter.AttributeNamesToFacetTypesMap;
 import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 
 /**
@@ -49,7 +50,7 @@ public class AttributeNamesToFacetTypesMapTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.rest.facet.AttributeNamesToFacetTypesMap#convert(java.lang.String[])}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.converter.AttributeNamesToFacetTypesMap#convert(java.lang.String[])}.
      */
     @Test
     @Purpose("The converter should properly convert type of string into a map of facet type")
@@ -64,7 +65,7 @@ public class AttributeNamesToFacetTypesMapTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.rest.facet.AttributeNamesToFacetTypesMap#convert(java.lang.String[])}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.converter.AttributeNamesToFacetTypesMap#convert(java.lang.String[])}.
      */
     @Test(expected = ConversionException.class)
     @Purpose("The converter should throw a conversion exception when attribute does not exist")

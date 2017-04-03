@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -332,6 +333,53 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS)
                 .param("sort", CatalogControllerTestUtils.SORT);
         performDefaultGet("/datasets/search", expectations, "Error searching documents", builder);
+    }
+
+    /**
+     * Check that the system adds a self hateoas link on datasets pointing to the dataset/{urn} endpoint.
+     */
+    @Test
+    @Purpose("Check that the system adds a self hateoas link on datasets pointing to the dataset/{urn} endpoint.")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    public final void testSearchDatasets_shouldHaveSelfLink() {
+        // Prepare authorization
+        setAuthorities("/datasets/{urn}", RequestMethod.GET, DEFAULT_ROLE);
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
+                                                        Matchers.is("self")));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+                                                    Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
+        RequestParamBuilder builder = RequestParamBuilder.build()
+                .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
+        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
+    }
+
+    /**
+     * Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.
+     */
+    @Test
+    @Purpose("Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    public final void testSearchDatasets_shouldHaveLinkNavigatingToDataobjects() {
+        // Prepare authorization
+        setAuthorities("/dataobjects/search", RequestMethod.GET, DEFAULT_ROLE);
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
+                                                        Matchers.is("next")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+                                                        Matchers.startsWith("http://localhost/dataobjects/search?q")));
+        RequestParamBuilder builder = RequestParamBuilder.build()
+                .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
+        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
     }
 
     /*

@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest.facet;
+package fr.cnes.regards.modules.search.rest.converter;
 
 import java.util.Map;
 

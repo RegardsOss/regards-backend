@@ -10,7 +10,7 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.search.rest.facet.FacettedPagedResourcesAssembler;
+import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
 
 /**
  *

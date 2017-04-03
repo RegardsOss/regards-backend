@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest.facet;
+package fr.cnes.regards.modules.search.rest.assembler;
 
 import java.util.Collection;
 import java.util.Set;
@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponents;
 
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
  * Custom {@link PagedResourcesAssembler}

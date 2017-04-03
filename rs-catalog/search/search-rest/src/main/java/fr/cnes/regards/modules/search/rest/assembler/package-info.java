@@ -5,4 +5,4 @@
  * 
  * @author Xavier-Alexandre Brochard
  */
-package fr.cnes.regards.modules.search.rest.facet;
+package fr.cnes.regards.modules.search.rest.assembler;

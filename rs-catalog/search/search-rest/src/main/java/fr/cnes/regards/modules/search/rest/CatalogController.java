@@ -40,8 +40,9 @@ import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
-import fr.cnes.regards.modules.search.rest.facet.FacettedPagedResources;
-import fr.cnes.regards.modules.search.rest.facet.FacettedPagedResourcesAssembler;
+import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
+import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
@@ -100,6 +101,11 @@ public class CatalogController {
     private final FacettedPagedResourcesAssembler<DataObject> dataobjectResourcesAssembler;
 
     /**
+     * The resource assembler to use for datasets.
+     */
+    private final DatasetResourcesAssembler datasetResourcesAssembler;
+
+    /**
      * Get current tenant at runtime and allows tenant forcing. Autowired.
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
@@ -110,19 +116,21 @@ public class CatalogController {
      * @param pResourceService
      * @param pAbstractEntityResourcesAssembler
      * @param pDataobjectResourcesAssembler
+     * @param pDatasetResourcesAssembler
      * @param pRuntimeTenantResolver
      */
     public CatalogController(ICatalogSearchService pCatalogSearchService, ISearchService pSearchService,
             IResourceService pResourceService,
             FacettedPagedResourcesAssembler<AbstractEntity> pAbstractEntityResourcesAssembler,
             FacettedPagedResourcesAssembler<DataObject> pDataobjectResourcesAssembler,
-            IRuntimeTenantResolver pRuntimeTenantResolver) {
+            DatasetResourcesAssembler pDatasetResourcesAssembler, IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         catalogSearchService = pCatalogSearchService;
         searchService = pSearchService;
         resourceService = pResourceService;
         abstractEntityResourcesAssembler = pAbstractEntityResourcesAssembler;
         dataobjectResourcesAssembler = pDataobjectResourcesAssembler;
+        datasetResourcesAssembler = pDatasetResourcesAssembler;
         runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
@@ -253,11 +261,11 @@ public class CatalogController {
     @RequestMapping(path = "/datasets/search", method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.")
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam("q") String pQ,
-            final Pageable pPageable, final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
+            final Pageable pPageable) throws SearchException {
         SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                      EntityType.DATASET);
         Page<Dataset> result = catalogSearchService.search(pQ, searchKey, null, pPageable);
-        return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
+        return new ResponseEntity<>(datasetResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
     /**
