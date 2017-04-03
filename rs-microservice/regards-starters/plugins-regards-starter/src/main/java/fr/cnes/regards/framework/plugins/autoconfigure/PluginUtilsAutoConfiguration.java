@@ -16,13 +16,11 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAut
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.bean.PluginUtilsBean;
 
 /**
- *
- * Class PluginUtilsAutoConfiguration
- *
- * A bean used to defined a implementation of {@link BeanFactoryAware}.
+ * Class PluginUtilsAutoConfiguration A bean used to defined a implementation of {@link BeanFactoryAware}.
  *
  * @author Christophe Mertz
  */
@@ -41,7 +39,9 @@ public class PluginUtilsAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean
     public PluginUtilsBean pluginUtilsBean() {
-        return new PluginUtilsBean();
+        PluginUtilsBean pluginUtilsBean = new PluginUtilsBean();
+        PluginUtils.setPluginUtilsBean(pluginUtilsBean);
+        return pluginUtilsBean;
     }
 
     @Bean
