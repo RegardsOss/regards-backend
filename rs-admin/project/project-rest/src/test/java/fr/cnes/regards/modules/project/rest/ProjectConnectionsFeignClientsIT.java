@@ -70,7 +70,7 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
         ResponseEntity<PagedResources<Resource<ProjectConnection>>> connections = client
-                .retrieveProjectsConnections("test", "rs-test");
+                .getAllProjectConnections("test");
         Assert.assertTrue(connections.getStatusCode().equals(HttpStatus.OK));
     }
 
