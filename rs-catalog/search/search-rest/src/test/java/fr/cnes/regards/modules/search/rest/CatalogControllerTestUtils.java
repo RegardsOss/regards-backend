@@ -27,6 +27,26 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 public class CatalogControllerTestUtils {
 
     /**
+     * The name of an attribute of type date
+     */
+    public static final String DATE_ATTRIBUTE_NAME = "date";
+
+    /**
+     * The name of an attribute of type string
+     */
+    public static final String STRING_ATTRIBUTE_NAME = "label";
+
+    /**
+     * The name of an attribute of type integer
+     */
+    public static final String INTEGER_ATTRIBUTE_NAME = "integer";
+
+    /**
+     * The name of an attribute which does not exist
+     */
+    public static final String UNEXISTNG_ATTRIBUTE_NAME = "unexisting";
+
+    /**
      * Dummy OpenSearch request
      */
     // public static final String QUERY = "integer:(2 AND 3) OR string:hello";
@@ -55,24 +75,25 @@ public class CatalogControllerTestUtils {
     /**
      * A dummy list of facets
      */
-    public static final List<String> FACETS = Lists.newArrayList("integer", "label", "date");
+    public static final List<String> FACETS = Lists.newArrayList(INTEGER_ATTRIBUTE_NAME, STRING_ATTRIBUTE_NAME,
+                                                                 DATE_ATTRIBUTE_NAME);
 
     /**
      * The dummy list of facets as array
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
-    private static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build("integer", AttributeType.INTEGER).get();
+    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build(INTEGER_ATTRIBUTE_NAME, AttributeType.INTEGER).get();
 
-    private static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build("label", AttributeType.STRING).get();
+    public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build(STRING_ATTRIBUTE_NAME, AttributeType.STRING).get();
 
-    private static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build("date", AttributeType.DATE_ISO8601).get();
+    public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build(DATE_ATTRIBUTE_NAME, AttributeType.DATE_ISO8601).get();
 
-    private static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL,
-                                                                        DATE_ATTRIBUTE_MODEL);
+    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL,
+                                                                       DATE_ATTRIBUTE_MODEL);
 
     public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
