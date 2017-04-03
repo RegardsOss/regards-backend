@@ -16,8 +16,4 @@ import fr.cnes.regards.framework.amqp.event.Target;
 @Event(target = Target.ALL)
 public class TenantDeletedEvent extends AbstractTenantEvent implements ISubscribable {
 
-    public TenantDeletedEvent(String pTenant) {
-        super(pTenant);
-    }
-
 }

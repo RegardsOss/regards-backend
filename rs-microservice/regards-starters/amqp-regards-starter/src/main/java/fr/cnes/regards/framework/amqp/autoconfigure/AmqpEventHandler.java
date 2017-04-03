@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import javax.annotation.PostConstruct;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -13,7 +14,8 @@ import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 
 /**
- * This class helps to configure virtual hosts at runtime listening to tenant events.
+ * This class helps to configure virtual hosts at runtime listening to tenant events. The system uses the AMQP manager
+ * virtual host no to be tenant dependent.
  *
  * @author Marc Sordi
  *
@@ -28,10 +30,17 @@ public class AmqpEventHandler {
     /**
      * Used to listen to tenant events
      */
+    private final IInstanceSubscriber instanceSubscriber;
+
+    /**
+     * Used to update tenant listeners
+     */
     private final ISubscriber subscriber;
 
-    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, ISubscriber pSubscriber) {
+    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, IInstanceSubscriber pInstanceSubscriber,
+            ISubscriber pSubscriber) {
         this.virtualHostAdmin = pVirtualHostAdmin;
+        this.instanceSubscriber = pInstanceSubscriber;
         this.subscriber = pSubscriber;
     }
 
@@ -41,8 +50,8 @@ public class AmqpEventHandler {
     @PostConstruct
     public void init() {
         // Listen to tenant events
-        subscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreationHandler());
-        subscriber.subscribeTo(TenantDeletedEvent.class, new TenantDeletionHandler());
+        instanceSubscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreationHandler());
+        instanceSubscriber.subscribeTo(TenantDeletedEvent.class, new TenantDeletionHandler());
     }
 
     /**
@@ -57,6 +66,7 @@ public class AmqpEventHandler {
         public void handle(TenantWrapper<TenantCreatedEvent> pWrapper) {
             TenantCreatedEvent tce = pWrapper.getContent();
             virtualHostAdmin.addVhost(tce.getTenant());
+            subscriber.addTenant(tce.getTenant());
         }
     }
 
@@ -72,6 +82,7 @@ public class AmqpEventHandler {
         public void handle(TenantWrapper<TenantDeletedEvent> pWrapper) {
             TenantDeletedEvent tde = pWrapper.getContent();
             virtualHostAdmin.removeVhost(tde.getTenant());
+            subscriber.removeTenant(tde.getTenant());
         }
     }
 }

@@ -9,10 +9,14 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Objects;
-import com.google.common.base.Throwables;
 
 public final class Beans {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Beans.class);
 
     /**
      * Compare two objects first with equals then by their properties readers, recursively follow inner objects using
@@ -23,12 +27,13 @@ public final class Beans {
      * @return true when objects equal, false otherwise
      */
     @SuppressWarnings("rawtypes")
-    public static boolean equals(final Object pO1, final Object pO2) {
+    public static boolean equals(final Object pO1, final Object pO2, String... gettersToForget) {
         Object o1 = pO1;
         Object o2 = pO2;
         if ((o1 == null) && (o2 == null)) {
             return true;
         } else if ((o1 == null) || (o2 == null)) {
+            LOGGER.warn("Objects differ : one is null, not the other");
             return false;
         }
 
@@ -36,6 +41,7 @@ public final class Beans {
             return Arrays.equals((Object[]) o1, (Object[]) o2);
         }
         if (!Objects.equal(o1, o2)) {
+            LOGGER.warn("Objects differ : {} vs {}", o1, o2);
             return false;
         }
 
@@ -58,19 +64,29 @@ public final class Beans {
                 // if it is a read property method (starting by get or is and without any parameter)
                 if ((method.getParameterCount() == 0)
                         && (method.getName().startsWith("get") || method.getName().startsWith("is"))) {
+                    if (contains(gettersToForget, method.getName())) {
+                        continue;
+                    }
                     Object v1 = method.invoke(o1, new Object[0]);
                     Object v2 = method.invoke(o2, new Object[0]);
                     if (v1 != null) {
                         if (v1.getClass().getName().startsWith("fr.cnes")) {
-                            if (!Beans.equals(v1, v2)) {
+                            if (!Beans.equals(v1, v2, gettersToForget)) {
+                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", o1, method.getName(), v1, o2,
+                                            method.getName(), v2);
                                 return false;
                             }
                         } else if (v1 instanceof Collection) { // For Hb9n PersistentBag type which seems to not be compatible with collections
-                            if (!Beans.equals(((Collection) v1).toArray(), ((Collection) v2).toArray())) {
+                            if (!Beans.equals(((Collection) v1).toArray(), ((Collection) v2).toArray(),
+                                              gettersToForget)) {
+                                LOGGER.warn("Object collections differ : {} vs {}",
+                                            Arrays.toString(((Collection) v1).toArray()), ((Collection) v2).toArray());
                                 return false;
                             }
                         } else {
                             if (!v1.equals(v2)) {
+                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", o1, method.getName(), v1, o2,
+                                            method.getName(), v2);
                                 return false;
                             }
                         }
@@ -78,9 +94,17 @@ public final class Beans {
                 }
             }
             return true;
-        } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw Throwables.propagate(e);
+        } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e); // NOSONAR
         }
+    }
+
+    public static boolean contains(String[] tab, String valueToSearch) {
+        for (String v : tab) {
+            if (v.equals(valueToSearch)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

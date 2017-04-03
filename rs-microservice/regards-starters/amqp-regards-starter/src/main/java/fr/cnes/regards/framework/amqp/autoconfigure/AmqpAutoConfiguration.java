@@ -21,9 +21,15 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
 
+import fr.cnes.regards.framework.amqp.IInstancePoller;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.InstancePoller;
+import fr.cnes.regards.framework.amqp.InstancePublisher;
+import fr.cnes.regards.framework.amqp.InstanceSubscriber;
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
@@ -140,6 +146,25 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
+    public IInstancePublisher instancePublisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+            RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
+        return new InstancePublisher(transactionalRabbitTemplate(), pRegardsAmqpAdmin, pRabbitVirtualHostAdmin);
+    }
+
+    @Bean
+    public IInstanceSubscriber instanceSubscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+            final RegardsAmqpAdmin pRegardsAmqpAdmin, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
+            final ITenantResolver pTenantResolver) {
+        return new InstanceSubscriber(pRabbitVirtualHostAdmin, pRegardsAmqpAdmin, pJackson2JsonMessageConverter);
+    }
+
+    @Bean
+    public IInstancePoller instancePoller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+            RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
+        return new InstancePoller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), pRegardsAmqpAdmin);
+    }
+
+    @Bean
     public MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory() {
         return new MultitenantSimpleRoutingConnectionFactory();
     }
@@ -162,7 +187,8 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public AmqpEventHandler amqpEventHandler(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, ISubscriber pSubscriber) {
-        return new AmqpEventHandler(pRabbitVirtualHostAdmin, pSubscriber);
+    public AmqpEventHandler amqpEventHandler(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+            IInstanceSubscriber pInstanceSubscriber, ISubscriber pSubscriber) {
+        return new AmqpEventHandler(pRabbitVirtualHostAdmin, pInstanceSubscriber, pSubscriber);
     }
 }

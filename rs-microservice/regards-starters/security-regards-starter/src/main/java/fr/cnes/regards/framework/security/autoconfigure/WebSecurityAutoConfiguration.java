@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -34,6 +35,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  *
  * @author msordi
  * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
  *
  */
 @Configuration
@@ -81,6 +83,8 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add CORS filter
         pHttp.addFilterAfter(new CorsFilter(authorizationService), IpFilter.class);
+
+        pHttp.addFilterAfter(new MDCInsertingServletFilter(), RequestLogFilter.class);
 
         // Add custom configurations if any
         if (customConfigurers != null) {

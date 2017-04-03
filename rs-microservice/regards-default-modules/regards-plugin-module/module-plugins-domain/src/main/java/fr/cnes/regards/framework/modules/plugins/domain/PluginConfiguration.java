@@ -22,7 +22,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +47,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfiguration.class);
 
     /**
+     * A constant used to define a {@link String} constraint with length 255
+     */
+    private static final int MAX_STRING_LENGTH = 255;
+
+    /**
      * Unique id
      */
     @Id
@@ -66,8 +70,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Label to identify the configuration.
      */
     @NotBlank
-    @Length(max = 255)
-    @Column(unique = true, name = "label")
+    @Column(unique = true, name = "label", length = MAX_STRING_LENGTH)
     private String label;
 
     /**
@@ -408,18 +411,16 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             if (other.label != null) {
                 return false;
             }
-        } else
-            if (!label.equals(other.label)) {
-                return false;
-            }
+        } else if (!label.equals(other.label)) {
+            return false;
+        }
         if (pluginId == null) {
             if (other.pluginId != null) {
                 return false;
             }
-        } else
-            if (!pluginId.equals(other.pluginId)) {
-                return false;
-            }
+        } else if (!pluginId.equals(other.pluginId)) {
+            return false;
+        }
         return true;
     }
 
