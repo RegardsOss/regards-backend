@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.modules.logbackappender;
+package fr.cnes.regards.framework.logbackappender;
 
 import java.util.List;
 
@@ -226,8 +226,8 @@ public class LogbackAppenderTest {
     private void controlLogEvent(LogEvent event) {
         Assert.assertNotNull(event);
         Assert.assertEquals(this.getClass().getCanonicalName(), event.getCaller());
-        Assert.assertEquals(microserviceName, event.getMicroService());
-        Assert.assertEquals(DEFAULT_USER, event.getUsername());
+        Assert.assertEquals(microserviceName, event.getMicroservice());
+        Assert.assertEquals(DEFAULT_USER, event.getUserName());
     }
 
 }

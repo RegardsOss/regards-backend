@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.logbackappender.autoconfigure;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,11 @@ import fr.cnes.regards.framework.logbackappender.domain.MonitoringLogEvent;
  */
 @Configuration
 public class LogAppenderAutoConfiguration {
+    
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(LogAppenderAutoConfiguration.class);
 
     /**
      * This method regardsAmqpAppender has the same name as the appender defined in logback.xml
@@ -43,6 +49,7 @@ public class LogAppenderAutoConfiguration {
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
     public RegardsAmqpAppender regardsAmqpAppender(LoggerContext ctx, IPublisher publisher) {
+        LOG.debug("Creation bean <regardsAmqpAppender>");
         RegardsAmqpAppender appender = new RegardsAmqpAppender(publisher);
         appender.setContext(ctx);
         return appender;
@@ -71,6 +78,7 @@ public class LogAppenderAutoConfiguration {
     @Bean
     @ConditionalOnBean(ILogEventHandler.class)
     public IMonitoringLogEvent monitoringLogEvent(ISubscriber subscriber, ILogEventHandler logEvenHandler) {
+        LOG.debug("Creation bean of type <IMonitoringLogEvent>");
         return new MonitoringLogEvent(subscriber, logEvenHandler);
     }
 

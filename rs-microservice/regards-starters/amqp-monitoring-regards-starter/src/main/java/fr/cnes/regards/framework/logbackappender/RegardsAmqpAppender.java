@@ -49,25 +49,27 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
         this.publisher = publisher;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see ch.qos.logback.core.AppenderBase#append(java.lang.Object)
-     */
     @Override
     protected void append(ILoggingEvent eventObject) {
-        LOGGER.debug("Send message for app name : " + microserviceName);
+
         String user = "";
+        String tenant = "";
         try {
             user = jwtService.getCurrentToken().getName();
+            tenant = jwtService.getCurrentToken().getTenant();
         } catch (JwtException e) {
             LOGGER.error(e.getMessage(), e);
         }
+
+        LOGGER.debug("[" + tenant + "] <" + microserviceName + "> send message  <" + eventObject.getFormattedMessage()
+                + ">");
+
         final LogEvent sended = new LogEvent(eventObject.getFormattedMessage(), microserviceName,
                 eventObject.getCallerData()[0].getClassName(), eventObject.getCallerData()[0].getMethodName(),
                 Instant.ofEpochMilli(eventObject.getTimeStamp()).toString(), eventObject.getLevel().toString(), user);
         publisher.publish(sended);
-        LOGGER.debug("Message sended : " + eventObject.getFormattedMessage());
+
+        LOGGER.debug("[" + tenant + "] message sended : " + sended.toString());
     }
 
 }

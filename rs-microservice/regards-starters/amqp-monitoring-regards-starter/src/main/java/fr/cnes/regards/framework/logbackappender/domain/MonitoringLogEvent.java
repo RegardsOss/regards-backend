@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.framework.logbackappender.domain;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 
@@ -14,8 +17,14 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
  */
 public class MonitoringLogEvent implements IMonitoringLogEvent {
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(MonitoringLogEvent.class);
+
     public MonitoringLogEvent(ISubscriber subscriber, IHandler<LogEvent> handler) {
         super();
+        LOG.debug("Subscription to logEvent queue");
         subscriber.subscribeTo(LogEvent.class, handler);
     }
 
