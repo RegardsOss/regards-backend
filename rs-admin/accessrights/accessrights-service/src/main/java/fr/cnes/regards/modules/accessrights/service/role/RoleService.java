@@ -27,9 +27,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -51,7 +52,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleLineageAssembler;
-import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
 
 /**
  * {@link IRoleService} implementation
@@ -108,7 +108,7 @@ public class RoleService implements IRoleService {
     /**
      * AMQP Message subscriber
      */
-    private final ISubscriber subscriber;
+    private final IInstanceSubscriber instanceSubscriber;
 
     /**
      * The default roles. Autowired by Spring.
@@ -119,7 +119,7 @@ public class RoleService implements IRoleService {
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            final JWTService pJwtService, final ISubscriber pSubscriber) {
+            final JWTService pJwtService, final IInstanceSubscriber pInstanceSubscriber) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
@@ -127,23 +127,23 @@ public class RoleService implements IRoleService {
         runtimeTenantResolver = pRuntimeTenantResolver;
         jwtService = pJwtService;
         microserviceName = pMicroserviceName;
-        subscriber = pSubscriber;
+        instanceSubscriber = pInstanceSubscriber;
     }
 
     @PostConstruct
     public void init() {
-        subscriber.subscribeTo(NewProjectConnectionEvent.class,
-                               new NewProjectConnectionEventHandler(runtimeTenantResolver, this));
+        instanceSubscriber.subscribeTo(TenantConnectionCreatedEvent.class,
+                                       new TenantConnectionCreatedEventHandler(runtimeTenantResolver, this));
         initDefaultRoles();
     }
 
-    private class NewProjectConnectionEventHandler implements IHandler<NewProjectConnectionEvent> {
+    private class TenantConnectionCreatedEventHandler implements IHandler<TenantConnectionCreatedEvent> {
 
         private final IRoleService roleService;
 
         private final IRuntimeTenantResolver runtimeTenantResolver;
 
-        public NewProjectConnectionEventHandler(IRuntimeTenantResolver pRuntimeTenantResolver,
+        public TenantConnectionCreatedEventHandler(IRuntimeTenantResolver pRuntimeTenantResolver,
                 IRoleService pRoleService) {
             super();
             roleService = pRoleService;
@@ -158,7 +158,7 @@ public class RoleService implements IRoleService {
          * @since 1.0-SNAPSHOT
          */
         @Override
-        public void handle(final TenantWrapper<NewProjectConnectionEvent> pWrapper) {
+        public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pWrapper) {
             runtimeTenantResolver.forceTenant(pWrapper.getTenant());
             roleService.initDefaultRoles();
         }

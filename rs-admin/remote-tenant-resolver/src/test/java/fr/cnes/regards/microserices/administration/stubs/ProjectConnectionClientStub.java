@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
@@ -27,12 +26,18 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  */
 public class ProjectConnectionClientStub implements IProjectConnectionClient {
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient#getAllProjectConnections(java.lang.String)
+     */
     @Override
-    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> retrieveProjectsConnections(
-            final String pProjectName, final String pMicroService) {
+    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> getAllProjectConnections(String pProjectName) {
+
         final List<Resource<ProjectConnection>> resources = new ArrayList<>();
-        final ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, pMicroService, "", "",
-                "", "");
+        final ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, "MICROSERVICE", "",
+                "", "", "");
         resources.add(new Resource<ProjectConnection>(connection));
 
         final PagedResources<Resource<ProjectConnection>> page = new PagedResources<>(resources,
@@ -40,20 +45,52 @@ public class ProjectConnectionClientStub implements IProjectConnectionClient {
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient#getProjectConnection(java.lang.String,
+     * java.lang.Long)
+     */
     @Override
-    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(
-            final ProjectConnection pProjectConnection) {
+    public ResponseEntity<Resource<ProjectConnection>> getProjectConnection(String pProjectName, Long pConnectionId) {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient#createProjectConnection(java.lang.String,
+     * fr.cnes.regards.modules.project.domain.ProjectConnection)
+     */
     @Override
-    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(
-            final ProjectConnection pProjectConnection) {
+    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(String pProjectName,
+            ProjectConnection pProjectConnection) {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient#updateProjectConnection(java.lang.String,
+     * java.lang.Long, fr.cnes.regards.modules.project.domain.ProjectConnection)
+     */
     @Override
-    public ResponseEntity<Void> deleteProjectConnection(final String pProjectName, final String pMicroservice) {
+    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(String pProjectName, Long pConnectionId,
+            ProjectConnection pProjectConnection) {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient#deleteProjectConnection(java.lang.String,
+     * java.lang.Long)
+     */
+    @Override
+    public ResponseEntity<Void> deleteProjectConnection(String pProjectName, Long pConnectionId) {
         return null;
     }
 
