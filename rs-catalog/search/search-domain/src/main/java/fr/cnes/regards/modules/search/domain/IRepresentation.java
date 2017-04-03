@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 
 /**
  *
@@ -31,12 +32,10 @@ public interface IRepresentation {
      * This method is used to set the body of the response and so should transform an AbstractIndexedEntity in the
      * format the plugin is handling
      *
-     * @param pToBeTransformed
-     *            AbstractIndexedEntity to be send in the Http Response
-     * @param pTargetCharset
-     *            charset to use for encoding (might be null)
+     * @param pToBeTransformed AbstractIndexedEntity to be sent in the Http Response
+     * @param pTargetCharset charset to use for encoding (might be null)
      * @return Byte array to include in the response
      */
-    byte[] transform(AbstractIndexedEntity pToBeTransformed, Charset pTargetCharset);
+    byte[] transform(AbstractEntity pToBeTransformed, Charset pTargetCharset);
 
 }

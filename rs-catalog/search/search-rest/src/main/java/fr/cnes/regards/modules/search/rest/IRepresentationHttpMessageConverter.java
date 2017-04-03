@@ -21,14 +21,14 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.search.domain.AbstractIndexedEntity;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
-public class IRepresentationHttpMessageConverter implements HttpMessageConverter<AbstractIndexedEntity> {
+public class IRepresentationHttpMessageConverter implements HttpMessageConverter<AbstractEntity> {
 
     private static final Logger LOG = LoggerFactory.getLogger(IRepresentationHttpMessageConverter.class);
 
@@ -64,7 +64,7 @@ public class IRepresentationHttpMessageConverter implements HttpMessageConverter
 
     @Override
     public boolean canWrite(Class<?> pClazz, MediaType pMediaType) {
-        return AbstractIndexedEntity.class.isInstance(pClazz);
+        return AbstractEntity.class.isInstance(pClazz);
     }
 
     @Override
@@ -73,19 +73,19 @@ public class IRepresentationHttpMessageConverter implements HttpMessageConverter
     }
 
     @Override
-    public AbstractIndexedEntity read(Class<? extends AbstractIndexedEntity> pClazz, HttpInputMessage pInputMessage)
+    public AbstractEntity read(Class<? extends AbstractEntity> pClazz, HttpInputMessage pInputMessage)
             throws IOException, HttpMessageNotReadableException {
         // should never be called as this converter cannot read anything
         return null;
     }
 
     @Override
-    public void write(AbstractIndexedEntity pT, MediaType pContentType, HttpOutputMessage pOutputMessage)
+    public void write(AbstractEntity entity, MediaType pContentType, HttpOutputMessage pOutputMessage)
             throws IOException, HttpMessageNotWritableException {
         PluginConfiguration confToUse = enabledRepresentationPluginMap.get(pContentType);
         try {
             IRepresentation pluginToUse = pluginService.getPlugin(confToUse.getId());
-            pOutputMessage.getBody().write(pluginToUse.transform(pT, pContentType.getCharset()));
+            pOutputMessage.getBody().write(pluginToUse.transform(entity, pContentType.getCharset()));
             pOutputMessage.getBody().flush();
         } catch (ModuleException e) {
             LOG.error(String.format("Could not instance a plugin for the required media type %s", pContentType), e);
