@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.search.service;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
@@ -38,7 +37,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final RegardsQueryParser queryParser;
 
     /**
-     * Service handling the access groups in criterion
+     * Service handling the access groups in criterion. Autowired by Spring.
      */
     private final IAccessRightFilter accessRightFilter;
 
@@ -73,12 +72,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Apply security filter
             criterion = accessRightFilter.addUserGroups(criterion);
 
-            // Sort
-            LinkedHashMap<String, Boolean> ascSortMap = null;
-
             // Perform search
             if (pSearchKey instanceof SimpleSearchKey) {
-                return searchService.search((SimpleSearchKey<R>) pSearchKey, pPageable, criterion, pFacets, ascSortMap);
+                return searchService.search((SimpleSearchKey<R>) pSearchKey, pPageable, criterion, pFacets);
             } else {
                 return searchService.search((JoinEntitySearchKey<S, R>) pSearchKey, pPageable, criterion);
             }

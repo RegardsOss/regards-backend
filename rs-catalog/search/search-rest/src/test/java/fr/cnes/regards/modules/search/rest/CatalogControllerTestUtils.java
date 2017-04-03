@@ -130,4 +130,9 @@ public class CatalogControllerTestUtils {
     public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
+    /**
+     * A sort query param
+     */
+    public static final String SORT = "ipId,asc";
+
 }

@@ -314,6 +314,26 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet("/documents/search", expectations, "Error searching documents", builder);
     }
 
+    /**
+     * Check that the system can return a sorted page of results.
+     */
+    @Test
+    @Purpose("Check that the system can return a sorted page of results.")
+    @Requirement("REGARDS_DSL_DAM_DOC_510")
+    public final void testSearch_withSort() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+                                                        Matchers.is("mydataset")));
+
+        RequestParamBuilder builder = RequestParamBuilder.build()
+                .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS)
+                .param("sort", CatalogControllerTestUtils.SORT);
+        performDefaultGet("/datasets/search", expectations, "Error searching documents", builder);
+    }
+
     /*
      * (non-Javadoc)
      *

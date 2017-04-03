@@ -109,7 +109,7 @@ public class CatalogSearchServiceTest {
         // Mock dependencies
         Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
         Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
-                                          Mockito.any(ICriterion.class), Mockito.any(), Mockito.any()))
+                                          Mockito.any(ICriterion.class), Mockito.any()))
                 .thenReturn(expectedSearchResult);
         PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
@@ -118,7 +118,7 @@ public class CatalogSearchServiceTest {
         catalogSearchService.search(q, searchKey, facets, pageable);
 
         // Check
-        Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets, null);
+        Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets);
     }
 
 }
