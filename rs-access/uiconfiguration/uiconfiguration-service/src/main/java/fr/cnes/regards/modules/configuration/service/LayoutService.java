@@ -78,6 +78,9 @@ public class LayoutService implements ILayoutService {
     @Autowired
     private ITenantResolver tenantResolver;
 
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
     @PostConstruct
     public void init() {
         // FIXME : not usefull for instance access / disable subscription
@@ -91,7 +94,7 @@ public class LayoutService implements ILayoutService {
 
         @Override
         public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pWrapper) {
-            if (pWrapper.getContent().getMicroserviceName() == "rs-access") {
+            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
                 initProjectLayout(pWrapper.getContent().getTenant().getTenant());
             }
         }
