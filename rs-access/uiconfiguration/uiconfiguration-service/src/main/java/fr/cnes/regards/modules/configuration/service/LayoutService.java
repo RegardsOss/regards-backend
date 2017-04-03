@@ -20,9 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -31,7 +32,6 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.configuration.dao.ILayoutRepository;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
-import fr.cnes.regards.modules.project.domain.event.NewProjectConnectionEvent;
 
 /**
  *
@@ -58,7 +58,7 @@ public class LayoutService implements ILayoutService {
      * AMQP Message subscriber
      */
     @Autowired
-    private ISubscriber subscriber;
+    private IInstanceSubscriber instanceSubscriber;
 
     /**
      * The email validation template as html
@@ -80,25 +80,19 @@ public class LayoutService implements ILayoutService {
 
     @PostConstruct
     public void init() {
-        subscriber.subscribeTo(NewProjectConnectionEvent.class, new NewProjectConnectionEventHandler(this));
+        // FIXME : not usefull for instance access / disable subscription
+        instanceSubscriber.subscribeTo(TenantConnectionCreatedEvent.class, new TenantConnectionCreatedEventHandler());
         for (final String tenant : tenantResolver.getAllTenants()) {
             initProjectLayout(tenant);
         }
     }
 
-    private class NewProjectConnectionEventHandler implements IHandler<NewProjectConnectionEvent> {
-
-        private final ILayoutService layoutService;
-
-        public NewProjectConnectionEventHandler(final ILayoutService pLayoutService) {
-            super();
-            layoutService = pLayoutService;
-        }
+    private class TenantConnectionCreatedEventHandler implements IHandler<TenantConnectionCreatedEvent> {
 
         @Override
-        public void handle(final TenantWrapper<NewProjectConnectionEvent> pWrapper) {
-            if (pWrapper.getContent().getNewProjectConnection().getMicroservice() == "rs-access") {
-                layoutService.initProjectLayout(pWrapper.getContent().getNewProjectConnection().getProject().getName());
+        public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pWrapper) {
+            if (pWrapper.getContent().getMicroserviceName() == "rs-access") {
+                initProjectLayout(pWrapper.getContent().getTenant().getTenant());
             }
         }
 
