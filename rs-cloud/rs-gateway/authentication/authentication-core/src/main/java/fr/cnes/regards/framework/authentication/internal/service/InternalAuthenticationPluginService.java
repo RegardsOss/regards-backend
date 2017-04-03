@@ -31,7 +31,8 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(InternalAuthenticationPluginService.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalAuthenticationPluginService.class);
 
     /**
      * Plugins service manager

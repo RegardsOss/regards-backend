@@ -4,7 +4,6 @@
 package fr.cnes.regards.cloud.gateway;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +23,6 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 @SpringBootApplication(scanBasePackages = "fr.cnes.regards.modules")
 @MicroserviceInfo(name = "gateway", version = "1.0-SNAPSHOT")
 @EnableZuulProxy
-@EnableAutoConfiguration
 public class Application { // NOSONAR
 
     /**
