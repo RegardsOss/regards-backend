@@ -53,13 +53,21 @@ public class RegardsQueryParserTest {
      */
     private static final String TENANT = "tenant";
 
+    private static ISubscriber subscriber;
+
+    private static IAttributeModelClient attributeModelClient;
+
+    private static IRuntimeTenantResolver runtimeTenantResolver;
+
+    private static IAttributeModelCache attributeModelCache;
+
     @BeforeClass
     public static void init() throws EntityNotFoundException {
-        ISubscriber subscriber = Mockito.mock(ISubscriber.class);
-        IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        subscriber = Mockito.mock(ISubscriber.class);
+        attributeModelClient = Mockito.mock(IAttributeModelClient.class);
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
-        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
+        attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
 
         ResponseEntity<List<Resource<AttributeModel>>> clientResponse = SampleDataUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE;

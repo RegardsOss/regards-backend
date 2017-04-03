@@ -107,7 +107,7 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
      * @return
      * @throws QueryNodeException
      */
-    private RangeComparison getRangeComparison(String pField, String pLowerText, String pUpperText,
+    private RangeComparison getRangeComparison(String pField, String pLowerText, String pUpperText, // NOSONAR
             boolean pIsLowerInclusive, boolean pIsUpperInclusive) throws QueryNodeException {
         if (pLowerText.isEmpty() && pUpperText.isEmpty()) {
             throw new QueryNodeException(

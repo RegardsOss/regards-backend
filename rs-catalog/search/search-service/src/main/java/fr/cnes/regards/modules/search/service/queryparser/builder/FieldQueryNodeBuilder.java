@@ -43,7 +43,7 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
     }
 
     @Override
-    public ICriterion build(final QueryNode pQueryNode) throws QueryNodeException {
+    public ICriterion build(final QueryNode pQueryNode) throws QueryNodeException { // NOSONAR
         final FieldQueryNode fieldNode = (FieldQueryNode) pQueryNode;
 
         final String field = fieldNode.getFieldAsString();

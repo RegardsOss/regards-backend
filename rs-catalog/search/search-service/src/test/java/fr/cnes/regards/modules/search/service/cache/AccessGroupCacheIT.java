@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -35,6 +36,7 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCach
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
+@Ignore
 public class AccessGroupCacheIT {
 
     @Configuration

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,6 +89,11 @@ public class AccessRightFilterTest {
         parser = new RegardsQueryParser(attributeModelCache);
 
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver);
+    }
+
+    @After
+    public void validate() {
+        Mockito.validateMockitoUsage();
     }
 
     /**
