@@ -74,7 +74,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
      *            Amqp publisher
      */
     public ProjectConnectionService(final IProjectRepository pProjectRepository,
-            final IProjectConnectionRepository pProjectConnectionRepository, final IInstancePublisher pInstancePublisher) {
+            final IProjectConnectionRepository pProjectConnectionRepository,
+            final IInstancePublisher pInstancePublisher) {
         super();
         projectRepository = pProjectRepository;
         projectConnectionRepository = pProjectConnectionRepository;
@@ -141,7 +142,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection updateProjectConnection(final ProjectConnection pProjectConnection)
+    public ProjectConnection updateProjectConnection(Long pProjectConnectionId, ProjectConnection pProjectConnection)
             throws EntityNotFoundException {
         final ProjectConnection connection;
         // Check that entity to update exists

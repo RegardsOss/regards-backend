@@ -97,6 +97,21 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         projectConnRepo.save(connection);
     }
 
+    @Requirement("REGARDS_DSL_SYS_ARC_050")
+    @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Purpose("Check REST Access to all projects database connections and Hateoas returned links")
+    @Test
+    public void getAllProjectConnectionsTest() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
+        performGet(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, expectations, "error", PROJECT_TEST);
+    }
+
     /**
      *
      * Check REST Access to get a project connection and Hateoas returned links
@@ -107,26 +122,11 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to get a project connection and Hateoas returned links")
     @Test
-    public void retrieveProjectConnection() {
+    public void getProjectConnectionTest() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performGet("/project_connections?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
-                   instanceAdmintoken, expectations, "error");
-    }
-
-    @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Requirement("REGARDS_DSL_SYS_ARC_020")
-    @Purpose("Check REST Access to all projects database connections and Hateoas returned links")
-    @Test
-    public void retrieveAllProjectsConnection() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet("/project_connections", instanceAdmintoken, expectations, "error");
+        performGet(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
+                   instanceAdmintoken, expectations, "error", PROJECT_TEST, connection.getId());
     }
 
     /**
@@ -139,14 +139,14 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to create a project connection and Hateoas returned links")
     @Test
-    public void createProjectConnection() {
+    public void createProjectConnectionTest() {
         final Project project = projectRepo.findOneByName(PROJECT_TEST);
         final ProjectConnection connection = new ProjectConnection(project, "microservice-test-2", "newUserName",
                 "newPassword", "newDriver", "newUrl");
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isCreated());
-        performPost("/project_connections", instanceAdmintoken, connection, expectations,
-                    "Error there must be project results");
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performPost(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, connection, expectations,
+                    "Error there must be project results", PROJECT_TEST);
     }
 
     /**
@@ -159,13 +159,14 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
-    public void updateProjectConnection() {
+    public void updateProjectConnectionTest() {
         final ProjectConnection connection = projectConnRepo.findOneByProjectNameAndMicroservice(PROJECT_TEST,
                                                                                                  MICROSERVICE_TEST);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPut("/project_connections", instanceAdmintoken, connection, expectations,
-                   "Error there must be project results");
+        performPut(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
+                   instanceAdmintoken, connection, expectations, "Error there must be project results", PROJECT_TEST,
+                   connection.getId());
     }
 
     /**
@@ -178,46 +179,11 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
-    public void deleteProjectConnection() {
+    public void deleteProjectConnectionTest() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDelete("/project_connections?project_name=" + PROJECT_TEST + "&microservice=" + MICROSERVICE_TEST,
-                      instanceAdmintoken, expectations, "Error there must be project results");
+        expectations.add(MockMvcResultMatchers.status().isNoContent());
+        performDelete(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
+                      instanceAdmintoken, expectations, "Error there must be project results", PROJECT_TEST,
+                      connection.getId());
     }
-
-    /**
-     * Check REST Access to project connections by project name and Hateoas returned links.
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Purpose("Check REST Access to project connections by project name and Hateoas returned links.")
-    @Test
-    public void testRetrieveProjectConnectionsByProjectName() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages", Matchers.is(1)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet("/project_connections?project_name=" + PROJECT_TEST, instanceAdmintoken, expectations, "error");
-    }
-
-    /**
-     * Check REST Access to project connections by id.
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Purpose("Check REST Access to project connections by id.")
-    @Test
-    public void testRetrieveProjectConnectionsById() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/project_connections/" + connection.getId(), instanceAdmintoken, expectations, "error");
-    }
-
 }

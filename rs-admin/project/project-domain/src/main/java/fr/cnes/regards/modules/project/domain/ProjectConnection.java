@@ -54,32 +54,36 @@ public class ProjectConnection implements IIdentifiable<Long> {
     /**
      * Microservice name
      */
-    @Column(name = "microservice")
+    @Column(name = "microservice", nullable = false)
     @NotNull
     private String microservice;
 
     /**
      * Database username
      */
-    @Column(name = "userName")
+    @Column(name = "userName", nullable = false)
+    @NotNull
     private String userName;
 
     /**
      * Database password
      */
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
+    @NotNull
     private String password;
 
     /**
      * Database driver class name
      */
-    @Column(name = "driverClassName")
+    @Column(name = "driverClassName", nullable = false)
+    @NotNull
     private String driverClassName;
 
     /**
      * Database URL
      */
-    @Column(name = "url")
+    @Column(name = "url", nullable = false)
+    @NotNull
     private String url;
 
     /**

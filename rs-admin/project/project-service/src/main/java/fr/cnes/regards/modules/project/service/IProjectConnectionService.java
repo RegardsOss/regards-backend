@@ -74,6 +74,8 @@ public interface IProjectConnectionService {
      *
      * Update an existing project connection
      *
+     * @param pProjectConnectionId
+     *            connection identifier
      * @param pProjectConnection
      *            Project connection to update
      * @return ProjectConnection updated
@@ -81,7 +83,8 @@ public interface IProjectConnectionService {
      *             Project connection or referenced project doesn't exists
      * @since 1.0-SNAPSHOT
      */
-    ProjectConnection updateProjectConnection(ProjectConnection pProjectConnection) throws EntityNotFoundException;
+    ProjectConnection updateProjectConnection(Long pProjectConnectionId, ProjectConnection pProjectConnection)
+            throws EntityNotFoundException;
 
     /**
      *

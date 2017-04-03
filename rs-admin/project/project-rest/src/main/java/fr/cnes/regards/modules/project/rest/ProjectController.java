@@ -46,12 +46,12 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 @ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 @RequestMapping("/projects")
-public class ProjectsController implements IResourceController<Project> {
+public class ProjectController implements IResourceController<Project> {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectsController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectController.class);
 
     /**
      * Business service for Project entities. Autowired.
@@ -63,7 +63,7 @@ public class ProjectsController implements IResourceController<Project> {
      */
     private final IResourceService resourceService;
 
-    public ProjectsController(final IProjectService pProjectService, final IResourceService pResourceService) {
+    public ProjectController(final IProjectService pProjectService, final IResourceService pResourceService) {
         super();
         projectService = pProjectService;
         resourceService = pResourceService;

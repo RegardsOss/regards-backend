@@ -230,7 +230,7 @@ public class ProjectConnectionServiceTest {
         }
         connection.setUserName(updateUserName);
         try {
-            connection = projectConnectionService.updateProjectConnection(connection);
+            connection = projectConnectionService.updateProjectConnection(connection.getId(), connection);
             Assert.assertTrue("Error updating project connection.", connection.getUserName().equals(updateUserName));
         } catch (final EntityNotFoundException e1) {
             Assert.fail(e1.getMessage());
@@ -241,7 +241,7 @@ public class ProjectConnectionServiceTest {
                 new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
                 COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
         try {
-            connection = projectConnectionService.updateProjectConnection(connection);
+            connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
         } catch (final EntityNotFoundException e) {
             // Nothing to do
@@ -253,12 +253,11 @@ public class ProjectConnectionServiceTest {
                 new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
                 COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
         try {
-            connection = projectConnectionService.updateProjectConnection(connection);
+            connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);
         } catch (final EntityNotFoundException e) {
             // Nothing to do
         }
-
     }
 
     /**
