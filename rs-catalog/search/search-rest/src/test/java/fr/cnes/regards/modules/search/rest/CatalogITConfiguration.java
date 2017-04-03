@@ -12,14 +12,16 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * Module-wide configuration for integration tests.
  *
+ * @author Sylvain Vissiere-Guerinet
+ * @author Xavier-Alexandre Brochard
  */
 @Configuration
 public class CatalogITConfiguration {
@@ -38,8 +40,8 @@ public class CatalogITConfiguration {
     }
 
     @Bean
-    public IAccessRightFilter accessRightFilter() {
-        return Mockito.mock(IAccessRightFilter.class);
+    public IUserClient userClient() {
+        return Mockito.mock(IUserClient.class);
     }
 
     @Bean

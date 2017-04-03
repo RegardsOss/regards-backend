@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParserMessages;
 
 /**
@@ -43,7 +43,7 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
     }
 
     @Override
-    public ICriterion build(final QueryNode pQueryNode) throws QueryNodeException {
+    public ICriterion build(final QueryNode pQueryNode) throws QueryNodeException { // NOSONAR
         final FieldQueryNode fieldNode = (FieldQueryNode) pQueryNode;
 
         final String field = fieldNode.getFieldAsString();

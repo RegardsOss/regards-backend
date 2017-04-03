@@ -16,7 +16,6 @@ import org.apache.lucene.queryparser.flexible.core.QueryParserHelper;
 import org.apache.lucene.queryparser.flexible.core.config.QueryConfigHandler;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.queryparser.flexible.standard.config.FuzzyConfig;
-import org.apache.lucene.queryparser.flexible.standard.config.LegacyNumericConfig;
 import org.apache.lucene.queryparser.flexible.standard.config.PointsConfig;
 import org.apache.lucene.queryparser.flexible.standard.config.StandardQueryConfigHandler;
 import org.apache.lucene.queryparser.flexible.standard.config.StandardQueryConfigHandler.ConfigurationKeys;
@@ -25,11 +24,12 @@ import org.apache.lucene.queryparser.flexible.standard.parser.StandardSyntaxPars
 import org.apache.lucene.queryparser.flexible.standard.processors.StandardQueryNodeProcessorPipeline;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MultiTermQuery;
+import org.apache.lucene.util.automaton.LevenshteinAutomata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.builder.RegardsQueryTreeBuilder;
 
 /**
@@ -246,26 +246,6 @@ public class RegardsQueryParser extends QueryParserHelper implements CommonQuery
 
     }
 
-    /**
-     * Sets field configuration for legacy numeric fields
-     *
-     * @deprecated Index with points instead and use {@link #setPointsConfigMap(Map)}
-     */
-    @Deprecated
-    public void setLegacyNumericConfigMap(final Map<String, LegacyNumericConfig> legacyNumericConfigMap) {
-        getQueryConfigHandler().set(ConfigurationKeys.LEGACY_NUMERIC_CONFIG_MAP, legacyNumericConfigMap);
-    }
-
-    /**
-     * Gets field configuration for legacy numeric fields
-     *
-     * @deprecated Index with points instead and use {@link #getPointsConfigMap()}
-     */
-    @Deprecated
-    public Map<String, LegacyNumericConfig> getLegacyNumericConfigMap() {
-        return getQueryConfigHandler().get(ConfigurationKeys.LEGACY_NUMERIC_CONFIG_MAP);
-    }
-
     public void setPointsConfigMap(final Map<String, PointsConfig> pointsConfigMap) {
         getQueryConfigHandler().set(ConfigurationKeys.POINTS_CONFIG_MAP, pointsConfigMap);
     }
@@ -342,7 +322,7 @@ public class RegardsQueryParser extends QueryParserHelper implements CommonQuery
         final FuzzyConfig fuzzyConfig = getQueryConfigHandler().get(ConfigurationKeys.FUZZY_CONFIG);
 
         if (fuzzyConfig == null) {
-            return FuzzyQuery.defaultMinSimilarity;
+            return LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE;
         } else {
             return fuzzyConfig.getMinSimilarity();
         }

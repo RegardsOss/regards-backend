@@ -6,6 +6,9 @@ import org.apache.lucene.queryparser.flexible.messages.NLS;
  * Flexible Query Parser message bundle class. The messages can be found in
  * <a>resources/RegardsQueryParserMessages.properties</a>
  *
+ * Do <b>*NOT*</b> listen to SonarQube about making the fields final and providing accessors.
+ * This code implements the correct {@link NLS} API (it is inspired from Lucene classes), wheter or not SonarQube is happy about it.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class RegardsQueryParserMessages extends NLS {

@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
  *
  * @author Xavier-Alexandre Brochard
  */
-public interface ICatalogSearchService {
+public interface ICatalogSearchService { // NOSONAR
 
     /**
      * Perform an OpenSearch request on a type.

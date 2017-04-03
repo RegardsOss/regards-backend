@@ -381,15 +381,14 @@ public class CatalogController {
      * @return a list of {@link Resource}
      */
     private <T> PagedResources<Resource<T>> toPagedResources(final Page<T> pElements,
-            final PagedResourcesAssembler<T> pAssembler, final Object... pExtras) {
+            final PagedResourcesAssembler<T> pAssembler) {
         Assert.notNull(pElements);
         final PagedResources<Resource<T>> pageResources = pAssembler.toResource(pElements);
-        pageResources.forEach(resource -> resource.add(toResource(resource.getContent(), pExtras).getLinks()));
+        pageResources.forEach(resource -> resource.add(toResource(resource.getContent()).getLinks()));
         return pageResources;
     }
 
-    private <T> Resource<T> toResource(final T pElement, final Object... pExtras) {
-        // TODO: Add links
+    private <T> Resource<T> toResource(final T pElement) {
         return resourceService.toResource(pElement);
     }
 

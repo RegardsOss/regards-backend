@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.search.rest.facet;
 import java.util.Map;
 
 import org.apache.commons.configuration.ConversionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
@@ -16,7 +15,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 
 /**
  * Teaches Spring how to convert a list of attribute names into a map of facet types.
@@ -25,9 +24,6 @@ import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
  */
 @ControllerAdvice
 public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<String, FacetType>> {
-
-    @Autowired
-    private IAttributeModelCache attributeModelCache;
 
     // @formatter:off
     private static final Map<AttributeType, FacetType> MAP = new ImmutableMap.Builder<AttributeType, FacetType>()
@@ -47,6 +43,19 @@ public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<St
             .put(AttributeType.DATE_INTERVAL, FacetType.RANGE)
             .build();
     // @formatter:on
+
+    /**
+     * Provides the {@link AttributeModel}s with caching facilities.
+     */
+    private final IAttributeModelCache attributeModelCache;
+
+    /**
+     * @param pAttributeModelCache
+     */
+    public AttributeNamesToFacetTypesMap(IAttributeModelCache pAttributeModelCache) {
+        super();
+        attributeModelCache = pAttributeModelCache;
+    }
 
     /**
      * Converts a list of attribute names like ["altitude", "lastUpdate"] to the map of corresponding facets.

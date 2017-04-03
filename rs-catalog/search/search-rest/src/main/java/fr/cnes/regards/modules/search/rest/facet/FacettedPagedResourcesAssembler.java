@@ -39,8 +39,6 @@ public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<
         Collection<Resource<T>> content = pagedResources.getContent();
         PageMetadata metaData = pagedResources.getMetadata();
         Iterable<Link> links = pagedResources.getLinks();
-        // Gson gson = new Gson();
-        // String tojson = gson.toJson(facets);
         return new FacettedPagedResources<>(facets, content, metaData, links);
     }
 

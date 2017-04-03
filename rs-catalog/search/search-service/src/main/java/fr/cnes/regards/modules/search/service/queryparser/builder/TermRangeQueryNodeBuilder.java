@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.search.service.cache.IAttributeModelCache;
+import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParserMessages;
 
 /**
@@ -107,7 +107,7 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
      * @return
      * @throws QueryNodeException
      */
-    private RangeComparison getRangeComparison(String pField, String pLowerText, String pUpperText,
+    private RangeComparison getRangeComparison(String pField, String pLowerText, String pUpperText, // NOSONAR
             boolean pIsLowerInclusive, boolean pIsUpperInclusive) throws QueryNodeException {
         if (pLowerText.isEmpty() && pUpperText.isEmpty()) {
             throw new QueryNodeException(

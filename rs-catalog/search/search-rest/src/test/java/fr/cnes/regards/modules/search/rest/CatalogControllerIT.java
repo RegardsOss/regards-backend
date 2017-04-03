@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -49,6 +50,12 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IAttributeModelClient attributeModelClient;
+
+    /**
+     * The mock user client providing access groups
+     */
+    @Autowired
+    private IUserClient userClient;
 
     /**
      * ElasticSearch repository
@@ -92,8 +99,19 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Before
     public void setUp() throws Exception {
+        // Mock clients
         Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
-                .thenReturn(CatalogControllerTestUtils.CLIENT_RESPONSE);
+                .thenReturn(CatalogControllerTestUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
+
+        Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(CatalogControllerTestUtils.USER_CLIENT_RESPONSE);
+
+        // Set groups
+        COLLECTION.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
+        DATAOBJECT.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
+        DATASET.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
+        DATASET_1.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
+        DOCUMENT.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
 
         // Populate the ElasticSearch repository
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
@@ -294,6 +312,26 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DOCUMENT);
         performDefaultGet("/documents/search", expectations, "Error searching documents", builder);
+    }
+
+    /**
+     * Check that the system can return a sorted page of results.
+     */
+    @Test
+    @Purpose("Check that the system can return a sorted page of results.")
+    @Requirement("REGARDS_DSL_DAM_DOC_510")
+    public final void testSearch_withSort() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+                                                        Matchers.is("mydataset")));
+
+        RequestParamBuilder builder = RequestParamBuilder.build()
+                .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS)
+                .param("sort", CatalogControllerTestUtils.SORT);
+        performDefaultGet("/datasets/search", expectations, "Error searching documents", builder);
     }
 
     /*
