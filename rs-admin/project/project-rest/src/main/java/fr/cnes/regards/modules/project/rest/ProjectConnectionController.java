@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -35,6 +36,7 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
  *
  */
 @RestController
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
 @RequestMapping(ProjectConnectionController.TYPE_MAPPING)
 public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
@@ -43,6 +45,9 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     public static final String TYPE_MAPPING = "/projects/{projectName}/connections";
 
+    /**
+     * Resource id mapping
+     */
     public static final String RESOURCE_ID_MAPPING = "/{connectionId}";
 
     /**
@@ -135,6 +140,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.PUT, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
     @ResourceAccess(description = "Update a project connection", role = DefaultRole.INSTANCE_ADMIN)
+
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable String projectName,
             @PathVariable Long connectionId, @Valid @RequestBody final ProjectConnection pProjectConnection)
             throws ModuleException {

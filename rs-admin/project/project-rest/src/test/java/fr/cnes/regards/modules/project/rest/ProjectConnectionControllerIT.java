@@ -170,8 +170,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     }
 
     /**
-     *
-     * Check REST Access to update a project connection and Hateoas returned links
+     * Check REST Access to project connections by id. >>>>>>> 538fc5b3af67db38dc598432cc06e9e4134c9971
      *
      * @since 1.0-SNAPSHOT
      */

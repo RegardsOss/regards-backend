@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LICENSE_PLACEHOLDER -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>metrics</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
+	</parent>
+
+	<modules>
+		<module>metrics-dao</module>
+		<module>metrics-domain</module>
+		<module>metrics-rest</module>
+		<module>metrics-service</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Module layers -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.metrics</groupId>
+				<artifactId>metrics-dao</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.metrics</groupId>
+				<artifactId>metrics-domain</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.metrics</groupId>
+				<artifactId>metrics-rest</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.metrics</groupId>
+				<artifactId>metrics-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>
