@@ -20,15 +20,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- Spring dependencies -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-eureka</artifactId>
-		</dependency>
 		<!-- Core dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.microservices</groupId>
@@ -38,10 +29,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
 			<artifactId>uiconfiguration-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>remote-tenant-resolver</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>

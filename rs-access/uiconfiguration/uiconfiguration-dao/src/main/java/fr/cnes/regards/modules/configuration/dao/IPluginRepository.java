@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.configuration.dao;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Plugin;
 
@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.configuration.domain.Plugin;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface IPluginRepository extends CrudRepository<Plugin, Long> {
+public interface IPluginRepository extends JpaRepository<Plugin, Long> {
 
     Page<Plugin> findAll(Pageable pPageable);
 
