@@ -134,25 +134,25 @@ public class CatalogSearchServiceTestUtils {
     /**
      * A criterion string match
      */
-    public static final ICriterion SIMPLE_STRING_MATCH_CRITERION = ICriterion.equals("field", "value");
+    public static final ICriterion SIMPLE_STRING_MATCH_CRITERION = ICriterion.eq("field", "value");
 
     /**
      * Define a criterion with a nested criterion of name "target" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion
-            .or(ICriterion.equals("target", SearchType.DATASET.toString()), ICriterion.equals("field", "value"));
+            .or(ICriterion.eq("target", SearchType.DATASET.toString()), ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "dataset" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_DATASET_FIELD = ICriterion
-            .or(ICriterion.equals("dataset", "whatever"), ICriterion.equals("field", "value"));
+            .or(ICriterion.eq("dataset", "whatever"), ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "datasets" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_DATASETS_FIELD = ICriterion
-            .or(ICriterion.equals("datasets", "whatever"), ICriterion.equals("field", "value"));
+            .or(ICriterion.eq("datasets", "whatever"), ICriterion.eq("field", "value"));
 
     /**
      * A dummy sort

@@ -70,7 +70,7 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
                 Long asLong = Long.parseLong(value);
                 return ICriterion.eq(field, asLong, asLong - Math.nextDown(asLong));
             case STRING:
-                return ICriterion.equals(field, value);
+                return ICriterion.eq(field, value);
             case STRING_ARRAY:
                 return ICriterion.contains(field, value);
             default:

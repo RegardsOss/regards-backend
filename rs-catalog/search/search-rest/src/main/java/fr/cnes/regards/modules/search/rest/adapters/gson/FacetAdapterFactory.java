@@ -17,6 +17,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
  *
  * @author Xavier-Alenxandre Brochard
  */
+@SuppressWarnings("rawtypes")
 @GsonTypeAdapterFactory
 public class FacetAdapterFactory extends PolymorphicTypeAdapterFactory<IFacet> {
 
