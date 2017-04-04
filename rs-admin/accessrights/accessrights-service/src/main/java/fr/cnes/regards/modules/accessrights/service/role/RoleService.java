@@ -30,7 +30,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -132,21 +132,16 @@ public class RoleService implements IRoleService {
 
     @PostConstruct
     public void init() {
-        instanceSubscriber.subscribeTo(TenantConnectionCreatedEvent.class,
-                                       new TenantConnectionCreatedEventHandler(runtimeTenantResolver, this));
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class,
+                                       new TenantConnectionReadyEventHandler(runtimeTenantResolver));
         initDefaultRoles();
     }
 
-    private class TenantConnectionCreatedEventHandler implements IHandler<TenantConnectionCreatedEvent> {
-
-        private final IRoleService roleService;
+    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
 
         private final IRuntimeTenantResolver runtimeTenantResolver;
 
-        public TenantConnectionCreatedEventHandler(IRuntimeTenantResolver pRuntimeTenantResolver,
-                IRoleService pRoleService) {
-            super();
-            roleService = pRoleService;
+        public TenantConnectionReadyEventHandler(IRuntimeTenantResolver pRuntimeTenantResolver) {
             runtimeTenantResolver = pRuntimeTenantResolver;
         }
 
@@ -158,9 +153,11 @@ public class RoleService implements IRoleService {
          * @since 1.0-SNAPSHOT
          */
         @Override
-        public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pWrapper) {
-            runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-            roleService.initDefaultRoles();
+        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
+            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
+                initDefaultRoles();
+            }
         }
     }
 

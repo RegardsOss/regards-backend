@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigured;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -124,7 +124,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 connection.getDriverClassName());
 
         if (!silent) {
-            instancePublisher.publish(new TenantConnectionCreatedEvent(tenantConnection, connection.getMicroservice()));
+            instancePublisher.publish(new TenantConnectionConfigured(tenantConnection, connection.getMicroservice()));
         }
 
         return connection;
