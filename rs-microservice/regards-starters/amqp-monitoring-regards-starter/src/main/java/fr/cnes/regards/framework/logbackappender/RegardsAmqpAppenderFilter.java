@@ -23,7 +23,6 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
      */
     private final List<String> includes = Arrays.asList("fr.cnes.regards.framework.modules",
                                                         "fr.cnes.regards.framework.security",
-                                                        "fr.cnes.regards.framework.logbackappender",
                                                         "fr.cnes.regards.modules");
 
     /**
