@@ -151,7 +151,7 @@ public class RegardsAmqpAdmin {
      *            {@link WorkerMode} used for naming convention
      * @param pTarget
      *            {@link Target} used for naming convention
-     * @return instance of the queue
+     * @return instance of queue
      */
     public Queue declareQueue(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
 
@@ -162,6 +162,34 @@ public class RegardsAmqpAdmin {
         final Map<String, Object> args = new HashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
         Queue queue = new Queue(getQueueName(pEventType, pWorkerMode, pTarget), true, false, false, args);
+
+        rabbitAdmin.declareQueue(queue);
+
+        return queue;
+    }
+
+    /**
+     * Declare a queue by event handler. Only useful for publish/subscribe mode.
+     *
+     * @param pTenant
+     *            tenant
+     * @param pEventHandler
+     *            event handler
+     * @param pWorkerMode
+     *            {@link WorkerMode} used for naming convention
+     * @param pTarget
+     *            {@link Target} used for naming convention
+     * @return instance of queue
+     */
+    public Queue declareSubscribeQueue(String pTenant, Class<?> pEventHandler, WorkerMode pWorkerMode, Target pTarget) {
+
+        LOGGER.debug("Declaring queue for : tenant {} / handler {} / target {} / mode {}", pTenant,
+                     pEventHandler.getName(), pTarget, pWorkerMode);
+
+        // Create queue
+        final Map<String, Object> args = new HashMap<>();
+        args.put("x-max-priority", MAX_PRIORITY);
+        Queue queue = new Queue(getQueueName(pEventHandler, pWorkerMode, pTarget), true, false, false, args);
 
         rabbitAdmin.declareQueue(queue);
 
@@ -189,17 +217,17 @@ public class RegardsAmqpAdmin {
     }
 
     /**
-     * Computing queue name according to {@link WorkerMode} and {@link Target}
+     * Computing queue name according to {@link WorkerMode}, {@link Target} and a discrimator type.
      *
-     * @param pEvtClass
-     *            event type
+     * @param pType
+     *            type
      * @param pWorkerMode
      *            {@link WorkerMode}
      * @param pTarget
      *            {@link Target}
      * @return queue name according to {@link WorkerMode} and {@link Target}
      */
-    public String getQueueName(Class<?> pEvtClass, WorkerMode pWorkerMode, Target pTarget) {
+    public String getQueueName(Class<?> pType, WorkerMode pWorkerMode, Target pTarget) {
         StringBuilder builder = new StringBuilder();
 
         // Prefix queue with microservice id if target restricted to microservice
@@ -216,10 +244,10 @@ public class RegardsAmqpAdmin {
 
         switch (pWorkerMode) {
             case SINGLE:
-                builder.append(pEvtClass.getName());
+                builder.append(pType.getName());
                 break;
             case ALL:
-                builder.append(pEvtClass.getName());
+                builder.append(pType.getName());
                 builder.append(UNDERSCORE);
                 builder.append(microserviceInstanceId);
                 break;

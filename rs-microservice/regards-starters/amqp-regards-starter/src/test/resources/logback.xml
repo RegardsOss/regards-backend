@@ -11,8 +11,8 @@
 	</appender>
 
 	<logger name="org.springframework" level="INFO" />
-	<logger name="org.springframework.amqp" level="TRACE"/>
-	<logger name="org.springframework.transaction" level="TRACE"/>
+	<logger name="org.springframework.amqp" level="INFO"/>
+	<logger name="org.springframework.transaction" level="INFO"/>
 
 	<root level="debug">
 		<appender-ref ref="STDOUT" />
