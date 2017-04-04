@@ -23,7 +23,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -84,18 +84,18 @@ public class LayoutService implements ILayoutService {
     @PostConstruct
     public void init() {
         // FIXME : not usefull for instance access / disable subscription
-        instanceSubscriber.subscribeTo(TenantConnectionCreatedEvent.class, new TenantConnectionCreatedEventHandler());
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
         for (final String tenant : tenantResolver.getAllTenants()) {
             initProjectLayout(tenant);
         }
     }
 
-    private class TenantConnectionCreatedEventHandler implements IHandler<TenantConnectionCreatedEvent> {
+    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
 
         @Override
-        public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pWrapper) {
+        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
             if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
-                initProjectLayout(pWrapper.getContent().getTenant().getTenant());
+                initProjectLayout(pWrapper.getContent().getTenant());
             }
         }
 
