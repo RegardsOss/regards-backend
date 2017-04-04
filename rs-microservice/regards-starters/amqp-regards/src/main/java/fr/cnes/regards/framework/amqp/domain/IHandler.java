@@ -12,8 +12,12 @@ package fr.cnes.regards.framework.amqp.domain;
  * @author svissier
  *
  */
-@FunctionalInterface
 public interface IHandler<T> {
 
     public void handle(TenantWrapper<T> pWrapper);
+
+    @SuppressWarnings("unchecked")
+    public default Class<? extends IHandler<T>> getType() {
+        return (Class<? extends IHandler<T>>) this.getClass();
+    }
 }
