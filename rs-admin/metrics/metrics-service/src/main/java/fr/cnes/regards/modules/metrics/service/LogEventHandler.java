@@ -28,8 +28,6 @@ public class LogEventHandler implements ILogEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogEvent.class);
 
-    private TenantWrapper<LogEvent> wrappers;
-
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     private ILogEventRepository logEventRepository;
@@ -43,11 +41,10 @@ public class LogEventHandler implements ILogEventHandler {
     public void handle(TenantWrapper<LogEvent> pWrapper) {
         LogEvent logEvent = pWrapper.getContent();
         LOGGER.debug("[" + pWrapper.getTenant() + "] a new event received : " + logEvent.toString());
-        
+
         runtimeTenantResolver.forceTenant(pWrapper.getTenant());
         LogEventJpa logEventToSave = new LogEventJpa(pWrapper.getContent());
         logEventRepository.save(logEventToSave);
-        this.wrappers = pWrapper;
     }
 
 }
