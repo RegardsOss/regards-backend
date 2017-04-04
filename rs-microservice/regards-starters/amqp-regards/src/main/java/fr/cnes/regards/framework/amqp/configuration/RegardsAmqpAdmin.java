@@ -128,8 +128,10 @@ public class RegardsAmqpAdmin {
                 // No prefix cause no target restriction
                 break;
             case MICROSERVICE:
-                builder.append(microserviceTypeId);
-                builder.append(UNDERSCORE);
+                builder.append(microserviceTypeId).append(UNDERSCORE);
+                break;
+            case INSTANCE:
+                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());
@@ -199,21 +201,21 @@ public class RegardsAmqpAdmin {
     /**
      * Purge the queue that manages the specified event
      *
-     * @param pEventType
-     *            event to purge (queue name will be retrieve automatically based on the event name)
+     * @param pType
+     *            handler type for subscribable events, else event type
      * @param noWait
      *            true to not await completion of the purge
      */
-    public void purgeQueue(Class<?> pEventType, boolean noWait) {
+    public void purgeQueue(Class<?> pType, boolean noWait) {
         WorkerMode mode;
-        if (ISubscribable.class.isAssignableFrom(pEventType)) {
+        if (ISubscribable.class.isAssignableFrom(pType)) {
             mode = WorkerMode.ALL;
-        } else if (IPollable.class.isAssignableFrom(pEventType)) {
+        } else if (IPollable.class.isAssignableFrom(pType)) {
             mode = WorkerMode.SINGLE;
         } else {
             throw new UnsupportedOperationException();
         }
-        rabbitAdmin.purgeQueue(getQueueName(pEventType, mode, EventUtils.getCommunicationTarget(pEventType)), noWait);
+        rabbitAdmin.purgeQueue(getQueueName(pType, mode, EventUtils.getCommunicationTarget(pType)), noWait);
     }
 
     /**
@@ -232,11 +234,14 @@ public class RegardsAmqpAdmin {
 
         // Prefix queue with microservice id if target restricted to microservice
         switch (pTarget) {
+            case ALL:
+                // No prefix cause no target restriction
+                break;
             case MICROSERVICE:
                 builder.append(microserviceTypeId).append(UNDERSCORE);
                 break;
-            case ALL:
-                // No prefix cause no target restriction
+            case INSTANCE:
+                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());

@@ -98,7 +98,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
     public final <T> void publish(final T pEvt, final WorkerMode pWorkerMode, final Target pTarget,
             final int pPriority) {
 
-        LOGGER.info("Publishing event {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTarget, pWorkerMode);
+        LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTarget, pWorkerMode);
 
         String tenant = resolveTenant();
         if (tenant != null) {
