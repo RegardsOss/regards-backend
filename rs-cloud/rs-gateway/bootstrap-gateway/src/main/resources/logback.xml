@@ -3,6 +3,8 @@
 <!-- LICENSE_PLACEHOLDER -->
 <configuration>
 
+	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
+
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
@@ -11,7 +13,40 @@
 		</encoder>
 	</appender>
 
-	<root level="info">
+	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+		<syslogHost>localhost</syslogHost>
+		<facility>LOCAL0</facility>
+		<suffixPattern>${SYSLOG_PATTERN}</suffixPattern>
+		<port>514</port>
+	</appender>
+
+	<appender name="SYSLOG-SECU" class="ch.qos.logback.classic.net.SyslogAppender">
+		<syslogHost>localhost</syslogHost>
+		<facility>LOCAL1</facility>
+		<suffixPattern>${SYSLOG_SECURITY_PATTERN}</suffixPattern>
+		<port>514</port>
+	</appender>
+
+	<!-- Log the microservice start --> 
+	<logger name="fr.cnes.regards.cloud.gateway" level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+
+	<!-- Log the user request authentication --> 
+	<logger name="fr.cnes.regards.framework.authentication" level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+	
+	<logger name="fr.cnes.regards.framework.security" level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+	
+<!-- 
+	<logger name="fr.cnes.regards.framework.security.filter" level="DEBUG" />
+	<logger name="fr.cnes.regards.cloud.gateway.filters" level="DEBUG" />
+ -->
+ 	
+ 	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>
