@@ -25,7 +25,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 
@@ -159,7 +158,7 @@ public final class DaoUtils {
                 }
             }
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e); // NOSONAR
         }
 
         return packagesToScan;

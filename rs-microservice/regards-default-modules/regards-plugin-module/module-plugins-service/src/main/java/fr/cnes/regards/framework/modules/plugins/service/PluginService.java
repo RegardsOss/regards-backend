@@ -30,7 +30,6 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
- *
  * The implementation of {@link IPluginService}.
  *
  * @author Christophe Mertz
@@ -70,8 +69,7 @@ public class PluginService implements IPluginService {
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
      *
-     * @param pPluginConfigurationRepository
-     *            {@link PluginConfiguration} JPA repository
+     * @param pPluginConfigurationRepository {@link PluginConfiguration} JPA repository
      */
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository) {
         super();
@@ -82,12 +80,7 @@ public class PluginService implements IPluginService {
             List<String> pPackagesToScan) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
-        if ((pPackagesToScan != null) && !pPackagesToScan.isEmpty()) {
-            if (pluginPackage == null) {
-                pluginPackage = new ArrayList<>();
-            }
-            pluginPackage.addAll(pPackagesToScan);
-        }
+        addPluginPackages(pPackagesToScan);
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
@@ -336,6 +329,19 @@ public class PluginService implements IPluginService {
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     public void addPluginPackage(final String pPluginPackage) {
         getPluginPackage().add(pPluginPackage);
+        Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, pluginPackage);
+        if (plugins == null) {
+            // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
+            plugins = new HashMap<>();
+        }
+        plugins.putAll(newPlugins);
+    }
+
+    private void addPluginPackages(List<String> pPackagesToScan) {
+        if ((pPackagesToScan != null) && !pPackagesToScan.isEmpty()) {
+            getPluginPackage().addAll(pPackagesToScan);
+            getLoadedPlugins();
+        }
     }
 
     @Override
