@@ -2,24 +2,25 @@
 <!-- LICENSE_PLACEHOLDER -->
 <configuration>
 
-	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
-
-	<property name="CONSOLE_LOG_PATTERN"
-		value="%d{HH:mm:ss.SSS} [%-16thread] %mdc{req.remoteHost} %mdc{req.xForwardedFor} ${LOG_LEVEL_PATTERN:-%5p} %logger{36} - %msg%n" />
-
-	<property name="SYSLOG_PATTERN"
-		value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
+	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
-	
+
 	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
 		<syslogHost>localhost</syslogHost>
 		<facility>LOCAL0</facility>
 		<suffixPattern>${SYSLOG_PATTERN}</suffixPattern>
+		<port>514</port>
+	</appender>
+
+	<appender name="SYSLOG-SECU" class="ch.qos.logback.classic.net.SyslogAppender">
+		<syslogHost>localhost</syslogHost>
+		<facility>LOCAL1</facility>
+		<suffixPattern>${SYSLOG_SECURITY_PATTERN}</suffixPattern>
 		<port>514</port>
 	</appender>
 
@@ -34,6 +35,39 @@
 	<logger name="fr.cnes.regards" level="INFO" additivity="true">
 		<appender-ref ref="regardsAmqpAppender" />
 	</logger>
+
+	<!-- Log the microservice start -->
+	<logger name="fr.cnes.regards.microservices.administration"
+		level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+
+	<!-- Log the user request authentication -->
+	<logger name="fr.cnes.regards.framework.authentication" level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+
+	<logger name="fr.cnes.regards.framework.security" level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+
+	<logger name="fr.cnes.regards.framework.authentication.internal"
+		level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+
+	<!-- Log the resource access -->
+	<logger name="fr.cnes.regards.modules.accessrights.service.resources"
+		level="INFO">
+		<appender-ref ref="SYSLOG-SECU" />
+	</logger>
+
+
+
+	<!-- <logger name="fr.cnes.regards.framework.logbackappender" level="DEBUG"/> 
+		<logger name="fr.cnes.regards.modules.metrics" level="DEBUG"/> <logger name="fr.cnes.regards.framework.security.autoconfigure" 
+		level="DEBUG"/> <logger name="fr.cnes.regards.framework.security.filter" 
+		level="DEBUG"/> -->
 
 	<root level="info">
 		<appender-ref ref="SYSLOG" />
