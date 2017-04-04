@@ -17,7 +17,7 @@ public class CoupleJwtRole {
     /**
      * JWT to be used for authentication
      */
-    private String access_token;
+    private String access_token; // NOSONAR: has this structure so we don't need a DTO or adapter for serialization
 
     public CoupleJwtRole(String pJwt, String pRoleName) {
         access_token = pJwt;
@@ -32,12 +32,12 @@ public class CoupleJwtRole {
         role = pRole;
     }
 
-    public String getAccess_token() {
+    public String getAccessToken() {
         return access_token;
     }
 
-    public void setAccess_token(String pAccess_token) {
-        access_token = pAccess_token;
+    public void setAccessToken(String pAccessToken) {
+        access_token = pAccessToken;
     }
 
 }

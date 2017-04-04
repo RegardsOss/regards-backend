@@ -81,7 +81,7 @@ public class BorrowRoleServiceTest {
 
         CoupleJwtRole newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
 
-        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getAccess_token());
+        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getAccessToken());
         newAuthentication = JwtService.parseToken(newAuthentication);
         Assert.assertNotNull(newToken);
         Assert.assertEquals("test@test.test", newAuthentication.getName());

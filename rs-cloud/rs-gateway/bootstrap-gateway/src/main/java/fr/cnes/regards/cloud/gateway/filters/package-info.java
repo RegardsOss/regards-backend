@@ -2,7 +2,7 @@
  * LICENSE_PLACEHOLDER
  */
 /**
- * Package for Regards Gateway zuul filters
+ * Package for Regards Gateway Zuul filters
  * 
  * @author Sébastien Binda
  */
