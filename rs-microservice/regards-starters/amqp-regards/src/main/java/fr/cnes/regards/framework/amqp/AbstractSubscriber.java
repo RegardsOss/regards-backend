@@ -82,7 +82,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     @Override
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
 
-        LOGGER.info("Stopping listener for event {}", pEvent.getName());
+        LOGGER.debug("Stopping listener for event {}", pEvent.getName());
 
         Set<String> tenants = resolveTenants();
         Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.get(pEvent);
@@ -120,7 +120,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     public <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver, final WorkerMode pWorkerMode,
             final Target pTarget) {
 
-        LOGGER.info("Subscribing to event {} with target {} and mode {}", pEvt.getName(), pTarget, pWorkerMode);
+        LOGGER.debug("Subscribing to event {} with target {} and mode {}", pEvt.getName(), pTarget, pWorkerMode);
 
         Set<String> tenants = resolveTenants();
 
@@ -170,7 +170,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         try {
             virtualHostAdmin.bind(pTenant);
             Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-            queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pReceiver.getType(), pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
         } finally {
             virtualHostAdmin.unbind();

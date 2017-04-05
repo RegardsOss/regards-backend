@@ -4,6 +4,8 @@
 package fr.cnes.regards.framework.logbackappender;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +17,9 @@ import ch.qos.logback.core.AppenderBase;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 
 /**
  *
@@ -36,7 +39,7 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     private IPublisher publisher;
 
     @Autowired
-    private JWTService jwtService;
+    IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * The microservice name
@@ -52,24 +55,23 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent eventObject) {
 
-        String user = "";
-        String tenant = "";
-        try {
-            user = jwtService.getCurrentToken().getName();
-            tenant = jwtService.getCurrentToken().getTenant();
-        } catch (JwtException e) {
-            LOGGER.error(e.getMessage(), e);
+        String user = SecurityUtils.getActualUser();
+        String tenant = runtimeTenantResolver.getTenant();
+
+        if (tenant != null) {
+            LOGGER.debug("[" + tenant + "] <" + microserviceName + "> send message  <"
+                    + eventObject.getFormattedMessage() + ">");
+
+            Instant instant = Instant.ofEpochMilli(eventObject.getTimeStamp());
+            LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+            final LogEvent sended = new LogEvent(eventObject.getFormattedMessage(), microserviceName,
+                    eventObject.getCallerData()[0].getClassName(), eventObject.getCallerData()[0].getMethodName(),
+                    ldt.toString(), eventObject.getLevel().toString(), user);
+            publisher.publish(sended);
+
+            LOGGER.debug("[" + tenant + "] message sended : " + sended.toString());
         }
-
-        LOGGER.debug("[" + tenant + "] <" + microserviceName + "> send message  <" + eventObject.getFormattedMessage()
-                + ">");
-
-        final LogEvent sended = new LogEvent(eventObject.getFormattedMessage(), microserviceName,
-                eventObject.getCallerData()[0].getClassName(), eventObject.getCallerData()[0].getMethodName(),
-                Instant.ofEpochMilli(eventObject.getTimeStamp()).toString(), eventObject.getLevel().toString(), user);
-        publisher.publish(sended);
-
-        LOGGER.debug("[" + tenant + "] message sended : " + sended.toString());
     }
 
 }

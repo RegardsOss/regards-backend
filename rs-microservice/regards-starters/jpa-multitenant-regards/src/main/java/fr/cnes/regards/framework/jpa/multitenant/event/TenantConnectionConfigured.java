@@ -10,15 +10,17 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 
 /**
  *
- * Class NewTenantEvent
  *
- * AMQP Message to broadcast information that a new tenant is available
+ * Event that informs a new tenant connection is configured and has to be handle by JPA multitenant starter to init its
+ * connection.<br/>
+ * This event must only be handled by the starter in each microservice instance. When the connection is ready to used,
+ * the starter sends to all microservice instances of the current type a {@link TenantConnectionReady}.
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Event(target = Target.ALL)
-public class TenantConnectionCreatedEvent implements ISubscribable {
+public class TenantConnectionConfigured implements ISubscribable {
 
     /**
      * New tenant
@@ -30,11 +32,11 @@ public class TenantConnectionCreatedEvent implements ISubscribable {
      */
     private String microserviceName;
 
-    public TenantConnectionCreatedEvent() {
+    public TenantConnectionConfigured() {
         super();
     }
 
-    public TenantConnectionCreatedEvent(final TenantConnection pTenant, final String pMicroserviceName) {
+    public TenantConnectionConfigured(final TenantConnection pTenant, final String pMicroserviceName) {
         super();
         tenant = pTenant;
         microserviceName = pMicroserviceName;

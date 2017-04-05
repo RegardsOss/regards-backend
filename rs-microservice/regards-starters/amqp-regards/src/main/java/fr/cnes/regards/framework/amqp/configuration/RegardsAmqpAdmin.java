@@ -128,8 +128,10 @@ public class RegardsAmqpAdmin {
                 // No prefix cause no target restriction
                 break;
             case MICROSERVICE:
-                builder.append(microserviceTypeId);
-                builder.append(UNDERSCORE);
+                builder.append(microserviceTypeId).append(UNDERSCORE);
+                break;
+            case INSTANCE:
+                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());
@@ -151,7 +153,7 @@ public class RegardsAmqpAdmin {
      *            {@link WorkerMode} used for naming convention
      * @param pTarget
      *            {@link Target} used for naming convention
-     * @return instance of the queue
+     * @return instance of queue
      */
     public Queue declareQueue(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
 
@@ -169,46 +171,77 @@ public class RegardsAmqpAdmin {
     }
 
     /**
+     * Declare a queue by event handler. Only useful for publish/subscribe mode.
+     *
+     * @param pTenant
+     *            tenant
+     * @param pEventHandler
+     *            event handler
+     * @param pWorkerMode
+     *            {@link WorkerMode} used for naming convention
+     * @param pTarget
+     *            {@link Target} used for naming convention
+     * @return instance of queue
+     */
+    public Queue declareSubscribeQueue(String pTenant, Class<?> pEventHandler, WorkerMode pWorkerMode, Target pTarget) {
+
+        LOGGER.debug("Declaring queue for : tenant {} / handler {} / target {} / mode {}", pTenant,
+                     pEventHandler.getName(), pTarget, pWorkerMode);
+
+        // Create queue
+        final Map<String, Object> args = new HashMap<>();
+        args.put("x-max-priority", MAX_PRIORITY);
+        Queue queue = new Queue(getQueueName(pEventHandler, pWorkerMode, pTarget), true, false, false, args);
+
+        rabbitAdmin.declareQueue(queue);
+
+        return queue;
+    }
+
+    /**
      * Purge the queue that manages the specified event
      *
-     * @param pEventType
-     *            event to purge (queue name will be retrieve automatically based on the event name)
+     * @param pType
+     *            handler type for subscribable events, else event type
      * @param noWait
      *            true to not await completion of the purge
      */
-    public void purgeQueue(Class<?> pEventType, boolean noWait) {
+    public void purgeQueue(Class<?> pType, boolean noWait) {
         WorkerMode mode;
-        if (ISubscribable.class.isAssignableFrom(pEventType)) {
+        if (ISubscribable.class.isAssignableFrom(pType)) {
             mode = WorkerMode.ALL;
-        } else if (IPollable.class.isAssignableFrom(pEventType)) {
+        } else if (IPollable.class.isAssignableFrom(pType)) {
             mode = WorkerMode.SINGLE;
         } else {
             throw new UnsupportedOperationException();
         }
-        rabbitAdmin.purgeQueue(getQueueName(pEventType, mode, EventUtils.getCommunicationTarget(pEventType)), noWait);
+        rabbitAdmin.purgeQueue(getQueueName(pType, mode, EventUtils.getCommunicationTarget(pType)), noWait);
     }
 
     /**
-     * Computing queue name according to {@link WorkerMode} and {@link Target}
+     * Computing queue name according to {@link WorkerMode}, {@link Target} and a discrimator type.
      *
-     * @param pEvtClass
-     *            event type
+     * @param pType
+     *            type
      * @param pWorkerMode
      *            {@link WorkerMode}
      * @param pTarget
      *            {@link Target}
      * @return queue name according to {@link WorkerMode} and {@link Target}
      */
-    public String getQueueName(Class<?> pEvtClass, WorkerMode pWorkerMode, Target pTarget) {
+    public String getQueueName(Class<?> pType, WorkerMode pWorkerMode, Target pTarget) {
         StringBuilder builder = new StringBuilder();
 
         // Prefix queue with microservice id if target restricted to microservice
         switch (pTarget) {
+            case ALL:
+                // No prefix cause no target restriction
+                break;
             case MICROSERVICE:
                 builder.append(microserviceTypeId).append(UNDERSCORE);
                 break;
-            case ALL:
-                // No prefix cause no target restriction
+            case INSTANCE:
+                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());
@@ -216,10 +249,10 @@ public class RegardsAmqpAdmin {
 
         switch (pWorkerMode) {
             case SINGLE:
-                builder.append(pEvtClass.getName());
+                builder.append(pType.getName());
                 break;
             case ALL:
-                builder.append(pEvtClass.getName());
+                builder.append(pType.getName());
                 builder.append(UNDERSCORE);
                 builder.append(microserviceInstanceId);
                 break;
