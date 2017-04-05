@@ -88,14 +88,16 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     @Override
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
 
-        LOGGER.debug("Stopping listener for event {}", pEvent.getName());
+        LOGGER.debug("Stopping all listeners for event {}", pEvent.getName());
 
-        Set<String> tenants = resolveTenants();
-        Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.get(pEvent);
-        if (tenantContainers != null) {
-            for (final String tenant : tenants) {
-                SimpleMessageListenerContainer container = tenantContainers.get(tenant);
-                if (container != null) {
+        for (Map.Entry<Class<?>, Class<?>> handleEvent : handledEvents.entrySet()) {
+            if (handleEvent.getValue().equals(pEvent)) {
+                // Retrieve handler managing event to unsubscribe
+                Class<?> handlerClass = handleEvent.getKey();
+                // Retrieve listeners for current handler
+                Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClass);
+                // Stop listeners
+                for (SimpleMessageListenerContainer container : tenantContainers.values()) {
                     container.stop();
                 }
             }
@@ -103,8 +105,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
-    public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
-        subscribeTo(pEvent, pReceiver, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEvent));
+    public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pHandler) {
+        subscribeTo(pEvent, pHandler, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEvent));
     }
 
     /**
@@ -116,14 +118,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      *            event type to which we subscribe
      * @param pEvt
      *            the event class token you want to subscribe to
-     * @param pReceiver
+     * @param pHandler
      *            the POJO defining the method handling the corresponding event connection factory from context
      * @param pWorkerMode
      *            {@link WorkerMode}
      * @param pTarget
      *            communication scope
      */
-    public <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pReceiver, final WorkerMode pWorkerMode,
+    public <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pHandler, final WorkerMode pWorkerMode,
             final Target pTarget) {
 
         LOGGER.debug("Subscribing to event {} with target {} and mode {}", pEvt.getName(), pTarget, pWorkerMode);
@@ -132,14 +134,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         Map<String, SimpleMessageListenerContainer> tenantContainers = new HashMap<>();
 
-        listeners.put(pReceiver.getClass(), tenantContainers);
-        handledEvents.put(pReceiver.getClass(), pEvt);
-        handlerInstances.put(pReceiver.getClass(), pReceiver);
+        listeners.put(pHandler.getClass(), tenantContainers);
+        handledEvents.put(pHandler.getClass(), pEvt);
+        handlerInstances.put(pHandler.getClass(), pHandler);
 
         for (final String tenant : tenants) {
             // CHECKSTYLE:OFF
             final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, tenant,
-                                                                                                      pReceiver,
+                                                                                                      pHandler,
                                                                                                       pWorkerMode,
                                                                                                       pTarget);
             tenantContainers.put(tenant, container);
@@ -160,7 +162,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      *            event we want to listen to
      * @param pTenant
      *            Tenant to listen to
-     * @param pReceiver
+     * @param pHandler
      *            handler provided by user to handle the event reception
      * @param pWorkerMode
      *            communication Mode
@@ -169,7 +171,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @return a container fully parameterized to listen to the corresponding event for the specified tenant
      */
     public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<?> pEvt,
-            final String pTenant, final IHandler<?> pReceiver, final WorkerMode pWorkerMode, final Target pTarget) {
+            final String pTenant, final IHandler<?> pHandler, final WorkerMode pWorkerMode, final Target pTarget) {
 
         // Retrieve tenant vhost connection factory
         ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(pTenant);
@@ -178,7 +180,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         try {
             virtualHostAdmin.bind(pTenant);
             Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pReceiver.getType(), pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pHandler.getType(), pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
         } finally {
             virtualHostAdmin.unbind();
@@ -188,7 +190,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
 
-        final MessageListenerAdapter messageListener = new MessageListenerAdapter(pReceiver, DEFAULT_HANDLING_METHOD);
+        final MessageListenerAdapter messageListener = new MessageListenerAdapter(pHandler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(jackson2JsonMessageConverter);
         container.setMessageListener(messageListener);
         container.addQueues(queue);
@@ -204,14 +206,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     protected void addTenantListeners(String tenant) {
         if (listeners != null) {
             for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
-                Class<?> receiverClass = entry.getKey();
-                Class<?> eventClass = handledEvents.get(receiverClass);
-                IHandler<?> handler = handlerInstances.get(receiverClass);
+                Class<?> handlerClass = entry.getKey();
+                Class<?> eventClass = handledEvents.get(handlerClass);
+                IHandler<?> handler = handlerInstances.get(handlerClass);
                 SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(eventClass, tenant,
                                                                                                     handler,
                                                                                                     WorkerMode.ALL,
                                                                                                     EventUtils
-                                                                                                            .getCommunicationTarget(receiverClass));
+                                                                                                            .getCommunicationTarget(handlerClass));
                 entry.getValue().put(tenant, container);
                 container.start();
             }
