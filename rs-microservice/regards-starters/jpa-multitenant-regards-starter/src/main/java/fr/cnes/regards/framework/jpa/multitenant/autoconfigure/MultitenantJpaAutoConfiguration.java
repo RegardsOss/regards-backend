@@ -64,8 +64,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter(value = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
@@ -218,6 +220,7 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
         hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
+
         if (configuration.getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
         } else {
