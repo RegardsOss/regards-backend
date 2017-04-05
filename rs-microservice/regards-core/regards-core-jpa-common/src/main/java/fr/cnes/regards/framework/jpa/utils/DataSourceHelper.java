@@ -77,21 +77,6 @@ public final class DataSourceHelper {
         return dmDataSource;
     }
 
-    /**
-     *
-     * Create a datasource
-     *
-     * @param pUrl
-     *            Adress to access database
-     * @param pDriverClassName
-     *            Driver class name
-     * @param pUserName
-     *            user name
-     * @param pPassword
-     *            password
-     * @return DataSource
-     * @since 1.0-SNAPSHOT
-     */
     public static DataSource createDataSource(final String pUrl, final String pDriverClassName, final String pUserName,
             final String pPassword) {
 
@@ -99,5 +84,4 @@ public final class DataSourceHelper {
                 .username(pUserName).password(pPassword).url(pUrl);
         return factory.build();
     }
-
 }

@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -201,21 +203,73 @@ public class RegardsAmqpAdmin {
     /**
      * Purge the queue that manages the specified event
      *
-     * @param pType
-     *            handler type for subscribable events, else event type
+     * @param <E>
+     *            event type to purge
+     * @param pEventType
+     *            event type
      * @param noWait
      *            true to not await completion of the purge
      */
-    public void purgeQueue(Class<?> pType, boolean noWait) {
-        WorkerMode mode;
-        if (ISubscribable.class.isAssignableFrom(pType)) {
-            mode = WorkerMode.ALL;
-        } else if (IPollable.class.isAssignableFrom(pType)) {
-            mode = WorkerMode.SINGLE;
-        } else {
-            throw new UnsupportedOperationException();
-        }
-        rabbitAdmin.purgeQueue(getQueueName(pType, mode, EventUtils.getCommunicationTarget(pType)), noWait);
+    public <E extends IPollable> void purgeQueue(Class<E> pEventType, boolean noWait) {
+        rabbitAdmin
+                .purgeQueue(getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)),
+                            noWait);
+    }
+
+    /**
+     * Purge the queue that manages the specified event
+     *
+     * @param <E>
+     *            event type to purge
+     * @param <H>
+     *            handler that manages events
+     * @param pEventType
+     *            event type
+     * @param pHandlerType
+     *            handler type for subscribable events
+     * @param noWait
+     *            true to not await completion of the purge
+     */
+    public <E extends ISubscribable, H extends IHandler<E>> void purgeQueue(Class<E> pEventType, Class<H> pHandlerType,
+            boolean noWait) {
+        rabbitAdmin
+                .purgeQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
+                            noWait);
+    }
+
+    public <E extends IPollable> Properties getQueueProperties(Class<E> pEventType) {
+        return rabbitAdmin.getQueueProperties(getQueueName(pEventType, WorkerMode.SINGLE,
+                                                           EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends ISubscribable, H extends IHandler<E>> Properties getQueueProperties(Class<E> pEventType,
+            Class<H> pHandlerType) {
+        return rabbitAdmin.getQueueProperties(getQueueName(pHandlerType, WorkerMode.ALL,
+                                                           EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends IPollable> void deleteQueue(Class<E> pEventType) {
+        rabbitAdmin.deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE,
+                                             EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType,
+            Class<H> pHandlerType) {
+        rabbitAdmin
+                .deleteQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends IPollable> void deleteQueue(Class<E> pEventType, final boolean unused, final boolean empty) {
+        rabbitAdmin
+                .deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)),
+                             unused, empty);
+    }
+
+    public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType, Class<H> pHandlerType,
+            final boolean unused, final boolean empty) {
+        rabbitAdmin
+                .deleteQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
+                             unused, empty);
     }
 
     /**
