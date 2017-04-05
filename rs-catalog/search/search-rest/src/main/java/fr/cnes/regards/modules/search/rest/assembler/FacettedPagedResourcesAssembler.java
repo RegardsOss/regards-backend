@@ -21,11 +21,13 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
 /**
  * Custom {@link PagedResourcesAssembler}
  *
+ * @param <T> The type wrapped by the resources
  * @author Xavier-Alexandre Brochard
  */
 public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<T> {
 
     /**
+     * Constructor
      * @param pResolver
      * @param pBaseUri
      */
@@ -34,6 +36,15 @@ public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<
         super(pResolver, pBaseUri);
     }
 
+    /**
+     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a {@link PageMetadata} instance and
+     * wrapping the contained elements into {@link Resource} instances. Will add pagination links based on the given the
+     * self link.
+     *
+     * @param page must not be {@literal null}.
+     * @param selfLink must not be {@literal null}.
+     * @return
+     */
     public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> pFacetPage) {
         PagedResources<Resource<T>> pagedResources = super.toResource(pFacetPage);
         Set<IFacet<?>> facets = pFacetPage.getFacets();
