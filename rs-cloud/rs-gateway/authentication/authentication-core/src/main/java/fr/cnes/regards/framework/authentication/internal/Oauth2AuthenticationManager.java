@@ -119,7 +119,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             final Map<String, String> detailsMap = (Map<String, String>) details;
             scope = detailsMap.get("scope");
             if (scope == null) {
-                throw new BadCredentialsException("Attribute scope is missing");
+                final String message = "Attribute scope is missing";
+                LOG.error(message);
+                throw new BadCredentialsException(message);
             }
         } else {
             final String message = "Invalid scope";
@@ -172,6 +174,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         if ((token != null) && token.isAuthenticated()) {
             createMissingAccount(token);
         }
+        
+        LOG.info("The user <{}> is authenticate for the project {}", pLogin, pScope);
 
         return token;
     }
