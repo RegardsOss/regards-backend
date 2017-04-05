@@ -44,8 +44,9 @@ import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
  */
 public class RegardsQueryParserTest {
 
-    private static String DEFAULT_FIELD = "defaultField";
-
+    /**
+     * Class under test
+     */
     private static RegardsQueryParser parser;
 
     /**
@@ -53,12 +54,24 @@ public class RegardsQueryParserTest {
      */
     private static final String TENANT = "tenant";
 
+    /**
+     * AMQP events subscriber
+     */
     private static ISubscriber subscriber;
 
+    /**
+     * Mock client providing {@link AttributeModel}s
+     */
     private static IAttributeModelClient attributeModelClient;
 
+    /**
+     * Retrieve current tenant at runtime
+     */
     private static IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * Provide {@link AttributeModel}s with caching facilities
+     */
     private static IAttributeModelCache attributeModelCache;
 
     @BeforeClass
@@ -67,8 +80,7 @@ public class RegardsQueryParserTest {
         attributeModelClient = Mockito.mock(IAttributeModelClient.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
-        attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
-                runtimeTenantResolver);
+        attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber, runtimeTenantResolver);
 
         ResponseEntity<List<Resource<AttributeModel>>> clientResponse = SampleDataUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE;
         Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(clientResponse);
@@ -82,7 +94,7 @@ public class RegardsQueryParserTest {
         String field = SampleDataUtils.BOOLEAN_FIELD;
         Boolean value = true;
         String term = field + ":" + value;
-        parser.parse(term, DEFAULT_FIELD);
+        parser.parse(term);
     }
 
     @Test
@@ -91,7 +103,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.INTEGER_FIELD;
         final Integer value = 8848;
         final String term = field + ":" + value;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof IntMatchCriterion);
@@ -109,7 +121,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.DOUBLE_FIELD;
         final Double value = 145.6;
         final String term = field + ":" + value;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -128,7 +140,7 @@ public class RegardsQueryParserTest {
     public void stringMatchTest() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "harrypotter";
-        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key + ":" + val);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -145,7 +157,7 @@ public class RegardsQueryParserTest {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "\"a phrase query\"";
         final String expectedAfterParse = "a phrase query";
-        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key + ":" + val);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -161,7 +173,7 @@ public class RegardsQueryParserTest {
     public void wildcardLeading() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "*potter";
-        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key + ":" + val);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -177,7 +189,7 @@ public class RegardsQueryParserTest {
     public void wildcardTrailing() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "harry*";
-        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key + ":" + val);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -193,7 +205,7 @@ public class RegardsQueryParserTest {
     public void wildcardsAound() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "*rry*";
-        final ICriterion criterion = parser.parse(key + ":" + val, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key + ":" + val);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -209,7 +221,7 @@ public class RegardsQueryParserTest {
     public void wildcardMiddleTest() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "har*ter";
-        parser.parse(key + ":" + val, DEFAULT_FIELD);
+        parser.parse(key + ":" + val);
     }
 
     @Test
@@ -217,7 +229,7 @@ public class RegardsQueryParserTest {
     public void andMatchTest() throws QueryNodeException {
         String key0 = SampleDataUtils.STRING_FIELD;
         String key1 = SampleDataUtils.STRING_FIELD_1;
-        final ICriterion criterion = parser.parse(key0 + ":harrypotter AND " + key1 + ":jkrowling", DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key0 + ":harrypotter AND " + key1 + ":jkrowling");
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof AndCriterion);
 
@@ -232,7 +244,7 @@ public class RegardsQueryParserTest {
     public void orMatchTest() throws QueryNodeException {
         String key0 = SampleDataUtils.STRING_FIELD;
         String key1 = SampleDataUtils.STRING_FIELD_1;
-        final ICriterion criterion = parser.parse(key0 + ":val1 OR " + key1 + ":val2", DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(key0 + ":val1 OR " + key1 + ":val2");
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof OrCriterion);
 
@@ -245,7 +257,7 @@ public class RegardsQueryParserTest {
     @Test(expected = QueryNodeException.class)
     @Purpose("Tests queries like title:harry~")
     public void proximityTest() throws QueryNodeException {
-        parser.parse("field:value~", DEFAULT_FIELD);
+        parser.parse("field:value~");
     }
 
     @Test(expected = QueryNodeException.class)
@@ -257,7 +269,7 @@ public class RegardsQueryParserTest {
         final String upperValue = "starwars";
         final String upperInclusion = "}";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        parser.parse(term, DEFAULT_FIELD);
+        parser.parse(term);
     }
 
     @SuppressWarnings("unchecked")
@@ -270,7 +282,7 @@ public class RegardsQueryParserTest {
         final Integer upperValue = 120;
         final String upperInclusion = "}";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -293,7 +305,7 @@ public class RegardsQueryParserTest {
         final Integer upperValue = 2;
         final String upperInclusion = "]";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -316,7 +328,7 @@ public class RegardsQueryParserTest {
         final Double upperValue = 145d;
         final String upperInclusion = "]";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -339,7 +351,7 @@ public class RegardsQueryParserTest {
         final Long upperValue = 88L;
         final String upperInclusion = "]";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -361,7 +373,7 @@ public class RegardsQueryParserTest {
         final LocalDateTime upperValue = LocalDateTime.now();
         final String upperInclusion = "]";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof DateRangeCriterion);
@@ -382,7 +394,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime upperValue = LocalDateTime.now();
         final String term = field + ":{ * TO " + upperValue + "}";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -401,7 +413,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime upperValue = LocalDateTime.now();
         final String term = field + ":{ * TO " + upperValue + "]";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -420,7 +432,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime lowerValue = LocalDateTime.now();
         final String term = field + ":{" + lowerValue + " TO *}";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -439,7 +451,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime lowerValue = LocalDateTime.now();
         final String term = field + ":[ " + lowerValue + " TO *}";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -459,7 +471,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer upperValue = 1;
         final String term = field + ":{ * TO " + upperValue + "}";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -478,7 +490,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer upperValue = 1;
         final String term = field + ":{ * TO " + upperValue + "]";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -497,7 +509,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer lowerValue = 1;
         final String term = field + ":{" + lowerValue + " TO *}";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -516,7 +528,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer lowerValue = 1;
         final String term = field + ":[ " + lowerValue + " TO *}";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -534,7 +546,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.STRING_FIELD;
         final String value = "harrypotter";
         final String term = "(" + field + ":" + value + ")";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -549,7 +561,7 @@ public class RegardsQueryParserTest {
     public void parenthesisAroundOrTest() throws QueryNodeException {
         final String field = SampleDataUtils.STRING_FIELD;
         final String term = field + ":(harrypotter OR starwars)";
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof OrCriterion);
@@ -561,7 +573,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.STRING_ARRAY_FIELD;
         final String value = "danielradcliffe";
         final String term = field + ":" + value;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -577,7 +589,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.INTEGER_ARRAY_FIELD;
         final Integer value = 2001;
         final String term = field + ":" + value;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof IntMatchCriterion);
@@ -594,7 +606,7 @@ public class RegardsQueryParserTest {
         final String field = SampleDataUtils.DOUBLE_ARRAY_FIELD;
         final Double value = 159d;
         final String term = field + ":" + value;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof RangeCriterion);
@@ -617,7 +629,7 @@ public class RegardsQueryParserTest {
         final String lowerInclusion = "[";
         final String upperInclusion = "]";
         final String term = field + ":" + lowerInclusion + lowerValue + " TO " + upperValue + upperInclusion;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof DateRangeCriterion);
@@ -635,7 +647,7 @@ public class RegardsQueryParserTest {
     @Purpose("Tests queries like tags:plop AND tags:(A\\:A OR B\\:B OR C\\:C)")
     public void handlesSmallRealLifeQuery() throws QueryNodeException {
         final String term = SampleDataUtils.SMALL_REAL_LIFE_QUERY;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof AndCriterion);
@@ -650,7 +662,7 @@ public class RegardsQueryParserTest {
     @Purpose("Checks that escaping special characters in not needed when using double quotes")
     public void escapingNotNeededWhenDoubleQuotes() throws QueryNodeException {
         final String term = SampleDataUtils.UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE;
-        final ICriterion criterion = parser.parse(term, DEFAULT_FIELD);
+        final ICriterion criterion = parser.parse(term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
