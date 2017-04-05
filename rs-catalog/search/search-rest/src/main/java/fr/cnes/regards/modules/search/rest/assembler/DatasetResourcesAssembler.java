@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.search.rest.CatalogController;
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class DatasetResourcesAssembler extends PagedResourcesAssembler<Dataset> {
+public class DatasetResourcesAssembler extends PagedResourcesAssembler<Dataset> implements ILinksAdder {
 
     /**
      * Logger
@@ -56,16 +56,15 @@ public class DatasetResourcesAssembler extends PagedResourcesAssembler<Dataset> 
     @Override
     public PagedResources<Resource<Dataset>> toResource(Page<Dataset> pElements) {
         PagedResources<Resource<Dataset>> pagedResources = super.toResource(pElements);
-        pagedResources.forEach(resource -> addLinks(resource));
+        pagedResources.forEach(resource -> addLinks(resource)); // NOSONAR
         return pagedResources;
     }
 
-    /**
-     * Add links to the passed resource
-     * @param pResource
-     * @return the resource augmented with links
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.search.rest.assembler.ILinksAdder#addLinks(org.springframework.hateoas.Resource)
      */
-    private Resource<Dataset> addLinks(Resource<Dataset> pResource) {
+    @Override
+    public Resource<Dataset> addLinks(Resource<Dataset> pResource) {
         UniformResourceName ipId = pResource.getContent().getIpId();
 
         resourceService.addLink(pResource, CatalogController.class, "getDataset", LinkRels.SELF,

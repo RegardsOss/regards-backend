@@ -26,6 +26,10 @@ import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeMod
  */
 public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriterionQueryBuilder {
 
+    /**
+     * Constructor
+     * @param pAttributeModelCache provides access to attribute models with caching facilities
+     */
     public RegardsQueryTreeBuilder(IAttributeModelCache pAttributeModelCache) {
 
         // Register builder

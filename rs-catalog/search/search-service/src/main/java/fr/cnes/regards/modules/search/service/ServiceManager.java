@@ -25,16 +25,26 @@ import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
  * Class managing the execution of {@link IService} plugins
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Service
 @MultitenantTransactional
 public class ServiceManager implements IServiceManager {
 
+    /**
+     * The service managing plugins
+     */
     private final IPluginService pluginService;
 
+    /**
+     * Service linking plugins with datasets
+     */
     private final ILinkPluginsDatasetsService linkPluginsDatasetsService;
 
+    /**
+     * Constructor
+     * @param pPluginService the service managing plugins
+     * @param pLinkPluginsDatasetsService service linking plugins with datasets
+     */
     public ServiceManager(IPluginService pPluginService, ILinkPluginsDatasetsService pLinkPluginsDatasetsService) {
         pluginService = pPluginService;
         linkPluginsDatasetsService = pLinkPluginsDatasetsService;
@@ -55,7 +65,7 @@ public class ServiceManager implements IServiceManager {
      *             thrown is the pDatasetId does not represent any Dataset.
      */
     @Override
-    public Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope)
+    public Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope) // NOSONAR
             throws EntityNotFoundException {
         LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
         Set<PluginConfiguration> servicesConf = datasetPlugins.getServices();
@@ -70,7 +80,6 @@ public class ServiceManager implements IServiceManager {
                         throw new RuntimeException(e);
                     }
                 }).collect(Collectors.toSet());
-
             case ONE:
                 return servicesConf.stream().filter(sc -> {
                     try {
@@ -81,7 +90,6 @@ public class ServiceManager implements IServiceManager {
                         throw new RuntimeException(e);
                     }
                 }).collect(Collectors.toSet());
-
             case MANY:
                 return servicesConf.stream().filter(sc -> {
                     try {

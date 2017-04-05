@@ -42,6 +42,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IAccessRightFilter accessRightFilter;
 
     /**
+     * Constructor
      * @param pSearchService
      * @param pQueryParser
      * @param pAccessRightFilter

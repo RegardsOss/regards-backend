@@ -20,12 +20,13 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.search.domain.ServiceScope;
 import fr.cnes.regards.modules.search.service.IServiceManager;
 
 /**
+ * REST Controller handling operations on services.
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @RestController
 @RequestMapping(ServicesController.PATH_SERVICES)
@@ -38,6 +39,13 @@ public class ServicesController {
     @Autowired
     private IServiceManager serviceManager;
 
+    /**
+     * Retrieve all services configured for a dataset and a given scope
+     * @param pDatasetId the id of the {@link Dataset}
+     * @param pServiceScope the {@link ServiceScope}
+     * @return the list of services configured for the given dataset and the given scope
+     * @throws EntityNotFoundException
+     */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(
@@ -49,15 +57,12 @@ public class ServicesController {
     }
 
     /**
-     *
      * Apply the given service.
-     *
-     * @param pServiceName
-     *            the {@link PluginConfiguration}'s label to be executed
-     * @param pQuery
-     *            the query to be interpreted to get the objects on which apply the service
-     * @param pQueryParameters
-     * @return
+     * @param pDatasetId the id of the {@link Dataset}
+     * @param pServiceName the {@link PluginConfiguration}'s label to be executed
+     * @param pQuery the query to be interpreted to get the objects on which apply the service
+     * @param pQueryParameters the query parameters
+     * @return whatever is returned by the given service
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET, path = PATH_SERVICE_NAME)

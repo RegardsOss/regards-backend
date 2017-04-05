@@ -44,10 +44,17 @@ public class LinkPluginsDatasets {
             inverseJoinColumns = @JoinColumn(name = "service_configuration_id"))
     private Set<PluginConfiguration> services;
 
+    /**
+     * Only there for (de)serialization purpose and hibernate
+     */
     protected LinkPluginsDatasets() {
-        // only there for (de)serialization purpose and hibernate
     }
 
+    /**
+     * Constructor
+     * @param pDatasetId Id of the dataset which is concerned by this mapping
+     * @param pServices Ids of plugin configuration of type IService
+     */
     public LinkPluginsDatasets(Long pDatasetId, @PluginServices Set<PluginConfiguration> pServices) {
         super();
         datasetId = pDatasetId;

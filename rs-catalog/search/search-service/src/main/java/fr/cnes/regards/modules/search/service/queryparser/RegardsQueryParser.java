@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.service.queryparser.builder.RegardsQueryTreeBuilder;
 
@@ -47,6 +48,10 @@ public class RegardsQueryParser extends QueryParserHelper implements CommonQuery
      */
     private static final String DEFAULT_FIELD = "defaultField";
 
+    /**
+     * Constructor
+     * @param pAttributeModelCache provides access to {@link AttributeModel}s with caching facilities
+     */
     public RegardsQueryParser(@Autowired IAttributeModelCache pAttributeModelCache) {
         super(new StandardQueryConfigHandler(), new StandardSyntaxParser(),
               new StandardQueryNodeProcessorPipeline(null), new RegardsQueryTreeBuilder(pAttributeModelCache));

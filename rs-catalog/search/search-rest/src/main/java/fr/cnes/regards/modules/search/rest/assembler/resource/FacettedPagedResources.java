@@ -12,11 +12,15 @@ import org.springframework.hateoas.PagedResources;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 
 /**
- *
+ * Extend the {@link PagedResources} to add a "facets" field.
+ * @param <T> The type of the resoures
  * @author Xavier-Alexandre Brochard
  */
 public class FacettedPagedResources<T> extends PagedResources<T> {
 
+    /**
+     * The set of facets
+     */
     private final Set<IFacet<?>> facets;
 
     /**
@@ -38,38 +42,43 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
         return facets;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.hateoas.PagedResources#equals(java.lang.Object)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public boolean equals(Object pObj) {
-
-        if (this == pObj) {
-            return true;
-        }
-
-        if ((pObj == null) || !pObj.getClass().equals(getClass())) {
-            return false;
-        }
-
-        FacettedPagedResources<T> that = (FacettedPagedResources<T>) pObj;
-
-        return super.equals(pObj) && (this.facets == that.facets);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.hateoas.PagedResources#hashCode()
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
      */
     @Override
     public int hashCode() {
+        final int prime = 31;
         int result = super.hashCode();
-        result += this.facets == null ? 0 : 31 * this.facets.hashCode();
+        result = (prime * result) + ((facets == null) ? 0 : facets.hashCode());
         return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FacettedPagedResources<?> other = (FacettedPagedResources<?>) obj;
+        if (facets == null) {
+            if (other.facets != null) {
+                return false;
+            }
+        } else if (!facets.equals(other.facets)) {
+            return false;
+        }
+        return true;
     }
 
     /*

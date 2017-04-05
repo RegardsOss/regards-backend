@@ -37,6 +37,14 @@ public interface IServiceManager {
     Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope)
             throws EntityNotFoundException;
 
+    /**
+     * Apply the service
+     * @param pDatasetId
+     * @param pServiceName
+     * @param pDynamicParameters
+     * @return the result of the service call wrapped in a resonse entity
+     * @throws ModuleException
+     */
     ResponseEntity<?> apply(Long pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
             throws ModuleException;
 

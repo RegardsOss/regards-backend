@@ -15,8 +15,6 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -30,8 +28,14 @@ import fr.cnes.regards.modules.search.domain.IRepresentation;
  */
 public class IRepresentationHttpMessageConverter implements HttpMessageConverter<AbstractEntity> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(IRepresentationHttpMessageConverter.class);
 
+    /**
+     * Plugin service
+     */
     private final IPluginService pluginService;
 
     /**
@@ -41,6 +45,13 @@ public class IRepresentationHttpMessageConverter implements HttpMessageConverter
      */
     private final Map<MediaType, PluginConfiguration> enabledRepresentationPluginMap;
 
+    /**
+     * Constructor
+     * @param pPluginService Plugin service
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws ClassNotFoundException
+     */
     public IRepresentationHttpMessageConverter(IPluginService pPluginService)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         super();
@@ -74,14 +85,14 @@ public class IRepresentationHttpMessageConverter implements HttpMessageConverter
 
     @Override
     public AbstractEntity read(Class<? extends AbstractEntity> pClazz, HttpInputMessage pInputMessage)
-            throws IOException, HttpMessageNotReadableException {
+            throws IOException {
         // should never be called as this converter cannot read anything
         return null;
     }
 
     @Override
     public void write(AbstractEntity entity, MediaType pContentType, HttpOutputMessage pOutputMessage)
-            throws IOException, HttpMessageNotWritableException {
+            throws IOException {
         PluginConfiguration confToUse = enabledRepresentationPluginMap.get(pContentType);
         try {
             IRepresentation pluginToUse = pluginService.getPlugin(confToUse.getId());
