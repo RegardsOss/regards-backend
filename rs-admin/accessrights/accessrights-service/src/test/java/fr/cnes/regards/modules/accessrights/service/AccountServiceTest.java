@@ -113,11 +113,10 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a not existing account
      *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
-     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
-     *             passed account<br>
+     * @throws EntityException <br>
+     * {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     * {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of passed
+     * account<br>
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system allows to create a new account.")
@@ -135,11 +134,10 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a account with different id thant the passed one.
      *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
-     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
-     *             passed account<br>
+     * @throws EntityException <br>
+     * {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     * {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of passed
+     * account<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
@@ -161,11 +159,10 @@ public class AccountServiceTest {
     /**
      * Check that the system allows to update an account.
      *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
-     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
-     *             passed account<br>
+     * @throws EntityException <br>
+     * {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     * {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of passed
+     * account<br>
      */
     @Test
     @Purpose("Check that the system allows to update an account.")
@@ -184,4 +181,5 @@ public class AccountServiceTest {
         // Check the repository was called to save
         Mockito.verify(accountRepository).save(Mockito.refEq(account));
     }
+
 }

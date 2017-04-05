@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.instance;
 
-import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,12 +28,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 @InstanceEntity
 @Entity(name = "T_ACCOUNT")
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")
-public class Account implements IIdentifiable<Long>, Serializable {
-
-    /**
-     * Generated serial
-     */
-    private static final long serialVersionUID = 6641844290657477573L;
+public class Account implements IIdentifiable<Long> {
 
     @Transient
     private static final int RANDOM_STRING_LENGTH = 10;
@@ -44,7 +39,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     private Long id;
 
     @Email
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @NotBlank
@@ -58,6 +53,9 @@ public class Account implements IIdentifiable<Long>, Serializable {
     @GsonIgnore
     @Column(name = "password")
     private String password;
+
+    @Column(name = "password_update_date")
+    private LocalDateTime passwordUpdateDate;
 
     @NotNull
     @Column(name = "status")
@@ -81,14 +79,10 @@ public class Account implements IIdentifiable<Long>, Serializable {
     /**
      * Creates new Account
      *
-     * @param pEmail
-     *            the email
-     * @param pFirstName
-     *            the first name
-     * @param pLastName
-     *            the last name
-     * @param pPassword
-     *            the password
+     * @param pEmail the email
+     * @param pFirstName the first name
+     * @param pLastName the last name
+     * @param pPassword the password
      */
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
         super();
@@ -97,7 +91,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;
-        password = pPassword;
+        setPassword(pPassword);
     }
 
     /**
@@ -109,8 +103,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
@@ -124,8 +117,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pEmail
-     *            the email to set
+     * @param pEmail the email to set
      */
     public void setEmail(final String pEmail) {
         email = pEmail;
@@ -139,8 +131,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pFirstName
-     *            the firstName to set
+     * @param pFirstName the firstName to set
      */
     public void setFirstName(final String pFirstName) {
         firstName = pFirstName;
@@ -154,8 +145,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pLastName
-     *            the lastName to set
+     * @param pLastName the lastName to set
      */
     public void setLastName(final String pLastName) {
         lastName = pLastName;
@@ -169,10 +159,10 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pPassword
-     *            the password to set
+     * @param pPassword the password to set
      */
     public void setPassword(final String pPassword) {
+        passwordUpdateDate = LocalDateTime.now();
         password = pPassword;
     }
 
@@ -184,8 +174,7 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pStatus
-     *            the status to set
+     * @param pStatus the status to set
      */
     public void setStatus(final AccountStatus pStatus) {
         status = pStatus;
@@ -199,11 +188,14 @@ public class Account implements IIdentifiable<Long>, Serializable {
     }
 
     /**
-     * @param pCode
-     *            the code to set
+     * @param pCode the code to set
      */
     public void setCode(final String pCode) {
         code = pCode;
+    }
+
+    public LocalDateTime getPasswordUpdateDate() {
+        return passwordUpdateDate;
     }
 
     @Override
