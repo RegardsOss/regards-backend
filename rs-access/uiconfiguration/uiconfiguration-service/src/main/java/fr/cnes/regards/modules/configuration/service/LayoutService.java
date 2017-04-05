@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -32,6 +33,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.configuration.dao.ILayoutRepository;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
+import fr.cnes.regards.modules.configuration.service.exception.InitProjectLayoutException;
+import fr.cnes.regards.modules.configuration.service.exception.MissingResourceException;
 
 /**
  *
@@ -81,6 +84,9 @@ public class LayoutService implements ILayoutService {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    /**
+     * Init
+     */
     @PostConstruct
     public void init() {
         // FIXME : not usefull for instance access / disable subscription
@@ -109,14 +115,21 @@ public class LayoutService implements ILayoutService {
             layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             layout.setLayout(layoutConf);
             runtimeTenantResolver.forceTenant(pTenant);
-
-            try {
-                retrieveLayout(LayoutDefaultApplicationIds.USER.toString());
-            } catch (final EntityNotFoundException e) {
-                repository.save(layout);
-            }
+            tryRetrieveLayout(layout);
         } catch (final IOException e) {
-            throw new RuntimeException("Error reading layout default configuration file", e);
+            throw new InitProjectLayoutException(e);
+        }
+    }
+
+    /**
+     * @param layout
+     */
+    private void tryRetrieveLayout(final Layout layout) {
+        try {
+            retrieveLayout(LayoutDefaultApplicationIds.USER.toString());
+        } catch (final EntityNotFoundException e) {
+            repository.save(layout);
+            LOG.info("Could not retrieve the project layout", e);
         }
     }
 
@@ -127,7 +140,7 @@ public class LayoutService implements ILayoutService {
     }
 
     @Override
-    public Layout saveLayout(final Layout pLayout) throws EntityAlreadyExistsException, EntityInvalidException {
+    public Layout saveLayout(final Layout pLayout) throws EntityException {
         if (repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
             throw new EntityAlreadyExistsException(pLayout.getApplicationId());
         }
@@ -143,7 +156,7 @@ public class LayoutService implements ILayoutService {
     }
 
     @Override
-    public Layout updateLayout(final Layout pLayout) throws EntityNotFoundException, EntityInvalidException {
+    public Layout updateLayout(final Layout pLayout) throws EntityException {
 
         // Check layut json format
         final Gson gson = new Gson();
@@ -160,7 +173,6 @@ public class LayoutService implements ILayoutService {
     }
 
     /**
-     *
      * Read the default Layout configuration file as a string.
      *
      * @return {@link Layout} as a string
@@ -169,8 +181,7 @@ public class LayoutService implements ILayoutService {
      */
     private String readDefaultLayoutFileResource() throws IOException {
         if ((defaultApplicationLayoutResource == null) || !defaultApplicationLayoutResource.exists()) {
-            throw new RuntimeException(
-                    "Error reading layout default configuration file" + defaultApplicationLayoutResource.getFilename());
+            throw new MissingResourceException();
         }
         try (BufferedReader buffer = new BufferedReader(
                 new InputStreamReader(defaultApplicationLayoutResource.getInputStream()))) {
