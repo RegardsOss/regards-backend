@@ -14,11 +14,11 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 
 /**
- *
  * Plugin management service.
  *
  * @author Christophe Mertz
  * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  */
 public interface IPluginService {
 
@@ -211,8 +211,10 @@ public interface IPluginService {
     public PluginMetaData checkPluginClassName(Class<?> pClass, String pPluginClassName) throws EntityInvalidException;
 
     /**
-     * get a PluginConfiguration according to its unique label
-     * 
+     * Get a PluginConfiguration according to its unique label
+     *
+     * @param pConfigurationLabel the configuration label
+     * @return the plugin configuration
      * @throws EntityNotFoundException
      */
     PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel) throws EntityNotFoundException;

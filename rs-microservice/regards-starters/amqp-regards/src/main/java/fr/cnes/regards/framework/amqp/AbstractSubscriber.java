@@ -213,7 +213,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                                                                                     handler,
                                                                                                     WorkerMode.ALL,
                                                                                                     EventUtils
-                                                                                                            .getCommunicationTarget(handlerClass));
+                                                                                                            .getCommunicationTarget(eventClass));
                 entry.getValue().put(tenant, container);
                 container.start();
             }
