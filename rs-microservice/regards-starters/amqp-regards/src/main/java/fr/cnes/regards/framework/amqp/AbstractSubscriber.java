@@ -60,14 +60,19 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
     /**
-     * Reference to running listeners per event and tenant
+     * Reference to running listeners per handlers and tenants
      */
     private final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
 
     /**
-     * Reference to handler per event to register new tenant listener at runtime
+     * Reference to events managed by handlers
      */
-    private final Map<Class<?>, IHandler<?>> handlers;
+    private final Map<Class<?>, Class<?>> handledEvents;
+
+    /**
+     * Reference to instances of handlers
+     */
+    private final Map<Class<?>, IHandler<?>> handlerInstances;
 
     public AbstractSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
             Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
@@ -76,7 +81,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
         pJackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
         listeners = new HashMap<>();
-        handlers = new HashMap<>();
+        handledEvents = new HashMap<>();
+        handlerInstances = new HashMap<>();
     }
 
     @Override
@@ -125,8 +131,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Set<String> tenants = resolveTenants();
 
         Map<String, SimpleMessageListenerContainer> tenantContainers = new HashMap<>();
-        listeners.put(pEvt, tenantContainers);
-        handlers.put(pEvt, pReceiver);
+
+        listeners.put(pReceiver.getClass(), tenantContainers);
+        handledEvents.put(pReceiver.getClass(), pEvt);
+        handlerInstances.put(pReceiver.getClass(), pReceiver);
 
         for (final String tenant : tenants) {
             // CHECKSTYLE:OFF
@@ -196,12 +204,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     protected void addTenantListeners(String tenant) {
         if (listeners != null) {
             for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
-                Class<?> eventClass = entry.getKey();
+                Class<?> receiverClass = entry.getKey();
+                Class<?> eventClass = handledEvents.get(receiverClass);
+                IHandler<?> handler = handlerInstances.get(receiverClass);
                 SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(eventClass, tenant,
-                                                                                                    handlers.get(eventClass),
+                                                                                                    handler,
                                                                                                     WorkerMode.ALL,
                                                                                                     EventUtils
-                                                                                                            .getCommunicationTarget(eventClass));
+                                                                                                            .getCommunicationTarget(receiverClass));
                 entry.getValue().put(tenant, container);
                 container.start();
             }
