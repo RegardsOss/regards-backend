@@ -83,8 +83,10 @@ public class LogbackAppenderTest {
 
         // initialize the runtime tenant for the message to publish
         runtimeTenantResolver.forceTenant(defaultTenant);
-        rabbitVirtualHostAdmin.addVhost(defaultTenant);
         jwtService.injectToken(defaultTenant, DEFAULT_ROLE, DEFAULT_USER);
+
+        rabbitVirtualHostAdmin.addVhost(defaultTenant);
+        rabbitVirtualHostAdmin.addVhost(otherTenant);
 
         // before each test, reset the LogEvent received
         receiverLogEvent.reset();
@@ -101,6 +103,7 @@ public class LogbackAppenderTest {
 
         final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
+        Assert.assertTrue(!wrapperReceivedEvents.isEmpty());
 
         // control the uniq log event received
         Assert.assertEquals(1, wrapperReceivedEvents.size());
@@ -125,6 +128,7 @@ public class LogbackAppenderTest {
 
         final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
+        Assert.assertTrue(!wrapperReceivedEvents.isEmpty());
 
         // control the log event
         Assert.assertEquals(3, wrapperReceivedEvents.size());
@@ -170,7 +174,6 @@ public class LogbackAppenderTest {
         LOGGER.info(msg2Send);
 
         runtimeTenantResolver.forceTenant(otherTenant);
-        rabbitVirtualHostAdmin.addVhost(otherTenant);
 
         final String otherMsg2Send = "Hello I'am an other event on a different tenant";
         LOGGER.info(otherMsg2Send);
@@ -180,6 +183,7 @@ public class LogbackAppenderTest {
 
         final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
+        Assert.assertTrue(!wrapperReceivedEvents.isEmpty());
 
         // first event
         TenantWrapper<LogEvent> wrapperReceived = wrapperReceivedEvents.get(0);
@@ -212,6 +216,7 @@ public class LogbackAppenderTest {
 
         final List<TenantWrapper<LogEvent>> wrapperReceivedEvents = receiverLogEvent.getMessages();
         Assert.assertNotNull(wrapperReceivedEvents);
+        Assert.assertTrue(!wrapperReceivedEvents.isEmpty());
         Assert.assertEquals(n, wrapperReceivedEvents.size());
 
         // first event
