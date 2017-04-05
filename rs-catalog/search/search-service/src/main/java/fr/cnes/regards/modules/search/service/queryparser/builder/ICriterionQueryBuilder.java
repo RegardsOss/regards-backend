@@ -11,8 +11,8 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
  * @author Marc Sordi
- *
  */
+@FunctionalInterface
 public interface ICriterionQueryBuilder extends QueryBuilder {
 
     @Override

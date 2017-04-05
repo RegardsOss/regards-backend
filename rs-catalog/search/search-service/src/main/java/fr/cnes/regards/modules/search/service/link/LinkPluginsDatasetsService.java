@@ -21,7 +21,6 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
  * Service handling properly how the mapping of plugin configurations to datasets is done.
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Service
 public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
@@ -30,6 +29,11 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
     private final IDatasetClient datasetClient;
 
+    /**
+     * Constructor
+     * @param pLinkRepo the repository handling {@link LinkPluginsDatasets}
+     * @param pDatasetClient Feign client providing {@link Dataset}s
+     */
     public LinkPluginsDatasetsService(ILinkPluginsDatasetsRepository pLinkRepo, IDatasetClient pDatasetClient) {
         super();
         linkRepo = pLinkRepo;
