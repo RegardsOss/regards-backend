@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
 import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
+import fr.cnes.regards.modules.search.rest.assembler.PagedDatasetResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
@@ -76,34 +77,39 @@ public class CatalogController {
     static final String PATH = "";
 
     /**
-     * Service performing the search from the query string
+     * Service performing the search from the query string. Autowired by Spring.
      */
     private final ICatalogSearchService catalogSearchService;
 
     /**
-     * Service perfoming the ElasticSearch search directly
+     * Service perfoming the ElasticSearch search directly. Autowired by Spring.
      */
     private final ISearchService searchService;
 
     /**
-     * The resource service
+     * The resource service. Autowired by Spring.
      */
     private final IResourceService resourceService;
 
     /**
-     * The resource assembler to use for abstract entities in order to add facets
+     * The resource assembler to use for abstract entities in order to add facets. Autowired by Spring.
      */
     private final FacettedPagedResourcesAssembler<AbstractEntity> abstractEntityResourcesAssembler;
 
     /**
-     * The resource assembler to use for dataobject in order to add facets
+     * The resource assembler to use for dataobject in order to add facets. Autowired by Spring.
      */
     private final FacettedPagedResourcesAssembler<DataObject> dataobjectResourcesAssembler;
 
     /**
-     * The resource assembler to use for datasets.
+     * The resource assembler to use for paged datasets. Autowired by Spring.
      */
     private final DatasetResourcesAssembler datasetResourcesAssembler;
+
+    /**
+     * The resource assembler to use for datasets. Autowired by Spring.
+     */
+    private final PagedDatasetResourcesAssembler pagedDatasetResourcesAssembler;
 
     /**
      * Get current tenant at runtime and allows tenant forcing. Autowired.
@@ -111,19 +117,22 @@ public class CatalogController {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * @param pCatalogSearchService
-     * @param pSearchService
-     * @param pResourceService
-     * @param pAbstractEntityResourcesAssembler
-     * @param pDataobjectResourcesAssembler
-     * @param pDatasetResourcesAssembler
-     * @param pRuntimeTenantResolver
+     * @param pCatalogSearchService Service performing the search from the query string. Autowired by Spring.
+     * @param pSearchService Service perfoming the ElasticSearch search directly. Autowired by Spring.
+     * @param pResourceService The resource service. Autowired by Spring.
+     * @param pAbstractEntityResourcesAssembler The resource assembler to use for abstract entities in order to add facets. Autowired by Spring.
+     * @param pDataobjectResourcesAssembler The resource assembler to use for dataobject in order to add facets. Autowired by Spring.
+     * @param pDatasetResourcesAssembler The resource assembler to use for paged datasets. Autowired by Spring.
+     * @param pPagedDatasetResourcesAssembler The resource assembler to use for datasets. Autowired by Spring.
+     * @param pRuntimeTenantResolver Get current tenant at runtime and allows tenant forcing. Autowired.
      */
-    public CatalogController(ICatalogSearchService pCatalogSearchService, ISearchService pSearchService,
+    public CatalogController(ICatalogSearchService pCatalogSearchService, ISearchService pSearchService, // NOSONAR
             IResourceService pResourceService,
             FacettedPagedResourcesAssembler<AbstractEntity> pAbstractEntityResourcesAssembler,
             FacettedPagedResourcesAssembler<DataObject> pDataobjectResourcesAssembler,
-            DatasetResourcesAssembler pDatasetResourcesAssembler, IRuntimeTenantResolver pRuntimeTenantResolver) {
+            DatasetResourcesAssembler pDatasetResourcesAssembler,
+            PagedDatasetResourcesAssembler pPagedDatasetResourcesAssembler,
+            IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         catalogSearchService = pCatalogSearchService;
         searchService = pSearchService;
@@ -131,6 +140,7 @@ public class CatalogController {
         abstractEntityResourcesAssembler = pAbstractEntityResourcesAssembler;
         dataobjectResourcesAssembler = pDataobjectResourcesAssembler;
         datasetResourcesAssembler = pDatasetResourcesAssembler;
+        pagedDatasetResourcesAssembler = pPagedDatasetResourcesAssembler;
         runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
@@ -241,8 +251,7 @@ public class CatalogController {
     public ResponseEntity<Resource<Dataset>> getDataset(@Valid @PathVariable("urn") UniformResourceName pUrn)
             throws SearchException {
         Dataset dataset = searchService.get(pUrn);
-        Resource<Dataset> resource = toResource(dataset);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(datasetResourcesAssembler.toResource(dataset), HttpStatus.OK);
     }
 
     /**
@@ -265,7 +274,7 @@ public class CatalogController {
         SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                      EntityType.DATASET);
         Page<Dataset> result = catalogSearchService.search(pQ, searchKey, null, pPageable);
-        return new ResponseEntity<>(datasetResourcesAssembler.toResource(result), HttpStatus.OK);
+        return new ResponseEntity<>(pagedDatasetResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
     /**
