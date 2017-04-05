@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -94,6 +95,56 @@ public class DefaultResourceService implements IResourceService {
 
     protected Link buildLink(final Method pMethod, final String pRel, final Object... pParameterValues) {
         return ControllerLinkBuilder.linkTo(pMethod, pParameterValues).withRel(pRel);
+    }
+
+    /**
+     * Custom way of adding link to a resource handling request params.
+     *
+     * For example, an endpoint like getSomething(@RequestParam String name)
+     * mapped to: "/something"
+     * will generate a link like
+     * "http://someting?name=myName"
+     *
+     * BUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * It cannot handle type conversion, even if you declared the correct Spring {@link Converter}.
+     *
+     * For example, an endpoint like
+     * getSomething(@RequestParam ComplexEntity entity)
+     * mapped to: "/something"
+     * will generate a conversion error, telling that it could not find the appropriate converter,
+     * even if you defined in your classpath a converter implementing Converter<ComplexEntity, String>
+     */
+    @Override
+    public <T, C> void addLinkWithParams(final Resource<T> pResource, final Class<C> pController,
+            final String pMethodName, final String pRel, final MethodParam<?>... pMethodParams) {
+
+        Assert.notNull(pResource);
+        Assert.notNull(pController);
+        Assert.notNull(pMethodName);
+        Assert.notNull(pRel);
+
+        // Prepare method parameters
+        Class<?>[] parameterTypes = null;
+        List<Object> parameterValues = null;
+        if (pMethodParams != null) {
+            parameterTypes = new Class<?>[pMethodParams.length];
+            parameterValues = new ArrayList<>();
+            for (int i = 0; i < pMethodParams.length; i++) {
+                parameterTypes[i] = pMethodParams[i].getParameterType();
+                parameterValues.add(pMethodParams[i].getValue());
+            }
+        }
+
+        try {
+            Method method = getMethod(pController, pMethodName, parameterTypes);
+            C proxyControllerInstance = ControllerLinkBuilder.methodOn(pController);
+            Object invoke = method.invoke(proxyControllerInstance, parameterValues.toArray());
+            Link link = ControllerLinkBuilder.linkTo(invoke).withRel(pRel);
+            pResource.add(link);
+        } catch (Exception e) {
+            // Do not insert link
+            LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
+        }
     }
 
     /**

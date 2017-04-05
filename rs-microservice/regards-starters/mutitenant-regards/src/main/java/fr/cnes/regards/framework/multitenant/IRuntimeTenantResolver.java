@@ -3,13 +3,15 @@
  */
 package fr.cnes.regards.framework.multitenant;
 
+import java.io.Serializable;
+
 /**
  * In a request context, this resolver allows to retrieve request tenant.
  *
  * @author Marc Sordi
  *
  */
-public interface IRuntimeTenantResolver {
+public interface IRuntimeTenantResolver extends Serializable {
 
     /**
      *

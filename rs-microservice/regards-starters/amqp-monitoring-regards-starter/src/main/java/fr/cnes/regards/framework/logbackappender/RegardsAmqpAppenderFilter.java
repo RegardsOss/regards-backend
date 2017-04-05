@@ -21,10 +21,9 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
      * The {@link List} of {@link String} for which the {@link Filter} should not log the event send by a class name
      * containing this {@link String}.
      */
-    private final List<String> includes = Arrays.asList("fr.cnes.regards.framework.modules",
-                                                        "fr.cnes.regards.framework.security",
-                                                        "fr.cnes.regards.framework.logbackappender",
-                                                        "fr.cnes.regards.modules");
+    private final List<String> includes = Arrays
+            .asList("fr.cnes.regards.framework.modules", "fr.cnes.regards.framework.security",
+                    "fr.cnes.regards.framework.logbackappender", "fr.cnes.regards.modules");
 
     /**
      * <code>false</code> if the event should not be log
@@ -39,8 +38,9 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
     @Override
     public FilterReply decide(ILoggingEvent event) {
 
-        if (event.getLevel() != level)
+        if (event.getLevel() != level) {
             return FilterReply.DENY;
+        }
 
         accept = false;
         String loggerName = event.getLoggerName().toLowerCase();
@@ -51,7 +51,7 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
             }
         });
 
-        if (!accept) {
+        if (!accept) { // NOSONAR
             return FilterReply.DENY;
         }
 
@@ -62,6 +62,7 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
         this.level = Level.toLevel(level);
     }
 
+    @Override
     public void start() {
         if (this.level == null) {
             level = Level.INFO;
