@@ -3,8 +3,11 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +19,10 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigured;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidConnectionException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
@@ -42,7 +47,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectConnectionService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectConnectionService.class);
 
     /**
      * JPA Repository to query projects from database
@@ -136,7 +141,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
             projectConnectionRepository.delete(pProjectConnectionId);
         } else {
             final String message = "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists";
-            LOG.error(String.format(message, pProjectConnectionId));
+            LOGGER.error(String.format(message, pProjectConnectionId));
             throw new EntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
         }
     }
@@ -161,24 +166,12 @@ public class ProjectConnectionService implements IProjectConnectionService {
         return connection;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.project.service.IProjectConnectionService#retrieveProjectsConnectionsByProject(org.
-     * springframework.data.domain.Pageable)
-     */
     @Override
     public Page<ProjectConnection> retrieveProjectsConnectionsByProject(final String pProjectName,
             final Pageable pPageable) {
         return projectConnectionRepository.findByProjectName(pProjectName, pPageable);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.project.service.IProjectConnectionService#retrieveProjectConnectionById(java.lang.String)
-     */
     @Override
     public ProjectConnection retrieveProjectConnectionById(final Long pId) throws EntityNotFoundException {
         final Optional<ProjectConnection> result = Optional.ofNullable(projectConnectionRepository.findOne(pId));
@@ -188,6 +181,19 @@ public class ProjectConnectionService implements IProjectConnectionService {
     @Override
     public List<ProjectConnection> retrieveProjectConnection(String pMicroService) throws EntityNotFoundException {
         return projectConnectionRepository.findByMicroservice(pMicroService);
+    }
+
+    @Override
+    public void testProjectConnection(Long pConnectionIdentifier) throws ModuleException {
+        ProjectConnection connection = retrieveProjectConnectionById(pConnectionIdentifier);
+        DataSource dataSource = DataSourceHelper.createDataSource(connection.getUrl(), connection.getDriverClassName(),
+                                                                  connection.getUserName(), connection.getPassword());
+        try {
+            dataSource.getConnection();
+        } catch (SQLException e) {
+            LOGGER.error("Connection test fail", e);
+            throw new InvalidConnectionException(e);
+        }
     }
 
 }
