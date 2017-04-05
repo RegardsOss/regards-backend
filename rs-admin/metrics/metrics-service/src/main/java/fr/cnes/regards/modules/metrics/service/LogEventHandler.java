@@ -39,12 +39,16 @@ public class LogEventHandler implements ILogEventHandler {
     }
 
     public void handle(TenantWrapper<LogEvent> pWrapper) {
-        LogEvent logEvent = pWrapper.getContent();
-        LOGGER.debug("[" + pWrapper.getTenant() + "] a new event received : " + logEvent.toString());
+        try {
+            LogEvent logEvent = pWrapper.getContent();
+            LOGGER.debug("[" + pWrapper.getTenant() + "] a new event received : " + logEvent.toString());
 
-        runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-        LogEventJpa logEventToSave = new LogEventJpa(pWrapper.getContent());
-        logEventRepository.save(logEventToSave);
+            runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+            LogEventJpa logEventToSave = new LogEventJpa(pWrapper.getContent());
+            logEventRepository.save(logEventToSave);
+        } catch (Throwable ex) {
+            LOGGER.error(ex.getMessage(), ex);
+        }
     }
 
 }
