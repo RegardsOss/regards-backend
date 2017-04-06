@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
+
 /**
  * REGARDS authority
  *
@@ -18,17 +20,6 @@ import org.springframework.security.core.GrantedAuthority;
  *
  */
 public class RoleAuthority implements GrantedAuthority {
-
-    /**
-     * Virtual Instance administrator ROLE name
-     */
-    public static final String INSTANCE_ADMIN_VIRTUAL_ROLE = "INSTANCE_ADMIN";
-
-    /**
-     * Virtual Project administrator ROLE name
-     */
-
-    public static final String PROJECT_ADMIN_VIRTUAL_ROLE = "PROJECT_ADMIN";
 
     /**
      * Role prefix
@@ -135,7 +126,7 @@ public class RoleAuthority implements GrantedAuthority {
      */
     public static boolean isSysRole(final String pRoleName) {
         boolean isSysRole = false;
-        if (pRoleName.startsWith(ROLE_PREFIX + SYS_ROLE_PREFIX)) {
+        if (getRoleAuthority(pRoleName).startsWith(ROLE_PREFIX + SYS_ROLE_PREFIX)) {
             isSysRole = true;
         }
         return isSysRole;
@@ -152,7 +143,7 @@ public class RoleAuthority implements GrantedAuthority {
      */
     public static boolean isInstanceAdminRole(final String pRoleName) {
         boolean isInstanceAdminRole = false;
-        if (pRoleName.equals(getRoleAuthority(INSTANCE_ADMIN_VIRTUAL_ROLE))) {
+        if (getRoleAuthority(pRoleName).equals(getRoleAuthority(DefaultRole.INSTANCE_ADMIN.toString()))) {
             isInstanceAdminRole = true;
         }
         return isInstanceAdminRole;
@@ -168,7 +159,7 @@ public class RoleAuthority implements GrantedAuthority {
      * @since 1.0-SNAPSHOT
      */
     public static boolean isProjectAdminRole(final String pRoleName) {
-        return pRoleName.equals(getRoleAuthority(PROJECT_ADMIN_VIRTUAL_ROLE));
+        return getRoleAuthority(pRoleName).equals(getRoleAuthority(DefaultRole.PROJECT_ADMIN.toString()));
     }
 
     @Override
