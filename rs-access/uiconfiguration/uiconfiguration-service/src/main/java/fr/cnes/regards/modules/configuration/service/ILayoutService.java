@@ -5,8 +5,7 @@ package fr.cnes.regards.modules.configuration.service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 
@@ -40,7 +39,7 @@ public interface ILayoutService {
      * @return Layout
      * @since 1.0-SNAPSHOT
      */
-    Layout saveLayout(Layout pLayout) throws EntityAlreadyExistsException, EntityInvalidException;
+    Layout saveLayout(Layout pLayout) throws EntityException;
 
     /**
      *
@@ -50,7 +49,7 @@ public interface ILayoutService {
      * @return Layout
      * @since 1.0-SNAPSHOT
      */
-    Layout updateLayout(Layout pLayout) throws EntityNotFoundException, EntityInvalidException;
+    Layout updateLayout(Layout pLayout) throws EntityException;
 
     /**
      *

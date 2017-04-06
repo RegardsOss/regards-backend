@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -32,6 +33,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.configuration.dao.ILayoutRepository;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
+import fr.cnes.regards.modules.configuration.service.exception.InitProjectLayoutException;
+import fr.cnes.regards.modules.configuration.service.exception.MissingResourceException;
 
 /**
  *
@@ -90,6 +93,9 @@ public class LayoutService implements ILayoutService {
     @Value("${regards.access.multitenant:true}")
     private boolean isMultitenentMicroservice;
 
+    /**
+     * Init
+     */
     @PostConstruct
     public void init() {
         if (isMultitenentMicroservice) {
@@ -122,15 +128,9 @@ public class LayoutService implements ILayoutService {
             final Layout layout = new Layout();
             layout.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             layout.setLayout(layoutConf);
-
-            try {
-                retrieveLayout(LayoutDefaultApplicationIds.PORTAL.toString());
-            } catch (final EntityNotFoundException e) {
-                LOG.info("Initializing new layout for Portal application");
-                repository.save(layout);
-            }
+            tryRetrieveLayout(layout);
         } catch (final IOException e) {
-            throw new RuntimeException("Error reading layout default configuration file", e);
+            throw new InitProjectLayoutException(e);
         }
     }
 
@@ -142,15 +142,21 @@ public class LayoutService implements ILayoutService {
             layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             layout.setLayout(layoutConf);
             runtimeTenantResolver.forceTenant(pTenant);
-
-            try {
-                retrieveLayout(LayoutDefaultApplicationIds.USER.toString());
-            } catch (final EntityNotFoundException e) {
-                LOG.info("Initializing new layout for User application (project {})", pTenant);
-                repository.save(layout);
-            }
+            tryRetrieveLayout(layout);
         } catch (final IOException e) {
-            throw new RuntimeException("Error reading layout default configuration file", e);
+            throw new InitProjectLayoutException(e);
+        }
+    }
+
+    /**
+     * @param layout
+     */
+    private void tryRetrieveLayout(final Layout layout) {
+        try {
+            retrieveLayout(layout.getApplicationId());
+        } catch (final EntityNotFoundException e) {
+            repository.save(layout);
+            LOG.info("Could not retrieve the project layout", e);
         }
     }
 
@@ -161,11 +167,11 @@ public class LayoutService implements ILayoutService {
     }
 
     @Override
-    public Layout saveLayout(final Layout pLayout) throws EntityAlreadyExistsException, EntityInvalidException {
+    public Layout saveLayout(final Layout pLayout) throws EntityException {
         if (repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
             throw new EntityAlreadyExistsException(pLayout.getApplicationId());
         }
-        // Check layut json format
+        // Check layout json format
         final Gson gson = new Gson();
         try {
             gson.fromJson(pLayout.getLayout(), Object.class);
@@ -177,7 +183,7 @@ public class LayoutService implements ILayoutService {
     }
 
     @Override
-    public Layout updateLayout(final Layout pLayout) throws EntityNotFoundException, EntityInvalidException {
+    public Layout updateLayout(final Layout pLayout) throws EntityException {
 
         // Check layut json format
         final Gson gson = new Gson();
@@ -194,7 +200,6 @@ public class LayoutService implements ILayoutService {
     }
 
     /**
-     *
      * Read the default Layout configuration file as a string.
      *
      * @return {@link Layout} as a string
@@ -211,7 +216,7 @@ public class LayoutService implements ILayoutService {
             resource = defaultPortalApplicationLayoutResource;
         }
         if ((resource == null) || !resource.exists()) {
-            throw new RuntimeException("Error reading layout default configuration file" + resource.getFilename());
+            throw new MissingResourceException();
         }
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             return buffer.lines().collect(Collectors.joining(System.lineSeparator()));
