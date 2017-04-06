@@ -74,7 +74,7 @@ public class Project implements IIdentifiable<Long> {
      */
     @Column(name = "isaccessible")
     @NotNull
-    private Boolean isAccessible;
+    private final Boolean isAccessible;
 
     /**
      * Is the project deleted ?
@@ -96,6 +96,7 @@ public class Project implements IIdentifiable<Long> {
         description = "";
         isDeleted = false;
         isPublic = false;
+        isAccessible = false;
     }
 
     public Project(final Long pId, final String pDesc, final String pIcon, final boolean pIsPublic,
