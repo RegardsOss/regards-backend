@@ -98,7 +98,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         apiRolesId = apiRoles + "/{role_id}";
         apiRolesName = apiRoles + "/{role_name}";
 
-        apiRolesPermissions = ResourcesController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
+        apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
         apiRolesUsers = ProjectUsersController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 

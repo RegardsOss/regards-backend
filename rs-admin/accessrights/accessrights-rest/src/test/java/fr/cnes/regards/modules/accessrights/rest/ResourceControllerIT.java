@@ -78,9 +78,14 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     private String instanceToken;
 
     /**
-     * Security token to access ADMIN endpoints
+     * Security token for PUBLIC
      */
     private String publicToken;
+
+    /**
+     * Security token for INSTANCE_ADMIN
+     */
+    private String instanceAdminToken;
 
     private ResourcesAccess testResource;
 
@@ -104,6 +109,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         instanceToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
                                               DefaultRole.INSTANCE_ADMIN.toString());
         publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.toString());
+        instanceAdminToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
+                                                   DefaultRole.INSTANCE_ADMIN.toString());
 
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
                 "Controller", HttpVerb.GET);
@@ -138,7 +145,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
                 CONFIGURED_ENDPOINT_URL, "Controller", RequestMethod.GET));
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performPost(ResourcesController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
+        performPost(ResourceController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
                     mapping, expectations, "Error during registring endpoints", DEFAULT_MICROSERVICE);
 
     }
@@ -150,13 +157,30 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
-    @Purpose("Check that the microservice allow to retrieve all resource endpoints configurations")
+    @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void retrieveResources() {
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourcesController.REQUEST_MAPPING_ROOT, publicToken, expectations, "Error retrieving endpoints");
+        performGet(ResourceController.REQUEST_MAPPING_ROOT, publicToken, expectations, "Error retrieving endpoints");
+    }
+
+    /**
+     *
+     * Check that the microservice allow to retrieve all resource endpoints configurations
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations for instance admin")
+    public void retrieveInstanceAdminResources() {
+        final List<ResultMatcher> expectations = new ArrayList<>(3);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
+        performGet(ResourceController.REQUEST_MAPPING_ROOT, instanceAdminToken, expectations,
+                   "Error retrieving endpoints");
     }
 
     /**
@@ -171,7 +195,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet(ResourcesController.REQUEST_MAPPING_ROOT + "/" + testResource.getId(), publicToken, expectations,
+        performGet(ResourceController.REQUEST_MAPPING_ROOT + "/" + testResource.getId(), publicToken, expectations,
                    "Error retrieving endpoints");
     }
 
@@ -181,12 +205,12 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void getUserPermissions() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ResourcesController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
                           "Error retrieving resourcesAccess for user.", testUser.getEmail());
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(ResourcesController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
                           "The user does not exists. There should be an error 404", "wrongEmail");
     }
 
