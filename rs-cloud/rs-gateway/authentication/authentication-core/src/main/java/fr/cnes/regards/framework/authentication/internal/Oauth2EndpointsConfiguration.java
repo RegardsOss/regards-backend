@@ -48,7 +48,7 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
             try {
                 pHttp.requestMatcher(new NotOAuthRequestMatcher(endpoints.oauth2EndpointHandlerMapping()));
             } catch (final Exception e) {
-                LOG.warn("An error occured during the configuration of custom web security", e);
+                LOG.warn("An error occurred during the configuration of custom web security", e);
                 throw new CustomWebSecurityConfigurationException(e.getCause());
             }
         }

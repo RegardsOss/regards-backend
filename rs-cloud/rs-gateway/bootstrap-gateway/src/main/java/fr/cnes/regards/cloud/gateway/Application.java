@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
-import fr.cnes.regards.cloud.gateway.filters.ProxyLogFilter;
+import fr.cnes.regards.cloud.gateway.filters.ZuulLogFilter;
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
@@ -41,12 +41,12 @@ public class Application { // NOSONAR
      *
      * Create zuul proxy filter
      *
-     * @return ProxyLogFilter
+     * @return ZuulLogFilter
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public ProxyLogFilter proxyLogFilter() {
-        return new ProxyLogFilter();
+    public ZuulLogFilter proxyLogFilter() {
+        return new ZuulLogFilter();
     }
 
 }
