@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,5 +185,37 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         performDelete(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
                       instanceAdmintoken, expectations, "Error there must be project results", PROJECT_TEST,
                       connection.getId());
+    }
+
+    @Ignore // Integration test with real database
+    @Test
+    public void testProjectConnection() {
+        // Create real project connection
+        ProjectConnection realConnection = new ProjectConnection();
+        realConnection.setProject(projectRepo.findOneByName(PROJECT_TEST));
+        realConnection.setDriverClassName("org.postgresql.Driver");
+        realConnection.setMicroservice("micro");
+        realConnection.setPassword("azertyuiop123456789");
+        realConnection.setUserName("azertyuiop123456789");
+        realConnection.setUrl("jdbc:postgresql://localhost:5432/rs_admin_tenant0");
+        projectConnRepo.save(realConnection);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isNoContent());
+        performGet(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING
+                + ProjectConnectionController.TEST_MAPPING, instanceAdmintoken, expectations,
+                   "Database should connect!", PROJECT_TEST, realConnection.getId());
+
+    }
+
+    @Test
+    public void testBadProjectConnection() {
+        // Create real project connection
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
+        performGet(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING
+                + ProjectConnectionController.TEST_MAPPING, instanceAdmintoken, expectations,
+                   "Database should connect!", PROJECT_TEST, connection.getId());
+
     }
 }

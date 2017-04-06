@@ -8,8 +8,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
@@ -28,22 +27,16 @@ public interface IResourcesService {
      *
      * Retrieve paged resources in database
      *
+     * @param pMicroserviceName
+     *            microservice
      * @param pPageable
      *            the paging information
      *
      * @return {@link Page} of {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException
+     *             if error occurs!
      */
-    Page<ResourcesAccess> retrieveRessources(Pageable pPageable);
-
-    /**
-     *
-     * Retrieve all resources in database
-     *
-     * @return List of {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
-     */
-    List<ResourcesAccess> retrieveRessources();
+    Page<ResourcesAccess> retrieveRessources(String pMicroserviceName, Pageable pPageable) throws ModuleException;
 
     /**
      *
@@ -53,9 +46,10 @@ public interface IResourcesService {
      *            the if of the {@link ResourcesAccess} to retrieve
      *
      * @return {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException
+     *             if error occurs!
      */
-    ResourcesAccess retrieveRessource(Long pResourceId) throws EntityNotFoundException;
+    ResourcesAccess retrieveRessource(Long pResourceId) throws ModuleException;
 
     /**
      * Update the given resource {@link ResourcesAccess}
@@ -64,24 +58,10 @@ public interface IResourcesService {
      *            {@link ResourcesAccess} to update
      *
      * @return {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException
+     *             if error occurs!
      */
-    ResourcesAccess updateResource(ResourcesAccess pResourceToUpdate) throws EntityNotFoundException;
-
-    /**
-     *
-     * Retrieve all resources in database for the given microservice
-     *
-     * @param pMicroserviceName
-     *            the microservice name
-     * @param pPageable
-     *            the paging information
-     * @return List of {@link ResourcesAccess}
-     * @throws EntityNotFoundException
-     * @since 1.0-SNAPSHOT
-     */
-    Page<ResourcesAccess> retrieveMicroserviceRessources(String pMicroserviceName, final Pageable pPageable)
-            throws EntityNotFoundException;
+    ResourcesAccess updateResource(ResourcesAccess pResourceToUpdate) throws ModuleException;
 
     /**
      *
@@ -92,7 +72,8 @@ public interface IResourcesService {
      *            list of {@link ResourceMapping} to register
      * @param pMicroserviceName
      *            microservice owner of the resources to register
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException
+     *             if error occurs!
      */
     void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName);
 
@@ -100,11 +81,12 @@ public interface IResourcesService {
      * remove a resource access from a role and its descendants
      *
      * @param pRoleId
+     *            role identifier
      * @param pResourcesAccessId
-     * @throws EntityNotFoundException
-     * @throws EntityOperationForbiddenException
+     *            resource identifier
+     * @throws ModuleException
+     *             if error occurs!
      */
-    void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId)
-            throws EntityNotFoundException, EntityOperationForbiddenException;
+    void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId) throws ModuleException;
 
 }

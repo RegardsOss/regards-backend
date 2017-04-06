@@ -95,6 +95,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         LOGGER.debug("Registering endpoints for tenant {}", tenant);
 
         resourcesService.registerResources(localEndpoints, microserviceName);
+
         // get a map that for each ResourcesAccess ra links the roles containing ra
         Set<Role> roles = roleService.retrieveRoles();
         SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();

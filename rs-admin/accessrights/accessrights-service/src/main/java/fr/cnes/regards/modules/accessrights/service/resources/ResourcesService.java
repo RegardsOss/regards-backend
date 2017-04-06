@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +16,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
@@ -64,54 +62,29 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public Page<ResourcesAccess> retrieveRessources(final Pageable pPageable) {
+    public Page<ResourcesAccess> retrieveRessources(final String pMicroserviceName, final Pageable pPageable)
+            throws ModuleException {
         Page<ResourcesAccess> results;
         final String roleName = SecurityUtils.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
         if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
                 || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
-            results = resourceAccessRepo.findAll(pPageable);
+            if (pMicroserviceName == null) {
+                results = resourceAccessRepo.findAll(pPageable);
+            } else {
+                results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
+            }
         } else {
             // Else retrieve only accessible resources
-            final Role currentRole;
-            try {
-                currentRole = roleService.retrieveRole(roleName);
-                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-                List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(getResourcesAccesses(roles));
-                results = new PageImpl<>(accessibleResourcesAccesses, pPageable, accessibleResourcesAccesses.size());
-            } catch (final EntityNotFoundException e) {
-                LOG.error(e.getMessage(), e);
-                results = new PageImpl<>(new ArrayList<>(), pPageable, 0);
-            }
+            final Role currentRole = roleService.retrieveRole(roleName);
+            List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(currentRole.getPermissions());
+            results = new PageImpl<>(accessibleResourcesAccesses, pPageable, accessibleResourcesAccesses.size());
         }
         return results;
     }
 
     @Override
-    public List<ResourcesAccess> retrieveRessources() {
-        List<ResourcesAccess> results;
-        final String roleName = SecurityUtils.getActualRole();
-        // If role is System role or InstanceAdminRole retrieve all resources
-        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
-                || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
-            results = resourceAccessRepo.findAll();
-        } else {
-            // Else retrieve only accessible resources
-            final Role currentRole;
-            try {
-                currentRole = roleService.retrieveRole(roleName);
-                final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-                results = Lists.newArrayList(getResourcesAccesses(roles));
-            } catch (final EntityNotFoundException e) {
-                LOG.error(e.getMessage(), e);
-                results = new ArrayList<>();
-            }
-        }
-        return results;
-    }
-
-    @Override
-    public ResourcesAccess retrieveRessource(final Long pResourceId) throws EntityNotFoundException {
+    public ResourcesAccess retrieveRessource(final Long pResourceId) throws ModuleException {
         final ResourcesAccess result = resourceAccessRepo.findOne(pResourceId);
         if (result == null) {
             throw new EntityNotFoundException(pResourceId, ResourcesAccess.class);
@@ -120,47 +93,11 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public ResourcesAccess updateResource(final ResourcesAccess pResourceToUpdate) throws EntityNotFoundException {
+    public ResourcesAccess updateResource(final ResourcesAccess pResourceToUpdate) throws ModuleException {
         if (resourceAccessRepo.exists(pResourceToUpdate.getId())) {
             throw new EntityNotFoundException(pResourceToUpdate.getId(), ResourcesAccess.class);
         }
         return resourceAccessRepo.save(pResourceToUpdate);
-    }
-
-    @Override
-    public Page<ResourcesAccess> retrieveMicroserviceRessources(final String pMicroserviceName,
-            final Pageable pPageable) throws EntityNotFoundException {
-        Page<ResourcesAccess> results;
-        final String roleName = SecurityUtils.getActualRole();
-        // If role is System role or InstanceAdminRole or ProjectAdmin role retrieve all resources
-        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
-                || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
-            results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
-        } else {
-            // Else retrieve only accessible resources
-            final Role currentRole;
-
-            currentRole = roleService.retrieveRole(roleName);
-            final Set<Role> roles = roleService.retrieveInheritedRoles(currentRole);
-            Set<ResourcesAccess> accessibleResourcesAccesses = getResourcesAccesses(roles);
-            // filter to get those for the given microservice and convert as a list for the page
-            List<ResourcesAccess> accessibleResourcesAccessesForMicroservice = accessibleResourcesAccesses.stream()
-                    .filter(ra -> ra.getMicroservice().equals(pMicroserviceName)).collect(Collectors.toList());
-            results = new PageImpl<>(accessibleResourcesAccessesForMicroservice, pPageable,
-                    accessibleResourcesAccessesForMicroservice.size());
-
-        }
-        return results;
-    }
-
-    /**
-     * Retrieve all the resource accesses contained by a set of roles
-     *
-     * @param pRoles
-     * @return all the resource accesses contained by roles in pRoles
-     */
-    private Set<ResourcesAccess> getResourcesAccesses(Set<Role> pRoles) {
-        return pRoles.stream().flatMap(role -> role.getPermissions().stream()).collect(Collectors.toSet());
     }
 
     @Override
@@ -183,7 +120,7 @@ public class ResourcesService implements IResourcesService {
 
         // Save missing resources
         if (!newResources.isEmpty()) {
-            saveResources(newResources);
+            resourceAccessRepo.save(newResources);
         }
     }
 
@@ -216,22 +153,8 @@ public class ResourcesService implements IResourcesService {
         return defaultResource;
     }
 
-    /**
-     *
-     * Save given ResourcesAccess to repository
-     *
-     * @param pResourcesToSave
-     *            entities to save
-     * @return saved entities.
-     * @since 1.0-SNAPSHOT
-     */
-    private List<ResourcesAccess> saveResources(final List<ResourcesAccess> pResourcesToSave) {
-        return resourceAccessRepo.save(pResourcesToSave);
-    }
-
     @Override
-    public void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId)
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+    public void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId) throws ModuleException {
         Role role = roleService.retrieveRole(pRoleId);
         ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
         roleService.removeResourcesAccesses(role, resourcesAccess);

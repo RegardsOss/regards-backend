@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
@@ -135,8 +135,8 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
-            user = new ProjectUser(pUserEmail, new Role(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE, null),
-                    new ArrayList<>(), new ArrayList<>());
+            user = new ProjectUser(pUserEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
+                    new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail)
                     .orElseThrow(() -> new EntityNotFoundException(pUserEmail, ProjectUser.class));

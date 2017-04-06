@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -188,8 +189,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
         ProjectConnection connection = retrieveProjectConnectionById(pConnectionIdentifier);
         DataSource dataSource = DataSourceHelper.createDataSource(connection.getUrl(), connection.getDriverClassName(),
                                                                   connection.getUserName(), connection.getPassword());
-        try {
-            dataSource.getConnection();
+        try (Connection conn = dataSource.getConnection()) {
+            LOGGER.debug("Connection success");
         } catch (SQLException e) {
             LOGGER.error("Connection test fail", e);
             throw new InvalidConnectionException(e);

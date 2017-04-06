@@ -95,7 +95,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         apiUserId = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_id}";
         apiUserEmail = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_email}";
 
-        apiUserPermissions = ResourcesController.REQUEST_MAPPING_ROOT + apiUserId;
+        apiUserPermissions = ResourceController.REQUEST_MAPPING_ROOT + apiUserId;
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
 
         errorMessage = "Cannot reach model attributes";

@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
@@ -137,17 +138,17 @@ public class ResourcesServiceTest {
     @Purpose("Check that the collect resources functionnality is well done when no resources are collected")
     @Requirement("REGARDS_DSL_ADM_ADM_240")
     @Test
-    public void testEmptyResourcesToCollect() throws EntityNotFoundException {
+    public void testEmptyResourcesToCollect() throws ModuleException {
         resourcesRepo.deleteAll();
         Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
-        final Page<ResourcesAccess> resultPage = resourcesService.retrieveRessources(new PageRequest(0, 20));
+        final Page<ResourcesAccess> resultPage = resourcesService.retrieveRessources(null, new PageRequest(0, 20));
         Assert.assertNotNull(resultPage);
         Assert.assertEquals(resultPage.getNumberOfElements(), 0);
         Assert.assertTrue(resultPage.getContent().isEmpty());
     }
 
     @Test
-    public void retrieveResourcesByMicroservice() throws EntityNotFoundException {
+    public void retrieveResourcesByMicroservice() throws ModuleException {
 
         final String ms = "rs-test";
 
@@ -164,7 +165,7 @@ public class ResourcesServiceTest {
                 HttpVerb.GET);
         roleAdmin.addPermission(raTest4);
 
-        final Page<ResourcesAccess> page = resourcesService.retrieveMicroserviceRessources(ms, new PageRequest(0, 20));
+        final Page<ResourcesAccess> page = resourcesService.retrieveRessources(ms, new PageRequest(0, 20));
         Assert.assertNotNull(page);
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(4, page.getContent().size());
