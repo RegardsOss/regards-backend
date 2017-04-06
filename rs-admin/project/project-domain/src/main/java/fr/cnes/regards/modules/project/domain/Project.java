@@ -70,6 +70,13 @@ public class Project implements IIdentifiable<Long> {
     private Boolean isPublic;
 
     /**
+     * IS the project accessible from portal ?
+     */
+    @Column(name = "isaccessible")
+    @NotNull
+    private Boolean isAccessible;
+
+    /**
      * Is the project deleted ?
      */
     @Column(name = "isdeleted")
@@ -156,7 +163,7 @@ public class Project implements IIdentifiable<Long> {
         return licenceLink;
     }
 
-    public void setLicenseLink(String pLicenceLink) {
+    public void setLicenseLink(final String pLicenceLink) {
         licenceLink = pLicenceLink;
     }
 
