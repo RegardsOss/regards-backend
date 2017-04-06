@@ -88,6 +88,12 @@ public class ProjectConnection implements IIdentifiable<Long> {
 
     /**
      *
+     */
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
+    /**
+     *
      * Constructor
      *
      * @since 1.0-SNAPSHOT
@@ -214,6 +220,14 @@ public class ProjectConnection implements IIdentifiable<Long> {
 
     public void setUrl(final String pUrl) {
         url = pUrl;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean pEnabled) {
+        enabled = pEnabled;
     }
 
 }

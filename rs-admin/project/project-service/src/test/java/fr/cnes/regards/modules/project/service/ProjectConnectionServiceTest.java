@@ -297,5 +297,4 @@ public class ProjectConnectionServiceTest {
         // Check
         Assert.assertNotNull(actual);
     }
-
 }

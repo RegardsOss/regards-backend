@@ -107,6 +107,25 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     }
 
     /**
+     * Test a single project connection by identifier
+     *
+     * @param projectName
+     *            project name
+     * @param connectionId
+     *            connection identifier
+     * @return a project connection
+     * @throws ModuleException
+     *             if error occurs
+     */
+    @RequestMapping(method = RequestMethod.GET, value = ProjectConnectionController.RESOURCE_ID_MAPPING + "/test")
+    @ResourceAccess(description = "Test a project connection of a given project/tenant", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> testProjectConnection(@PathVariable String projectName, @PathVariable Long connectionId)
+            throws ModuleException {
+        projectConnectionService.testProjectConnection(connectionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Create a new project connection
      *
      * @param projectName
@@ -173,6 +192,9 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     public Resource<ProjectConnection> toResource(ProjectConnection pElement, Object... pExtras) {
         final Resource<ProjectConnection> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "getProjectConnection", LinkRels.SELF,
+                                MethodParamFactory.build(String.class, pElement.getProject().getName()),
+                                MethodParamFactory.build(Long.class, pElement.getId()));
+        resourceService.addLink(resource, this.getClass(), "testProjectConnection", "test",
                                 MethodParamFactory.build(String.class, pElement.getProject().getName()),
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateProjectConnection", LinkRels.UPDATE,
