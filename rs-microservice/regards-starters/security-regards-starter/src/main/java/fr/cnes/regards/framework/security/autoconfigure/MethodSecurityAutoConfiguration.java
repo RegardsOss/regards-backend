@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 
 import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 
@@ -43,6 +44,9 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
     private IInstanceAdminAccessVoter instanceAccessVoter;
 
     @Autowired(required = false)
+    private IInstancePublicAccessVoter instancePublicAccessVoter;
+
+    @Autowired(required = false)
     private ISystemAccessVoter systemAccessVoter;
 
     @Autowired(required = false)
@@ -61,6 +65,10 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
         // Manage instance voter
         if (instanceAccessVoter != null) {
             decisionVoters.add(instanceAccessVoter);
+        }
+
+        if (instancePublicAccessVoter != null) {
+            decisionVoters.add(instancePublicAccessVoter);
         }
 
         // Manage project admin voter
