@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  */
 @Service
 @InstanceTransactional
+@EnableScheduling
 public class AccountService implements IAccountService {
 
     /**
@@ -159,7 +161,6 @@ public class AccountService implements IAccountService {
             return new String(md.digest(pPassword.getBytes()));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);// NOSONAR: this is only a developpement exception and should never happens
-            // otherwise
         }
     }
 

@@ -148,7 +148,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         // And start with a single account for convenience
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
-        accountInstance = accountRepository.save(new Account(rootAdminInstanceLogin, FIRST_NAME, LAST_NAME, PASSWORD));
         accountLocked = new Account(EMAIL_LOCKED, FIRST_NAME, LAST_NAME, PASSWORD);
         accountLocked.setStatus(AccountStatus.LOCKED);
         accountLocked = accountRepository.save(accountLocked);
@@ -230,7 +229,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         // if that's not the same functional ID and the parameter is valid:
         expectations.clear();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isNotFound());
         performDefaultPut(apiAccountId, account, expectations, errorMessage, 99L);
     }
 
@@ -280,7 +279,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to reset an instance user's password.")
     public void performResetPassword() throws EntityAlreadyExistsException {
         // Prepare the request parameters
-        final PerformResetPasswordDto dto = new PerformResetPasswordDto("token", "newPassword");
+        final PerformResetPasswordDto dto = new PerformResetPasswordDto("token", "newpassword");
 
         // Create the token in db
         passwordResetTokenRepository.save(new PasswordResetToken(dto.getToken(), account));
@@ -333,7 +332,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links.update.href", Matchers.notNullValue()));
         // expectations.add(MockMvcResultMatchers.jsonPath("$._links",
         // Matchers.not(Matchers.containsString(LinkRels.DELETE))));
-
+        accountInstance = accountRepository.findOneByEmail(rootAdminInstanceLogin).get();
         performDefaultGet(apiAccountId, expectations, errorMessage, accountInstance.getId());
     }
 

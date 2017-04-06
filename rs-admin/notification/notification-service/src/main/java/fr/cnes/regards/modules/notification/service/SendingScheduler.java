@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@EnableScheduling
 public class SendingScheduler {
 
     /**
