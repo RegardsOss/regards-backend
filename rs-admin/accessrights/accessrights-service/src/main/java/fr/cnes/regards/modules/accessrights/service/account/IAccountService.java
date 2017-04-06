@@ -90,8 +90,9 @@ public interface IAccountService {
      * @param pPassword The password to check
      * @throws EntityNotFoundException Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      * @return <code>true</code> if the password is valid, else <code>false</code>
+     * @throws EntityException
      */
-    boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException;
+    boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException, EntityException;
 
     /**
      * Validate the password according to the regex provided by file. Mainly used by create and update methods so an
@@ -99,7 +100,7 @@ public interface IAccountService {
      *
      * @throws EntityInvalidException thrown if the provided password does not respect the configured regex
      */
-    void checkPassword(String pPassword) throws EntityInvalidException;
+    void checkPassword(Account pNewAccount) throws EntityInvalidException;
 
     /**
      * @return whether the password respect the regex
@@ -109,5 +110,9 @@ public interface IAccountService {
     String getPasswordRules();
 
     String encryptPassword(String pPassword);
+
+    void checkAccountValidity();
+
+    void changePassword(Long pId, String pEncryptPassword) throws EntityNotFoundException;
 
 }

@@ -337,6 +337,30 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(apiAccountId, expectations, errorMessage, accountInstance.getId());
     }
 
+    @Test
+    @Requirement("REGARDS_DSL_SYS_SEC_300")
+    @Purpose("password respects a regular expression which is configurable by instance")
+    public void checkPassword() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(true)));
+        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, PASSWORD,
+                           expectations, errorMessage);
+        expectations.clear();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(false)));
+        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, PASSWORD + "ZE",
+                           expectations, errorMessage);
+    }
+
+    @Test
+    public void getPasswordRules() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        performDefaultGet(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, expectations,
+                          errorMessage);
+    }
+
     @Override
     protected Logger getLogger() {
         return LOG;

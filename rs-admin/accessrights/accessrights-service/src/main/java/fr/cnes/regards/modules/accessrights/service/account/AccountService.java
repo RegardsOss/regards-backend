@@ -47,29 +47,37 @@ public class AccountService implements IAccountService {
     /**
      * Regex that the password should respect. Provided by property file.
      */
-    @Value("${regards.accounts.password.regex}")
-    private String passwordRegex;
+    private final String passwordRegex;
 
     /**
-     * Description of the regex to respect in natural language
+     * Description of the regex to respect in natural language. Provided by property file.
      */
-    @Value("${regards.accounts.password.rules}")
-    private String passwordRules;
-
-    @Value("${regards.accounts.password.validity.duration}")
-    private Long accountValidityDuration;
+    private final String passwordRules;
 
     /**
-     * Root admin user login
+     * In days. Provided by property file.
      */
-    @Value("${regards.accounts.root.user.login}")
-    private String rootAdminUserLogin;
+    private final Long accountPasswordValidityDuration;
 
     /**
-     * Root admin user password
+     * In days. Provided by property file.
      */
-    @Value("${regards.accounts.root.user.password}")
-    private String rootAdminUserPassword;
+    private final Long accountValidityDuration;
+
+    /**
+     * Root admin user login. Provided by property file.
+     */
+    private final String rootAdminUserLogin;
+
+    /**
+     * Root admin user password. Provided by property file.
+     */
+    private final String rootAdminUserPassword;
+
+    /**
+     * threshold of failed authentication above which an account should be locked. Provided by property file.
+     */
+    private final Long thresholdFailedAuthentication;
 
     /**
      * CRUD repository handling {@link Account}s. Autowired by Spring.
@@ -81,9 +89,23 @@ public class AccountService implements IAccountService {
      *
      * @param pAccountRepository the account repo
      */
-    public AccountService(final IAccountRepository pAccountRepository) {
+    public AccountService(final IAccountRepository pAccountRepository,
+            @Value("${regards.accounts.password.regex}") String passwordRegex,
+            @Value("${regards.accounts.password.rules}") String passwordRules,
+            @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
+            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
+            @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
+            @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
+            @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication) {
         super();
         accountRepository = pAccountRepository;
+        this.passwordRegex = passwordRegex;
+        this.passwordRules = passwordRules;
+        this.accountPasswordValidityDuration = accountPasswordValidityDuration;
+        this.accountValidityDuration = accountValidityDuration;
+        this.rootAdminUserLogin = rootAdminUserLogin;
+        this.rootAdminUserPassword = rootAdminUserPassword;
+        this.thresholdFailedAuthentication = thresholdFailedAuthentication;
     }
 
     @PostConstruct
@@ -121,6 +143,7 @@ public class AccountService implements IAccountService {
     public Account createAccount(final Account pAccount) {
         pAccount.setId(null);
         pAccount.setPassword(encryptPassword(pAccount.getPassword()));
+        pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         return accountRepository.save(pAccount);
     }
 
@@ -187,10 +210,19 @@ public class AccountService implements IAccountService {
      * java.lang.String)
      */
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
-        return accountRepository.findOneByEmail(pEmail)
-                .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class)).getPassword()
-                .equals(encryptPassword(pPassword));
+    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityException {
+        Account toValidate = accountRepository.findOneByEmail(pEmail)
+                .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class));
+        Boolean result = toValidate.getStatus().equals(AccountStatus.ACTIVE)
+                && toValidate.getPassword().equals(encryptPassword(pPassword));
+        if (!result) {
+            toValidate.setAuthenticationFailedCounter(toValidate.getAuthenticationFailedCounter() + 1);
+            if (toValidate.getAuthenticationFailedCounter() > thresholdFailedAuthentication) {
+                toValidate.setStatus(AccountStatus.LOCKED);
+                updateAccount(toValidate.getId(), toValidate);
+            }
+        }
+        return result;
     }
 
     /*
@@ -203,8 +235,8 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public void checkPassword(String pPassword) throws EntityInvalidException {
-        if (!validPassword(pPassword)) {
+    public void checkPassword(Account pAccount) throws EntityInvalidException {
+        if (!pAccount.getExternal() && !validPassword(pAccount.getPassword())) {
             throw new EntityInvalidException(
                     "The provided password doesn't match the configured pattern : " + passwordRegex);
         }
@@ -221,14 +253,32 @@ public class AccountService implements IAccountService {
         return passwordRules;
     }
 
-    @Scheduled(cron = "${regards.accounts.password.validity.check.cron}")
-    public void checkPasswordValidity() {
+    @Override
+    public void changePassword(Long pId, String pEncryptPassword) throws EntityNotFoundException {
+        Account toChange = retrieveAccount(pId);
+        toChange.setPassword(pEncryptPassword);
+        toChange.setAuthenticationFailedCounter(0L);
+        toChange.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(toChange);
+    }
+
+    @Scheduled(cron = "${regards.accounts.validity.check.cron}")
+    @Override
+    public void checkAccountValidity() {
+        Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
+        // lets check issues with the invalidity date
         if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
-            LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountValidityDuration);
+            LocalDateTime now = LocalDateTime.now();
+            toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).forEach(accountRepository::save);
+        }
+        // lets check issues with the password
+        if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
+            LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
-            Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.LOCKED);
-            toCheck.stream().filter(a -> a.getPasswordUpdateDate().isBefore(minValidityDate))
-                    .forEach(a -> a.setStatus(AccountStatus.LOCKED));
+            toCheck.stream()
+                    .filter(a -> a.getExternal().equals(false) && a.getPasswordUpdateDate().isBefore(minValidityDate))
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).forEach(accountRepository::save);
         }
     }
 

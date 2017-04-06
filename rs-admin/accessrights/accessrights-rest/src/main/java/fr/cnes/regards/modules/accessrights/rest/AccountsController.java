@@ -130,7 +130,7 @@ public class AccountsController implements IResourceController<Account> {
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
             throws EntityException {
-        accountService.checkPassword(pNewAccount.getPassword());
+        accountService.checkPassword(pNewAccount);
         final Account created = accountService.createAccount(pNewAccount);
         final Resource<Account> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
@@ -182,7 +182,7 @@ public class AccountsController implements IResourceController<Account> {
     public ResponseEntity<Resource<Account>> updateAccount(@PathVariable("account_id") final Long pAccountId,
             @Valid @RequestBody final Account pUpdatedAccount) throws EntityException {
         if (pUpdatedAccount.getPassword() != null) {
-            accountService.checkPassword(pUpdatedAccount.getPassword());
+            accountService.checkPassword(pUpdatedAccount);
         }
         return ResponseEntity.ok(toResource(accountService.updateAccount(pAccountId, pUpdatedAccount)));
     }
@@ -292,7 +292,9 @@ public class AccountsController implements IResourceController<Account> {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final PerformResetPasswordDto pDto) throws EntityException {
-        accountService.checkPassword(pDto.getNewPassword());
+        Account toReset = accountService.retrieveAccountByEmail(pAccountEmail);
+        toReset.setPassword(pDto.getNewPassword());
+        accountService.checkPassword(toReset);
         passwordResetService.performPasswordReset(pAccountEmail, pDto.getToken(), pDto.getNewPassword());
         return ResponseEntity.noContent().build();
     }
@@ -304,13 +306,13 @@ public class AccountsController implements IResourceController<Account> {
      * @param pEmail The {@link Account}'s <code>email</code>
      * @param pPassword The password to check
      * @return <code>true</code> if the password is valid, else <code>false</code>
-     * @throws EntityNotFoundException
+     * @throws EntityException
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_VALIDATE, method = RequestMethod.GET)
     @ResourceAccess(description = "Validate the account password", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<AccountStatus> validatePassword(@PathVariable("account_email") final String pEmail,
-            @RequestParam("password") final String pPassword) throws EntityNotFoundException {
+            @RequestParam("password") final String pPassword) throws EntityException {
         if (accountService.validatePassword(pEmail, pPassword)) {
             return new ResponseEntity<>(AccountStatus.ACTIVE, HttpStatus.OK);
         } else {
@@ -326,9 +328,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.POST)
     @ResourceAccess(description = "Validate a password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<String> checkPassword(@RequestBody String pPassword) {
+    public ResponseEntity<Validity> checkPassword(@RequestBody String pPassword) {
         // JSON object is not reflected by a POJO because a POJO for ONE attribute would be overkill
-        return new ResponseEntity<>("{\"validity\" : " + accountService.validPassword(pPassword) + "}", HttpStatus.OK);
+        return new ResponseEntity<>(new Validity(accountService.validPassword(pPassword)), HttpStatus.OK);
     }
 
     /**
@@ -358,6 +360,27 @@ public class AccountsController implements IResourceController<Account> {
             }
         }
         return resource;
+    }
+
+    private class Validity {
+
+        private Boolean validity;
+
+        private Validity() {
+        }
+
+        private Validity(Boolean pValidity) {
+            validity = pValidity;
+        }
+
+        public Boolean getValidity() {
+            return validity;
+        }
+
+        public void setValidity(Boolean pValidity) {
+            validity = pValidity;
+        }
+
     }
 
 }

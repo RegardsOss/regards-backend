@@ -84,8 +84,7 @@ public class PasswordResetService implements IPasswordResetService {
             throws EntityException {
         final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
         validatePasswordResetToken(pAccountEmail, pResetCode);
-        account.setPassword(accountService.encryptPassword(pNewPassword));
-        accountService.updateAccount(account.getId(), account);
+        accountService.changePassword(account.getId(), accountService.encryptPassword(pNewPassword));
     }
 
     /**

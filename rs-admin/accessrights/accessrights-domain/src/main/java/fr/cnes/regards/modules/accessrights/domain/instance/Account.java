@@ -50,6 +50,18 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "lastName")
     private String lastName;
 
+    @Column
+    private LocalDateTime invalidityDate;
+
+    /**
+     * By default an account is considered internal and not relying on an external identity service provider
+     */
+    @Column
+    private Boolean external = false;
+
+    @Column(name = "authentication_failed_counter")
+    private Long authenticationFailedCounter;
+
     @GsonIgnore
     @Column(name = "password")
     private String password;
@@ -196,6 +208,34 @@ public class Account implements IIdentifiable<Long> {
 
     public LocalDateTime getPasswordUpdateDate() {
         return passwordUpdateDate;
+    }
+
+    public void setPasswordUpdateDate(LocalDateTime passwordUpdateDate) {
+        this.passwordUpdateDate = passwordUpdateDate;
+    }
+
+    public Boolean getExternal() {
+        return external;
+    }
+
+    public void setExternal(Boolean pExternal) {
+        external = pExternal;
+    }
+
+    public Long getAuthenticationFailedCounter() {
+        return authenticationFailedCounter;
+    }
+
+    public void setAuthenticationFailedCounter(Long pAuthenticationFailedCounter) {
+        authenticationFailedCounter = pAuthenticationFailedCounter;
+    }
+
+    public LocalDateTime getInvalidityDate() {
+        return invalidityDate;
+    }
+
+    public void setInvalidityDate(LocalDateTime pInvalidityDate) {
+        invalidityDate = pInvalidityDate;
     }
 
     @Override
