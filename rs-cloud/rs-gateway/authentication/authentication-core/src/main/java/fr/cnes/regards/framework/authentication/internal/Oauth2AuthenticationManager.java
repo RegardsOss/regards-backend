@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -174,7 +175,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         if ((token != null) && token.isAuthenticated()) {
             createMissingAccount(token);
         }
-        
+
         LOG.info("The user <{}> is authenticate for the project {}", pLogin, pScope);
 
         return token;
@@ -307,7 +308,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             // Manage root login
             userDetails = new UserDetails();
             userDetails.setName(pUserName);
-            userDetails.setRole(RoleAuthority.INSTANCE_ADMIN_VIRTUAL_ROLE);
+            userDetails.setRole(DefaultRole.INSTANCE_ADMIN.toString());
             userDetails.setTenant(pScope);
         } else {
             // Retrieve account
