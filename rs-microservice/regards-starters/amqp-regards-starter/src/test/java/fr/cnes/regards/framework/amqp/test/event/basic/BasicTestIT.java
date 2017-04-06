@@ -71,6 +71,8 @@ public class BasicTestIT {
 
     private boolean eventReceived;
 
+    private boolean concurrentEventReceived;
+
     @Before
     public void init() throws RabbitMQVhostException {
         Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
@@ -80,13 +82,16 @@ public class BasicTestIT {
     @Test
     public void publishEvent() throws InterruptedException {
         subscriber.subscribeTo(PublishEvent.class, new PublishEventHandler());
+        subscriber.subscribeTo(PublishEvent.class, new ConcurrentPublishEventHandler());
 
         PublishEvent event = new PublishEvent();
         event.setMessage("Publish all! (i.e. broadcast)");
         eventReceived = false; // Mutated by handler
+        concurrentEventReceived = false; // Mutated by handler
         publisher.publish(event);
         Thread.sleep(2000);
         Assert.assertTrue(eventReceived);
+        Assert.assertTrue(concurrentEventReceived);
     }
 
     private class PublishEventHandler implements IHandler<PublishEvent> {
@@ -101,6 +106,16 @@ public class BasicTestIT {
             Assert.assertNotNull(message);
             LOGGER.info("Handled message : {}", message);
         }
+    }
+
+    private class ConcurrentPublishEventHandler implements IHandler<PublishEvent> {
+
+        @Override
+        public void handle(TenantWrapper<PublishEvent> pWrapper) {
+            concurrentEventReceived = true;
+            LOGGER.info("Concurrent handler reached");
+        }
+
     }
 
     @Test

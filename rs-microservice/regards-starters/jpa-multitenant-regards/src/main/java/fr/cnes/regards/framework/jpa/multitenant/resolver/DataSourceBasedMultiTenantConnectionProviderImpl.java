@@ -17,11 +17,13 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionCreatedEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigured;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
@@ -48,6 +50,11 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * AMQP Message subscriber
      */
     private transient IInstanceSubscriber instanceSubscriber;
+
+    /**
+     * AMQP Message subscriber
+     */
+    private transient IInstancePublisher instancePublisher;
 
     /**
      * Microservice global configuration
@@ -99,7 +106,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         }
 
         // Listen for new tenant connections
-        instanceSubscriber.subscribeTo(TenantConnectionCreatedEvent.class, new TenantConnectionHandler());
+        instanceSubscriber.subscribeTo(TenantConnectionConfigured.class, new TenantConnectionHandler());
     }
 
     /**
@@ -175,7 +182,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
      * @author Sébastien Binda
      * @since 1.0-SNAPSHOT
      */
-    private class TenantConnectionHandler implements IHandler<TenantConnectionCreatedEvent> {
+    private class TenantConnectionHandler implements IHandler<TenantConnectionConfigured> {
 
         /**
          *
@@ -185,15 +192,18 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
          * @since 1.0-SNAPSHOT
          */
         @Override
-        public void handle(final TenantWrapper<TenantConnectionCreatedEvent> pNewTenant) {
+        public void handle(final TenantWrapper<TenantConnectionConfigured> pTenantConnectionConfigured) {
             // Add a new datasource to the current pool of datasource if the current microservice is the target of the
             // new
             // tenant connection
-            if ((pNewTenant.getContent() != null)
-                    && microserviceName.equals(pNewTenant.getContent().getMicroserviceName())) {
-                final TenantConnection tenantConn = pNewTenant.getContent().getTenant();
+            if ((pTenantConnectionConfigured.getContent() != null)
+                    && microserviceName.equals(pTenantConnectionConfigured.getContent().getMicroserviceName())) {
+                final TenantConnection tenantConn = pTenantConnectionConfigured.getContent().getTenant();
                 addDataSource(tenantConn.getUrl(), tenantConn.getUserName(), tenantConn.getPassword(),
                               tenantConn.getDriverClassName(), tenantConn.getTenant());
+                // Broadcast connection ready
+                instancePublisher.publish(new TenantConnectionReady(pTenantConnectionConfigured.getTenant(),
+                        pTenantConnectionConfigured.getContent().getMicroserviceName()));
             }
         }
     }

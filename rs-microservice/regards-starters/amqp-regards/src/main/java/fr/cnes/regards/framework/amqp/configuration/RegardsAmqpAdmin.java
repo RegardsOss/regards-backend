@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -128,8 +130,10 @@ public class RegardsAmqpAdmin {
                 // No prefix cause no target restriction
                 break;
             case MICROSERVICE:
-                builder.append(microserviceTypeId);
-                builder.append(UNDERSCORE);
+                builder.append(microserviceTypeId).append(UNDERSCORE);
+                break;
+            case INSTANCE:
+                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());
@@ -151,7 +155,7 @@ public class RegardsAmqpAdmin {
      *            {@link WorkerMode} used for naming convention
      * @param pTarget
      *            {@link Target} used for naming convention
-     * @return instance of the queue
+     * @return instance of queue
      */
     public Queue declareQueue(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
 
@@ -169,46 +173,129 @@ public class RegardsAmqpAdmin {
     }
 
     /**
-     * Purge the queue that manages the specified event
+     * Declare a queue by event handler. Only useful for publish/subscribe mode.
      *
-     * @param pEventType
-     *            event to purge (queue name will be retrieve automatically based on the event name)
-     * @param noWait
-     *            true to not await completion of the purge
+     * @param pTenant
+     *            tenant
+     * @param pEventHandler
+     *            event handler
+     * @param pWorkerMode
+     *            {@link WorkerMode} used for naming convention
+     * @param pTarget
+     *            {@link Target} used for naming convention
+     * @return instance of queue
      */
-    public void purgeQueue(Class<?> pEventType, boolean noWait) {
-        WorkerMode mode;
-        if (ISubscribable.class.isAssignableFrom(pEventType)) {
-            mode = WorkerMode.ALL;
-        } else if (IPollable.class.isAssignableFrom(pEventType)) {
-            mode = WorkerMode.SINGLE;
-        } else {
-            throw new UnsupportedOperationException();
-        }
-        rabbitAdmin.purgeQueue(getQueueName(pEventType, mode, EventUtils.getCommunicationTarget(pEventType)), noWait);
+    public Queue declareSubscribeQueue(String pTenant, Class<?> pEventHandler, WorkerMode pWorkerMode, Target pTarget) {
+
+        LOGGER.debug("Declaring queue for : tenant {} / handler {} / target {} / mode {}", pTenant,
+                     pEventHandler.getName(), pTarget, pWorkerMode);
+
+        // Create queue
+        final Map<String, Object> args = new HashMap<>();
+        args.put("x-max-priority", MAX_PRIORITY);
+        Queue queue = new Queue(getQueueName(pEventHandler, pWorkerMode, pTarget), true, false, false, args);
+
+        rabbitAdmin.declareQueue(queue);
+
+        return queue;
     }
 
     /**
-     * Computing queue name according to {@link WorkerMode} and {@link Target}
+     * Purge the queue that manages the specified event
      *
-     * @param pEvtClass
+     * @param <E>
+     *            event type to purge
+     * @param pEventType
      *            event type
+     * @param noWait
+     *            true to not await completion of the purge
+     */
+    public <E extends IPollable> void purgeQueue(Class<E> pEventType, boolean noWait) {
+        rabbitAdmin
+                .purgeQueue(getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)),
+                            noWait);
+    }
+
+    /**
+     * Purge the queue that manages the specified event
+     *
+     * @param <E>
+     *            event type to purge
+     * @param <H>
+     *            handler that manages events
+     * @param pEventType
+     *            event type
+     * @param pHandlerType
+     *            handler type for subscribable events
+     * @param noWait
+     *            true to not await completion of the purge
+     */
+    public <E extends ISubscribable, H extends IHandler<E>> void purgeQueue(Class<E> pEventType, Class<H> pHandlerType,
+            boolean noWait) {
+        rabbitAdmin
+                .purgeQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
+                            noWait);
+    }
+
+    public <E extends IPollable> Properties getQueueProperties(Class<E> pEventType) {
+        return rabbitAdmin.getQueueProperties(getQueueName(pEventType, WorkerMode.SINGLE,
+                                                           EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends ISubscribable, H extends IHandler<E>> Properties getQueueProperties(Class<E> pEventType,
+            Class<H> pHandlerType) {
+        return rabbitAdmin.getQueueProperties(getQueueName(pHandlerType, WorkerMode.ALL,
+                                                           EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends IPollable> void deleteQueue(Class<E> pEventType) {
+        rabbitAdmin.deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE,
+                                             EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType,
+            Class<H> pHandlerType) {
+        rabbitAdmin
+                .deleteQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)));
+    }
+
+    public <E extends IPollable> void deleteQueue(Class<E> pEventType, final boolean unused, final boolean empty) {
+        rabbitAdmin
+                .deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)),
+                             unused, empty);
+    }
+
+    public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType, Class<H> pHandlerType,
+            final boolean unused, final boolean empty) {
+        rabbitAdmin
+                .deleteQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
+                             unused, empty);
+    }
+
+    /**
+     * Computing queue name according to {@link WorkerMode}, {@link Target} and a discrimator type.
+     *
+     * @param pType
+     *            type
      * @param pWorkerMode
      *            {@link WorkerMode}
      * @param pTarget
      *            {@link Target}
      * @return queue name according to {@link WorkerMode} and {@link Target}
      */
-    public String getQueueName(Class<?> pEvtClass, WorkerMode pWorkerMode, Target pTarget) {
+    public String getQueueName(Class<?> pType, WorkerMode pWorkerMode, Target pTarget) {
         StringBuilder builder = new StringBuilder();
 
         // Prefix queue with microservice id if target restricted to microservice
         switch (pTarget) {
+            case ALL:
+                // No prefix cause no target restriction
+                break;
             case MICROSERVICE:
                 builder.append(microserviceTypeId).append(UNDERSCORE);
                 break;
-            case ALL:
-                // No prefix cause no target restriction
+            case INSTANCE:
+                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
                 break;
             default:
                 throw new EnumConstantNotPresentException(Target.class, pTarget.name());
@@ -216,10 +303,10 @@ public class RegardsAmqpAdmin {
 
         switch (pWorkerMode) {
             case SINGLE:
-                builder.append(pEvtClass.getName());
+                builder.append(pType.getName());
                 break;
             case ALL:
-                builder.append(pEvtClass.getName());
+                builder.append(pType.getName());
                 builder.append(UNDERSCORE);
                 builder.append(microserviceInstanceId);
                 break;
