@@ -101,8 +101,7 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName)
-            throws ModuleException {
+    public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName) {
 
         final List<ResourcesAccess> resources = new ArrayList<>();
 
