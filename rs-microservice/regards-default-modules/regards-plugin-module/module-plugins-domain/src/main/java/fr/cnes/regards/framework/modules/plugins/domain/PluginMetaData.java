@@ -6,6 +6,8 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+
 /**
  * Plugin meta-data representation
  *
@@ -14,17 +16,12 @@ import java.util.List;
 public class PluginMetaData {
 
     /**
-     * The plugin identifier
-     */
-    private String pluginId;
-
-    /**
      * The plugin class name
      */
     private String pluginClassName;
 
     /**
-     * The interface used by the plugin 
+     * The interface used by the plugin
      */
     private String interfaceName;
 
@@ -32,6 +29,11 @@ public class PluginMetaData {
      * The author of the plugin
      */
     private String author;
+
+    /**
+     * The plugin identifier
+     */
+    private String pluginId;
 
     /**
      * The version of the plugin
@@ -44,16 +46,51 @@ public class PluginMetaData {
     private String description;
 
     /**
+     * An URL link to the web site of the plugin.
+     */
+    private String url;
+
+    /**
+     * An email to contact the plugin's author.
+     */
+    private String contact;
+
+    /**
+     * The legal owner of the plugin.
+     */
+    private String owner;
+
+    /**
+     * Licence of the plugin.
+     */
+    private String licence;
+
+    /**
      * The parameters of the plugin
      */
     private List<PluginParameterType> parameters;
 
+    public PluginMetaData(Plugin plugin) {
+        author = plugin.author();
+        pluginId = plugin.id();
+        version = plugin.version();
+        description = plugin.description();
+        url = plugin.url();
+        contact = plugin.contact();
+        owner = plugin.owner();
+        licence = plugin.licence();
+    }
+
+    public PluginMetaData() {
+
+    }
+
     public String getPluginId() {
-        return this.pluginId;
+        return pluginId;
     }
 
     public void setPluginId(String pPluginId) {
-        this.pluginId = pPluginId;
+        pluginId = pPluginId;
     }
 
     public String getPluginClassName() {
@@ -61,7 +98,7 @@ public class PluginMetaData {
     }
 
     public void setPluginClassName(String pPluginClassName) {
-        this.pluginClassName = pPluginClassName;
+        pluginClassName = pPluginClassName;
     }
 
     public String getInterfaceName() {
@@ -69,31 +106,63 @@ public class PluginMetaData {
     }
 
     public void setInterfaceName(String pInterfaceClassName) {
-        this.interfaceName = pInterfaceClassName;
+        interfaceName = pInterfaceClassName;
     }
 
     public String getAuthor() {
-        return this.author;
+        return author;
     }
 
     public void setAuthor(String pAuthor) {
-        this.author = pAuthor;
+        author = pAuthor;
     }
 
     public String getVersion() {
-        return this.version;
+        return version;
     }
 
     public void setVersion(String pVersion) {
-        this.version = pVersion;
+        version = pVersion;
     }
 
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public void setDescription(String pDescription) {
-        this.description = pDescription;
+        description = pDescription;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String pUrl) {
+        url = pUrl;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String pContact) {
+        contact = pContact;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String pOwner) {
+        owner = pOwner;
+    }
+
+    public String getLicence() {
+        return licence;
+    }
+
+    public void setLicence(String pLicence) {
+        licence = pLicence;
     }
 
     public List<PluginParameterType> getParameters() {
@@ -101,7 +170,7 @@ public class PluginMetaData {
     }
 
     public void setParameters(List<PluginParameterType> pParameters) {
-        this.parameters = pParameters;
+        parameters = pParameters;
     }
 
 }

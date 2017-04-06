@@ -13,11 +13,11 @@ import fr.cnes.regards.plugins.utils.ISamplePlugin;
 
 /**
  * ISamplePlugin
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
-@Plugin(author = "CSSI", description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1")
+@Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "http://www.c-s.fr/")
 public class ComplexPlugin implements ISamplePlugin {
 
     /**
@@ -51,7 +51,7 @@ public class ComplexPlugin implements ISamplePlugin {
     @Override
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
-        if (this.isActive) {
+        if (isActive) {
             str.append(this.getClass().getName() + "-" + pMessage);
         } else {
 
@@ -62,9 +62,9 @@ public class ComplexPlugin implements ISamplePlugin {
 
     @Override
     public int add(final int pFirst, final int pSecond) {
-        final float f = complexInterfacePlugin.mult(4,8);
+        final float f = complexInterfacePlugin.mult(4, 8);
         LOGGER.info("float=" + f);
-        final int res = this.coef * (pFirst + pSecond);
+        final int res = coef * (pFirst + pSecond);
         LOGGER.info("add result : " + res);
         return res;
     }
@@ -78,8 +78,7 @@ public class ComplexPlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "|active:" + this.isActive + "|coeff:"
-                + this.coef);
+        LOGGER.info("Init method call : " + this.getClass().getName() + "|active:" + isActive + "|coeff:" + coef);
         // + "|plg_conf:" + this.pluginConfiguration.getId()+ "|plg_int:" + this.complexInterfacePlugin.toString()
     }
 

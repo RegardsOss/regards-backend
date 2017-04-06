@@ -9,11 +9,11 @@ import fr.cnes.regards.plugins.utils.ISamplePlugin;
 
 /**
  * ISamplePlugin
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
-@Plugin(author = "CSSI", description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1")
+@Plugin(description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "http://www.c-s.fr/")
 public class ComplexErrorPlugin implements ISamplePlugin {
 
     /**
@@ -36,7 +36,7 @@ public class ComplexErrorPlugin implements ISamplePlugin {
     @Override
     public String echo(String pMessage) {
         final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getName() + "-" + pMessage + this.interfacePlugin.toString());
+        str.append(this.getClass().getName() + "-" + pMessage + interfacePlugin.toString());
         return str.toString();
     }
 

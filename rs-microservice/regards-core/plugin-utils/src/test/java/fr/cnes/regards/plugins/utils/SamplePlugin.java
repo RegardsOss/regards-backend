@@ -12,11 +12,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SamplePlugin
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
-@Plugin(author = "CSSI", description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1")
+@Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "http://www.c-s.fr/")
 public class SamplePlugin implements ISamplePlugin {
 
     /**
@@ -45,8 +45,8 @@ public class SamplePlugin implements ISamplePlugin {
     @Override
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
-        if (this.isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + " - "+ this.suffix);
+        if (isActive) {
+            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
         } else {
 
             str.append(this.getClass().getName() + ":is not active");
@@ -56,7 +56,7 @@ public class SamplePlugin implements ISamplePlugin {
 
     @Override
     public int add(final int pFist, final int pSecond) {
-        final int res = this.coef * (pFist + pSecond);
+        final int res = coef * (pFist + pSecond);
         LOGGER.info("add result : " + res);
         return res;
     }
@@ -66,8 +66,8 @@ public class SamplePlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + this.suffix + "|active:"
-                + this.isActive + "|coeff:" + this.coef);
+        LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
+                + "|coeff:" + coef);
     }
 
 }

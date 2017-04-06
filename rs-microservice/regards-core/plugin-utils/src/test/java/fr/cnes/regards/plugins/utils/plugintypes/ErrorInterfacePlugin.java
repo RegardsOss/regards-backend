@@ -12,11 +12,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ISamplePlugin
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
-@Plugin(author = "CSSI", description = "Sample plugin test", id = "anErrorPluginInterface", version = "0.0.1")
+@Plugin(description = "Sample plugin test", id = "anErrorPluginInterface", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "http://www.c-s.fr/")
 public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
 
     /**
@@ -35,7 +35,7 @@ public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "|long:" + this.aLong);
+        LOGGER.info("Init method call : " + this.getClass().getName() + "|long:" + aLong);
     }
 
     @Override
