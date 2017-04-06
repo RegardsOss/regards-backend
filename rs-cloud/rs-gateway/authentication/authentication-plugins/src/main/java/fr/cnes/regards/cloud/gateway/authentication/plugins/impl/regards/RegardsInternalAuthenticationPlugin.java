@@ -19,15 +19,14 @@ import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
 /**
- *
- * Class SimpleAuthentication
- *
- * Regards internal authentication plugin
+ * Class SimpleAuthentication Regards internal authentication plugin
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@Plugin(author = "CSSI", description = "Regards internal authentication plugin", id = "RegardsInternalAuthenticationPlugin", version = "1.0")
+@Plugin(description = "Regards internal authentication plugin", id = "RegardsInternalAuthenticationPlugin",
+        version = "1.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
@@ -67,15 +66,16 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
                 status = AuthenticationStatus.ACCESS_DENIED;
                 errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Authentication failed.";
             }
-        } else if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-            status = AuthenticationStatus.ACCOUNT_NOT_FOUND;
-            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                         pEmail);
-        } else {
-            status = AuthenticationStatus.ACCESS_DENIED;
-            errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
-                    + validateResponse.getStatusCode().toString();
-        }
+        } else
+            if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                status = AuthenticationStatus.ACCOUNT_NOT_FOUND;
+                errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
+                                             pEmail);
+            } else {
+                status = AuthenticationStatus.ACCESS_DENIED;
+                errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
+                        + validateResponse.getStatusCode().toString();
+            }
 
         return new AuthenticationPluginResponse(status, pEmail, errorMessage, rootLogin.equals(pEmail));
 

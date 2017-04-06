@@ -46,15 +46,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
- * Class Oauth2AuthenticationManager
- *
- * Authentication Manager. This class provide the authentication process to check user/password and retrieve user
- * account.
+ * Class Oauth2AuthenticationManager Authentication Manager. This class provide the authentication process to check
+ * user/password and retrieve user account.
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
  * @since 1.0-SNPASHOT
  */
 public class Oauth2AuthenticationManager implements AuthenticationManager, BeanFactoryAware {
@@ -87,12 +83,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     /**
      * The default constructor.
      *
-     * @param pMicroserviceName
-     *            The microservice name
-     * @param pDefaultAuthenticationPlugin
-     *            The {@link IAuthenticationPlugin} to used
-     * @param pJwtService
-     *            The {@link JWTService} to used
+     * @param pMicroserviceName The microservice name
+     * @param pDefaultAuthenticationPlugin The {@link IAuthenticationPlugin} to used
+     * @param pJwtService The {@link JWTService} to used
      */
     public Oauth2AuthenticationManager(final String pMicroserviceName,
             final IAuthenticationPlugin pDefaultAuthenticationPlugin, final JWTService pJwtService) {
@@ -141,15 +134,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     /**
-     *
      * Authenticate a user for a given project
      *
-     * @param pLogin
-     *            user login
-     * @param pPassword
-     *            user password
-     * @param pScope
-     *            project to authenticate to
+     * @param pLogin user login
+     * @param pPassword user password
+     * @param pScope project to authenticate to
      * @return Authentication token
      * @since 1.0-SNAPSHOT
      */
@@ -177,15 +166,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     /**
-     *
      * Authenticate thought authentication plugins for the given scope
      *
-     * @param pLogin
-     *            User login
-     * @param pPassword
-     *            User password
-     * @param pScope
-     *            Project
+     * @param pLogin User login
+     * @param pPassword User password
+     * @param pScope Project
      * @return Authentication
      * @since 1.0-SNAPSHOT
      */
@@ -214,11 +199,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     /**
-     *
      * Check with administration service, the existence of the given project
      *
-     * @param pScope
-     *            Project to check
+     * @param pScope Project to check
      * @return [true|false]
      * @since 1.0-SNAPSHOT
      */
@@ -236,11 +219,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     /**
-     *
      * Create account into REGARDS internal accounts system if the account does already exists
      *
-     * @param pToken
-     *            Authentication token containing user details informations
+     * @param pToken Authentication token containing user details informations
      * @since 1.0-SNAPSHOT
      */
     private void createMissingAccount(final Authentication pToken) {
@@ -262,17 +243,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     /**
-     *
      * Do authentication job with the given authentication plugin
      *
-     * @param pPlugin
-     *            IAuthenticationPlugin to use for authentication
-     * @param pUserName
-     *            user name
-     * @param pUserPassword
-     *            user password
-     * @param pScope
-     *            scope
+     * @param pPlugin IAuthenticationPlugin to use for authentication
+     * @param pUserName user name
+     * @param pUserPassword user password
+     * @param pScope scope
      * @return AbstractAuthenticationToken
      */
     private AbstractAuthenticationToken doPluginAuthentication(final IAuthenticationPlugin pPlugin,
@@ -285,6 +261,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         if (!validator.validate(response).isEmpty()) {
             final String message = String.format("Access denied for user %s. Authentication informations are not valid",
                                                  pUserName);
+            // TODO: get the account and if it exist increment the counter of failing and if it reaches the threshold
+            // then lock it
             throw new BadCredentialsException(message);
         }
 
@@ -319,16 +297,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     }
 
     /**
-     *
      * Retrieve user information from internal REGARDS database
      *
-     * @param pEmail
-     *            user email
-     * @param pScope
-     *            project to authenticate to
+     * @param pEmail user email
+     * @param pScope project to authenticate to
      * @return UserDetails
-     * @throws EntityNotFoundException
-     *             user not found in internal REGARDS database
+     * @throws EntityNotFoundException user not found in internal REGARDS database
      * @since 1.0-SNAPSHOT
      */
     public UserDetails retrieveUserDetails(final String pEmail, final String pScope) throws EntityNotFoundException {

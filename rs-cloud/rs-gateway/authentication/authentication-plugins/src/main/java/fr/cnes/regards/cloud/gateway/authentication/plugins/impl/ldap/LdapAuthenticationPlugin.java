@@ -1,4 +1,6 @@
-/* license_placeholder */
+/*
+ * LICENSE_PLACEHOLDER
+ */
 /*
  * VERSION-HISTORY
  *
@@ -29,16 +31,16 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.Authenticatio
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+
 /**
- *
- * Class LdapAuthenticationPlugin
- *
- * LDAP Authentication plugin.
+ * Class LdapAuthenticationPlugin LDAP Authentication plugin.
  *
  * @author Sébastien Binda
  * @since 1.0
  */
-@Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0")
+@Plugin(description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
@@ -116,7 +118,6 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     private String ldapEmailAttribute;
 
     /**
-     *
      * Initialize default values
      *
      * @since 1.0-SNAPSHOT
@@ -141,7 +142,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      * Overridden method
      *
      * @see fr.cs.regards.interfaces.plugins.IAuthenticationPlugin#authenticate(java.lang.String, java.lang.String,
-     *      java.lang.String)
+     * java.lang.String)
      * @since 1.0
      */
     @Override
@@ -197,13 +198,10 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     }
 
     /**
-     *
      * Retrieve LDAP connection
      *
-     * @param pHost
-     *            ldap server host
-     * @param pPort
-     *            ldap server port
+     * @param pHost ldap server host
+     * @param pPort ldap server port
      * @return LdapConnection
      * @since 1.0-SNAPSHOT
      */
@@ -212,18 +210,13 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     }
 
     /**
-     *
      * Retrieve user name from ldap server
      *
-     * @param pLdapContext
-     *            ldap connection
-     * @param pDn
-     *            ldap dn
-     * @param pLogin
-     *            User login
+     * @param pLdapContext ldap connection
+     * @param pDn ldap dn
+     * @param pLogin User login
      * @return user email
-     * @throws LdapException
-     *             error during LDAP transation
+     * @throws LdapException error during LDAP transation
      * @since 1.0-SNAPSHOT
      */
     private String getEmail(final LdapConnection pLdapContext, final String pDn, final String pLogin)
