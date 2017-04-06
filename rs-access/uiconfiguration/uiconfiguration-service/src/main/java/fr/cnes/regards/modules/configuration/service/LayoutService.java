@@ -63,8 +63,14 @@ public class LayoutService implements ILayoutService {
     /**
      * The email validation template as html
      */
-    @Value("classpath:DefaultApplicationLayout.json")
-    private Resource defaultApplicationLayoutResource;
+    @Value("classpath:DefaultUserApplicationLayout.json")
+    private Resource defaultUserApplicationLayoutResource;
+
+    /**
+     * The email validation template as html
+     */
+    @Value("classpath:DefaultPortalApplicationLayout.json")
+    private Resource defaultPortalApplicationLayoutResource;
 
     /**
      * Runtime tenant resolver
@@ -81,12 +87,21 @@ public class LayoutService implements ILayoutService {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    @Value("${regards.access.multitenant:true}")
+    private boolean isMultitenentMicroservice;
+
     @PostConstruct
     public void init() {
-        // FIXME : not usefull for instance access / disable subscription
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
-        for (final String tenant : tenantResolver.getAllTenants()) {
-            initProjectLayout(tenant);
+        if (isMultitenentMicroservice) {
+            // Multitenant version of the microservice.
+            // Initialize subscriber for new tenant connection and initialize database if not already done
+            instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
+            for (final String tenant : tenantResolver.getAllTenants()) {
+                initProjectLayout(tenant);
+            }
+        } else {
+            // Initialize database if not already done
+            initInstanceLayout();
         }
     }
 
@@ -101,6 +116,24 @@ public class LayoutService implements ILayoutService {
 
     }
 
+    public void initInstanceLayout() {
+        try {
+            final String layoutConf = readDefaultLayoutFileResource();
+            final Layout layout = new Layout();
+            layout.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
+            layout.setLayout(layoutConf);
+
+            try {
+                retrieveLayout(LayoutDefaultApplicationIds.PORTAL.toString());
+            } catch (final EntityNotFoundException e) {
+                LOG.info("Initializing new layout for Portal application");
+                repository.save(layout);
+            }
+        } catch (final IOException e) {
+            throw new RuntimeException("Error reading layout default configuration file", e);
+        }
+    }
+
     @Override
     public void initProjectLayout(final String pTenant) {
         try {
@@ -113,6 +146,7 @@ public class LayoutService implements ILayoutService {
             try {
                 retrieveLayout(LayoutDefaultApplicationIds.USER.toString());
             } catch (final EntityNotFoundException e) {
+                LOG.info("Initializing new layout for User application (project {})", pTenant);
                 repository.save(layout);
             }
         } catch (final IOException e) {
@@ -168,12 +202,18 @@ public class LayoutService implements ILayoutService {
      * @since 1.0-SNAPSHOT
      */
     private String readDefaultLayoutFileResource() throws IOException {
-        if ((defaultApplicationLayoutResource == null) || !defaultApplicationLayoutResource.exists()) {
-            throw new RuntimeException(
-                    "Error reading layout default configuration file" + defaultApplicationLayoutResource.getFilename());
+        Resource resource;
+        if (isMultitenentMicroservice) {
+            // For multintenant the initialization is for User applications.
+            resource = defaultUserApplicationLayoutResource;
+        } else {
+            // For instance the initialization is for Portal applications.
+            resource = defaultPortalApplicationLayoutResource;
         }
-        try (BufferedReader buffer = new BufferedReader(
-                new InputStreamReader(defaultApplicationLayoutResource.getInputStream()))) {
+        if ((resource == null) || !resource.exists()) {
+            throw new RuntimeException("Error reading layout default configuration file" + resource.getFilename());
+        }
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             return buffer.lines().collect(Collectors.joining(System.lineSeparator()));
         }
     }

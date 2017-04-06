@@ -145,7 +145,8 @@ public class PluginController implements IResourceController<Plugin> {
         resourceService.addLink(resource, this.getClass(), "retrievePlugin", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updatePlugin", LinkRels.UPDATE,
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(Plugin.class));
         resourceService.addLink(resource, this.getClass(), "deletePlugin", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;

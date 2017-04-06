@@ -145,7 +145,8 @@ public class ThemeController implements IResourceController<Theme> {
         resourceService.addLink(resource, this.getClass(), "retrieveTheme", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateTheme", LinkRels.UPDATE,
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(Theme.class));
         resourceService.addLink(resource, this.getClass(), "deleteTheme", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;

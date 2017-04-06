@@ -12,6 +12,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
+
 /**
  *
  * Class Theme
@@ -52,6 +54,7 @@ public class Theme {
      */
     @NotNull
     @Column(nullable = false)
+    @Type(type = "text")
     private String configuration;
 
     public Long getId() {

@@ -65,7 +65,7 @@ public class ModuleController implements IResourceController<Module> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<Resource<Module>> retrieveModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("applicationId") final Long pModuleId) throws EntityNotFoundException {
+            @PathVariable("moduleId") final Long pModuleId) throws EntityNotFoundException {
         final Module module = service.retrieveModule(pModuleId);
         final Resource<Module> resource = toResource(module);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -169,7 +169,8 @@ public class ModuleController implements IResourceController<Module> {
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateModule", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(Module.class));
         resourceService.addLink(resource, this.getClass(), "deleteModule", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, pElement.getApplicationId()),
                                 MethodParamFactory.build(Long.class, pElement.getId()));
