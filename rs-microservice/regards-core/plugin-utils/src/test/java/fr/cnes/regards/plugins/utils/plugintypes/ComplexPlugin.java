@@ -17,7 +17,7 @@ import fr.cnes.regards.plugins.utils.ISamplePlugin;
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "http://www.c-s.fr/")
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexPlugin implements ISamplePlugin {
 
     /**
