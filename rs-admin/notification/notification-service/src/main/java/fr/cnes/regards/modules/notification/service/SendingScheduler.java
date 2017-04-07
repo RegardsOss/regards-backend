@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@EnableScheduling
 public class SendingScheduler {
 
     /**
@@ -47,12 +49,9 @@ public class SendingScheduler {
     /**
      * Create a new scheduler with passed services and repositories
      *
-     * @param pStrategy
-     *            The notification sending strategy
-     * @param pNotificationService
-     *            The notification service
-     * @param pNotificationSettingsRepository
-     *            The notification settings repository
+     * @param pStrategy The notification sending strategy
+     * @param pNotificationService The notification service
+     * @param pNotificationSettingsRepository The notification settings repository
      */
     public SendingScheduler(final ISendingStrategy pStrategy, final INotificationService pNotificationService,
             final INotificationSettingsRepository pNotificationSettingsRepository) {
@@ -116,8 +115,7 @@ public class SendingScheduler {
      * We gather the triplet (notification, project user, settings) in a simple agregator class in order to allow the
      * usage of filters on the three entities in the stream.
      *
-     * @param pFilter
-     *            The filter with which filter the project users
+     * @param pFilter The filter with which filter the project users
      */
     private void filterAndSend(final Predicate<NotificationUserSetting> pFilter) {
         // With the stream of unsent notifications
@@ -144,8 +142,7 @@ public class SendingScheduler {
      * Create a filter working on {@link NotificationUserSetting} aggregator class in order to keep only elements for
      * which the setting's <code>frequency</code> is equal to passed.
      *
-     * @param pFrequency
-     *            The frequency for the filter
+     * @param pFrequency The frequency for the filter
      * @return The filter as a {@link Predicate}. Use in a {@link Stream#map} for example.
      */
     private Predicate<NotificationUserSetting> createFrequencyFilter(final NotificationFrequency pFrequency) {
@@ -156,8 +153,7 @@ public class SendingScheduler {
     /**
      * Change the sending strategy
      *
-     * @param pStrategy
-     *            the strategy to set
+     * @param pStrategy the strategy to set
      */
     public void changeStrategy(final ISendingStrategy pStrategy) {
         strategy = pStrategy;

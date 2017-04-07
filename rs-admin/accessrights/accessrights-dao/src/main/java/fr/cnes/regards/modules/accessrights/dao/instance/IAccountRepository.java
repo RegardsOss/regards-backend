@@ -4,12 +4,14 @@
 package fr.cnes.regards.modules.accessrights.dao.instance;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -18,6 +20,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * Allows execution of Query by Example {@link Example} instances.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sylvain Vissiere-Guerinet
  */
 @InstanceEntity
 public interface IAccountRepository extends JpaRepository<Account, Long> {
@@ -26,10 +29,14 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
      * Find the single {@link Account} with passed <code>email</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pEmail
-     *            The {@link Account}'s <code>email</code>
+     * @param pEmail The {@link Account}'s <code>email</code>
      * @return An optional account
      */
     Optional<Account> findOneByEmail(String pEmail);
+
+    /**
+     * Find all Account which status is not the one provided.
+     */
+    Set<Account> findAllByStatusNot(AccountStatus pStatus);
 
 }
