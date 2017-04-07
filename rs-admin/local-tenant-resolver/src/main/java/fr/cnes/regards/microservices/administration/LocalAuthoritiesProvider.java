@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -88,13 +89,18 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      * @since 1.0-SNAPSHOT
      */
     @Override
-    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> localEndpoints) {
+    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> localEndpoints)
+            throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.debug("Registering endpoints for tenant {}", tenant);
 
-        resourcesService.registerResources(localEndpoints, microserviceName);
+        try {
+            resourcesService.registerResources(localEndpoints, microserviceName);
+        } catch (ModuleException e) {
+            throw new SecurityException(e);
+        }
 
         // get a map that for each ResourcesAccess ra links the roles containing ra
         Set<Role> roles = roleService.retrieveRoles();
@@ -118,7 +124,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities(String tenant) {
+    public List<RoleAuthority> getRoleAuthorities(String tenant) throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);

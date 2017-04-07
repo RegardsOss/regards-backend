@@ -4,7 +4,11 @@
 package fr.cnes.regards.modules.accessrights.service.resources;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +19,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
@@ -37,6 +43,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
+@MultitenantTransactional
 @Service
 public class ResourcesService implements IResourcesService {
 
@@ -75,6 +82,7 @@ public class ResourcesService implements IResourcesService {
                 results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
             }
         } else {
+            // FIXME retrieve resource by page from repository
             // Else retrieve only accessible resources
             final Role currentRole = roleService.retrieveRole(roleName);
             List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(currentRole.getPermissions());
@@ -101,56 +109,59 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName) {
+    public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName)
+            throws ModuleException {
 
-        final List<ResourcesAccess> resources = new ArrayList<>();
-
-        // Retrieve already configured resources for the given microservice
-        final List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
-
-        pResourcesToRegister.forEach(r -> resources.add(createDefaultResourceConfiguration(r, pMicroserviceName)));
-
-        final List<ResourcesAccess> newResources = new ArrayList<>();
-        // Create missing resources
-        for (final ResourcesAccess resource : resources) {
-            if (!existingResources.contains(resource)) {
-                newResources.add(resource);
+        // Compute resource to register as ResourcesAccess
+        List<ResourcesAccess> resources = new ArrayList<>();
+        for (ResourceMapping rm : pResourcesToRegister) {
+            if (rm != null) {
+                ResourcesAccess access = new ResourcesAccess();
+                access.setControllerSimpleName(rm.getControllerSimpleName());
+                access.setDefaultRole(rm.getResourceAccess().role());
+                access.setDescription(rm.getResourceAccess().description());
+                access.setMicroservice(pMicroserviceName);
+                access.setResource(rm.getFullPath());
+                access.setVerb(rm.getMethod());
+                resources.add(access);
+            } else {
+                LOG.debug("Resource mapping is null!");
             }
         }
 
-        // Save missing resources
+        // Retrieve already configured resources for the given microservice
+        List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+
+        // Extract and save new resources
+        List<ResourcesAccess> newResources = new ArrayList<>();
+        for (ResourcesAccess ra : resources) {
+            if (!existingResources.contains(ra)) {
+                newResources.add(ra);
+            }
+        }
         if (!newResources.isEmpty()) {
             resourceAccessRepo.save(newResources);
         }
-    }
 
-    /**
-     *
-     * Create a {@link ResourcesAccess} with default configuration from a {@link ResourceMapping} object.
-     *
-     * @param pResource
-     *            New resource to configure
-     * @param pMicroserviceName
-     *            the microservice name
-     * @return {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
-     */
-    private ResourcesAccess createDefaultResourceConfiguration(final ResourceMapping pResource,
-            final String pMicroserviceName) {
-        final ResourcesAccess defaultResource = new ResourcesAccess(pResource, pMicroserviceName);
+        // TODO clean missing resources
 
-        if (pResource.getResourceAccess() != null) {
-            final String roleName = pResource.getResourceAccess().role().name();
-            try {
-                final Role role = roleService.retrieveRole(roleName);
-                role.addPermission(defaultResource);
-            } catch (final EntityNotFoundException e) {
-                LOG.debug(e.getMessage(), e);
-                LOG.warn("Default role {} for resource {} does not exists.", roleName, defaultResource.getResource());
+        // Compute map by native roles
+        Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
+        for (ResourcesAccess nra : newResources) {
+            Set<ResourcesAccess> set = accessesByDefaultRole.get(nra.getDefaultRole());
+            if (set == null) {
+                set = new HashSet<>();
+                accessesByDefaultRole.put(nra.getDefaultRole(), set);
             }
-
+            set.add(nra);
         }
-        return defaultResource;
+
+        // Link new resources with existing roles
+        for (Map.Entry<DefaultRole, Set<ResourcesAccess>> entry : accessesByDefaultRole.entrySet()) {
+            Role role = roleService.retrieveRole(entry.getKey().toString());
+            roleService.addResourceAccesses(role.getId(),
+                                            entry.getValue().toArray(new ResourcesAccess[entry.getValue().size()]));
+        }
     }
 
     @Override

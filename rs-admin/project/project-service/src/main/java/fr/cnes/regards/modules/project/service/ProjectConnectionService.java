@@ -187,7 +187,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
     @Override
     public void testProjectConnection(Long pConnectionIdentifier) throws ModuleException {
         ProjectConnection connection = retrieveProjectConnectionById(pConnectionIdentifier);
-        DataSource dataSource = DataSourceHelper.createDataSource(connection.getUrl(), connection.getDriverClassName(),
+        DataSource dataSource = DataSourceHelper.createDataSource(connection.getProject().getName(),
+                                                                  connection.getUrl(), connection.getDriverClassName(),
                                                                   connection.getUserName(), connection.getPassword());
         try (Connection conn = dataSource.getConnection()) {
             LOGGER.debug("Connection success");

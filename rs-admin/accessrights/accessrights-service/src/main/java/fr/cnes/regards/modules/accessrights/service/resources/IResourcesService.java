@@ -75,7 +75,8 @@ public interface IResourcesService {
      * @throws ModuleException
      *             if error occurs!
      */
-    void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName);
+    void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName)
+            throws ModuleException;
 
     /**
      * remove a resource access from a role and its descendants

@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -33,7 +34,6 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -125,8 +125,10 @@ public class ProjectUserServiceTest {
         projectUser.setStatus(STATUS);
         projectUser.setMetaData(META_DATA);
         projectUser.setPermissions(PERMISSIONS);
-        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller", HttpVerb.GET));
-        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller", HttpVerb.PUT));
+        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller",
+                RequestMethod.GET, DefaultRole.ADMIN));
+        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller",
+                RequestMethod.PUT, DefaultRole.ADMIN));
         projectUser.setRole(ROLE);
 
         // Mock untested services & repos
@@ -464,11 +466,11 @@ public class ProjectUserServiceTest {
         final List<ResourcesAccess> input = new ArrayList<>();
         // Updating an existing one
         final ResourcesAccess updatedPermission = new ResourcesAccess(0L, "updated desc0", "updated ms0",
-                "updated res0", "Controller", HttpVerb.POST);
+                "updated res0", "Controller", RequestMethod.POST, DefaultRole.ADMIN);
         input.add(updatedPermission);
         // Adding a new permission
         final ResourcesAccess newPermission = new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller",
-                HttpVerb.GET);
+                RequestMethod.GET, DefaultRole.ADMIN);
         input.add(newPermission);
 
         // Define expected result

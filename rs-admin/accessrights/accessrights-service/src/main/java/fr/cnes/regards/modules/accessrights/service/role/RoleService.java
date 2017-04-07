@@ -40,9 +40,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -101,11 +98,6 @@ public class RoleService implements IRoleService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * Security service
-     */
-    private final JWTService jwtService;
-
-    /**
      * AMQP Message subscriber
      */
     private final IInstanceSubscriber instanceSubscriber;
@@ -119,13 +111,12 @@ public class RoleService implements IRoleService {
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            final JWTService pJwtService, final IInstanceSubscriber pInstanceSubscriber) {
+            final IInstanceSubscriber pInstanceSubscriber) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
-        jwtService = pJwtService;
         microserviceName = pMicroserviceName;
         instanceSubscriber = pInstanceSubscriber;
     }
@@ -163,28 +154,14 @@ public class RoleService implements IRoleService {
 
     /**
      * Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
+     *
      */
-    // FIXME method à revoir avec IRuntimeTenantResolver
-    @Override
     public void initDefaultRoles() {
 
-        // Define a consumer injecting the passed tenant in the context
-        final Consumer<? super String> injectTenant = tenant -> {
-            try {
-                jwtService.injectToken(tenant, RoleAuthority.getSysRole(microserviceName), microserviceName);
-            } catch (final JwtException e) {
-                LOG.error(e.getMessage(), e);
-            }
-        };
-
-        // Return the role with same name in db if exists
+        // Return the role with same name in database if exists
         final UnaryOperator<Role> replaceWithRoleFromDb = r -> {
-            try {
-                return retrieveRole(r.getName());
-            } catch (final EntityNotFoundException e) {
-                LOG.debug("Could not find a role in DB, falling back to xml definition.", e);
-                return r;
-            }
+            Optional<Role> dbRole = roleRepository.findOneByName(r.getName());
+            return dbRole.isPresent() ? dbRole.get() : r;
         };
 
         // For passed role, replace parent with its equivalent from the defaultRoles list
@@ -196,19 +173,15 @@ public class RoleService implements IRoleService {
             }
         };
 
-        // Define a consumer creating if needed all default roles on current tenant
-        final Consumer<? super String> createDefaultRolesOnTenant = t -> {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            // Work on tenant
+            runtimeTenantResolver.forceTenant(tenant);
             // Replace all default roles with their db version if exists
             defaultRoles.replaceAll(replaceWithRoleFromDb);
             // Re-plug the parent roles
             defaultRoles.forEach(setParentFromDefaultRoles);
             // Save everything
             defaultRoles.forEach(roleRepository::save);
-        };
-
-        // For each tenant, inject tenant in context and create (if needed) default roles
-        try (Stream<String> tenantsStream = tenantResolver.getAllActiveTenants().stream()) {
-            tenantsStream.peek(injectTenant).forEach(createDefaultRolesOnTenant);
         }
     }
 
@@ -293,7 +266,7 @@ public class RoleService implements IRoleService {
 
     @Override
     public void addResourceAccesses(Long pRoleId, ResourcesAccess... pNewOnes) throws EntityNotFoundException {
-        Role role = roleRepository.findOne(pRoleId);
+        Role role = roleRepository.findOneById(pRoleId);
         if (role == null) {
             throw new EntityNotFoundException(pRoleId, Role.class);
         }
@@ -329,26 +302,12 @@ public class RoleService implements IRoleService {
      */
     private Set<Role> getDescendants(Role pRole) {
         // get sons of this role
-        if (isCurrentUserRole(pRole)) {
-            // if its the current role then
-            return roleRepository.findByParentRoleName(pRole.getName());
-        }
         Set<Role> descendants = roleRepository.findByParentRoleName(pRole.getName());
         // for each son get its descendants
         for (Role son : descendants) {
             descendants.addAll(getDescendants(son));
         }
         return descendants;
-    }
-
-    /**
-     * Check if the given role is the current role(real one or borrowed) of the user
-     *
-     * @param pRole
-     * @return true if the given role is the one of the user
-     */
-    private boolean isCurrentUserRole(Role pRole) {
-        return SecurityUtils.getActualRole().equals(pRole.getName());
     }
 
     /**
@@ -541,9 +500,8 @@ public class RoleService implements IRoleService {
 
     @Override
     public Set<Role> retrieveBorrowableRoles() throws JwtException {
-        // get User
-        JWTAuthentication authentication = jwtService.getCurrentToken();
-        String email = authentication.getName();
+
+        String email = SecurityUtils.getActualUser();
         ProjectUser user = projectUserRepository.findOneByEmail(email).get();
         // get Original Role of the user
         Role originalRole = user.getRole();

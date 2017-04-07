@@ -8,8 +8,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
 /**
@@ -37,7 +37,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @since 1.0-SNAPSHOT
      */
     ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String pResourceFullPath,
-            HttpVerb pVerb);
+            RequestMethod pVerb);
 
     /**
      *

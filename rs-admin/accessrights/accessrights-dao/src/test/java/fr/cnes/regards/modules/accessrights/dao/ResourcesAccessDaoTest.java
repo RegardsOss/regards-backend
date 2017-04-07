@@ -12,13 +12,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -78,13 +78,13 @@ public class ResourcesAccessDaoTest {
          * Create 3 ResourcesAcces
          */
         final ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL, "controller",
-                HttpVerb.GET);
+                RequestMethod.GET, DefaultRole.PUBLIC);
 
         final ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, "controller",
-                HttpVerb.GET);
+                RequestMethod.GET, DefaultRole.REGISTERED_USER);
 
         final ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, "controller",
-                HttpVerb.GET);
+                RequestMethod.GET, DefaultRole.PROJECT_ADMIN);
 
         /*
          * Set Permission to Role and persist the Role

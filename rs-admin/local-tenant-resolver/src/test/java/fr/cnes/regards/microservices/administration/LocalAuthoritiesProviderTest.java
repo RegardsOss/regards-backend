@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -28,7 +29,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
@@ -107,13 +107,13 @@ public class LocalAuthoritiesProviderTest {
 
         resourcesAccessRepository.deleteAll();
         resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", HttpVerb.GET));
+                "Controller", RequestMethod.GET, DefaultRole.ADMIN));
         resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", HttpVerb.PUT));
+                "Controller", RequestMethod.PUT, DefaultRole.ADMIN));
         resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", HttpVerb.POST));
+                "Controller", RequestMethod.POST, DefaultRole.ADMIN));
         resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", HttpVerb.DELETE));
+                "Controller", RequestMethod.DELETE, DefaultRole.ADMIN));
     }
 
     /**
