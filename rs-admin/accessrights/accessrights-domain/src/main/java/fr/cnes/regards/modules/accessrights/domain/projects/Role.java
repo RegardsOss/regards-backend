@@ -3,15 +3,11 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.ForeignKey;
@@ -84,25 +80,6 @@ public class Role implements IIdentifiable<Long> {
     private Set<ResourcesAccess> permissions;
 
     /**
-     * Role associated authorized IP addresses
-     */
-    @Column(name = "authorized_addresses")
-    @Convert(converter = RoleAuthorizedAdressesConverter.class)
-    private List<String> authorizedAddresses;
-
-    /**
-     * Are the cors requests authorized for this role ?
-     */
-    @Column(name = "cors_requests_authorized")
-    private boolean isCorsRequestsAuthorized;
-
-    /**
-     * If CORS requests are authorized for this role, this parameter indicates the limit date of the authorization
-     */
-    @Column(name = "cors_requests_auth_end_date")
-    private LocalDateTime corsRequestsAuthorizationEndDate;
-
-    /**
      * Is a default role ?
      */
     @Column(name = "is_default")
@@ -124,9 +101,7 @@ public class Role implements IIdentifiable<Long> {
         super();
         isDefault = false;
         isNative = false;
-        isCorsRequestsAuthorized = true;
         permissions = new HashSet<>();
-        authorizedAddresses = new ArrayList<>();
     }
 
     public Role(final String pName, final Role pParentRole) {
@@ -190,51 +165,6 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @return the authorizedAddresses
-     */
-    public List<String> getAuthorizedAddresses() {
-        return authorizedAddresses;
-    }
-
-    /**
-     * @param pAuthorizedAddresses
-     *            the authorizedAddresses to set
-     */
-    public void setAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
-        authorizedAddresses = pAuthorizedAddresses;
-    }
-
-    /**
-     * @return the isCorsRequestsAuthorized
-     */
-    public boolean isCorsRequestsAuthorized() {
-        return isCorsRequestsAuthorized;
-    }
-
-    /**
-     * @param pIsCorsRequestsAuthorized
-     *            the isCorsRequestsAuthorized to set
-     */
-    public void setCorsRequestsAuthorized(final boolean pIsCorsRequestsAuthorized) {
-        isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
-    }
-
-    /**
-     * @return the corsRequestsAuthorizationEndDate
-     */
-    public LocalDateTime getCorsRequestsAuthorizationEndDate() {
-        return corsRequestsAuthorizationEndDate;
-    }
-
-    /**
-     * @param pCorsRequestsAuthorizationEndDate
-     *            the corsRequestsAuthorizationEndDate to set
-     */
-    public void setCorsRequestsAuthorizationEndDate(final LocalDateTime pCorsRequestsAuthorizationEndDate) {
-        corsRequestsAuthorizationEndDate = pCorsRequestsAuthorizationEndDate;
-    }
-
-    /**
      * @return the isDefault
      */
     public boolean isDefault() {
@@ -287,7 +217,7 @@ public class Role implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -297,7 +227,7 @@ public class Role implements IIdentifiable<Long> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        Role other = (Role) obj;
+        final Role other = (Role) obj;
         if (name == null) {
             if (other.name != null) {
                 return false;
@@ -311,9 +241,7 @@ public class Role implements IIdentifiable<Long> {
 
     @Override
     public String toString() {
-        return "Role [id=" + id + ", name=" + name + ", parentRole=" + parentRole + ", authorizedAddresses="
-                + authorizedAddresses + ", isCorsRequestsAuthorized=" + isCorsRequestsAuthorized
-                + ", corsRequestsAuthorizationEndDate=" + corsRequestsAuthorizationEndDate + ", isDefault=" + isDefault
+        return "Role [id=" + id + ", name=" + name + ", parentRole=" + parentRole + ", isDefault=" + isDefault
                 + ", isNative=" + isNative + "]";
     }
 

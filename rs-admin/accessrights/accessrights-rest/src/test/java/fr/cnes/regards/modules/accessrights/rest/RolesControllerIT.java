@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.rest;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -166,7 +165,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to update a role and handle fail cases.")
     public void updateRole() {
         // Grab a role and change something
-        roleTest.setCorsRequestsAuthorizationEndDate(LocalDateTime.now().plusDays(2));
+        roleTest.setName("newValue");
 
         // Regular case
         List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -290,7 +289,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final Set<Role> roles = roleService.retrieveInheritedRoles(publicRole);
         // Number of roles should be all Default roles except PUBLIC(which is parent of the hierarchy wanted) and
         // PROJECT_ADMIN, INSTANCE_ADMIN which has no parent plus the default ROLE Create for those tests.
-        int defaultRoleSize = DefaultRole.values().length;
+        final int defaultRoleSize = DefaultRole.values().length;
         Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 3) + 1));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));

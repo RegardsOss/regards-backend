@@ -183,14 +183,15 @@ public class RoleServiceTest {
     @Purpose("Check that the system retrieve the good roles that can be borrowed")
     public void retrieveBorrowableRoles() throws JwtException {
         // mock JWTAuthentication
-        JWTAuthentication token = new JWTAuthentication("");
-        UserDetails user = new UserDetails();
+        final JWTAuthentication token = new JWTAuthentication("");
+        final UserDetails user = new UserDetails();
         user.setName("test@test.test");
         user.setRole("ADMIN");
         token.setUser(user);
         Mockito.when(jwtService.getCurrentToken()).thenReturn(token);
         // mock project user
-        ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new ArrayList<>());
+        final ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(),
+                new ArrayList<>());
         Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
         Set<Role> result = roleService.retrieveBorrowableRoles();
@@ -338,7 +339,7 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         // Change something on the role
-        rolePublic.setCorsRequestsAuthorized(!rolePublic.isCorsRequestsAuthorized());
+        rolePublic.setNative(false);
 
         // Do the update
         roleService.updateRole(PUBLIC_ID, rolePublic);
@@ -440,18 +441,18 @@ public class RoleServiceTest {
 
         // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
-            Set<Role> sonsOfPublic = new HashSet<>();
+            final Set<Role> sonsOfPublic = new HashSet<>();
             sonsOfPublic.add(roleRegisteredUser);
             sonsOfPublic.add(new Role("TEST", rolePublic));
             return sonsOfPublic;
         });
         Mockito.when(roleRepository.findByParentRoleName(roleRegisteredUser.getName())).thenAnswer(pInvocation -> {
-            Set<Role> sonsOfRU = new HashSet<>();
+            final Set<Role> sonsOfRU = new HashSet<>();
             sonsOfRU.add(roleAdmin);
             return sonsOfRU;
         });
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenAnswer(pInvocation -> {
-            Set<Role> sonsOfAdmin = new HashSet<>();
+            final Set<Role> sonsOfAdmin = new HashSet<>();
             return sonsOfAdmin;
         });
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
@@ -501,17 +502,17 @@ public class RoleServiceTest {
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
         // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN <- PROJECT ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
-            Set<Role> sonsOfPublic = new HashSet<>();
+            final Set<Role> sonsOfPublic = new HashSet<>();
             sonsOfPublic.add(roleRegisteredUser);
             return sonsOfPublic;
         });
         Mockito.when(roleRepository.findByParentRoleName(roleRegisteredUser.getName())).thenAnswer(pInvocation -> {
-            Set<Role> sonsOfRU = new HashSet<>();
+            final Set<Role> sonsOfRU = new HashSet<>();
             sonsOfRU.add(roleAdmin);
             return sonsOfRU;
         });
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenAnswer(pInvocation -> {
-            Set<Role> sonsOfAdmin = new HashSet<>();
+            final Set<Role> sonsOfAdmin = new HashSet<>();
             sonsOfAdmin.add(roleProjectAdmin);
             return sonsOfAdmin;
         });

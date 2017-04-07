@@ -81,9 +81,6 @@ public class RoleTest {
         projectUsers.add(new ProjectUser());
         authorizedAddresses.add("authorizedAddress");
         role = new Role(name, parentRole);
-        role.setAuthorizedAddresses(authorizedAddresses);
-        role.setCorsRequestsAuthorizationEndDate(corsRequestsAuthorizationEndDate);
-        role.setCorsRequestsAuthorized(isCorsRequestsAuthorized);
         role.setDefault(isDefault);
         role.setId(id);
         role.setName(name);
@@ -104,9 +101,6 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(null, testRole.getParentRole());
         Assert.assertEquals(new HashSet<>(), testRole.getPermissions());
-        Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
-        Assert.assertEquals(true, testRole.isCorsRequestsAuthorized());
-        Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
     }
 
     /**
@@ -121,9 +115,6 @@ public class RoleTest {
         Assert.assertEquals(false, testRole.isDefault());
         Assert.assertEquals(parentRole, testRole.getParentRole());
         Assert.assertEquals(new HashSet<>(), testRole.getPermissions());
-        Assert.assertEquals(new ArrayList<>(), testRole.getAuthorizedAddresses());
-        Assert.assertEquals(true, testRole.isCorsRequestsAuthorized());
-        Assert.assertEquals(null, testRole.getCorsRequestsAuthorizationEndDate());
     }
 
     /**
@@ -233,63 +224,6 @@ public class RoleTest {
         newPermissions.add(new ResourcesAccess(localId));
         role.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, role.getPermissions());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#getAuthorizedAddresses()}.
-     */
-    @Test
-    public void testGetAuthorizedAddresses() {
-        Assert.assertEquals(authorizedAddresses, role.getAuthorizedAddresses());
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#setAuthorizedAddresses(java.util.List)}.
-     */
-    @Test
-    public void testSetAuthorizedAddresses() {
-        final List<String> newAuthorizedAddresses = new ArrayList<String>();
-        newAuthorizedAddresses.add("newAddress");
-        role.setAuthorizedAddresses(newAuthorizedAddresses);
-        Assert.assertEquals(newAuthorizedAddresses, role.getAuthorizedAddresses());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#isCorsRequestsAuthorized()}.
-     */
-    @Test
-    public void testIsCorsRequestsAuthorized() {
-        Assert.assertEquals(isCorsRequestsAuthorized, role.isCorsRequestsAuthorized());
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#setCorsRequestsAuthorized(boolean)}.
-     */
-    @Test
-    public void testSetCorsRequestsAuthorized() {
-        role.setCorsRequestsAuthorized(!isCorsRequestsAuthorized);
-        Assert.assertEquals(!isCorsRequestsAuthorized, role.isCorsRequestsAuthorized());
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#getCorsRequestsAuthorizationEndDate()}.
-     */
-    @Test
-    public void testGetCorsRequestsAuthorizationEndDate() {
-        Assert.assertEquals(corsRequestsAuthorizationEndDate, role.getCorsRequestsAuthorizationEndDate());
-    }
-
-    /**
-     * Test method for {@link Role#setCorsRequestsAuthorizationEndDate(LocalDateTime)}.
-     */
-    @Test
-    public void testSetCorsRequestsAuthorizationEndDate() {
-        final LocalDateTime newCorsRequestsAuthorizationEndDate = LocalDateTime.now();
-        role.setCorsRequestsAuthorizationEndDate(newCorsRequestsAuthorizationEndDate);
-        Assert.assertEquals(newCorsRequestsAuthorizationEndDate, role.getCorsRequestsAuthorizationEndDate());
     }
 
 }

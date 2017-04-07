@@ -40,8 +40,7 @@ public class RoleFactory {
     /**
      * The parent role.
      * <p/>
-     * Must not be null except if current role is PUBLIC. Validated via type-level
-     * {@link HasValidParent} annotation.
+     * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasValidParent} annotation.
      */
     private Role parentRole;
 
@@ -89,9 +88,6 @@ public class RoleFactory {
         name = forDefaultValues.getName();
         parentRole = forDefaultValues.getParentRole();
         permissions = forDefaultValues.getPermissions();
-        authorizedAddresses = forDefaultValues.getAuthorizedAddresses();
-        isCorsRequestsAuthorized = forDefaultValues.isCorsRequestsAuthorized();
-        corsRequestsAuthorizationEndDate = forDefaultValues.getCorsRequestsAuthorizationEndDate();
         isDefault = forDefaultValues.isDefault();
         isNative = forDefaultValues.isNative();
     }
@@ -107,9 +103,6 @@ public class RoleFactory {
         toCreate.setName(name);
         toCreate.setParentRole(parentRole);
         toCreate.setPermissions(permissions);
-        toCreate.setAuthorizedAddresses(authorizedAddresses);
-        toCreate.setCorsRequestsAuthorized(isCorsRequestsAuthorized);
-        toCreate.setCorsRequestsAuthorizationEndDate(corsRequestsAuthorizationEndDate);
         toCreate.setDefault(isDefault);
         toCreate.setNative(isNative);
         return toCreate;
