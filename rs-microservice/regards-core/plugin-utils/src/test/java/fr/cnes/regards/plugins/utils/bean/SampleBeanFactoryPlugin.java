@@ -13,11 +13,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SampleBeanFactoryPlugin
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
-@Plugin(author = "CSSI", description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1")
+@Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SampleBeanFactoryPlugin implements ISamplePlugin {
 
     /**
@@ -32,7 +32,7 @@ public class SampleBeanFactoryPlugin implements ISamplePlugin {
     private String suffix;
 
     /**
-     * An Autowired field 
+     * An Autowired field
      */
     @Autowired
     private ISampleBeanService sampleBeanService;
@@ -40,7 +40,7 @@ public class SampleBeanFactoryPlugin implements ISamplePlugin {
     @Override
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getCanonicalName() + " -> " + pMessage + " - " + this.suffix);
+        str.append(this.getClass().getCanonicalName() + " -> " + pMessage + " - " + suffix);
         sampleBeanService.setId("---> add string with PluginService");
         return str.toString() + sampleBeanService.getId();
     }
@@ -50,7 +50,7 @@ public class SampleBeanFactoryPlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + " suffixe=" + this.suffix);
+        LOGGER.info("Init method call : " + " suffixe=" + suffix);
     }
 
 }
