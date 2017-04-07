@@ -96,9 +96,12 @@ public class MethodAuthorizationService {
 
     /**
      * After bean construction
+     *
+     * @throws SecurityException
+     *             if error occurs
      */
     @PostConstruct
-    public void init() {
+    public void init() throws SecurityException {
         // Init all authorities
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             refreshAuthorities(tenant);
@@ -113,9 +116,14 @@ public class MethodAuthorizationService {
      *
      * Refresh all authorities configuration information for tenant
      *
+     * @param tenant
+     *            tenant
+     * @throws SecurityException
+     *             if error occurs
+     *
      * @since 1.0-SNAPSHOT
      */
-    private void refreshAuthorities(String tenant) {
+    private void refreshAuthorities(String tenant) throws SecurityException {
         registerMethodResourcesAccessByTenant(tenant);
         collectRolesByTenant(tenant);
     }
@@ -126,9 +134,11 @@ public class MethodAuthorizationService {
      *
      * @param pTenant
      *            tenant
+     * @throws SecurityException
+     *             if error occurs
      * @since 1.0-SNAPSHOT
      */
-    private void registerMethodResourcesAccessByTenant(String pTenant) {
+    private void registerMethodResourcesAccessByTenant(String pTenant) throws SecurityException {
         final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(pTenant, getResources());
         if (grantedAuthoritiesByTenant.get(pTenant) != null) {
             grantedAuthoritiesByTenant.get(pTenant).clear();
@@ -144,9 +154,11 @@ public class MethodAuthorizationService {
      *
      * @param pTenant
      *            tenant
+     * @throws SecurityException
+     *             if cannot retrieve role
      * @since 1.0-SNAPSHOT
      */
-    private void collectRolesByTenant(String pTenant) {
+    private void collectRolesByTenant(String pTenant) throws SecurityException {
         final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities(pTenant);
         if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
             grantedRolesIpAddressesByTenant.get(pTenant).clear();
@@ -404,7 +416,11 @@ public class MethodAuthorizationService {
 
         @Override
         public void handle(final TenantWrapper<UpdateAuthoritiesEvent> pT) {
-            refreshAuthorities(pT.getTenant());
+            try {
+                refreshAuthorities(pT.getTenant());
+            } catch (SecurityException e) {
+                LOG.error("Error while updating authorities", e);
+            }
         }
     }
 }

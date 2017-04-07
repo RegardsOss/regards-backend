@@ -29,6 +29,7 @@ import com.google.gson.TypeAdapterFactory;
 
 import fr.cnes.regards.framework.gson.adapters.LocalDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
@@ -38,7 +39,6 @@ import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
  * GSON support auto configuration
  *
  * @author Marc Sordi
- *
  */
 @Configuration
 @EnableConfigurationProperties(GsonProperties.class)
@@ -117,11 +117,13 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     private void customizeBuilder(GsonBuilder pBuilder) {
         pBuilder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
         pBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe());
-        pBuilder.setExclusionStrategies(new GsonIgnoreExclusionStrategy());
+        pBuilder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
+
     }
 
     /**
-     * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated with {@link GsonTypeAdapter}
+     * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated
+     * with {@link GsonTypeAdapter}
      *
      * @param pBuilder GSON builder to customize
      */
@@ -132,8 +134,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactoryBean} with Spring support.
      *
-     * @param pBuilder
-     *            GSON builder to customize
+     * @param pBuilder GSON builder to customize
      */
     private void addBeanFactories(GsonBuilder pBuilder) {
 
