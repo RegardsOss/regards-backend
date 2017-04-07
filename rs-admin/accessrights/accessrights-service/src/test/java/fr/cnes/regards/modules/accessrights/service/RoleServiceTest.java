@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
@@ -183,6 +184,7 @@ public class RoleServiceTest {
         user.setName("test@test.test");
         user.setRole("ADMIN");
         token.setUser(user);
+        SecurityContextHolder.getContext().setAuthentication(token);
         // mock project user
         ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new ArrayList<>());
         Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
