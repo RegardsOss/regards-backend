@@ -30,6 +30,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
+import fr.cnes.regards.framework.authentication.exception.AuthenticationErrorTypesEnum;
+import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -290,19 +292,28 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         if (!validator.validate(response).isEmpty()) {
             final String message = String.format("Access denied for user %s. Authentication informations are not valid",
                                                  pUserName);
-            throw new BadCredentialsException(message);
+            throw new AuthenticationException(message, AuthenticationErrorTypesEnum.USER_UNKNOWN);
         }
 
         if ((response == null) || !response.getStatus().equals(AuthenticationStatus.ACCESS_GRANTED)) {
             String message = String.format("Access denied for user %s.", pUserName);
             if (response != null) {
                 message = message + String.format(" Cause : %s", response.getErrorMessage());
+                switch (response.getStatus()) {
+                    case INVALID_PASSWORD:
+                    case PASSWORD_EXPIRED:
+                        throw new AuthenticationException(message, AuthenticationErrorTypesEnum.ACCOUNT_LOCKED);
+                    case ACCESS_DENIED:
+                    case ACCOUNT_NOT_FOUND:
+                    default:
+                        throw new AuthenticationException(message, AuthenticationErrorTypesEnum.USER_UNKNOWN);
+                }
             }
-            throw new BadCredentialsException(message);
+            throw new AuthenticationException(message, AuthenticationErrorTypesEnum.USER_UNKNOWN);
         }
 
         UserDetails userDetails;
-        List<GrantedAuthority> grantedAuths = new ArrayList<>();
+        final List<GrantedAuthority> grantedAuths = new ArrayList<>();
 
         if (response.isRoot()) {
             // Manage root login
