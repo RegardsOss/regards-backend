@@ -35,6 +35,9 @@ public class ResourceMapping {
      */
     private String fullPath = "/";
 
+    /**
+     * Controller simple name
+     */
     private String controllerSimpleName;
 
     /**

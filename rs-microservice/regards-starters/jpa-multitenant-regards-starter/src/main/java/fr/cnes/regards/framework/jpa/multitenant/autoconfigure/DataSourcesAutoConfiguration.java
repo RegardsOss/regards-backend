@@ -86,8 +86,9 @@ public class DataSourcesAutoConfiguration {
                                                                        daoProperties.getEmbeddedPath());
 
             } else {
-                datasource = DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
-                                                               tenant.getUserName(), tenant.getPassword());
+                datasource = DataSourceHelper.createDataSource(tenant.getTenant(), tenant.getUrl(),
+                                                               tenant.getDriverClassName(), tenant.getUserName(),
+                                                               tenant.getPassword());
             }
             if (!datasources.containsKey(tenant.getTenant())) {
                 // Initialize connection in administration service
@@ -122,8 +123,9 @@ public class DataSourcesAutoConfiguration {
                             .createEmbeddedDataSource(tenant.getTenant(), daoProperties.getEmbeddedPath()));
                 } else {
                     datasources.put(tenant.getTenant(),
-                                    DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
-                                                                      tenant.getUserName(), tenant.getPassword()));
+                                    DataSourceHelper.createDataSource(tenant.getTenant(), tenant.getUrl(),
+                                                                      tenant.getDriverClassName(), tenant.getUserName(),
+                                                                      tenant.getPassword()));
                 }
             } else {
                 LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getTenant()));
