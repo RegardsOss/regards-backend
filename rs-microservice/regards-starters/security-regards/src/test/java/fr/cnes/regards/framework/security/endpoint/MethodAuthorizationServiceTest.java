@@ -160,15 +160,18 @@ public class MethodAuthorizationServiceTest {
     /**
      *
      * testManagedAuthoritiesByTenantAndResources
-     * 
-     * @throws SecurityException
+     *
+     * @throws fr.cnes.regards.framework.security.domain.SecurityException
+     *             if error occurs
+     *
      *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify internal management of resources endponts by tenants and resources")
     @Test
-    public void testManagedAuthoritiesByTenantAndResources() throws SecurityException {
+    public void testManagedAuthoritiesByTenantAndResources()
+            throws fr.cnes.regards.framework.security.domain.SecurityException {
 
         final String resourcePath = "new/path";
         final int expectedResult = 6;

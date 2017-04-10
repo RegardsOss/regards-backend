@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -99,6 +100,7 @@ public class MethodAuthorizationService {
      *
      * @throws SecurityException
      *             if error occurs
+     *
      */
     @PostConstruct
     public void init() throws SecurityException {
@@ -155,7 +157,7 @@ public class MethodAuthorizationService {
      * @param pTenant
      *            tenant
      * @throws SecurityException
-     *             if cannot retrieve role
+     *             if error occurs
      * @since 1.0-SNAPSHOT
      */
     private void collectRolesByTenant(String pTenant) throws SecurityException {
