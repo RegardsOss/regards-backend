@@ -106,7 +106,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection createProjectConnection(ProjectConnection pProjectConnection, boolean silent)
+    public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection, final boolean silent)
             throws ModuleException {
         final ProjectConnection connection;
         final Project project = pProjectConnection.getProject();
@@ -148,8 +148,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection updateProjectConnection(Long pProjectConnectionId, ProjectConnection pProjectConnection)
-            throws EntityNotFoundException {
+    public ProjectConnection updateProjectConnection(final Long pProjectConnectionId,
+            final ProjectConnection pProjectConnection) throws EntityNotFoundException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
@@ -180,18 +180,20 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public List<ProjectConnection> retrieveProjectConnection(String pMicroService) throws EntityNotFoundException {
+    public List<ProjectConnection> retrieveProjectConnection(final String pMicroService)
+            throws EntityNotFoundException {
         return projectConnectionRepository.findByMicroservice(pMicroService);
     }
 
     @Override
-    public void testProjectConnection(Long pConnectionIdentifier) throws ModuleException {
-        ProjectConnection connection = retrieveProjectConnectionById(pConnectionIdentifier);
-        DataSource dataSource = DataSourceHelper.createDataSource(connection.getUrl(), connection.getDriverClassName(),
-                                                                  connection.getUserName(), connection.getPassword());
+    public void testProjectConnection(final Long pConnectionIdentifier) throws ModuleException {
+        final ProjectConnection connection = retrieveProjectConnectionById(pConnectionIdentifier);
+        final DataSource dataSource = DataSourceHelper
+                .createDataSource(connection.getProject().getName(), connection.getUrl(),
+                                  connection.getDriverClassName(), connection.getUserName(), connection.getPassword());
         try (Connection conn = dataSource.getConnection()) {
             LOGGER.debug("Connection success");
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             LOGGER.error("Connection test fail", e);
             throw new InvalidConnectionException(e);
         }

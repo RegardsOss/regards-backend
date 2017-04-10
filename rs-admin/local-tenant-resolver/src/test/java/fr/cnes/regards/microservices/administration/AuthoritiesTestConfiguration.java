@@ -48,17 +48,7 @@ public class AuthoritiesTestConfiguration {
     /**
      * Role name with access granted to CORS requests.
      */
-    public static final String CORS_ROLE_NAME_GRANTED = "USER_CORS_OK";
-
-    /**
-     * Role name with access denied to CORS requests.
-     */
-    public static final String CORS_ROLE_NAME_INVALID_1 = "USER_CORS_NOK_1";
-
-    /**
-     * Role name with access denied to CORS requests.
-     */
-    public static final String CORS_ROLE_NAME_INVALID_2 = "USER_CORS_NOK_2";
+    public static final String ROLE_NAME = "USER_ROLE";
 
     /**
      * Current microservice name

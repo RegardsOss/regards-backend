@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -55,16 +54,6 @@ public class RoleFactory {
     private List<String> authorizedAddresses;
 
     /**
-     * Are the cors requests authorized for this role ?
-     */
-    private boolean isCorsRequestsAuthorized;
-
-    /**
-     * If CORS requests are authorized for this role, this parameter indicates the limit date of the authorization
-     */
-    private LocalDateTime corsRequestsAuthorizationEndDate;
-
-    /**
      * Is a default role ?
      */
     private boolean isDefault;
@@ -105,6 +94,7 @@ public class RoleFactory {
         toCreate.setPermissions(permissions);
         toCreate.setDefault(isDefault);
         toCreate.setNative(isNative);
+        toCreate.setAuthorizedAddresses(authorizedAddresses);
         return toCreate;
     }
 
@@ -168,26 +158,6 @@ public class RoleFactory {
      */
     public RoleFactory withAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
         authorizedAddresses = pAuthorizedAddresses;
-        return this;
-    }
-
-    /**
-     * @param pCorsRequestsAuthorizationEndDate
-     *            the corsRequestsAuthorizationEndDate to set
-     * @return this for chaining
-     */
-    public RoleFactory withCorsRequestsAuthorizationEndDate(final LocalDateTime pCorsRequestsAuthorizationEndDate) {
-        corsRequestsAuthorizationEndDate = pCorsRequestsAuthorizationEndDate;
-        return this;
-    }
-
-    /**
-     * @param pIsCorsRequestsAuthorized
-     *            the isCorsRequestsAuthorized to set
-     * @return this for chaining
-     */
-    public RoleFactory withCorsRequestsAuthorized(final boolean pIsCorsRequestsAuthorized) {
-        isCorsRequestsAuthorized = pIsCorsRequestsAuthorized;
         return this;
     }
 

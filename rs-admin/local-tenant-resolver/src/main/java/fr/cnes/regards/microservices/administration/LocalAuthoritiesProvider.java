@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,7 +66,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
     public LocalAuthoritiesProvider(@Value("${spring.application.name") final String pMicroserviceName,
             final IRoleService pRoleService, final IResourcesService pResourcesService,
-            IRuntimeTenantResolver runtimeTenantResolver) {
+            final IRuntimeTenantResolver runtimeTenantResolver) {
         super();
         microserviceName = pMicroserviceName;
         roleService = pRoleService;
@@ -88,7 +87,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      * @since 1.0-SNAPSHOT
      */
     @Override
-    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> localEndpoints) {
+    public List<ResourceMapping> registerEndpoints(final String tenant, final List<ResourceMapping> localEndpoints) {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -97,8 +96,8 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         resourcesService.registerResources(localEndpoints, microserviceName);
 
         // get a map that for each ResourcesAccess ra links the roles containing ra
-        Set<Role> roles = roleService.retrieveRoles();
-        SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
+        final Set<Role> roles = roleService.retrieveRoles();
+        final SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
 
         roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
 
@@ -108,8 +107,8 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
     }
 
-    private ResourceMapping buildResourceMapping(ResourcesAccess pRa, Collection<Role> pRoles) {
-        ResourceMapping mapping = new ResourceMapping(
+    private ResourceMapping buildResourceMapping(final ResourcesAccess pRa, final Collection<Role> pRoles) {
+        final ResourceMapping mapping = new ResourceMapping(
                 ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
                 pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
         mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
@@ -118,7 +117,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities(String tenant) {
+    public List<RoleAuthority> getRoleAuthorities(final String tenant) {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -128,12 +127,6 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         final Set<Role> roles = roleService.retrieveRoles();
         for (final Role role : roles) {
             final RoleAuthority roleAuth = new RoleAuthority(role.getName());
-            boolean access = role.isCorsRequestsAuthorized();
-            if (access && (role.getCorsRequestsAuthorizationEndDate() != null)) {
-                access = LocalDateTime.now().isBefore(role.getCorsRequestsAuthorizationEndDate());
-            }
-            roleAuth.setAuthorizedIpAdresses(role.getAuthorizedAddresses());
-            roleAuth.setCorsAccess(access);
             results.add(roleAuth);
         }
         return results;
