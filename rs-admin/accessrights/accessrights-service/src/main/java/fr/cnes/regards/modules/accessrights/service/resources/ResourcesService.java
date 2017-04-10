@@ -124,6 +124,7 @@ public class ResourcesService implements IResourcesService {
                 } else {
                     // Fallback to default
                     access.setDefaultRole(DefaultRole.PROJECT_ADMIN);
+                    access.setDescription("Missing description");
                 }
                 access.setMicroservice(pMicroserviceName);
                 access.setResource(rm.getFullPath());
