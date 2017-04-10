@@ -4,6 +4,8 @@
 package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +68,9 @@ public class CorsFilterTest {
 
         Mockito.doReturn("172.27.26.25").when(mockedRequest).getHeader(CorsFilter.REQUEST_HEADER_ORIGIN);
 
-        final String[] authorizedIp = { "172.27.26.*", "1.2.3.4" };
+        final List<String> authorizedIp = new ArrayList<>();
+        authorizedIp.add("172.27.26.*");
+        authorizedIp.add("1.2.3.4");
         final CorsFilter filter = new CorsFilter(authorizedIp);
 
         final String errorMessage = "Error creating response cors header";
@@ -110,7 +114,8 @@ public class CorsFilterTest {
 
         Mockito.doReturn("172.27.26.25").when(mockedRequest).getHeader(CorsFilter.REQUEST_HEADER_ORIGIN);
 
-        final String[] authorizedIp = { "172.25.26.24" };
+        final List<String> authorizedIp = new ArrayList<>();
+        authorizedIp.add("172.25.26.24");
         final CorsFilter filter = new CorsFilter(authorizedIp);
 
         final String errorMessage = "Error creating response cors header";

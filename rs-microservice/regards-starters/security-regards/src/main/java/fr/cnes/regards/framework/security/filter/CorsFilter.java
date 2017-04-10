@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
@@ -62,13 +63,13 @@ public class CorsFilter extends OncePerRequestFilter {
     /**
      * List of authorized adresses for CORS requests.
      */
-    private String[] authorizedAddress;
+    private List<String> authorizedAddress;
 
     public CorsFilter() {
         super();
     }
 
-    public CorsFilter(final String[] pAuthorizedAdress) {
+    public CorsFilter(final List<String> pAuthorizedAdress) {
         super();
         authorizedAddress = pAuthorizedAdress;
     }
@@ -77,7 +78,7 @@ public class CorsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        doSecurizedFilter(pRequest, pResponse, pFilterChain);
+        doSecurisedFilter(pRequest, pResponse, pFilterChain);
 
         if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
             pFilterChain.doFilter(pRequest, pResponse);
@@ -101,22 +102,22 @@ public class CorsFilter extends OncePerRequestFilter {
      *             Internal error
      * @since 1.0-SNAPSHOT
      */
-    private void doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+    private void doSecurisedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        final String origineAdress = getClientOrigine(pRequest);
+        final String originAdress = getClientOrigin(pRequest);
 
-        if ((authorizedAddress == null) || (authorizedAddress.length == 0)) {
+        if ((authorizedAddress == null) || (authorizedAddress.size() == 0)) {
             allowCorsRequest(pRequest, pResponse, pFilterChain);
         } else {
             boolean isAuthorized = false;
             for (final String authorizedAdress : authorizedAddress) {
-                isAuthorized = isAuthorized || Pattern.compile(authorizedAdress).matcher(origineAdress).matches();
+                isAuthorized = isAuthorized || Pattern.compile(authorizedAdress).matcher(originAdress).matches();
             }
             if (isAuthorized) {
                 allowCorsRequest(pRequest, pResponse, pFilterChain);
             } else {
-                LOG.error("[CORS REQUEST FILTER] Access denied for client : {}", origineAdress);
+                LOG.error("[CORS REQUEST FILTER] Access denied for client : {}", originAdress);
             }
         }
     }
@@ -129,7 +130,7 @@ public class CorsFilter extends OncePerRequestFilter {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    private static String getClientOrigine(final HttpServletRequest request) {
+    private static String getClientOrigin(final HttpServletRequest request) {
         String remoteAddr = null;
         if (request != null) {
             remoteAddr = request.getHeader(REQUEST_HEADER_ORIGIN);

@@ -48,11 +48,6 @@ public class RoleAuthority implements GrantedAuthority {
     private List<String> authorizedIpAdresses = new ArrayList<>();
 
     /**
-     * Role does accept CORS Requests ?
-     */
-    private Boolean corsAccess = Boolean.TRUE;
-
-    /**
      *
      * Constructor
      *
@@ -171,16 +166,8 @@ public class RoleAuthority implements GrantedAuthority {
         return authorizedIpAdresses;
     }
 
-    public Boolean getCorsAccess() {
-        return corsAccess;
-    }
-
     public void setAuthorizedIpAdresses(final List<String> pAuthorizedIpAdresses) {
         authorizedIpAdresses = pAuthorizedIpAdresses;
-    }
-
-    public void setCorsAccess(final Boolean pCorsAccess) {
-        corsAccess = pCorsAccess;
     }
 
     @Override
