@@ -118,8 +118,13 @@ public class ResourcesService implements IResourcesService {
             if (rm != null) {
                 ResourcesAccess access = new ResourcesAccess();
                 access.setControllerSimpleName(rm.getControllerSimpleName());
-                access.setDefaultRole(rm.getResourceAccess().role());
-                access.setDescription(rm.getResourceAccess().description());
+                if (rm.getResourceAccess() != null) {
+                    access.setDefaultRole(rm.getResourceAccess().role());
+                    access.setDescription(rm.getResourceAccess().description());
+                } else {
+                    // Fallback to default
+                    access.setDefaultRole(DefaultRole.PROJECT_ADMIN);
+                }
                 access.setMicroservice(pMicroserviceName);
                 access.setResource(rm.getFullPath());
                 access.setVerb(rm.getMethod());
