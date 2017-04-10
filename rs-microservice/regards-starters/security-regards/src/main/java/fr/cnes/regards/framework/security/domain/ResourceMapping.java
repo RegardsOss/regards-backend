@@ -107,7 +107,7 @@ public class ResourceMapping {
      * @return a unique identifier for the resource access
      */
     public String getResourceMappingId() {
-        final StringBuffer identifier = new StringBuffer();
+        final StringBuilder identifier = new StringBuilder();
 
         identifier.append(fullPath);
         identifier.append(SEPARATOR);
