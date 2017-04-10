@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -102,8 +101,6 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void initResources() throws EntityNotFoundException {
 
-        resourcesAccessRepository.deleteAll();
-
         final JWTService service = new JWTService();
         service.setSecret("123456789");
         instanceToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
@@ -113,7 +110,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
                                                    DefaultRole.INSTANCE_ADMIN.toString());
 
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                "Controller", HttpVerb.GET);
+                "Controller", RequestMethod.GET, DefaultRole.ADMIN);
         resource = resourcesAccessRepository.save(resource);
         final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);
@@ -158,7 +155,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
-    public void retrieveResources() {
+    public void retrievePublicResources() {
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());

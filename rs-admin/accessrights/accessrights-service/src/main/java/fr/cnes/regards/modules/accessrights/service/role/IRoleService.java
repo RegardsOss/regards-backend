@@ -193,11 +193,6 @@ public interface IRoleService {
 
     /**
      *
-     */
-    void initDefaultRoles();
-
-    /**
-     *
      * retrieve a role by its Id
      *
      * @param pRoleId

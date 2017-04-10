@@ -50,6 +50,16 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findOneByName(String pName);
 
     /**
+     * Find the role with its permissions
+     *
+     * @param pId
+     *            role identifier
+     * @return
+     */
+    @EntityGraph(value = "graph.role.permissions")
+    Role findOneById(Long pId);
+
+    /**
      * Find the all {@link Role}s where <code>name</code> is in passed collection.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *

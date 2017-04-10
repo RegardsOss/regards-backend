@@ -16,11 +16,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  *
@@ -77,21 +77,27 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @NotNull
     @Column(name = "verb")
     @Enumerated(EnumType.STRING)
-    private HttpVerb verb;
+    private RequestMethod verb;
+
+    @NotNull
+    @Column(name = "defaultRole")
+    @Enumerated(EnumType.STRING)
+    private DefaultRole defaultRole;
 
     public ResourcesAccess() {
         super();
-        verb = HttpVerb.GET;
+        verb = RequestMethod.GET;
     }
 
     public ResourcesAccess(final Long pResourcesAccessId) {
         super();
         id = pResourcesAccessId;
-        verb = HttpVerb.GET;
+        verb = RequestMethod.GET;
     }
 
     public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,
-            final String pResource, final String pControllerSimpleName, final HttpVerb pVerb) {
+            final String pResource, final String pControllerSimpleName, final RequestMethod pVerb,
+            final DefaultRole pDefaultRole) {
         super();
         id = pResourcesAccessId;
         description = pDescription;
@@ -99,26 +105,12 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         resource = pResource;
         controllerSimpleName = pControllerSimpleName;
         verb = pVerb;
+        this.defaultRole = pDefaultRole;
     }
 
     public ResourcesAccess(final String pDescription, final String pMicroservice, final String pResource,
-            final String pControllerSimpleName, final HttpVerb pVerb) {
-        super();
-        description = pDescription;
-        microservice = pMicroservice;
-        resource = pResource;
-        controllerSimpleName = pControllerSimpleName;
-        verb = pVerb;
-    }
-
-    public ResourcesAccess(final ResourceMapping pMapping, final String pMicroservicename) {
-        if (pMapping.getResourceAccess() != null) {
-            description = pMapping.getResourceAccess().description();
-        }
-        microservice = pMicroservicename;
-        resource = pMapping.getFullPath();
-        verb = HttpVerb.valueOf(pMapping.getMethod().toString());
-        controllerSimpleName = pMapping.getControllerSimpleName();
+            final String pControllerSimpleName, final RequestMethod pVerb, final DefaultRole pDefaultRole) {
+        this(null, pDescription, pMicroservice, pResource, pControllerSimpleName, pVerb, pDefaultRole);
     }
 
     @Override
@@ -152,18 +144,16 @@ public class ResourcesAccess implements IIdentifiable<Long> {
             if (other.microservice != null) {
                 return false;
             }
-        } else
-            if (!microservice.equals(other.microservice)) {
-                return false;
-            }
+        } else if (!microservice.equals(other.microservice)) {
+            return false;
+        }
         if (resource == null) {
             if (other.resource != null) {
                 return false;
             }
-        } else
-            if (!resource.equals(other.resource)) {
-                return false;
-            }
+        } else if (!resource.equals(other.resource)) {
+            return false;
+        }
         if (verb != other.verb) {
             return false;
         }
@@ -198,11 +188,11 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         resource = pResource;
     }
 
-    public HttpVerb getVerb() {
+    public RequestMethod getVerb() {
         return verb;
     }
 
-    public void setVerb(final HttpVerb pVerb) {
+    public void setVerb(final RequestMethod pVerb) {
         verb = pVerb;
     }
 
@@ -212,6 +202,14 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     public void setControllerSimpleName(String pControllerSimpleName) {
         controllerSimpleName = pControllerSimpleName;
+    }
+
+    public DefaultRole getDefaultRole() {
+        return defaultRole;
+    }
+
+    public void setDefaultRole(DefaultRole pDefaultRole) {
+        defaultRole = pDefaultRole;
     }
 
 }
