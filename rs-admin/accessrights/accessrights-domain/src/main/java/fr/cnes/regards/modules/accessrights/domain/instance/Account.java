@@ -60,7 +60,7 @@ public class Account implements IIdentifiable<Long> {
     private Boolean external = false;
 
     @Column(name = "authentication_failed_counter")
-    private Long authenticationFailedCounter;
+    private Long authenticationFailedCounter = 0L;
 
     @GsonIgnore
     @Column(name = "password")
@@ -91,10 +91,14 @@ public class Account implements IIdentifiable<Long> {
     /**
      * Creates new Account
      *
-     * @param pEmail the email
-     * @param pFirstName the first name
-     * @param pLastName the last name
-     * @param pPassword the password
+     * @param pEmail
+     *            the email
+     * @param pFirstName
+     *            the first name
+     * @param pLastName
+     *            the last name
+     * @param pPassword
+     *            the password
      */
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
         super();
@@ -115,7 +119,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pId the id to set
+     * @param pId
+     *            the id to set
      */
     public void setId(final Long pId) {
         id = pId;
@@ -129,7 +134,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pEmail the email to set
+     * @param pEmail
+     *            the email to set
      */
     public void setEmail(final String pEmail) {
         email = pEmail;
@@ -143,7 +149,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pFirstName the firstName to set
+     * @param pFirstName
+     *            the firstName to set
      */
     public void setFirstName(final String pFirstName) {
         firstName = pFirstName;
@@ -157,7 +164,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pLastName the lastName to set
+     * @param pLastName
+     *            the lastName to set
      */
     public void setLastName(final String pLastName) {
         lastName = pLastName;
@@ -171,7 +179,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pPassword the password to set
+     * @param pPassword
+     *            the password to set
      */
     public void setPassword(final String pPassword) {
         passwordUpdateDate = LocalDateTime.now();
@@ -186,7 +195,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pStatus the status to set
+     * @param pStatus
+     *            the status to set
      */
     public void setStatus(final AccountStatus pStatus) {
         status = pStatus;
@@ -200,7 +210,8 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pCode the code to set
+     * @param pCode
+     *            the code to set
      */
     public void setCode(final String pCode) {
         code = pCode;
@@ -210,7 +221,7 @@ public class Account implements IIdentifiable<Long> {
         return passwordUpdateDate;
     }
 
-    public void setPasswordUpdateDate(LocalDateTime passwordUpdateDate) {
+    public void setPasswordUpdateDate(final LocalDateTime passwordUpdateDate) {
         this.passwordUpdateDate = passwordUpdateDate;
     }
 
@@ -218,7 +229,7 @@ public class Account implements IIdentifiable<Long> {
         return external;
     }
 
-    public void setExternal(Boolean pExternal) {
+    public void setExternal(final Boolean pExternal) {
         external = pExternal;
     }
 
@@ -226,7 +237,7 @@ public class Account implements IIdentifiable<Long> {
         return authenticationFailedCounter;
     }
 
-    public void setAuthenticationFailedCounter(Long pAuthenticationFailedCounter) {
+    public void setAuthenticationFailedCounter(final Long pAuthenticationFailedCounter) {
         authenticationFailedCounter = pAuthenticationFailedCounter;
     }
 
@@ -234,7 +245,7 @@ public class Account implements IIdentifiable<Long> {
         return invalidityDate;
     }
 
-    public void setInvalidityDate(LocalDateTime pInvalidityDate) {
+    public void setInvalidityDate(final LocalDateTime pInvalidityDate) {
         invalidityDate = pInvalidityDate;
     }
 
