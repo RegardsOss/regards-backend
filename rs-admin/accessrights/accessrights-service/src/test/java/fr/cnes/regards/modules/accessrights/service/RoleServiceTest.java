@@ -18,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
 
@@ -30,7 +32,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -38,7 +39,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -119,8 +119,6 @@ public class RoleServiceTest {
 
     private Role roleProjectAdmin;
 
-    private JWTService jwtService;
-
     private Role adminSon;
 
     /**
@@ -132,10 +130,8 @@ public class RoleServiceTest {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        jwtService = Mockito.mock(JWTService.class);
-        jwtService.setSecret("123456789");
         roleService = new RoleService("rs-test", roleRepository, projectUserRepository, tenantResolver,
-                runtimeTenantResolver, jwtService, null);
+                runtimeTenantResolver, null);
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -188,7 +184,7 @@ public class RoleServiceTest {
         user.setName("test@test.test");
         user.setRole("ADMIN");
         token.setUser(user);
-        Mockito.when(jwtService.getCurrentToken()).thenReturn(token);
+        SecurityContextHolder.getContext().setAuthentication(token);
         // mock project user
         final ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(),
                 new ArrayList<>());
@@ -465,7 +461,7 @@ public class RoleServiceTest {
 
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                HttpVerb.PATCH);
+                RequestMethod.PATCH, DefaultRole.ADMIN);
         resourcesAccesses.add(addedResourcesAccess);
 
         // Perform the update
@@ -496,7 +492,8 @@ public class RoleServiceTest {
     public void updateRoleResourcesAccessUpdatingResourcesAccess()
             throws EntityNotFoundException, EntityOperationForbiddenException {
         final List<ResourcesAccess> initRAs = new ArrayList<>();
-        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
+        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
+                DefaultRole.ADMIN));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
@@ -521,7 +518,8 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         final Set<ResourcesAccess> passedRAs = new HashSet<>();
-        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", HttpVerb.DELETE));
+        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
+                DefaultRole.ADMIN));
 
         // Ensure new permission's attributes are different from the previous
 
@@ -549,7 +547,8 @@ public class RoleServiceTest {
     public void clearRoleResourcesAccess() throws EntityNotFoundException {
         // Prepare the role by adding some resources accesses
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", HttpVerb.TRACE));
+        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
+                DefaultRole.ADMIN));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock

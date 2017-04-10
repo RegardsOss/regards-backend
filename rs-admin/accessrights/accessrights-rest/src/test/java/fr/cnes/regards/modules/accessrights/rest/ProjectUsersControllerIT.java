@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -26,7 +27,6 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -218,9 +218,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void updateUserPermissions() {
         final List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(resourcesAccessRepository
-                .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", HttpVerb.GET)));
-        newPermissionList.add(resourcesAccessRepository
-                .save(new ResourcesAccess("desc1", "ms1", "res1", "Controller", HttpVerb.DELETE)));
+                .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", RequestMethod.GET, DefaultRole.ADMIN)));
+        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", "Controller",
+                RequestMethod.DELETE, DefaultRole.ADMIN)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());

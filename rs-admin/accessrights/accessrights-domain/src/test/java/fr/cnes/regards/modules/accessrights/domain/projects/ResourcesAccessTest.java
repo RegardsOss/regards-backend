@@ -6,8 +6,9 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Unit testing of {@link ResourcesAccess}
@@ -44,13 +45,14 @@ public class ResourcesAccessTest {
     /**
      * Test verb
      */
-    private final HttpVerb verb = HttpVerb.HEAD;
+    private final RequestMethod verb = RequestMethod.HEAD;
 
     private final String controller = "controller";
 
     @Before
     public void setUp() {
-        resourcesAccess = new ResourcesAccess(id, description, microservice, resource, controller, verb);
+        resourcesAccess = new ResourcesAccess(id, description, microservice, resource, controller, verb,
+                DefaultRole.ADMIN);
     }
 
     /**
@@ -64,7 +66,7 @@ public class ResourcesAccessTest {
         Assert.assertEquals(null, testResources.getDescription());
         Assert.assertEquals(null, testResources.getMicroservice());
         Assert.assertEquals(null, testResources.getResource());
-        Assert.assertEquals(HttpVerb.GET, testResources.getVerb());
+        Assert.assertEquals(RequestMethod.GET, testResources.getVerb());
     }
 
     /**
@@ -79,7 +81,7 @@ public class ResourcesAccessTest {
         Assert.assertEquals(null, testResources.getDescription());
         Assert.assertEquals(null, testResources.getMicroservice());
         Assert.assertEquals(null, testResources.getResource());
-        Assert.assertEquals(HttpVerb.GET, testResources.getVerb());
+        Assert.assertEquals(RequestMethod.GET, testResources.getVerb());
     }
 
     /**
@@ -88,7 +90,7 @@ public class ResourcesAccessTest {
     @Test
     public void testResourcesAccessWithEverything() {
         final ResourcesAccess testResources = new ResourcesAccess(id, description, microservice, resource, controller,
-                verb);
+                verb, DefaultRole.ADMIN);
 
         Assert.assertEquals(id, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
@@ -102,8 +104,8 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccessWithoutID() {
-        final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, controller,
-                verb);
+        final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, controller, verb,
+                DefaultRole.ADMIN);
 
         Assert.assertEquals(null, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
@@ -201,7 +203,7 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testSetVerb() {
-        final HttpVerb newVerb = HttpVerb.DELETE;
+        final RequestMethod newVerb = RequestMethod.DELETE;
         resourcesAccess.setVerb(newVerb);
         Assert.assertEquals(newVerb, resourcesAccess.getVerb());
     }

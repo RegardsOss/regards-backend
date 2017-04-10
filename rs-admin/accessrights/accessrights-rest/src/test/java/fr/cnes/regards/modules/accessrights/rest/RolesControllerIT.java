@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -33,7 +34,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.HttpVerb;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
@@ -105,7 +105,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
-                "Controller", HttpVerb.GET);
+                "Controller", RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
         roleRepository.save(publicRole);
@@ -116,9 +116,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
         final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
-                HttpVerb.GET);
+                RequestMethod.GET, DefaultRole.ADMIN);
         final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
-                HttpVerb.DELETE);
+                RequestMethod.DELETE, DefaultRole.ADMIN);
 
         resourcesAccess.add(aResourcesAccess);
         resourcesAccess.add(bResourcesAccess);
@@ -248,10 +248,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         final Set<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccesses(roleTest.getId());
 
-        newPermissionList.add(resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "new", "new", "new", "Controller", HttpVerb.PUT)));
-        newPermissionList.add(resourcesAccessRepository
-                .save(new ResourcesAccess(1L, "neww", "neww", "neww", "Controller", HttpVerb.DELETE)));
+        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess(0L, "new", "new", "new", "Controller",
+                RequestMethod.PUT, DefaultRole.ADMIN)));
+        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess(1L, "neww", "neww", "neww",
+                "Controller", RequestMethod.DELETE, DefaultRole.ADMIN)));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
