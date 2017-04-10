@@ -17,8 +17,7 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageTyp
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Plugin(author = "Sylvain VISSIERE-GUERINET", description = "Default plugin of Allocation Strategy",
-        id = "DefaultAllocationStrategyPlugin", version = "1.0")
+@Plugin(author = "Sylvain VISSIERE-GUERINET", description = "Default plugin of Allocation Strategy", id = "DefaultAllocationStrategyPlugin", version = "1.0", url = "todo", owner = "CSSI", licence = "GPLV3", contact = "regards@c-s.fr")
 // FIXME: quelque chose de bizzare
 public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
