@@ -29,6 +29,7 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.Authenticatio
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+
 /**
  *
  * Class LdapAuthenticationPlugin
@@ -38,7 +39,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author Sébastien Binda
  * @since 1.0
  */
-@Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0")
+@Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0",
+        contact = "regards@c-s.fr", licence = "GPL V3", owner = "CNES", url = "www.cnes.fr")
 public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**

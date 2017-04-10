@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
  * @since 1.0-SNAPSHOT
  */
 @Plugin(author = "CS-SI", description = "Kerberos Service Provider", id = "KerberosServiceProviderPlugin",
-        version = "1.0")
+        version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3", owner = "CNES", url = "www.cnes.fr")
 public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
 
     /**
