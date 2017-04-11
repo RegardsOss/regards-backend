@@ -64,10 +64,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(
-        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
-        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(excludeFilters = {
+        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter(value = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
@@ -89,7 +87,7 @@ public class MultitenantJpaAutoConfiguration {
      * Data sources pool
      */
     @Autowired
-    @Qualifier("multitenantsDataSources")
+    @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
     private Map<String, DataSource> dataSources;
 
     /**
