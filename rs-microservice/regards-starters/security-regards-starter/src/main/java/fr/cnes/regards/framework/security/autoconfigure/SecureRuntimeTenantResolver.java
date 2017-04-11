@@ -80,6 +80,6 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @Override
     public Boolean isInstance() {
-        return instanceTenantName.equals(tenantHolder.get());
+        return instanceTenantName.equals(getTenant());
     }
 }

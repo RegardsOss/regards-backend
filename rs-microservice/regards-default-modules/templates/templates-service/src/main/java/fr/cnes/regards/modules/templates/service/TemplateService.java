@@ -15,10 +15,10 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -39,7 +39,6 @@ import freemarker.template.Version;
  * @author Marc Sordi
  */
 @Service
-@MultitenantTransactional
 public class TemplateService implements ITemplateService {
 
     /**
@@ -94,13 +93,16 @@ public class TemplateService implements ITemplateService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private Template emailValidationTemplate;
+    private Template emailAccountValidationTemplate;
 
     @Autowired
     private Template passwordResetTemplate;
 
     @Autowired
     private Template accountUnlockTemplate;
+
+    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
+    private String noReplyAdress;
 
     /**
      * Constructor
@@ -134,16 +136,16 @@ public class TemplateService implements ITemplateService {
      */
     private void initDefaultTemplates() {
 
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
+        for (final String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            if (!templateRepository.findOneByCode(emailValidationTemplate.getCode()).isPresent()) {
-                templateRepository.save(emailValidationTemplate);
-            }
             if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
                 templateRepository.save(passwordResetTemplate);
             }
             if (!templateRepository.findOneByCode(accountUnlockTemplate.getCode()).isPresent()) {
                 templateRepository.save(accountUnlockTemplate);
+            }
+            if (!templateRepository.findOneByCode(emailAccountValidationTemplate.getCode()).isPresent()) {
+                templateRepository.save(emailAccountValidationTemplate);
             }
         }
     }
@@ -239,8 +241,27 @@ public class TemplateService implements ITemplateService {
     public SimpleMailMessage writeToEmail(final String pTemplateCode, final Map<String, String> pDataModel,
             final String[] pRecipients) throws EntityNotFoundException {
         // Retrieve the template of passed code
-        final Template template = templateRepository.findOneByCode(pTemplateCode)
-                .orElseThrow(() -> new EntityNotFoundException(pTemplateCode, Template.class));
+        Template template = null;
+        if (!runtimeTenantResolver.isInstance()) {
+            template = templateRepository.findOneByCode(pTemplateCode)
+                    .orElseThrow(() -> new EntityNotFoundException(pTemplateCode, Template.class));
+        } else {
+            if (accountUnlockTemplate.getCode().equals(pTemplateCode)) {
+                template = accountUnlockTemplate;
+            }
+
+            if (passwordResetTemplate.getCode().equals(pTemplateCode)) {
+                template = passwordResetTemplate;
+            }
+
+            if (emailAccountValidationTemplate.getCode().equals(pTemplateCode)) {
+                template = emailAccountValidationTemplate;
+            }
+
+            if (template == null) {
+                throw new EntityNotFoundException(pTemplateCode, Template.class);
+            }
+        }
 
         // Add the template (regards template POJO) to the loader
         loader.putTemplate(template.getCode(), template.getContent());
@@ -252,7 +273,9 @@ public class TemplateService implements ITemplateService {
             // Retrieve the template (freemarker Template) and process it with the data model
             configuration.getTemplate(template.getCode()).process(pDataModel, out);
             text = out.toString();
-        } catch (TemplateException | IOException e) {
+        } catch (TemplateException |
+
+                IOException e) {
             LOG.warn("Unable to process the data into the template of code " + template.getCode()
                     + ". Falling back to the not templated content.", e);
             text = template.getContent();
@@ -262,8 +285,7 @@ public class TemplateService implements ITemplateService {
         message.setSubject(template.getSubject());
         message.setText(text);
         message.setTo(pRecipients);
-        // TODO
-        message.setFrom("system@regards.com");
+        message.setFrom(noReplyAdress);
 
         return message;
     }
