@@ -29,6 +29,7 @@ import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
@@ -79,6 +80,7 @@ public class Role implements IIdentifiable<Long> {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
             inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
+    @GsonIgnore
     private Set<ResourcesAccess> permissions;
 
     /**

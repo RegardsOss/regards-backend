@@ -165,8 +165,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccess() {
-        final AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, new ArrayList<>(),
-                PASSWORD, ORIGIN_URL, REQUEST_LINK);
+        final AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null,
+                new ArrayList<>(), PASSWORD, ORIGIN_URL, REQUEST_LINK);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isCreated());

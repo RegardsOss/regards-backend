@@ -4,13 +4,10 @@
 package fr.cnes.regards.modules.accessrights.registration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -31,9 +28,6 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * {@link IRegistrationService} implementation.
@@ -48,11 +42,6 @@ public class RegistrationService implements IRegistrationService {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationService.class);
-
-    /**
-     * The email validation template code
-     */
-    private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
 
     /**
      * CRUD repository handling {@link Account}s. Autowired by Spring.
@@ -86,16 +75,6 @@ public class RegistrationService implements IRegistrationService {
     private final AccountWorkflowManager accountWorkflowManager;
 
     /**
-     * CRUD service handling {@link Template}s. Autowired by Spring.
-     */
-    private final ITemplateService templateService;
-
-    /**
-     * Email Client. Autowired by Spring.
-     */
-    private final IEmailClient emailClient;
-
-    /**
      * @param pAccountRepository
      *            the account repository
      * @param pProjectUserRepository
@@ -108,16 +87,11 @@ public class RegistrationService implements IRegistrationService {
      *            the account settings service
      * @param pAccountWorkflowManager
      *            the account workflow manager
-     * @param pTemplateService
-     *            the template service
-     * @param pEmailClient
-     *            the email client
      */
     public RegistrationService(final IAccountRepository pAccountRepository,
             final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
             final IVerificationTokenService pTokenService, final IAccountSettingsService pAccountSettingsService,
-            final AccountWorkflowManager pAccountWorkflowManager, final ITemplateService pTemplateService,
-            final IEmailClient pEmailClient) {
+            final AccountWorkflowManager pAccountWorkflowManager) {
         super();
         accountRepository = pAccountRepository;
         projectUserRepository = pProjectUserRepository;
@@ -125,8 +99,6 @@ public class RegistrationService implements IRegistrationService {
         tokenService = pTokenService;
         accountSettingsService = pAccountSettingsService;
         accountWorkflowManager = pAccountWorkflowManager;
-        templateService = pTemplateService;
-        emailClient = pEmailClient;
     }
 
     /*
@@ -213,47 +185,6 @@ public class RegistrationService implements IRegistrationService {
 
         // Save
         projectUserRepository.save(projectUser);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.registration.IRegistrationService#sendValidationEmail(fr.cnes.regards.
-     * modules.accessrights.registration.OnAcceptAccountEvent)
-     */
-    @Override
-    public void sendValidationEmail(final Account pAccount) throws EntityNotFoundException {
-        // Retrieve the token
-        final VerificationToken token = tokenService.findByAccount(pAccount);
-
-        // Build the list of recipients
-        final String[] recipients = { pAccount.getEmail() };
-
-        // Create a hash map in order to store the data to inject in the mail
-        final Map<String, String> data = new HashMap<>();
-        data.put("name", pAccount.getFirstName());
-        data.put("originUrl", token.getOriginUrl());
-        data.put("requestLink", token.getRequestLink());
-        data.put("token", token.getToken());
-        data.put("accountEmail", pAccount.getEmail());
-
-        SimpleMailMessage email;
-        try {
-            email = templateService.writeToEmail(EMAIL_VALIDATION_TEMPLATE_CODE, data, recipients);
-        } catch (final EntityNotFoundException e) {
-            LOG.warn("Could not find the template for registration confirmation. Falling back to default template.", e);
-            email = new SimpleMailMessage();
-            email.setTo(recipients);
-            email.setSubject("REGARDS - Registration Confirmation");
-
-            final String linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
-            final String linkUrl = String.format(linkUrlTemplate, token.getRequestLink(), token.getOriginUrl(),
-                                                 token.getToken(), pAccount.getEmail());
-            email.setText("Please click on the following link to confirm your registration: " + linkUrl);
-        }
-
-        // Send it
-        emailClient.sendEmail(email);
     }
 
 }

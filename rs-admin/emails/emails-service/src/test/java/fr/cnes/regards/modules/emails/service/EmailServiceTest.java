@@ -37,6 +37,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
@@ -102,7 +103,7 @@ public class EmailServiceTest {
         final Session smtpSession = greenMail.getSmtp().createSession();
         mailSender.setSession(smtpSession);
 
-        emailService = new EmailService(emailRepository, mailSender);
+        emailService = new EmailService(emailRepository, mailSender, mock(IRuntimeTenantResolver.class));
     }
 
     /**
@@ -199,7 +200,7 @@ public class EmailServiceTest {
 
     /**
      * Check that the system handles the case where an email cannot be found when re-sending.
-     * 
+     *
      * @throws ModuleException
      */
     @Test(expected = Exception.class)

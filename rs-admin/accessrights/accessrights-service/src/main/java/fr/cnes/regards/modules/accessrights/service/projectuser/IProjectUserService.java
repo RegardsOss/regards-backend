@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -18,6 +19,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
  * Strategy interface to handle Read an Update operations on access settings.
@@ -80,6 +82,16 @@ public interface IProjectUserService {
      *             could be found
      */
     ProjectUser retrieveCurrentUser() throws EntityNotFoundException;
+
+    /**
+     *
+     * Create a new projectUser (and account if missing) without resitration process.
+     *
+     * @param pDto
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
+    ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.

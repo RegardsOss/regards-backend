@@ -27,6 +27,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -102,6 +103,7 @@ public class ProjectUser implements IIdentifiable<Long> {
     @Valid
     @OneToMany(fetch = FetchType.LAZY)
     @Column(name = "permissions")
+    @GsonIgnore
     private List<ResourcesAccess> permissions;
 
     /**
@@ -296,7 +298,7 @@ public class ProjectUser implements IIdentifiable<Long> {
         return licenseAccepted;
     }
 
-    public void setLicenseAccepted(boolean pLicenceAccepted) {
+    public void setLicenseAccepted(final boolean pLicenceAccepted) {
         licenseAccepted = pLicenceAccepted;
     }
 

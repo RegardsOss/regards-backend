@@ -41,7 +41,8 @@ import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWork
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
 public class RegistrationController {
 
@@ -97,7 +98,7 @@ public class RegistrationController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Creates a new access request", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto pDto) throws EntityException {
         registrationService.requestAccess(pDto);
         return new ResponseEntity<>(HttpStatus.CREATED);

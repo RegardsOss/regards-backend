@@ -66,7 +66,7 @@ public class AccessRequestDTOTest {
      */
     @Before
     public void setUp() {
-        access = new AccessRequestDto(email, firstName, lastName, metaDatas, password, originUrl, requestLink);
+        access = new AccessRequestDto(email, firstName, lastName, null, metaDatas, password, originUrl, requestLink);
     }
 
     /**

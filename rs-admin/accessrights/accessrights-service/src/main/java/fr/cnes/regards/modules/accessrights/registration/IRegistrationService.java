@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessrights.registration;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -33,15 +32,5 @@ public interface IRegistrationService {
      * @return void
      */
     void requestAccess(final AccessRequestDto pDto) throws EntityException;
-
-    /**
-     * Send the email for account validation.
-     *
-     * @param pAccount
-     *            the account
-     * @throws EntityNotFoundException
-     *             when no verification token linked to the account could be found
-     */
-    void sendValidationEmail(final Account pAccount) throws EntityNotFoundException;
 
 }

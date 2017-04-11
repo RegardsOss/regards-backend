@@ -28,7 +28,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
@@ -106,6 +108,10 @@ public class RegistrationServiceTest {
 
     private IRoleService roleService;
 
+    private IAccountService accountService;
+
+    private IProjectUserService projectUserService;
+
     private IVerificationTokenService tokenService;
 
     private IAccountSettingsService accountSettingsService;
@@ -140,17 +146,21 @@ public class RegistrationServiceTest {
         templateService = Mockito.mock(ITemplateService.class);
         emailClient = Mockito.mock(IEmailClient.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
+        accountService = Mockito.mock(IAccountService.class);
+        projectUserService = Mockito.mock(IProjectUserService.class);
 
         // Mock
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new PendingState(accountRepository));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService));
 
         // Create the tested service
         registrationService = new RegistrationService(accountRepository, projectUserRepository, roleService,
-                tokenService, accountSettingsService, accountWorkflowManager, templateService, emailClient);
+                tokenService, accountSettingsService, accountWorkflowManager);
 
         // Prepare the access request
-        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, META_DATA, PASSOWRD, ORIGIN_URL, REQUEST_LINK);
+        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
+                REQUEST_LINK);
 
         // Prepare the account we expect to be create by the access request
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
@@ -259,8 +269,8 @@ public class RegistrationServiceTest {
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Trigger the exception
-        final AccessRequestDto dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, META_DATA, PASSOWRD, ORIGIN_URL,
-                REQUEST_LINK);
+        final AccessRequestDto dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA,
+                PASSOWRD, ORIGIN_URL, REQUEST_LINK);
         registrationService.requestAccess(dto);
     }
 

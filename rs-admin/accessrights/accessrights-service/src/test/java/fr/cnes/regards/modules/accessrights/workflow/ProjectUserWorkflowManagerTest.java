@@ -5,9 +5,7 @@ package fr.cnes.regards.modules.accessrights.workflow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -16,9 +14,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -149,7 +144,8 @@ public class ProjectUserWorkflowManagerTest {
         projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider);
 
         // Prepare the access request
-        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, META_DATA, PASSOWRD, ORIGIN_URL, REQUEST_LINK);
+        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
+                REQUEST_LINK);
 
         // Prepare the project user we expect to be created by the access request
         projectUser = new ProjectUser();

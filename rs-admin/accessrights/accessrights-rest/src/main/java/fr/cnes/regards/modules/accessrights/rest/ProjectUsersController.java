@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +37,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
@@ -158,6 +161,25 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
         final ProjectUser updatedUser = projectUserService.updateUser(pUserId, pUpdatedProjectUser);
         return new ResponseEntity<>(toResource(updatedUser), HttpStatus.OK);
+    }
+
+    /**
+     * Create a new user by bypassing registration process (accounts and projectUser validation)
+     *
+     * @param pDto
+     *            A Dto containing all information for creating the account/project user and sending the activation link
+     * @return the passed Dto
+     * @throws EntityException
+     *             if error occurs.
+     */
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST)
+    @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto)
+            throws EntityException {
+        final ProjectUser userCreated = projectUserService.createProjectUser(pDto);
+        return new ResponseEntity<>(toResource(userCreated), HttpStatus.CREATED);
     }
 
     /**

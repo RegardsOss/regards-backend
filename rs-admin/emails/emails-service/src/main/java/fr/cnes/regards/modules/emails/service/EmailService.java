@@ -9,14 +9,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
@@ -46,6 +51,11 @@ public class EmailService implements IEmailService {
     private final JavaMailSender mailSender;
 
     /**
+     * Tenant resolver used to know current tenant.
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
      *
      * @param pEmailRepository
@@ -53,10 +63,12 @@ public class EmailService implements IEmailService {
      * @param pMailSender
      *            Autowired by Spring. Must not be {@literal null}.
      */
-    public EmailService(final IEmailRepository pEmailRepository, final JavaMailSender pMailSender) {
+    public EmailService(final IEmailRepository pEmailRepository, final JavaMailSender pMailSender,
+            final IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         emailRepository = pEmailRepository;
         mailSender = pMailSender;
+        runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
     @Override
@@ -79,18 +91,47 @@ public class EmailService implements IEmailService {
         // Create the savable DTO
         final Email email = createEmailFromSimpleMailMessage(pMessage);
 
-        // Persist in DB
-        emailRepository.save(email);
+        if (!runtimeTenantResolver.isInstance()) {
+            // Persist in DB
+            emailRepository.save(email);
+        }
 
-        // Send the mail
-        mailSender.send(pMessage);
+        final MimeMessage message = mailSender.createMimeMessage();
+        try {
+            final MimeMessageHelper helper = new MimeMessageHelper(message, false);
+            helper.setText(pMessage.getText(), true);
+            helper.setTo(pMessage.getTo());
+            if (pMessage.getBcc() != null) {
+                helper.setBcc(pMessage.getBcc());
+            }
+            if (pMessage.getCc() != null) {
+                helper.setCc(pMessage.getCc());
+            }
+            if (pMessage.getFrom() != null) {
+                helper.setFrom(pMessage.getFrom());
+            }
+            if (pMessage.getReplyTo() != null) {
+                helper.setReplyTo(pMessage.getReplyTo());
+            }
+            if (pMessage.getSentDate() != null) {
+                helper.setSentDate(pMessage.getSentDate());
+            }
+            if (pMessage.getSubject() != null) {
+                helper.setSubject(pMessage.getSubject());
+            }
+            // Send the mail
+            mailSender.send(message);
+        } catch (final MessagingException e) {
+            // TODO Throw error mail exception
+            LOGGER.error("Error sending mail", e);
+        }
 
         return pMessage;
     }
 
     @Override
     public Email retrieveEmail(final Long pId) throws ModuleException {
-        Email email = emailRepository.findOne(pId);
+        final Email email = emailRepository.findOne(pId);
         if (email == null) {
             throw new EntityNotFoundException(pId, Email.class);
         }

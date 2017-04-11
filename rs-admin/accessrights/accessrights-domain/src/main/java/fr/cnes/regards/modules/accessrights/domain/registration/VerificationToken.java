@@ -80,6 +80,10 @@ public class VerificationToken {
      */
     private boolean verified;
 
+    public VerificationToken() {
+        super();
+    }
+
     /**
      *
      * @param pAccount

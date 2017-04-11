@@ -27,6 +27,11 @@ public class AccessRequestDto {
     private String lastName;
 
     /**
+     * The role name requested
+     */
+    private String roleName;
+
+    /**
      * The list of meta data
      */
     private List<MetaData> metaData;
@@ -56,7 +61,7 @@ public class AccessRequestDto {
      * @param pRequestLink
      */
     public AccessRequestDto(final String pEmail, final String pFirstName, final String pLastName,
-            final List<MetaData> pMetaData, final String pPassword, final String pOriginUrl,
+            final String pRoleName, final List<MetaData> pMetaData, final String pPassword, final String pOriginUrl,
             final String pRequestLink) {
         super();
         email = pEmail;
@@ -66,6 +71,7 @@ public class AccessRequestDto {
         password = pPassword;
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
+        roleName = pRoleName;
     }
 
     /**
@@ -111,6 +117,14 @@ public class AccessRequestDto {
      */
     public void setLastName(final String pLastName) {
         lastName = pLastName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(final String pRoleName) {
+        roleName = pRoleName;
     }
 
     /**

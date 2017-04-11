@@ -206,7 +206,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(6)));
         // 6 = 5 roles and the added role TEST_ROLE has two permissions
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
+        // Updated : Permissions are ignore in roles results requests to avoid lazy load.
+        // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
         // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
         performDefaultGet(apiRoles, expectations, "TODO Error message");

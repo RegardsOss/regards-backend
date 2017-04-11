@@ -19,19 +19,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -59,6 +64,11 @@ public class ProjectUserService implements IProjectUserService {
     private final IRoleService roleService;
 
     /**
+     * Account service used to manage accounts.
+     */
+    private final IAccountService accountService;
+
+    /**
      * A filter on meta data to keep visible ones only
      */
     private final Predicate<? super MetaData> keepVisibleMetaData = m -> !UserVisibility.HIDDEN
@@ -80,11 +90,13 @@ public class ProjectUserService implements IProjectUserService {
      *            The instance admin user email
      */
     public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
+            final IAccountService pAccountService,
             @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
+        accountService = pAccountService;
     }
 
     /*
@@ -303,6 +315,44 @@ public class ProjectUserService implements IProjectUserService {
         return merged;
     }
 
+    @Override
+    public ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException {
+
+        if (!accountService.existAccount(pDto.getEmail())) {
+            final Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
+                    pDto.getPassword());
+            newAccount.setStatus(AccountStatus.ACTIVE);
+            accountService.createAccount(newAccount);
+        }
+
+        if (!existUser(pDto.getEmail())) {
+            // Get role for projectUser to create
+            Role role;
+            try {
+                if ((pDto.getRoleName() != null) && !pDto.getRoleName().isEmpty()) {
+                    role = roleService.retrieveRole(pDto.getRoleName());
+                } else {
+                    role = roleService.getDefaultRole();
+                }
+            } catch (final EntityNotFoundException e) {
+                role = roleService.getDefaultRole();
+                LOG.warn("Request role does not exists, the new user is associated to default role");
+                LOG.debug(e.getMessage(), e);
+            }
+            final ProjectUser newProjectUser = new ProjectUser();
+            newProjectUser.setEmail(pDto.getEmail());
+            newProjectUser.setRole(role);
+            if (pDto.getMetaData() != null) {
+                newProjectUser.setMetaData(pDto.getMetaData());
+            }
+            newProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
+            return save(newProjectUser);
+        } else {
+            throw new EntityAlreadyExistsException("Project user already exists");
+        }
+
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -336,8 +386,8 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public void resetLicence() {
-        List<ProjectUser> everyone = projectUserRepository.findAll();
-        for (ProjectUser anyone : everyone) {
+        final List<ProjectUser> everyone = projectUserRepository.findAll();
+        for (final ProjectUser anyone : everyone) {
             anyone.setLicenseAccepted(false);
         }
         projectUserRepository.save(everyone);

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -41,6 +42,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -113,6 +116,11 @@ public class ProjectUserServiceTest {
     private IRoleService roleService;
 
     /**
+     * Mocked service handling CRUD operation on {@link Role}s
+     */
+    private IAccountService accountService;
+
+    /**
      * Do some setup before each test
      */
     @Before
@@ -134,9 +142,77 @@ public class ProjectUserServiceTest {
         // Mock untested services & repos
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = Mockito.mock(IRoleService.class);
+        accountService = Mockito.mock(IAccountService.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(projectUserRepository, roleService, "instance_admin@regards.fr");
+        projectUserService = new ProjectUserService(projectUserRepository, roleService, accountService,
+                "instance_admin@regards.fr");
+    }
+
+    @Test
+    @Purpose("Check that the system allows to create a new projectUser with the associated account.")
+    public void createUserByBypassingRegristrationProcess() throws EntityNotFoundException {
+
+        Mockito.when(accountService.existAccount("test@regards.fr")).thenReturn(false);
+        Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
+        Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
+
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
+                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+
+        try {
+            projectUserService.createProjectUser(accessRequest);
+
+            // Chcek that createAccount method is called
+            Mockito.verify(accountService).createAccount(Mockito.any());
+            Mockito.verify(projectUserRepository).save(Mockito.any(ProjectUser.class));
+
+        } catch (final EntityAlreadyExistsException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    @Purpose("Check that the system allows to create a new projectUser with the associated account.")
+    public void createUserByBypassingRegristrationProcessWithoutAccount() throws EntityNotFoundException {
+
+        Mockito.when(accountService.existAccount("test@regards.fr")).thenReturn(true);
+        Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
+        Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
+
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
+                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+
+        try {
+            projectUserService.createProjectUser(accessRequest);
+
+            // Chcek that createAccount method is called
+            Mockito.verify(accountService, Mockito.never()).createAccount(Mockito.any());
+            Mockito.verify(projectUserRepository).save(Mockito.any(ProjectUser.class));
+
+        } catch (final EntityAlreadyExistsException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    @Purpose("Check that the system allows to create a new projectUser with the associated account.")
+    public void createUserByBypassingRegristrationProcessError() throws EntityNotFoundException {
+
+        Mockito.when(accountService.existAccount("test@regards.fr")).thenReturn(true);
+        Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr"))
+                .thenReturn(Optional.of(new ProjectUser()));
+        Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
+
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
+                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+
+        try {
+            projectUserService.createProjectUser(accessRequest);
+            Assert.fail("ProjectUser already exists. There should be an exception thronw here.");
+        } catch (final EntityAlreadyExistsException e) {
+            // Nothing to do. There should be an exception
+        }
     }
 
     /**
