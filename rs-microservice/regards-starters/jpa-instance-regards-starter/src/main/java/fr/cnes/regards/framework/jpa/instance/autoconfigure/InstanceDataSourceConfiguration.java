@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
+import java.beans.PropertyVetoException;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,21 +42,26 @@ public class InstanceDataSourceConfiguration {
      * Default data source for persistence unit instance.
      *
      * @return datasource
+     * @throws PropertyVetoException
+     *             if error occurs
      * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
-    public DataSource instanceDataSource() {
+    public DataSource instanceDataSource() throws PropertyVetoException {
 
+        String tenant = "instance";
         DataSource datasource;
         if (daoProperties.getEmbedded()) {
-            datasource = DataSourceHelper.createEmbeddedDataSource("instance", daoProperties.getEmbeddedPath());
+            datasource = DataSourceHelper.createEmbeddedDataSource(tenant, daoProperties.getEmbeddedPath());
 
         } else {
-            datasource = DataSourceHelper.createDataSource(daoProperties.getDatasource().getUrl(),
-                                                           daoProperties.getDatasource().getDriverClassName(),
-                                                           daoProperties.getDatasource().getUsername(),
-                                                           daoProperties.getDatasource().getPassword());
+            datasource = DataSourceHelper
+                    .createPooledDataSource(tenant, daoProperties.getDatasource().getUrl(),
+                                            daoProperties.getDatasource().getDriverClassName(),
+                                            daoProperties.getDatasource().getUsername(),
+                                            daoProperties.getDatasource().getPassword(), daoProperties.getMinPoolSize(),
+                                            daoProperties.getMaxPoolSize(), daoProperties.getPreferredTestQuery());
         }
         return datasource;
     }

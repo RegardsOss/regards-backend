@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
+import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,16 +18,22 @@ import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigured;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationCreated;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationDeleted;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationUpdated;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -40,6 +48,12 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 @SuppressWarnings("serial")
 public class DataSourceBasedMultiTenantConnectionProviderImpl
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
     /**
      * Current microservice name
@@ -105,8 +119,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
             updateDataSourceSchema(selectDataSource(tenant));
         }
 
-        // Listen for new tenant connections
-        instanceSubscriber.subscribeTo(TenantConnectionConfigured.class, new TenantConnectionHandler());
+        // Listen for tenant connection creation
+        instanceSubscriber.subscribeTo(TenantConnectionConfigurationCreated.class, new ConfigurationCreatedHandler());
+        // Listen for tenant connection update
+        instanceSubscriber.subscribeTo(TenantConnectionConfigurationUpdated.class, new ConfigurationUpdatedHandler());
+        // Listen for tenant connection deletion
+        instanceSubscriber.subscribeTo(TenantConnectionConfigurationDeleted.class, new ConfigurationDeletedHandler());
     }
 
     /**
@@ -136,74 +154,108 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     }
 
     /**
+     * Handle {@link TenantConnection} configuration creation
      *
-     * Add a datasource to the multitenant datasources pool
-     *
-     * @param pDataSource
-     *            : Datasource to add
-     * @param pTenant
-     *            : tenant name
-     * @since 1.0-SNAPSHOT
+     * @author Sébastien Binda
      */
-    private void addDataSource(final DataSource pDataSource, final String pTenant) {
-        dataSources.put(pTenant, pDataSource);
-        updateDataSourceSchema(pDataSource);
-    }
+    private class ConfigurationCreatedHandler implements IHandler<TenantConnectionConfigurationCreated> {
 
-    /**
-     *
-     * Create a new datasource into the multitenant datasources pool
-     *
-     * @param pUrl
-     *            : Only used if the dao is not configured in embedded mod
-     * @param pUser
-     *            : Only used if the dao is not configured in embedded mod
-     * @param pPassword
-     *            : Only used if the dao is not configured in embedded mod
-     * @param pDriverClassName
-     *            : Only used if the dao is not configured in embedded mod
-     * @param pTenant
-     *            : tenant
-     * @since 1.0-SNAPSHOT
-     */
-    public void addDataSource(final String pUrl, final String pUser, final String pPassword,
-            final String pDriverClassName, final String pTenant) {
-
-        if (daoProperties.getEmbedded()) {
-            addDataSource(DataSourceHelper.createEmbeddedDataSource(pTenant, daoProperties.getEmbeddedPath()), pTenant);
-        } else {
-            addDataSource(DataSourceHelper.createDataSource(pUrl, pDriverClassName, pUser, pPassword), pTenant);
+        @Override
+        public void handle(final TenantWrapper<TenantConnectionConfigurationCreated> pEvent) {
+            // Add a new datasource to the current pool of datasource if the current microservice is the target of the
+            // new
+            // tenant connection
+            if ((pEvent.getContent() != null) && microserviceName.equals(pEvent.getContent().getMicroserviceName())) {
+                final TenantConnection tenantConnection = pEvent.getContent().getTenant();
+                try {
+                    // Init data source
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
+                    // Register data source
+                    dataSources.put(tenantConnection.getTenant(), dataSource);
+                    // Update schema
+                    updateDataSourceSchema(dataSource);
+                    // Broadcast connection ready
+                    instancePublisher.publish(new TenantConnectionReady(tenantConnection.getTenant(),
+                            pEvent.getContent().getMicroserviceName()));
+                } catch (PropertyVetoException e) {
+                    // Do not block all tenants if for an inconsistent data source
+                    LOGGER.error("Cannot handle datasource for tenant {}. Creation fails.",
+                                 tenantConnection.getTenant());
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
         }
     }
 
     /**
-     * Register new tenant connections as new datasources
+     * Handle {@link TenantConnection} configuration update
      *
-     * @author Sébastien Binda
-     * @since 1.0-SNAPSHOT
+     * @author Marc Sordi
+     *
      */
-    private class TenantConnectionHandler implements IHandler<TenantConnectionConfigured> {
+    private class ConfigurationUpdatedHandler implements IHandler<TenantConnectionConfigurationUpdated> {
 
-        /**
-         *
-         * Create a new DataSource and add it to the JPA Multitenant connection provider
-         *
-         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
-         * @since 1.0-SNAPSHOT
-         */
         @Override
-        public void handle(final TenantWrapper<TenantConnectionConfigured> pTenantConnectionConfigured) {
-            // Add a new datasource to the current pool of datasource if the current microservice is the target of the
-            // new
-            // tenant connection
-            if ((pTenantConnectionConfigured.getContent() != null)
-                    && microserviceName.equals(pTenantConnectionConfigured.getContent().getMicroserviceName())) {
-                final TenantConnection tenantConn = pTenantConnectionConfigured.getContent().getTenant();
-                addDataSource(tenantConn.getUrl(), tenantConn.getUserName(), tenantConn.getPassword(),
-                              tenantConn.getDriverClassName(), tenantConn.getTenant());
-                // Broadcast connection ready
-                instancePublisher.publish(new TenantConnectionReady(pTenantConnectionConfigured.getTenant(),
-                        pTenantConnectionConfigured.getContent().getMicroserviceName()));
+        public void handle(TenantWrapper<TenantConnectionConfigurationUpdated> pEvent) {
+
+            if ((pEvent.getContent() != null) && microserviceName.equals(pEvent.getContent().getMicroserviceName())) {
+                final TenantConnection tenantConnection = pEvent.getContent().getTenant();
+                try {
+                    // Init data source
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
+                    // Remove existing one
+                    DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
+                    if (oldDataSource != null) {
+                        oldDataSource.getConnection().close();
+                    }
+                    // Register updated data source
+                    dataSources.put(tenantConnection.getTenant(), dataSource);
+                    // Update schema
+                    updateDataSourceSchema(dataSource);
+                    // Broadcast connection ready
+                    instancePublisher.publish(new TenantConnectionReady(tenantConnection.getTenant(),
+                            pEvent.getContent().getMicroserviceName()));
+                } catch (PropertyVetoException e) {
+                    // Do not block all tenants if for an inconsistent data source
+                    LOGGER.error("Cannot handle datasource for tenant {}. Update fails.", tenantConnection.getTenant());
+                    LOGGER.error(e.getMessage(), e);
+                } catch (SQLException e) {
+                    LOGGER.error("Cannot release datasource for tenant {}. Update fails while closing old connection.",
+                                 tenantConnection.getTenant());
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Handle {@link TenantConnection} configuration deletion
+     *
+     * @author Marc Sordi
+     *
+     */
+    private class ConfigurationDeletedHandler implements IHandler<TenantConnectionConfigurationDeleted> {
+
+        @Override
+        public void handle(TenantWrapper<TenantConnectionConfigurationDeleted> pEvent) {
+
+            if ((pEvent.getContent() != null) && microserviceName.equals(pEvent.getContent().getMicroserviceName())) {
+                final TenantConnection tenantConnection = pEvent.getContent().getTenant();
+                try {
+                    // Remove existing datasource
+                    DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
+                    if (oldDataSource != null) {
+                        oldDataSource.getConnection().close();
+                    }
+                    // Broadcast connection ready
+                    instancePublisher.publish(new TenantConnectionDiscarded(tenantConnection.getTenant(),
+                            pEvent.getContent().getMicroserviceName()));
+                } catch (SQLException e) {
+                    LOGGER.error("Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
+                                 tenantConnection.getTenant());
+                    LOGGER.error(e.getMessage(), e);
+                }
             }
         }
     }

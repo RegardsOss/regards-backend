@@ -3,9 +3,12 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,6 +65,12 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired(required = false)
     private Set<ICustomWebSecurityConfiguration> customConfigurers;
 
+    /**
+     * List of authorized ip for CORS request. If empty all origins are allowed. Split character ','
+     */
+    @Value("${regards.cors.requests.authorized.clients.addresses:null}")
+    private String corsRequestAuthorizedClientAddresses;
+
     @Override
     protected void configure(final HttpSecurity pHttp) throws Exception {
 
@@ -82,7 +91,13 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         pHttp.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);
 
         // Add CORS filter
-        pHttp.addFilterAfter(new CorsFilter(authorizationService), IpFilter.class);
+        final List<String> authorizedIp = new ArrayList<>();
+        for (final String ip : corsRequestAuthorizedClientAddresses.split(",")) {
+            if (ip.length() > 0) {
+                authorizedIp.add(ip);
+            }
+        }
+        pHttp.addFilterAfter(new CorsFilter(authorizedIp), IpFilter.class);
 
         pHttp.addFilterAfter(new MDCInsertingServletFilter(), RequestLogFilter.class);
 

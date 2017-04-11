@@ -4,7 +4,8 @@
 package fr.cnes.regards.framework.security.filter;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -13,12 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  *
@@ -55,33 +51,34 @@ public class CorsFilter extends OncePerRequestFilter {
     public static final String OPTIONS_REQUEST_TYPE = "OPTIONS";
 
     /**
+     * Request Header forward for parameter
+     */
+    public static final String REQUEST_HEADER_ORIGIN = "Origin";
+
+    /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(CorsFilter.class);
 
     /**
-     * Method authorization service
+     * List of authorized adresses for CORS requests.
      */
-    private MethodAuthorizationService methodAuthService = null;
+    private List<String> authorizedAddress;
 
     public CorsFilter() {
         super();
     }
 
-    public CorsFilter(final MethodAuthorizationService pMethodAuthService) {
+    public CorsFilter(final List<String> pAuthorizedAdress) {
         super();
-        methodAuthService = pMethodAuthService;
+        authorizedAddress = pAuthorizedAdress;
     }
 
     @Override
     protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            doSecurizedFilter(pRequest, pResponse, pFilterChain);
-        } else {
-            allowCorsRequest(pRequest, pResponse, pFilterChain);
-        }
+        doSecurisedFilter(pRequest, pResponse, pFilterChain);
 
         if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
             pFilterChain.doFilter(pRequest, pResponse);
@@ -105,27 +102,43 @@ public class CorsFilter extends OncePerRequestFilter {
      *             Internal error
      * @since 1.0-SNAPSHOT
      */
-    private void doSecurizedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+    private void doSecurisedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        // Get authorized ip associated to given role
-        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
+        final String originAdress = getClientOrigin(pRequest);
 
-        @SuppressWarnings("unchecked")
-        final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
+        if ((authorizedAddress == null) || (authorizedAddress.size() == 0)) {
+            allowCorsRequest(pRequest, pResponse, pFilterChain);
+        } else {
+            boolean isAuthorized = false;
+            for (final String authorizedAdress : authorizedAddress) {
+                isAuthorized = isAuthorized || Pattern.compile(authorizedAdress).matcher(originAdress).matches();
+            }
+            if (isAuthorized) {
+                allowCorsRequest(pRequest, pResponse, pFilterChain);
+            } else {
+                LOG.error("[CORS REQUEST FILTER] Access denied for client : {}", originAdress);
+            }
+        }
+    }
 
-        allowCorsRequest(pRequest, pResponse, pFilterChain);
-        // FIXME Manage CORS
-        /**
-         * 
-         * if (!roles.isEmpty()) { boolean access = false; for (final RoleAuthority role : roles) { final
-         * Optional<RoleAuthority> roleAuth = methodAuthService.getRoleAuthority(role.getAuthority(),
-         * authentication.getTenant()); if (roleAuth.isPresent()) { access = access || roleAuth.get().getCorsAccess(); }
-         * } if (access) { LOG.debug(String.format("[REGARDS CORS FILTER] Access granted for user %s",
-         * authentication.getUser().getName())); allowCorsRequest(pRequest, pResponse, pFilterChain); } } else {
-         * pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "[REGARDS CORS FILTER] No Authority Role defined"); }
-         */
+    /**
+     *
+     * Return the addresse of the origine request address
+     *
+     * @param request
+     * @return
+     * @since 1.0-SNAPSHOT
+     */
+    private static String getClientOrigin(final HttpServletRequest request) {
+        String remoteAddr = null;
+        if (request != null) {
+            remoteAddr = request.getHeader(REQUEST_HEADER_ORIGIN);
+            if ((remoteAddr == null) || "".equals(remoteAddr)) {
+                remoteAddr = request.getRemoteAddr();
+            }
+        }
+        return remoteAddr;
     }
 
     /**

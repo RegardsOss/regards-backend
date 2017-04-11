@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
+import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 
 /**
  *
@@ -42,7 +43,12 @@ public class DataSourcesAutoConfiguration {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourcesAutoConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourcesAutoConfiguration.class);
+
+    /**
+     * Data source registry bean
+     */
+    public static final String DATA_SOURCE_BEAN_NAME = "multitenantsDataSources";
 
     /**
      * Current microservice name
@@ -69,35 +75,17 @@ public class DataSourcesAutoConfiguration {
      * @return Map<Tenant, DataSource>
      * @since 1.0-SNAPSHOT
      */
-    @Bean(name = { "multitenantsDataSources" })
+    @Bean(name = { DATA_SOURCE_BEAN_NAME })
     public Map<String, DataSource> getDataSources() {
 
-        final Map<String, DataSource> datasources = new HashMap<>();
+        Map<String, DataSource> datasources = new HashMap<>();
 
-        // Add datasources from bean configuration
-        final List<TenantConnection> connections = multitenantResolver.getTenantConnections();
-        datasources.putAll(createDataSourcesFromTenants(connections));
-
-        // Add datasources configuration from properties file.
-        for (final TenantConnection tenant : daoProperties.getTenants()) {
-            DataSource datasource;
-            if (daoProperties.getEmbedded()) {
-                datasource = DataSourceHelper.createEmbeddedDataSource(tenant.getTenant(),
-                                                                       daoProperties.getEmbeddedPath());
-
-            } else {
-                datasource = DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
-                                                               tenant.getUserName(), tenant.getPassword());
-            }
-            if (!datasources.containsKey(tenant.getTenant())) {
-                // Initialize connection in administration service
-                multitenantResolver.addTenantConnection(tenant);
-                // Add datasource to managed datasources pool
-                datasources.put(tenant.getTenant(), datasource);
-            } else {
-                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getTenant()));
-            }
-        }
+        // Retrieve microservice tenant connections from multitenant resolver
+        List<TenantConnection> connections = multitenantResolver.getTenantConnections();
+        // Initialize tenant connections
+        initDataSources(datasources, connections, false);
+        // Add static datasource configuration from properties file if necessary
+        initDataSources(datasources, daoProperties.getTenants(), true);
 
         return datasources;
     }
@@ -106,30 +94,42 @@ public class DataSourcesAutoConfiguration {
      *
      * Create the datasources from the TenantConfiguration list given
      *
-     * @param pTenants
+     * @param pExistingDataSources
+     *            list of existing datasources
+     * @param pConnections
      *            pTenants tenants configuration
+     * @param pNeedRegistration
+     *            if data source have to be registered
      * @return datasources created
      * @since 1.0-SNAPSHOT
      */
-    private Map<String, DataSource> createDataSourcesFromTenants(final List<TenantConnection> pTenants) {
+    private void initDataSources(Map<String, DataSource> pExistingDataSources,
+            final List<TenantConnection> pConnections, boolean pNeedRegistration) {
 
-        final Map<String, DataSource> datasources = new HashMap<>();
+        for (final TenantConnection tenantConnection : pConnections) {
 
-        for (final TenantConnection tenant : pTenants) {
-            if (!datasources.containsKey(tenant.getTenant())) {
-                if (daoProperties.getEmbedded()) {
-                    datasources.put(tenant.getTenant(), DataSourceHelper
-                            .createEmbeddedDataSource(tenant.getTenant(), daoProperties.getEmbeddedPath()));
-                } else {
-                    datasources.put(tenant.getTenant(),
-                                    DataSourceHelper.createDataSource(tenant.getUrl(), tenant.getDriverClassName(),
-                                                                      tenant.getUserName(), tenant.getPassword()));
+            // Prevent duplicates
+            if (!pExistingDataSources.containsKey(tenantConnection.getTenant())) {
+
+                try {
+                    // Init data source
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
+                    // Register connection
+                    if (pNeedRegistration) {
+                        multitenantResolver.addTenantConnection(tenantConnection);
+                    }
+                    // Register data source
+                    pExistingDataSources.put(tenantConnection.getTenant(), dataSource);
+                } catch (PropertyVetoException e) {
+                    // Do not block all tenants if for an inconsistent data source
+                    LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
+                    LOGGER.error(e.getMessage(), e);
                 }
+
             } else {
-                LOG.warn(String.format("Datasource for tenant %s already defined.", tenant.getTenant()));
+                LOGGER.warn(String.format("Datasource for tenant %s already defined.", tenantConnection.getTenant()));
             }
         }
-        return datasources;
     }
 
     /**
@@ -149,7 +149,7 @@ public class DataSourcesAutoConfiguration {
         if ((multitenantsDataSources != null) && !multitenantsDataSources.isEmpty()) {
             datasource = multitenantsDataSources.values().iterator().next();
         } else {
-            LOG.error("No datasource defined for MultitenantcyJpaAutoConfiguration !");
+            LOGGER.error("No datasource defined for MultitenantcyJpaAutoConfiguration !");
         }
         return datasource;
     }

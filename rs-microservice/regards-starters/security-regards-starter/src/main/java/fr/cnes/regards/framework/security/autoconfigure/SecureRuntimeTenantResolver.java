@@ -19,6 +19,14 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     /**
+     * serialVersionUID field.
+     *
+     * @author CS
+     * @since 1.0-SNAPSHOT
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SecureRuntimeTenantResolver.class);
@@ -26,15 +34,33 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     // Thread safe tenant holder for forced tenant
     private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
 
+    /**
+     * Name of the static and fixed name of instance virtual tenant.
+     */
+    private final String instanceTenantName;
+
+    /**
+     *
+     * Constructeur
+     *
+     * @param pInstanceTenantName
+     * @since 1.0-SNAPSHOT
+     */
+    public SecureRuntimeTenantResolver(final String pInstanceTenantName) {
+        super();
+        instanceTenantName = pInstanceTenantName;
+    }
+
     @Override
     public String getTenant() {
         // Try to get tenant from tenant holder
-        String tenant = tenantHolder.get();
+        final String tenant = tenantHolder.get();
         if (tenant != null) {
             return tenant;
         }
         // Try to get tenant from JWT
-        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
+                .getAuthentication();
         if (authentication != null) {
             return authentication.getTenant();
         } else {
@@ -43,12 +69,17 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     }
 
     @Override
-    public void forceTenant(String pTenant) {
+    public void forceTenant(final String pTenant) {
         tenantHolder.set(pTenant);
     }
 
     public void clearTenant() {
         LOGGER.info("Clearing tenant");
         tenantHolder.remove();
+    }
+
+    @Override
+    public Boolean isInstance() {
+        return instanceTenantName.equals(getTenant());
     }
 }

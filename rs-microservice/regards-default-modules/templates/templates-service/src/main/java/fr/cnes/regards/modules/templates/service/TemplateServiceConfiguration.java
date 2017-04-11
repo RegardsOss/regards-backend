@@ -30,17 +30,17 @@ public class TemplateServiceConfiguration {
     /**
      * The email validation template code
      */
-    private static final String EMAIL_VALIDATION_TEMPLATE_CODE = "emailValidationTemplate";
+    public static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE = "emailAccountValidationTemplate";
 
     /**
      * The password reset template code
      */
-    private static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
+    public static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
 
     /**
      * The account unlock template code
      */
-    private static final String ACCOUNT_UNLOCK_TEMPLATE = "accountUnlockTemplate";
+    public static final String ACCOUNT_UNLOCK_TEMPLATE = "accountUnlockTemplate";
 
     /**
      * The email validation template as html
@@ -60,12 +60,18 @@ public class TemplateServiceConfiguration {
     @Value("classpath:account-unlock-template.html")
     private Resource accountUnlockTemplate;
 
+    /**
+     * The password reset template as html
+     */
+    @Value("classpath:email-account-validation-template.html")
+    private Resource emailAccountValidationTemplate;
+
     @Bean
-    public Template emailValidationTemplate() throws IOException {
-        try (InputStream is = emailValidationTemplate.getInputStream()) {
+    public Template emailAccountValidationTemplate() throws IOException {
+        try (InputStream is = emailAccountValidationTemplate.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(EMAIL_VALIDATION_TEMPLATE_CODE, text, dataStructure, "Access Confirmation");
+            return new Template(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE, text, dataStructure, "Account Confirmation");
         }
     }
 

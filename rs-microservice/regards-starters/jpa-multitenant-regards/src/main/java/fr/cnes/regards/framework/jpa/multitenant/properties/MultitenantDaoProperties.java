@@ -48,6 +48,21 @@ public class MultitenantDaoProperties {
      */
     private String dialect;
 
+    /**
+     * For pooled data source, min available connections
+     */
+    private Integer minPoolSize = 5;
+
+    /**
+     * For pooled data source, max available connections
+     */
+    private Integer maxPoolSize = 20;
+
+    /**
+     * Default test query
+     */
+    private String preferredTestQuery = "SELECT 1";
+
     public List<TenantConnection> getTenants() {
         return tenants;
     }
@@ -86,6 +101,30 @@ public class MultitenantDaoProperties {
 
     public void setEnabled(final Boolean pEnabled) {
         enabled = pEnabled;
+    }
+
+    public Integer getMinPoolSize() {
+        return minPoolSize;
+    }
+
+    public void setMinPoolSize(Integer pMinPoolSize) {
+        minPoolSize = pMinPoolSize;
+    }
+
+    public Integer getMaxPoolSize() {
+        return maxPoolSize;
+    }
+
+    public void setMaxPoolSize(Integer pMaxPoolSize) {
+        maxPoolSize = pMaxPoolSize;
+    }
+
+    public String getPreferredTestQuery() {
+        return preferredTestQuery;
+    }
+
+    public void setPreferredTestQuery(String pPreferredTestQuery) {
+        preferredTestQuery = pPreferredTestQuery;
     }
 
 }
