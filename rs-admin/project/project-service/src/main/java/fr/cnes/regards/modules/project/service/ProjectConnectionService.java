@@ -3,12 +3,8 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +14,12 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigured;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationCreated;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationDeleted;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationUpdated;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidConnectionException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
@@ -125,26 +121,40 @@ public class ProjectConnectionService implements IProjectConnectionService {
         }
 
         // Send event to all microservices that a new connection is available for a new project
-        final TenantConnection tenantConnection = new TenantConnection(connection.getProject().getName(),
-                connection.getUrl(), connection.getUserName(), connection.getPassword(),
-                connection.getDriverClassName());
-
         if (!silent) {
-            instancePublisher.publish(new TenantConnectionConfigured(tenantConnection, connection.getMicroservice()));
+            instancePublisher.publish(new TenantConnectionConfigurationCreated(toTenantConnection(connection),
+                    connection.getMicroservice()));
         }
 
         return connection;
     }
 
+    /**
+     * Transform {@link ProjectConnection} to {@link TenantConnection}
+     *
+     * @param pConnection
+     *            related connection
+     */
+    private TenantConnection toTenantConnection(ProjectConnection pConnection) {
+        // Send event to all microservices that a new connection is available for a new project
+        return new TenantConnection(pConnection.getProject().getName(), pConnection.getUrl(), pConnection.getUserName(),
+                pConnection.getPassword(), pConnection.getDriverClassName());
+    }
+
     @Override
     public void deleteProjectConnection(final Long pProjectConnectionId) throws EntityNotFoundException {
-        if (projectConnectionRepository.exists(pProjectConnectionId)) {
+        ProjectConnection connection = projectConnectionRepository.findOne(pProjectConnectionId);
+        if (connection != null) {
             projectConnectionRepository.delete(pProjectConnectionId);
         } else {
             final String message = "Invalid entity <ProjectConnection> for deletion. Entity (id=%d) does not exists";
             LOGGER.error(String.format(message, pProjectConnectionId));
             throw new EntityNotFoundException(pProjectConnectionId.toString(), ProjectConnection.class);
         }
+
+        // Publish configuration deletion
+        instancePublisher.publish(new TenantConnectionConfigurationDeleted(toTenantConnection(connection),
+                connection.getMicroservice()));
     }
 
     @Override
@@ -164,6 +174,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
         } else {
             throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
         }
+
+        // Publish configuration update
+        instancePublisher.publish(new TenantConnectionConfigurationUpdated(toTenantConnection(connection),
+                connection.getMicroservice()));
+
         return connection;
     }
 
@@ -184,19 +199,4 @@ public class ProjectConnectionService implements IProjectConnectionService {
             throws EntityNotFoundException {
         return projectConnectionRepository.findByMicroservice(pMicroService);
     }
-
-    @Override
-    public void testProjectConnection(Long pConnectionIdentifier) throws ModuleException {
-        ProjectConnection connection = retrieveProjectConnectionById(pConnectionIdentifier);
-        DataSource dataSource = DataSourceHelper.createDataSource(connection.getProject().getName(),
-                                                                  connection.getUrl(), connection.getDriverClassName(),
-                                                                  connection.getUserName(), connection.getPassword());
-        try (Connection conn = dataSource.getConnection()) {
-            LOGGER.debug("Connection success");
-        } catch (final SQLException e) {
-            LOGGER.error("Connection test fail", e);
-            throw new InvalidConnectionException(e);
-        }
-    }
-
 }

@@ -89,7 +89,8 @@ public class AccountService implements IAccountService {
     /**
      * Create new service with passed deps
      *
-     * @param pAccountRepository the account repo
+     * @param pAccountRepository
+     *            the account repo
      */
     public AccountService(final IAccountRepository pAccountRepository,
             @Value("${regards.accounts.password.regex}") String passwordRegex,
@@ -113,13 +114,16 @@ public class AccountService implements IAccountService {
     @PostConstruct
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
-            accountRepository.save(new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                    rootAdminUserPassword));
+            Account root = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
+                    rootAdminUserPassword);
+            root.setStatus(AccountStatus.ACTIVE);
+            createAccount(root);
         }
     }
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountList()
      */
     @Override
@@ -129,6 +133,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#existAccount(java.lang.Long)
      */
     @Override
@@ -138,6 +143,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#createAccount(fr.cnes.regards.modules.
      * accessrights.domain.instance.Account)
      */
@@ -166,6 +172,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccount(java.lang.Long)
      */
     @Override
@@ -176,6 +183,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#updateAccount(java.lang.Long,
      * fr.cnes.regards.modules.accessrights.domain.instance.Account)
      */
@@ -196,6 +204,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see
      * fr.cnes.regards.modules.accessrights.service.account.IAccountService#retrieveAccountByEmail(java.lang.String)
      */
@@ -207,6 +216,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#validatePassword(java.lang.String,
      * java.lang.String)
      */
@@ -228,6 +238,7 @@ public class AccountService implements IAccountService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#existAccount(java.lang.String)
      */
     @Override

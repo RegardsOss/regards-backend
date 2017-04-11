@@ -236,7 +236,7 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
-        final Role role = roleRepository.findOne(pRoleId);
+        final Role role = roleRepository.findOneById(pRoleId);
         return role.getPermissions();
     }
 

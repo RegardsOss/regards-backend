@@ -134,13 +134,4 @@ public interface IProjectConnectionService {
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection retrieveProjectConnectionById(Long pId) throws EntityNotFoundException;
-
-    /**
-     * Test project connection
-     *
-     * @param connectionIdentifier
-     *            connection identifier
-     */
-    void testProjectConnection(Long connectionIdentifier) throws ModuleException;
-
 }

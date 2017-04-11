@@ -51,11 +51,6 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     public static final String RESOURCE_ID_MAPPING = "/{connectionId}";
 
     /**
-     * Resource id mapping
-     */
-    public static final String TEST_MAPPING = "/test";
-
-    /**
      * {@link ProjectConnection} service
      */
     private final IProjectConnectionService projectConnectionService;
@@ -109,26 +104,6 @@ public class ProjectConnectionController implements IResourceController<ProjectC
             @PathVariable Long connectionId) throws ModuleException {
         ProjectConnection pConn = projectConnectionService.retrieveProjectConnectionById(connectionId);
         return ResponseEntity.ok(toResource(pConn));
-    }
-
-    /**
-     * Test a single project connection by identifier
-     *
-     * @param projectName
-     *            project name
-     * @param connectionId
-     *            connection identifier
-     * @return a project connection
-     * @throws ModuleException
-     *             if error occurs
-     */
-    @RequestMapping(method = RequestMethod.GET, value = ProjectConnectionController.RESOURCE_ID_MAPPING
-            + ProjectConnectionController.TEST_MAPPING)
-    @ResourceAccess(description = "Test a project connection of a given project/tenant", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> testProjectConnection(@PathVariable String projectName, @PathVariable Long connectionId)
-            throws ModuleException {
-        projectConnectionService.testProjectConnection(connectionId);
-        return ResponseEntity.noContent().build();
     }
 
     /**
