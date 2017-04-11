@@ -20,6 +20,7 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards.Regards
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthorizationServerConfigurer;
 import fr.cnes.regards.framework.authentication.internal.Oauth2EndpointsConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
@@ -67,6 +68,9 @@ public class Oauth2AutoConfiguration {
     private String grantType;
 
     @Autowired
+    private IRuntimeTenantResolver runTimeTenantResolver;
+
+    @Autowired
     private JWTService jwtService;
 
     @Bean
@@ -83,7 +87,7 @@ public class Oauth2AutoConfiguration {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        return new Oauth2AuthenticationManager(resourceId, defaultAuthenticationPlugin(), jwtService);
+        return new Oauth2AuthenticationManager(resourceId, defaultAuthenticationPlugin(), runTimeTenantResolver);
     }
 
     /**

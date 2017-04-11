@@ -29,7 +29,7 @@ public class AuthenticationPluginResponse {
      * Authentication status
      */
     @NotNull
-    private AuthenticationStatus status;
+    private Boolean accessGranted = false;
 
     /**
      * User email
@@ -40,52 +40,32 @@ public class AuthenticationPluginResponse {
     private final String email;
 
     /**
-     * Identify root user
-     */
-    private final boolean isRoot;
-
-    /**
      * Error message
      */
     private String errorMessage = null;
 
-    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail, String pErrorMessage,
-            boolean pIsRoot) {
+    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail, final String pErrorMessage,
+            final boolean pIsRoot) {
         super();
-        this.status = pStatus;
+        this.accessGranted = pAccessGranted;
         this.email = pEmail;
         this.errorMessage = pErrorMessage;
-        this.isRoot = pIsRoot;
     }
 
-    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail) {
-        this(pStatus, pEmail, null, false);
+    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail) {
+        this(pAccessGranted, pEmail, null, false);
     }
 
-    public AuthenticationPluginResponse(final AuthenticationStatus pStatus, final String pEmail,
-            final String pErrorMessage) {
-        this(pStatus, pEmail, pErrorMessage, false);
+    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail, final String pErrorMessage) {
+        this(pAccessGranted, pEmail, pErrorMessage, false);
     }
 
-    /**
-     * Get method.
-     *
-     * @return the status
-     * @since 1.0
-     */
-    public AuthenticationStatus getStatus() {
-        return status;
+    public Boolean getAccessGranted() {
+        return accessGranted;
     }
 
-    /**
-     * Set method.
-     *
-     * @param pStatus
-     *            the status to set
-     * @since 1.0
-     */
-    public void setStatus(final AuthenticationStatus pStatus) {
-        status = pStatus;
+    public void setAccessGranted(final Boolean pAccessGranted) {
+        accessGranted = pAccessGranted;
     }
 
     /**
@@ -111,9 +91,5 @@ public class AuthenticationPluginResponse {
 
     public String getEmail() {
         return email;
-    }
-
-    public boolean isRoot() {
-        return isRoot;
     }
 }

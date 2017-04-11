@@ -1,18 +1,21 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.authentication.exception;
+package fr.cnes.regards.framework.authentication.internal;
 
 /**
  *
- * Class AuthenticationErrorTypesEnum
- *
- * Know error type for the regards frontend
+ * Enumeration for authentication plugins status.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+ *
  */
-public enum AuthenticationErrorTypesEnum {
+public enum AuthenticationStatus {
+
+    /**
+     * Authentication is successful, access is granted
+     */
+    ACCESS_GRANTED,
 
     /**
      * Login error login or password invalid.
@@ -58,5 +61,10 @@ public enum AuthenticationErrorTypesEnum {
      * User access inactive
      */
     USER_ACCESS_INACTIVE;
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
 
 }

@@ -12,11 +12,9 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
 /**
  *
@@ -55,32 +53,26 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
     @Override
     public AuthenticationPluginResponse authenticate(final String pEmail, final String pPassword, final String pScope) {
 
-        AuthenticationStatus status;
+        Boolean accessGranted = false;
         String errorMessage = null;
 
         // Validate password as system
         FeignSecurityManager.asSystem();
-        final ResponseEntity<AccountStatus> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+        final ResponseEntity<Boolean> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
 
         if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
-            if (validateResponse.getBody().equals(AccountStatus.ACTIVE)) {
-                status = AuthenticationStatus.ACCESS_GRANTED;
+            if (validateResponse.getBody()) {
+                accessGranted = validateResponse.getBody();
             } else {
-                status = AuthenticationStatus.ACCESS_DENIED;
-                errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Authentication failed.";
-            }
-        } else
-            if (validateResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                status = AuthenticationStatus.ACCOUNT_NOT_FOUND;
                 errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
                                              pEmail);
-            } else {
-                status = AuthenticationStatus.ACCESS_DENIED;
-                errorMessage = "[REMOTE ADMINISTRATION] - validatePassword - Request error code : "
-                        + validateResponse.getStatusCode().toString();
             }
+        } else {
+            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
+                                         pEmail);
+        }
 
-        return new AuthenticationPluginResponse(status, pEmail, errorMessage, rootLogin.equals(pEmail));
+        return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage, rootLogin.equals(pEmail));
 
     }
 

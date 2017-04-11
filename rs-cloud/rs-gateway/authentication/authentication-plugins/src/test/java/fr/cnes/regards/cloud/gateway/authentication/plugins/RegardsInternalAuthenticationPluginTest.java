@@ -16,14 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards.RegardsInternalAuthenticationPlugin;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
@@ -92,7 +90,7 @@ public class RegardsInternalAuthenticationPluginTest {
         try {
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(AccountStatus.ACTIVE, HttpStatus.OK);
+            final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -107,7 +105,7 @@ public class RegardsInternalAuthenticationPluginTest {
         Assert.assertNotNull(response);
         Assert.assertTrue(response.getEmail().equals("test@regards.fr"));
         Assert.assertNull(response.getErrorMessage());
-        Assert.assertTrue(response.getStatus().equals(AuthenticationStatus.ACCESS_GRANTED));
+        Assert.assertTrue(response.getAccessGranted());
 
     }
 
@@ -129,8 +127,7 @@ public class RegardsInternalAuthenticationPluginTest {
         try {
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(AccountStatus.INACTIVE,
-                    HttpStatus.UNAUTHORIZED);
+            final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -144,7 +141,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertTrue(response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertFalse(response.getAccessGranted());
 
     }
 
@@ -165,7 +162,7 @@ public class RegardsInternalAuthenticationPluginTest {
         try {
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+            final ResponseEntity<Boolean> response = new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -179,7 +176,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertTrue(response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertFalse(response.getAccessGranted());
 
     }
 
@@ -201,7 +198,7 @@ public class RegardsInternalAuthenticationPluginTest {
         try {
 
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
-            final ResponseEntity<AccountStatus> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            final ResponseEntity<Boolean> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -215,7 +212,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertTrue(response.getStatus().equals(AuthenticationStatus.ACCOUNT_NOT_FOUND));
+        Assert.assertFalse(response.getAccessGranted());
 
     }
 }

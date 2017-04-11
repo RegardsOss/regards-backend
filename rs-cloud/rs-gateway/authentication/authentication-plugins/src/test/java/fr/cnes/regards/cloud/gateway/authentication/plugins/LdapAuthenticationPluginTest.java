@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -98,8 +97,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("Error authentication. Access should be granted.",
-                          response.getStatus().equals(AuthenticationStatus.ACCESS_GRANTED));
+        Assert.assertTrue("Error authentication. Access should be granted.", response.getAccessGranted());
         Assert.assertTrue("Error authentication. Email is not valid", response.getEmail().equals(EMAIL));
 
     }
@@ -126,8 +124,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.",
-                          response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertTrue("The authentication shoul not be granted.", !response.getAccessGranted());
     }
 
     /**
@@ -153,8 +150,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.",
-                          response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertTrue("The authentication shoul not be granted.", !response.getAccessGranted());
     }
 
     /**
@@ -179,8 +175,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.",
-                          response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertTrue("The authentication shoul not be granted.", !response.getAccessGranted());
     }
 
     /**
@@ -205,8 +200,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.",
-                          response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertTrue("The authentication shoul not be granted.", !response.getAccessGranted());
 
     }
 
@@ -232,8 +226,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.",
-                          response.getStatus().equals(AuthenticationStatus.ACCESS_DENIED));
+        Assert.assertTrue("The authentication shoul not be granted.", !response.getAccessGranted());
 
     }
 
