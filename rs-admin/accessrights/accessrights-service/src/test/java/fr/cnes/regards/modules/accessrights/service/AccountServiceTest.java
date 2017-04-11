@@ -24,6 +24,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -102,10 +103,12 @@ public class AccountServiceTest {
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
 
+        final IRuntimeTenantResolver resolver = Mockito.mock(IRuntimeTenantResolver.class);
+
         // Construct serivice with mock deps
         accountService = new AccountService(accountRepository, PASSWORD_REGEX, PASSWORD_RULES,
                 PASSWORD_VALIDITY_DURATION, ACCOUNT_VALIDIDTY_DURATION, ROOT_LOGIN, ROOT_PASSWORD,
-                FAILED_AUTHENTICATION_THRESHOLD);
+                FAILED_AUTHENTICATION_THRESHOLD, resolver);
     }
 
     /**
@@ -136,10 +139,11 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a not existing account
      *
-     * @throws EntityException <br>
-     * {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
-     * {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of passed
-     * account<br>
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
+     *             passed account<br>
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system allows to create a new account.")
@@ -157,10 +161,11 @@ public class AccountServiceTest {
     /**
      * Check that the system fails when trying to update a account with different id thant the passed one.
      *
-     * @throws EntityException <br>
-     * {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
-     * {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of passed
-     * account<br>
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
+     *             passed account<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Purpose("Check that the system fails when trying to update a account with different id thant the passed one.")
@@ -170,7 +175,7 @@ public class AccountServiceTest {
 
         // Define a wrong id
         final Long wrongId = 1L;
-        Account fakeAccount = new Account("fake@toto.toto", "pFirstName", "pLastName", "pPassword");
+        final Account fakeAccount = new Account("fake@toto.toto", "pFirstName", "pLastName", "pPassword");
         fakeAccount.setId(wrongId);
 
         // Mock
@@ -184,10 +189,11 @@ public class AccountServiceTest {
     /**
      * Check that the system allows to update an account.
      *
-     * @throws EntityException <br>
-     * {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
-     * {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of passed
-     * account<br>
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} Thrown when no {@link Account} with passed if could be found<br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when passed id is different from the id of
+     *             passed account<br>
      */
     @Test
     @Purpose("Check that the system allows to update an account.")
@@ -211,8 +217,8 @@ public class AccountServiceTest {
     @Requirement("REGARDS_DSL_SYS_SEC_300")
     @Purpose("password has a complexity which is configurable by a regular expression")
     public void testValidPassword() {
-        String validPassword = "sdfnqnonhninsdfbzhvdvnqn";
-        String invalidPassword = "XCTGFU";
+        final String validPassword = "sdfnqnonhninsdfbzhvdvnqn";
+        final String invalidPassword = "XCTGFU";
         Assert.assertTrue(accountService.validPassword(validPassword));
         Assert.assertFalse(accountService.validPassword(invalidPassword));
     }
@@ -225,22 +231,22 @@ public class AccountServiceTest {
     @Purpose("Chack that the system can invalidate an account on the basis of its account validity duration or passowrd validity duration")
     public void testCheckAccountValidity() {
 
-        Account accountValid = new Account("valid@toto.toto", "pFirstName", "pLastName", "pPassword");
+        final Account accountValid = new Account("valid@toto.toto", "pFirstName", "pLastName", "pPassword");
         accountValid.setInvalidityDate(LocalDateTime.now().plusDays(ACCOUNT_VALIDIDTY_DURATION));
         accountValid.setStatus(AccountStatus.ACTIVE);
 
-        Account accountInvalid = new Account("invalid@toto.toto", "pFirstName", "pLastName", "pPassword");
+        final Account accountInvalid = new Account("invalid@toto.toto", "pFirstName", "pLastName", "pPassword");
         accountInvalid.setInvalidityDate(LocalDateTime.now().minusDays(1L));
         accountInvalid.setStatus(AccountStatus.ACTIVE);
 
-        Account accountPasswordInvalid = new Account("passwordInvalid@toto.toto", "pFirstName", "pLastName",
+        final Account accountPasswordInvalid = new Account("passwordInvalid@toto.toto", "pFirstName", "pLastName",
                 "pPassword");
         accountPasswordInvalid.setInvalidityDate(LocalDateTime.now().plusDays(ACCOUNT_VALIDIDTY_DURATION));
         // set the password validity date in two instruction so we are sure it is invalid without any headakes
         accountPasswordInvalid
                 .setPasswordUpdateDate(LocalDateTime.now().minusDays(PASSWORD_VALIDITY_DURATION).minusDays(1L));
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
-        Set<Account> toCheck = Sets.newHashSet(accountValid, accountInvalid, accountPasswordInvalid);
+        final Set<Account> toCheck = Sets.newHashSet(accountValid, accountInvalid, accountPasswordInvalid);
         Mockito.when(accountRepository.findAllByStatusNot(AccountStatus.LOCKED)).thenReturn(toCheck);
 
         // lets test now that everything is in place

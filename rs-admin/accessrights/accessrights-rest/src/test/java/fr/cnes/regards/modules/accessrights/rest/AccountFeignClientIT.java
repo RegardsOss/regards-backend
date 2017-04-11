@@ -18,11 +18,13 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
@@ -39,20 +41,21 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Autowired
     private IAccountRepository accountRepo;
 
-    // @Autowired
-    // private FeignSecurityManager feignSecurityManager;
-
-    @Autowired
     private IAccountsClient accountsClient;
+
+    /**
+     * Feign security manager
+     */
+    @Autowired
+    private FeignSecurityManager feignSecurityManager;
 
     private static final String MAIL_TEST = "feign@user.com";
 
     @Before
     public void init() {
-        // FeignSecurityManager.asSystem();
-        // accountsClient = HystrixFeign.builder().contract(new SpringMvcContract()).encoder(new GsonEncoder())
-        // .decoder(new ResponseEntityDecoder(new GsonDecoder())).decode404()
-        // .target(new TokenClientProvider<>(IAccountsClient.class, "http://" + serverAddress + ":" + getPort()));
+        accountsClient = FeignClientBuilder.build(new TokenClientProvider<>(IAccountsClient.class,
+                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        FeignSecurityManager.asSystem();
 
         final Optional<Account> account = accountRepo.findOneByEmail(MAIL_TEST);
         account.ifPresent(accountRepo::delete);
@@ -214,12 +217,11 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
-    @Ignore
     public void validatePasswordFromFeignClient() {
         try {
-            final ResponseEntity<AccountStatus> response = accountsClient.validatePassword("email@unkown.fr",
-                                                                                           "password");
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            final ResponseEntity<Boolean> response = accountsClient.validatePassword("email@unkown.fr", "password");
+            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+            Assert.assertFalse(response.getBody());
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());

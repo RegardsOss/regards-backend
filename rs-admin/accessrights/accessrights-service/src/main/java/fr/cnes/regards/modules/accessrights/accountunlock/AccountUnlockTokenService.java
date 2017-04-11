@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.accountunlock;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,8 +61,19 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
      */
     @Override
     public void create(final Account pAccount) {
-        final String uuid = UUID.randomUUID().toString();
-        final AccountUnlockToken token = new AccountUnlockToken(uuid, pAccount);
+
+        AccountUnlockToken token;
+
+        // Check if a token already exists for the given account. If it already exists, just update validity date.
+        final Optional<AccountUnlockToken> alreadyExistsToken = tokenRepository.findByAccount(pAccount);
+        if (alreadyExistsToken.isPresent()) {
+            token = alreadyExistsToken.get();
+            token.updateExipracyDate();
+        } else {
+            // Else create a new one
+            final String uuid = UUID.randomUUID().toString();
+            token = new AccountUnlockToken(uuid, pAccount);
+        }
         tokenRepository.save(token);
     }
 

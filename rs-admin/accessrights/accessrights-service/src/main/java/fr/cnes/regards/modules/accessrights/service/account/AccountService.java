@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -12,6 +13,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +28,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -40,6 +45,11 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 @InstanceTransactional
 @EnableScheduling
 public class AccountService implements IAccountService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
     /**
      * Encryption algorithm
@@ -87,6 +97,11 @@ public class AccountService implements IAccountService {
     private final IAccountRepository accountRepository;
 
     /**
+     * Instance tenant name
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      * Create new service with passed deps
      *
      * @param pAccountRepository
@@ -99,7 +114,8 @@ public class AccountService implements IAccountService {
             @Value("${regards.accounts.validity.duration}") final Long accountValidityDuration,
             @Value("${regards.accounts.root.user.login}") final String rootAdminUserLogin,
             @Value("${regards.accounts.root.user.password}") final String rootAdminUserPassword,
-            @Value("${regards.accounts.failed.authentication.max}") final Long thresholdFailedAuthentication) {
+            @Value("${regards.accounts.failed.authentication.max}") final Long thresholdFailedAuthentication,
+            @Autowired final IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         accountRepository = pAccountRepository;
         this.passwordRegex = passwordRegex;
@@ -109,13 +125,14 @@ public class AccountService implements IAccountService {
         this.rootAdminUserLogin = rootAdminUserLogin;
         this.rootAdminUserPassword = rootAdminUserPassword;
         this.thresholdFailedAuthentication = thresholdFailedAuthentication;
+        this.runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
     @PostConstruct
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
             final Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                    rootAdminUserPassword);
+                    encryptPassword(rootAdminUserPassword));
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             account.setExternal(false);
@@ -166,7 +183,13 @@ public class AccountService implements IAccountService {
     public String encryptPassword(final String pPassword) {
         try {
             final MessageDigest md = MessageDigest.getInstance(SHA_512);
-            return new String(md.digest(pPassword.getBytes()));
+            final Charset charset = Charset.forName("UTF-8");
+            final byte[] bytes = md.digest(pPassword.getBytes(charset));
+            final StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < bytes.length; i++) {
+                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
         } catch (final NoSuchAlgorithmException e) {
             throw new RuntimeException(e);// NOSONAR: this is only a developpement exception and should never happens
         }
@@ -223,19 +246,33 @@ public class AccountService implements IAccountService {
      * java.lang.String)
      */
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityException {
-        final Account toValidate = accountRepository.findOneByEmail(pEmail)
-                .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class));
-        final Boolean result = toValidate.getStatus().equals(AccountStatus.ACTIVE)
-                && toValidate.getPassword().equals(encryptPassword(pPassword));
-        if (!result) {
-            toValidate.setAuthenticationFailedCounter(toValidate.getAuthenticationFailedCounter() + 1);
-            if (toValidate.getAuthenticationFailedCounter() > thresholdFailedAuthentication) {
-                toValidate.setStatus(AccountStatus.LOCKED);
-                updateAccount(toValidate.getId(), toValidate);
+    public boolean validatePassword(final String pEmail, final String pPassword) {
+
+        final Optional<Account> toValidate = accountRepository.findOneByEmail(pEmail);
+
+        if (!toValidate.isPresent()) {
+            return false;
+        }
+
+        // Check password validity and account active status.
+        final boolean activeAccount = toValidate.get().getStatus().equals(AccountStatus.ACTIVE);
+        final boolean validPassword = toValidate.get().getPassword().equals(encryptPassword(pPassword));
+
+        // If password is invalid
+        if (!validPassword && !runtimeTenantResolver.isInstance()) {
+            // Increment password error counter and update account
+            toValidate.get().setAuthenticationFailedCounter(toValidate.get().getAuthenticationFailedCounter() + 1);
+            // If max error reached, lock account
+            if (toValidate.get().getAuthenticationFailedCounter() > thresholdFailedAuthentication) {
+                toValidate.get().setStatus(AccountStatus.LOCKED);
+                try {
+                    updateAccount(toValidate.get().getId(), toValidate.get());
+                } catch (final EntityException e) {
+                    LOG.error(e.getMessage(), e);
+                }
             }
         }
-        return result;
+        return activeAccount && validPassword;
     }
 
     /*
