@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -12,7 +11,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
  * @author svissier
  *
  */
-public interface IRabbitVirtualHostAdmin extends Serializable {
+public interface IRabbitVirtualHostAdmin {
 
     /**
      * GET Request to host/api/vhosts to know which Vhosts are already defined

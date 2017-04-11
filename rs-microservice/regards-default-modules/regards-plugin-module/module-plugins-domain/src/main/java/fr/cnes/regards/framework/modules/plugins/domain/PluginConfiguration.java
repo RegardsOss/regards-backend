@@ -424,4 +424,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "PluginConfiguration [id=" + id + ", pluginId=" + pluginId + ", label=" + label + ", version=" + version
+                + ", priorityOrder=" + priorityOrder + ", active=" + active + ", pluginClassName=" + pluginClassName
+                + ", interfaceName=" + interfaceName + "]";
+    }
+
 }
