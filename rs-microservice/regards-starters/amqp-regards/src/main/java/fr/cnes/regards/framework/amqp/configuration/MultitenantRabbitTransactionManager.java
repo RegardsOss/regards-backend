@@ -22,12 +22,12 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
     /**
      * Resolve current tenant at runtime. The resolver must be thread safe.
      */
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    private transient final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Virtual host admin
      */
-    private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
+    private transient final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     public MultitenantRabbitTransactionManager(ConnectionFactory pConnectionFactory,
             IRuntimeTenantResolver pRuntimeTenantResolver, IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {

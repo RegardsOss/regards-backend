@@ -169,6 +169,11 @@ public class PluginService implements IPluginService {
     }
 
     @Override
+    public boolean exists(Long pId) {
+        return pluginConfRepository.exists(pId);
+    }
+
+    @Override
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf) throws ModuleException {
         if (!pluginConfRepository.exists(pPluginConf.getId())) {
             LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pPluginConf.getId()));

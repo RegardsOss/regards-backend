@@ -160,6 +160,8 @@ public interface IPluginService {
      */
     PluginConfiguration getPluginConfiguration(Long pId) throws ModuleException;
 
+    boolean exists(Long pId);
+
     /**
      *
      * Get all plugin's configuration for a specific plugin type.
