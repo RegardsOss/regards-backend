@@ -29,7 +29,7 @@ public class AuthenticationPluginResponse {
      * Authentication status
      */
     @NotNull
-    private Boolean accessGranted = false;
+    private Boolean accessGranted = Boolean.FALSE;
 
     /**
      * User email
@@ -44,8 +44,7 @@ public class AuthenticationPluginResponse {
      */
     private String errorMessage = null;
 
-    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail, final String pErrorMessage,
-            final boolean pIsRoot) {
+    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail, final String pErrorMessage) {
         super();
         this.accessGranted = pAccessGranted;
         this.email = pEmail;
@@ -53,11 +52,7 @@ public class AuthenticationPluginResponse {
     }
 
     public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail) {
-        this(pAccessGranted, pEmail, null, false);
-    }
-
-    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail, final String pErrorMessage) {
-        this(pAccessGranted, pEmail, pErrorMessage, false);
+        this(pAccessGranted, pEmail, null);
     }
 
     public Boolean getAccessGranted() {

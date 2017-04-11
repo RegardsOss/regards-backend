@@ -73,6 +73,9 @@ public class Oauth2AutoConfiguration {
     @Autowired
     private JWTService jwtService;
 
+    @Value("${regards.accounts.root.user.login}")
+    private String rootUserLogin;
+
     @Bean
     public IAuthenticationPlugin defaultAuthenticationPlugin() {
         return new RegardsInternalAuthenticationPlugin();
@@ -87,7 +90,7 @@ public class Oauth2AutoConfiguration {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        return new Oauth2AuthenticationManager(defaultAuthenticationPlugin(), runTimeTenantResolver);
+        return new Oauth2AuthenticationManager(defaultAuthenticationPlugin(), runTimeTenantResolver, rootUserLogin);
     }
 
     /**

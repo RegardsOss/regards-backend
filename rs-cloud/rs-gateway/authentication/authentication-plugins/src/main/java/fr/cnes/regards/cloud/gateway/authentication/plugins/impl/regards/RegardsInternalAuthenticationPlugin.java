@@ -3,10 +3,7 @@
  */
 package fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -29,20 +26,6 @@ import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
         id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3",
         owner = "CNES", url = "www.cnes.fr")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(RegardsInternalAuthenticationPlugin.class);
-
-    /**
-     * Current microservice name
-     */
-    @Value("${spring.application.name}")
-    private String microserviceName;
-
-    @Value("${regards.accounts.root.user.login}")
-    private String rootLogin;
 
     /**
      * rs-admin microservice client for accounts
@@ -72,7 +55,7 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
                                          pEmail);
         }
 
-        return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage, rootLogin.equals(pEmail));
+        return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);
 
     }
 

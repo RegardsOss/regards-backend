@@ -75,6 +75,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     private final IRuntimeTenantResolver runTimeTenantResolver;
 
     /**
+     * Static and fixed root login. To know if the user who want to autify is root user.
+     */
+    private final String staticRootLogin;
+
+    /**
      * Spring bean factory
      */
     private BeanFactory beanFactory;
@@ -88,10 +93,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      *            The {@link IAuthenticationPlugin} to used
      */
     public Oauth2AuthenticationManager(final IAuthenticationPlugin pDefaultAuthenticationPlugin,
-            final IRuntimeTenantResolver pRunTimeTenantResolver) {
+            final IRuntimeTenantResolver pRunTimeTenantResolver, final String pStaticRootLogin) {
         super();
         defaultAuthenticationPlugin = pDefaultAuthenticationPlugin;
         runTimeTenantResolver = pRunTimeTenantResolver;
+        staticRootLogin = pStaticRootLogin;
     }
 
     @Override
@@ -328,9 +334,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             }
         }
 
-        // Check for project user status if the tenant to access is not instance
+        // Check for project user status if the tenant to access is not instance and the user logged is not instance
+        // root user.
         if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (pTenant != null)
-                && !runTimeTenantResolver.isInstance()) {
+                && !runTimeTenantResolver.isInstance() && !pUserEmail.equals(staticRootLogin)) {
             // Retrieve user projectUser
             final ResponseEntity<Resource<ProjectUser>> projectUserClientResponse = projectUsersClient
                     .retrieveProjectUser(pUserEmail);
@@ -375,7 +382,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @return AbstractAuthenticationToken
      */
     private Boolean doPluginAuthentication(final IAuthenticationPlugin pPlugin, final String pUserName,
-            final String pUserPassword, final String pScope) throws AuthenticationException {
+            final String pUserPassword, final String pScope) {
 
         // Check user/password
         Boolean accessGranted = true;

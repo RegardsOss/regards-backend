@@ -106,7 +106,7 @@ public class Oauth2AuthenticationManagerTest {
         final IRuntimeTenantResolver service = Mockito.mock(IRuntimeTenantResolver.class);
 
         // Create manager
-        manager = new Oauth2AuthenticationManager(plugin, service);
+        manager = new Oauth2AuthenticationManager(plugin, service, "root@test.fr");
 
         // Initialize valid account
         validAccount = new Account("test@regards.fr", "test", "test", "test");

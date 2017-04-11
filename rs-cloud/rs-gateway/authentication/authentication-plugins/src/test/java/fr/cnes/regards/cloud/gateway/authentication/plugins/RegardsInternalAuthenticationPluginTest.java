@@ -57,16 +57,7 @@ public class RegardsInternalAuthenticationPluginTest {
                     .getPlugin(parameters, RegardsInternalAuthenticationPlugin.class,
                                Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"));
             Assert.assertNotNull(plugin);
-
-            Field privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("microserviceName");
-            privateField.setAccessible(true);
-            privateField.set(plugin, "test");
-
-            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("rootLogin");
-            privateField.setAccessible(true);
-            privateField.set(plugin, "root");
-        } catch (final PluginUtilsException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException
-                | SecurityException e) {
+        } catch (final PluginUtilsException | IllegalArgumentException | SecurityException e) {
             Assert.fail();
         }
 
