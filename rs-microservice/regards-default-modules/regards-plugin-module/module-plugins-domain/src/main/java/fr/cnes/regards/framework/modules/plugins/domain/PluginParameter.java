@@ -21,6 +21,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
@@ -32,11 +34,6 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 @Table(name = "t_plugin_parameter")
 @SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
 public class PluginParameter implements IIdentifiable<Long> {
-
-    /**
-     * The max size of a {@link String} value
-     */
-    private static final int MAX_STRING_VALUE = 2048;
 
     /**
      * Unique id
@@ -55,7 +52,8 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * Parameter value
      */
-    @Column(length = MAX_STRING_VALUE)
+    @Column
+    @Type(type = "text")
     private String value;
 
     /**
