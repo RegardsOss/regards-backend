@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +37,11 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
 
     PluginConfiguration findOneByLabel(String pConfigurationLabel);
 
+    /**
+     * Find a plugin configuration loading its parameters and dynamic values
+     * @param id pluginConfiguration id
+     * @return a PluginConfiguration without lazy relations
+     */
+    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
+    PluginConfiguration findById(Long id);
 }

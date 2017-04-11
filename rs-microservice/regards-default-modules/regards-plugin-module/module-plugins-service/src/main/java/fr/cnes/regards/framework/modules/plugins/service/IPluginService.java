@@ -160,6 +160,11 @@ public interface IPluginService {
      */
     PluginConfiguration getPluginConfiguration(Long pId) throws ModuleException;
 
+    /**
+     * Load a PluginConfiguration with all its relations
+     */
+    PluginConfiguration loadPluginConfiguration(Long id);
+
     boolean exists(Long pId);
 
     /**

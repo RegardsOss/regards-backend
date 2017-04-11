@@ -169,6 +169,11 @@ public class PluginService implements IPluginService {
     }
 
     @Override
+    public PluginConfiguration loadPluginConfiguration(Long id) {
+        return pluginConfRepository.findById(id);
+    }
+
+    @Override
     public boolean exists(Long pId) {
         return pluginConfRepository.exists(pId);
     }

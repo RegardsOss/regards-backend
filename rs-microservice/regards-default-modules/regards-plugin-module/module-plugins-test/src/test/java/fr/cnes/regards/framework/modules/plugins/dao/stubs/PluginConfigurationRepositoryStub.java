@@ -125,6 +125,11 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     }
 
     @Override
+    public PluginConfiguration findById(Long pId) {
+        return null;
+    }
+
+    @Override
     public PluginConfiguration findOneByLabel(String pConfigurationLabel) {
         List<PluginConfiguration> confs = getEntities();
         Optional<PluginConfiguration> conf = confs.stream().filter(c -> c.getLabel().equals(pConfigurationLabel))
