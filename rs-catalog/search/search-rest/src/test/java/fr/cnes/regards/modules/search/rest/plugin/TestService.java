@@ -18,9 +18,9 @@ import fr.cnes.regards.modules.search.domain.IService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
-@Plugin(author = "Sylvain Vissiere-Guerinet", id = "tata")
+@Plugin(id = "tata", description = "plugin for test", author = "REGARDS Team", contact = "regards@c-s.fr",
+        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
 public class TestService implements IService {
 
     public static final String EXPECTED_VALUE = "skydiving";
