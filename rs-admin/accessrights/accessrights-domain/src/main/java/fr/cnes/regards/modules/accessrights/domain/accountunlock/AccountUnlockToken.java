@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- * 
+ *
  * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
@@ -85,6 +85,16 @@ public class AccountUnlockToken {
      */
     private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
         return LocalDateTime.now().plusMinutes(pExpiryTimeInMinutes);
+    }
+
+    /**
+     *
+     * Update token expiracy date from the current date.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    public void updateExipracyDate() {
+        this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
     /**

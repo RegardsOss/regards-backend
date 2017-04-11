@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
@@ -121,7 +120,8 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Create a new {@link Account} in state PENDING from the passed values
      *
-     * @param pNewAccount The data transfer object containing values to create the account from
+     * @param pNewAccount
+     *            The data transfer object containing values to create the account from
      * @return the {@link Account} created
      * @throws EntityException
      */
@@ -139,7 +139,8 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.
      *
-     * @param pAccountId The {@link Account}'s <code>id</code>
+     * @param pAccountId
+     *            The {@link Account}'s <code>id</code>
      * @return The {@link Account}
      * @throws EntityNotFoundException
      */
@@ -154,7 +155,8 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Retrieve an account by his unique email
      *
-     * @param pAccountEmail email of the account to retrieve
+     * @param pAccountEmail
+     *            email of the account to retrieve
      * @return Account
      * @throws EntityNotFoundException
      */
@@ -170,8 +172,10 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Update an {@link Account} with passed values.
      *
-     * @param pAccountId The <code>id</code> of the {@link Account} to update
-     * @param pUpdatedAccount The new values to set
+     * @param pAccountId
+     *            The <code>id</code> of the {@link Account} to update
+     * @param pUpdatedAccount
+     *            The new values to set
      * @return the {@link Account} updated
      * @throws EntityException
      */
@@ -191,7 +195,8 @@ public class AccountsController implements IResourceController<Account> {
      * Remove on {@link Account} from db.<br>
      * Only remove if no project user for any tenant.
      *
-     * @param pAccountId The account <code>id</code>
+     * @param pAccountId
+     *            The account <code>id</code>
      * @return void
      * @throws ModuleException
      */
@@ -208,14 +213,17 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Send to the user an email containing a link with limited validity to unlock its account.
      *
-     * @param pAccountEmail The {@link Account}'s <code>email</code>
-     * @param pDto The DTO containing<br>
-     * - The url of the app from where was issued the query<br>
-     * - The url to redirect the user to the password reset interface
+     * @param pAccountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing<br>
+     *            - The url of the app from where was issued the query<br>
+     *            - The url to redirect the user to the password reset interface
      * @return void
-     * @throws EntityException <br>
-     * {@link EntityNotFoundException} when no account with passed email could be found<br>
-     * {@link EntityOperationForbiddenException} when the account is not in status LOCKED<br>
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when no account with passed email could be found<br>
+     *             {@link EntityOperationForbiddenException} when the account is not in status LOCKED<br>
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.POST)
@@ -233,12 +241,16 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Unlock an {@link Account}.
      *
-     * @param pAccountEmail The {@link Account}'s <code>email</code>
-     * @param pToken The token
-     * @throws EntityException <br>
-     * {@link EntityNotFoundException} when no account with passed email could be found or the token could not be
-     * found<br>
-     * {@link EntityOperationForbiddenException} when the account is not in status LOCKED or the token is invalid<br>
+     * @param pAccountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pToken
+     *            The token
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} when no account with passed email could be found or the token could
+     *             not be found<br>
+     *             {@link EntityOperationForbiddenException} when the account is not in status LOCKED or the token is
+     *             invalid<br>
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.PUT)
@@ -256,10 +268,12 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Send to the user an email containing a link with limited validity to reset its password.
      *
-     * @param pAccountEmail The {@link Account}'s <code>email</code>
-     * @param pDto The DTO containing<br>
-     * - The url of the app from where was issued the query<br>
-     * - The url to redirect the user to the password reset interface
+     * @param pAccountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing<br>
+     *            - The url of the app from where was issued the query<br>
+     *            - The url to redirect the user to the password reset interface
      * @return void
      * @throws EntityNotFoundException
      */
@@ -279,12 +293,15 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Change the passord of an {@link Account}.
      *
-     * @param pAccountEmail The {@link Account}'s <code>email</code>
-     * @param pDto The DTO containing : 1) the token 2) the new password
+     * @param pAccountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing : 1) the token 2) the new password
      * @return void
-     * @throws EntityException <br>
-     * {@link EntityOperationForbiddenException} when the token is invalid<br>
-     * {@link EntityNotFoundException} when no account could be found<br>
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityOperationForbiddenException} when the token is invalid<br>
+     *             {@link EntityNotFoundException} when no account could be found<br>
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_RESET_PASSWORD, method = RequestMethod.PUT)
@@ -292,7 +309,7 @@ public class AccountsController implements IResourceController<Account> {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final PerformResetPasswordDto pDto) throws EntityException {
-        Account toReset = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account toReset = accountService.retrieveAccountByEmail(pAccountEmail);
         toReset.setPassword(pDto.getNewPassword());
         accountService.checkPassword(toReset);
         passwordResetService.performPasswordReset(pAccountEmail, pDto.getToken(), pDto.getNewPassword());
@@ -303,32 +320,36 @@ public class AccountsController implements IResourceController<Account> {
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
      * passed <code>email</code>
      *
-     * @param pEmail The {@link Account}'s <code>email</code>
-     * @param pPassword The password to check
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pPassword
+     *            The password to check
      * @return <code>true</code> if the password is valid, else <code>false</code>
      * @throws EntityException
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_VALIDATE, method = RequestMethod.GET)
     @ResourceAccess(description = "Validate the account password", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<AccountStatus> validatePassword(@PathVariable("account_email") final String pEmail,
+    public ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") final String pEmail,
             @RequestParam("password") final String pPassword) throws EntityException {
-        if (accountService.validatePassword(pEmail, pPassword)) {
-            return new ResponseEntity<>(AccountStatus.ACTIVE, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(AccountStatus.INACTIVE, HttpStatus.OK);
-        }
+
+        // Validate password for given user and password
+        final boolean validPassword = accountService.validatePassword(pEmail, pPassword);
+
+        // Return password validity
+        return new ResponseEntity<>(validPassword, HttpStatus.OK);
     }
 
     /**
      * Endpoint allowing to provide a password and know if it is valid or not.
      *
-     * @param pPassword password to check
+     * @param pPassword
+     *            password to check
      */
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.POST)
     @ResourceAccess(description = "Validate a password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Validity> checkPassword(@RequestBody String pPassword) {
+    public ResponseEntity<Validity> checkPassword(@RequestBody final String pPassword) {
         // JSON object is not reflected by a POJO because a POJO for ONE attribute would be overkill
         return new ResponseEntity<>(new Validity(accountService.validPassword(pPassword)), HttpStatus.OK);
     }
@@ -369,7 +390,7 @@ public class AccountsController implements IResourceController<Account> {
         private Validity() {
         }
 
-        private Validity(Boolean pValidity) {
+        private Validity(final Boolean pValidity) {
             validity = pValidity;
         }
 
@@ -377,7 +398,7 @@ public class AccountsController implements IResourceController<Account> {
             return validity;
         }
 
-        public void setValidity(Boolean pValidity) {
+        public void setValidity(final Boolean pValidity) {
             validity = pValidity;
         }
 

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
@@ -32,7 +31,8 @@ import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPas
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountsClient {
 
     /**
@@ -175,6 +175,6 @@ public interface IAccountsClient {
      */
     @ResponseBody
     @RequestMapping(value = "/{account_email}/validate", method = RequestMethod.GET)
-    ResponseEntity<AccountStatus> validatePassword(@PathVariable("account_email") String pEmail,
+    ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String pEmail,
             @RequestParam("password") String pPassword);
 }
