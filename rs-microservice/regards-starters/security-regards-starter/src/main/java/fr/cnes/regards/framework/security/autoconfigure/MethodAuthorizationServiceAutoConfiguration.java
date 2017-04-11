@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -28,10 +29,13 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 @AutoConfigureBefore(MultitenantAutoConfiguration.class)
 public class MethodAuthorizationServiceAutoConfiguration {
 
+    @Value("${regards.instance.tenant.name:instance}")
+    private String instanceTenantName;
+
     @ConditionalOnMissingBean
     @Bean
     public IRuntimeTenantResolver secureThreadTenantResolver() {
-        return new SecureRuntimeTenantResolver();
+        return new SecureRuntimeTenantResolver(instanceTenantName);
     }
 
     @Bean

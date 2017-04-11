@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidConnectionException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
@@ -203,6 +204,19 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(SearchException.class)
     public ResponseEntity<ServerErrorResponse> searchException(final SearchException pException) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
+                pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
+    }
+
+    /**
+     * Exception returning 400 when a datasource connection is invalid
+     * 
+     * @param pException
+     *            {@link InvalidConnectionException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(InvalidConnectionException.class)
+    public ResponseEntity<ServerErrorResponse> connectionException(final InvalidConnectionException pException) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
                 pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
     }

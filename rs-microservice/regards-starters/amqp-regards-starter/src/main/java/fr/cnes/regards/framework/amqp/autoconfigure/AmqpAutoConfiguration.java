@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapProperties;
 
 /**
  *
@@ -52,6 +53,9 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
         AmqpMicroserviceProperties.class })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
+
+    @Autowired
+    private MultitenantBootstrapProperties bootstrapProperties;
 
     /**
      * bean providing properties from the configuration file
@@ -89,7 +93,7 @@ public class AmqpAutoConfiguration {
         return new RabbitVirtualHostAdmin(pTenantResolver, amqpProperties.getRabbitmqUserName(),
                 amqpProperties.getRabbitmqPassword(), amqpProperties.getAmqpManagementHost(),
                 amqpProperties.getAmqpManagementPort(), pRestTemplate, pSimpleRoutingConnectionFactory,
-                amqpProperties.getRabbitmqAddresses());
+                amqpProperties.getRabbitmqAddresses(), bootstrapProperties.getBootstrapTenants());
     }
 
     @Bean

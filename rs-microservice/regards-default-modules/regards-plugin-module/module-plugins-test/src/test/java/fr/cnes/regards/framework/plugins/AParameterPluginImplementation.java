@@ -8,11 +8,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ParameterPlugin
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
-@Plugin(author = "CSSI", description = "Parameter plugin test", id = "aParameterPlugin", version = "0.0.1")
+@Plugin(description = "Parameter plugin test", id = "aParameterPlugin", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class AParameterPluginImplementation implements IComplexInterfacePlugin {
 
     /**

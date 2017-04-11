@@ -172,7 +172,8 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         if (daoProperties.getEmbedded()) {
             addDataSource(DataSourceHelper.createEmbeddedDataSource(pTenant, daoProperties.getEmbeddedPath()), pTenant);
         } else {
-            addDataSource(DataSourceHelper.createDataSource(pUrl, pDriverClassName, pUser, pPassword), pTenant);
+            addDataSource(DataSourceHelper.createDataSource(pTenant, pUrl, pDriverClassName, pUser, pPassword),
+                          pTenant);
         }
     }
 

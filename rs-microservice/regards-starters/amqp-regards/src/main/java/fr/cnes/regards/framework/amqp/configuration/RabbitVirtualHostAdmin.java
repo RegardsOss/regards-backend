@@ -111,6 +111,11 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     private final ITenantResolver tenantResolver;
 
     /**
+     * List of static tenant to manage at startup
+     */
+    private final String[] bootstrapTenants;
+
+    /**
      *
      * Constructor used to initialize properties from AmqpProperties
      *
@@ -130,10 +135,13 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      *            connection factory to handle multi-tenancy
      * @param pRabbitAddresses
      *            server addresses
+     * @param pStartupTenants
+     *            tenant to manage at startup
      */
     public RabbitVirtualHostAdmin(ITenantResolver pTenantResolver, String pRabbitmqUserName, String pRabbitmqPassword,
             String pAmqpManagementHost, Integer pAmqpManagementPort, RestTemplate pRestTemplate,
-            MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, String pRabbitAddresses) {
+            MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory, String pRabbitAddresses,
+            String[] pStartupTenants) {
         super();
         this.tenantResolver = pTenantResolver;
         restTemplate = pRestTemplate;
@@ -143,6 +151,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         amqpManagementHost = pAmqpManagementHost;
         amqpManagementPort = pAmqpManagementPort;
         rabbitAddresses = pRabbitAddresses;
+        this.bootstrapTenants = pStartupTenants;
     }
 
     /**
@@ -152,6 +161,13 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     public void init() {
         // Initialize AMQP manager VHOST
         addVhost(AmqpConstants.AMQP_MANAGER);
+
+        // Check if we have startup tenant vhost to manage
+        if (bootstrapTenants != null) {
+            for (String tenant : bootstrapTenants) {
+                addVhost(tenant);
+            }
+        }
 
         // Retrieve already configured tenant
         Set<String> tenants = tenantResolver.getAllTenants();

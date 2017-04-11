@@ -29,4 +29,7 @@ public class SecurityException extends Exception {
         super(pMessage, pCause);
     }
 
+    public SecurityException(Throwable cause) {
+        super(cause);
+    }
 }

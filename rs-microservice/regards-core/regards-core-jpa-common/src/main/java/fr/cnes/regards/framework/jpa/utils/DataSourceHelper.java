@@ -5,6 +5,8 @@ package fr.cnes.regards.framework.jpa.utils;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -18,6 +20,13 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  * @since 1.0-SNAPSHOT
  */
 public final class DataSourceHelper {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceHelper.class);
+
+    private static final String HR = "####################################################";
 
     /**
      * Hibernate dialect for embedded HSQL Database
@@ -61,43 +70,34 @@ public final class DataSourceHelper {
      *
      * Create an embedded datasource
      *
-     * @param pProjectName
+     * @param pTenant
      *            Project name
      * @param pEmbeddedPath
      *            path for database files.
      * @return DataSource
      * @since 1.0-SNAPSHOT
      */
-    public static DataSource createEmbeddedDataSource(final String pProjectName, final String pEmbeddedPath) {
+    public static DataSource createEmbeddedDataSource(final String pTenant, final String pEmbeddedPath) {
 
         final DriverManagerDataSource dmDataSource = new DriverManagerDataSource();
         dmDataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-        dmDataSource.setUrl(EMBEDDED_HSQL_URL + pEmbeddedPath + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pProjectName
+        dmDataSource.setUrl(EMBEDDED_HSQL_URL + pEmbeddedPath + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pTenant
                 + DataSourceHelper.EMBEDDED_URL_SEPARATOR + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
+
+        LOGGER.info("\n{}\nCreating EMBEDDED datasource for tenant {} with path {}\n{}", HR, pTenant, pEmbeddedPath,
+                    HR);
+
         return dmDataSource;
     }
 
-    /**
-     *
-     * Create a datasource
-     *
-     * @param pUrl
-     *            Adress to access database
-     * @param pDriverClassName
-     *            Driver class name
-     * @param pUserName
-     *            user name
-     * @param pPassword
-     *            password
-     * @return DataSource
-     * @since 1.0-SNAPSHOT
-     */
-    public static DataSource createDataSource(final String pUrl, final String pDriverClassName, final String pUserName,
-            final String pPassword) {
+    public static DataSource createDataSource(final String pTenant, final String pUrl, final String pDriverClassName,
+            final String pUserName, final String pPassword) {
 
         final DataSourceBuilder factory = DataSourceBuilder.create().driverClassName(pDriverClassName)
                 .username(pUserName).password(pPassword).url(pUrl);
+
+        LOGGER.info("\n{}\nCreating datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
+
         return factory.build();
     }
-
 }

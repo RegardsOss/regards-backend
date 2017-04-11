@@ -46,12 +46,13 @@ public class InstanceDataSourceConfiguration {
     @Primary
     public DataSource instanceDataSource() {
 
+        String tenant = "instance";
         DataSource datasource;
         if (daoProperties.getEmbedded()) {
-            datasource = DataSourceHelper.createEmbeddedDataSource("instance", daoProperties.getEmbeddedPath());
+            datasource = DataSourceHelper.createEmbeddedDataSource(tenant, daoProperties.getEmbeddedPath());
 
         } else {
-            datasource = DataSourceHelper.createDataSource(daoProperties.getDatasource().getUrl(),
+            datasource = DataSourceHelper.createDataSource(tenant, daoProperties.getDatasource().getUrl(),
                                                            daoProperties.getDatasource().getDriverClassName(),
                                                            daoProperties.getDatasource().getUsername(),
                                                            daoProperties.getDatasource().getPassword());

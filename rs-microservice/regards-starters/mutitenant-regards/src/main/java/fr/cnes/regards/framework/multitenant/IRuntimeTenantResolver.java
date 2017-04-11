@@ -20,9 +20,18 @@ public interface IRuntimeTenantResolver extends Serializable {
     String getTenant();
 
     /**
+     *
+     * Does the current tenant is instance
+     *
+     * @return true|false
+     */
+    Boolean isInstance();
+
+    /**
      * Force runtime tenant to a specific value
      *
-     * @param pTenant tenant
+     * @param pTenant
+     *            tenant
      */
     void forceTenant(String pTenant);
 }

@@ -130,7 +130,7 @@ public final class PluginUtils {
         final Plugin plugin = pPluginClass.getAnnotation(Plugin.class);
 
         // Init plugin metadata
-        final PluginMetaData pluginMetaData = new PluginMetaData();
+        final PluginMetaData pluginMetaData = new PluginMetaData(plugin);
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
 
         // Search the plugin type of the plugin class : ie the interface has the @PluginInterface annotation
@@ -145,16 +145,6 @@ public final class PluginUtils {
                 }
             });
         }
-
-        // Manage plugin id
-        if ("".equals(plugin.id())) {
-            pluginMetaData.setPluginId(pPluginClass.getSimpleName());
-        } else {
-            pluginMetaData.setPluginId(plugin.id());
-        }
-        pluginMetaData.setAuthor(plugin.author());
-        pluginMetaData.setVersion(plugin.version());
-        pluginMetaData.setDescription(plugin.description());
 
         // Try to detect parameters if any
         pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass, pPrefixs));
