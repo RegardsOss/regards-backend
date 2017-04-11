@@ -23,9 +23,12 @@ import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.Authenticatio
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
+import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -103,7 +106,7 @@ public class Oauth2AuthenticationManagerTest {
         final IRuntimeTenantResolver service = Mockito.mock(IRuntimeTenantResolver.class);
 
         // Create manager
-        manager = new Oauth2AuthenticationManager("test", plugin, service);
+        manager = new Oauth2AuthenticationManager(plugin, service);
 
         // Initialize valid account
         validAccount = new Account("test@regards.fr", "test", "test", "test");

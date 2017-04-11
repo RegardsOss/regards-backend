@@ -87,7 +87,7 @@ public class Oauth2AutoConfiguration {
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        return new Oauth2AuthenticationManager(resourceId, defaultAuthenticationPlugin(), runTimeTenantResolver);
+        return new Oauth2AuthenticationManager(defaultAuthenticationPlugin(), runTimeTenantResolver);
     }
 
     /**

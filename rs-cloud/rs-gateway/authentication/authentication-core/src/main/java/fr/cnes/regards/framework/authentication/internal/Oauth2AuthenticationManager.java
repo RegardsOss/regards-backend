@@ -65,11 +65,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     private static final Logger LOG = LoggerFactory.getLogger(Oauth2AuthenticationManager.class);
 
     /**
-     * Current microservice name
-     */
-    private final String microserviceName;
-
-    /**
      * Default authentication plugin to use if none is configured
      */
     private final IAuthenticationPlugin defaultAuthenticationPlugin;
@@ -92,11 +87,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pDefaultAuthenticationPlugin
      *            The {@link IAuthenticationPlugin} to used
      */
-    public Oauth2AuthenticationManager(final String pMicroserviceName,
-            final IAuthenticationPlugin pDefaultAuthenticationPlugin,
+    public Oauth2AuthenticationManager(final IAuthenticationPlugin pDefaultAuthenticationPlugin,
             final IRuntimeTenantResolver pRunTimeTenantResolver) {
         super();
-        microserviceName = pMicroserviceName;
         defaultAuthenticationPlugin = pDefaultAuthenticationPlugin;
         runTimeTenantResolver = pRunTimeTenantResolver;
     }
