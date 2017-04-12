@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 
 /**
  *
@@ -30,12 +29,10 @@ public class AuthenticationPluginStub implements IAuthenticationPlugin {
 
     @Override
     public AuthenticationPluginResponse authenticate(final String pName, final String pPassword, final String pScope) {
-        AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
+        Boolean accessGranted = true;
         if (pPassword.equals(INVALID_PASSWORD)) {
-            status = AuthenticationStatus.INVALID_PASSWORD;
-        } else {
-            status = AuthenticationStatus.ACCESS_GRANTED;
+            accessGranted = false;
         }
-        return new AuthenticationPluginResponse(status, pName, null);
+        return new AuthenticationPluginResponse(accessGranted, pName, null);
     }
 }

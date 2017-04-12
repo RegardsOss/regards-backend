@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.dao.stubs.PluginConfigurationRepositoryStub;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -64,6 +66,7 @@ public class AuthenticationTestConfiguration {
         final ProjectUser testUser = new ProjectUser();
         testUser.setEmail("test@regards.fr");
         testUser.setRole(testRole);
+        testUser.setStatus(UserStatus.ACCESS_GRANTED);
 
         final ResponseEntity<Resource<ProjectUser>> response = new ResponseEntity<Resource<ProjectUser>>(
                 new Resource<ProjectUser>(testUser, new ArrayList<>()), HttpStatus.OK);
@@ -86,7 +89,9 @@ public class AuthenticationTestConfiguration {
     @Bean
     IAccountsClient accountsClient() {
         final IAccountsClient mock = Mockito.mock(IAccountsClient.class);
-        final Resource<Account> resource = HateoasUtils.wrap(new Account("", "", "", ""));
+        final Account account = new Account("email@test.fr", "name", "lastname", "password");
+        account.setStatus(AccountStatus.ACTIVE);
+        final Resource<Account> resource = HateoasUtils.wrap(account);
         final ResponseEntity<Resource<Account>> response = ResponseEntity.ok(resource);
         Mockito.when(mock.retrieveAccounByEmail(Mockito.any())).thenReturn(response);
         return mock;

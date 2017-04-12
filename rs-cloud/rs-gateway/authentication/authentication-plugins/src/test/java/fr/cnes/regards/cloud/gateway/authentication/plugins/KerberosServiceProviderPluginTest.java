@@ -40,7 +40,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
+ *
  * @since 1.0-SNAPSHOT
  */
 public class KerberosServiceProviderPluginTest {
@@ -58,12 +58,12 @@ public class KerberosServiceProviderPluginTest {
     /**
      * REGARDS Principal to use for test
      */
-    private final static String applicationPrincipal = "HTTP/po14173LX@REGARDS.CLOUD-ESPACE.SI.C-S.FR";
+    private static final String applicationPrincipal = "HTTP/po14173LX@REGARDS.CLOUD-ESPACE.SI.C-S.FR";
 
     /**
      * User login to connect for test
      */
-    private final static String userPrincipal = "sbinda";
+    private static final String userPrincipal = "sbinda";
 
     /**
      *

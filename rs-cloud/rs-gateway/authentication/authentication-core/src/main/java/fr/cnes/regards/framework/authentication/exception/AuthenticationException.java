@@ -5,6 +5,8 @@ package fr.cnes.regards.framework.authentication.exception;
 
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
+import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
+
 /**
  *
  * Class AuthenticationException
@@ -27,9 +29,9 @@ public class AuthenticationException extends OAuth2Exception {
      */
     private static final String ERROR_TYPE_KEY = "error";
 
-    public AuthenticationException(final String pMsg, final AuthenticationErrorTypesEnum pErrorType) {
+    public AuthenticationException(final String pMsg, final AuthenticationStatus pStatus) {
         super(pMsg);
-        this.addAdditionalInformation(ERROR_TYPE_KEY, pErrorType.toString());
+        this.addAdditionalInformation(ERROR_TYPE_KEY, pStatus.toString());
     }
 
 }

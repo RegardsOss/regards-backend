@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.domain.AuthenticationStatus;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -149,7 +148,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     @Override
     public AuthenticationPluginResponse authenticate(final String pLogin, final String pPassword, final String pScope) {
 
-        AuthenticationStatus status = AuthenticationStatus.ACCESS_DENIED;
+        Boolean accessGranted = false;
         String errorMessage = null;
         String email = "";
         // Create LDAP Connection
@@ -164,24 +163,21 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
         try {
             // Check connection
             if (!connection.connect()) {
-                status = AuthenticationStatus.ACCESS_DENIED;
                 errorMessage = "Connection failed to LDAP Server";
             } else {
                 connection.bind(dn, pPassword);
                 if (connection.isAuthenticated()) {
                     email = getEmail(connection, dn, pLogin);
-                    status = AuthenticationStatus.ACCESS_GRANTED;
+                    accessGranted = true;
                 } else {
                     errorMessage = String.format("LDAP Authentication failed for user %s", pLogin);
                 }
             }
         } catch (final LdapAuthenticationException e) {
             LOGGER.error("LDAP authentication error : " + e.getMessage(), e);
-            status = AuthenticationStatus.ACCESS_DENIED;
             errorMessage = e.getMessage();
         } catch (final LdapException | IOException e) {
             LOGGER.error("LDAP error : " + e.getMessage(), e);
-            status = AuthenticationStatus.ACCESS_DENIED;
             errorMessage = e.getMessage();
         } finally {
             try {
@@ -194,7 +190,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
         }
 
         // Return connection state
-        return new AuthenticationPluginResponse(status, email, errorMessage);
+        return new AuthenticationPluginResponse(accessGranted, email, errorMessage);
 
     }
 
