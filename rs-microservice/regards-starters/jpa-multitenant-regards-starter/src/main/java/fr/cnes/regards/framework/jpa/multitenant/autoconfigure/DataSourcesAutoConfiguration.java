@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
@@ -73,15 +74,17 @@ public class DataSourcesAutoConfiguration {
      * List of data sources for each configured tenant.
      *
      * @return Map<Tenant, DataSource>
+     * @throws JpaMultitenantException
+     *             if connections cannot be retrieved on startup
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
-    public Map<String, DataSource> getDataSources() {
+    public Map<String, DataSource> getDataSources() throws JpaMultitenantException {
 
         Map<String, DataSource> datasources = new HashMap<>();
 
         // Retrieve microservice tenant connections from multitenant resolver
-        List<TenantConnection> connections = multitenantResolver.getTenantConnections();
+        List<TenantConnection> connections = multitenantResolver.getTenantConnections(microserviceName);
         // Initialize tenant connections
         initDataSources(datasources, connections, false);
         // Add static datasource configuration from properties file if necessary
@@ -116,11 +119,11 @@ public class DataSourcesAutoConfiguration {
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
                     // Register connection
                     if (pNeedRegistration) {
-                        multitenantResolver.addTenantConnection(tenantConnection);
+                        multitenantResolver.addTenantConnection(microserviceName, tenantConnection);
                     }
                     // Register data source
                     pExistingDataSources.put(tenantConnection.getTenant(), dataSource);
-                } catch (PropertyVetoException e) {
+                } catch (PropertyVetoException | JpaMultitenantException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);
@@ -139,11 +142,13 @@ public class DataSourcesAutoConfiguration {
      * ConditionalOnMissingBean : In case of jpa-instance-regards-starter activated. There can't be two datasources.
      *
      * @return datasource
+     * @throws JpaMultitenantException
+     *             if connections cannot be retrieved on startup
      * @since 1.0-SNAPSHOT
      */
     @Bean
     @ConditionalOnMissingBean(DataSource.class)
-    public DataSource projectsDataSource() {
+    public DataSource projectsDataSource() throws JpaMultitenantException {
         final Map<String, DataSource> multitenantsDataSources = getDataSources();
         DataSource datasource = null;
         if ((multitenantsDataSources != null) && !multitenantsDataSources.isEmpty()) {
