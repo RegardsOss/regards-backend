@@ -18,6 +18,8 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -137,7 +139,7 @@ public final class PluginUtils {
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(pPrefixs);
         List<String> types = new ArrayList<>();
 
-        for (Class<?> aInterface : pPluginClass.getInterfaces()) {
+        for (Class<?> aInterface : TypeToken.of(pPluginClass).getTypes().interfaces().rawTypes()) {
             types.add(aInterface.getCanonicalName());
             pluginInterfaces.forEach(s -> {
                 if (s.equals(aInterface.getCanonicalName())) {

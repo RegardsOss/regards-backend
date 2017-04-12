@@ -57,10 +57,9 @@ public class PluginParameter implements IIdentifiable<Long> {
     private String value;
 
     /**
-     * {@link PluginConfiguration} parameter is optional
-     * This is used when a plugin paramter leads to a plugin configuration.
-     * For example, a datasource (used by Dataset) is a plugin configuration and has a paramater "connection" which is
-     * also a plugin configuration (the connection to database)
+     * {@link PluginConfiguration} parameter is optional This is used when a plugin paramter leads to a plugin
+     * configuration. For example, a datasource (used by Dataset) is a plugin configuration and has a paramater
+     * "connection" which is also a plugin configuration (the connection to database)
      */
     @ManyToOne
     @JoinColumn(name = "next_conf_id", foreignKey = @ForeignKey(name = "fk_param_next_conf_id"), nullable = true)
@@ -80,7 +79,6 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     /**
      * Default constructor
-     *
      */
     public PluginParameter() {
         super();
@@ -90,10 +88,8 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * Constructor
      *
-     * @param pName
-     *            the parameter name
-     * @param pValue
-     *            the parameter value
+     * @param pName the parameter name
+     * @param pValue the parameter value
      */
     public PluginParameter(final String pName, final String pValue) {
         super();
@@ -104,10 +100,8 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * Constructor
      *
-     * @param pName
-     *            the parameter name
-     * @param pPluginConfiguration
-     *            the plugin configuration
+     * @param pName the parameter name
+     * @param pPluginConfiguration the plugin configuration
      */
     public PluginParameter(final String pName, final PluginConfiguration pPluginConfiguration) {
         super();
@@ -136,7 +130,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     }
 
     public final void setIsDynamic(Boolean pIsDynamic) {
-        this.dynamic = pIsDynamic;
+        dynamic = pIsDynamic;
     }
 
     public final PluginConfiguration getPluginConfiguration() {
@@ -160,7 +154,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     }
 
     public void setDynamicsValues(List<PluginDynamicValue> pDynamicValues) {
-        this.dynamicsValues = pDynamicValues;
+        dynamicsValues = pDynamicValues;
     }
 
     @Override
@@ -200,9 +194,10 @@ public class PluginParameter implements IIdentifiable<Long> {
             if (other.name != null) {
                 return false;
             }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
+        } else
+            if (!name.equals(other.name)) {
+                return false;
+            }
         return true;
     }
 
