@@ -132,7 +132,7 @@ public class AccountService implements IAccountService {
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
             final Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                    encryptPassword(rootAdminUserPassword));
+                    rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             account.setExternal(false);
@@ -148,6 +148,11 @@ public class AccountService implements IAccountService {
     @Override
     public Page<Account> retrieveAccountList(final Pageable pPageable) {
         return accountRepository.findAll(pPageable);
+    }
+
+    @Override
+    public Page<Account> retrieveAccountList(final AccountStatus pStatus, final Pageable pPageable) {
+        return accountRepository.findAllByStatus(pStatus, pPageable);
     }
 
     /*
@@ -186,7 +191,7 @@ public class AccountService implements IAccountService {
             final Charset charset = Charset.forName("UTF-8");
             final byte[] bytes = md.digest(pPassword.getBytes(charset));
             final StringBuilder sb = new StringBuilder();
-            for (byte b : bytes) {
+            for (final byte b : bytes) {
                 sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();

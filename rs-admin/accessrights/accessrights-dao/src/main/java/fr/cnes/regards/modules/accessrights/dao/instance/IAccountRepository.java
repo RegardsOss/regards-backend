@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -29,7 +31,8 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
      * Find the single {@link Account} with passed <code>email</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pEmail The {@link Account}'s <code>email</code>
+     * @param pEmail
+     *            The {@link Account}'s <code>email</code>
      * @return An optional account
      */
     Optional<Account> findOneByEmail(String pEmail);
@@ -38,5 +41,10 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
      * Find all Account which status is not the one provided.
      */
     Set<Account> findAllByStatusNot(AccountStatus pStatus);
+
+    /**
+     * Find all Account which status is not the one provided.
+     */
+    Page<Account> findAllByStatus(AccountStatus pStatus, Pageable pPageable);
 
 }

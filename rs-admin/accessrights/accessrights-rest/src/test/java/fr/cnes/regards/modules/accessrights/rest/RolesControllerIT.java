@@ -56,8 +56,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     private String apiRoles;
 
-    private String apiRolesId;
-
     private String apiRolesName;
 
     private String apiRolesPermissions;
@@ -94,7 +92,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() {
         apiRoles = RolesController.REQUEST_MAPPING_ROOT;
-        apiRolesId = apiRoles + "/{role_id}";
         apiRolesName = apiRoles + "/{role_name}";
 
         apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
@@ -170,12 +167,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Regular case
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(apiRolesId, roleTest, expectations, "TODO Error message", roleTest.getId());
+        performDefaultPut(apiRolesName, roleTest, expectations, "TODO Error message", roleTest.getName());
 
         // Fail case: ids differ
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(apiRolesId, roleTest, expectations, "TODO Error message", 99L);
+        performDefaultPut(apiRolesName, roleTest, expectations, "TODO Error message", 99L);
     }
 
     /**
@@ -191,7 +188,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final long nRole = roleRepository.count();
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultDelete(apiRolesId, expectations, "TODO Error message", publicRole.getId());
+        performDefaultDelete(apiRolesName, expectations, "TODO Error message", publicRole.getName());
 
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole, roleRepository.count());
@@ -227,7 +224,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Create a non-native role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultDelete(apiRolesId, expectations, "TODO Error message", roleTest.getId());
+        performDefaultDelete(apiRolesName, expectations, "TODO Error message", roleTest.getName());
 
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole - 1, roleRepository.count());

@@ -13,9 +13,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
@@ -53,6 +55,11 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
+     *
+     */
+    private final IPasswordResetService passwordResetTokenService;
+
+    /**
      * Constructor
      *
      * @param pProjectUserService
@@ -63,13 +70,15 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      *            the tenant resolver
      */
     public AbstractDeletableState(final IProjectUserService pProjectUserService,
-            final IAccountRepository pAccountRepository, final ITenantResolver pTenantResolver,
-            IRuntimeTenantResolver pRuntimeTenantResolver) {
+            final IAccountRepository pAccountRepository,
+            final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
+            final IPasswordResetService pPasswordResetTokenService) {
         super();
         projectUserService = pProjectUserService;
         accountRepository = pAccountRepository;
         tenantResolver = pTenantResolver;
-        this.runtimeTenantResolver = pRuntimeTenantResolver;
+        runtimeTenantResolver = pRuntimeTenantResolver;
+        passwordResetTokenService = pPasswordResetTokenService;
     }
 
     @Override
@@ -98,19 +107,21 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
-        for (String tenant : tenants) {
+        for (final String tenant : tenants) {
             runtimeTenantResolver.forceTenant(tenant);
 
             // Is there a project user associated to the account on the passed tenant?
             if (projectUserService.existUser(pAccount.getEmail())) {
-                String errorMessage = String.format(
-                                                    "Cannot remove account %s because it is linked to at least one project.",
-                                                    pAccount.getEmail());
+                final String errorMessage = String.format(
+                                                          "Cannot remove account %s because it is linked to at least one project.",
+                                                          pAccount.getEmail());
                 LOGGER.error(errorMessage);
                 throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, errorMessage);
             }
         }
 
+        LOGGER.info("Deleting tokens associated to account {} from instance.", pAccount.getEmail());
+        passwordResetTokenService.deletePasswordResetTokenForAccount(pAccount);
         LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
         accountRepository.delete(pAccount.getId());
     }

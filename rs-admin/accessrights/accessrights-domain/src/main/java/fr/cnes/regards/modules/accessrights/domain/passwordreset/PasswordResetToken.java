@@ -19,7 +19,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- * 
+ *
  * @see <a>http://www.baeldung.com/spring-security-registration-i-forgot-my-password</a>
  */
 @InstanceEntity
@@ -47,8 +47,7 @@ public class PasswordResetToken {
      * The link back to the {@link Account}
      */
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false, name = "account_id",
-            foreignKey = @ForeignKey(name = "FK_PASSWORD_RESET_TOKEN"))
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "FK_PASSWORD_RESET_TOKEN"))
     private Account account;
 
     /**

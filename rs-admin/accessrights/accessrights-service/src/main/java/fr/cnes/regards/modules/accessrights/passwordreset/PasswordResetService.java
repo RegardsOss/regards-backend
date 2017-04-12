@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.passwordreset;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,8 +42,10 @@ public class PasswordResetService implements IPasswordResetService {
     /**
      * Creates a new instance with passed deps
      *
-     * @param pTokenRepository The verif token repository
-     * @param pAccountService The account service
+     * @param pTokenRepository
+     *            The verif token repository
+     * @param pAccountService
+     *            The account service
      */
     public PasswordResetService(final IPasswordResetTokenRepository pTokenRepository,
             final IAccountService pAccountService) {
@@ -53,6 +56,7 @@ public class PasswordResetService implements IPasswordResetService {
 
     /*
      * (non-Javadoc)
+     *
      * @see
      * fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService#getPasswordResetToken(java.lang.String)
      */
@@ -64,6 +68,7 @@ public class PasswordResetService implements IPasswordResetService {
 
     /*
      * (non-Javadoc)
+     *
      * @see
      * fr.cnes.regards.modules.accessrights.service.account.IAccountService#createVerificationToken(fr.cnes.regards.
      * modules.accessrights.domain.instance.Account, java.lang.String)
@@ -76,6 +81,7 @@ public class PasswordResetService implements IPasswordResetService {
 
     /*
      * (non-Javadoc)
+     *
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountService#changeAccountPassword(java.lang.Long,
      * java.lang.String, java.lang.String)
      */
@@ -90,10 +96,12 @@ public class PasswordResetService implements IPasswordResetService {
     /**
      * Validate the password reset token
      *
-     * @param pAccountEmail the account email
-     * @param pToken the token to validate
-     * @throws EntityOperationForbiddenException Thrown if: - token does not exists - is not linked to the passed
-     * account - is expired
+     * @param pAccountEmail
+     *            the account email
+     * @param pToken
+     *            the token to validate
+     * @throws EntityOperationForbiddenException
+     *             Thrown if: - token does not exists - is not linked to the passed account - is expired
      */
     private void validatePasswordResetToken(final String pAccountEmail, final String pToken)
             throws EntityOperationForbiddenException {
@@ -110,6 +118,14 @@ public class PasswordResetService implements IPasswordResetService {
         // Check token expiry
         if (passToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new EntityOperationForbiddenException(pToken, PasswordResetToken.class, "Expired token");
+        }
+    }
+
+    @Override
+    public void deletePasswordResetTokenForAccount(final Account pAccount) {
+        final Optional<PasswordResetToken> token = tokenRepository.findByAccount(pAccount);
+        if (token.isPresent()) {
+            tokenRepository.delete(token.get());
         }
     }
 
