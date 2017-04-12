@@ -49,11 +49,6 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroserviceAuthoritiesProvider.class);
 
     /**
-     * Current microservice name
-     */
-    private final String microserviceName;
-
-    /**
      * Administration microservice REST client
      */
     private final IResourcesClient resourcesClient;
@@ -72,8 +67,6 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      *
      * Constructor
      *
-     * @param pMicroserviceName
-     *            current microservice name
      * @param pRoleClient
      *            Feign client to query administration service for roles
      * @param pResourcesClient
@@ -82,17 +75,17 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      *            runtime tenant resolver
      * @since 1.0-SNAPSHOT
      */
-    public MicroserviceAuthoritiesProvider(final String pMicroserviceName, final IResourcesClient pResourcesclient,
-            final IRolesClient pRolesClient, final IRuntimeTenantResolver runtimeTenantResolver) {
+    public MicroserviceAuthoritiesProvider(final IResourcesClient pResourcesclient, final IRolesClient pRolesClient,
+            final IRuntimeTenantResolver runtimeTenantResolver) {
         super();
-        microserviceName = pMicroserviceName;
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public List<ResourceMapping> registerEndpoints(final String tenant, final List<ResourceMapping> localEndpoints) {
+    public List<ResourceMapping> registerEndpoints(String microserviceName, final String tenant,
+            final List<ResourceMapping> localEndpoints) {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -119,7 +112,7 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities(final String tenant) {
+    public List<RoleAuthority> getRoleAuthorities(String microserviceName, final String tenant) {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);

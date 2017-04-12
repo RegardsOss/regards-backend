@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -30,12 +29,6 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 public class LocalTenantConnectionResolverAutoConfiguration {
 
     /**
-     * Current microservice name
-     */
-    @Value("${spring.application.name}")
-    private String microserviceName;
-
-    /**
      *
      * {@link ITenantConnectionResolver} implementation for local resolver for administration service.
      *
@@ -48,7 +41,7 @@ public class LocalTenantConnectionResolverAutoConfiguration {
     @Primary
     ITenantConnectionResolver tenantConnectionResolver(IProjectService pProjectService,
             IProjectConnectionService pProjectConnectionService) {
-        return new LocalTenantConnectionResolver(microserviceName, pProjectService, pProjectConnectionService);
+        return new LocalTenantConnectionResolver(pProjectService, pProjectConnectionService);
     }
 
     /**
@@ -75,7 +68,7 @@ public class LocalTenantConnectionResolverAutoConfiguration {
     @Primary
     IAuthoritiesProvider authoritiesProvider(IRoleService pRoleService, IResourcesService pResourcesService,
             IRuntimeTenantResolver runtimeTenantResolver) {
-        return new LocalAuthoritiesProvider(microserviceName, pRoleService, pResourcesService, runtimeTenantResolver);
+        return new LocalAuthoritiesProvider(pRoleService, pResourcesService, runtimeTenantResolver);
     }
 
 }

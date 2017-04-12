@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
@@ -26,24 +27,17 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 public class MicroserviceTenantConnectionResolver implements ITenantConnectionResolver {
 
     /**
-     * Current Microservice name
-     */
-    private final String microserviceName;
-
-    /**
      * Tenant connection client
      */
     private final ITenantConnectionClient tenantConnectionClient;
 
-    public MicroserviceTenantConnectionResolver(final String microserviceName,
-            ITenantConnectionClient tenantConnectionClient) {
+    public MicroserviceTenantConnectionResolver(ITenantConnectionClient tenantConnectionClient) {
         super();
-        this.microserviceName = microserviceName;
         this.tenantConnectionClient = tenantConnectionClient;
     }
 
     @Override
-    public List<TenantConnection> getTenantConnections() {
+    public List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException {
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<List<TenantConnection>> response = tenantConnectionClient
@@ -55,13 +49,35 @@ public class MicroserviceTenantConnectionResolver implements ITenantConnectionRe
     }
 
     @Override
-    public void addTenantConnection(final TenantConnection pTenantConnection) {
+    public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
+            throws JpaMultitenantException {
         try {
             FeignSecurityManager.asSystem();
             tenantConnectionClient.addTenantConnection(microserviceName, pTenantConnection);
         } finally {
             FeignSecurityManager.reset();
         }
+    }
+
+    @Override
+    public void enableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
+        try {
+            FeignSecurityManager.asSystem();
+            tenantConnectionClient.enableTenantConnection(pMicroserviceName, pTenant);
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
+
+    @Override
+    public void disableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
+        try {
+            FeignSecurityManager.asSystem();
+            tenantConnectionClient.disableTenantConnection(pMicroserviceName, pTenant);
+        } finally {
+            FeignSecurityManager.reset();
+        }
+
     }
 
 }

@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.HashMultimap;
@@ -47,11 +46,6 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalAuthoritiesProvider.class);
 
     /**
-     * Current microservice name
-     */
-    private final String microserviceName;
-
-    /**
      * Role service
      */
     private final IRoleService roleService;
@@ -66,31 +60,17 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public LocalAuthoritiesProvider(@Value("${spring.application.name") final String pMicroserviceName,
-            final IRoleService pRoleService, final IResourcesService pResourcesService,
+    public LocalAuthoritiesProvider(final IRoleService pRoleService, final IResourcesService pResourcesService,
             final IRuntimeTenantResolver runtimeTenantResolver) {
         super();
-        microserviceName = pMicroserviceName;
         roleService = pRoleService;
         resourcesService = pResourcesService;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
-    /**
-     *
-     * Save new endpoints with default configuration if they doesn't exists and return configured endpoints of the
-     * administration microservice
-     *
-     * @param tenant
-     *            working tenant
-     * @param localEndpoints
-     *            Collected endpoints with default configuration
-     * @return All configured endpoints of the administration microservice
-     * @since 1.0-SNAPSHOT
-     */
     @Override
-    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> localEndpoints)
-            throws SecurityException {
+    public List<ResourceMapping> registerEndpoints(String microserviceName, String tenant,
+            final List<ResourceMapping> localEndpoints) throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -124,7 +104,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities(String tenant) throws SecurityException {
+    public List<RoleAuthority> getRoleAuthorities(String microserviceName, String tenant) throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);

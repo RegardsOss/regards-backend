@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -36,11 +37,6 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     private static final Logger LOG = LoggerFactory.getLogger(LocalTenantConnectionResolver.class);
 
     /**
-     * Current microservice name
-     */
-    private final String microserviceName;
-
-    /**
      * The {@link ProjectService} management.
      */
     private final IProjectService projectService;
@@ -54,24 +50,21 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
      *
      * Constructor
      *
-     * @param pMicroserviceName
-     *            name of the current microservice
      * @param pProjectService
      *            the {@link ProjectService}
      * @param pProjectConnectionService
      *            the  {@link ProjectConnectionService}
      * @since 1.0-SNAPSHOT
      */
-    public LocalTenantConnectionResolver(final String pMicroserviceName, final IProjectService pProjectService,
+    public LocalTenantConnectionResolver(final IProjectService pProjectService,
             final IProjectConnectionService pProjectConnectionService) {
         super();
-        microserviceName = pMicroserviceName;
         projectService = pProjectService;
         projectConnectionService = pProjectConnectionService;
     }
 
     @Override
-    public List<TenantConnection> getTenantConnections() {
+    public List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException {
         final List<TenantConnection> tenants = new ArrayList<>();
         final Iterable<Project> projects = projectService.retrieveProjectList();
 
@@ -94,7 +87,8 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     }
 
     @Override
-    public void addTenantConnection(final TenantConnection pTenantConnection) {
+    public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
+            throws JpaMultitenantException {
         try {
             final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 
@@ -110,4 +104,27 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
 
     }
 
+    @Override
+    public void enableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
+        try {
+            ProjectConnection connection = projectConnectionService.retrieveProjectConnection(pTenant,
+                                                                                              pMicroserviceName);
+            connection.setEnabled(true);
+            projectConnectionService.updateProjectConnection(connection.getId(), connection);
+        } catch (EntityNotFoundException e) {
+            throw new JpaMultitenantException(e);
+        }
+    }
+
+    @Override
+    public void disableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
+        try {
+            ProjectConnection connection = projectConnectionService.retrieveProjectConnection(pTenant,
+                                                                                              pMicroserviceName);
+            connection.setEnabled(false);
+            projectConnectionService.updateProjectConnection(connection.getId(), connection);
+        } catch (EntityNotFoundException e) {
+            throw new JpaMultitenantException(e);
+        }
+    }
 }

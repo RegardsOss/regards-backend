@@ -116,6 +116,6 @@ public class AuthoritiesTestConfiguration {
                 "driver", "url");
         pProjectConnRepo.save(conn);
 
-        return new LocalTenantConnectionResolver(microserviceName, pProjectService, pProjectConnectionService);
+        return new LocalTenantConnectionResolver(pProjectService, pProjectConnectionService);
     }
 }

@@ -32,6 +32,14 @@ public interface ITenantConnectionClient {
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/enable")
+    public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
+            @PathVariable("tenant") String tenant);
+
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/disable")
+    public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
+            @PathVariable("tenant") String tenant);
+
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(
             @PathVariable("microservice") String microservice);

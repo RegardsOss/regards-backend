@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -34,12 +33,6 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 public class MicroserviceAutoConfiguration {
 
     /**
-     * Current Microservice name
-     */
-    @Value("${spring.application.name}")
-    private String microserviceName;
-
-    /**
      *
      * multintenantResolver
      *
@@ -53,7 +46,7 @@ public class MicroserviceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantConnectionResolver multintenantResolver(ITenantConnectionClient tenantConnectionClient) {
-        return new MicroserviceTenantConnectionResolver(microserviceName, tenantConnectionClient);
+        return new MicroserviceTenantConnectionResolver(tenantConnectionClient);
     }
 
     /**
@@ -71,8 +64,7 @@ public class MicroserviceAutoConfiguration {
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     IAuthoritiesProvider authoritiesProvider(final IResourcesClient pResourcesClient, final IRolesClient pRolesClient,
             IRuntimeTenantResolver runtimeTenantResolver) {
-        return new MicroserviceAuthoritiesProvider(microserviceName, pResourcesClient, pRolesClient,
-                runtimeTenantResolver);
+        return new MicroserviceAuthoritiesProvider(pResourcesClient, pRolesClient, runtimeTenantResolver);
     }
 
     /**

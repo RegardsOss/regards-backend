@@ -35,7 +35,7 @@ public class TenantConnectionController {
     /**
      * {@link ProjectConnection} service
      */
-    private final IProjectConnectionService connectionService;
+    private final IProjectConnectionService projectConnectionService;
 
     /**
      * {@link Project} service
@@ -43,11 +43,11 @@ public class TenantConnectionController {
     private final IProjectService projectService;
 
     public TenantConnectionController(IProjectConnectionService connectionService, IProjectService projectService) {
-        this.connectionService = connectionService;
+        this.projectConnectionService = connectionService;
         this.projectService = projectService;
     }
 
-    @ResourceAccess(description = "Add a connection", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Add a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable String microservice,
             @Valid @RequestBody TenantConnection tenantConnection) throws ModuleException {
@@ -63,14 +63,35 @@ public class TenantConnectionController {
         projectConnection.setUserName(tenantConnection.getUserName());
 
         return ResponseEntity
-                .ok(toTenantConnection(connectionService.createProjectConnection(projectConnection, true)));
+                .ok(toTenantConnection(projectConnectionService.createProjectConnection(projectConnection, true)));
+    }
+
+    @ResourceAccess(description = "Enable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/enable")
+    public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
+            @PathVariable("tenant") String tenant) throws ModuleException {
+
+        ProjectConnection connection = projectConnectionService.retrieveProjectConnection(tenant, microservice);
+        connection.setEnabled(true);
+        projectConnectionService.updateProjectConnection(connection.getId(), connection);
+        return ResponseEntity.ok(toTenantConnection(connection));
+    }
+
+    @ResourceAccess(description = "Disable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/disable")
+    public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
+            @PathVariable("tenant") String tenant) throws ModuleException {
+        ProjectConnection connection = projectConnectionService.retrieveProjectConnection(tenant, microservice);
+        connection.setEnabled(false);
+        projectConnectionService.updateProjectConnection(connection.getId(), connection);
+        return ResponseEntity.ok(toTenantConnection(connection));
     }
 
     @ResourceAccess(description = "List all tenant connections for a specified microservice", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice)
             throws ModuleException {
-        List<ProjectConnection> projectConnections = connectionService.retrieveProjectConnection(microservice);
+        List<ProjectConnection> projectConnections = projectConnectionService.retrieveProjectConnection(microservice);
         // Transform to tenant connection
         List<TenantConnection> tenantConnections = new ArrayList<>();
         if (projectConnections != null) {
