@@ -417,21 +417,28 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         final List<GrantedAuthority> grantedAuths = new ArrayList<>();
 
-        if (runTimeTenantResolver.isInstance()) {
+        // If instance tenant is requested, only instance user can be authenticated.
+        if (runTimeTenantResolver.isInstance() && pUserName.equals(staticRootLogin)) {
             // Manage root login
             userDetails = new UserDetails();
             userDetails.setName(pUserName);
             userDetails.setRole(DefaultRole.INSTANCE_ADMIN.toString());
             userDetails.setTenant(pScope);
-        } else {
-            // Retrieve account
-            try {
-                userDetails = retrieveUserDetails(pUserName, pScope);
-            } catch (final EntityNotFoundException e) {
-                LOG.debug(e.getMessage(), e);
-                throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
+        } else
+            if (!runTimeTenantResolver.isInstance()) {
+                // Retrieve account
+                try {
+                    userDetails = retrieveUserDetails(pUserName, pScope);
+                } catch (final EntityNotFoundException e) {
+                    LOG.debug(e.getMessage(), e);
+                    throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
+                }
+            } else {
+                // Unauthorized access to instance tenant for authenticated user.
+                throw new AuthenticationException(
+                        "Access denied to REGARDS instance administration for user " + pUserName,
+                        AuthenticationStatus.INSTANCE_ACCESS_DENIED);
             }
-        }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
         return new UsernamePasswordAuthenticationToken(userDetails, pUserPassword, grantedAuths);
     }

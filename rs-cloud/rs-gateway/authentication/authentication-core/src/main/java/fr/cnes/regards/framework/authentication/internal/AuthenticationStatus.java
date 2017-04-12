@@ -60,7 +60,12 @@ public enum AuthenticationStatus {
     /**
      * User access inactive
      */
-    USER_ACCESS_INACTIVE;
+    USER_ACCESS_INACTIVE,
+
+    /**
+     * User cannot access instance tenant
+     */
+    INSTANCE_ACCESS_DENIED;
 
     @Override
     public String toString() {
