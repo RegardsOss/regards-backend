@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.plugins.utils.bean;
 
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
+import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  * @author Christophe Mertz
@@ -12,5 +12,5 @@ import fr.cnes.regards.plugins.utils.PluginUtilsException;
 @FunctionalInterface
 public interface IPluginUtilsBean {
 
-    public <T> void processAutowiredBean(final T pPluginInstance) throws PluginUtilsException;
+    public <T> void processAutowiredBean(final T pPluginInstance) ;
 }

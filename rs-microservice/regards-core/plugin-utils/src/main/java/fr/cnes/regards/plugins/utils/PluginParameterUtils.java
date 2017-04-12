@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
 
 /**
- *
  * Post process plugin instances to inject annotated parameters.
  *
  * @author Christophe Mertz
@@ -45,9 +44,8 @@ public final class PluginParameterUtils {
 
     /**
      * PrimitiveObject for the plugin parameters
-     * 
-     * @author Christophe Mertz
      *
+     * @author Christophe Mertz
      */
     public enum PrimitiveObject {
         /**
@@ -97,14 +95,12 @@ public final class PluginParameterUtils {
 
         /**
          * Constructor
-         * 
-         * @param pType
-         *            primitive type
          *
+         * @param pType primitive type
          * @since 1.0-SNAPSHOT
          */
         private PrimitiveObject(final Class<?> pType) {
-            this.type = pType;
+            type = pType;
         }
 
         /**
@@ -119,13 +115,10 @@ public final class PluginParameterUtils {
     }
 
     /**
-     *
      * Retrieve plugin parameters by reflection on class fields
      *
-     * @param pPluginClass
-     *            the target class
-     * @param pPrefixs
-     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param pPluginClass the target class
+     * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return list of parameters or null
      */
     public static List<PluginParameterType> getParameters(final Class<?> pPluginClass, final List<String> pPrefixs) {
@@ -156,11 +149,9 @@ public final class PluginParameterUtils {
 
     /**
      * Build a {@link PluginParameterType}.
-     * 
-     * @param pField
-     *            The current {@link Field}
-     * @param pIsPrimitive
-     *            True if the type of the field is a Java primitive type False otherwise
+     *
+     * @param pField The current {@link Field}
+     * @param pIsPrimitive True if the type of the field is a Java primitive type False otherwise
      * @return a {@link PluginParameterType}
      */
     private static PluginParameterType buildPluginParameter(Field pField, boolean pIsPrimitive) {
@@ -180,9 +171,8 @@ public final class PluginParameterUtils {
 
     /**
      * Search a field in the {@link PrimitiveObject}
-     * 
-     * @param pField
-     *            a field
+     *
+     * @param pField a field
      * @return an {@link Optional} {@link PrimitiveObject}
      */
     private static Optional<PrimitiveObject> isAPrimitiveType(final Field pField) {
@@ -192,11 +182,9 @@ public final class PluginParameterUtils {
 
     /**
      * Search a field like a {@link PluginInterface}
-     * 
-     * @param pField
-     *            a field
-     * @param pPrefixs
-     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     *
+     * @param pField a field
+     * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return true is the type of the field is a {@link Plugin}
      */
     private static boolean isAnInterface(final Field pField, final List<String> pPrefixs) {
@@ -213,18 +201,16 @@ public final class PluginParameterUtils {
 
     /**
      * Search a field like a {@link PluginInterface}
-     * 
-     * @param pField
-     *            a field
-     * @param pPrefix
-     *            a package to scan for find the {@link Plugin} and {@link PluginInterface}
+     *
+     * @param pField a field
+     * @param pPrefix a package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return true is the type of the field is a {@link PrimitiveObject}
      */
     private static boolean isAnInterface(final Field pField, final String pPrefix) {
         boolean isSupportedType = false;
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(pPrefix);
 
-        if (pluginInterfaces != null && !pluginInterfaces.isEmpty()) {
+        if ((pluginInterfaces != null) && !pluginInterfaces.isEmpty()) {
             isSupportedType = pluginInterfaces.stream().filter(s -> s.equalsIgnoreCase(pField.getType().getName()))
                     .count() > 0;
         }
@@ -237,35 +223,26 @@ public final class PluginParameterUtils {
     }
 
     /**
-     *
      * Use configured values to set field values.
-     * 
-     * @param <T>
-     *            a plugin type
-     * @param pReturnPlugin
-     *            the plugin instance
-     * @param pPlgConf
-     *            the plugin configuration
-     * @param pPrefixs
-     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @param pPlgParameters
-     *            an optional set of {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
-     * 
-     * @throws PluginUtilsException
-     *             if any error occurs
+     *
+     * @param <T> a plugin type
+     * @param pReturnPlugin the plugin instance
+     * @param pPlgConf the plugin configuration
+     * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param pPlgParameters an optional set of
+     * {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
     public static <T> void postProcess(final T pReturnPlugin, final PluginConfiguration pPlgConf,
             final List<String> pPrefixs,
-            final fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
-            throws PluginUtilsException {
+            final fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcess :" + pReturnPlugin.getClass().getSimpleName());
         }
 
         // Test if the plugin configuration is active
         if (!pPlgConf.isActive()) {
-            throw new PluginUtilsException(String.format("The plugin configuration <%s-%s> is not active.",
-                                                         pPlgConf.getId(), pPlgConf.getLabel()));
+            throw new PluginUtilsRuntimeException(String.format("The plugin configuration <%s-%s> is not active.",
+                                                                pPlgConf.getId(), pPlgConf.getLabel()));
         }
 
         // Look for annotated fields
@@ -283,29 +260,19 @@ public final class PluginParameterUtils {
 
     /**
      * Use configured values to set field value for a {@link PluginParameter}
-     * 
-     * @param <T>
-     *            a plugin type
-     * @param pPluginInstance
-     *            the plugin instance
-     * @param pPlgConf
-     *            the plugin configuration to used
-     * @param pField
-     *            the parameter
-     * @param pPlgParamAnnotation
-     *            the plugin parameter
-     * @param pPrefixs
-     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @param pPlgParameters
-     *            an optional set of {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
-     * 
-     * @throws PluginUtilsException
-     *             if any error occurs
+     *
+     * @param <T> a plugin type
+     * @param pPluginInstance the plugin instance
+     * @param pPlgConf the plugin configuration to used
+     * @param pField the parameter
+     * @param pPlgParamAnnotation the plugin parameter
+     * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param pPlgParameters an optional set of
+     * {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
     private static <T> void processPluginParameter(final T pPluginInstance, final PluginConfiguration pPlgConf,
             final Field pField, final PluginParameter pPlgParamAnnotation, final List<String> pPrefixs,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
-            throws PluginUtilsException {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) {
 
         // Inject value
         ReflectionUtils.makeAccessible(pField);
@@ -324,7 +291,7 @@ public final class PluginParameterUtils {
                 LOGGER.debug(String.format("interface parameter : %s --> %s", pField.getName(), pField.getType()));
                 postProcessInterface(pPluginInstance, pPlgConf, pField, pPlgParamAnnotation, pPrefixs);
             } else {
-                throw new PluginUtilsException(String.format("Type parameter <%s> is unknown.", pField));
+                throw new PluginUtilsRuntimeException(String.format("Type parameter <%s> is unknown.", pField));
             }
         }
 
@@ -332,29 +299,19 @@ public final class PluginParameterUtils {
 
     /**
      * Use configured values to set field values for a parameter of type {@link PrimitiveObject}
-     * 
-     * @param <T>
-     *            a plugin type
-     * @param pPluginInstance
-     *            the plugin instance
-     * @param pPlgConf
-     *            the plugin configuration to used
-     * @param pField
-     *            the parameter
-     * @param pTypeWrapper
-     *            the type wrapper of the parameter
-     * @param pPlgParamAnnotation
-     *            the plugin parameter
-     * @param pPlgParameters
-     *            an optional set of {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
-     * 
-     * @throws PluginUtilsException
-     *             if any error occurs
+     *
+     * @param <T> a plugin type
+     * @param pPluginInstance the plugin instance
+     * @param pPlgConf the plugin configuration to used
+     * @param pField the parameter
+     * @param pTypeWrapper the type wrapper of the parameter
+     * @param pPlgParamAnnotation the plugin parameter
+     * @param pPlgParameters an optional set of
+     * {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
     private static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
             final Optional<PrimitiveObject> pTypeWrapper, PluginParameter pPlgParamAnnotation,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters)
-            throws PluginUtilsException {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... pPlgParameters) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcessPrimitiveType :" + pPlgParamAnnotation.name());
@@ -399,7 +356,7 @@ public final class PluginParameterUtils {
         } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException
                 | InvocationTargetException e) {
             // Propagate exception
-            throw new PluginUtilsException(
+            throw new PluginUtilsRuntimeException(
                     String.format("Exception while processing param <%s> in plugin class <%s> with value <%s>.",
                                   pPlgParamAnnotation.name(), pPluginInstance.getClass(), paramValue),
                     e);
@@ -412,24 +369,17 @@ public final class PluginParameterUtils {
 
     /**
      * Use configured values to set field values for a parameter of type {@link PluginParameter}
-     * 
-     * @param <T>
-     *            a plugin type
-     * @param pPluginInstance
-     *            the plugin instance
-     * @param pPlgConf
-     *            the plugin configuration to used
-     * @param pField
-     *            the parameter
-     * @param pPlgParamAnnotation
-     *            the plugin parameter
-     * @param pPrefixs
-     *            a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @throws PluginUtilsException
-     *             if any error occurs
+     *
+     * @param <T> a plugin type
+     * @param pPluginInstance the plugin instance
+     * @param pPlgConf the plugin configuration to used
+     * @param pField the parameter
+     * @param pPlgParamAnnotation the plugin parameter
+     * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface} @ if
+     * any error occurs
      */
     private static <T> void postProcessInterface(T pPluginInstance, PluginConfiguration pPlgConf, Field pField,
-            PluginParameter pPlgParamAnnotation, final List<String> pPrefixs) throws PluginUtilsException {
+            PluginParameter pPlgParamAnnotation, final List<String> pPrefixs) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcessInterface :" + pPlgParamAnnotation.name());
@@ -443,9 +393,9 @@ public final class PluginParameterUtils {
         try {
             final Object effectiveVal = PluginUtils.getPlugin(paramValue, paramValue.getPluginClassName(), pPrefixs);
             pField.set(pPluginInstance, effectiveVal);
-        } catch (PluginUtilsException | IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
-            throw new PluginUtilsException(
+            throw new PluginUtilsRuntimeException(
                     String.format("Exception while processing param <%s> in plugin class <%s> with value <%s>.",
                                   pPlgParamAnnotation.name(), pPluginInstance.getClass(), paramValue),
                     e);
@@ -458,21 +408,15 @@ public final class PluginParameterUtils {
 
     /**
      * Apply a dynamic parameter value to a parameter plugin
-     * 
-     * @param pParamValue
-     *            the current parameter value
-     * @param pConfiguredPlgParam
-     *            the plugin parameter configured
-     * @param pDynamicPlgParam
-     *            the dynamic parameter value
-     * @return the new parameter value
-     * @throws PluginUtilsException
-     *             if any error occurs
+     *
+     * @param pParamValue the current parameter value
+     * @param pConfiguredPlgParam the plugin parameter configured
+     * @param pDynamicPlgParam the dynamic parameter value
+     * @return the new parameter value @ if any error occurs
      */
     private static String postProcessDynamicValues(final String pParamValue,
             final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> pConfiguredPlgParam,
-            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> pDynamicPlgParam)
-            throws PluginUtilsException {
+            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> pDynamicPlgParam) {
         LOGGER.debug(String.format("Starting postProcessDynamicValues : %s - init value= <%s>",
                                    pDynamicPlgParam.get().getName(), pParamValue));
 
@@ -480,7 +424,7 @@ public final class PluginParameterUtils {
                 && (!pConfiguredPlgParam.get().getDynamicsValues().isEmpty()) && (!pConfiguredPlgParam.get()
                         .getDynamicsValuesAsString().contains(pDynamicPlgParam.get().getValue()))) {
             // The dynamic parameter value is not a possible value
-            throw new PluginUtilsException(
+            throw new PluginUtilsRuntimeException(
                     String.format("The dynamic value <%s> is not an authorized value for the parameter %s.",
                                   pDynamicPlgParam.get().getValue(), pDynamicPlgParam.get().getName()));
         }

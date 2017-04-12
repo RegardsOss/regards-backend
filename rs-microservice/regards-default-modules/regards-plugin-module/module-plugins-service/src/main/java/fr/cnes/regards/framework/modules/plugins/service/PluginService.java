@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 
 /**
  * The implementation of {@link IPluginService}.
@@ -301,11 +300,7 @@ public class PluginService implements IPluginService {
                                           pluginConf.getVersion(), pluginMetadata.getVersion()));
             }
 
-            try {
-                resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
-            } catch (PluginUtilsException e) {
-                throw new ModuleException(e);
-            }
+            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
 
             // Put in the map, only if there is no dynamic parameters
             if (pPluginParameters.length == 0) {
