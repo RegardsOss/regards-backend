@@ -23,4 +23,13 @@ public class EntityInconsistentIdentifierException extends EntityException {
         // CHECKSTYLE:ON
     }
 
+    public EntityInconsistentIdentifierException(final String pPathName, final String pBodyName,
+            final Class<?> pEntityClass) {
+        // CHECKSTYLE:OFF
+        super(String.format(
+                            "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
+                            pEntityClass.getName(), pPathName, pBodyName));
+        // CHECKSTYLE:ON
+    }
+
 }
