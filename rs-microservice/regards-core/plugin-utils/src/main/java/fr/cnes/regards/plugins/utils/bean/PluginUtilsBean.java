@@ -10,7 +10,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
+import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 import fr.cnes.regards.plugins.utils.ReflectionUtils;
 
 /**
@@ -31,7 +31,7 @@ public class PluginUtilsBean implements IPluginUtilsBean, BeanFactoryAware {
     }
 
     @Override
-    public <T> void processAutowiredBean(final T pPluginInstance) throws PluginUtilsException {
+    public <T> void processAutowiredBean(final T pPluginInstance)  {
         // Look for annotated fields
         for (final Field field : pPluginInstance.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Autowired.class)) {
@@ -42,7 +42,7 @@ public class PluginUtilsBean implements IPluginUtilsBean, BeanFactoryAware {
                 try {
                     field.set(pPluginInstance, effectiveVal);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new PluginUtilsException("Unable to set the field <" + field.getName() + ">.", e);
+                    throw new PluginUtilsRuntimeException("Unable to set the field <" + field.getName() + ">.", e);
                 }
             }
         }

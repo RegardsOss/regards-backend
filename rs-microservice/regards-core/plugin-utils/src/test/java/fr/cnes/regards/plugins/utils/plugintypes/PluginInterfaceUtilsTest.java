@@ -18,14 +18,13 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
+import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
@@ -62,13 +61,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterface() {
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_PACKAGES);
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -76,12 +75,12 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterfaceEmpty() {
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGE);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -89,13 +88,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterfaceSeveralPrefix() {
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(Arrays.asList(PLUGIN_CURRENT_PACKAGE));
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -103,12 +102,12 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadNoPluginsInterfaceSeveralPrefix() {
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGES);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -119,60 +118,54 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Purpose("Load a plugin with a plugin type interface parameter.")
     public void getComplexPlugin() {
         final ComplexPlugin complexPlugin;
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
         /*
          * Set all parameters
          */
-        try {
-            /*
-             * Get the configuration for the Plugin parameter (ie the child)
-             */
-            final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
-                    .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
-                    .getParameters();
-            final PluginConfiguration pluginConfigurationInterface = PluginUtils
-                    .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class,
-                                            Arrays.asList(PLUGIN_CURRENT_PACKAGE));
-            Assert.assertNotNull(pluginConfigurationInterface);
+        /*
+         * Get the configuration for the Plugin parameter (ie the child)
+         */
+        final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
+                .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
+                .getParameters();
+        final PluginConfiguration pluginConfigurationInterface = PluginUtils
+                .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class,
+                                        Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        Assert.assertNotNull(pluginConfigurationInterface);
 
-            /*
-             * Get the configuration for the complex Plugin (ie the parent)
-             */
-            final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                    .addParameterPluginConfiguration(ComplexPlugin.PLUGIN_PARAM, pluginConfigurationInterface)
-                    .addParameter(ComplexPlugin.ACTIVE, TRUE)
-                    .addParameter(ComplexPlugin.COEFF, PluginInterfaceUtilsTest.CINQ).getParameters();
+        /*
+         * Get the configuration for the complex Plugin (ie the parent)
+         */
+        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+                .addParameterPluginConfiguration(ComplexPlugin.PLUGIN_PARAM, pluginConfigurationInterface)
+                .addParameter(ComplexPlugin.ACTIVE, TRUE)
+                .addParameter(ComplexPlugin.COEFF, PluginInterfaceUtilsTest.CINQ).getParameters();
 
-            /*
-             * Instantiate the parent plugin
-             */
-            complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
-                                                  Arrays.asList(PLUGIN_CURRENT_PACKAGE));
-            Assert.assertNotNull(complexPlugin);
+        /*
+         * Instantiate the parent plugin
+         */
+        complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
+                                              Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        Assert.assertNotNull(complexPlugin);
 
-            Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
-                                                Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
-            Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
-                    .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
+        Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
+                                            Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
+        Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
+                .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 
-            LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
+        LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 
-        } catch (final PluginUtilsException e) {
-            LOGGER.error(e.getMessage());
-            Assert.fail();
-        }
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
-     * @throws PluginUtilsException
-     *             throw if an error occurs
+     * @ throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
+    @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
-    public void incompatibleInterfaceError() throws PluginUtilsException {
-        LOGGER.debug(STARTING + this.toString());
+    public void incompatibleInterfaceError() {
+        LOGGER.debug(STARTING + toString());
         /*
          * Set all parameters
          */
@@ -187,14 +180,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     }
 
     /**
-     * @throws PluginUtilsException
-     *             throw if an error occurs
+     * @ throw if an error occurs
      */
-    @Test(expected = PluginUtilsException.class)
+    @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
-    public void incompatibleParameterError() throws PluginUtilsException {
-        LOGGER.debug(STARTING + this.toString());
+    public void incompatibleParameterError() {
+        LOGGER.debug(STARTING + toString());
         /*
          * Set all parameters
          */
