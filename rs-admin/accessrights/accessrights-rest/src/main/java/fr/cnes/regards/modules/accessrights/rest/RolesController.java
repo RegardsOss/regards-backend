@@ -107,9 +107,8 @@ public class RolesController implements IResourceController<Role> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<Role>> createRole(@Valid @RequestBody final Role pNewRole)
-            throws EntityAlreadyExistsException {
-        final Role created = roleService.createRole(pNewRole);
+    public ResponseEntity<Resource<Role>> createRole(@RequestBody final Role pNewRole) throws EntityException {
+        final Role created = roleService.createRoleWithNativeParentPermissions(pNewRole);
         return new ResponseEntity<>(toResource(created), HttpStatus.CREATED);
     }
 
@@ -124,7 +123,7 @@ public class RolesController implements IResourceController<Role> {
      */
     @ResponseBody
     @RequestMapping(value = "/{role_name}", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve a role by id", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve a role by name", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName)
             throws EntityNotFoundException {
         final Role role = roleService.retrieveRole(pRoleName);
@@ -148,7 +147,7 @@ public class RolesController implements IResourceController<Role> {
      */
     @ResponseBody
     @RequestMapping(value = "/{role_name}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Update the role of role_id with passed body", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Update the role of role_name with passed body", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_name") final String pRoleName,
             @Valid @RequestBody final Role pUpdatedRole) throws EntityException {
         final Role updatedRole = roleService.updateRole(pRoleName, pUpdatedRole);
@@ -180,7 +179,7 @@ public class RolesController implements IResourceController<Role> {
             resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, pElement.getName()));
             resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
-                                    MethodParamFactory.build(Long.class, pElement.getId()),
+                                    MethodParamFactory.build(String.class, pElement.getName()),
                                     MethodParamFactory.build(Role.class));
             // Disable deletion of native roles.
             if (!pElement.isNative()) {

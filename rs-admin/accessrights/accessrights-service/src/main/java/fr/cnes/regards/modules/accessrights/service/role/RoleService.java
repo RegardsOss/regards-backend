@@ -201,6 +201,45 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public Role createRoleWithNativeParentPermissions(final Role pRoleToCreate) throws EntityException {
+        if (existByName(pRoleToCreate.getName())) {
+            throw new EntityAlreadyExistsException(pRoleToCreate.getName());
+        }
+
+        if ((pRoleToCreate.getParentRole() == null) || (pRoleToCreate.getParentRole().getName() == null)) {
+            throw new EntityException("Parent role required to create a new role.");
+        }
+
+        // If parent role is a native role. Copy resources from the parent role.
+        final Optional<Role> roleOpt = roleRepository.findOneByName(pRoleToCreate.getParentRole().getName());
+        if (!roleOpt.isPresent()) {
+            throw new EntityNotFoundException(pRoleToCreate.getParentRole().getName(), Role.class);
+        }
+
+        final Role parentRole = roleOpt.get();
+        Role newCreatedRole;
+        if (parentRole.isNative()) {
+            newCreatedRole = roleRepository.save(pRoleToCreate);
+            newCreatedRole.setPermissions(Sets.newHashSet(parentRole.getPermissions()));
+        } else {
+            // Retrieve parent native role of the given parent role.
+            if (!parentRole.getParentRole().isNative()) {
+                throw new EntityException(
+                        "There is no native parent associated to the given parent role " + parentRole.getName());
+            }
+
+            newCreatedRole = new Role(pRoleToCreate.getName(), parentRole.getParentRole());
+            if (pRoleToCreate.getAuthorizedAddresses() != null) {
+                newCreatedRole.setAuthorizedAddresses(pRoleToCreate.getAuthorizedAddresses());
+            }
+            newCreatedRole = roleRepository.save(newCreatedRole);
+            newCreatedRole.setPermissions(Sets.newHashSet(parentRole.getPermissions()));
+        }
+
+        return roleRepository.save(newCreatedRole);
+    }
+
+    @Override
     public Role retrieveRole(final String pRoleName) throws EntityNotFoundException {
         return roleRepository.findOneByName(pRoleName)
                 .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
@@ -322,11 +361,12 @@ public class RoleService implements IRoleService {
     private Set<Role> getDescendants(final Role pRole) {
         // get sons of this role
         final Set<Role> descendants = roleRepository.findByParentRoleName(pRole.getName());
+        final Set<Role> newDescendants = Sets.newHashSet(descendants);
         // for each son get its descendants
         for (final Role son : descendants) {
-            descendants.addAll(getDescendants(son));
+            newDescendants.addAll(getDescendants(son));
         }
-        return descendants;
+        return newDescendants;
     }
 
     /**

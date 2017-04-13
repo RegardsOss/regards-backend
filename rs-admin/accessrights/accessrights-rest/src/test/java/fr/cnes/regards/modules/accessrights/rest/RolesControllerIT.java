@@ -60,6 +60,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     private String apiRolesPermissions;
 
+    private String apiRolesIdPermissions;
+
     private String apiRolesUsers;
 
     @Autowired
@@ -94,7 +96,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         apiRoles = RolesController.REQUEST_MAPPING_ROOT;
         apiRolesName = apiRoles + "/{role_name}";
 
-        apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
+        apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_name}";
+
+        apiRolesIdPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
         apiRolesUsers = ProjectUsersController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
@@ -108,7 +112,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         roleRepository.save(publicRole);
 
         // Create a new Role
-        // roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
@@ -236,7 +240,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveRoleResourcesAccessList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultGet(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
+        performDefaultGet(apiRolesPermissions, expectations, "TODO Error message", roleTest.getName());
     }
 
     @Test
@@ -253,7 +257,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performDefaultPut(apiRolesPermissions, newPermissionList, expectations, "TODO Error message", roleTest.getId());
+        performDefaultPut(apiRolesIdPermissions, newPermissionList, expectations, "TODO Error message",
+                          roleTest.getId());
     }
 
     @Test
@@ -262,7 +267,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void clearRoleResourcesAccess() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performDefaultDelete(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
+        performDefaultDelete(apiRolesIdPermissions, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Test

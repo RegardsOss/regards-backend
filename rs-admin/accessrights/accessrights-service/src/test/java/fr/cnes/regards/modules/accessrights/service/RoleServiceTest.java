@@ -273,6 +273,43 @@ public class RoleServiceTest {
     }
 
     /**
+     * Check that the system allows to create a role in a regular case.
+     *
+     * @throws EntityAlreadyExistsException
+     *             Thrown if a role with passed id already exists
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to create a role from an other role to copy resources.")
+    public void createRoleWithNativeParentPermission() throws EntityException {
+
+        final Role newRole = new Role("newRole", adminSon);
+
+        final Long id = 4834848L;
+        final Role expected = new Role();
+        expected.setId(id);
+        expected.setName("newRole");
+        expected.setParentRole(roleAdmin);
+
+        Mockito.when(roleRepository.save(expected)).thenReturn(expected);
+
+        Mockito.when(roleRepository.findOneByName("newRole")).thenReturn((Optional.empty()));
+        Mockito.when(roleRepository.findOneByName(roleAdmin.getName())).thenReturn(Optional.of(roleAdmin));
+        Mockito.when(roleRepository.findOneByName(adminSon.getName())).thenReturn(Optional.of(adminSon));
+
+        final Role actual = roleService.createRoleWithNativeParentPermissions(newRole);
+
+        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
+        Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
+
+        // Check that the expected and actual role have same values
+        checkRolesEqual(expected, actual);
+
+        // Check that the repository's method was called with right arguments
+        Mockito.verify(roleRepository).save(Mockito.refEq(expected));
+    }
+
+    /**
      * Check that the system fails when trying to update a role which does not exist.
      *
      * @throws EntityException

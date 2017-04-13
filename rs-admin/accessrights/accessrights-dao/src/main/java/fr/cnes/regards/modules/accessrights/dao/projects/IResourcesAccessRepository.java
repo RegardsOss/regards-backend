@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -45,7 +46,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      *
      * @param pMicroservice
      *            Microservice name who own the resource
-     * @return List<ResourcesAccess>
+     * @return List of {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
     List<ResourcesAccess> findByMicroservice(String pMicroservice);
@@ -62,5 +63,29 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @since 1.0-SNAPSHOT
      */
     Page<ResourcesAccess> findByMicroservice(String pMicroservice, Pageable pPageable);
+
+    /**
+     *
+     * Retrieve all resource for a given microservice and a given controller
+     *
+     * @param pMicroservice
+     *            microservice name
+     * @param pControllerSimpleName
+     *            controller name
+     * @return List of {@link ResourcesAccess}
+     * @since 1.0-SNAPSHOT
+     */
+    List<ResourcesAccess> findByMicroserviceAndControllerSimpleNameOrderByResource(String pMicroservice,
+            String pControllerSimpleName);
+
+    /**
+     * Retrieve the list of controller names for a given microservice name
+     *
+     * @param pMicroservice
+     * @return Array of String
+     * @since 1.0-SNAPSHOT
+     */
+    @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1")
+    List<String> findAllControllersByMicroservice(String pMicroservice);
 
 }

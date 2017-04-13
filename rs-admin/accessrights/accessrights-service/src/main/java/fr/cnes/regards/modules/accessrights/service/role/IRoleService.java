@@ -81,6 +81,18 @@ public interface IRoleService {
     Role createRole(Role pNewRole) throws EntityAlreadyExistsException;
 
     /**
+     *
+     * Create a new {@link Role} using native parent permissions as own permissions.
+     *
+     * @param pNewRole
+     *            new {@link @Role} to create
+     * @return {@link Role}'s created
+     * @throws EntityException
+     * @since 1.0-SNAPSHOT
+     */
+    Role createRoleWithNativeParentPermissions(Role pNewRole) throws EntityException;
+
+    /**
      * Delete the {@link Role} of passed <code>id</code>.
      *
      * @param pRoleId
