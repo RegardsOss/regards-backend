@@ -137,7 +137,6 @@ public class RoleService implements IRoleService {
         }
 
         /**
-         *
          * Initialize default roles in the new project connection
          *
          * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
@@ -154,7 +153,6 @@ public class RoleService implements IRoleService {
 
     /**
      * Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
-     *
      */
     public void initDefaultRoles() {
 
@@ -360,13 +358,15 @@ public class RoleService implements IRoleService {
      */
     private Set<Role> getDescendants(final Role pRole) {
         // get sons of this role
-        final Set<Role> descendants = roleRepository.findByParentRoleName(pRole.getName());
+        final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
+        Set<Role> descendants = Sets.newHashSet();
+        descendants.addAll(sons);
         final Set<Role> newDescendants = Sets.newHashSet(descendants);
         // for each son get its descendants
         for (final Role son : descendants) {
-            newDescendants.addAll(getDescendants(son));
+            descendants.addAll(getDescendants(son));
         }
-        return newDescendants;
+        return descendants;
     }
 
     /**
@@ -545,16 +545,29 @@ public class RoleService implements IRoleService {
             throw new EntityOperationForbiddenException(pRole.getName(), Role.class,
                     "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
-        final Set<Role> descendants = getDescendants(pRole);
-        final Set<Role> nativeDescendants = descendants.stream().filter(role -> role.isNative())
-                .collect(Collectors.toSet());
-        // lets add this role to the list so it is processed with the others
-        descendants.add(pRole);
-        for (final Role descendant : descendants) {
-            descendant.getPermissions().removeAll(Lists.newArrayList(pResourcesAccesses));
-            // dynamic roles might change of parent when we are removing accesses
-            changeParent(descendant, nativeDescendants);
-            roleRepository.save(descendant);
+
+        Role father = pRole.getParentRole();
+        if (father != null) {
+            Set<Role> ascendants = getAscendants(pRole.getParentRole());
+            Set<Role> nativeAscendants = ascendants.stream().filter(a -> a.isNative()).collect(Collectors.toSet());
+            if (pRole.isNative()) {
+                nativeAscendants.add(pRole); // adding myself so i am processed with the others
+                // remove the acces from the native ascendants
+                for (Role nativeAscendant : nativeAscendants) {
+                    nativeAscendant.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+                    roleRepository.save(nativeAscendant);
+                }
+                // custom role parent won't change on removal
+            } else {
+                // in case of a custom role, removal is not propagated to other roles
+                pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+                // but a custom role can change parent
+                changeParent(pRole, nativeAscendants);
+                roleRepository.save(pRole);
+            }
+        } else {
+            pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+            roleRepository.save(pRole);
         }
     }
 
