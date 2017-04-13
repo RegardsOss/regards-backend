@@ -21,7 +21,6 @@
 		<module>helloworld-module</module>
 		<module>microservice-archetype</module>
 		<module>module-archetype</module>
-		<module>christophetest</module>
 	</modules>
 
 </project>
