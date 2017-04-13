@@ -1,2 +1,0 @@
-# Microservice helloworld.microservice
-
