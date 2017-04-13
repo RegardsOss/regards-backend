@@ -437,13 +437,12 @@ public class RoleServiceTest {
             final Set<Role> sonsOfAdmin = new HashSet<>();
             return sonsOfAdmin;
         });
+        rolePublic.addPermission(new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET,
+                DefaultRole.ADMIN));
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         Mockito.when(roleRepository.save(rolePublic)).thenReturn(rolePublic);
-        // Mockito.when(roleRepository.save(roleRegisteredUser)).thenReturn(roleRegisteredUser);
-        // Mockito.when(roleRepository.save(roleAdmin)).thenReturn(roleAdmin);
-        // Mockito.when(roleRepository.save(roleProjectAdmin)).thenReturn(roleProjectAdmin);
 
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
