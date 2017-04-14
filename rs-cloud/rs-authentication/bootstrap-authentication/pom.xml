@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LICENSE_PLACEHOLDER -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.cnes.regards.cloud</groupId>
+	<artifactId>bootstrap-authentication</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<description>REGARDS Authentication bootstrap</description>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-boot-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath></relativePath>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.language>java</sonar.language>
+		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+		<fr.cnes.regards.docker.image.name>rs-authentication</fr.cnes.regards.docker.image.name>
+	</properties>
+
+	<dependencies>
+		<!-- Enable microservice features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable security feature -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable swagger features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>swagger-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable cloud features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>cloud-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable plugin features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable monitoring features -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-monitoring-regards-starter</artifactId>
+		</dependency>
+		<!-- Enable remote tenant management -->
+		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-tenant-resolver</artifactId>
+		</dependency>
+		<!-- Enable authentication starter -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>authentication-starter</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- Add authentication module -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.authentication</groupId>
+			<artifactId>authentication-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<!-- Default properties -->
+				<filter.name>development</filter.name>
+			</properties>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/${filter.name}.properties</filter>
+				</filters>
+			</build>
+		</profile>
+		<profile>
+			<id>docker</id>
+			<properties>
+				<!-- Default properties -->
+				<filter.name>docker</filter.name>
+			</properties>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/${filter.name}.properties</filter>
+				</filters>
+			</build>
+		</profile>
+		<profile>
+			<id>delivery</id>
+		</profile>
+	</profiles>
+</project>
+

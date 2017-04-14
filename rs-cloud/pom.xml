@@ -25,5 +25,6 @@
 		<module>rs-config</module>
 		<module>rs-gateway</module>
 		<module>rs-registry</module>
+		<module>rs-authentication</module>
 	</modules>
 </project>

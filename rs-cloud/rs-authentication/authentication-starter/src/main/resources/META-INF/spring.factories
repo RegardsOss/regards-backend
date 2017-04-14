@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.authentication.autoconfigure.RemoteFeignClientAutoConfiguration,\
+fr.cnes.regards.framework.authentication.autoconfigure.Oauth2WebAutoConfiguration,\
+fr.cnes.regards.framework.authentication.autoconfigure.Oauth2AutoConfiguration

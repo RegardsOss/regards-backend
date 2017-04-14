@@ -1,4 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.cloud.gateway.authentication.configuration.RemoteFeignClientAutoConfiguration,\
-fr.cnes.regards.cloud.gateway.authentication.configuration.Oauth2WebAutoConfiguration,\
-fr.cnes.regards.cloud.gateway.authentication.configuration.Oauth2AutoConfiguration

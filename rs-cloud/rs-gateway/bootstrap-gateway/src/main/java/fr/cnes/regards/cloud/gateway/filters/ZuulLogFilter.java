@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.common.net.HttpHeaders;
 import com.netflix.zuul.ZuulFilter;
@@ -21,6 +22,7 @@ import com.netflix.zuul.context.RequestContext;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
+@Component
 public class ZuulLogFilter extends ZuulFilter {
 
     /**
@@ -54,7 +56,7 @@ public class ZuulLogFilter extends ZuulFilter {
         LOG.info("Request received : {}@{} from {}", request.getRequestURI(), request.getMethod(), remoteAddr);
 
         String xForwardedFor = ctx.getZuulRequestHeaders().get(HttpHeaders.X_FORWARDED_FOR);
-        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
+        if ((xForwardedFor != null) && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
             xForwardedFor = xForwardedFor + COMMA + remoteAddr;
             ctx.getZuulRequestHeaders().put(HttpHeaders.X_FORWARDED_FOR, xForwardedFor);
         } else {
