@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -29,7 +30,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@AutoConfigureBefore(DataSourcesAutoConfiguration.class)
+@AutoConfigureBefore({ DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class })
 public class MicroserviceAutoConfiguration {
 
     /**
@@ -45,7 +46,7 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    ITenantConnectionResolver multintenantResolver(ITenantConnectionClient tenantConnectionClient) {
+    ITenantConnectionResolver multitenantResolver(ITenantConnectionClient tenantConnectionClient) {
         return new MicroserviceTenantConnectionResolver(tenantConnectionClient);
     }
 
