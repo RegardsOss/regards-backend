@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -79,8 +80,10 @@ public class LockedState extends AbstractDeletableState {
     public LockedState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IAccountService pAccountService, final IAccountUnlockTokenService pTokenService,
-            final ITemplateService pTemplateService, IEmailClient pEmailClient) {
-        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver);
+            final ITemplateService pTemplateService, final IEmailClient pEmailClient,
+            final IPasswordResetService pPasswordResetTokenService) {
+        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+              pPasswordResetTokenService);
         accountService = pAccountService;
         tokenService = pTokenService;
         templateService = pTemplateService;

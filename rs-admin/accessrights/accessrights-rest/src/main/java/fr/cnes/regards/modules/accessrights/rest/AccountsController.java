@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
@@ -113,8 +114,14 @@ public class AccountsController implements IResourceController<Account> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<Account>>> retrieveAccountList(final Pageable pPageable,
-            final PagedResourcesAssembler<Account> pAssembler) {
-        return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(pPageable), pAssembler));
+            final PagedResourcesAssembler<Account> pAssembler,
+            @RequestParam(value = "status", required = false) final AccountStatus pStatus) {
+        if (pStatus != null) {
+            return ResponseEntity
+                    .ok(toPagedResources(accountService.retrieveAccountList(pStatus, pPageable), pAssembler));
+        } else {
+            return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(pPageable), pAssembler));
+        }
     }
 
     /**

@@ -62,7 +62,7 @@ public class ResourcesService implements IResourcesService {
      */
     private final IRoleService roleService;
 
-    public ResourcesService(IResourcesAccessRepository pResourceAccessRepo, IRoleService pRoleService) {
+    public ResourcesService(final IResourcesAccessRepository pResourceAccessRepo, final IRoleService pRoleService) {
         super();
         resourceAccessRepo = pResourceAccessRepo;
         roleService = pRoleService;
@@ -85,7 +85,7 @@ public class ResourcesService implements IResourcesService {
             // FIXME retrieve resource by page from repository
             // Else retrieve only accessible resources
             final Role currentRole = roleService.retrieveRole(roleName);
-            List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(currentRole.getPermissions());
+            final List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(currentRole.getPermissions());
             results = new PageImpl<>(accessibleResourcesAccesses, pPageable, accessibleResourcesAccesses.size());
         }
         return results;
@@ -113,10 +113,10 @@ public class ResourcesService implements IResourcesService {
             throws ModuleException {
 
         // Compute resource to register as ResourcesAccess
-        List<ResourcesAccess> resources = new ArrayList<>();
-        for (ResourceMapping rm : pResourcesToRegister) {
+        final List<ResourcesAccess> resources = new ArrayList<>();
+        for (final ResourceMapping rm : pResourcesToRegister) {
             if (rm != null) {
-                ResourcesAccess access = new ResourcesAccess();
+                final ResourcesAccess access = new ResourcesAccess();
                 access.setControllerSimpleName(rm.getControllerSimpleName());
                 if (rm.getResourceAccess() != null) {
                     access.setDefaultRole(rm.getResourceAccess().role());
@@ -136,11 +136,11 @@ public class ResourcesService implements IResourcesService {
         }
 
         // Retrieve already configured resources for the given microservice
-        List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        final List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
 
         // Extract and save new resources
-        List<ResourcesAccess> newResources = new ArrayList<>();
-        for (ResourcesAccess ra : resources) {
+        final List<ResourcesAccess> newResources = new ArrayList<>();
+        for (final ResourcesAccess ra : resources) {
             if (!existingResources.contains(ra)) {
                 newResources.add(ra);
             }
@@ -152,8 +152,8 @@ public class ResourcesService implements IResourcesService {
         // TODO clean missing resources
 
         // Compute map by native roles
-        Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
-        for (ResourcesAccess nra : newResources) {
+        final Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
+        for (final ResourcesAccess nra : newResources) {
             Set<ResourcesAccess> set = accessesByDefaultRole.get(nra.getDefaultRole());
             if (set == null) {
                 set = new HashSet<>();
@@ -163,18 +163,30 @@ public class ResourcesService implements IResourcesService {
         }
 
         // Link new resources with existing roles
-        for (Map.Entry<DefaultRole, Set<ResourcesAccess>> entry : accessesByDefaultRole.entrySet()) {
-            Role role = roleService.retrieveRole(entry.getKey().toString());
+        for (final Map.Entry<DefaultRole, Set<ResourcesAccess>> entry : accessesByDefaultRole.entrySet()) {
+            final Role role = roleService.retrieveRole(entry.getKey().toString());
             roleService.addResourceAccesses(role.getId(),
                                             entry.getValue().toArray(new ResourcesAccess[entry.getValue().size()]));
         }
     }
 
     @Override
-    public void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId) throws ModuleException {
-        Role role = roleService.retrieveRole(pRoleId);
-        ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
+    public void removeRoleResourcesAccess(final Long pRoleId, final Long pResourcesAccessId) throws ModuleException {
+        final Role role = roleService.retrieveRole(pRoleId);
+        final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
         roleService.removeResourcesAccesses(role, resourcesAccess);
+    }
+
+    @Override
+    public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(final String pMicroserviceName,
+            final String pControllerName) {
+        return resourceAccessRepo.findByMicroserviceAndControllerSimpleNameOrderByResource(pMicroserviceName,
+                                                                                           pControllerName);
+    }
+
+    @Override
+    public List<String> retrieveMicroserviceControllers(final String pMicroserviceName) {
+        return resourceAccessRepo.findAllControllersByMicroservice(pMicroserviceName);
     }
 
 }

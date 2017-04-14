@@ -90,4 +90,28 @@ public interface IResourcesService {
      */
     void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId) throws ModuleException;
 
+    /**
+     *
+     * Retrieve all resources for the given microservice and the given controller name
+     *
+     * @param pMicroserviceName
+     *            microservice name
+     * @param pControllerName
+     *            controller name
+     * @return @return List of {@link ResourcesAccess}
+     * @since 1.0-SNAPSHOT
+     */
+    List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(String pMicroserviceName, String pControllerName);
+
+    /**
+     *
+     * Retreive microservice controllers names.
+     *
+     * @param pMicroserviceName
+     *            microservice name
+     * @return Array of String (controllers names)
+     * @since 1.0-SNAPSHOT
+     */
+    List<String> retrieveMicroserviceControllers(String pMicroserviceName);
+
 }

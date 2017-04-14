@@ -60,6 +60,11 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     private static final String DEFAULT_MICROSERVICE = "rs-test";
 
     /**
+     * Default controller name used for resourceAccess tests.
+     */
+    private static final String DEFAULT_CONTROLLER = "testController";
+
+    /**
      * JPA Respository used to initialize datas and check results
      */
     @Autowired
@@ -110,7 +115,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
                                                    DefaultRole.INSTANCE_ADMIN.toString());
 
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                "Controller", RequestMethod.GET, DefaultRole.ADMIN);
+                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
         resource = resourcesAccessRepository.save(resource);
         final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);
@@ -133,13 +138,13 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void initialMicroserviceEndpointsRegistration() {
         final List<ResourceMapping> mapping = new ArrayList<>();
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                "/endpoint/test", "Controller", RequestMethod.GET));
+                "/endpoint/test", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.REGISTERED_USER),
-                "/endpoint/test2", "Controller", RequestMethod.GET));
+                "/endpoint/test2", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.INSTANCE_ADMIN),
-                "/endpoint/test3", "Controller", RequestMethod.GET));
+                "/endpoint/test3", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                CONFIGURED_ENDPOINT_URL, "Controller", RequestMethod.GET));
+                CONFIGURED_ENDPOINT_URL, DEFAULT_CONTROLLER, RequestMethod.GET));
         final List<ResultMatcher> expectations = new ArrayList<>(3);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performPost(ResourceController.REQUEST_MAPPING_ROOT + "/register/microservices/{microservice}", instanceToken,
@@ -194,6 +199,75 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet(ResourceController.REQUEST_MAPPING_ROOT + "/" + testResource.getId(), publicToken, expectations,
                    "Error retrieving endpoints");
+    }
+
+    /**
+     *
+     * Check that the microservice allow to retrieve all resource endpoints configurations for a given microservice name
+     * and a given controller name
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    @Purpose("Check that the microservice allow to retrieve resource endpoints for a microservice and crontroller name")
+    public void retrieveMicroserviceControllerResource() {
+
+        // Check that the microservice return the initialized endpoit.
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + ResourceController.REQUEST_MSERVICE_CONTROLLER,
+                          expectations, "Error retrieving endpoints for microservice and controller",
+                          DEFAULT_MICROSERVICE, DEFAULT_CONTROLLER);
+
+        // Check that no endpoint is returned for an unknown controller name
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + ResourceController.REQUEST_MSERVICE_CONTROLLER,
+                          expectations, "Error retrieving endpoints for microservice and controller",
+                          DEFAULT_MICROSERVICE, "unknown-controller");
+
+        // Check that no endpoint is returned for an unknown microservice name
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + ResourceController.REQUEST_MSERVICE_CONTROLLER,
+                          expectations, "Error retrieving endpoints for microservice and controller",
+                          "unkonwon-microservice", DEFAULT_CONTROLLER);
+    }
+
+    /**
+     *
+     * Check that the microservice allow to retrieve all resource endpoints configurations for a given microservice name
+     * and a given controller name
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    @Purpose("Check that the microservice allow to retrieve a microservice resources crontrollers name")
+    public void retrieveMicroserviceControllers() {
+
+        // Check that the microservice return is controllers names from is initialized resources.
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + ResourceController.REQUEST_MSERVICE_CONTROLLERS,
+                          expectations, "Error retrieving endpoints controllers names for microservice",
+                          DEFAULT_MICROSERVICE);
+
+        // Check that no controllers are returned for an unknown controller name
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
+        performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + ResourceController.REQUEST_MSERVICE_CONTROLLERS,
+                          expectations, "Error retrieving endpoints controllers names for microservice",
+                          "unkonwon-microservice");
     }
 
     @Test

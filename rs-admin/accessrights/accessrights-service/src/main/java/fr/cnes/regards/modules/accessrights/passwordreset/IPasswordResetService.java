@@ -38,6 +38,16 @@ public interface IPasswordResetService {
     void createPasswordResetToken(Account pAccount, String pToken);
 
     /**
+     * Delete a {@link PasswordResetToken} for the passed {@link Account}
+     *
+     * @param pAccount
+     *            the account
+     * @param pToken
+     *            the token
+     */
+    void deletePasswordResetTokenForAccount(Account pAccount);
+
+    /**
      * Change the passord of an {@link Account}.
      *
      * @param pAccountEmail

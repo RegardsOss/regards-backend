@@ -55,10 +55,10 @@ public interface IRoleService {
     Role getDefaultRole();
 
     /**
-     * Update the {@link Role} of id <code>pRoleId</code>.
+     * Update the {@link Role} of name <code>pRoleName</code>.
      *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
+     * @param pRoleName
+     *            The {@link Role} <code>name</code>
      * @param pUpdatedRole
      *            The new {@link Role}
      * @throws EntityException
@@ -67,7 +67,7 @@ public interface IRoleService {
      *             {@link EntityInconsistentIdentifierException} Thrown when <code>pRoleId</code> is different from the
      *             id of <code>pUpdatedRole</code><br>
      */
-    Role updateRole(Long pRoleId, Role pUpdatedRole) throws EntityException;
+    Role updateRole(String pRoleName, Role pUpdatedRole) throws EntityException;
 
     /**
      * Create a new {@link Role}.
@@ -81,14 +81,36 @@ public interface IRoleService {
     Role createRole(Role pNewRole) throws EntityAlreadyExistsException;
 
     /**
+     *
+     * Create a new {@link Role} using native parent permissions as own permissions.
+     *
+     * @param pNewRole
+     *            new {@link @Role} to create
+     * @return {@link Role}'s created
+     * @throws EntityException
+     * @since 1.0-SNAPSHOT
+     */
+    Role createRoleWithNativeParentPermissions(Role pNewRole) throws EntityException;
+
+    /**
      * Delete the {@link Role} of passed <code>id</code>.
      *
      * @param pRoleId
      *            The {@link Role}'s <code>id</code>
-     * @throws EntityOperationForbiddenException
-     *             when the updated role is native. Native roles should not be removed
+     * @throws EntityException
+     *             If role doesn't exists or when the updated role is native. Native roles should not be removed
      */
-    void removeRole(Long pRoleId) throws EntityOperationForbiddenException;
+    void removeRole(Long pRoleId) throws EntityException;
+
+    /**
+     * Delete the {@link Role} of passed <code>name</code>.
+     *
+     * @param pRoleName
+     *            The {@link Role}'s <code>name</code>
+     * @throws EntityException
+     *             If role doesn't exists or when the updated role is native. Native roles should not be removed
+     */
+    void removeRole(String pRoleName) throws EntityException;
 
     /**
      * Return the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed <code>id</code>.

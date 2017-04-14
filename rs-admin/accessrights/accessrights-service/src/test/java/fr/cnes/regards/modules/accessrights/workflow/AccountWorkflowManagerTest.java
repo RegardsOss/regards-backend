@@ -5,18 +5,13 @@ package fr.cnes.regards.modules.accessrights.workflow;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -28,16 +23,13 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.workflow.account.ActiveState;
-import fr.cnes.regards.modules.accessrights.workflow.account.PendingState;
 
 /**
  * Test class for {@link ProjectUserService}.
@@ -77,19 +69,9 @@ public class AccountWorkflowManagerTest {
     private static final String PASSWORD = "password";
 
     /**
-     * Dummy unlock code
-     */
-    private static final String CODE = "code";
-
-    /**
      * Dummy tenants
      */
     private static final Set<String> TENANTS = new HashSet<>(Arrays.asList("tenant0", "tenant1"));
-
-    /**
-     * Dummy account settings
-     */
-    private static AccountSettings accountSettings;
 
     /**
      * Tested service
@@ -122,9 +104,9 @@ public class AccountWorkflowManagerTest {
     private AccountStateProvider accountStateProvider;
 
     /**
-     * Mock Account Settings Service
+     * Mocked service
      */
-    private IAccountSettingsService accountSettingsService;
+    private IPasswordResetService passwordResetService;
 
     /**
      * Do some setup before each test
@@ -132,14 +114,13 @@ public class AccountWorkflowManagerTest {
     @Before
     public void setUp() {
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
-        accountSettings = new AccountSettings();
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
-        accountSettingsService = Mockito.mock(IAccountSettingsService.class);
+        passwordResetService = Mockito.mock(IPasswordResetService.class);
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
@@ -170,7 +151,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
+                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -190,7 +171,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
+                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACCEPTED);
@@ -217,7 +198,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver));
+                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);

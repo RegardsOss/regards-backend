@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
@@ -33,9 +34,11 @@ public class InactiveState extends AbstractDeletableState {
      * @param pRuntimeTenantResolver
      *            runtime tenant resolver
      */
-    public InactiveState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
-            ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver) {
-        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver);
+    public InactiveState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
+            final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
+            final IPasswordResetService pPasswordResetTokenService) {
+        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+              pPasswordResetTokenService);
     }
 
     @Override

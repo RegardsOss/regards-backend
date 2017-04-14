@@ -56,11 +56,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     private String apiRoles;
 
-    private String apiRolesId;
-
     private String apiRolesName;
 
     private String apiRolesPermissions;
+
+    private String apiRolesIdPermissions;
 
     private String apiRolesUsers;
 
@@ -94,10 +94,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() {
         apiRoles = RolesController.REQUEST_MAPPING_ROOT;
-        apiRolesId = apiRoles + "/{role_id}";
         apiRolesName = apiRoles + "/{role_name}";
 
-        apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
+        apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_name}";
+
+        apiRolesIdPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
         apiRolesUsers = ProjectUsersController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
@@ -111,7 +112,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         roleRepository.save(publicRole);
 
         // Create a new Role
-        // roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
@@ -170,12 +171,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Regular case
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(apiRolesId, roleTest, expectations, "TODO Error message", roleTest.getId());
+        performDefaultPut(apiRolesName, roleTest, expectations, "TODO Error message", roleTest.getName());
 
         // Fail case: ids differ
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(apiRolesId, roleTest, expectations, "TODO Error message", 99L);
+        performDefaultPut(apiRolesName, roleTest, expectations, "TODO Error message", 99L);
     }
 
     /**
@@ -191,7 +192,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final long nRole = roleRepository.count();
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultDelete(apiRolesId, expectations, "TODO Error message", publicRole.getId());
+        performDefaultDelete(apiRolesName, expectations, "TODO Error message", publicRole.getName());
 
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole, roleRepository.count());
@@ -227,7 +228,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Create a non-native role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultDelete(apiRolesId, expectations, "TODO Error message", roleTest.getId());
+        performDefaultDelete(apiRolesName, expectations, "TODO Error message", roleTest.getName());
 
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole - 1, roleRepository.count());
@@ -239,7 +240,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveRoleResourcesAccessList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultGet(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
+        performDefaultGet(apiRolesPermissions, expectations, "TODO Error message", roleTest.getName());
     }
 
     @Test
@@ -256,7 +257,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performDefaultPut(apiRolesPermissions, newPermissionList, expectations, "TODO Error message", roleTest.getId());
+        performDefaultPut(apiRolesIdPermissions, newPermissionList, expectations, "TODO Error message",
+                          roleTest.getId());
     }
 
     @Test
@@ -265,7 +267,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void clearRoleResourcesAccess() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
-        performDefaultDelete(apiRolesPermissions, expectations, "TODO Error message", roleTest.getId());
+        performDefaultDelete(apiRolesIdPermissions, expectations, "TODO Error message", roleTest.getId());
     }
 
     @Test

@@ -10,6 +10,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 
 /**
@@ -36,6 +37,17 @@ public interface IAccountService {
      * @return The accounts list
      */
     Page<Account> retrieveAccountList(final Pageable pPageable);
+
+    /**
+     * Retrieve the list of all {@link Account}s with given status.
+     *
+     * @param pPageable
+     *            pagination informations
+     * @param pStatus
+     *            status required for retrieved accounts
+     * @return The accounts list
+     */
+    Page<Account> retrieveAccountList(AccountStatus pStatus, final Pageable pPageable);
 
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.
