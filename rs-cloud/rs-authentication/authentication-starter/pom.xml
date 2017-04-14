@@ -50,7 +50,7 @@
 			<artifactId>security-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.cloud.gateway</groupId>
+			<groupId>fr.cnes.regards.modules.authentication</groupId>
 			<artifactId>authentication-plugins</artifactId>
 			<version>${project.version}</version>
 		</dependency>

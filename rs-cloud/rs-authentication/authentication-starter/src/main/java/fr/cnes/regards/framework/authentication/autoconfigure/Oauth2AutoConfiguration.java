@@ -16,8 +16,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
-import fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.cloud.gateway.authentication.plugins.impl.regards.RegardsInternalAuthenticationPlugin;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthorizationServerConfigurer;
 import fr.cnes.regards.framework.authentication.internal.Oauth2EndpointsConfiguration;
@@ -25,6 +23,8 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAut
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
+import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
 
 /**
  *
