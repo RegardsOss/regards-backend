@@ -64,13 +64,13 @@ public class SampleErrorPlugin implements ISamplePlugin {
     /**
      * Init method
      * 
-     * @throws PluginUtilsException
+     * @
      */
     @PluginInit
-    private void aInit() throws PluginUtilsException {
+    private void aInit()  {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
                 + "|coeff:" + coef);
-        throw new PluginUtilsException("error");
+        throw new PluginUtilsRuntimeException("error");
     }
 
 }

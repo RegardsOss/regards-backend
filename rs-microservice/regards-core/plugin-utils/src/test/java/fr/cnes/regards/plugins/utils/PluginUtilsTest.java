@@ -19,9 +19,8 @@ import fr.cnes.regards.plugins.utils.PluginParameterUtils.PrimitiveObject;
 
 /**
  * Unit testing of {@link PluginUtils}.
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {
 
@@ -37,7 +36,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPlugins() {
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
 
         // Get all the plugins
         final Map<String, PluginMetaData> maps = PluginUtils.getPlugins(PLUGIN_PACKAGE, Arrays.asList(PLUGIN_PACKAGE));
@@ -48,7 +47,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final PluginMetaData pluginMetaData = maps.get(maps.keySet().stream().findFirst().get());
         Assert.assertNotNull(pluginMetaData);
 
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -58,7 +57,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePlugin() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set all parameters
@@ -67,12 +66,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
-        try {
-            // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
-        }
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
+
         Assert.assertNotNull(samplePlugin);
 
         /*
@@ -83,7 +79,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                             samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                              Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -93,7 +89,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePluginWithOneDynamicParameter() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set all parameters
@@ -102,17 +98,14 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameterDynamic(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.SUFFIXE, "suffix").getParameters();
-        try {
-            // init a dynamic parameter
-            final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                    .addParameter(SamplePlugin.COEFF, "-1").getParameters().stream().findAny().get();
+        // init a dynamic parameter
+        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build().addParameter(SamplePlugin.COEFF, "-1")
+                .getParameters().stream().findAny().get();
 
-            // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
-                                                 aDynamicPlgParam);
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
-        }
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             aDynamicPlgParam);
+
         Assert.assertNotNull(samplePlugin);
 
         /*
@@ -121,14 +114,14 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertTrue(0 > samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                                Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     @Test
     public void getSamplePluginDynamicParameterNull() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set all parameters
@@ -137,12 +130,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameterDynamic(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.SUFFIXE, "a suffix").getParameters();
-        try {
-            // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
-        }
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
+
         Assert.assertNotNull(samplePlugin);
 
         /*
@@ -151,7 +141,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertTrue(0 < samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                                Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -161,7 +151,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePluginWithOneDynamicParameterWithValues() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set all parameters
@@ -173,24 +163,21 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameterDynamic(SamplePlugin.SUFFIXE, PluginUtilsTest.RED, dynamicValues).getParameters();
-        try {
-            // init a dynamic parameter
-            final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                    .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.BLUE).getParameters().stream().findAny().get();
+        // init a dynamic parameter
+        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.BLUE).getParameters().stream().findAny().get();
 
-            // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
-                                                 aDynamicPlgParam);
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
-        }
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             aDynamicPlgParam);
+
         Assert.assertNotNull(samplePlugin);
 
         /*
          * Use the plugin
          */
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.BLUE));
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
@@ -200,7 +187,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     public void getSamplePluginWithoutDynamicParameterWithValues() {
         SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + this.toString());
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set all parameters
@@ -211,30 +198,24 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameterDynamic(SamplePlugin.SUFFIXE, PluginUtilsTest.RED, dynamicValues).getParameters();
-        try {
-            // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
-        }
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE));
+
         Assert.assertNotNull(samplePlugin);
 
         /*
          * Use the plugin
          */
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.RED));
-        LOGGER.debug(ENDING + this.toString());
+        LOGGER.debug(ENDING + toString());
     }
 
     /**
-     * Get a {@link SamplePlugin} with a specific parameters
-     * 
-     * @throws PluginUtilsException
-     *             An error occurs
+     * Get a {@link SamplePlugin} with a specific parameters @ An error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void getSamplePluginWithUnknownDynamicParameterWithValues() throws PluginUtilsException {
-        LOGGER.debug(STARTING + this.toString());
+    @Test(expected = PluginUtilsRuntimeException.class)
+    public void getSamplePluginWithUnknownDynamicParameterWithValues() {
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set all parameters
@@ -255,14 +236,11 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     /**
-     * Unable to get {@link SamplePlugin} an Integer parameter is missing
-     * 
-     * @throws PluginUtilsException
-     *             An error occurs
+     * Unable to get {@link SamplePlugin} an Integer parameter is missing @ An error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void getSamplePluginMissingCoeffParameter() throws PluginUtilsException {
-        LOGGER.debug(STARTING + this.toString());
+    @Test(expected = PluginUtilsRuntimeException.class)
+    public void getSamplePluginMissingCoeffParameter() {
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set parameters : Missing coeff parameter
@@ -277,14 +255,11 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     /**
-     * Unable to get {@link SamplePlugin} an Integer parameter is missing
-     * 
-     * @throws PluginUtilsException
-     *             An error occurs
+     * Unable to get {@link SamplePlugin} an Integer parameter is missing @ An error occurs
      */
-    @Test(expected = PluginUtilsException.class)
-    public void getSamplePluginWithErrorInitMethod() throws PluginUtilsException {
-        LOGGER.debug(STARTING + this.toString());
+    @Test(expected = PluginUtilsRuntimeException.class)
+    public void getSamplePluginWithErrorInitMethod() {
+        LOGGER.debug(STARTING + toString());
 
         /*
          * Set parameters

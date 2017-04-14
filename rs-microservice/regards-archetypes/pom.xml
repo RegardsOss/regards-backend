@@ -18,6 +18,7 @@
         </parent>
 
 	<modules>
+		<module>helloworld-module</module>
 		<module>microservice-archetype</module>
 		<module>module-archetype</module>
 	</modules>

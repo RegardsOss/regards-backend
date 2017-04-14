@@ -19,14 +19,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
 import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
 import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
  *
  * @author Christophe Mertz
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfiguration.class })
@@ -63,13 +61,10 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
 
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SampleBeanFactoryPlugin.SUFFIXE, "chris_test_1").getParameters();
-        try {
-            // instantiate plugin
-            samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, pluginUtilsBean,
-                                                 Arrays.asList("fr.cnes.regards.plugins.utils.bean"));
-        } catch (final PluginUtilsException e) {
-            Assert.fail();
-        }
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, pluginUtilsBean,
+                                             Arrays.asList("fr.cnes.regards.plugins.utils.bean"));
+
         Assert.assertNotNull(samplePlugin);
         final String toulouse = "Toulouse";
         Assert.assertTrue(samplePlugin.echo(toulouse).contains(toulouse));
