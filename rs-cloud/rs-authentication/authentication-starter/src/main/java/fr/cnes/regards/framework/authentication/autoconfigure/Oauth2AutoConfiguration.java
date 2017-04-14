@@ -6,9 +6,9 @@ package fr.cnes.regards.framework.authentication.autoconfigure;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -123,13 +123,15 @@ public class Oauth2AutoConfiguration {
 
     /**
      *
-     * Create transactionManager mandatory by DefaultTokenService but we dont need it because JWT token are not stored.
+     * Create transactionManager mandatory by DefaultTokenService but we don't need it because JWT token are not
+     * stored.<br/>
+     * Set {@link PlatformTransactionManager} as primary to prevent conflict with another manager.
      *
      * @return PlatformTransactionManager
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     public PlatformTransactionManager transactionManagerStub() {
         return new PlatformTransactionManager() {
 

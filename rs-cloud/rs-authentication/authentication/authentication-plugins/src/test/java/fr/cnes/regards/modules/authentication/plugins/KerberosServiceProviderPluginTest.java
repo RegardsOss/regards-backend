@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosSPPa
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.Krb5TicketValidateAction;
 import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
+import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  *
@@ -106,7 +106,7 @@ public class KerberosServiceProviderPluginTest {
                     .getPlugin(parameters, KerberosServiceProviderPlugin.class,
                                Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"));
             Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsException e) {
+        } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();
         }
     }

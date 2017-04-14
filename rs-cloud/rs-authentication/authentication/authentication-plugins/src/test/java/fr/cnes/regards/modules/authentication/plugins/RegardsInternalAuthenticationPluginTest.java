@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
 import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsException;
+import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  *
@@ -57,7 +57,7 @@ public class RegardsInternalAuthenticationPluginTest {
                     .getPlugin(parameters, RegardsInternalAuthenticationPlugin.class,
                                Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"));
             Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsException | IllegalArgumentException | SecurityException e) {
+        } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException e) {
             Assert.fail();
         }
 
