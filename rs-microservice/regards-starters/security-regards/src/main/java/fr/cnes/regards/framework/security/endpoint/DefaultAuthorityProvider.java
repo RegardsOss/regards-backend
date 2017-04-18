@@ -47,7 +47,8 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     private String[] roles;
 
     @Override
-    public List<ResourceMapping> registerEndpoints(String tenant, final List<ResourceMapping> pLocalEndpoints) {
+    public List<ResourceMapping> registerEndpoints(String microserviceName, String tenant,
+            final List<ResourceMapping> pLocalEndpoints) {
         LOG.warn("No Authority provider defined. Default one used."
                 + " The local endpoints are not register to administration service. Only the default configuration is available");
         if (authorities != null) {
@@ -71,7 +72,7 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities(String tenant) {
+    public List<RoleAuthority> getRoleAuthorities(String microserviceName, String tenant) {
         LOG.warn("No Authority provider defined. Only default roles are initialied.");
         final List<RoleAuthority> defaultRoleAuthorities = new ArrayList<>();
         for (final DefaultRole role : DefaultRole.values()) {
