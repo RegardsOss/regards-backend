@@ -46,8 +46,15 @@ import fr.cnes.regards.modules.configuration.service.IUIPluginDefinitionService;
 @RestController
 @ModuleInfo(name = "Plugin", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/plugins/definition")
+@RequestMapping(UIPluginDefinitionController.REQUEST_MAPPING_ROOT)
 public class UIPluginDefinitionController implements IResourceController<UIPluginDefinition> {
+
+    /**
+     * Root request mapping
+     */
+    public static final String REQUEST_MAPPING_ROOT = "/plugins/definition";
+
+    public static final String REQUEST_MAPPING_PLUGIN_DEFINITION = "/{pluginId}";
 
     @Autowired
     private IUIPluginDefinitionService service;
@@ -61,7 +68,8 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
      * @return {@link UIPluginDefinition}
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{pluginId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.PUBLIC)
     public HttpEntity<Resource<UIPluginDefinition>> retrievePlugin(@PathVariable("pluginId") final Long pPluginId)
@@ -122,7 +130,8 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{pluginId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION, method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM plugin", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<UIPluginDefinition>> updatePlugin(@PathVariable("pluginId") final Long pPluginId,
@@ -143,7 +152,8 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{pluginId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION, method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a plugin", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Void>> deletePlugin(@PathVariable("pluginId") final Long pPluginId)

@@ -202,7 +202,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.REGISTERED_USER)
-    public HttpEntity<Resource<Void>> updatePluginConfiguration(
+    public HttpEntity<Resource<Void>> deletePluginConfiguration(
             @PathVariable("pluginConfId") final Long pPluginConfigurationId) throws EntityException {
         final UIPluginConfiguration pluginConfToDelete = new UIPluginConfiguration();
         pluginConfToDelete.setId(pPluginConfigurationId);

@@ -82,7 +82,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(3)));
-        performDefaultGet("/plugins", expectations, "Error getting all plugins");
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
     }
 
     /**
@@ -96,14 +96,14 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(2)));
-        performDefaultGet("/plugins", expectations, "Error getting all criteria plugins",
-                          RequestParamBuilder.build().param("type", "criteria"));
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations,
+                          "Error getting all criteria plugins", RequestParamBuilder.build().param("type", "criteria"));
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(1)));
-        performDefaultGet("/plugins", expectations, "Error getting all criteria plugins",
-                          RequestParamBuilder.build().param("type", "service"));
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations,
+                          "Error getting all criteria plugins", RequestParamBuilder.build().param("type", "service"));
     }
 
     /**
@@ -115,7 +115,9 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     public void testGetOnePlugin() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultGet("/plugins/{pluginId}", expectations, "Error getting one plugin", plugin.getId());
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
+                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
+                          "Error getting one plugin", plugin.getId());
     }
 
     /**
@@ -127,11 +129,15 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     public void testDeleteOnePlugin() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultDelete("/plugins/{pluginId}", expectations, "Error deleting one theme", plugin.getId());
+        performDefaultDelete(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
+                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
+                             "Error deleting one theme", plugin.getId());
 
         expectations.clear();
         expectations.add(status().isNotFound());
-        performDefaultGet("/plugins/{pluginId}", expectations, "Error retrieving plugin", plugin.getId());
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
+                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
+                          "Error retrieving plugin", plugin.getId());
     }
 
     /**
@@ -144,12 +150,13 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final UIPluginDefinition plugin = createPlugin(UIPluginTypesEnum.SERVICE);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPost("/plugins", plugin, expectations, "Error saving new plugin");
+        performDefaultPost(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, plugin, expectations,
+                           "Error saving new plugin");
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(4)));
-        performDefaultGet("/plugins", expectations, "Error getting all plugins");
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
     }
 
     /**
@@ -162,7 +169,9 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         plugin.setSourcePath("plugins/new/bundle.js");
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut("/plugins/{pluginId}", plugin, expectations, "Error saving new theme", plugin.getId());
+        performDefaultPut(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
+                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, plugin, expectations,
+                          "Error saving new theme", plugin.getId());
     }
 
 }

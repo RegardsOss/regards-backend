@@ -82,10 +82,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     public void init() {
 
         // Create plugin definitions
-        plugin = createPlugin(UIPluginTypesEnum.CRITERIA);
-        final UIPluginDefinition plugin2 = createPlugin(UIPluginTypesEnum.SERVICE);
-        pluginDefRepository.save(plugin);
-        pluginDefRepository.save(plugin2);
+        plugin = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.CRITERIA));
+        final UIPluginDefinition plugin2 = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.SERVICE));
 
         // Create plugin Configurations
         pluginConf = repository.save(createPluginConf(plugin, true, false));
@@ -211,7 +209,7 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         expectations.add(status().isOk());
         performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
                 + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, expectations,
-                             "Error getting all plugins", plugin.getId());
+                             "Error getting all plugins", pluginConf.getId());
     }
 
     /**
