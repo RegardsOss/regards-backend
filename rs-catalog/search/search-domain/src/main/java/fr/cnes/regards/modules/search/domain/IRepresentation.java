@@ -11,12 +11,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 
 /**
- *
  * IRepresentation are used in a HttpMessageConverter so we can transform http outputs to different MIME Type. Each
- * plugin should handle a different MIME Type.
+ * plugin should handle a different MIME Type. For now dynamic parameters are not handled
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @PluginInterface(description = "plugin interface for representation plugins")
 public interface IRepresentation {
