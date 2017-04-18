@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Plugin;
+import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
 
 public interface IPluginService {
 
@@ -30,6 +31,15 @@ public interface IPluginService {
      * @since 1.0-SNAPSHOT
      */
     Page<Plugin> retrievePlugins(Pageable pPageable);
+
+    /**
+     *
+     * Retrieve all plugins for the given type
+     *
+     * @return Paged list of {@link Plugin}
+     * @since 1.0-SNAPSHOT
+     */
+    Page<Plugin> retrievePlugins(PluginTypesEnum pType, Pageable pPageable);
 
     /**
      *

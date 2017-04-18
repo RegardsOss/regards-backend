@@ -45,7 +45,7 @@ public class Plugin {
      */
     @NotNull
     @Column(nullable = false)
-    private String type;
+    private PluginTypesEnum type;
 
     /**
      * Theme name. Use to instantiate the right module
@@ -70,11 +70,11 @@ public class Plugin {
         name = pName;
     }
 
-    public String getType() {
+    public PluginTypesEnum getType() {
         return type;
     }
 
-    public void setType(final String pType) {
+    public void setType(final PluginTypesEnum pType) {
         type = pType;
     }
 

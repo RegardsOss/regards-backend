@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Plugin;
+import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
 
 /**
  *
@@ -20,6 +21,9 @@ import fr.cnes.regards.modules.configuration.domain.Plugin;
  */
 public interface IPluginRepository extends JpaRepository<Plugin, Long> {
 
+    @Override
     Page<Plugin> findAll(Pageable pPageable);
+
+    Page<Plugin> findByType(PluginTypesEnum pType, Pageable pPageable);
 
 }

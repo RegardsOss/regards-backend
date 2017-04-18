@@ -20,8 +20,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.modules.configuration.dao.IPluginRepository;
 import fr.cnes.regards.modules.configuration.domain.Plugin;
+import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
 
 /**
  *
@@ -51,19 +53,19 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         return LOG;
     }
 
-    private Plugin createPlugin() {
+    private Plugin createPlugin(final PluginTypesEnum pType) {
         final Plugin plugin = new Plugin();
         plugin.setName("PluginTest");
-        plugin.setType("criteria");
+        plugin.setType(pType);
         plugin.setSourcePath("plugins/test/bundle.js");
         return plugin;
     }
 
     @Before
     public void init() {
-        plugin = createPlugin();
-        final Plugin plugin2 = createPlugin();
-        final Plugin plugin3 = createPlugin();
+        plugin = createPlugin(PluginTypesEnum.CRITERIA);
+        final Plugin plugin2 = createPlugin(PluginTypesEnum.CRITERIA);
+        final Plugin plugin3 = createPlugin(PluginTypesEnum.SERVICE);
         repository.save(plugin);
         repository.save(plugin2);
         repository.save(plugin3);
@@ -71,7 +73,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      *
-     * Test retrieve all themes
+     * Test retrieve all plugis
      *
      * @since 1.0-SNAPSHOT
      */
@@ -81,6 +83,27 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(3)));
         performDefaultGet("/plugins", expectations, "Error getting all plugins");
+    }
+
+    /**
+     *
+     * Test retrieve all plugins by type
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    public void testGetPluginsByType() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(2)));
+        performDefaultGet("/plugins", expectations, "Error getting all criteria plugins",
+                          RequestParamBuilder.build().param("type", "criteria"));
+
+        expectations.clear();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(1)));
+        performDefaultGet("/plugins", expectations, "Error getting all criteria plugins",
+                          RequestParamBuilder.build().param("type", "service"));
     }
 
     /**
@@ -118,7 +141,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void testSavePlugin() {
-        final Plugin plugin = createPlugin();
+        final Plugin plugin = createPlugin(PluginTypesEnum.SERVICE);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultPost("/plugins", plugin, expectations, "Error saving new plugin");

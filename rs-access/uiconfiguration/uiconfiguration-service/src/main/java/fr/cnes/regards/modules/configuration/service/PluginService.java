@@ -12,6 +12,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IPluginRepository;
 import fr.cnes.regards.modules.configuration.domain.Plugin;
+import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
 
 @Service(value = "pluginService")
 public class PluginService implements IPluginService {
@@ -30,6 +31,11 @@ public class PluginService implements IPluginService {
     @Override
     public Page<Plugin> retrievePlugins(final Pageable pPageable) {
         return repository.findAll(pPageable);
+    }
+
+    @Override
+    public Page<Plugin> retrievePlugins(final PluginTypesEnum pType, final Pageable pPageable) {
+        return repository.findByType(pType, pPageable);
     }
 
     @Override

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Plugin;
+import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
 import fr.cnes.regards.modules.configuration.service.IPluginService;
 
 /**
@@ -73,14 +75,26 @@ public class PluginController implements IResourceController<Plugin> {
      * Entry point to retrieve all plugins
      *
      * @return {@link Plugin}
+     * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM plugins", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Endpoint to retrieve all IHM plugins", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<Plugin>>> retrievePlugins(final Pageable pPageable,
-            final PagedResourcesAssembler<Plugin> pAssembler) {
-        final Page<Plugin> plugins = service.retrievePlugins(pPageable);
+            @RequestParam(value = "type", required = false) final String pType,
+            final PagedResourcesAssembler<Plugin> pAssembler) throws EntityInvalidException {
+
+        final Page<Plugin> plugins;
+        if (pType != null) {
+            final PluginTypesEnum type = PluginTypesEnum.parse(pType);
+            if (type == null) {
+                throw new EntityInvalidException(String.format("Unknown plugin type %s", pType));
+            }
+            plugins = service.retrievePlugins(type, pPageable);
+        } else {
+            plugins = service.retrievePlugins(pPageable);
+        }
         final PagedResources<Resource<Plugin>> resources = toPagedResources(plugins, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
