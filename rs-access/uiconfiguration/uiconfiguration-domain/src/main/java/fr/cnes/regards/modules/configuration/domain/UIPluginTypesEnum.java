@@ -12,7 +12,7 @@ package fr.cnes.regards.modules.configuration.domain;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public enum PluginTypesEnum {
+public enum UIPluginTypesEnum {
 
     /**
      * UI Plugins for search-forms. Create a new UI Criteria.
@@ -26,7 +26,7 @@ public enum PluginTypesEnum {
 
     private final String value;
 
-    private PluginTypesEnum(final String pValue) {
+    private UIPluginTypesEnum(final String pValue) {
         value = pValue;
     }
 
@@ -35,8 +35,8 @@ public enum PluginTypesEnum {
         return this.value;
     }
 
-    public static PluginTypesEnum parse(final String pType) {
-        for (final PluginTypesEnum type : PluginTypesEnum.values()) {
+    public static UIPluginTypesEnum parse(final String pType) {
+        for (final UIPluginTypesEnum type : UIPluginTypesEnum.values()) {
             if (type.toString().equals(pType) || type.name().equals(pType)) {
                 return type;
             }

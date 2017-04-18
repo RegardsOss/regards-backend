@@ -10,43 +10,43 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.configuration.dao.IPluginRepository;
-import fr.cnes.regards.modules.configuration.domain.Plugin;
-import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
+import fr.cnes.regards.modules.configuration.dao.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
+import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 
 @Service(value = "pluginService")
-public class PluginService implements IPluginService {
+public class UIPluginDefinitionService implements IUIPluginDefinitionService {
 
     @Autowired
-    private IPluginRepository repository;
+    private IUIPluginDefinitionRepository repository;
 
     @Override
-    public Plugin retrievePlugin(final Long pPluginId) throws EntityNotFoundException {
+    public UIPluginDefinition retrievePlugin(final Long pPluginId) throws EntityNotFoundException {
         if (!repository.exists(pPluginId)) {
-            throw new EntityNotFoundException(pPluginId, Plugin.class);
+            throw new EntityNotFoundException(pPluginId, UIPluginDefinition.class);
         }
         return repository.findOne(pPluginId);
     }
 
     @Override
-    public Page<Plugin> retrievePlugins(final Pageable pPageable) {
+    public Page<UIPluginDefinition> retrievePlugins(final Pageable pPageable) {
         return repository.findAll(pPageable);
     }
 
     @Override
-    public Page<Plugin> retrievePlugins(final PluginTypesEnum pType, final Pageable pPageable) {
+    public Page<UIPluginDefinition> retrievePlugins(final UIPluginTypesEnum pType, final Pageable pPageable) {
         return repository.findByType(pType, pPageable);
     }
 
     @Override
-    public Plugin savePlugin(final Plugin pPlugin) throws EntityInvalidException {
+    public UIPluginDefinition savePlugin(final UIPluginDefinition pPlugin) throws EntityInvalidException {
         return repository.save(pPlugin);
     }
 
     @Override
-    public Plugin updatePlugin(final Plugin pPlugin) throws EntityNotFoundException, EntityInvalidException {
+    public UIPluginDefinition updatePlugin(final UIPluginDefinition pPlugin) throws EntityNotFoundException, EntityInvalidException {
         if (!repository.exists(pPlugin.getId())) {
-            throw new EntityNotFoundException(pPlugin.getId(), Plugin.class);
+            throw new EntityNotFoundException(pPlugin.getId(), UIPluginDefinition.class);
         }
         return repository.save(pPlugin);
     }
@@ -54,7 +54,7 @@ public class PluginService implements IPluginService {
     @Override
     public void deletePlugin(final Long pPluginId) throws EntityNotFoundException {
         if (!repository.exists(pPluginId)) {
-            throw new EntityNotFoundException(pPluginId, Plugin.class);
+            throw new EntityNotFoundException(pPluginId, UIPluginDefinition.class);
         }
         repository.delete(pPluginId);
     }

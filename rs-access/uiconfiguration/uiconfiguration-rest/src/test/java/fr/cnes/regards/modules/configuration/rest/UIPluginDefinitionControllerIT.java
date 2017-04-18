@@ -21,9 +21,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
-import fr.cnes.regards.modules.configuration.dao.IPluginRepository;
-import fr.cnes.regards.modules.configuration.domain.Plugin;
-import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
+import fr.cnes.regards.modules.configuration.dao.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
+import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 
 /**
  *
@@ -36,25 +36,25 @@ import fr.cnes.regards.modules.configuration.domain.PluginTypesEnum;
  */
 @TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
-public class PluginControllerIT extends AbstractRegardsTransactionalIT {
+public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(PluginControllerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UIPluginDefinitionControllerIT.class);
 
     @Autowired
-    private IPluginRepository repository;
+    private IUIPluginDefinitionRepository repository;
 
-    private Plugin plugin;
+    private UIPluginDefinition plugin;
 
     @Override
     protected Logger getLogger() {
         return LOG;
     }
 
-    private Plugin createPlugin(final PluginTypesEnum pType) {
-        final Plugin plugin = new Plugin();
+    private UIPluginDefinition createPlugin(final UIPluginTypesEnum pType) {
+        final UIPluginDefinition plugin = new UIPluginDefinition();
         plugin.setName("PluginTest");
         plugin.setType(pType);
         plugin.setSourcePath("plugins/test/bundle.js");
@@ -63,9 +63,9 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() {
-        plugin = createPlugin(PluginTypesEnum.CRITERIA);
-        final Plugin plugin2 = createPlugin(PluginTypesEnum.CRITERIA);
-        final Plugin plugin3 = createPlugin(PluginTypesEnum.SERVICE);
+        plugin = createPlugin(UIPluginTypesEnum.CRITERIA);
+        final UIPluginDefinition plugin2 = createPlugin(UIPluginTypesEnum.CRITERIA);
+        final UIPluginDefinition plugin3 = createPlugin(UIPluginTypesEnum.SERVICE);
         repository.save(plugin);
         repository.save(plugin2);
         repository.save(plugin3);
@@ -141,7 +141,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void testSavePlugin() {
-        final Plugin plugin = createPlugin(PluginTypesEnum.SERVICE);
+        final UIPluginDefinition plugin = createPlugin(UIPluginTypesEnum.SERVICE);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultPost("/plugins", plugin, expectations, "Error saving new plugin");

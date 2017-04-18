@@ -23,14 +23,14 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "T_IHM_PLUGINS")
-public class Plugin {
+public class UIPluginDefinition {
 
     /**
      * Unique id
      */
     @Id
-    @SequenceGenerator(name = "ihmThemesSequence", initialValue = 1, sequenceName = "SEQ_IHM_THEMES")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmThemesSequence")
+    @SequenceGenerator(name = "ihmPluginsSequence", initialValue = 1, sequenceName = "SEQ_IHM_PLUGINS")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmPluginsSequence")
     private Long id;
 
     /**
@@ -45,7 +45,7 @@ public class Plugin {
      */
     @NotNull
     @Column(nullable = false)
-    private PluginTypesEnum type;
+    private UIPluginTypesEnum type;
 
     /**
      * Theme name. Use to instantiate the right module
@@ -70,11 +70,11 @@ public class Plugin {
         name = pName;
     }
 
-    public PluginTypesEnum getType() {
+    public UIPluginTypesEnum getType() {
         return type;
     }
 
-    public void setType(final PluginTypesEnum pType) {
+    public void setType(final UIPluginTypesEnum pType) {
         type = pType;
     }
 
