@@ -105,8 +105,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
-        final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
+        ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
                 "Controller", RequestMethod.GET, DefaultRole.ADMIN);
+        aResourcesAccessPublic = resourcesAccessRepository.save(aResourcesAccessPublic);
         resourcesAccessPublic.add(aResourcesAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
         roleRepository.save(publicRole);
@@ -116,10 +117,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
-        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
+        ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
                 RequestMethod.GET, DefaultRole.ADMIN);
-        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
+        aResourcesAccess = resourcesAccessRepository.save(aResourcesAccess);
+        ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
                 RequestMethod.DELETE, DefaultRole.ADMIN);
+        bResourcesAccess = resourcesAccessRepository.save(bResourcesAccess);
 
         resourcesAccess.add(aResourcesAccess);
         resourcesAccess.add(bResourcesAccess);
