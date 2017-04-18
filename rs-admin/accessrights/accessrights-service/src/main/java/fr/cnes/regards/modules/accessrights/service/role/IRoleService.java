@@ -136,8 +136,7 @@ public interface IRoleService {
      * @throws EntityOperationForbiddenException
      *             if pRoleId is the id of PROJECT_ADMIN
      */
-    Role updateRoleResourcesAccess(Long pRoleId, Set<ResourcesAccess> pResourcesAccesses)
-            throws EntityNotFoundException, EntityOperationForbiddenException;
+    Role updateRoleResourcesAccess(Long pRoleId, Set<ResourcesAccess> pResourcesAccesses) throws EntityException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link Role} with passed <code>id</code>.
@@ -231,8 +230,7 @@ public interface IRoleService {
      * @throws EntityOperationForbiddenException
      *             thrown if pRole is PROJECT_ADMIN
      */
-    void removeResourcesAccesses(Role pRole, ResourcesAccess... pResourcesAccess)
-            throws EntityOperationForbiddenException;
+    void removeResourcesAccesses(String pRoleName, ResourcesAccess... pResourcesAccess) throws EntityException;
 
     /**
      * Add given resources accesses to the role of given role id

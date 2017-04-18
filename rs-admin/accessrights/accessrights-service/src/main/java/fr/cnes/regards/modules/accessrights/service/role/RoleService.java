@@ -296,7 +296,7 @@ public class RoleService implements IRoleService {
 
     @Override
     public Role updateRoleResourcesAccess(final Long pRoleId, final Set<ResourcesAccess> pResourcesAccesses)
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+            throws EntityException {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
@@ -307,7 +307,7 @@ public class RoleService implements IRoleService {
         final Set<ResourcesAccess> toBeRemoved = new HashSet<>(permissions);
         toBeRemoved.removeAll(pResourcesAccesses);
         // remove them by handling descendancy
-        removeResourcesAccesses(role, toBeRemoved.toArray(new ResourcesAccess[toBeRemoved.size()]));
+        removeResourcesAccesses(role.getName(), toBeRemoved.toArray(new ResourcesAccess[toBeRemoved.size()]));
 
         // extract which ResourcesAccess is really new
         final Set<ResourcesAccess> newOnes = new HashSet<>(pResourcesAccesses);
@@ -359,7 +359,7 @@ public class RoleService implements IRoleService {
     private Set<Role> getDescendants(final Role pRole) {
         // get sons of this role
         final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
-        Set<Role> descendants = Sets.newHashSet();
+        final Set<Role> descendants = Sets.newHashSet();
         descendants.addAll(sons);
         final Set<Role> newDescendants = Sets.newHashSet(descendants);
         // for each son get its descendants
@@ -538,22 +538,22 @@ public class RoleService implements IRoleService {
         return role;
     }
 
-    @Override
-    public void removeResourcesAccesses(final Role pRole, final ResourcesAccess... pResourcesAccesses)
-            throws EntityOperationForbiddenException {
+    private void removeResourcesAccesses(final Role pRole, final ResourcesAccess... pResourcesAccesses)
+            throws EntityException {
         if (pRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
             throw new EntityOperationForbiddenException(pRole.getName(), Role.class,
                     "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
-        Role father = pRole.getParentRole();
+        final Role father = pRole.getParentRole();
         if (father != null) {
-            Set<Role> ascendants = getAscendants(pRole.getParentRole());
-            Set<Role> nativeAscendants = ascendants.stream().filter(a -> a.isNative()).collect(Collectors.toSet());
+            final Set<Role> ascendants = getAscendants(roleRepository.findOneById(pRole.getParentRole().getId()));
+            final Set<Role> nativeAscendants = ascendants.stream().filter(a -> a.isNative())
+                    .collect(Collectors.toSet());
             if (pRole.isNative()) {
                 nativeAscendants.add(pRole); // adding myself so i am processed with the others
                 // remove the acces from the native ascendants
-                for (Role nativeAscendant : nativeAscendants) {
+                for (final Role nativeAscendant : nativeAscendants) {
                     nativeAscendant.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
                     roleRepository.save(nativeAscendant);
                 }
@@ -569,6 +569,19 @@ public class RoleService implements IRoleService {
             pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
             roleRepository.save(pRole);
         }
+    }
+
+    @Override
+    public void removeResourcesAccesses(final String pRoleName, final ResourcesAccess... pResourcesAccesses)
+            throws EntityException {
+
+        final Optional<Role> roleOpt = roleRepository.findOneByName(pRoleName);
+
+        if (!roleOpt.isPresent()) {
+            throw new EntityNotFoundException(pRoleName, Role.class);
+        }
+
+        removeResourcesAccesses(roleOpt.get(), pResourcesAccesses);
     }
 
     @Override
@@ -589,7 +602,7 @@ public class RoleService implements IRoleService {
         final Set<Role> ascendants = new HashSet<>();
         if (originalRole.getParentRole() != null) {
             // only adds the ascendants of my role's parent as my role's brotherhood is not part of my role's ascendants
-            ascendants.addAll(getAscendants(originalRole.getParentRole()));
+            ascendants.addAll(getAscendants(roleRepository.findOneById(originalRole.getParentRole().getId())));
         } else {
             // handle ProjectAdmin by considering that ADMIN is its parent(projectAdmin is not considered admin's
             // son so no resources accesses are added or removed from him but has to be considered for role borrowing)
@@ -619,6 +632,9 @@ public class RoleService implements IRoleService {
             } else {
                 return ascendants;
             }
+        } else {
+            // We need to load parent from repository to load his permissions.
+            parent = roleRepository.findOneById(parent.getId());
         }
         // otherwise lets get pRole's parent and look for his children: Brotherhood
         ascendants.addAll(roleRepository.findByParentRoleName(parent.getName()));

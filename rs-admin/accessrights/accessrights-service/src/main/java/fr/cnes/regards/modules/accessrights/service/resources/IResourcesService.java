@@ -88,7 +88,7 @@ public interface IResourcesService {
      * @throws ModuleException
      *             if error occurs!
      */
-    void removeRoleResourcesAccess(Long pRoleId, Long pResourcesAccessId) throws ModuleException;
+    void removeRoleResourcesAccess(String pRoleName, Long pResourcesAccessId) throws ModuleException;
 
     /**
      *

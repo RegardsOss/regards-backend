@@ -95,6 +95,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     private ProjectUser testUser;
 
+    private Role customRole;
+
     /**
      *
      * Initialize all datas for this unit tests
@@ -125,6 +127,16 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         testResource = resourcesAccessRepository.save(resource);
         roleRepository.save(adminRole);
+
+        // Create a custom role for tests
+        customRole = new Role();
+        customRole.setName("CUSTOM_ROLE");
+        customRole.setParentRole(adminRole);
+        customRole.setNative(false);
+        customRole.setDefault(false);
+        customRole.addPermission(testResource);
+        customRole = roleRepository.save(customRole);
+
     }
 
     /**
@@ -283,6 +295,16 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultGet(ResourceController.REQUEST_MAPPING_ROOT + "/users/{user_email}", expectations,
                           "The user does not exists. There should be an error 404", "wrongEmail");
+    }
+
+    @Test
+    @Purpose("Check that the system allows to remove a resourceAccess permission to a given role.")
+    public void removeRoleResource() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isNoContent());
+        performDefaultDelete(ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_name}/{resources_access_id}",
+                             expectations, "Error retrieving resourcesAccess for user.", testUser.getRole().getName(),
+                             testResource.getId());
     }
 
     @Override
