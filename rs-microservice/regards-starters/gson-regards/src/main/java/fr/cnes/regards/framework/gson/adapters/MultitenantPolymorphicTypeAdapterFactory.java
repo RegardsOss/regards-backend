@@ -10,6 +10,7 @@
 package fr.cnes.regards.framework.gson.adapters;
 
 import java.io.IOException;
+import java.time.zone.ZoneRulesProvider;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -258,6 +259,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     }
 
     protected boolean needRefreshMapping(String pTenant) {
+        if (!refreshMapping.containsKey(pTenant)) {
+            LOGGER.warn("Empty mapping for tenant {}", pTenant);
+        }
         return refreshMapping.get(pTenant);
     }
 
@@ -470,8 +474,8 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
 
                 if (delegate == null) {
                     String errorMessage = String.format(
-                                                        "Cannot serialize %s. Did you forget to register a subtype ? (tenant = %s)",
-                                                        srcType.getName(), tenant);
+                                                        "Cannot serialize attribute '%s' of type %s. Did you forget to register a subtype ? (tenant = %s)",
+                                                        pValue, srcType.getName(), tenant);
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
