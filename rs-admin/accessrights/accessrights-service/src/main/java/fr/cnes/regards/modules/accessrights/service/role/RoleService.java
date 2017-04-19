@@ -643,4 +643,9 @@ public class RoleService implements IRoleService {
         return ascendants;
     }
 
+    @Override
+    public Set<Role> retrieveRolesWithResource(final Long pResourceId) {
+        return roleRepository.findByPermissionsId(pResourceId);
+    }
+
 }

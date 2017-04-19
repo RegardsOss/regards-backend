@@ -248,4 +248,14 @@ public interface IRoleService {
      * @throws JwtException
      */
     Set<Role> retrieveBorrowableRoles() throws JwtException;
+
+    /**
+     *
+     * Retrieve roles associated to ginve resource id
+     *
+     * @param pResourceId
+     * @return list of {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    Set<Role> retrieveRolesWithResource(Long pResourceId);
 }
