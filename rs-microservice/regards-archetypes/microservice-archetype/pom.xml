@@ -1,49 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<name>microservice-archetype</name>
-	<groupId>fr.cnes.regards.microservices</groupId>
-	<artifactId>microservice-archetype</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<description>Microservice creation archetype </description>
-	<!-- allow maven archetype plugin to recognize this archetype as an archetype 
-		and treat it as it -->
-	<packaging>maven-archetype</packaging>
+  <groupId>fr.cnes.regards.microservices</groupId>
+  <artifactId>helloworld.microservice-archetype</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>maven-archetype</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath/>
-	</parent>
+  <name>helloworld.microservice-archetype</name>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-		</plugins>
-		<!-- support for maven archetype plugin and automaticly integrate the archetype 
-			into local catalog -->
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.archetype</groupId>
-				<artifactId>archetype-packaging</artifactId>
-				<version>2.4</version>
-			</extension>
-		</extensions>
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.archetype</groupId>
+        <artifactId>archetype-packaging</artifactId>
+        <version>3.0.1</version>
+      </extension>
+    </extensions>
 
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-archetype-plugin</artifactId>
-					<version>2.4</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-archetype-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 </project>
