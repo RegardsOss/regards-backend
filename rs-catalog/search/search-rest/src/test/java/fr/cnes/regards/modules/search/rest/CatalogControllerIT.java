@@ -13,13 +13,17 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -360,7 +364,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.
+     * Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled
+     * query.
      */
     @Test
     @Purpose("Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
@@ -384,12 +389,25 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
 
     /*
      * (non-Javadoc)
-     *
      * @see fr.cnes.regards.framework.test.integration.AbstractRegardsIT#getLogger()
      */
     @Override
     protected Logger getLogger() {
         return LOG;
+    }
+
+    @Override
+    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final Object... pUrlVars) {
+
+        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
+                                                                                            pUrlVars);
+        addSecurityHeader(requestBuilder, pAuthToken);
+
+        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
+        requestBuilder.header(HttpConstants.ACCEPT, "application/json");
+
+        return requestBuilder;
     }
 
 }

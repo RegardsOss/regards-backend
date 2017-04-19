@@ -4,7 +4,10 @@
 package fr.cnes.regards.modules.search.domain;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -35,5 +38,11 @@ public interface IRepresentation {
      * @return Byte array to include in the response
      */
     byte[] transform(AbstractEntity pToBeTransformed, Charset pTargetCharset);
+
+    byte[] transform(Collection<AbstractEntity> pEntity, Charset pCharset);
+
+    byte[] transform(PagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset);
+
+    byte[] transform(Resource<AbstractEntity> pEntity, Charset pCharset);
 
 }
