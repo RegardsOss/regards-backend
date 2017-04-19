@@ -9,6 +9,13 @@
 
   <name>helloworld-archetype</name>
 
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath/>
+	</parent>
+
   <build>
     <extensions>
       <extension>
