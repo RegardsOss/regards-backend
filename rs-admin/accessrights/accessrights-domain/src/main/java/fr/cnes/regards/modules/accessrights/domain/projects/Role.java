@@ -11,7 +11,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,7 +31,6 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
 
 /**
@@ -42,12 +40,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidP
  * @author Sébastien Binda
  */
 @Entity
-@EntityListeners(UpdateAuthoritiesListener.class)
 @Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
 @HasValidParent
-@NamedEntityGraph(name = "graph.role.permissions",
-        attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
+@NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions", subgraph = "permissions"))
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -81,8 +77,7 @@ public class Role implements IIdentifiable<Long> {
     @ManyToMany(cascade = CascadeType.ALL)
     // TODO Remove cascade property. Test fails ?
     @OrderBy("resource")
-    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
-            inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
+    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     @GsonIgnore
     private Set<ResourcesAccess> permissions;
 
@@ -261,10 +256,9 @@ public class Role implements IIdentifiable<Long> {
             if (other.name != null) {
                 return false;
             }
-        } else
-            if (!name.equals(other.name)) {
-                return false;
-            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
         return true;
     }
 

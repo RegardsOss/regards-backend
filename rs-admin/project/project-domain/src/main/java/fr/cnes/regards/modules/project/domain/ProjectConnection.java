@@ -87,10 +87,10 @@ public class ProjectConnection implements IIdentifiable<Long> {
     private String url;
 
     /**
-     *
+     * Mark connection as enabled so it can be populated
      */
     @Column(name = "enabled", nullable = false)
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     /**
      *

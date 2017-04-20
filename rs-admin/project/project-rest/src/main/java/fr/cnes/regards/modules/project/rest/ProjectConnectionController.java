@@ -175,9 +175,6 @@ public class ProjectConnectionController implements IResourceController<ProjectC
         resourceService.addLink(resource, this.getClass(), "getProjectConnection", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getProject().getName()),
                                 MethodParamFactory.build(Long.class, pElement.getId()));
-        resourceService.addLink(resource, this.getClass(), "testProjectConnection", "test",
-                                MethodParamFactory.build(String.class, pElement.getProject().getName()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateProjectConnection", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, pElement.getProject().getName()),
                                 MethodParamFactory.build(Long.class, pElement.getId()),

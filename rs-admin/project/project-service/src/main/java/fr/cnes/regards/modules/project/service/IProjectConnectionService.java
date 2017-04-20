@@ -134,4 +134,31 @@ public interface IProjectConnectionService {
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection retrieveProjectConnectionById(Long pId) throws EntityNotFoundException;
+
+    /**
+     * Enable a tenant connection
+     *
+     * @param pMicroService
+     *            related microservice
+     * @param pProjectName
+     *            related tenant
+     * @return related project connection
+     * @throws EntityNotFoundException
+     *             implementation exception
+     */
+    ProjectConnection enableProjectConnection(String pMicroService, String pProjectName) throws EntityNotFoundException;
+
+    /**
+     * Disable a tenant connection
+     *
+     * @param pMicroService
+     *            related microservice
+     * @param pProjectName
+     *            related tenant
+     * @return related project connection
+     * @throws EntityNotFoundException
+     *             implementation exception
+     */
+    ProjectConnection disableProjectConnection(String pMicroService, String pProjectName)
+            throws EntityNotFoundException;
 }

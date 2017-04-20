@@ -62,7 +62,7 @@ public class TenantService implements ITenantService {
         for (Project project : projects) {
             ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
                                                                                                    pMicroserviceName);
-            if (pc != null) {
+            if ((pc != null) && pc.isEnabled()) {
                 tenants.add(project.getName());
             }
         }

@@ -69,6 +69,10 @@
 		level="DEBUG"/> <logger name="fr.cnes.regards.framework.security.filter" 
 		level="DEBUG"/> -->
 
+	<logger name="fr.cnes.regards.framework.jpa" level="DEBUG" />
+	<logger name="org.hibernate.tool.hbm2ddl" level="DEBUG">
+		<appender-ref ref="STDOUT" />
+	</logger>
 	<root level="info">
 		<appender-ref ref="SYSLOG" />
 		<appender-ref ref="STDOUT" />

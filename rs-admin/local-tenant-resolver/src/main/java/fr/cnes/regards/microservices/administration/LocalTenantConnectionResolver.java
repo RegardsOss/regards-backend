@@ -72,7 +72,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
             try {
                 final ProjectConnection projectConnection = projectConnectionService
                         .retrieveProjectConnection(project.getName(), microserviceName);
-                if (projectConnection != null) {
+                if ((projectConnection != null) && projectConnection.isEnabled()) {
                     tenants.add(new TenantConnection(projectConnection.getProject().getName(),
                             projectConnection.getUrl(), projectConnection.getUserName(),
                             projectConnection.getPassword(), projectConnection.getDriverClassName()));
@@ -97,6 +97,8 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
                     pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
 
             projectConnectionService.createProjectConnection(projectConnection, true);
+            // Automatically enable internal connection
+            projectConnectionService.enableProjectConnection(microserviceName, project.getName());
         } catch (final ModuleException e) {
             LOG.error("Error adding new tenant. Cause : {}", e.getMessage());
             LOG.debug(e.getMessage(), e);
@@ -107,10 +109,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     @Override
     public void enableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
         try {
-            ProjectConnection connection = projectConnectionService.retrieveProjectConnection(pTenant,
-                                                                                              pMicroserviceName);
-            connection.setEnabled(true);
-            projectConnectionService.updateProjectConnection(connection.getId(), connection);
+            projectConnectionService.enableProjectConnection(pMicroserviceName, pTenant);
         } catch (EntityNotFoundException e) {
             throw new JpaMultitenantException(e);
         }
@@ -119,10 +118,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     @Override
     public void disableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
         try {
-            ProjectConnection connection = projectConnectionService.retrieveProjectConnection(pTenant,
-                                                                                              pMicroserviceName);
-            connection.setEnabled(false);
-            projectConnectionService.updateProjectConnection(connection.getId(), connection);
+            projectConnectionService.disableProjectConnection(pMicroserviceName, pTenant);
         } catch (EntityNotFoundException e) {
             throw new JpaMultitenantException(e);
         }

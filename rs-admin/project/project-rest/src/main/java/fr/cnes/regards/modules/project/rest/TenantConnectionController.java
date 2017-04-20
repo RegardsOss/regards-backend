@@ -62,8 +62,10 @@ public class TenantConnectionController {
         projectConnection.setUrl(tenantConnection.getUrl());
         projectConnection.setUserName(tenantConnection.getUserName());
 
-        return ResponseEntity
-                .ok(toTenantConnection(projectConnectionService.createProjectConnection(projectConnection, true)));
+        projectConnectionService.createProjectConnection(projectConnection, true);
+        ProjectConnection connection = projectConnectionService.enableProjectConnection(microservice,
+                                                                                        project.getName());
+        return ResponseEntity.ok(toTenantConnection(connection));
     }
 
     @ResourceAccess(description = "Enable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
@@ -71,9 +73,7 @@ public class TenantConnectionController {
     public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
             @PathVariable("tenant") String tenant) throws ModuleException {
 
-        ProjectConnection connection = projectConnectionService.retrieveProjectConnection(tenant, microservice);
-        connection.setEnabled(true);
-        projectConnectionService.updateProjectConnection(connection.getId(), connection);
+        ProjectConnection connection = projectConnectionService.enableProjectConnection(microservice, tenant);
         return ResponseEntity.ok(toTenantConnection(connection));
     }
 
@@ -81,13 +81,12 @@ public class TenantConnectionController {
     @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/disable")
     public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
             @PathVariable("tenant") String tenant) throws ModuleException {
-        ProjectConnection connection = projectConnectionService.retrieveProjectConnection(tenant, microservice);
-        connection.setEnabled(false);
-        projectConnectionService.updateProjectConnection(connection.getId(), connection);
+
+        ProjectConnection connection = projectConnectionService.disableProjectConnection(microservice, tenant);
         return ResponseEntity.ok(toTenantConnection(connection));
     }
 
-    @ResourceAccess(description = "List all tenant connections for a specified microservice", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "List all enabled tenant connections for a specified microservice", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice)
             throws ModuleException {
@@ -96,7 +95,9 @@ public class TenantConnectionController {
         List<TenantConnection> tenantConnections = new ArrayList<>();
         if (projectConnections != null) {
             for (ProjectConnection projectConnection : projectConnections) {
-                tenantConnections.add(toTenantConnection(projectConnection));
+                if (projectConnection.isEnabled()) {
+                    tenantConnections.add(toTenantConnection(projectConnection));
+                }
             }
         }
 

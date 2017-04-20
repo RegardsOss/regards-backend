@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
@@ -39,6 +40,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.event.ResourceAccessInit;
+import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
@@ -65,7 +68,8 @@ public class RoleService implements IRoleService {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(RoleService.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoleService.class);
 
     /**
      * Error message
@@ -98,9 +102,14 @@ public class RoleService implements IRoleService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * AMQP Message subscriber
+     * AMQP instance message subscriber
      */
     private final IInstanceSubscriber instanceSubscriber;
+
+    /**
+     * AMQP tenant publisher
+     */
+    private final IPublisher publisher;
 
     /**
      * The default roles. Autowired by Spring.
@@ -111,7 +120,7 @@ public class RoleService implements IRoleService {
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IInstanceSubscriber pInstanceSubscriber) {
+            final IInstanceSubscriber pInstanceSubscriber, final IPublisher pPublisher) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
@@ -119,22 +128,25 @@ public class RoleService implements IRoleService {
         runtimeTenantResolver = pRuntimeTenantResolver;
         microserviceName = pMicroserviceName;
         instanceSubscriber = pInstanceSubscriber;
+        publisher = pPublisher;
     }
 
     @PostConstruct
     public void init() {
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class,
-                                       new TenantConnectionReadyEventHandler(runtimeTenantResolver));
-        initDefaultRoles();
+        // Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
+        for (final String tenant : tenantResolver.getAllActiveTenants()) {
+            initDefaultRoles(tenant);
+        }
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
     }
 
+    /**
+     * Handle a new tenant connection to initialize default roles
+     *
+     * @author Marc Sordi
+     *
+     */
     private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        private final IRuntimeTenantResolver runtimeTenantResolver;
-
-        public TenantConnectionReadyEventHandler(final IRuntimeTenantResolver pRuntimeTenantResolver) {
-            runtimeTenantResolver = pRuntimeTenantResolver;
-        }
 
         /**
          * Initialize default roles in the new project connection
@@ -145,17 +157,23 @@ public class RoleService implements IRoleService {
         @Override
         public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
             if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
-                runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
-                initDefaultRoles();
+                // Retrieve new tenant to manage
+                String tenant = pWrapper.getContent().getTenant();
+                // Init default role for this tenant
+                initDefaultRoles(tenant);
+                // Populate default roles with resources informing security starter to process
+                publisher.publish(new ResourceAccessInit());
             }
         }
     }
 
     /**
-     * Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
+     * Init default roles for a specified tenant
+     *
+     * @param tenant
+     *            tenant
      */
-    public void initDefaultRoles() {
-
+    private void initDefaultRoles(String tenant) {
         // Return the role with same name in database if exists
         final UnaryOperator<Role> replaceWithRoleFromDb = r -> {
             final Optional<Role> dbRole = roleRepository.findOneByName(r.getName());
@@ -171,16 +189,14 @@ public class RoleService implements IRoleService {
             }
         };
 
-        for (final String tenant : tenantResolver.getAllActiveTenants()) {
-            // Work on tenant
-            runtimeTenantResolver.forceTenant(tenant);
-            // Replace all default roles with their db version if exists
-            defaultRoles.replaceAll(replaceWithRoleFromDb);
-            // Re-plug the parent roles
-            defaultRoles.forEach(setParentFromDefaultRoles);
-            // Save everything
-            defaultRoles.forEach(roleRepository::save);
-        }
+        // Work on tenant
+        runtimeTenantResolver.forceTenant(tenant);
+        // Replace all default roles with their db version if exists
+        defaultRoles.replaceAll(replaceWithRoleFromDb);
+        // Re-plug the parent roles
+        defaultRoles.forEach(setParentFromDefaultRoles);
+        // Save everything
+        defaultRoles.forEach(roleRepository::save);
     }
 
     @Override
@@ -195,7 +211,11 @@ public class RoleService implements IRoleService {
         if (existByName(pNewRole.getName())) {
             throw new EntityAlreadyExistsException(pNewRole.getName());
         }
-        return roleRepository.save(pNewRole);
+        Role newRole = roleRepository.save(pNewRole);
+        // Inform security starter
+        publishRoleEvent(newRole);
+        // And return new created role
+        return newRole;
     }
 
     @Override
@@ -233,8 +253,10 @@ public class RoleService implements IRoleService {
             newCreatedRole = roleRepository.save(newCreatedRole);
             newCreatedRole.setPermissions(Sets.newHashSet(parentRole.getPermissions()));
         }
-
-        return roleRepository.save(newCreatedRole);
+        Role newRole = roleRepository.save(newCreatedRole);
+        // Inform security starter
+        publishRoleEvent(newRole);
+        return newRole;
     }
 
     @Override
@@ -259,10 +281,9 @@ public class RoleService implements IRoleService {
         final Role previous = roleRepository.findOne(pRoleId);
         if ((previous != null) && previous.isNative()) {
             throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else
-            if (previous == null) {
-                throw new EntityNotFoundException(pRoleId, Role.class);
-            }
+        } else if (previous == null) {
+            throw new EntityNotFoundException(pRoleId, Role.class);
+        }
         roleRepository.delete(pRoleId);
     }
 
@@ -271,12 +292,11 @@ public class RoleService implements IRoleService {
         final Optional<Role> role = roleRepository.findOneByName(pRoleName);
         if (!role.isPresent()) {
             throw new EntityNotFoundException(pRoleName, Role.class);
-        } else
-            if (role.get().isNative()) {
-                throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-            } else {
-                roleRepository.delete(role.get().getId());
-            }
+        } else if (role.get().isNative()) {
+            throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+        } else {
+            roleRepository.delete(role.get().getId());
+        }
 
     }
 
@@ -625,6 +645,18 @@ public class RoleService implements IRoleService {
         // now lets add the ascendants of parent
         ascendants.addAll(getAscendants(parent));
         return ascendants;
+    }
+
+    /**
+     * Inform security starter of a role change
+     *
+     * @param role
+     *            role
+     */
+    private void publishRoleEvent(Role role) {
+        RoleEvent roleEvent = new RoleEvent();
+        roleEvent.setRole(role.getName());
+        publisher.publish(roleEvent);
     }
 
 }

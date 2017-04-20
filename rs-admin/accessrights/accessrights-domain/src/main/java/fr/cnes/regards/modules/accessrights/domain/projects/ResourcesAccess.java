@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -19,7 +18,6 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.security.entity.listeners.UpdateAuthoritiesListener;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
@@ -35,7 +33,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  */
 @Entity
 @Table(name = "T_RESOURCES_ACCESS")
-@EntityListeners(UpdateAuthoritiesListener.class)
 @SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
 public class ResourcesAccess implements IIdentifiable<Long> {
 

@@ -166,6 +166,9 @@ public class ProjectConnectionService implements IProjectConnectionService {
             final Project project = pProjectConnection.getProject();
             // Check that the referenced project exists
             if ((project.getId() != null) && projectRepository.exists(project.getId())) {
+                // Disable connection : new configuration may be incorrect
+                // Multitenant starter is reponsible for enabling data source
+                pProjectConnection.setEnabled(false);
                 // Update entity
                 connection = projectConnectionRepository.save(pProjectConnection);
             } else {
@@ -198,5 +201,33 @@ public class ProjectConnectionService implements IProjectConnectionService {
     public List<ProjectConnection> retrieveProjectConnection(final String pMicroService)
             throws EntityNotFoundException {
         return projectConnectionRepository.findByMicroservice(pMicroService);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.project.service.IProjectConnectionService#enableProjectConnection(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public ProjectConnection enableProjectConnection(String pMicroService, String pProjectName)
+            throws EntityNotFoundException {
+        ProjectConnection connection = retrieveProjectConnection(pProjectName, pMicroService);
+        connection.setEnabled(true);
+        return projectConnectionRepository.save(connection);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.project.service.IProjectConnectionService#disableProjectConnection(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public ProjectConnection disableProjectConnection(String pMicroService, String pProjectName)
+            throws EntityNotFoundException {
+        ProjectConnection connection = retrieveProjectConnection(pProjectName, pMicroService);
+        connection.setEnabled(false);
+        return projectConnectionRepository.save(connection);
     }
 }
