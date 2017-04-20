@@ -130,10 +130,28 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @throws EntityNotFoundException
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_email}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{user_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") final Long pUserId)
+            throws EntityNotFoundException {
+        final ProjectUser user = projectUserService.retrieveUser(pUserId);
+        return new ResponseEntity<>(toResource(user), HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
+     *
+     * @param pUserEmail
+     *            The {@link ProjectUser}'s <code>id</code>
+     * @return a {@link ProjectUser}
+     * @throws EntityNotFoundException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
+    @ResourceAccess(description = "retrieve the project user and only display  metadata",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(
             @PathVariable("user_email") final String pUserEmail) throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveOneByEmail(pUserEmail);
         return new ResponseEntity<>(toResource(user), HttpStatus.OK);
@@ -159,7 +177,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResourceAccess(description = "update the project user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<ProjectUser>> updateProjectUser(@PathVariable("user_id") final Long pUserId,
             @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
-        final ProjectUser updatedUser = projectUserService.updateUser(pUserId, pUpdatedProjectUser);
+        final ProjectUser updatedUser = projectUserService.updateUserInfos(pUserId, pUpdatedProjectUser);
         return new ResponseEntity<>(toResource(updatedUser), HttpStatus.OK);
     }
 
@@ -231,7 +249,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUser", LinkRels.SELF,
-                                    MethodParamFactory.build(String.class, pElement.getEmail()));
+                                    MethodParamFactory.build(Long.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "updateProjectUser", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(ProjectUser.class, pElement));

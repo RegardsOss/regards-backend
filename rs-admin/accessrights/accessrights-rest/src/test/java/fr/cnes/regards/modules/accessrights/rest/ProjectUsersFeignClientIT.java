@@ -67,7 +67,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      */
     @Test
     public void retrieveProjectUserListFromFeignClient() {
-        ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
+        final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 
@@ -90,8 +90,20 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      * @since 1.0-SNAPSHOT
      */
     @Test
+    public void retrieveProjectUserByEmailFromFeignClient() {
+        final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUserByEmail("unkown@regards.de");
+        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     *
+     * Check that the accounts Feign Client can retrieve all accounts.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
     public void retrieveProjectUserFromFeignClient() {
-        final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUser("unkown@regards.de");
+        final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUser(1L);
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
     }
 
