@@ -340,7 +340,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 && !runTimeTenantResolver.isInstance() && !pUserEmail.equals(staticRootLogin)) {
             // Retrieve user projectUser
             final ResponseEntity<Resource<ProjectUser>> projectUserClientResponse = projectUsersClient
-                    .retrieveProjectUser(pUserEmail);
+                    .retrieveProjectUserByEmail(pUserEmail);
 
             if (!projectUserClientResponse.getStatusCode().equals(HttpStatus.OK)) {
                 status = AuthenticationStatus.USER_UNKNOWN;
@@ -424,19 +424,21 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             userDetails.setName(pUserName);
             userDetails.setRole(DefaultRole.INSTANCE_ADMIN.toString());
             userDetails.setTenant(pScope);
-        } else if (!runTimeTenantResolver.isInstance()) {
-            // Retrieve account
-            try {
-                userDetails = retrieveUserDetails(pUserName, pScope);
-            } catch (final EntityNotFoundException e) {
-                LOG.debug(e.getMessage(), e);
-                throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
+        } else
+            if (!runTimeTenantResolver.isInstance()) {
+                // Retrieve account
+                try {
+                    userDetails = retrieveUserDetails(pUserName, pScope);
+                } catch (final EntityNotFoundException e) {
+                    LOG.debug(e.getMessage(), e);
+                    throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
+                }
+            } else {
+                // Unauthorized access to instance tenant for authenticated user.
+                throw new AuthenticationException(
+                        "Access denied to REGARDS instance administration for user " + pUserName,
+                        AuthenticationStatus.INSTANCE_ACCESS_DENIED);
             }
-        } else {
-            // Unauthorized access to instance tenant for authenticated user.
-            throw new AuthenticationException("Access denied to REGARDS instance administration for user " + pUserName,
-                    AuthenticationStatus.INSTANCE_ACCESS_DENIED);
-        }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
         return new UsernamePasswordAuthenticationToken(userDetails, pUserPassword, grantedAuths);
     }
@@ -465,7 +467,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 throw new BadCredentialsException(message);
             }
 
-            final ResponseEntity<Resource<ProjectUser>> response = projectUsersClient.retrieveProjectUser(pEmail);
+            final ResponseEntity<Resource<ProjectUser>> response = projectUsersClient
+                    .retrieveProjectUserByEmail(pEmail);
             if (response.getStatusCode() == HttpStatus.OK) {
                 final ProjectUser projectUser = response.getBody().getContent();
                 user.setName(projectUser.getEmail());

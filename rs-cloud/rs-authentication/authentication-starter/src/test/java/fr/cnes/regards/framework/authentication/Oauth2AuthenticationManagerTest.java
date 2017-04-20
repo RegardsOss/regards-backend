@@ -144,7 +144,7 @@ public class Oauth2AuthenticationManagerTest {
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
         final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
                 HttpStatus.OK);
-        Mockito.when(projectUsersClientMock.retrieveProjectUser(Mockito.anyString())).thenReturn(resp);
+        Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
         try {
@@ -220,7 +220,7 @@ public class Oauth2AuthenticationManagerTest {
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
         final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
                 HttpStatus.OK);
-        Mockito.when(projectUsersClientMock.retrieveProjectUser(Mockito.anyString())).thenReturn(resp);
+        Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
 
         // Mock a valid account
         final Resource<Account> resource = new Resource<>(validAccount);
@@ -251,7 +251,7 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(auth.getDetails()).thenReturn(mockedDetails);
 
         // Mock unknown user
-        Mockito.when(projectUsersClientMock.retrieveProjectUser(Mockito.anyString()))
+        Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         // Run authentication process
@@ -290,7 +290,7 @@ public class Oauth2AuthenticationManagerTest {
         user.setStatus(UserStatus.WAITING_ACCESS);
 
         final Resource<ProjectUser> resource = new Resource<>(user);
-        Mockito.when(projectUsersClientMock.retrieveProjectUser(Mockito.anyString()))
+        Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(resource, HttpStatus.OK));
 
         // Run authentication process

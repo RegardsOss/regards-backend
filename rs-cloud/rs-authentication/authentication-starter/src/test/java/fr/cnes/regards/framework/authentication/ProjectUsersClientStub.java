@@ -51,7 +51,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final String pUserEmail) {
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(final String pUserEmail) {
         ProjectUser result = null;
         for (final ProjectUser user : users) {
             if (user.getEmail().equals(pUserEmail)) {
@@ -85,6 +85,11 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     @Override
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId,
             final int pPage, final int pSize) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final Long pUserId) {
         return null;
     }
 

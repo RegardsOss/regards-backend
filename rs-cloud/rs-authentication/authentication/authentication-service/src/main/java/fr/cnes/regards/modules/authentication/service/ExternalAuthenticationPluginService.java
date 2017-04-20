@@ -139,7 +139,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
                 // Get informations about the user from the regards internal accounts.
                 final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
-                        .retrieveProjectUser(userDetails.getName());
+                        .retrieveProjectUserByEmail(userDetails.getName());
 
                 if (userResponse.getStatusCode().equals(HttpStatus.OK)
                         && (userResponse.getBody().getContent() != null)) {
@@ -152,7 +152,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
                                           pAuthInformations.getProject()));
                 }
             }
-        } catch (ModuleException e) {
+        } catch (final ModuleException e) {
             throw new BadCredentialsException(e.getMessage(), e);
         }
 
