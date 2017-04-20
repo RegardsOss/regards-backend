@@ -2,7 +2,7 @@
 <!-- LICENSE_PLACEHOLDER --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>${groupId}.helloworld.microservice</groupId>
+	<groupId>${groupId}</groupId>
 	<artifactId>${artifactId}</artifactId>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -14,7 +14,7 @@
 	</parent>
 
 	<properties>
-		<fr.cnes.regards.docker.image.name>rs-helloworld.microservice</fr.cnes.regards.docker.image.name>
+		<fr.cnes.regards.docker.image.name>helloworld-microservice</fr.cnes.regards.docker.image.name>
 	</properties>
 
 	<dependencies>

@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>fr.cnes.regards.modules</groupId>
-  <artifactId>helloworld-archetype</artifactId>
+  <artifactId>module-archetype</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>maven-archetype</packaging>
 
-  <name>helloworld-archetype</name>
+  <name>helloworld-module-archetype</name>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
