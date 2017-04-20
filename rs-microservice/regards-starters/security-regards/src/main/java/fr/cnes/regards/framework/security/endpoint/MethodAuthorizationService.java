@@ -27,15 +27,11 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
 import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.event.UpdateAuthoritiesEvent;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
@@ -73,12 +69,6 @@ public class MethodAuthorizationService {
     private ITenantResolver tenantResolver;
 
     /**
-     * AMQP Object to send event on queue.
-     */
-    @Autowired
-    private ISubscriber eventListener;
-
-    /**
      * Curent microservice name
      */
     @Value("${spring.application.name}")
@@ -106,28 +96,11 @@ public class MethodAuthorizationService {
     public void init() throws SecurityException {
         // Init all authorities
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            refreshAuthorities(tenant);
+            // Register microservice resources for all configured tenant
+            registerMethodResourcesAccessByTenant(tenant);
+            // Collect role authorities
+            collectRolesByTenant(tenant);
         }
-        // Listen for every update authorities message
-        // Update authorities event must be provided by administration service when the authorities configuration
-        // are updated like resourceAccess or Roles configurations.
-        eventListener.subscribeTo(UpdateAuthoritiesEvent.class, new UpdateAuthoritiesEventHandler());
-    }
-
-    /**
-     *
-     * Refresh all authorities configuration information for tenant
-     *
-     * @param tenant
-     *            tenant
-     * @throws SecurityException
-     *             if error occurs
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    private void refreshAuthorities(String tenant) throws SecurityException {
-        registerMethodResourcesAccessByTenant(tenant);
-        collectRolesByTenant(tenant);
     }
 
     /**
@@ -140,7 +113,7 @@ public class MethodAuthorizationService {
      *             if error occurs
      * @since 1.0-SNAPSHOT
      */
-    private void registerMethodResourcesAccessByTenant(String pTenant) throws SecurityException {
+    public void registerMethodResourcesAccessByTenant(String pTenant) throws SecurityException {
         final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(microserviceName, pTenant,
                                                                                       getResources());
         if (grantedAuthoritiesByTenant.get(pTenant) != null) {
@@ -161,7 +134,7 @@ public class MethodAuthorizationService {
      *             if error occurs
      * @since 1.0-SNAPSHOT
      */
-    private void collectRolesByTenant(String pTenant) throws SecurityException {
+    public void collectRolesByTenant(String pTenant) throws SecurityException {
         final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities(microserviceName, pTenant);
         if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
             grantedRolesIpAddressesByTenant.get(pTenant).clear();
@@ -406,24 +379,5 @@ public class MethodAuthorizationService {
             }
         }
         return Optional.empty();
-    }
-
-    /**
-     *
-     * Update local authority cache on authority event by tenant
-     *
-     * @author Marc Sordi
-     *
-     */
-    private class UpdateAuthoritiesEventHandler implements IHandler<UpdateAuthoritiesEvent> {
-
-        @Override
-        public void handle(final TenantWrapper<UpdateAuthoritiesEvent> pT) {
-            try {
-                refreshAuthorities(pT.getTenant());
-            } catch (SecurityException e) {
-                LOG.error("Error while updating authorities", e);
-            }
-        }
     }
 }

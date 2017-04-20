@@ -40,12 +40,16 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
@@ -82,6 +86,12 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    /**
+     * Database schema name
+     */
+    @Value("${spring.jpa.properties.hibernate.default_schema}")
+    private String schemaName;
 
     /**
      * Data sources pool
@@ -147,6 +157,25 @@ public class MultitenantJpaAutoConfiguration {
     }
 
     /**
+     * Init JPA event handler manager
+     *
+     * @param instanceSubscriber
+     *            to subscribe to tenant connection events
+     * @param instancePublisher
+     *            to publish {@link TenantConnectionReady} or {@link TenantConnectionDiscarded} events
+     * @param multitenantResolver
+     *            to resolve tenant
+     * @return JPA event handler
+     */
+    @Bean
+    public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
+            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver) {
+        return new MultitenantJpaEventHandler(microserviceName, schemaName, dataSources, configuration,
+                implicitNamingStrategyName, physicalNamingStrategyName, instanceSubscriber, instancePublisher,
+                multitenantResolver);
+    }
+
+    /**
      *
      * Create the connection provider. Used to select datasource for a given tenant
      *
@@ -154,10 +183,8 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider(
-            IInstanceSubscriber instanceSubscriber) {
-        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, instanceSubscriber,
-                microserviceName);
+    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
+        return new DataSourceBasedMultiTenantConnectionProviderImpl(dataSources);
     }
 
     /**
@@ -217,7 +244,7 @@ public class MultitenantJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
-        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
+        hibernateProps.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
 
         if (configuration.getEmbedded()) {
             hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +55,12 @@ public abstract class AbstractJpaAutoConfiguration {
      * JPA Persistence unit name. Used to separate multiples databases
      */
     private static final String PERSITENCE_UNIT_NAME = "instance";
+
+    /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     /**
      * Microservice global configuration
@@ -128,7 +135,7 @@ public abstract class AbstractJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
-        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
+        hibernateProps.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
 
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         List<Class<?>> packages;
