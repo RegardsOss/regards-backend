@@ -436,15 +436,12 @@ public class RoleServiceTest {
     /**
      * Check that the system fails when trying to update permissions of a role which does not exist.
      *
-     * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
-     * @throws EntityOperationForbiddenException
+     * @throws EntityException
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system fails when trying to update permissions of a role which does not exist.")
-    public void updateRoleResourcesAccessNotExistent()
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+    public void updateRoleResourcesAccessNotExistent() throws EntityException {
         final Long id = 44255L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(false);
@@ -457,15 +454,12 @@ public class RoleServiceTest {
     /**
      * Check that the system allows to add resources accesses on a role.
      *
-     * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
-     * @throws EntityOperationForbiddenException
+     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210") // FIXME: change the requirement to PM003, ask to claire the naming
     @Purpose("Check that the system allows to add resources accesses on a role.")
-    public void updateRoleResourcesAccessAddingResourcesAccess()
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+    public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityException {
         // Mock
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
@@ -516,15 +510,12 @@ public class RoleServiceTest {
     /**
      * Check that the system allows to update resources accesses of a role.
      *
-     * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
-     * @throws EntityOperationForbiddenException
+     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210") // FIXME: change the requirement to PM003, ask to claire the naming
     @Purpose("Check that the system allows to update resources accesses of a role.")
-    public void updateRoleResourcesAccessUpdatingResourcesAccess()
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+    public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityException {
         final List<ResourcesAccess> initRAs = new ArrayList<>();
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
                 DefaultRole.ADMIN));

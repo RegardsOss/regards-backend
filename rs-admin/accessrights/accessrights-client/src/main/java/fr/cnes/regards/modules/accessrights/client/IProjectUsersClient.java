@@ -32,7 +32,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectUsersClient {
 
     /**
@@ -59,6 +60,17 @@ public interface IProjectUsersClient {
             @RequestParam("size") int pSize);
 
     /**
+     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
+     *
+     * @param pUserEmail
+     *            The {@link ProjectUser}'s <code>id</code>
+     * @return {@link PagedResources} of {@link ProjectUser}
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{user_id}", method = RequestMethod.GET)
+    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
+
+    /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
      * @param pUserEmail
@@ -66,8 +78,8 @@ public interface IProjectUsersClient {
      * @return {@link PagedResources} of {@link ProjectUser}
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_email}", method = RequestMethod.GET)
-    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_email") String pUserEmail);
+    @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
+    ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String pUserEmail);
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.

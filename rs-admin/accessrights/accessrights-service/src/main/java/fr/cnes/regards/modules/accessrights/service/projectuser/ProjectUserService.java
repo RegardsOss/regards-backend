@@ -196,7 +196,40 @@ public class ProjectUserService implements IProjectUserService {
         if (!existUser(pUserId)) {
             throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
+
         return save(pUpdatedProjectUser);
+    }
+
+    @Override
+    public ProjectUser updateUserInfos(final Long pUserId, final ProjectUser pUpdatedProjectUser)
+            throws EntityException {
+
+        if (!pUpdatedProjectUser.getId().equals(pUserId)) {
+            throw new EntityInconsistentIdentifierException(pUserId, pUpdatedProjectUser.getId(), ProjectUser.class);
+        }
+        if (!existUser(pUserId)) {
+            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        }
+
+        final ProjectUser user = projectUserRepository.findOne(pUserId);
+        user.setMetaData(pUpdatedProjectUser.getMetaData());
+        user.setPermissions(pUpdatedProjectUser.getPermissions());
+        if (pUpdatedProjectUser.getRole() == null) {
+            user.setRole(null);
+        } else
+            if (pUpdatedProjectUser.getRole().getId() != null) {
+                user.setRole(pUpdatedProjectUser.getRole());
+            } else
+                if (pUpdatedProjectUser.getRole().getName() != null) {
+                    final Role newRole = roleService.retrieveRole(pUpdatedProjectUser.getRole().getName());
+                    if (newRole != null) {
+                        user.setRole(newRole);
+                    } else {
+                        throw new EntityNotFoundException(pUpdatedProjectUser.getRole().getName(), Role.class);
+                    }
+                }
+
+        return save(user);
     }
 
     /*

@@ -303,17 +303,14 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param pResourcesAccessList
      *            The {@link List} of {@link ResourcesAccess} to set
      * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     * @throws EntityOperationForbiddenException
+     * @throws EntityException
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Totally update the list of permissions of the role with role_id",
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final Set<ResourcesAccess> pResourcesAccessList)
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+            @Valid @RequestBody final Set<ResourcesAccess> pResourcesAccessList) throws EntityException {
         roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -373,8 +370,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeRoleResourcesAccess(@PathVariable("role_name") final String pRoleName,
             @PathVariable("resources_access_id") final Long pResourcesAccessId) throws ModuleException {
-        final Role role = roleService.retrieveRole(pRoleName);
-        service.removeRoleResourcesAccess(role.getId(), pResourcesAccessId);
+        service.removeRoleResourcesAccess(pRoleName, pResourcesAccessId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

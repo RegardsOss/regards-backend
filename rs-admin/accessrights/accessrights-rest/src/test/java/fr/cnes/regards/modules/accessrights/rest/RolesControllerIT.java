@@ -91,6 +91,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     private Role publicRole;
 
+    private ResourcesAccess resourceAccessPublic;
+
     @Before
     public void init() {
         apiRoles = RolesController.REQUEST_MAPPING_ROOT;
@@ -105,9 +107,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         final Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
-        final ResourcesAccess aResourcesAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource",
-                "Controller", RequestMethod.GET, DefaultRole.ADMIN);
-        resourcesAccessPublic.add(aResourcesAccessPublic);
+        resourceAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource", "Controller",
+                RequestMethod.GET, DefaultRole.ADMIN);
+        resourceAccessPublic = resourcesAccessRepository.save(resourceAccessPublic);
+        resourcesAccessPublic.add(resourceAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
         roleRepository.save(publicRole);
 
@@ -116,10 +119,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         final Set<ResourcesAccess> resourcesAccess = new HashSet<>();
-        final ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
+        ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
                 RequestMethod.GET, DefaultRole.ADMIN);
-        final ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
+        aResourcesAccess = resourcesAccessRepository.save(aResourcesAccess);
+        ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
                 RequestMethod.DELETE, DefaultRole.ADMIN);
+        bResourcesAccess = resourcesAccessRepository.save(bResourcesAccess);
 
         resourcesAccess.add(aResourcesAccess);
         resourcesAccess.add(bResourcesAccess);
@@ -212,6 +217,16 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
         performDefaultGet(apiRoles, expectations, "TODO Error message");
+    }
+
+    @Test
+    @Purpose("Check that the microservice allow to retrieve all roles associated to a given resource.")
+    public void retrieveRoleAsswoatedToAResourceAccess() throws JwtException {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(1)));
+        performDefaultGet(RolesController.REQUEST_MAPPING_ROOT + RolesController.PATH_ROLE_WITH_RESOURCE, expectations,
+                          "TODO Error message", resourceAccessPublic.getId());
     }
 
     /**

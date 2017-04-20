@@ -89,4 +89,14 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
     @Query("select distinct r from Role r left join fetch r.permissions")
     Set<Role> findAllDistinctLazy();
 
+    /**
+     *
+     * Find all roles associated to given ResourceAccess Id
+     *
+     * @param pPermissionId
+     * @return a {@link Set} of {@link Role}
+     * @since 1.0-SNAPSHOT
+     */
+    Set<Role> findByPermissionsId(Long pPermissionId);
+
 }

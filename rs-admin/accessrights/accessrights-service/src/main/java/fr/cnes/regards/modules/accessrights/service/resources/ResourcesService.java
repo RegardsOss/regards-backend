@@ -171,10 +171,10 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public void removeRoleResourcesAccess(final Long pRoleId, final Long pResourcesAccessId) throws ModuleException {
-        final Role role = roleService.retrieveRole(pRoleId);
+    public void removeRoleResourcesAccess(final String pRoleName, final Long pResourcesAccessId)
+            throws ModuleException {
         final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
-        roleService.removeResourcesAccesses(role, resourcesAccess);
+        roleService.removeResourcesAccesses(pRoleName, resourcesAccess);
     }
 
     @Override

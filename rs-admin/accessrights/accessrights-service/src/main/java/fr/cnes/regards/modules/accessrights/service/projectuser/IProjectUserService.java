@@ -110,6 +110,23 @@ public interface IProjectUserService {
     ProjectUser updateUser(Long pUserId, ProjectUser pUpdatedProjectUser) throws EntityException;
 
     /**
+     * Update the main informations for {@link ProjectUser} of id <code>pUserId</code>. The calculated informations are
+     * not overidden.
+     *
+     * @param pUserId
+     *            The {@link ProjectUser} <code>id</code>
+     * @param pUpdatedProjectUser
+     *            The new {@link ProjectUser}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when <code>pUserId</code> differs from the id of
+     *             <code>pUpdatedProjectUser</code><br>
+     *             {@link EntityNotFoundException} Thrown when no {@link ProjectUser} with passed <code>id</code> could
+     *             be found<br>
+     */
+    ProjectUser updateUserInfos(Long pUserId, ProjectUser pUpdatedProjectUser) throws EntityException;
+
+    /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
      *
      * @param pEmail

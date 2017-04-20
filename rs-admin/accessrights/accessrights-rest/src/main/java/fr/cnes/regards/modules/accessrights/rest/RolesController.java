@@ -58,6 +58,8 @@ public class RolesController implements IResourceController<Role> {
 
     public static final String PATH_BORROWABLE_TARGET = PATH_BORROWABLE + "/{target}";
 
+    public static final String PATH_ROLE_WITH_RESOURCE = "/resources/{resourceId}";
+
     @Autowired
     private IRoleService roleService;
 
@@ -92,6 +94,22 @@ public class RolesController implements IResourceController<Role> {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<Role>>> retrieveBorrowableRoles() throws JwtException {
         final Set<Role> roles = roleService.retrieveBorrowableRoles();
+        return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for retrieving the list of borrowable Roles for the current user.
+     *
+     * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
+     * @throws JwtException
+     */
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, path = PATH_ROLE_WITH_RESOURCE)
+    @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
+            role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<List<Resource<Role>>> retrieveRolesWithResource(
+            @PathVariable("resourceId") final Long pResourceId) {
+        final Set<Role> roles = roleService.retrieveRolesWithResource(pResourceId);
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
     }
 
