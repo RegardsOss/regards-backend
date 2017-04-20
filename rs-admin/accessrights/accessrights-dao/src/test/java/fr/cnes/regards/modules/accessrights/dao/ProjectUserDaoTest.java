@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,16 +56,6 @@ public class ProjectUserDaoTest {
     @BeforeTransaction
     public void beforeTransaction() {
         runtimeTenantResolver.forceTenant("test1");
-    }
-
-    /**
-     * @throws JwtException
-     *             if the token is wrong
-     */
-    @Before
-    public void setUp() {
-        projectUserRepository.deleteAll();
-        roleRepository.deleteAll();
     }
 
     /**
