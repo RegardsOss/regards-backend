@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.microservices</groupId>
-	<artifactId>module-archetype</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<description>Module creation archetype </description>
-	<!-- allow maven archetype plugin to recognize this archetype as an archetype 
-		and treat it as it -->
-	<packaging>maven-archetype</packaging>
+  <groupId>fr.cnes.regards.modules</groupId>
+  <artifactId>helloworld-archetype</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>maven-archetype</packaging>
+
+  <name>helloworld-archetype</name>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
@@ -18,35 +16,32 @@
 		<relativePath/>
 	</parent>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-		<!-- support for maven archetype plugin and automaticly integrate the archetype 
-			into local catalog -->
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.archetype</groupId>
-				<artifactId>archetype-packaging</artifactId>
-				<version>2.4</version>
-			</extension>
-		</extensions>
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.archetype</groupId>
+        <artifactId>archetype-packaging</artifactId>
+        <version>3.0.1</version>
+      </extension>
+    </extensions>
 
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-archetype-plugin</artifactId>
-					<version>2.4</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-archetype-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <url>https://github.com/RegardsOss/RegardsOss.github.io/helloworld</url>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>archiva-snapshots</id>
+      <name>Archiva Managed Snapshot Repository</name>
+      <url>http://172.26.46.158:8010/repository/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
