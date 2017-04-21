@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigura
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationUpdated;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.exception.InvalidDataSourceTenant;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
@@ -102,6 +103,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
 
     @Override
     protected DataSource selectDataSource(final String pTenantIdentifier) {
+        DataSource tenantDataSource = dataSources.get(pTenantIdentifier);
+        if (tenantDataSource == null) {
+            String message = String.format("No data source found for tenant %s.", pTenantIdentifier);
+            LOGGER.error(message);
+            throw new InvalidDataSourceTenant(message);
+        }
         return dataSources.get(pTenantIdentifier);
     }
 

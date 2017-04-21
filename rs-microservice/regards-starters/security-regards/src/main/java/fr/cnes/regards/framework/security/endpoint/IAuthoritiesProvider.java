@@ -19,8 +19,10 @@ public interface IAuthoritiesProvider {
 
     /**
      *
-     * Register microservice given local endpoints to the administration service and retrieve configured endpoints.
+     * Register microservice local endpoints to the administration service and retrieve configured endpoints.
      *
+     * @param microserviceName
+     *            related microservice
      * @param tenant
      *            working tenant
      * @param localEndpoints
@@ -30,13 +32,15 @@ public interface IAuthoritiesProvider {
      *             if endpoints cannot be registered
      * @since 1.0-SNAPSHOT
      */
-    List<ResourceMapping> registerEndpoints(String tenant, List<ResourceMapping> localEndpoints)
-            throws SecurityException;
+    List<ResourceMapping> registerEndpoints(String microserviceName, String tenant,
+            List<ResourceMapping> localEndpoints) throws SecurityException;
 
     /**
      *
-     * Retrieve all roles authorities for specified tenant
+     * Retrieve all roles authorities for specified tenant and microservice
      *
+     * @param microserviceName
+     *            related microservice
      * @param tenant
      *            working tenant
      * @return all {@link RoleAuthority}
@@ -44,5 +48,5 @@ public interface IAuthoritiesProvider {
      *             if role cannot be retrieved
      * @since 1.0-SNAPSHOT
      */
-    List<RoleAuthority> getRoleAuthorities(String tenant) throws SecurityException;
+    List<RoleAuthority> getRoleAuthorities(String microserviceName, String tenant) throws SecurityException;
 }

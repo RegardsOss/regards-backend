@@ -141,7 +141,8 @@ public class MethodAuthorizationService {
      * @since 1.0-SNAPSHOT
      */
     private void registerMethodResourcesAccessByTenant(String pTenant) throws SecurityException {
-        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(pTenant, getResources());
+        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(microserviceName, pTenant,
+                                                                                      getResources());
         if (grantedAuthoritiesByTenant.get(pTenant) != null) {
             grantedAuthoritiesByTenant.get(pTenant).clear();
         }
@@ -161,7 +162,7 @@ public class MethodAuthorizationService {
      * @since 1.0-SNAPSHOT
      */
     private void collectRolesByTenant(String pTenant) throws SecurityException {
-        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities(pTenant);
+        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities(microserviceName, pTenant);
         if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
             grantedRolesIpAddressesByTenant.get(pTenant).clear();
         }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LICENSE_PLACEHOLDER --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>${groupId}</groupId>
+	<artifactId>${artifactId}</artifactId>
+
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-boot-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<fr.cnes.regards.docker.image.name>helloworld-microservice</fr.cnes.regards.docker.image.name>
+	</properties>
+
+	<dependencies>
+		<!-- Core dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.microservices</groupId>
+			<artifactId>microservice-core</artifactId>
+		</dependency>
+		<!-- Module dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-monitoring-regards-starter</artifactId>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<!-- Default properties -->
+				<filter.name>development</filter.name>
+			</properties>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/${filter.name}.properties</filter>
+				</filters>
+			</build>
+		</profile>
+		<profile>
+			<id>delivery</id>
+		</profile>
+	</profiles>
+</project>
