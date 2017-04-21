@@ -7,14 +7,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -34,9 +32,6 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
 @Configuration
 public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
 
-    /**
-     *
-     */
     private static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
 
     @Autowired
@@ -49,23 +44,19 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
     private ITenantResolver tenantsResolver;
 
     @Autowired
-    private ISubscriber subscriber;
+    private RepresentationHttpMessageConverter representationHttpMessageConverter;
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        pluginService.addPluginPackage(IRepresentation.class.getPackage().getName());
-        pluginService.addPluginPackage(GeoJsonRepresentation.class.getPackage().getName());
-        setDefaultPluginConfiguration();
-        super.configureMessageConverters(converters);
-        try {
-            converters.add(new RepresentationHttpMessageConverter(pluginService, tenantResolver, tenantsResolver,
-                    subscriber));
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new RuntimeException("Could not configure the Representation plugins", e); // NOSONAR: developpment
-                                                                                             // exception:
-                                                                                             // it should never be
-                                                                                             // thrown
+        for (String tenant : tenantsResolver.getAllActiveTenants()) {
+            tenantResolver.forceTenant(tenant);
+            pluginService.addPluginPackage(IRepresentation.class.getPackage().getName());
+            pluginService.addPluginPackage(GeoJsonRepresentation.class.getPackage().getName());
+            setDefaultPluginConfiguration();
         }
+        super.configureMessageConverters(converters);
+        converters.add(representationHttpMessageConverter);
+
     }
 
     private void setDefaultPluginConfiguration() {
@@ -93,6 +84,6 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.defaultContentType(new MediaType("application", "geo+json"));
+        configurer.defaultContentType(GeoJsonRepresentation.MEDIA_TYPE);
     }
 }

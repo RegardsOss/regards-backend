@@ -16,7 +16,7 @@ import org.springframework.web.util.UriComponents;
 
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
-import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
 
 /**
  * Custom {@link PagedResourcesAssembler}

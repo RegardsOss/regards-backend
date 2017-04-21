@@ -41,10 +41,10 @@ import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
+import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
 import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.PagedDatasetResourcesAssembler;
-import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 

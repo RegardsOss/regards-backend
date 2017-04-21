@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
+import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
 
 /**
  * HttpMessageConverter implementation allowing us to use the IRepresentation plugins. Declared as an
@@ -87,6 +88,12 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     };
 
     /**
+     * TypeToken used to recognize FacettedPagedResources&#60;Resource&#60;AbstractEntity&#62;&#62;
+     */
+    private static final TypeToken<FacettedPagedResources<Resource<? extends AbstractEntity>>> FACETTED_PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<FacettedPagedResources<Resource<? extends AbstractEntity>>>() {
+    };
+
+    /**
      * Plugin service
      */
     private final IPluginService pluginService;
@@ -125,10 +132,12 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             List<PluginConfiguration> representationConfigurations = pluginService
                     .getPluginConfigurationsByType(IRepresentation.class);
             for (PluginConfiguration representationConf : representationConfigurations) {
-                // for each plugin conf lets extract handled media type and add it to the map
-                MediaType handledType = ((IRepresentation) Class.forName(representationConf.getPluginClassName())
-                        .newInstance()).getHandledMediaType();
-                enabledRepresentationPluginMap.put(handledType, representationConf.getId());
+                if (representationConf.isActive()) {
+                    // for each plugin conf lets extract handled media type and add it to the map
+                    MediaType handledType = ((IRepresentation) Class.forName(representationConf.getPluginClassName())
+                            .newInstance()).getHandledMediaType();
+                    enabledRepresentationPluginMap.put(handledType, representationConf.getId());
+                }
             }
             enabledRepresentationPluginMapByTenant.put(tenant, enabledRepresentationPluginMap);
         }
@@ -144,11 +153,11 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
 
     @Override
     public boolean canWrite(Class<?> pClazz, MediaType pMediaType) {
-        if (pMediaType == null) {
+        if ((pMediaType == null) || MediaType.ALL.equals(pMediaType)) {
             // if there is no media type into the accept header lets set to the default
-            return supports(pClazz) && (getCurrentTenantPluginConfigurationFor(DEFAULT_MEDIA_TYPE) != null);
+            return supports(pClazz);
         }
-        return supports(pClazz) && (getCurrentTenantPluginConfigurationFor(pMediaType) != null);
+        return (getCurrentTenantPluginConfigurationFor(pMediaType) != null) && supports(pClazz);
     }
 
     @Override
@@ -165,8 +174,10 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     protected boolean supports(Class<?> pClazz) {
         // lets check if it's just AbstractEntity/Collection<AbstractEntity> OR
         // Resource<AbstractEntity>/PagedResources<Resource<AbstractEntity>>
-
-        return PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN.isSubtypeOf(pClazz)
+        // why it is working for subtype here and we need supertype in the writeInternal method is a mystery, maybe it
+        // is because in the writeInternal method we actually have a parameterizedType and not just the class object
+        return FACETTED_PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN.isSubtypeOf(pClazz)
+                || PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN.isSubtypeOf(pClazz)
                 || RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN.isSubtypeOf(pClazz)
                 || ABSTRACT_ENTITY_TYPE_TOKEN.isSubtypeOf(pClazz)
                 || COLLECTION_ABSTRACT_ENTITY_TYPE_TOKEN.isSubtypeOf(pClazz);
@@ -192,7 +203,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         Long confIdToUse = getCurrentTenantPluginConfigurationFor(contentType);
         try {
             IRepresentation pluginToUse = pluginService.getPlugin(confIdToUse);
-            // lets determine which type we are actually writing
+            // lets determine which type we are eventually writing
             if (ABSTRACT_ENTITY_TYPE_TOKEN.isSupertypeOf(type)) {
                 pOutputMessage.getBody()
                         .write(pluginToUse.transform((AbstractEntity) entity, contentType.getCharset()));
@@ -201,18 +212,26 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
                     pOutputMessage.getBody().write(pluginToUse.transform((Collection<AbstractEntity>) entity,
                                                                          contentType.getCharset()));
                 } else {
-                    if (isPagedResources(type)) {
-                        // canWrite has already assured us that if it is a PagedResources it is a
-                        // PagedResources<Resource<? extends AbstractEntity>>
+                    if (isFacettedPagedResources(type)) {
+                        // canWrite has already assured us that if it is a FacettedPagedResources it is a
+                        // FacettedPagedResources<Resource<? extends AbstractEntity>>
                         pOutputMessage.getBody()
-                                .write(pluginToUse.transform((PagedResources<Resource<AbstractEntity>>) entity,
+                                .write(pluginToUse.transform((FacettedPagedResources<Resource<AbstractEntity>>) entity,
                                                              contentType.getCharset()));
                     } else {
-                        // As we can only handle AbstractEntity or Collection<AbstractEntity> or
-                        // PagedResources<Resource<AbstractEntity>> or Resource<AbstractEntity>, now we only have
-                        // Resource<AbstractEntity> left
-                        pOutputMessage.getBody().write(pluginToUse.transform((Resource<AbstractEntity>) entity,
-                                                                             contentType.getCharset()));
+                        if (isPagedResources(type)) {
+                            // canWrite has already assured us that if it is a PagedResources it is a
+                            // PagedResources<Resource<? extends AbstractEntity>>
+                            pOutputMessage.getBody()
+                                    .write(pluginToUse.transform((PagedResources<Resource<AbstractEntity>>) entity,
+                                                                 contentType.getCharset()));
+                        } else {
+                            // As we can only handle AbstractEntity or Collection<AbstractEntity> or
+                            // PagedResources<Resource<AbstractEntity>> or Resource<AbstractEntity>, now we only have
+                            // Resource<AbstractEntity> left
+                            pOutputMessage.getBody().write(pluginToUse.transform((Resource<AbstractEntity>) entity,
+                                                                                 contentType.getCharset()));
+                        }
                     }
                 }
             }
@@ -240,6 +259,22 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         return PagedResources.class.isAssignableFrom(rawClass);
     }
 
+    /**
+     * clone of isPagedResources for FacettedPagedResources
+     */
+    private boolean isFacettedPagedResources(Type pType) {
+        if (!(pType instanceof ParameterizedType)) {
+            return false;
+        }
+        ParameterizedType parameterized = (ParameterizedType) pType;
+        Type rawType = parameterized.getRawType();
+        if (!(rawType instanceof Class)) {
+            return false;
+        }
+        Class<?> rawClass = (Class<?>) rawType;
+        return FacettedPagedResources.class.isAssignableFrom(rawClass);
+    }
+
     @Override
     protected AbstractEntity readInternal(Class<?> pClazz, HttpInputMessage pInputMessage)
             throws IOException, HttpMessageNotReadableException {
@@ -247,11 +282,54 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         return null;
     }
 
+    private void handleCreation(String tenantOfEvent, PluginConfigurationEvent event, Long confId) {
+        try {
+            PluginConfiguration conf = pluginService.getPluginConfiguration(confId);
+            if (conf.isActive()) {
+                MediaType newMediaType = ((IRepresentation) Class.forName(conf.getPluginClassName()).newInstance())
+                        .getHandledMediaType();
+                enabledRepresentationPluginMapByTenant.get(tenantOfEvent).put(newMediaType, confId);
+            }
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            LOG.error("Couldn't add the newly defined Representation plugin for tenant: {}, configuration id: {}",
+                      tenantOfEvent, event.getPluginConfId());
+            throw new RuntimeException(e);// NOSONAR
+        } catch (ModuleException e) {
+            // if the event represent a creation and the configuration has already been removed then
+            // lets do nothing
+            LOG.debug("try to add a representation plugin which configuration has already been removed", e);
+        }
+    }
+
+    private void handleActivation(String tenantOfEvent, PluginConfigurationEvent event, Long confId) {
+        try {
+            PluginConfiguration conf = pluginService.getPluginConfiguration(confId);
+            MediaType newMediaType = ((IRepresentation) Class.forName(conf.getPluginClassName()).newInstance())
+                    .getHandledMediaType();
+            enabledRepresentationPluginMapByTenant.get(tenantOfEvent).put(newMediaType, confId);
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            LOG.error("Couldn't add the newly activated Representation plugin for tenant: {}, configuration id: {}",
+                      tenantOfEvent, event.getPluginConfId());
+            throw new RuntimeException(e);// NOSONAR
+        } catch (ModuleException e) {
+            // if the event represents an activation and the configuration has already been removed then
+            // we do not have anything to do because the plugin was previously desactivated
+            LOG.debug("try to add a representation plugin which configuration has already been removed", e);
+        }
+    }
+
+    private void handleDesactivationAndDelete(String tenantOfEvent, Long confId) {
+        Map<MediaType, Long> enabledRepresentationForDeterminedTenant = enabledRepresentationPluginMapByTenant
+                .get(tenantOfEvent);
+        enabledRepresentationForDeterminedTenant.entrySet().removeIf(entry -> entry.getValue().equals(confId));
+    }
+
     private class DeletionPluginConfigurationHandler implements IHandler<PluginConfigurationEvent> {
 
         @Override
         public void handle(TenantWrapper<PluginConfigurationEvent> pWrapper) {
             String tenantOfEvent = pWrapper.getTenant();
+            tenantResolver.forceTenant(tenantOfEvent);
             PluginConfigurationEvent event = pWrapper.getContent();
             if (IRepresentation.class.getName().equals(event.getPluginType())) {
                 Long confId = event.getPluginConfId();
@@ -267,10 +345,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
                     // those we can handle
                     case DESACTIVATE:
                     case DELETE:
-                        Map<MediaType, Long> enabledRepresentationForDeterminedTenant = enabledRepresentationPluginMapByTenant
-                                .get(tenantOfEvent);
-                        enabledRepresentationForDeterminedTenant.entrySet()
-                                .removeIf(entry -> entry.getValue().equals(confId));
+                        handleDesactivationAndDelete(tenantOfEvent, confId);
                         break;
                     default:
                         break;
@@ -278,40 +353,5 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             }
         }
 
-        private void handleActivation(String tenantOfEvent, PluginConfigurationEvent event, Long confId) {
-            try {
-                PluginConfiguration conf = pluginService.getPluginConfiguration(confId);
-                MediaType newMediaType = ((IRepresentation) Class.forName(conf.getPluginClassName()).newInstance())
-                        .getHandledMediaType();
-                enabledRepresentationPluginMapByTenant.get(tenantOfEvent).put(newMediaType, confId);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                LOG.error("Couldn't add the newly activated Representation plugin for tenant: {}, configuration id: {}",
-                          tenantOfEvent, event.getPluginConfId());
-                throw new RuntimeException(e);// NOSONAR
-            } catch (ModuleException e) {
-                // if the event represents an activation and the configuration has already been removed then
-                // we do not have anything to do because the plugin was previously desactivated
-                LOG.debug("try to add a representation plugin which configuration has already been removed", e);
-            }
-        }
-
-        private void handleCreation(String tenantOfEvent, PluginConfigurationEvent event, Long confId) {
-            try {
-                PluginConfiguration conf = pluginService.getPluginConfiguration(confId);
-                if (conf.isActive()) {
-                    MediaType newMediaType = ((IRepresentation) Class.forName(conf.getPluginClassName()).newInstance())
-                            .getHandledMediaType();
-                    enabledRepresentationPluginMapByTenant.get(tenantOfEvent).put(newMediaType, confId);
-                }
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                LOG.error("Couldn't add the newly defined Representation plugin for tenant: {}, configuration id: {}",
-                          tenantOfEvent, event.getPluginConfId());
-                throw new RuntimeException(e);// NOSONAR
-            } catch (ModuleException e) {
-                // if the event represent a creation and the configuration has already been removed then
-                // lets do nothing
-                LOG.debug("try to add a representation plugin which configuration has already been removed", e);
-            }
-        }
     }
 }

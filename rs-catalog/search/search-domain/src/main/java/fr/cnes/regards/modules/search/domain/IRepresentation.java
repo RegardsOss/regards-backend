@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
 
 /**
  * IRepresentation are used in a HttpMessageConverter so we can transform http outputs to different MIME Type. Each
@@ -42,6 +43,8 @@ public interface IRepresentation {
     byte[] transform(Collection<AbstractEntity> pEntity, Charset pCharset);
 
     byte[] transform(PagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset);
+
+    byte[] transform(FacettedPagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset);
 
     byte[] transform(Resource<AbstractEntity> pEntity, Charset pCharset);
 

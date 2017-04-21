@@ -18,8 +18,11 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
+import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
 
 /**
+ * Representation plugin allowing to serialize data to GeoJson format
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @Plugin(author = "REGARDS Team", contact = "regards@c-s.fr",
@@ -27,12 +30,14 @@ import fr.cnes.regards.modules.search.domain.IRepresentation;
         licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "0.0.1")
 public class GeoJsonRepresentation implements IRepresentation {
 
+    public static final MediaType MEDIA_TYPE = new MediaType("application", "geo+json", StandardCharsets.UTF_8);
+
     @Autowired
     private Gson gson;
 
     @Override
     public MediaType getHandledMediaType() {
-        return new MediaType("application", "geo+json", StandardCharsets.UTF_8);
+        return MEDIA_TYPE;
     }
 
     @Override
@@ -79,6 +84,33 @@ public class GeoJsonRepresentation implements IRepresentation {
     public byte[] transform(Resource<AbstractEntity> pEntity, Charset pCharset) {
         // geometric characterisation is already handled by AbstractEntity
         return gson.toJson(pEntity).getBytes(pCharset);
+    }
+
+    @Override
+    public byte[] transform(FacettedPagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset) {
+        // FacettedPagedResources are composed of 4 parts: metadata, links, facets, content
+        // lets handle metadata part
+        String json = "{\"metadata\":";
+        json += gson.toJson(pEntity.getMetadata());
+        // lets handle links
+        json += ",\"links\":";
+        json += gson.toJson(pEntity.getLinks());
+        // lets handle facets
+        json += ",\"facets\":";
+        json += gson.toJson(pEntity.getFacets());
+        // lets handle content
+        json += ",\"content\":";
+        Collection<Resource<AbstractEntity>> entities = pEntity.getContent();
+        // lets serialize each entity to json
+        StringJoiner sj = new StringJoiner(",");
+        for (Resource<AbstractEntity> entity : entities) {
+            sj.add(gson.toJson(entity));
+        }
+        // lets set the content now that each entity has been added
+        json += "{\"type\":\"FeatureCollection\",\"features\":[" + sj.toString() + "]}";
+        // lets close the json so it is a correct one
+        json += "}";
+        return json.getBytes(pCharset);
     }
 
 }
