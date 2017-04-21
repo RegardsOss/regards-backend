@@ -26,6 +26,8 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
@@ -124,10 +126,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * A constructor with {@link PluginMetaData}.
      *
-     * @param pPluginMetaData
-     *            the plugin's metadata
-     * @param pLabel
-     *            the label
+     * @param pPluginMetaData the plugin's metadata
+     * @param pLabel the label
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel) {
         super();
@@ -143,12 +143,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
      *
-     * @param pPluginMetaData
-     *            the plugin's metadata
-     * @param pLabel
-     *            the label
-     * @param pParameters
-     *            the list of parameters
+     * @param pPluginMetaData the plugin's metadata
+     * @param pLabel the label
+     * @param pParameters the list of parameters
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
             final List<PluginParameter> pParameters) {
@@ -166,14 +163,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
      *
-     * @param pPluginMetaData
-     *            the plugin's metadata
-     * @param pLabel
-     *            the label
-     * @param pParameters
-     *            the list of parameters
-     * @param pOrder
-     *            the order
+     * @param pPluginMetaData the plugin's metadata
+     * @param pLabel the label
+     * @param pParameters the list of parameters
+     * @param pOrder the order
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
             final List<PluginParameter> pParameters, final int pOrder) {
@@ -191,12 +184,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * A constructor with {@link PluginMetaData}.
      *
-     * @param pPluginMetaData
-     *            the plugin's metadata
-     * @param pLabel
-     *            the label
-     * @param pOrder
-     *            the order
+     * @param pPluginMetaData the plugin's metadata
+     * @param pLabel the label
+     * @param pOrder the order
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
         super();
@@ -209,11 +199,22 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         active = Boolean.TRUE;
     }
 
+    public PluginConfiguration(PluginConfiguration other) {
+        active = other.active;
+        id = other.id;
+        interfaceName = other.interfaceName;
+        label = other.label;
+        parameters = Lists.newArrayList(other.parameters);
+        pluginClassName = other.pluginClassName;
+        pluginId = other.pluginId;
+        priorityOrder = other.priorityOrder;
+        version = other.version;
+    }
+
     /**
      * Return the value of a specific parameter
      *
-     * @param pParameterName
-     *            the parameter to get the value
+     * @param pParameterName the parameter to get the value
      * @return the value of the parameter
      */
     public final String getParameterValue(String pParameterName) {
@@ -232,10 +233,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Change the value of the parameter which name is pParameterName if and only if such parameter exists and is
      * dynamic
      *
-     * @param pParameterName
-     *            Name of the parameter whose value should be setted
-     * @param pValue
-     *            value to be setted
+     * @param pParameterName Name of the parameter whose value should be setted
+     * @param pValue value to be setted
      */
     public final void setParameterDynamicValue(String pParameterName, String pValue) {
         Optional<PluginParameter> parameter = parameters.stream()
@@ -248,8 +247,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Return the {@link PluginParameter} of a specific parameter
      *
-     * @param pParameterName
-     *            the parameter to get the value
+     * @param pParameterName the parameter to get the value
      * @return the {@link PluginParameter}
      */
     public final PluginParameter getParameter(String pParameterName) {
@@ -267,8 +265,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Return the value of a specific parameter {@link PluginConfiguration}
      *
-     * @param pParameterName
-     *            the parameter to get the value
+     * @param pParameterName the parameter to get the value
      * @return the value of the parameter
      */
     public final PluginConfiguration getParameterConfiguration(String pParameterName) {
@@ -305,10 +302,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Log a {@link PluginParameter}.
      *
-     * @param pParam
-     *            the {@link PluginParameter} to log
-     * @param pPrefix
-     *            a prefix to set in the log
+     * @param pParam the {@link PluginParameter} to log
+     * @param pPrefix a prefix to set in the log
      */
     private void logParam(PluginParameter pParam, String pPrefix) {
         LOGGER.info(pPrefix + pParam.getName() + "-def val:" + pParam.getValue());
@@ -411,16 +406,18 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             if (other.label != null) {
                 return false;
             }
-        } else if (!label.equals(other.label)) {
-            return false;
-        }
+        } else
+            if (!label.equals(other.label)) {
+                return false;
+            }
         if (pluginId == null) {
             if (other.pluginId != null) {
                 return false;
             }
-        } else if (!pluginId.equals(other.pluginId)) {
-            return false;
-        }
+        } else
+            if (!pluginId.equals(other.pluginId)) {
+                return false;
+            }
         return true;
     }
 

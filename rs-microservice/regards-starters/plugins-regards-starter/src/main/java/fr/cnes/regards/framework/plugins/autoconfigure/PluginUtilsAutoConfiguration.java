@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -27,7 +29,7 @@ import fr.cnes.regards.plugins.utils.bean.PluginUtilsBean;
 @Configuration
 @EnableConfigurationProperties(PluginUtilsProperties.class)
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.plugins" })
-@AutoConfigureAfter({ MultitenantJpaAutoConfiguration.class })
+@AutoConfigureAfter({ MultitenantJpaAutoConfiguration.class, AmqpAutoConfiguration.class })
 public class PluginUtilsAutoConfiguration {
 
     /**
@@ -45,8 +47,8 @@ public class PluginUtilsAutoConfiguration {
     }
 
     @Bean
-    public IPluginService pluginService(IPluginConfigurationRepository pPluginConfRepo) {
-        return new PluginService(pPluginConfRepo, pluginUtilsProperties.getPackagesToScan());
+    public IPluginService pluginService(IPluginConfigurationRepository pPluginConfRepo, IPublisher publisher) {
+        return new PluginService(pPluginConfRepo, pluginUtilsProperties.getPackagesToScan(), publisher);
     }
 
 }
