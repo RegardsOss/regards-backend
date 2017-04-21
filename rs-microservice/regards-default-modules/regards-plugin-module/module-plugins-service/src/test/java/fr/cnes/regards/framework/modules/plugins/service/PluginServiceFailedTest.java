@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -23,7 +24,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
@@ -48,15 +48,14 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     public void init() {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class));
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
     }
 
     /**
      * Get an unsaved {@link PluginConfiguration}.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void getAPluginConfigurationUnknown() throws ModuleException {
@@ -69,8 +68,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Delete an unsaved {@link PluginConfiguration}.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void deleteAPluginConfigurationUnknown() throws ModuleException {
@@ -84,8 +82,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a null {@link PluginConfiguration}.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void saveANullPluginConfiguration() throws ModuleException {
@@ -96,8 +93,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without pluginId attribute.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void saveAPluginConfigurationWithoutPluginId() throws ModuleException {
@@ -110,8 +106,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void saveAPluginConfigurationWithoutPriorityOrder() throws ModuleException {
@@ -124,8 +119,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void saveAPluginConfigurationWithoutVersion() throws ModuleException {
@@ -138,8 +132,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Save a {@link PluginConfiguration} without parameters.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     public void saveAPluginConfigurationWithoutParameters() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
@@ -156,8 +149,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Update an unsaved {@link PluginConfiguration}
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void updateAPluginConfigurationUnknown() throws ModuleException {
@@ -186,8 +178,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     public void getAPluginWithBadVersionConfiguration() throws ModuleException {
@@ -213,9 +204,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not the most priority.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
-     * 
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void getFirstPluginTheMostPrioritaryError() throws ModuleException {
@@ -248,8 +237,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not active.
      *
-     * @throws ModuleException
-     *             throw if an error occurs
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     @Requirement("REGARDS_DSL_CMP_PLG_100")
