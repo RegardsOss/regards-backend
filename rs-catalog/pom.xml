@@ -20,7 +20,6 @@
 	<modules>
 		<module>bootstrap-catalog</module>
 		<module>search</module>
-		<module>plugin-client</module>
 	</modules>
 
 </project>
