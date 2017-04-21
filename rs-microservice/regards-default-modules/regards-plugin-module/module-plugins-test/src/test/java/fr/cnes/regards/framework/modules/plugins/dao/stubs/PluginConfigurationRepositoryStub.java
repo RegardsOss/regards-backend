@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.test.repository.RepositoryStub;
  *
  * @author Christophe Mertz
  * @author Sébastien Binda
- *
  */
 @Repository
 @Primary
@@ -126,7 +125,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
 
     @Override
     public PluginConfiguration findById(Long pId) {
-        return null;
+        return getEntities().stream().filter(e -> e.getId().equals(pId)).findFirst().orElse(null);
     }
 
     @Override

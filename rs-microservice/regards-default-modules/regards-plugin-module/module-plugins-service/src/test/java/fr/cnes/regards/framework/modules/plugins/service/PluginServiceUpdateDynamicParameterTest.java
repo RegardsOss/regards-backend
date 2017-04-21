@@ -58,8 +58,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-            Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
@@ -108,8 +107,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-            Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 

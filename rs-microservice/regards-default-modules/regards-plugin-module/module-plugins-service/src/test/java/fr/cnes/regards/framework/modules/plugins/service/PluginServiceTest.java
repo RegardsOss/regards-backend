@@ -184,7 +184,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Purpose("Create a new plugin configuration")
     public void saveAPluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        final PluginConfiguration aPluginConfigurationWithId = getPluginConfigurationWithParameters();
+        final PluginConfiguration aPluginConfigurationWithId = new PluginConfiguration(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
@@ -213,8 +213,8 @@ public class PluginServiceTest extends PluginServiceUtility {
     public void updateAPluginConfiguration() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+                .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
@@ -228,10 +228,9 @@ public class PluginServiceTest extends PluginServiceUtility {
     public void desactivateAPluginConfiguration() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
-        PluginConfiguration toBeUpdated = getPluginConfigurationWithParameters();
-        toBeUpdated.setId(AN_ID);
+        Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+                .thenReturn(aPluginConfiguration);
+        PluginConfiguration toBeUpdated = new PluginConfiguration(aPluginConfiguration);
         toBeUpdated.setIsActive(false);
         Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
 
@@ -249,10 +248,9 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
         aPluginConfiguration.setIsActive(false);
-        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
-        PluginConfiguration toBeUpdated = getPluginConfigurationWithParameters();
-        toBeUpdated.setId(AN_ID);
+        Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+                .thenReturn(aPluginConfiguration);
+        PluginConfiguration toBeUpdated = new PluginConfiguration(aPluginConfiguration);
         toBeUpdated.setIsActive(true);
         Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
 
