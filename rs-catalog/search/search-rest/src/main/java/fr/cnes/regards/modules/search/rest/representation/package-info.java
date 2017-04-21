@@ -5,4 +5,4 @@
  * @author Sylvain Vissiere-Guerinet
  *
  */
-package fr.cnes.regards.microservices.catalog.plugin.client;
+package fr.cnes.regards.modules.search.rest.representation;

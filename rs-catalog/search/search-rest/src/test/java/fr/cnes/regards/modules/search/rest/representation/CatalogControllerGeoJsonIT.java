@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.rest.representation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +13,17 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -31,6 +35,8 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.search.rest.CatalogController;
+import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 
 /**
  * Integration test for {@link CatalogController}
@@ -39,12 +45,12 @@ import fr.cnes.regards.modules.models.client.IAttributeModelClient;
  */
 @TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
-public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
+public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(CatalogControllerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CatalogControllerGeoJsonIT.class);
 
     /**
      * The mock attribute model client
@@ -188,7 +194,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
                                                         Matchers.is("mycollection")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
         RequestParamBuilder builder = RequestParamBuilder.build()
@@ -219,9 +225,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
                                                         Matchers.is("mydataset")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[1].content.label",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[1].content.label",
                                                         Matchers.is("mydataset")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
         RequestParamBuilder builder = RequestParamBuilder.build()
@@ -255,7 +261,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
                                                         Matchers.is("mydataobject")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
@@ -308,7 +314,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
                                                         Matchers.is("mydocument")));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DOCUMENT);
@@ -326,7 +332,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
                                                         Matchers.is("mydataset")));
 
         RequestParamBuilder builder = RequestParamBuilder.build()
@@ -349,10 +355,10 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
                                                         Matchers.is("self")));
         expectations
-                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
                                                     Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
@@ -374,9 +380,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
                                                         Matchers.is("next")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
                                                         Matchers.startsWith("http://localhost/dataobjects/search?q")));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
@@ -390,6 +396,20 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Override
     protected Logger getLogger() {
         return LOG;
+    }
+
+    @Override
+    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final Object... pUrlVars) {
+
+        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
+                                                                                            pUrlVars);
+        addSecurityHeader(requestBuilder, pAuthToken);
+
+        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
+        requestBuilder.header(HttpConstants.ACCEPT, "application/geo+json");
+
+        return requestBuilder;
     }
 
 }
