@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -30,6 +31,8 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -74,7 +77,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     private IProjectUserRepository projectUserRepository;
 
     @Autowired
-    IRoleRepository roleRepository;
+    private IRoleRepository roleRepository;
 
     /**
      * Security token to access ADMIN_INSTANCE endpoints
