@@ -18,39 +18,39 @@
 	
 
 	<modules>
-		<module>helloworld-domain</module>
-		<module>helloworld-client</module>
-		<module>helloworld-dao</module>
-		<module>helloworld-rest</module>
-		<module>helloworld-service</module>
+		<module>helloworld-module-domain</module>
+		<module>helloworld-module-client</module>
+		<module>helloworld-module-dao</module>
+		<module>helloworld-module-rest</module>
+		<module>helloworld-module-service</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
 			<!-- Module layers -->
 			<dependency>
-				<groupId>fr.cnes.regards.modules.helloworld</groupId>
-				<artifactId>helloworld-dao</artifactId>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>helloworld-module-dao</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.helloworld</groupId>
-				<artifactId>helloworld-domain</artifactId>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>helloworld-module-domain</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.helloworld</groupId>
-				<artifactId>helloworld-rest</artifactId>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>helloworld-module-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.helloworld</groupId>
-				<artifactId>helloworld-service</artifactId>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>helloworld-module-service</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.helloworld</groupId>
-				<artifactId>helloworld-client</artifactId>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>helloworld-module-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

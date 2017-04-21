@@ -4,25 +4,25 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.helloworld</groupId>
-	<artifactId>helloworld-service</artifactId>
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>helloworld-module-service</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>helloworld</artifactId>
+		<artifactId>helloworld-module</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.helloworld</groupId>
-			<artifactId>helloworld-dao</artifactId>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>helloworld-module-dao</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.helloworld</groupId>
-			<artifactId>helloworld-domain</artifactId>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>helloworld-module-domain</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>

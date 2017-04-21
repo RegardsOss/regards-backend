@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.helloworldmodule.service.GreetingsService;
  *
  */
 @RestController
-@ModuleInfo(name="helloworldmodule", version="1.0.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name="helloworld-module-rest", version="1.0.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 

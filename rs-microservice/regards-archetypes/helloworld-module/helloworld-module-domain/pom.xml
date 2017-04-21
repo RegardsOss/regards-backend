@@ -4,26 +4,26 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.helloworld</groupId>
-	<artifactId>helloworld-client</artifactId>
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>helloworld-module-domain</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>helloworld</artifactId>
+		<artifactId>helloworld-module</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
+			<artifactId>regards-core-jpa-data</artifactId>
 		</dependency>
-		<!-- Module domain -->
+		<!-- Test -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.helloworld</groupId>
-			<artifactId>helloworld-domain</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

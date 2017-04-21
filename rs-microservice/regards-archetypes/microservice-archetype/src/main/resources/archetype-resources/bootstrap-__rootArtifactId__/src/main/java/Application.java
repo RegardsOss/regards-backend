@@ -13,12 +13,12 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * 
- * Start microservice helloworldmicroservice
+ * Start microservice ${parentArtifactId}
  * @author TODO
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "helloworldmicroservice", version = "${version}")
+@MicroserviceInfo(name = "${parentArtifactId}", version = "${version}")
 public class Application {
 
     /**

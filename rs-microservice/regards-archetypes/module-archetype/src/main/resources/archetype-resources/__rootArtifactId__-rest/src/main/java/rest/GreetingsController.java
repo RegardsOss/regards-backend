@@ -33,7 +33,7 @@ import ${package}.service.GreetingsService;
  *
  */
 @RestController
-@ModuleInfo(name="${parentArtifactId}module", version="${version}", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name="${parentArtifactId}-rest", version="${version}", author="REGARDS", legalOwner="CS", documentation="http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 
