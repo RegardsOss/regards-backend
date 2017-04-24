@@ -458,7 +458,6 @@ public class RoleService implements IRoleService {
      * @return pCandantite if there is no better choice, one of its descendants otherwise
      */
     private Role searchBetterParent(final Role pCandidate, final List<Role> pNativesWithSameAccesses) {
-
         // we have at most one son as the hierarchy of native roles is a linear. Moreover, we are looking for the son of
         // the candidate because he is less likely to have his accesses reduced in the future.
         final Optional<Role> sonsOfCandidateAmongNativesWithSameAccesses = pNativesWithSameAccesses.stream()
@@ -531,7 +530,7 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Return true if {@link pRole} is an ancestor of {@link pOther} through the {@link Role#getParentRole()} chain.
+     * Return true if pRole is an ancestor of pOther through the {@link Role#getParentRole()} chain.
      */
     @Override
     public boolean isHierarchicallyInferior(final Role pRole, final Role pOther) {
@@ -612,7 +611,7 @@ public class RoleService implements IRoleService {
     public void removeResourcesAccesses(final String pRoleName, final ResourcesAccess... pResourcesAccesses)
             throws EntityException {
 
-        final Optional<Role> roleOpt = roleRepository.findOneByName(pRoleName);
+        final Optional<Role> roleOpt = roleRepository.findByName(pRoleName);
 
         if (!roleOpt.isPresent()) {
             throw new EntityNotFoundException(pRoleName, Role.class);
