@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
@@ -142,8 +143,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
 
     @Override
     public Collection<PluginConfiguration> findAllByInterfaceNameOrderByPriorityOrderDesc(String pName) {
-        // TODO Auto-generated method stub
-        return null;
+        return getEntities().stream().filter(e -> e.getInterfaceName().equals(pName)).collect(Collectors.toList());
     }
 
 }
