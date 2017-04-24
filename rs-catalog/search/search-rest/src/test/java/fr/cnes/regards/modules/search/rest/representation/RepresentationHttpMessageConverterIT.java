@@ -89,7 +89,8 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         esRepository.save(DEFAULT_TENANT, COLLECTION);
     }
 
-    @Requirement("REGARDS_DSL_STO_ARC_030")
+    @Requirement("REGARDS_DSL_DAM_ARC_210")
+    @Requirement("REGARDS_DSL_DAM_ARC_230")
     @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     @Test
     public void test() throws ModuleException, InterruptedException {
