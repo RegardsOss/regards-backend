@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsITWithoutMockedCots;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
@@ -87,6 +89,8 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         esRepository.save(DEFAULT_TENANT, COLLECTION);
     }
 
+    @Requirement("REGARDS_DSL_STO_ARC_030")
+    @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     @Test
     public void test() throws ModuleException, InterruptedException {
         // lets get a collection as geo+json
