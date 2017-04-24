@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -21,10 +22,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsITWithoutMockedCots;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -43,9 +43,8 @@ import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
  *
  * @author Xavier-Alexandre Brochard
  */
-@TestPropertySource(locations = { "classpath:test.properties" })
-@MultitenantTransactional
-public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
+@TestPropertySource(locations = { "classpath:dao.properties", "classpath:test-representation.properties" })
+public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCots {
 
     /**
      * Class logger
@@ -101,6 +100,15 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     public static final Document DOCUMENT = new Document(null, DEFAULT_TENANT, "mydocument");
 
+    // @BeforeTransaction
+    // protected void beforeTransaction() {
+    // injectToken();
+    // }
+    //
+    // private void injectToken() {
+    // jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
+    // }
+
     /**
      * @throws java.lang.Exception
      */
@@ -132,6 +140,12 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         esRepository.save(DEFAULT_TENANT, DATAOBJECT);
         esRepository.save(DEFAULT_TENANT, DOCUMENT);
         esRepository.refresh(DEFAULT_TENANT);
+        Thread.sleep(10000);
+    }
+
+    @After
+    public void cleanUp() {
+        esRepository.deleteIndex(DEFAULT_TENANT);
     }
 
     /**
@@ -379,11 +393,13 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
-                                                        Matchers.is("next")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
-                                                        Matchers.startsWith("http://localhost/dataobjects/search?q")));
+                                                        Matchers.either(Matchers.is("next")).or(Matchers.is("self"))));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
+                          Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
+                                  .or(Matchers.startsWith("http://localhost/datasets/"))));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);

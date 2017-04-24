@@ -375,9 +375,11 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
-                                                        Matchers.is("next")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
-                                                        Matchers.startsWith("http://localhost/dataobjects/search?q")));
+                                                        Matchers.either(Matchers.is("next")).or(Matchers.is("self"))));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+                          Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
+                                  .or(Matchers.startsWith("http://localhost/datasets/"))));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);

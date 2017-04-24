@@ -58,12 +58,6 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     private static final Logger LOG = LoggerFactory.getLogger(RepresentationHttpMessageConverter.class);
 
     /**
-     * Default media type the system should return: GeoJSON
-     */
-    private static final MediaType DEFAULT_MEDIA_TYPE = new MediaType("application", "geo+json",
-            StandardCharsets.UTF_8);
-
-    /**
      * TypeToken used to recognize AbstractEntity
      */
     private static final TypeToken<? extends AbstractEntity> ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<AbstractEntity>() {
@@ -124,6 +118,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         this.tenantResolver = tenantResolver;
         this.tenantsResolver = tenantsResolver;
         pluginService = pPluginService;
+        pluginService.addPluginPackage(IRepresentation.class.getPackage().getName());
         this.subscriber = subscriber;
         enabledRepresentationPluginMapByTenant = Collections.synchronizedMap(new HashMap<>());
         for (String tenant : tenantsResolver.getAllActiveTenants()) {

@@ -149,7 +149,8 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         acceptToUse = "application/geo+json";
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().bytes(TestController.TEST_BODY.getBytes()));
+        // \" and \" are to be added because the body is "..." and not just the string
+        expectations.add(MockMvcResultMatchers.content().bytes(("\"" + TestController.TEST_BODY + "\"").getBytes()));
         performDefaultGet(TestController.TEST_PATH, expectations, "error getting the test hello world");
     }
 

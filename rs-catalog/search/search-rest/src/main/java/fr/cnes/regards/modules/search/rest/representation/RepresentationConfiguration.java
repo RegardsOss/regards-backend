@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.search.rest.representation;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -34,6 +37,8 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
 
     private static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
 
+    private static final Logger LOG = LoggerFactory.getLogger(RepresentationConfiguration.class);
+
     @Autowired
     private IPluginService pluginService;
 
@@ -44,19 +49,28 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
     private ITenantResolver tenantsResolver;
 
     @Autowired
+    private ISubscriber subscriber;
+
+    @Autowired
     private RepresentationHttpMessageConverter representationHttpMessageConverter;
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        LOG.info("starting to configure http message converters");
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
             tenantResolver.forceTenant(tenant);
             pluginService.addPluginPackage(IRepresentation.class.getPackage().getName());
             pluginService.addPluginPackage(GeoJsonRepresentation.class.getPackage().getName());
             setDefaultPluginConfiguration();
         }
-        super.configureMessageConverters(converters);
+        // try {
+        // converters.add(new RepresentationHttpMessageConverter(pluginService, tenantResolver, tenantsResolver,
+        // subscriber));
+        // } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        // throw new RuntimeException(e); // NOSONAR: if the converter was a component we would have the same behaviour
+        // }
         converters.add(representationHttpMessageConverter);
-
+        super.configureMessageConverters(converters);
     }
 
     private void setDefaultPluginConfiguration() {
