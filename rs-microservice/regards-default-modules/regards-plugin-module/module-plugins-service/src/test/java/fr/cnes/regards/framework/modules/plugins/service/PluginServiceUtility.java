@@ -10,12 +10,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 
 /***
  * Constants and datas for unit testing of plugin's Service.
  *
  * @author Christophe Mertz
- *
  */
 public class PluginServiceUtility {
 
@@ -132,30 +132,31 @@ public class PluginServiceUtility {
     /**
      * A {@link PluginConfiguration}
      */
-    private PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
             "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
      */
-    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
             "second configuration", DYNAMICPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} without parameters.
      */
-    private PluginConfiguration pluginConfiguration3 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
             "third configuration", CINQ);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
      */
-    private PluginConfiguration pluginConfiguration4 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration4 = new PluginConfiguration(getPluginMetaData(),
             "fourth configuration", DYNAMICPARAMETERS_TO_UPDATE, 0);
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
+        pluginMetaData.setInterfaceName(IComplexInterfacePlugin.class.getName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

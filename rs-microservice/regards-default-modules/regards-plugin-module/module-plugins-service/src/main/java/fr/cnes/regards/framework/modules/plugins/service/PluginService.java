@@ -239,11 +239,13 @@ public class PluginService implements IPluginService {
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
         final List<PluginConfiguration> configurations = new ArrayList<>();
-
-        final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
-
-        pluginImpls.forEach(pMetaData -> configurations
-                .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
+        //
+        // final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
+        //
+        // pluginImpls.forEach(pMetaData -> configurations
+        // .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
+        configurations.addAll(pluginConfRepository
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(pInterfacePluginType.getName()));
         return configurations;
     }
 

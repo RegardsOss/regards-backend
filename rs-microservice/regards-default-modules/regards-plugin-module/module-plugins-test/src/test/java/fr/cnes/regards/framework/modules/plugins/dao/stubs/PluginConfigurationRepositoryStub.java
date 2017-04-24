@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.modules.plugins.dao.stubs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -136,6 +137,12 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
         if (conf.isPresent()) {
             return conf.get();
         }
+        return null;
+    }
+
+    @Override
+    public Collection<PluginConfiguration> findAllByInterfaceNameOrderByPriorityOrderDesc(String pName) {
+        // TODO Auto-generated method stub
         return null;
     }
 

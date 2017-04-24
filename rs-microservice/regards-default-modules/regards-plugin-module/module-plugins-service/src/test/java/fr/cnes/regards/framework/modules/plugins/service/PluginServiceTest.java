@@ -274,7 +274,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         pluginConfs.add(getPluginConfigurationWithParameters());
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         final List<PluginConfiguration> results = pluginServiceMocked
                 .getPluginConfigurationsByType(IComplexInterfacePlugin.class);
@@ -325,7 +326,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -381,7 +383,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -414,7 +417,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -449,7 +453,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -485,7 +490,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -524,7 +530,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -552,7 +559,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -585,7 +593,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
@@ -618,7 +627,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginConfRepositoryMocked
+                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
