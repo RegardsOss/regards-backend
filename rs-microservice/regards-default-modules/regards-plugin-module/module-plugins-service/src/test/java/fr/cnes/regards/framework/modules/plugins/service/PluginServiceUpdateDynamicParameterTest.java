@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -21,7 +22,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Unit testing of {@link PluginService}.
  *
  * @author Christophe Mertz
@@ -45,7 +45,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
     public void init() {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class));
     }
 
     /**
@@ -58,8 +58,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-            Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
@@ -108,8 +107,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-            Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 

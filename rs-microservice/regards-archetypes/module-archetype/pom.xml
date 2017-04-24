@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>fr.cnes.regards.modules</groupId>
-  <artifactId>helloworld-archetype</artifactId>
+  <artifactId>helloworld-module-archetype</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>maven-archetype</packaging>
 
-  <name>helloworld-archetype</name>
+  <name>helloworld-module-archetype</name>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
@@ -37,11 +37,4 @@
 
   <url>https://github.com/RegardsOss/RegardsOss.github.io/helloworld</url>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>archiva-snapshots</id>
-      <name>Archiva Managed Snapshot Repository</name>
-      <url>http://172.26.46.158:8010/repository/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
 </project>

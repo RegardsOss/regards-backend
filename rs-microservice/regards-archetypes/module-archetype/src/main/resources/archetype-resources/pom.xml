@@ -17,27 +17,27 @@
 		<dependencies>
 			<!-- Module layers -->
 			<dependency>
-				<groupId>${groupId}.helloworld</groupId>
+				<groupId>${groupId}</groupId>
 				<artifactId>${rootArtifactId}-dao</artifactId>
 				<version>${version}</version>
 			</dependency>
 			<dependency>
-				<groupId>${groupId}.helloworld</groupId>
+				<groupId>${groupId}</groupId>
 				<artifactId>${rootArtifactId}-domain</artifactId>
 				<version>${version}</version>
 			</dependency>
 			<dependency>
-				<groupId>${groupId}.helloworld</groupId>
+				<groupId>${groupId}</groupId>
 				<artifactId>${rootArtifactId}-rest</artifactId>
 				<version>${version}</version>
 			</dependency>
 			<dependency>
-				<groupId>${groupId}.helloworld</groupId>
+				<groupId>${groupId}</groupId>
 				<artifactId>${rootArtifactId}-service</artifactId>
 				<version>${version}</version>
 			</dependency>
 			<dependency>
-				<groupId>${groupId}.helloworld</groupId>
+				<groupId>${groupId}</groupId>
 				<artifactId>${rootArtifactId}-client</artifactId>
 				<version>${version}</version>
 			</dependency>

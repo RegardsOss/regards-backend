@@ -1,10 +1,7 @@
-#set( $symbol_pound = '#' )
-#set( $symbol_dollar = '$' )
-#set( $symbol_escape = '\' )
 /*
  * LICENSE_PLACEHOLDER
  */
-package ${package}.rest;
+package fr.cnes.regards.modules.helloworldmodule.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -21,8 +18,8 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import ${package}.domain.Greeting;
-import ${package}.service.GreetingsService;
+import fr.cnes.regards.modules.helloworldmodule.domain.Greeting;
+import fr.cnes.regards.modules.helloworldmodule.service.GreetingsService;
 
 /**
  * REST module controller
@@ -33,7 +30,7 @@ import ${package}.service.GreetingsService;
  *
  */
 @RestController
-@ModuleInfo(name="${parentArtifactId}-rest", version="${version}", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name="helloworld-module-rest", version="1.0.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 

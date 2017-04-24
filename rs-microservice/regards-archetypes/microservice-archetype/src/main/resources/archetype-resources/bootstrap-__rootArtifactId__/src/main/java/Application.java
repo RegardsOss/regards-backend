@@ -1,7 +1,10 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.microservices.helloworldmicroservice;
+package ${package};
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,12 +13,12 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * 
- * Start microservice helloworld-microservice
+ * Start microservice ${parentArtifactId}
  * @author TODO
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "helloworld-microservice", version = "1.0.0-SNAPSHOT")
+@MicroserviceInfo(name = "${parentArtifactId}", version = "${version}")
 public class Application {
 
     /**

@@ -5,8 +5,10 @@ package fr.cnes.regards.framework.modules.plugins.dao.stubs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
@@ -25,7 +27,6 @@ import fr.cnes.regards.framework.test.repository.RepositoryStub;
  *
  * @author Christophe Mertz
  * @author Sébastien Binda
- *
  */
 @Repository
 @Primary
@@ -126,7 +127,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
 
     @Override
     public PluginConfiguration findById(Long pId) {
-        return null;
+        return getEntities().stream().filter(e -> e.getId().equals(pId)).findFirst().orElse(null);
     }
 
     @Override
@@ -138,6 +139,11 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
             return conf.get();
         }
         return null;
+    }
+
+    @Override
+    public Collection<PluginConfiguration> findAllByInterfaceNameOrderByPriorityOrderDesc(String pName) {
+        return getEntities().stream().filter(e -> e.getInterfaceName().equals(pName)).collect(Collectors.toList());
     }
 
 }
