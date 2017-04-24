@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.event.ResourceAccessEvent;
 import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -211,11 +212,7 @@ public class RoleService implements IRoleService {
         if (existByName(pNewRole.getName())) {
             throw new EntityAlreadyExistsException(pNewRole.getName());
         }
-        Role newRole = roleRepository.save(pNewRole);
-        // Inform security starter
-        publishRoleEvent(newRole);
-        // And return new created role
-        return newRole;
+        return saveAndPublish(pNewRole);
     }
 
     @Override
@@ -253,10 +250,8 @@ public class RoleService implements IRoleService {
             newCreatedRole = roleRepository.save(newCreatedRole);
             newCreatedRole.setPermissions(Sets.newHashSet(parentRole.getPermissions()));
         }
-        Role newRole = roleRepository.save(newCreatedRole);
-        // Inform security starter
-        publishRoleEvent(newRole);
-        return newRole;
+        // Save permissions
+        return saveAndPublish(newCreatedRole);
     }
 
     @Override
@@ -273,7 +268,7 @@ public class RoleService implements IRoleService {
         if (!existRole(pUpdatedRole)) {
             throw new EntityNotFoundException(pRoleName, Role.class);
         }
-        return roleRepository.save(pUpdatedRole);
+        return saveAndPublish(pUpdatedRole);
     }
 
     @Override
@@ -283,8 +278,9 @@ public class RoleService implements IRoleService {
             throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
         } else if (previous == null) {
             throw new EntityNotFoundException(pRoleId, Role.class);
+        } else {
+            deleteAndPublish(previous);
         }
-        roleRepository.delete(pRoleId);
     }
 
     @Override
@@ -295,7 +291,7 @@ public class RoleService implements IRoleService {
         } else if (role.get().isNative()) {
             throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
         } else {
-            roleRepository.delete(role.get().getId());
+            deleteAndPublish(role.get());
         }
 
     }
@@ -367,8 +363,29 @@ public class RoleService implements IRoleService {
             changeParent(descendant, nativeDescendants);
             roleRepository.save(descendant);
         }
+
+        // Compute concerned microservices
+        Set<String> microservices = new HashSet<>();
+        for (ResourcesAccess ra : pNewOnes) {
+            microservices.add(ra.getMicroservice());
+        }
+        // Publish an event for each microservice
+        microservices.forEach(this::publishResourceAccessEvent);
     }
 
+    /**
+     * Inform security starter an (or many) access(es) changed
+     *
+     * @param microservice
+     *            concerned microservice (not current! the origin of the resource access endpoint)
+     */
+    private void publishResourceAccessEvent(String microservice) {
+        ResourceAccessEvent raEvent = new ResourceAccessEvent();
+        raEvent.setMicroservice(microservice);
+        publisher.publish(raEvent);
+    }
+
+    // FIXME clean method? or not?
     /**
      * Used with {@link RoleService#addResourceAccesses(Role, Set)} so we just need to get the descendants of a given
      * role until our actual role as we cannot add accesses that we do not have.
@@ -540,10 +557,10 @@ public class RoleService implements IRoleService {
         final Set<Role> inheritedRoles = roleRepository.findByParentRoleName(pRole.getName());
         if (inheritedRoles != null) {
 
-            inheritedRoles.forEach(r -> results.add(r));
+            inheritedRoles.forEach(results::add);
 
             for (final Role role : inheritedRoles) {
-                retrieveInheritedRoles(role).forEach(r -> results.add(r));
+                retrieveInheritedRoles(role).forEach(results::add);
             }
         }
         return results;
@@ -678,5 +695,16 @@ public class RoleService implements IRoleService {
         RoleEvent roleEvent = new RoleEvent();
         roleEvent.setRole(role.getName());
         publisher.publish(roleEvent);
+    }
+
+    private Role saveAndPublish(Role role) {
+        Role savedRole = roleRepository.save(role);
+        publishRoleEvent(role);
+        return savedRole;
+    }
+
+    private void deleteAndPublish(Role role) {
+        roleRepository.delete(role);
+        publishRoleEvent(role);
     }
 }
