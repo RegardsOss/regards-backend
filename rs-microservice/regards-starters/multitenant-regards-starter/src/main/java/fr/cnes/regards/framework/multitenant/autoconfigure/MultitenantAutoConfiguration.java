@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.LocalTenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
 import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 
 /**
@@ -34,7 +34,7 @@ public class MultitenantAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean
     public ITenantResolver tenantResolver() {
-        return new LocalTenantResolver();
+        return new DefaultTenantResolver();
     }
 
     /**

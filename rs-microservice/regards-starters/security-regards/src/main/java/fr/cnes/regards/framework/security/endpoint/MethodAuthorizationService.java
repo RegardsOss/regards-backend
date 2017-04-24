@@ -12,13 +12,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -43,7 +45,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * @since 1.0-SNAPSHOT
  *
  */
-public class MethodAuthorizationService {
+public class MethodAuthorizationService implements ApplicationContextAware, ApplicationListener<ApplicationReadyEvent> {
 
     /**
      * Class logger
@@ -53,20 +55,17 @@ public class MethodAuthorizationService {
     /**
      * Plugin resource manager. To handle plugins endpoints specific resources.
      */
-    @Autowired
     private IPluginResourceManager pluginResourceManager;
-
-    /**
-     * Provider for authorities
-     */
-    @Autowired
-    private IAuthoritiesProvider authoritiesProvider;
 
     /**
      * Tenant resolver
      */
-    @Autowired
     private ITenantResolver tenantResolver;
+
+    /**
+     * Role and resource access manager
+     */
+    private IAuthoritiesProvider authoritiesProvider;
 
     /**
      * Curent microservice name
@@ -86,20 +85,25 @@ public class MethodAuthorizationService {
     private final Map<String, List<RoleAuthority>> grantedRolesIpAddressesByTenant = new HashMap<>();
 
     /**
-     * After bean construction
-     *
-     * @throws SecurityException
-     *             if error occurs
-     *
+     * Spring application context
      */
-    @PostConstruct
-    public void init() throws SecurityException {
-        // Init all authorities
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            // Register microservice resources for all configured tenant
-            registerMethodResourcesAccessByTenant(tenant);
-            // Collect role authorities
-            collectRolesByTenant(tenant);
+    private ApplicationContext applicationContext;
+
+    /**
+     * Initialize security cache as soon as the application is ready.
+     */
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+        try {
+            // Init all authorities
+            for (String tenant : getTenantResolver().getAllActiveTenants()) {
+                // Register microservice resources for all configured tenant
+                registerMethodResourcesAccessByTenant(tenant);
+                // Collect role authorities
+                collectRolesByTenant(tenant);
+            }
+        } catch (SecurityException e) {
+            LOG.error("Cannot initialize role authorities, no access set", e);
         }
     }
 
@@ -114,8 +118,8 @@ public class MethodAuthorizationService {
      * @since 1.0-SNAPSHOT
      */
     public void registerMethodResourcesAccessByTenant(String pTenant) throws SecurityException {
-        final List<ResourceMapping> resources = authoritiesProvider.registerEndpoints(microserviceName, pTenant,
-                                                                                      getResources());
+        final List<ResourceMapping> resources = getAuthoritiesProvider().registerEndpoints(microserviceName, pTenant,
+                                                                                           getResources());
         if (grantedAuthoritiesByTenant.get(pTenant) != null) {
             grantedAuthoritiesByTenant.get(pTenant).clear();
         }
@@ -135,7 +139,8 @@ public class MethodAuthorizationService {
      * @since 1.0-SNAPSHOT
      */
     public void collectRolesByTenant(String pTenant) throws SecurityException {
-        final List<RoleAuthority> roleAuthorities = authoritiesProvider.getRoleAuthorities(microserviceName, pTenant);
+        final List<RoleAuthority> roleAuthorities = getAuthoritiesProvider().getRoleAuthorities(microserviceName,
+                                                                                                pTenant);
         if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
             grantedRolesIpAddressesByTenant.get(pTenant).clear();
         }
@@ -192,9 +197,9 @@ public class MethodAuthorizationService {
             if (AnnotationUtils.findAnnotation(pMethod, ResourceAccess.class) != null) {
                 final ResourceMapping mapping = MethodAuthorizationUtils.buildResourceMapping(pMethod);
 
-                if (!mapping.getResourceAccess().plugin().equals(Void.class) && (pluginResourceManager != null)) {
+                if (!mapping.getResourceAccess().plugin().equals(Void.class) && (getPluginResourceManager() != null)) {
                     // Manage specific plugin endpoints
-                    mappings.addAll(pluginResourceManager.manageMethodResource(mapping));
+                    mappings.addAll(getPluginResourceManager().manageMethodResource(mapping));
                 } else {
                     mappings.add(mapping);
                 }
@@ -379,5 +384,37 @@ public class MethodAuthorizationService {
             }
         }
         return Optional.empty();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
+     * ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext pApplicationContext) throws BeansException {
+        this.applicationContext = pApplicationContext;
+    }
+
+    public IAuthoritiesProvider getAuthoritiesProvider() {
+        if (authoritiesProvider == null) {
+            authoritiesProvider = applicationContext.getBean(IAuthoritiesProvider.class);
+        }
+        return authoritiesProvider;
+    }
+
+    public ITenantResolver getTenantResolver() {
+        if (tenantResolver == null) {
+            tenantResolver = applicationContext.getBean(ITenantResolver.class);
+        }
+        return tenantResolver;
+    }
+
+    public IPluginResourceManager getPluginResourceManager() {
+        if (pluginResourceManager == null) {
+            pluginResourceManager = applicationContext.getBean(IPluginResourceManager.class);
+        }
+        return pluginResourceManager;
     }
 }

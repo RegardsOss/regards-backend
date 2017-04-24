@@ -67,7 +67,7 @@ public class DataSourcesAutoConfiguration {
      * Custom projects dao connection reader
      */
     @Autowired
-    private ITenantConnectionResolver multitenantResolver;
+    private ITenantConnectionResolver tenantConnectionResolver;
 
     /**
      *
@@ -84,7 +84,7 @@ public class DataSourcesAutoConfiguration {
         Map<String, DataSource> datasources = new HashMap<>();
 
         // Retrieve microservice tenant connections from multitenant resolver
-        List<TenantConnection> connections = multitenantResolver.getTenantConnections(microserviceName);
+        List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(microserviceName);
         // Initialize tenant connections
         initDataSources(datasources, connections, false);
         // Add static datasource configuration from properties file if necessary
@@ -119,7 +119,7 @@ public class DataSourcesAutoConfiguration {
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
                     // Register connection
                     if (pNeedRegistration) {
-                        multitenantResolver.addTenantConnection(microserviceName, tenantConnection);
+                        tenantConnectionResolver.addTenantConnection(microserviceName, tenantConnection);
                     }
                     // Register data source
                     pExistingDataSources.put(tenantConnection.getTenant(), dataSource);

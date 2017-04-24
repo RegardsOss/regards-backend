@@ -82,6 +82,12 @@ public abstract class AbstractJpaAutoConfiguration {
     private DataSource instanceDataSource;
 
     /**
+     * Transaction manager builder
+     */
+    @Autowired
+    private EntityManagerFactoryBuilder builder;
+
+    /**
      *
      * Constructor. Check for classpath errors.
      *
@@ -103,9 +109,9 @@ public abstract class AbstractJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
-    public PlatformTransactionManager instanceJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager instanceJpaTransactionManager() {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(instanceEntityManagerFactory(pBuilder).getObject());
+        jtm.setEntityManagerFactory(instanceEntityManagerFactory().getObject());
         return jtm;
     }
 
@@ -120,8 +126,7 @@ public abstract class AbstractJpaAutoConfiguration {
      */
     @Bean
     @Primary
-    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(
-            final EntityManagerFactoryBuilder pBuilder) {
+    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory() {
 
         final Map<String, Object> hibernateProps = new LinkedHashMap<>();
         hibernateProps.putAll(jpaProperties.getHibernateProperties(instanceDataSource));
@@ -141,7 +146,7 @@ public abstract class AbstractJpaAutoConfiguration {
         List<Class<?>> packages;
         packages = DaoUtils.scanPackagesForJpa(getEntityAnnotationScan(), null, packagesToScan);
 
-        return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
+        return builder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
     }

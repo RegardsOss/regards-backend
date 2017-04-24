@@ -175,7 +175,7 @@ public class MethodAuthorizationServiceTest {
 
         final String resourcePath = "new/path";
         final int expectedResult = 6;
-        methodAuthService.init();
+        methodAuthService.onApplicationEvent(null);
         methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, "Controller", RequestMethod.GET,
                                          "TEST_ROLE", "TEST_ROLE_2");
 
