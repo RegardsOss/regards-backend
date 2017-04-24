@@ -210,10 +210,11 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDatasets(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+     * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
      */
     @Test
+    @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
+    @Requirement("REGARDS_DSL_DAM_CAT_620")
     public final void testSearchDatasets_shouldFindTwoWithoutFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());

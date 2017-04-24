@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
@@ -18,6 +19,8 @@ import org.springframework.hateoas.Resource;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -99,6 +102,43 @@ public class CatalogSearchServiceTest {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
         String q = SampleDataUtils.QUERY;
         Map<String, FacetType> facets = SampleDataUtils.FACETS;
+        PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
+        Pageable pageable = SampleDataUtils.PAGEABLE;
+
+        // Define expected values
+        ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
+        Page<DataObject> expectedSearchResult = SampleDataUtils.PAGE_DATAOBJECT;
+
+        // Mock dependencies
+        Mockito.when(queryParser.parse(q)).thenReturn(expectedCriterion);
+        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
+                                          Mockito.any(ICriterion.class), Mockito.any()))
+                .thenReturn(expectedSearchResult);
+        PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
+        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+
+        // Perform the test
+        catalogSearchService.search(q, searchKey, facets, pageable);
+
+        // Check
+        Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets);
+    }
+
+    /**
+     * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
+     *
+     * @throws SearchException
+     * @throws QueryNodeException
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
+    @Requirement("REGARDS_DSL_DAM_CAT_620")
+    public void doSearch_withNoFacet() throws SearchException, QueryNodeException {
+        // Prepare test
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
+        String q = SampleDataUtils.QUERY;
+        Map<String, FacetType> facets = new HashMap<>();
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
