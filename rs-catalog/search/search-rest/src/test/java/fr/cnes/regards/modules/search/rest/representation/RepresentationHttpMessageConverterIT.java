@@ -89,11 +89,10 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         esRepository.save(DEFAULT_TENANT, COLLECTION);
     }
 
-    @Requirement("REGARDS_DSL_STO_ARC_030")
-    @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     @Test
+    @Requirement("REGARDS_DSL_STO_ARC_030")
     @Requirement("REGARDS_DSL_SYS_ARC_220")
-    @Purpose("When a HTTP request GET a not activate plugin configuration, the HTTP return code is 406")
+    @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     public void test() throws ModuleException, InterruptedException {
         // lets get a collection as geo+json
         acceptToUse = "application/geo+json";
