@@ -97,6 +97,7 @@ public class CatalogSearchServiceTest {
      */
     @SuppressWarnings("unchecked")
     @Test
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void doSearch_shouldPerformASimpleSearch() throws SearchException, QueryNodeException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
