@@ -127,6 +127,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
         instanceSubscriber.subscribeTo(TenantConnectionConfigurationUpdated.class, new ConfigurationUpdatedHandler());
         // Listen to tenant connection deletion
         instanceSubscriber.subscribeTo(TenantConnectionConfigurationDeleted.class, new ConfigurationDeletedHandler());
+        // Listen to tenant connection failure
+        instanceSubscriber.subscribeTo(TenantConnectionFailed.class, new TenantConnectionFailedHandler());
     }
 
     /**
@@ -285,6 +287,38 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 } catch (SQLException e) {
                     LOGGER.error("Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
                                  tenantConnection.getTenant());
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle {@link TenantConnection} fail event
+     *
+     * @author Marc Sordi
+     *
+     */
+    private class TenantConnectionFailedHandler implements IHandler<TenantConnectionFailed> {
+
+        @Override
+        public void handle(TenantWrapper<TenantConnectionFailed> pEvent) {
+
+            if ((pEvent.getContent() != null) && microserviceName.equals(pEvent.getContent().getMicroserviceName())) {
+                final TenantConnectionFailed tcf = pEvent.getContent();
+                try {
+                    // Remove existing datasource
+                    DataSource oldDataSource = dataSources.remove(tcf.getTenant());
+                    if (oldDataSource != null) {
+                        oldDataSource.getConnection().close();
+                    }
+                    // Disable connection
+                    multitenantResolver.disableTenantConnection(tcf.getMicroserviceName(), tcf.getTenant());
+                } catch (SQLException e) {
+                    LOGGER.error("Cannot release datasource for tenant {}. Cannot close connection", tcf.getTenant());
+                    LOGGER.error(e.getMessage(), e);
+                } catch (JpaMultitenantException e) {
+                    LOGGER.error("Cannot disable datasource for tenant {}. Update fails.", tcf.getTenant());
                     LOGGER.error(e.getMessage(), e);
                 }
             }
