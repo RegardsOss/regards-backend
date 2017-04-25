@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
-import fr.cnes.regards.microservices.administration.MicroserviceAutoConfiguration;
+import fr.cnes.regards.microservices.administration.RemoteTenantAutoConfiguration;
 
 /**
  *
@@ -30,7 +30,7 @@ import fr.cnes.regards.microservices.administration.MicroserviceAutoConfiguratio
 @Ignore("Cannot reach an admin microservice instance in unit test.")
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ContextConfiguration(classes = { JpaTenantConnectionConfiguration.class, MicroserviceAutoConfiguration.class })
+@ContextConfiguration(classes = { JpaTenantConnectionConfiguration.class, RemoteTenantAutoConfiguration.class })
 public class JpaTenantConnectionTest {
 
     /**

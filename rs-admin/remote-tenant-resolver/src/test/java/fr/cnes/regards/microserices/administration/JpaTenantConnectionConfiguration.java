@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
-import fr.cnes.regards.microservices.administration.MicroserviceClientsAutoConfiguration;
+import fr.cnes.regards.microservices.administration.RemoteClientAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableAutoConfiguration(exclude = { MicroserviceClientsAutoConfiguration.class, DataSourceAutoConfiguration.class })
+@EnableAutoConfiguration(exclude = { RemoteClientAutoConfiguration.class, DataSourceAutoConfiguration.class })
 @PropertySource("classpath:dao.properties")
 public class JpaTenantConnectionConfiguration {
 

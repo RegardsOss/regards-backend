@@ -5,6 +5,7 @@ package fr.cnes.regards.microservices.administration;
 
 import java.util.List;
 
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -24,20 +25,23 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
-public class MicroserviceTenantConnectionResolver implements ITenantConnectionResolver {
+public class RemoteTenantConnectionResolver extends AbstractDiscoveryClientChecker
+        implements ITenantConnectionResolver {
 
     /**
      * Tenant connection client
      */
     private final ITenantConnectionClient tenantConnectionClient;
 
-    public MicroserviceTenantConnectionResolver(ITenantConnectionClient tenantConnectionClient) {
-        super();
+    public RemoteTenantConnectionResolver(final DiscoveryClient discoveryClient,
+            ITenantConnectionClient tenantConnectionClient) {
+        super(discoveryClient);
         this.tenantConnectionClient = tenantConnectionClient;
     }
 
     @Override
     public List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException {
+
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<List<TenantConnection>> response = tenantConnectionClient

@@ -385,7 +385,6 @@ public class RoleService implements IRoleService {
         publisher.publish(raEvent);
     }
 
-    // FIXME clean method? or not?
     /**
      * Used with {@link RoleService#addResourceAccesses(Role, Set)} so we just need to get the descendants of a given
      * role until our actual role as we cannot add accesses that we do not have.
@@ -398,9 +397,8 @@ public class RoleService implements IRoleService {
         final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
         final Set<Role> descendants = Sets.newHashSet();
         descendants.addAll(sons);
-        final Set<Role> newDescendants = Sets.newHashSet(descendants);
         // for each son get its descendants
-        for (final Role son : descendants) {
+        for (final Role son : sons) {
             descendants.addAll(getDescendants(son));
         }
         return descendants;

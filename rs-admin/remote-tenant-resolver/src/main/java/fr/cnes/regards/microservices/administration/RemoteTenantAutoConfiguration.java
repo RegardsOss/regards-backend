@@ -3,13 +3,13 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
@@ -18,6 +18,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.project.client.rest.ITenantClient;
 import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 
 /**
@@ -31,23 +32,25 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  */
 @Configuration
 @AutoConfigureBefore({ DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class })
-public class MicroserviceAutoConfiguration {
+public class RemoteTenantAutoConfiguration {
+
+    /**
+     * Microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     /**
      *
-     * multintenantResolver
-     *
-     * @param pAdminProjectConnectionClient
-     *            Administraction Rest client
-     * @param pAdminProjectsClient
-     *            Administration Rest Client
-     * @return IMultitenantResolver
-     * @since 1.0-SNAPSHOT
+     * @param tenantConnectionClient
+     *            Feign clien
+     * @return {@link ITenantConnectionResolver}
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    ITenantConnectionResolver multitenantResolver(ITenantConnectionClient tenantConnectionClient) {
-        return new MicroserviceTenantConnectionResolver(tenantConnectionClient);
+    ITenantConnectionResolver multitenantResolver(final DiscoveryClient discoveryClient,
+            final ITenantConnectionClient tenantConnectionClient) {
+        return new RemoteTenantConnectionResolver(discoveryClient, tenantConnectionClient);
     }
 
     /**
@@ -63,9 +66,10 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAuthoritiesProvider authoritiesProvider(final IResourcesClient pResourcesClient, final IRolesClient pRolesClient,
-            IRuntimeTenantResolver runtimeTenantResolver) {
-        return new MicroserviceAuthoritiesProvider(pResourcesClient, pRolesClient, runtimeTenantResolver);
+    IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
+            final IResourcesClient resourcesClient, final IRolesClient rolesClient,
+            final IRuntimeTenantResolver runtimeTenantResolver) {
+        return new RemoteAuthoritiesProvider(discoveryClient, resourcesClient, rolesClient, runtimeTenantResolver);
     }
 
     /**
@@ -81,7 +85,7 @@ public class MicroserviceAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    ITenantResolver tenantResolver(DiscoveryClient pDiscoveryClient, FeignSecurityManager pFeignSecurityManager) {
-        return new RemoteTenantResolver(pDiscoveryClient, pFeignSecurityManager);
+    ITenantResolver tenantResolver(final DiscoveryClient pDiscoveryClient, final ITenantClient tenantClient) {
+        return new RemoteTenantResolver(pDiscoveryClient, tenantClient, microserviceName);
     }
 }

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -41,12 +42,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
-public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
+public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker implements IAuthoritiesProvider {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(MicroserviceAuthoritiesProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAuthoritiesProvider.class);
 
     /**
      * Administration microservice REST client
@@ -75,9 +76,9 @@ public class MicroserviceAuthoritiesProvider implements IAuthoritiesProvider {
      *            runtime tenant resolver
      * @since 1.0-SNAPSHOT
      */
-    public MicroserviceAuthoritiesProvider(final IResourcesClient pResourcesclient, final IRolesClient pRolesClient,
-            final IRuntimeTenantResolver runtimeTenantResolver) {
-        super();
+    public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient, final IResourcesClient pResourcesclient,
+            final IRolesClient pRolesClient, final IRuntimeTenantResolver runtimeTenantResolver) {
+        super(discoveryClient);
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
         this.runtimeTenantResolver = runtimeTenantResolver;

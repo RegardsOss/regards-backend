@@ -24,9 +24,9 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * @since 1.0-SNAPSHOT.
  */
 @Configuration
-@AutoConfigureBefore(MicroserviceAutoConfiguration.class)
+@AutoConfigureBefore(RemoteTenantAutoConfiguration.class)
 @ConditionalOnProperty(name = "regards.cloud.enabled", matchIfMissing = true)
 @EnableFeignClients(
         clients = { IProjectsClient.class, IProjectConnectionClient.class, IResourcesClient.class, IRolesClient.class })
-public class MicroserviceClientsAutoConfiguration {
+public class RemoteClientAutoConfiguration {
 }
