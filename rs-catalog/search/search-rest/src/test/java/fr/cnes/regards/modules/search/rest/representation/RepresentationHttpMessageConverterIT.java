@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsITWithoutMockedCots;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
@@ -88,6 +90,8 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
     }
 
     @Test
+    @Requirement("REGARDS_DSL_SYS_ARC_220")
+    @Purpose("When a HTTP request GET a not activate plugin configuration, the HTTP return code is 406")
     public void test() throws ModuleException, InterruptedException {
         // lets get a collection as geo+json
         acceptToUse = "application/geo+json";
