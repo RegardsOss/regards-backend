@@ -89,6 +89,8 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         esRepository.save(DEFAULT_TENANT, COLLECTION);
     }
 
+    @Requirement("REGARDS_DSL_STO_ARC_030")
+    @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_220")
     @Purpose("When a HTTP request GET a not activate plugin configuration, the HTTP return code is 406")
