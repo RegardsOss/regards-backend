@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 
 /**
@@ -29,6 +31,8 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     private static final Logger LOG = LoggerFactory.getLogger(LinkDatasetsPluginsControllerIT.class);
 
     @Test
+    @Requirement("REGARDS_DSL_DAM_SET_230")
+    @Purpose("The system allows to get the list of plugin's service for a dataset")
     public void retrieveLink() {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -38,6 +42,8 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     }
 
     @Test
+    @Requirement("REGARDS_DSL_DAM_SET_210")
+    @Purpose("The system allows to link a plugin's service to a dataset")
     public void updateLink() {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());

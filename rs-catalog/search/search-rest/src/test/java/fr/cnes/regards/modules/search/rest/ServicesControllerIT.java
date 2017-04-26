@@ -122,5 +122,18 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
                           expectations, "there should not be any error", 1L, conf.getLabel());
     }
+    
+    @Test
+    @Requirement("REGARDS_DSL_CMP_PLG_310")
+    @Purpose("System allows to set a dynamic plugin parameter in the HTPP request")
+    public void testApplyServiceSetSpecificParamValue() {
+        StringJoiner sj = new StringJoiner("&", "?", "");
+        sj.add("q=truc");
+        sj.add("para=HelloWorld");
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
+        performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
+                          expectations, "there should not be any error", 1L, conf.getLabel());
+    }
 
 }

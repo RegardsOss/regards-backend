@@ -167,6 +167,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Le système doit permettre de réaliser une recherche par critères sur l’ensemble du catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_510")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchAll() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -180,6 +182,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Le système doit permettre de fournir des facettes pour toute recherche dans le catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_610")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchAll_withFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -218,6 +222,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose(
             "Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_COL_410")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchCollections_shouldFindOneWithoutFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -302,6 +308,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
     @Requirement("REGARDS_DSL_DAM_CAT_620")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchDatasets_shouldFindTwoWithoutFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -338,6 +346,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(String, Map, Pageable)}.
      */
     @Test
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchDataobjects_shouldFindOneWithFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -392,6 +402,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose(
             "Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchDocuments() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -410,6 +422,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the system can return a sorted page of results.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearch_withSort() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
@@ -430,6 +444,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the system adds a self hateoas link on datasets pointing to the dataset/{urn} endpoint.")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchDatasets_shouldHaveSelfLink() {
         // Prepare authorization
         setAuthorities("/datasets/{urn}", RequestMethod.GET, DEFAULT_ROLE);
@@ -456,6 +472,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose(
             "Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
+    @Requirement("REGARDS_DSL_DAM_ARC_820")
     public final void testSearchDatasets_shouldHaveLinkNavigatingToDataobjects() {
         // Prepare authorization
         setAuthorities("/dataobjects/search", RequestMethod.GET, DEFAULT_ROLE);

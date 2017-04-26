@@ -20,6 +20,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ComparisonOperator;
 import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
@@ -90,6 +91,7 @@ public class RegardsQueryParserTest {
 
     @Test(expected = QueryNodeException.class)
     @Purpose("Tests queries like isTrue:false")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void booleanMatchTest() throws QueryNodeException {
         String field = SampleDataUtils.BOOLEAN_FIELD;
         Boolean value = true;
@@ -99,6 +101,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like altitude:8848")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void intMatchTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_FIELD;
         final Integer value = 8848;
@@ -117,6 +120,7 @@ public class RegardsQueryParserTest {
     @Test
     @SuppressWarnings("unchecked")
     @Purpose("Tests queries like bpm:128.0")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void doubleMatchTest() throws QueryNodeException {
         final String field = SampleDataUtils.DOUBLE_FIELD;
         final Double value = 145.6;
@@ -137,6 +141,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:harrypotter")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void stringMatchTest() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "harrypotter";
@@ -153,6 +158,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:\"harry potter\"")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void stringPhraseMatchTest() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "\"a phrase query\"";
@@ -170,6 +176,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:*potter")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void wildcardLeading() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "*potter";
@@ -186,6 +193,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:harry*")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void wildcardTrailing() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "harry*";
@@ -202,6 +210,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:*rry*")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void wildcardsAound() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "*rry*";
@@ -218,6 +227,7 @@ public class RegardsQueryParserTest {
 
     @Test(expected = QueryNodeException.class)
     @Purpose("Tests queries like title:har*ter")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void wildcardMiddleTest() throws QueryNodeException {
         final String key = SampleDataUtils.STRING_FIELD;
         final String val = "har*ter";
@@ -226,6 +236,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:harrypotter AND author:jkrowling")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void andMatchTest() throws QueryNodeException {
         String key0 = SampleDataUtils.STRING_FIELD;
         String key1 = SampleDataUtils.STRING_FIELD_1;
@@ -241,6 +252,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:harrypotter OR author:jkrowling")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void orMatchTest() throws QueryNodeException {
         String key0 = SampleDataUtils.STRING_FIELD;
         String key1 = SampleDataUtils.STRING_FIELD_1;
@@ -256,12 +268,14 @@ public class RegardsQueryParserTest {
 
     @Test(expected = QueryNodeException.class)
     @Purpose("Tests queries like title:harry~")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void proximityTest() throws QueryNodeException {
         parser.parse("field:value~");
     }
 
     @Test(expected = QueryNodeException.class)
     @Purpose("Tests queries like title:{harrypotter TO starwars}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void stringRangeTest() throws QueryNodeException {
         final String field = SampleDataUtils.STRING_RANGE_FIELD;
         final String lowerInclusion = "{";
@@ -275,6 +289,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like altitude:{90 TO 120}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerRangeExclusiveTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final String lowerInclusion = "{";
@@ -298,6 +313,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like altitude:[90 TO 120]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerRangeInclusiveTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final String lowerInclusion = "[";
@@ -321,6 +337,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like bpm:{128.0 TO 145]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void doubleRangeSemiInclusiveTest() throws QueryNodeException {
         final String field = SampleDataUtils.DOUBLE_RANGE_FIELD;
         final String lowerInclusion = "{";
@@ -344,6 +361,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like distance:{0 TO 88]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void longRangeTest() throws QueryNodeException {
         final String field = SampleDataUtils.LONG_RANGE_FIELD;
         final String lowerInclusion = "{";
@@ -366,6 +384,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like date:[2007-12-03T10:15:30 TO 2007-12-03T11:15:30]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void localDateTimeRangeTest() throws QueryNodeException {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final String lowerInclusion = "{";
@@ -390,6 +409,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like date:{* TO 2007-12-03T10:15:30}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void localDateTimeLtTest() throws QueryNodeException {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime upperValue = LocalDateTime.now();
@@ -409,6 +429,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like date:{* TO 2007-12-03T10:15:30]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void localDateTimeLeTest() throws QueryNodeException {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime upperValue = LocalDateTime.now();
@@ -428,6 +449,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like date:{2007-12-03T10:15:30 TO *}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void localDateTimeGtTest() throws QueryNodeException {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime lowerValue = LocalDateTime.now();
@@ -447,6 +469,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like date:[2007-12-03T10:15:30 TO *}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void localDateTimeGeTest() throws QueryNodeException {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_RANGE_FIELD;
         final LocalDateTime lowerValue = LocalDateTime.now();
@@ -467,6 +490,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like altitude:{* TO 1}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerLtTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer upperValue = 1;
@@ -486,6 +510,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like altitude:{* TO 1]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerLeTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer upperValue = 1;
@@ -505,6 +530,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like altitude:{1 TO *}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerGtTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer lowerValue = 1;
@@ -524,6 +550,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like altitude:[1 TO *}")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerGeTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_RANGE_FIELD;
         final Integer lowerValue = 1;
@@ -542,6 +569,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like (title:harrypotter)")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void parenthesisAroundAllTest() throws QueryNodeException {
         final String field = SampleDataUtils.STRING_FIELD;
         final String value = "harrypotter";
@@ -558,6 +586,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like title:(harrypotter OR starwars)")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void parenthesisAroundOrTest() throws QueryNodeException {
         final String field = SampleDataUtils.STRING_FIELD;
         final String term = field + ":(harrypotter OR starwars)";
@@ -569,6 +598,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like cast:danielradcliffe")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void stringArrayTest() throws QueryNodeException {
         final String field = SampleDataUtils.STRING_ARRAY_FIELD;
         final String value = "danielradcliffe";
@@ -585,6 +615,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like years:2001")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void integerArrayTest() throws QueryNodeException {
         final String field = SampleDataUtils.INTEGER_ARRAY_FIELD;
         final Integer value = 2001;
@@ -602,6 +633,7 @@ public class RegardsQueryParserTest {
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Tests queries like duration:159")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void doubleArrayTest() throws QueryNodeException {
         final String field = SampleDataUtils.DOUBLE_ARRAY_FIELD;
         final Double value = 159d;
@@ -622,6 +654,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like releases:[2001-11-04T00:00:00 TO 2001-11-16T23:59:59]")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void containsDateBetweenTest() throws QueryNodeException {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_ARRAY;
         final LocalDateTime lowerValue = LocalDateTime.parse("2001-11-04T00:00:00");
@@ -645,6 +678,7 @@ public class RegardsQueryParserTest {
 
     @Test
     @Purpose("Tests queries like tags:plop AND tags:(A\\:A OR B\\:B OR C\\:C)")
+    @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void handlesSmallRealLifeQuery() throws QueryNodeException {
         final String term = SampleDataUtils.SMALL_REAL_LIFE_QUERY;
         final ICriterion criterion = parser.parse(term);
@@ -659,7 +693,7 @@ public class RegardsQueryParserTest {
     }
 
     @Test
-    @Purpose("Checks that escaping special characters in not needed when using double quotes")
+    @Purpose("Checks that escaping special characters is not needed when using double quotes")
     public void escapingNotNeededWhenDoubleQuotes() throws QueryNodeException {
         final String term = SampleDataUtils.UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE;
         final ICriterion criterion = parser.parse(term);
