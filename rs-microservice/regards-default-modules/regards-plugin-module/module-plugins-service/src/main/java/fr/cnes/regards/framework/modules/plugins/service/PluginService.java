@@ -348,10 +348,7 @@ public class PluginService implements IPluginService {
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
         Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
-        if (confs == null) {
-            Collections.emptyList();
-        }
-        return Lists.newArrayList(confs);
+        return (confs != null) ? Lists.newArrayList(confs) : Collections.emptyList();
     }
 
     private List<String> getPluginPackage() {
