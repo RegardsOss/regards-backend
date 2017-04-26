@@ -10,7 +10,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
 
 /**
- * Helper classs for creating Roles implemented as a fluent API.
+ * Helper class for creating Roles implemented as a fluent API.
  * </p>
  * 1 - Create an instance of the factory. A new role will be created with default values.<br>
  * 2 - You can use the different 'with' methods to specify the non-default fields for your role.<br>
@@ -111,23 +111,17 @@ public class RoleFactory {
 
     public Role createInstanceAdmin() {
         final Role toCreate = create();
-        final RoleFactory factoryForParentRole = new RoleFactory();
         toCreate.setName(DefaultRole.INSTANCE_ADMIN.toString());
         toCreate.setNative(true);
-        if (autoCreateParents) {
-            toCreate.setParentRole(factoryForParentRole.createProjectAdmin());
-        }
+        toCreate.setParentRole(null);
         return toCreate;
     }
 
     public Role createProjectAdmin() {
         final Role toCreate = create();
-        final RoleFactory factoryForParentRole = new RoleFactory();
         toCreate.setName(DefaultRole.PROJECT_ADMIN.toString());
         toCreate.setNative(true);
-        if (autoCreateParents) {
-            toCreate.setParentRole(factoryForParentRole.createAdmin());
-        }
+        toCreate.setParentRole(null);
         return toCreate;
     }
 

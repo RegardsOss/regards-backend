@@ -131,7 +131,7 @@ public class RoleServiceTest {
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         roleService = new RoleService("rs-test", roleRepository, projectUserRepository, tenantResolver,
-                runtimeTenantResolver, null, null);
+                runtimeTenantResolver, null, null, null);
 
         // Clear the repos
         projectUserRepository.deleteAll();

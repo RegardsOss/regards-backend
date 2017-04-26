@@ -7,17 +7,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.listener.exception.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.domain.Page;
@@ -27,10 +25,12 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -108,20 +108,20 @@ public class RoleService implements IRoleService {
     private final IInstanceSubscriber instanceSubscriber;
 
     /**
+     * AMQP instance message publisher
+     */
+    private final IInstancePublisher instancePublisher;
+
+    /**
      * AMQP tenant publisher
      */
     private final IPublisher publisher;
 
-    /**
-     * The default roles. Autowired by Spring.
-     */
-    @Resource
-    private List<Role> defaultRoles;
-
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IInstanceSubscriber pInstanceSubscriber, final IPublisher pPublisher) {
+            final IInstanceSubscriber pInstanceSubscriber, final IInstancePublisher instancePublisher,
+            final IPublisher pPublisher) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
@@ -129,6 +129,7 @@ public class RoleService implements IRoleService {
         runtimeTenantResolver = pRuntimeTenantResolver;
         microserviceName = pMicroserviceName;
         instanceSubscriber = pInstanceSubscriber;
+        this.instancePublisher = instancePublisher;
         publisher = pPublisher;
     }
 
@@ -158,12 +159,18 @@ public class RoleService implements IRoleService {
         @Override
         public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
             if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
+
                 // Retrieve new tenant to manage
                 String tenant = pWrapper.getContent().getTenant();
-                // Init default role for this tenant
-                initDefaultRoles(tenant);
-                // Populate default roles with resources informing security starter to process
-                publisher.publish(new ResourceAccessInit());
+                try {
+                    // Init default role for this tenant
+                    initDefaultRoles(tenant);
+                    // Populate default roles with resources informing security starter to process
+                    publisher.publish(new ResourceAccessInit());
+                } catch (ListenerExecutionFailedException e) {
+                    LOGGER.error("Cannot initialize connection  for tenant " + tenant, e);
+                    instancePublisher.publish(new TenantConnectionFailed(tenant, microserviceName));
+                }
             }
         }
     }
@@ -175,29 +182,44 @@ public class RoleService implements IRoleService {
      *            tenant
      */
     private void initDefaultRoles(String tenant) {
-        // Return the role with same name in database if exists
-        final UnaryOperator<Role> replaceWithRoleFromDb = r -> {
-            final Optional<Role> dbRole = roleRepository.findOneByName(r.getName());
-            return dbRole.isPresent() ? dbRole.get() : r;
-        };
 
-        // For passed role, replace parent with its equivalent from the defaultRoles list
-        final Consumer<Role> setParentFromDefaultRoles = r -> {
-            if (r.getParentRole() != null) {
-                final Role parent = defaultRoles.stream().filter(el -> el.getName().equals(r.getParentRole().getName()))
-                        .findFirst().orElse(null);
-                r.setParentRole(parent);
-            }
-        };
+        // Init factory to create missing roles
+        RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
 
-        // Work on tenant
+        // Set working tenant
         runtimeTenantResolver.forceTenant(tenant);
-        // Replace all default roles with their db version if exists
-        defaultRoles.replaceAll(replaceWithRoleFromDb);
-        // Re-plug the parent roles
-        defaultRoles.forEach(setParentFromDefaultRoles);
-        // Save everything
-        defaultRoles.forEach(roleRepository::save);
+        // Manage public
+        Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
+        // Manage registered user
+        Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
+        // Manage admin
+        createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
+        // Manage project admin
+        createOrLoadDefaultRole(roleFactory.createProjectAdmin(), null);
+        // Manage instance admin
+        createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), null);
+    }
+
+    /**
+     * Create or load a default role
+     *
+     * @param defaultRole
+     *            default role to create
+     * @param parentRole
+     *            parent role to attach
+     * @return created role
+     */
+    private Role createOrLoadDefaultRole(Role defaultRole, Role parentRole) {
+
+        // Retrieve role from database
+        Optional<Role> role = roleRepository.findOneByName(defaultRole.getName());
+
+        if (role.isPresent()) {
+            return role.get();
+        }
+
+        defaultRole.setParentRole(parentRole);
+        return roleRepository.save(defaultRole);
     }
 
     @Override
