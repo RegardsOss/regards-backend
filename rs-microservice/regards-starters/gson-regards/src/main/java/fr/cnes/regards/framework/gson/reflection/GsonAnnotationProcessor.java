@@ -216,7 +216,7 @@ public final class GsonAnnotationProcessor {
                     TypeAdapter<?> adapter = typeAdapterClass.newInstance();
                     pBuilder.registerTypeAdapter(annotation.adapted(), adapter);
                 } catch (InstantiationException | IllegalAccessException e) {
-                    String format = "Factory % cannot be instanciated. No arg public constructor must exist.";
+                    String format = "Factory %s cannot be instanciated. No arg public constructor must exist.";
                     final String errorMessage = String.format(format, typeAdapterClass);
                     LOGGER.error(errorMessage, e);
                     throw new IllegalArgumentException(errorMessage);
