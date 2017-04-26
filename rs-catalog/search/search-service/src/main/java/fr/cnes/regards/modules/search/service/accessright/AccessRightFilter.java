@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +17,7 @@ import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.search.domain.Terms;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
 
 /**
  * Implementation of {@link IAccessRightFilter}.
@@ -34,21 +36,25 @@ public class AccessRightFilter implements IAccessRightFilter {
     /**
      * Provides access groups for a user with cache facilities. Autowired by Spring.
      */
-    private final IAccessGroupCache cache;
+    private final IAccessGroupClientService cache;
 
     /**
      * Get current tenant at runtime. Autworied by Spring.
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final IProjectUsersClient projectUserClient;
+
     /**
      * @param pCache
      * @param pRuntimeTenantResolver
      */
-    public AccessRightFilter(IAccessGroupCache pCache, IRuntimeTenantResolver pRuntimeTenantResolver) {
+    public AccessRightFilter(IAccessGroupClientService pCache, IRuntimeTenantResolver pRuntimeTenantResolver,
+            IProjectUsersClient pProjectUserClient) {
         super();
         cache = pCache;
         runtimeTenantResolver = pRuntimeTenantResolver;
+        projectUserClient = pProjectUserClient;
     }
 
     /*
@@ -60,15 +66,23 @@ public class AccessRightFilter implements IAccessRightFilter {
      */
     @Override
     public ICriterion addUserGroups(ICriterion pCriterion) {
-        String pUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<AccessGroup> accessGroups = cache.getAccessGroups(pUserEmail, runtimeTenantResolver.getTenant());
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        FeignSecurityManager.asSystem();
+        try {
+            if (!projectUserClient.isAdmin(userEmail).getBody()) {
+                List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant());
 
-        // Create a list with all group criterions plus the initial criterion
-        List<ICriterion> rootWithGroups = accessGroups.stream().map(GROUP_TO_CRITERION).collect(Collectors.toList());
-        rootWithGroups.add(pCriterion);
-
-        // Build the final "and" criterion
-        return ICriterion.and(rootWithGroups);
+                // Create a list with all group criterions plus the initial criterion
+                List<ICriterion> rootWithGroups = accessGroups.stream().map(GROUP_TO_CRITERION)
+                        .collect(Collectors.toList());
+                rootWithGroups.add(pCriterion);
+                // Build the final "and" criterion
+                return ICriterion.and(rootWithGroups);
+            }
+            return pCriterion;
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 }

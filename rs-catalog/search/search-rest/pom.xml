@@ -58,5 +58,9 @@
 			<groupId>fr.cnes.regards.modules.indexer</groupId>
 			<artifactId>indexer-domain</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-client</artifactId>
+		</dependency>
 	</dependencies>
 </project>

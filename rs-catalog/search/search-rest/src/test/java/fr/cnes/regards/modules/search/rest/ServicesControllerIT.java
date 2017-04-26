@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -38,6 +39,7 @@ import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
  *
  */
 @TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(classes = { CatalogITConfiguration.class })
 @Transactional
 public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
@@ -108,7 +110,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_030")
     @Requirement("REGARDS_DSL_DAM_ARC_010")
-    @Purpose("System has a joinpoint \"Service\" allow to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
+    @Purpose(
+            "System has a joinpoint \"Service\" allow to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
     public void testApplyService() {
         StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add("q=truc");

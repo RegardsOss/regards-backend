@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,11 @@ public class CatalogITConfiguration {
     @Bean
     public IUserClient userClient() {
         return Mockito.mock(IUserClient.class);
+    }
+
+    @Bean
+    public IProjectUsersClient projectUsersClient() {
+        return Mockito.mock(IProjectUsersClient.class);
     }
 
     @Bean
