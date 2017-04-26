@@ -483,12 +483,10 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         Path contract = CONTRACT_REPOSITORY.resolve(pJSonFileName);
 
         if (Files.exists(contract)) {
-            JsonReader reader;
-            try {
-                reader = new JsonReader(new FileReader(contract.toFile()));
+            try (JsonReader reader = new JsonReader(new FileReader(contract.toFile()))) {
                 JsonElement el = Streams.parse(reader);
                 return el.toString();
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 String message = "Cannot read JSON contract";
                 getLogger().error(message, e);
                 throw new AssertionError(message, e);
