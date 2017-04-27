@@ -390,7 +390,7 @@ public class AccountsController implements IResourceController<Account> {
         return resource;
     }
 
-    private class Validity {
+    private static class Validity {
 
         private Boolean validity;
 
