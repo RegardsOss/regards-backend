@@ -38,8 +38,10 @@ public class MaintenanceFilter extends OncePerRequestFilter {
         if (pRequest.getMethod().equals(HttpMethod.GET.name())) {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
+            // Only authorize to disable maintenance mode
             if (!((pRequest.getPathInfo() != null)
-                    && pRequest.getPathInfo().contains(MaintenanceController.MAINTENANCES_URL))
+                    && pRequest.getPathInfo().contains(MaintenanceController.MAINTENANCE_URL)
+                    && pRequest.getPathInfo().contains(MaintenanceController.DISABLE))
                     && MaintenanceManager.getMaintenance(resolver.getTenant())) {
                 pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), "Tenant in maintenance");
             } else {

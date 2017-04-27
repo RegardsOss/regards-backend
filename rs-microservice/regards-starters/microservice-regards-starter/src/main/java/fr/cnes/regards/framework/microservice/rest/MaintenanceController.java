@@ -26,14 +26,18 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  * @since 1.0
  */
 @RestController
-@RequestMapping(MaintenanceController.MAINTENANCES_URL)
+@RequestMapping(MaintenanceController.MAINTENANCE_URL)
 public class MaintenanceController {
 
-    public static final String MAINTENANCES_URL = "/maintenance";
+    public static final String ENABLE = "enable";
 
-    public static final String MAINTENANCES_ACTIVATE_URL = "/{tenant}/activate";
+    public static final String DISABLE = "disable";
 
-    public static final String MAINTENANCES_DESACTIVATE_URL = "/{tenant}/desactivate";
+    public static final String MAINTENANCE_URL = "/maintenance";
+
+    public static final String MAINTENANCE_ACTIVATE_URL = "/{tenant}/" + ENABLE;
+
+    public static final String MAINTENANCE_DESACTIVATE_URL = "/{tenant}/" + DISABLE;
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
@@ -43,14 +47,14 @@ public class MaintenanceController {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCES_ACTIVATE_URL)
+    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
     @ResourceAccess(description = "set this tenant into maintenance mode")
     public HttpEntity<Resource<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.setMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCES_DESACTIVATE_URL)
+    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_DESACTIVATE_URL)
     @ResourceAccess(description = "unset this tenant from maintenance mode")
     public HttpEntity<Resource<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.unSetMaintenance(pTenant);
