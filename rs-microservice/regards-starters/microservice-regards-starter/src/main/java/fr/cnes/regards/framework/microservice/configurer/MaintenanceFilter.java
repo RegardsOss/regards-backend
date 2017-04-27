@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.microservice.filter;
+package fr.cnes.regards.framework.microservice.configurer;
 
 import java.io.IOException;
 
@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -25,10 +26,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 public class MaintenanceFilter extends OncePerRequestFilter {
 
     private final IRuntimeTenantResolver resolver;
-
-    private static final String MAINTENANCE_PATH_URL = "maintenances";
-
-    private static final String MAINTENANCE_DESACTIVATE_ACTION = "desactivate";
 
     public MaintenanceFilter(IRuntimeTenantResolver pResolver) {
         resolver = pResolver;
@@ -41,9 +38,9 @@ public class MaintenanceFilter extends OncePerRequestFilter {
         if (pRequest.getMethod().equals(HttpMethod.GET.name())) {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
-            if (!(pRequest.getPathInfo().contains(MAINTENANCE_PATH_URL)
-                    && pRequest.getPathInfo().contains(MAINTENANCE_DESACTIVATE_ACTION))
-                    && (MaintenanceManager.getMaintenance(resolver.getTenant()))) {
+            if (!((pRequest.getPathInfo() != null)
+                    && pRequest.getPathInfo().contains(MaintenanceController.MAINTENANCES_URL))
+                    && MaintenanceManager.getMaintenance(resolver.getTenant())) {
                 pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), "Tenant in maintenance");
             } else {
                 pFilterChain.doFilter(pRequest, pResponse);
