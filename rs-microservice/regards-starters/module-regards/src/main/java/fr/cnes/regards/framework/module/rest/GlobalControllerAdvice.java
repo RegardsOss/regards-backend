@@ -9,13 +9,16 @@ import javax.validation.ValidationException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.util.WebUtils;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
@@ -46,11 +49,22 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
-public class GlobalControllerAdvice {
+public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ServerErrorResponse> handleArgumentValidationFailedException(final ModuleException pEx) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pEx.getMessage()));
+    /**
+     * Customize response body for spring managed exception
+     */
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
+            HttpStatus status, WebRequest request) {
+
+        // Create REGARDS body
+        ServerErrorResponse responseBody = new ServerErrorResponse(ex.getMessage());
+
+        if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
+            request.setAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, ex, WebRequest.SCOPE_REQUEST);
+        }
+        return new ResponseEntity<>(responseBody, headers, status);
     }
 
     @ExceptionHandler(ModuleException.class)
@@ -210,7 +224,7 @@ public class GlobalControllerAdvice {
 
     /**
      * Exception returning 400 when a datasource connection is invalid
-     * 
+     *
      * @param pException
      *            {@link InvalidConnectionException}
      * @return {@link ResponseEntity}
@@ -220,5 +234,4 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
                 pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
     }
-
 }
