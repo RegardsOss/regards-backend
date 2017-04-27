@@ -32,11 +32,11 @@ import fr.cnes.regards.modules.access.service.INavigationContextService;
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class NavigationContextControllerIT extends AbstractRegardsIT {
 
-    private static final String JSON_CONTENT_ROUTE = JSON_PATH_CONTENT+".route";
+    private static final String JSON_CONTENT_ROUTE = JSON_PATH_CONTENT + ".route";
 
-    private static final String JSON_CONTENT_TINY_URL = JSON_PATH_CONTENT+".tinyUrl";
-    
-    private static final String JSON_CONTENT_STORE = JSON_PATH_CONTENT+".store";
+    private static final String JSON_CONTENT_TINY_URL = JSON_PATH_CONTENT + ".tinyUrl";
+
+    private static final String JSON_CONTENT_STORE = JSON_PATH_CONTENT + ".store";
 
     @Autowired
     private INavigationContextService service;
@@ -214,14 +214,14 @@ public class NavigationContextControllerIT extends AbstractRegardsIT {
     @Test
     public final void saveANullUrl() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isServiceUnavailable());
+        expectations.add(status().isBadRequest());
 
         performDefaultPost(apiTinyUrls, null, expectations, "unable to creta a new context navigation");
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.test.integration.AbstractRegardsIT#getLogger()
      */
     @Override
