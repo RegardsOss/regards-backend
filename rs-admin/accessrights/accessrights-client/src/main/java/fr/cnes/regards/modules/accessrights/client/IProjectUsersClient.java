@@ -3,22 +3,16 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import java.util.List;
 
 /**
  *
@@ -62,7 +56,7 @@ public interface IProjectUsersClient {
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserEmail
+     * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
      * @return {@link PagedResources} of {@link ProjectUser}
      */
@@ -80,6 +74,10 @@ public interface IProjectUsersClient {
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
     ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String pUserEmail);
+
+    @ResponseBody
+    @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
+    ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail);
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
