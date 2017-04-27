@@ -19,11 +19,16 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
+ * @author Christophe Mertz
  *
  */
 public class MaintenanceFilter extends OncePerRequestFilter {
 
     private final IRuntimeTenantResolver resolver;
+
+    private static final String MAINTENANCE_PATH_URL = "maintenances";
+
+    private static final String MAINTENANCE_DESACTIVATE_ACTION = "desactivate";
 
     public MaintenanceFilter(IRuntimeTenantResolver pResolver) {
         resolver = pResolver;
@@ -36,9 +41,9 @@ public class MaintenanceFilter extends OncePerRequestFilter {
         if (pRequest.getMethod().equals(HttpMethod.GET.name())) {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
-            // TODO: check if the path fo request is /maintenances to authorize them and so allow to desactivate the
-            // maintenance
-            if (MaintenanceManager.getMaintenance(resolver.getTenant())) {
+            if (!(pRequest.getPathInfo().contains(MAINTENANCE_PATH_URL)
+                    && pRequest.getPathInfo().contains(MAINTENANCE_DESACTIVATE_ACTION))
+                    && (MaintenanceManager.getMaintenance(resolver.getTenant()))) {
                 pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), "Tenant in maintenance");
             } else {
                 pFilterChain.doFilter(pRequest, pResponse);

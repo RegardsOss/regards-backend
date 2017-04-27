@@ -106,7 +106,7 @@ public class JpaMultitenantController {
      * @author Marc Sordi
      *
      */
-    private class Body {
+    private static class Body {
 
         private String message;
 

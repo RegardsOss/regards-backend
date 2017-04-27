@@ -119,6 +119,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_PLG_500")
+    @Purpose("The system allows to list all the plugins of a specific plugin's type")
     public void getPluginOneType() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
@@ -149,6 +151,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_PLG_400")
+    @Purpose("The system allows to list all the plugin's type of a microservice")
     public void getAllPluginTypes() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());

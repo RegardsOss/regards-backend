@@ -27,20 +27,24 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  * @since 1.0
  */
 @RestController
-@RequestMapping("/maintenances")
 public class MaintenanceController {
 
-    @RequestMapping(method = RequestMethod.GET, produces = "application/json")
+    public static final String MAINTENANCES_URL = "/maintenances";
+
+    public static final String MAINTENANCES_ACTIVATE_URL = MAINTENANCES_URL + "/{tenant}/activate";
+
+    public static final String MAINTENANCES_DESACTIVATE_URL = MAINTENANCES_URL + "/{tenant}/desactivate";
+
+    @RequestMapping(method = RequestMethod.GET, value = MAINTENANCES_URL, produces = "application/json")
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
     @ResponseBody
     public HttpEntity<Resource<Map<String, Boolean>>> retrieveTenantsInMaintenance() {
-
         final Map<String, Boolean> maintenaceMap = MaintenanceManager.getMaintenanceMap();
         final Resource<Map<String, Boolean>> resource = new Resource<>(maintenaceMap);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/activate", produces = "application/json")
+    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCES_ACTIVATE_URL, produces = "application/json")
     @ResourceAccess(description = "set this tenant into maintenance mode")
     @ResponseBody
     public HttpEntity<Resource<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
@@ -48,7 +52,7 @@ public class MaintenanceController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/desactivate", produces = "application/json")
+    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCES_DESACTIVATE_URL, produces = "application/json")
     @ResourceAccess(description = "unset this tenant from maintenance mode")
     @ResponseBody
     public HttpEntity<Resource<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {

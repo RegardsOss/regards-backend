@@ -127,7 +127,7 @@ public final class XlsxHelper {
 
                 // Write file
                 wb.write(out);
-
+                wb.close();
             } catch (IOException e) {
                 final String message = "Error while writing XLSX file";
                 LOG.error(message, e);
@@ -139,8 +139,7 @@ public final class XlsxHelper {
     /**
      * Read an existing file
      *
-     * @param pFilename
-     *            the file to read
+     * @param pFilePath the file to read
      * @return an {@link HSSFWorkbook} representing the file
      * @throws IOException
      *             if problem occurs

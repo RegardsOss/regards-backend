@@ -138,7 +138,12 @@ public class DefaultResourceService implements IResourceService {
         try {
             Method method = getMethod(pController, pMethodName, parameterTypes);
             C proxyControllerInstance = ControllerLinkBuilder.methodOn(pController);
-            Object invoke = method.invoke(proxyControllerInstance, parameterValues.toArray());
+            Object invoke;
+            if (parameterValues != null) {
+                invoke = method.invoke(proxyControllerInstance, parameterValues.toArray());
+            } else {
+                invoke = method.invoke(proxyControllerInstance);
+            }
             Link link = ControllerLinkBuilder.linkTo(invoke).withRel(pRel);
             pResource.add(link);
         } catch (Exception e) {
@@ -167,13 +172,14 @@ public class DefaultResourceService implements IResourceService {
             checkAuthorization(method);
             return method;
         } catch (final NoSuchMethodException e) {
-            final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
-                                                        pController.getCanonicalName());
+            final String message = MessageFormat
+                    .format("No such method {0} in controller {1}.", pMethodName, pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         } catch (final SecurityException e) {
-            final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
-                                                        pMethodName, pController.getCanonicalName());
+            final String message = MessageFormat
+                    .format("Security exception accessing method {0} in controller {1}.", pMethodName,
+                            pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         }
