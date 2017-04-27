@@ -98,6 +98,7 @@ public class MethodAuthorizationServiceTest {
         Mockito.doReturn(authorities).when(authenticationMock).getAuthorities();
         Mockito.when(authenticationMock.getTenant()).thenReturn(TestConfiguration.TENANT_1);
 
+        methodAuthService.onApplicationEvent(null);
         final ResourceAccessVoter voter = new ResourceAccessVoter(methodAuthService);
         int result = voter.vote(authenticationMock, methodIvoncation, null);
         Assert.assertEquals(AccessDecisionVoter.ACCESS_GRANTED, result);
@@ -151,6 +152,7 @@ public class MethodAuthorizationServiceTest {
         Mockito.doReturn(authorities).when(authenticationMock).getAuthorities();
         Mockito.when(authenticationMock.getTenant()).thenReturn(TestConfiguration.TENANT_1);
 
+        methodAuthService.onApplicationEvent(null);
         final ResourceAccessVoter voter = new ResourceAccessVoter(methodAuthService);
         final int result = voter.vote(authenticationMock, methodIvoncation, null);
         Assert.assertEquals(result, AccessDecisionVoter.ACCESS_DENIED);

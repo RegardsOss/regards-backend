@@ -7,19 +7,10 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Set;
 
-import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.HibernateException;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
-import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.boot.spi.MetadataImplementor;
-import org.hibernate.cfg.Environment;
-import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -29,14 +20,12 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
-import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
 
 /**
  *
@@ -56,21 +45,6 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      * Current microservice name
      */
     private final String microserviceName;
-
-    /**
-     * Database schema name
-     */
-    private final String schemaName;
-
-    /**
-     * Implicit naming strategy
-     */
-    private final String implicitNamingStrategyName;
-
-    /**
-     * Physical naming strategy
-     */
-    private final String physicalNamingStrategyName;
 
     /**
      * AMQP Message subscriber
@@ -97,16 +71,19 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      */
     private final MultitenantDaoProperties daoProperties;
 
-    public MultitenantJpaEventHandler(String microserviceName, String schemaName, Map<String, DataSource> dataSources,
-            MultitenantDaoProperties daoProperties, String implicitNamingStrategyName,
-            String physicalNamingStrategyName, IInstanceSubscriber instanceSubscriber,
-            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver) {
+    /**
+     * Schema update helper
+     */
+    private final UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper;
+
+    public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
+            MultitenantDaoProperties daoProperties, UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper,
+            IInstanceSubscriber instanceSubscriber, IInstancePublisher instancePublisher,
+            ITenantConnectionResolver multitenantResolver) {
         this.microserviceName = microserviceName;
-        this.schemaName = schemaName;
         this.dataSources = dataSources;
         this.daoProperties = daoProperties;
-        this.implicitNamingStrategyName = implicitNamingStrategyName;
-        this.physicalNamingStrategyName = physicalNamingStrategyName;
+        this.updateDatasourceSchemaHelper = updateDatasourceSchemaHelper;
         this.instancePublisher = instancePublisher;
         this.instanceSubscriber = instanceSubscriber;
         this.multitenantResolver = multitenantResolver;
@@ -132,49 +109,13 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     }
 
     /**
+     * Test connection
      *
-     * Update datasource schema
-     *
-     * @param pDataSource
-     *            datasource to update
-     * @since 1.0-SNAPSHOT
+     * @param dataSource
+     *            related data source
+     * @throws JpaMultitenantException
+     *             if connection fails
      */
-    private void updateDataSourceSchema(final DataSource pDataSource) throws JpaMultitenantException {
-        // 1. Update database schema if needed
-        String dialect = daoProperties.getDialect();
-        if (daoProperties.getEmbedded()) {
-            dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
-        }
-
-        StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
-        builder.applySetting(Environment.DIALECT, dialect);
-        builder.applySetting(Environment.DATASOURCE, pDataSource);
-        builder.applySetting(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
-        builder.applySetting(Environment.DEFAULT_SCHEMA, schemaName);
-
-        try {
-            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
-                    .forName(physicalNamingStrategyName).newInstance();
-            builder.applySetting(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
-            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
-                    .forName(implicitNamingStrategyName).newInstance();
-            builder.applySetting(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            LOGGER.error("Error occurs with naming strategy", e);
-            throw new JpaMultitenantException(e);
-        }
-
-        final MetadataSources metadata = new MetadataSources(builder.build());
-
-        Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
-        packagesToScan.stream()
-                .flatMap(pPackage -> DaoUtils.scanPackageForJpa(pPackage, Entity.class, InstanceEntity.class).stream())
-                .forEach(metadata::addAnnotatedClass);
-
-        final SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
-        export.execute(false, true);
-    }
-
     private void testConnection(DataSource dataSource) throws JpaMultitenantException {
         try (Connection connection = dataSource.getConnection()) {
             LOGGER.debug("Successful data source connection test");
@@ -205,7 +146,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     oldDataSource.getConnection().close();
                 }
                 // Update schema
-                updateDataSourceSchema(dataSource);
+                updateDatasourceSchemaHelper.updateDataSourceSchema(dataSource);
                 // Enable data source
                 multitenantResolver.enableTenantConnection(microserviceName, tenantConnection.getTenant());
                 // Register data source
