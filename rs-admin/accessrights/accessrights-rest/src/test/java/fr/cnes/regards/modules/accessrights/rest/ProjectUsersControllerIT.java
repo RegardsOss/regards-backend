@@ -93,7 +93,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void setUp() {
         apiUserId = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_id}";
-        apiUserEmail = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_email}";
+        apiUserEmail = ProjectUsersController.REQUEST_MAPPING_ROOT + "/email/{user_email}";
 
         apiUserPermissions = ResourceController.REQUEST_MAPPING_ROOT + apiUserId;
         apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";

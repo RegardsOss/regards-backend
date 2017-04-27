@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -59,7 +60,19 @@ public class AccessRightsDaoTestConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public IInstanceSubscriber eventInstancePublisher() {
+    public IInstanceSubscriber eventInstanceSubscriber() {
         return Mockito.mock(IInstanceSubscriber.class);
+    }
+
+    /**
+     *
+     * Mock AMQP
+     *
+     * @return {@link IPublisher}
+     * @since 1.0-SNAPSHOT
+     */
+    @Bean
+    public IInstancePublisher eventInstancePublisher() {
+        return Mockito.mock(IInstancePublisher.class);
     }
 }

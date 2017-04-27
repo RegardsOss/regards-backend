@@ -723,7 +723,7 @@ public class RoleService implements IRoleService {
     }
 
     private void deleteAndPublish(Role role) {
-        roleRepository.delete(role);
+        roleRepository.delete(role.getId());
         publishRoleEvent(role);
     }
 }

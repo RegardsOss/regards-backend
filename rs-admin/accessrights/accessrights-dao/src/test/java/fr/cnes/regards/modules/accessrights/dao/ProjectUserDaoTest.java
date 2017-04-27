@@ -62,7 +62,7 @@ public class ProjectUserDaoTest {
      * Check that the system updates automatically the field lastUpdate before any db persistence.
      */
     @Test
-    @Purpose("Check that the system updates automaticly the field lastUpdate before any db persistence.")
+    @Purpose("Check that the system updates automatically the field lastUpdate before any db persistence.")
     public final void setLastUpdateListener() {
 
         final RoleFactory factory = new RoleFactory();

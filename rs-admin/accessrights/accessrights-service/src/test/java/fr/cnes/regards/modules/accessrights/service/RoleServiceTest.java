@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -131,7 +134,8 @@ public class RoleServiceTest {
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         roleService = new RoleService("rs-test", roleRepository, projectUserRepository, tenantResolver,
-                runtimeTenantResolver, null, null, null);
+                runtimeTenantResolver, Mockito.mock(IInstanceSubscriber.class), Mockito.mock(IInstancePublisher.class),
+                Mockito.mock(IPublisher.class));
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -153,6 +157,14 @@ public class RoleServiceTest {
         roleProjectAdmin.setId(PROJECT_ADMIN_ID);
         adminSon.setId(ADMIN_SON_ID);
         Mockito.when(roleRepository.findOneByName(roleAdmin.getName())).thenReturn(Optional.of(roleAdmin));
+
+        Mockito.when(roleRepository.findOneById(PUBLIC_ID)).thenReturn(rolePublic);
+        Mockito.when(roleRepository.findOneById(REGISTERED_USER_ID)).thenReturn(roleRegisteredUser);
+        Mockito.when(roleRepository.findOneById(ADMIN_ID)).thenReturn(roleAdmin);
+        Mockito.when(roleRepository.findOneById(ADMIN_SON_ID)).thenReturn(adminSon);
+        Mockito.when(roleRepository.findOneById(PROJECT_ADMIN_ID)).thenReturn(roleProjectAdmin);
+
+        Mockito.when(roleRepository.findByName(NAME)).thenReturn(Optional.of(rolePublic));
     }
 
     /**
@@ -420,7 +432,10 @@ public class RoleServiceTest {
         final Long id = 0L;
 
         Mockito.when(roleRepository.exists(id)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(id)).thenReturn(new Role());
+
+        Role role = new Role();
+        role.setId(id);
+        Mockito.when(roleRepository.findOne(id)).thenReturn(role);
         Assert.assertTrue(roleService.existRole(id));
 
         roleService.removeRole(id);
@@ -664,26 +679,29 @@ public class RoleServiceTest {
     public void isHierarchicallyInferior() {
         // Init default roles
         final RoleFactory factory = new RoleFactory();
-        final Role roleInstanceAdmin = factory.createInstanceAdmin();
-        final Role roleProjectAdminParent = roleInstanceAdmin.getParentRole();
-        final Role roleAdminParent = roleProjectAdminParent.getParentRole();
+        final Role roleAdminParent = factory.createAdmin();
         final Role roleRegisteredUserParent = roleAdminParent.getParentRole();
         final Role rolePublicParent = roleRegisteredUserParent.getParentRole();
 
-        Assert.assertNotNull(roleInstanceAdmin);
-        Assert.assertNotNull(roleProjectAdminParent);
         Assert.assertNotNull(roleAdminParent);
         Assert.assertNotNull(roleRegisteredUserParent);
         Assert.assertNotNull(rolePublicParent);
 
-        Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUserParent, roleProjectAdminParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(roleProjectAdminParent, roleRegisteredUserParent));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUserParent, roleAdminParent));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(roleAdminParent, roleRegisteredUserParent));
+
+        Assert.assertTrue(roleService.isHierarchicallyInferior(rolePublicParent, roleRegisteredUserParent));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(roleRegisteredUserParent, rolePublicParent));
+
+        Assert.assertTrue(roleService.isHierarchicallyInferior(rolePublicParent, roleAdminParent));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(roleAdminParent, rolePublicParent));
 
         // final Role admin = roleService.retrieveRole(2L);
         final Role customRoleFromAdmin = new Role("custom role", roleAdminParent);
 
+        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, rolePublicParent));
         Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleRegisteredUserParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleProjectAdminParent));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleAdminParent));
     }
 
     /**
