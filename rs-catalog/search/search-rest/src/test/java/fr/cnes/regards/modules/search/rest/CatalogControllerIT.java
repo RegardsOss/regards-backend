@@ -281,11 +281,11 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations3.add(MockMvcResultMatchers.status().isOk());
         expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.length", Matchers.is(2)));
+        expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.length()", Matchers.is(2)));
 
         // Search collection with admin user
         performGet("/collections/search",
-                   manageDefaultSecurity(ADMIN_USER_EMAIL, "/collections/search", RequestMethod.GET), expectations2,
+                   manageDefaultSecurity(ADMIN_USER_EMAIL, "/collections/search", RequestMethod.GET), expectations3,
                    "Error searching collections", builder);
     }
 
