@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
 
@@ -105,7 +106,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setInterfaceName("fr.cnes.regards.cloud.gateway.authentication.plugins.IAuthenticationPlugin");
+        metadata.setInterfaceName(IServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);
