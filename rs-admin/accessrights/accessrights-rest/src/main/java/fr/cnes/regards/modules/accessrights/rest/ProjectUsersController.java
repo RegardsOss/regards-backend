@@ -157,6 +157,19 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         return new ResponseEntity<>(toResource(user), HttpStatus.OK);
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
+    @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail)
+            throws EntityNotFoundException {
+        ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
+        if (user.getRole().equals(DefaultRole.ADMIN.toString()) || user.getRole().getParentRole()
+                .equals(DefaultRole.ADMIN.toString())) {
+            return new ResponseEntity<>(true, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(false, HttpStatus.OK);
+    }
+
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
      *
@@ -234,7 +247,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Retrieve the list of project users (crawls through parents' hierarachy) of the role with role_id",
+            description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId, final Pageable pPageable,
