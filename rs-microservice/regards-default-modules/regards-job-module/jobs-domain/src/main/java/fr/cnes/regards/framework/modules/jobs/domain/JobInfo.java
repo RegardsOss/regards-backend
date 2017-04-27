@@ -138,7 +138,7 @@ public class JobInfo implements IIdentifiable<Long> {
      *            the priority to set
      */
     public void setPriority(final int pPriority) {
-        priority = new Integer(pPriority);
+        priority = Integer.valueOf(pPriority);
     }
 
     /**
@@ -243,7 +243,7 @@ public class JobInfo implements IIdentifiable<Long> {
      * @return job is archived
      */
     public Boolean isArchived() {
-        return archived.booleanValue();
+        return archived;
     }
 
     /**
@@ -251,7 +251,7 @@ public class JobInfo implements IIdentifiable<Long> {
      *            set if job archived
      */
     public void setArchived(final boolean pArchived) {
-        archived = new Boolean(pArchived);
+        archived = Boolean.valueOf(pArchived);
     }
 
 }
