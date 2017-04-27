@@ -60,7 +60,7 @@ public final class PluginUtils {
         // Static class
     }
 
-    public static void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
+     public static  synchronized void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
         pluginUtilsBean = pPluginUtilsBean;
     }
 
@@ -167,7 +167,7 @@ public final class PluginUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
-            final List<String> pPrefixs, final PluginParameter... pPluginParameters)  {
+            final List<String> pPrefixs, final PluginParameter... pPluginParameters) {
         T returnPlugin = null;
 
         try {
@@ -185,7 +185,8 @@ public final class PluginUtils {
             doInitPlugin(returnPlugin);
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | ClassNotFoundException e) {
-            throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pPluginMetadata.getPluginClassName()), e);
+            throw new PluginUtilsRuntimeException(
+                    String.format(CANNOT_INSTANTIATE, pPluginMetadata.getPluginClassName()), e);
 
         }
 
@@ -194,8 +195,8 @@ public final class PluginUtils {
 
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
             final IPluginUtilsBean pPluginUtilsBean, final List<String> pPrefixs,
-            final PluginParameter... pPluginParameters)  {
-        pluginUtilsBean = pPluginUtilsBean;
+            final PluginParameter... pPluginParameters) {
+        setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPrefixs, pPluginParameters);
     }
 
@@ -212,7 +213,7 @@ public final class PluginUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final String pPluginClassName,
-            final List<String> pPrefixs, final PluginParameter... pPluginParameters)  {
+            final List<String> pPrefixs, final PluginParameter... pPluginParameters) {
         T returnPlugin = null;
 
         try {
@@ -252,8 +253,8 @@ public final class PluginUtils {
      */
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
             final IPluginUtilsBean pPluginUtilsBean, final List<String> pPrefixs,
-            final PluginParameter... pPluginParameters)  {
-        pluginUtilsBean = pPluginUtilsBean;
+            final PluginParameter... pPluginParameters) {
+        setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPrefixs, pPluginParameters);
     }
 
@@ -269,7 +270,7 @@ public final class PluginUtils {
      * @ if a problem occurs
      */
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
-            final List<String> pPrefixs, final PluginParameter... pPluginParameters)  {
+            final List<String> pPrefixs, final PluginParameter... pPluginParameters) {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
@@ -284,7 +285,7 @@ public final class PluginUtils {
      * @param pPluginInstance the {@link Plugin} instance
      * @ if a problem occurs
      */
-    private static <T> void doInitPlugin(final T pPluginInstance)  {
+    private static <T> void doInitPlugin(final T pPluginInstance) {
         final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
         for (final Method method : allMethods) {
             if (method.isAnnotationPresent(PluginInit.class)) {
@@ -314,7 +315,7 @@ public final class PluginUtils {
      * @ if a problem occurs
      */
     public static <T> PluginConfiguration getPluginConfiguration(final List<PluginParameter> pParameters,
-            final Class<T> pReturnInterfaceType, final List<String> pPrefixs)  {
+            final Class<T> pReturnInterfaceType, final List<String> pPrefixs) {
         // Build plugin metadata
         final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
