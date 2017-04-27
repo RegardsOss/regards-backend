@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsITWithoutMocked
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -75,6 +76,9 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IProjectUsersClient projectUserClient;
+
     /**
      * A dummy collection
      */
@@ -120,6 +124,9 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
 
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(CatalogControllerTestUtils.USER_CLIENT_RESPONSE);
+
+        Mockito.when(projectUserClient.isAdmin(Mockito.anyString()))
+                .thenReturn(CatalogControllerTestUtils.PROJECT_USERS_CLIENT_RESPONSE);
 
         // Set groups
         COLLECTION.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
