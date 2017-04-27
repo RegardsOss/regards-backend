@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.test.report.annotation.Requirements;
 
 /**
  *
@@ -418,10 +417,10 @@ public class PluginControllerIT extends AbstractRegardsIT {
     @Test
     @DirtiesContext
     @Requirement("REGARDS_DSL_SYS_ARC_230")
-    @Purpose("If a HTTP request POST is unsopported or mal-formatted, the HTTP return code is 503")
+    @Purpose("If a HTTP request POST is unsopported or mal-formatted, the HTTP return code is 400")
     public void savePluginConfigurationErrorConfNull() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isServiceUnavailable());
+        expectations.add(status().isBadRequest());
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, null, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
@@ -448,7 +447,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(SamplePlugin.class.getCanonicalName());
-        //        pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
+        // pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);
