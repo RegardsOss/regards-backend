@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,8 +11,6 @@ import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.MultiTenancyStrategy;
-import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
-import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
@@ -40,19 +37,19 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
+import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -90,23 +87,8 @@ public class MultitenantJpaAutoConfiguration {
     @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
     private Map<String, DataSource> dataSources;
 
-    /**
-     * Microservice global configuration
-     */
     @Autowired
-    private MultitenantDaoProperties configuration;
-
-    @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
-    private String implicitNamingStrategyName;
-
-    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
-    private String physicalNamingStrategyName;
-
-    /**
-     * JPA Configuration
-     */
-    @Autowired
-    private JpaProperties jpaProperties;
+    private UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper;
 
     /**
      * Multitenant connection provider
@@ -119,6 +101,12 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Autowired
     private CurrentTenantIdentifierResolver currentTenantIdentifierResolver;
+
+    /**
+     * Transaction manager builder
+     */
+    @Autowired
+    private EntityManagerFactoryBuilder builder;
 
     /**
      *
@@ -154,48 +142,31 @@ public class MultitenantJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
-    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider(
-            IInstanceSubscriber instanceSubscriber) {
-        return new DataSourceBasedMultiTenantConnectionProviderImpl(configuration, dataSources, instanceSubscriber,
-                microserviceName);
+    public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
+        return new DataSourceBasedMultiTenantConnectionProviderImpl(dataSources);
     }
 
     /**
-     *
      * Create Transaction manager for multitenancy projects datasources
      *
-     * @param pBuilder
-     *            EntityManagerFactoryBuilder
-     * @return PlatformTransactionManager
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @since 1.0-SNAPSHOT
+     * @return {@link PlatformTransactionManager}
+     * @throws JpaMultitenantException
      */
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
-    public PlatformTransactionManager multitenantsJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder)
-            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public PlatformTransactionManager multitenantsJpaTransactionManager() throws JpaMultitenantException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(pBuilder).getObject());
+        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory().getObject());
         return jtm;
     }
 
     /**
-     *
      * Create EntityManagerFactory for multitenancy datasources
      *
-     * @param pBuilder
-     *            EntityManagerFactoryBuilder
-     * @return LocalContainerEntityManagerFactoryBean
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @since 1.0-SNAPSHOT
+     * @return {@link LocalContainerEntityManagerFactoryBean}
+     * @throws JpaMultitenantException
      */
     @Bean(name = "multitenantsEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory(
-            final EntityManagerFactoryBuilder pBuilder)
-            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() throws JpaMultitenantException {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."
@@ -203,33 +174,19 @@ public class MultitenantJpaAutoConfiguration {
         }
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
-        final Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties.getHibernateProperties(defaultDataSource));
+        // Init with common properties
+        final Map<String, Object> hibernateProps = updateDatasourceSchemaHelper.getDbProperties(defaultDataSource);
 
+        // Add multitenant properties
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
-
-        final PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
-                .forName(physicalNamingStrategyName).newInstance();
-        hibernateProps.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
-        final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
-                .forName(implicitNamingStrategyName).newInstance();
-        hibernateProps.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
-        hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
-        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
-
-        if (configuration.getEmbedded()) {
-            hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
-        } else {
-            hibernateProps.put(Environment.DIALECT, configuration.getDialect());
-        }
 
         // Find classpath for each Entity and not NonStandardEntity
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
 
-        return pBuilder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
+        return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
     }
 

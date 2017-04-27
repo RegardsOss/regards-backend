@@ -22,7 +22,7 @@ public interface ITenantConnectionResolver {
 
     /**
      *
-     * Retrieve the connection configuration for each tenant of the specified microservice
+     * Retrieve all <b>enabled connection configuration</b> for each tenant of the specified microservice
      *
      * @param microserviceName
      *            related microservice

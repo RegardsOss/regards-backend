@@ -9,13 +9,13 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  *
- * Class UpdateAuthoritiesEvent
+ * This event must be sent when a new tenant is created and after default role creation to register microservice
+ * resources.
  *
- * AMQP Event to inform that authorities has been changed by administration service.
+ * @author Marc Sordi
  *
- * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Event(target = Target.ALL)
-public class UpdateAuthoritiesEvent implements ISubscribable {
+public class ResourceAccessInit implements ISubscribable {
+
 }

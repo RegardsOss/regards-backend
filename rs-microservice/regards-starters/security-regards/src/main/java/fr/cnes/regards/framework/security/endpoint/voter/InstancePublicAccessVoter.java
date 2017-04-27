@@ -33,8 +33,8 @@ public class InstancePublicAccessVoter implements IInstancePublicAccessVoter {
     /**
      * Constructor
      *
-     * @param pMethodAuthService
-     *            the method authoization service
+     * @param pInstanceTenantName
+     *            instance
      */
     public InstancePublicAccessVoter(final String pInstanceTenantName) {
         this.instanceTenantName = pInstanceTenantName;

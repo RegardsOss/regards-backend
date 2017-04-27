@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
@@ -17,6 +18,7 @@ import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.event.SecurityEventHandler;
 
 /**
  * Method Authorization Service auto configuration
@@ -28,6 +30,12 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 @ConditionalOnWebApplication
 @AutoConfigureBefore(MultitenantAutoConfiguration.class)
 public class MethodAuthorizationServiceAutoConfiguration {
+
+    /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     @Value("${regards.instance.tenant.name:instance}")
     private String instanceTenantName;
@@ -54,5 +62,10 @@ public class MethodAuthorizationServiceAutoConfiguration {
     @ConditionalOnMissingBean
     public IPluginResourceManager pluginResourceManager() {
         return new DefaultPluginResourceManager();
+    }
+
+    @Bean
+    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber) {
+        return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService());
     }
 }

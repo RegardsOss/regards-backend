@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +57,12 @@ public abstract class AbstractJpaAutoConfiguration {
     private static final String PERSITENCE_UNIT_NAME = "instance";
 
     /**
+     * Current microservice name
+     */
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
+    /**
      * Microservice global configuration
      */
     @Autowired
@@ -73,6 +80,12 @@ public abstract class AbstractJpaAutoConfiguration {
     @Autowired
     @Qualifier("instanceDataSource")
     private DataSource instanceDataSource;
+
+    /**
+     * Transaction manager builder
+     */
+    @Autowired
+    private EntityManagerFactoryBuilder builder;
 
     /**
      *
@@ -96,9 +109,9 @@ public abstract class AbstractJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
-    public PlatformTransactionManager instanceJpaTransactionManager(final EntityManagerFactoryBuilder pBuilder) {
+    public PlatformTransactionManager instanceJpaTransactionManager() {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(instanceEntityManagerFactory(pBuilder).getObject());
+        jtm.setEntityManagerFactory(instanceEntityManagerFactory().getObject());
         return jtm;
     }
 
@@ -113,8 +126,7 @@ public abstract class AbstractJpaAutoConfiguration {
      */
     @Bean
     @Primary
-    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory(
-            final EntityManagerFactoryBuilder pBuilder) {
+    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory() {
 
         final Map<String, Object> hibernateProps = new LinkedHashMap<>();
         hibernateProps.putAll(jpaProperties.getHibernateProperties(instanceDataSource));
@@ -128,13 +140,13 @@ public abstract class AbstractJpaAutoConfiguration {
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
         hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
-        hibernateProps.put(DataSourceHelper.HIBERNATE_ID_GENERATOR_PROP, "true");
+        hibernateProps.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
 
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         List<Class<?>> packages;
         packages = DaoUtils.scanPackagesForJpa(getEntityAnnotationScan(), null, packagesToScan);
 
-        return pBuilder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
+        return builder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
                 .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
 
     }

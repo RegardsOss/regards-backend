@@ -18,7 +18,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  * @author msordi
  *
  */
-public class LocalTenantResolver implements ITenantResolver {
+public class DefaultTenantResolver implements ITenantResolver {
 
     /**
      * List of configurated tenants

@@ -51,6 +51,7 @@ public class MockAmqpConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Primary
     public IPublisher eventPublisher() {
         return Mockito.mock(IPublisher.class);
     }
@@ -62,6 +63,7 @@ public class MockAmqpConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean
+    @Primary
     public IInstancePublisher eventInstancePublisher() {
         return Mockito.mock(IInstancePublisher.class);
     }
