@@ -16,6 +16,7 @@ import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
  *
  * @since 1.0-SNAPSHOT
  */
+@Ignore
 public class KerberosServiceProviderPluginTest {
 
     /**
