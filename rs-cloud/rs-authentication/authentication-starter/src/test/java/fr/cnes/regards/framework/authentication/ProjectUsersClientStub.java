@@ -93,4 +93,14 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.modules.accessrights.client.IProjectUsersClient#isAdmin(java.lang.String)
+     */
+    @Override
+    public ResponseEntity<Boolean> isAdmin(String pUserEmail) {
+        return null;
+    }
+
 }
