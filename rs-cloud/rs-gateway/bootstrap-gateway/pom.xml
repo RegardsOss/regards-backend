@@ -25,6 +25,8 @@
 	</properties>
 
 	<dependencies>
+		<!-- <dependency> <groupId>fr.cnes.regards.framework</groupId> <artifactId>microservice-regards-starter</artifactId> 
+			</dependency> -->
 		<!-- Spring cloud dependencies -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -38,35 +40,31 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
-		<!-- Regards dependencies -->
+		<!-- Spring boot config -->
 		<dependency>
-			<groupId>fr.cnes.regards.cloud.gateway</groupId>
-			<artifactId>authentication-starter</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>microservice-regards-starter</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
+		<!-- Activate actuator -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		<!-- Tests -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>remote-tenant-resolver</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-monitoring-regards-starter</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -94,7 +92,7 @@
 		</profile>
 		<profile>
 			<id>docker</id>
-			<properties> 
+			<properties>
 				<!-- Default properties -->
 				<filter.name>docker</filter.name>
 			</properties>

@@ -5,11 +5,9 @@ package fr.cnes.regards.cloud.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
-import org.springframework.context.annotation.Bean;
-
-import fr.cnes.regards.cloud.gateway.filters.ZuulLogFilter;
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  *
@@ -20,9 +18,10 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@SpringBootApplication(scanBasePackages = "fr.cnes.regards.modules")
-@MicroserviceInfo(name = "gateway", version = "1.0-SNAPSHOT")
+@SpringBootApplication
 @EnableZuulProxy
+@EnableDiscoveryClient
+@EnableEurekaClient
 public class Application { // NOSONAR
 
     /**
@@ -36,17 +35,4 @@ public class Application { // NOSONAR
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
-
-    /**
-     *
-     * Create zuul proxy filter
-     *
-     * @return ZuulLogFilter
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    public ZuulLogFilter proxyLogFilter() {
-        return new ZuulLogFilter();
-    }
-
 }
