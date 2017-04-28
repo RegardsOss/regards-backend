@@ -245,9 +245,14 @@ public class PluginService implements IPluginService {
         // pluginImpls.forEach(pMetaData -> configurations
         // .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
 
-        return Lists.newArrayList(pluginConfRepository.findAll()).stream()
-                .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
-                .collect(Collectors.toList());
+        Iterable<PluginConfiguration> plgConfs = pluginConfRepository.findAll();
+        if (plgConfs != null) {
+            return Lists.newArrayList(plgConfs).stream()
+                    .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
+                    .collect(Collectors.toList());
+        } else {
+            return Lists.newArrayList();
+        }
     }
 
     @Override
