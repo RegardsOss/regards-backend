@@ -126,6 +126,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginId = "undefined";
         priorityOrder = 0;
         version = "0.0";
+        interfaceNames = Sets.newHashSet();
     }
 
     /**
