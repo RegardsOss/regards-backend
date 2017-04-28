@@ -6,9 +6,11 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
@@ -27,8 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
@@ -101,10 +105,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     private String pluginClassName;
 
     /**
-     * The interface implemented by the pluginClassName, an interface that implements {@link PluginInterface}
+     * The interfaces, that implements {@link PluginInterface}, implemented by the pluginClassName
      */
-    @Column(nullable = false)
-    private String interfaceName;
+    @Column(columnDefinition = "text")
+    @Convert(converter = SetStringCsvConverter.class)
+    private Set<String> interfaceNames;
 
     /**
      * Configuration parameters of the plugin
@@ -130,14 +135,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param pLabel the label
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel) {
-        super();
-        pluginId = pPluginMetaData.getPluginId();
-        version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClassName();
-        interfaceName = pPluginMetaData.getInterfaceName();
-        priorityOrder = 0;
-        label = pLabel;
-        active = Boolean.TRUE;
+        this(pPluginMetaData, pLabel, null, 0);
     }
 
     /**
@@ -149,15 +147,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
             final List<PluginParameter> pParameters) {
-        super();
-        pluginId = pPluginMetaData.getPluginId();
-        version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClassName();
-        interfaceName = pPluginMetaData.getInterfaceName();
-        parameters = pParameters;
-        priorityOrder = 0;
-        label = pLabel;
-        active = Boolean.TRUE;
+        this(pPluginMetaData, pLabel, pParameters, 0);
     }
 
     /**
@@ -174,7 +164,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginId = pPluginMetaData.getPluginId();
         version = pPluginMetaData.getVersion();
         pluginClassName = pPluginMetaData.getPluginClassName();
-        interfaceName = pPluginMetaData.getInterfaceName();
+        interfaceNames = Sets.newHashSet(pPluginMetaData.getInterfaceNames());
         parameters = pParameters;
         priorityOrder = pOrder;
         label = pLabel;
@@ -189,20 +179,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param pOrder the order
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
-        super();
-        pluginId = pPluginMetaData.getPluginId();
-        version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClassName();
-        interfaceName = pPluginMetaData.getInterfaceName();
-        priorityOrder = pOrder;
-        label = pLabel;
-        active = Boolean.TRUE;
+        this(pPluginMetaData, pLabel, null, pOrder);
     }
 
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
         id = other.id;
-        interfaceName = other.interfaceName;
+        interfaceNames = Sets.newHashSet(other.interfaceNames);
         label = other.label;
         parameters = Lists.newArrayList(other.parameters);
         pluginClassName = other.pluginClassName;
@@ -364,12 +347,12 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return pluginClassName;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public Set<String> getInterfaceNames() {
+        return interfaceNames;
     }
 
-    public void setInterfaceName(String pInterfaceName) {
-        interfaceName = pInterfaceName;
+    public void setInterfaceNames(Set<String> pInterfaceNames) {
+        interfaceNames = pInterfaceNames;
     }
 
     @Override
@@ -425,7 +408,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public String toString() {
         return "PluginConfiguration [id=" + id + ", pluginId=" + pluginId + ", label=" + label + ", version=" + version
                 + ", priorityOrder=" + priorityOrder + ", active=" + active + ", pluginClassName=" + pluginClassName
-                + ", interfaceName=" + interfaceName + "]";
+                + ", interfaceName=" + interfaceNames + "]";
     }
 
 }

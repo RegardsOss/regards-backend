@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +159,7 @@ public class PluginService implements IPluginService {
 
         getLoadedPlugins().forEach((pKey, pValue) -> {
             if (pValue.getPluginClassName().equals(pPluginConfiguration.getPluginClassName())) {
-                pPluginConfiguration.setInterfaceName(pValue.getInterfaceName());
+                pPluginConfiguration.setInterfaceNames(pValue.getInterfaceNames());
             }
         });
 
@@ -167,7 +168,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration newConf = pluginConfRepository.save(pPluginConfiguration);
         if (shouldPublishCreation) {
             publisher.publish(new PluginConfigurationEvent(newConf.getId(), PluginServiceAction.CREATE,
-                    newConf.getInterfaceName()));
+                    newConf.getInterfaceNames()));
         }
 
         return newConf;
@@ -205,10 +206,10 @@ public class PluginService implements IPluginService {
         if (oldConfActive != newPluginConfiguration.isActive()) {
             if (newPluginConfiguration.isActive()) {
                 publisher.publish(new PluginConfigurationEvent(pPluginConf.getId(), PluginServiceAction.ACTIVATE,
-                        newPluginConfiguration.getInterfaceName()));
+                        newPluginConfiguration.getInterfaceNames()));
             } else {
                 publisher.publish(new PluginConfigurationEvent(pPluginConf.getId(), PluginServiceAction.DESACTIVATE,
-                        newPluginConfiguration.getInterfaceName()));
+                        newPluginConfiguration.getInterfaceNames()));
             }
         }
         /**
@@ -227,7 +228,7 @@ public class PluginService implements IPluginService {
             throw new EntityNotFoundException(pConfId.toString(), PluginConfiguration.class);
         }
         publisher.publish(new PluginConfigurationEvent(pConfId, PluginServiceAction.DELETE,
-                toDelete.getInterfaceName()));
+                toDelete.getInterfaceNames()));
         pluginConfRepository.delete(pConfId);
 
         /**
@@ -238,15 +239,15 @@ public class PluginService implements IPluginService {
 
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
-        final List<PluginConfiguration> configurations = new ArrayList<>();
-        //
+
         // final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
         //
         // pluginImpls.forEach(pMetaData -> configurations
         // .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
-        configurations.addAll(pluginConfRepository
-                .findAllByInterfaceNameOrderByPriorityOrderDesc(pInterfacePluginType.getName()));
-        return configurations;
+
+        return Lists.newArrayList(pluginConfRepository.findAll()).stream()
+                .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override

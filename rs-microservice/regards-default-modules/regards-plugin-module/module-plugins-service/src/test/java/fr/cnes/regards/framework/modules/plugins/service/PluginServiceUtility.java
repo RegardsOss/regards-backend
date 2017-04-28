@@ -6,6 +6,8 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -156,7 +158,7 @@ public class PluginServiceUtility {
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
-        pluginMetaData.setInterfaceName(IComplexInterfacePlugin.class.getName());
+        pluginMetaData.setInterfaceNames(Sets.newHashSet(IComplexInterfacePlugin.class.getName()));
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

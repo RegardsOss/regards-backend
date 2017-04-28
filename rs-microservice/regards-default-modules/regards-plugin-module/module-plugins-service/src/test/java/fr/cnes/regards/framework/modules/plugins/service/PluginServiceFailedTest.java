@@ -190,9 +190,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked
-                .findAllByInterfaceNameOrderByPriorityOrderDesc(IComplexInterfacePlugin.class.getName()))
-                .thenReturn(pluginConfs);
+        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
         Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 

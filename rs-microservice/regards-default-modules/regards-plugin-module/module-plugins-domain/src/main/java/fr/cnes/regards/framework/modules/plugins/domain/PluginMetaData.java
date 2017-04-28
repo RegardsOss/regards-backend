@@ -5,6 +5,9 @@
 package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
@@ -23,7 +26,7 @@ public class PluginMetaData {
     /**
      * The interface used by the plugin
      */
-    private String interfaceName;
+    private Set<String> interfaceNames;
 
     /**
      * The author of the plugin
@@ -101,12 +104,15 @@ public class PluginMetaData {
         pluginClassName = pPluginClassName;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public Set<String> getInterfaceNames() {
+        if (interfaceNames == null) {
+            interfaceNames = Sets.newHashSet();
+        }
+        return interfaceNames;
     }
 
-    public void setInterfaceName(String pInterfaceClassName) {
-        interfaceName = pInterfaceClassName;
+    public void setInterfaceNames(Set<String> pInterfaceNames) {
+        interfaceNames = pInterfaceNames;
     }
 
     public String getAuthor() {

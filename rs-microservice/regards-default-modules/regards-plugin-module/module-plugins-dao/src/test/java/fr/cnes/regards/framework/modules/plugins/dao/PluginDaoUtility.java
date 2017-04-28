@@ -20,7 +20,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
  * Constants and datas for unit testing of plugin's DAO.
  *
  * @author Christophe Mertz
- *
  */
 public class PluginDaoUtility extends AbstractDaoTest {
 
@@ -117,7 +116,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
-        pluginMetaData.setInterfaceName("TestInterface");
+        pluginMetaData.getInterfaceNames().add("TestInterface");
         pluginMetaData.setPluginId("plugin-id");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

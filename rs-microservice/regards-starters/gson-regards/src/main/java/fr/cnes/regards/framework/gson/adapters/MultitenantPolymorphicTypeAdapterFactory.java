@@ -10,7 +10,6 @@
 package fr.cnes.regards.framework.gson.adapters;
 
 import java.io.IOException;
-import java.time.zone.ZoneRulesProvider;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +39,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  *
  * @author Marc Sordi
  * @author oroussel
- *
  * @param <E> entity base type
  */
 public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
@@ -93,17 +91,12 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Constructor
      *
-     * @param pTenantResolver
-     *            tenant resolver
-     * @param pBaseType
-     *            base hierarchy type
-     * @param pDiscriminatorFieldName
-     *            discriminator field name
-     * @param pInjectField
-     *            do not inject field if already exists else yes.
+     * @param pTenantResolver tenant resolver
+     * @param pBaseType base hierarchy type
+     * @param pDiscriminatorFieldName discriminator field name
+     * @param pInjectField do not inject field if already exists else yes.
      */
     protected MultitenantPolymorphicTypeAdapterFactory(IRuntimeTenantResolver pTenantResolver, Class<E> pBaseType,
             String pDiscriminatorFieldName, boolean pInjectField) {
@@ -127,12 +120,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Init a {@link TypeAdapterFactory} with an existing discriminator field (so field is not injected)
      *
-     * @param pTenantResolver
-     *            tenant resolver
-     * @param pBaseType
-     *            base hierarchy type
-     * @param pDiscriminatorFieldName
-     *            discriminator field name
+     * @param pTenantResolver tenant resolver
+     * @param pBaseType base hierarchy type
+     * @param pDiscriminatorFieldName discriminator field name
      */
     protected MultitenantPolymorphicTypeAdapterFactory(IRuntimeTenantResolver pTenantResolver, Class<E> pBaseType,
             String pDiscriminatorFieldName) {
@@ -142,10 +132,8 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Inject default discriminator field name in the serialized object.
      *
-     * @param pTenantResolver
-     *            tenant resolver
-     * @param pBaseType
-     *            base hierarchy type
+     * @param pTenantResolver tenant resolver
+     * @param pBaseType base hierarchy type
      */
     protected MultitenantPolymorphicTypeAdapterFactory(IRuntimeTenantResolver pTenantResolver, Class<E> pBaseType) {
         this(pTenantResolver, pBaseType, DEFAULT_DISCRIMINATOR_FIELD_NAME, true);
@@ -154,13 +142,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Register a mapping between a field value and an explicit type
      *
-     * @param pTenant
-     *            tenant
-     * @param pType
-     *            type
-     * @param pDiscriminatorFieldValue
-     *            field value
-     *
+     * @param pTenant tenant
+     * @param pType type
+     * @param pDiscriminatorFieldValue field value
      */
     public void registerSubtype(String pTenant, Class<?> pType, String pDiscriminatorFieldValue) {
         setRefreshMapping(pTenant, true);
@@ -206,12 +190,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Unregister mapping between a field value and an explicit type
      *
-     * @param pTenant
-     *            tenant
-     * @param pType
-     *            type
-     * @param pDiscriminatorFieldValue
-     *            field value
+     * @param pTenant tenant
+     * @param pType type
+     * @param pDiscriminatorFieldValue field value
      */
     public void unregisterSubtype(String pTenant, Class<?> pType, String pDiscriminatorFieldValue) {
         setRefreshMapping(pTenant, true);
@@ -233,12 +214,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Register a mapping between an enumeration and an explicit type.
      *
-     * @param pType
-     *            type
-     * @param pEnum
-     *            enum value
-     * @param pTenant
-     *            tenant
+     * @param pType type
+     * @param pEnum enum value
+     * @param pTenant tenant
      */
     public void registerSubtype(String pTenant, Class<?> pType, Enum<?> pEnum) {
         registerSubtype(pTenant, pType, pEnum.toString());
@@ -258,7 +236,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         }
     }
 
-    protected boolean needRefreshMapping(String pTenant) {
+    protected Boolean needRefreshMapping(String pTenant) {
         if (!refreshMapping.containsKey(pTenant)) {
             LOGGER.warn("Empty mapping for tenant {}", pTenant);
         }
@@ -286,14 +264,10 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Store mappings
      *
-     * @param pGson
-     *            GSON
-     * @param pDiscriminatorToDelegate
-     *            mapping between discriminator value and adapter
-     * @param pSubtypeToDelegate
-     *            mapping between sub type and adapter
-     * @param pTenant
-     *            tenant
+     * @param pGson GSON
+     * @param pDiscriminatorToDelegate mapping between discriminator value and adapter
+     * @param pSubtypeToDelegate mapping between sub type and adapter
+     * @param pTenant tenant
      */
     protected void doTenantMapping(Gson pGson, Map<String, TypeAdapter<?>> pDiscriminatorToDelegate,
             Map<Class<?>, TypeAdapter<?>> pSubtypeToDelegate, String pTenant) {
@@ -354,8 +328,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
      * Default behavior to retrieve discriminator on read.<br/>
      * Override this method to customize discriminator retrieval.
      *
-     * @param pJsonElement
-     *            parsed JSON
+     * @param pJsonElement parsed JSON
      * @return {@link JsonElement} containing a {@link String} representing the discriminator field value.
      */
     protected JsonElement getOnReadDiscriminator(JsonElement pJsonElement) {
@@ -374,12 +347,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
      * Default behavior before parsing {@link JsonElement} to sub type.<br/>
      * Override this method to manipulate {@link JsonElement} before parsing it into target type.
      *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            related discriminator value
-     * @param pSubType
-     *            target type
+     * @param pJsonElement {@link JsonElement}
+     * @param pDiscriminator related discriminator value
+     * @param pSubType target type
      * @return {@link JsonElement} that will be parsed.
      */
     protected JsonElement beforeRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) { // NOSONAR
@@ -390,10 +360,8 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
      * Default behavior before writing {@link JsonElement} to output stream.<br/>
      * Override this method to manipulate {@link JsonElement} before writing it to JSON.
      *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pSubType
-     *            target type
+     * @param pJsonElement {@link JsonElement}
+     * @param pSubType target type
      * @return {@link JsonElement} that will be write on output stream.
      */
     protected JsonElement beforeWrite(JsonElement pJsonElement, Class<?> pSubType) { // NOSONAR

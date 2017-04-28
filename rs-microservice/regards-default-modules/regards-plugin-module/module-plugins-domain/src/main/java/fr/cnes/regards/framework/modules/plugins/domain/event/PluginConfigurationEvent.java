@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.event;
 
+import java.util.Set;
+
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -17,13 +19,13 @@ public class PluginConfigurationEvent implements ISubscribable {
 
     private PluginServiceAction action;
 
-    private String pluginType;
+    private Set<String> pluginTypes;
 
-    public PluginConfigurationEvent(Long pPluginConfId, PluginServiceAction pAction, String pPluginType) {
+    public PluginConfigurationEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {
         super();
         pluginConfId = pPluginConfId;
         action = pAction;
-        pluginType = pPluginType;
+        pluginTypes = pPluginTypes;
     }
 
     private PluginConfigurationEvent() {
@@ -46,12 +48,12 @@ public class PluginConfigurationEvent implements ISubscribable {
         action = pAction;
     }
 
-    public String getPluginType() {
-        return pluginType;
+    public Set<String> getPluginTypes() {
+        return pluginTypes;
     }
 
-    public void setPluginType(String pPluginType) {
-        pluginType = pPluginType;
+    public void setPluginTypes(Set<String> pPluginTypes) {
+        pluginTypes = pPluginTypes;
     }
 
     @Override
@@ -60,7 +62,7 @@ public class PluginConfigurationEvent implements ISubscribable {
         int result = 1;
         result = (prime * result) + ((action == null) ? 0 : action.hashCode());
         result = (prime * result) + ((pluginConfId == null) ? 0 : pluginConfId.hashCode());
-        result = (prime * result) + ((pluginType == null) ? 0 : pluginType.hashCode());
+        result = (prime * result) + ((pluginTypes == null) ? 0 : pluginTypes.hashCode());
         return result;
     }
 
@@ -87,12 +89,12 @@ public class PluginConfigurationEvent implements ISubscribable {
             if (!pluginConfId.equals(other.pluginConfId)) {
                 return false;
             }
-        if (pluginType == null) {
-            if (other.pluginType != null) {
+        if (pluginTypes == null) {
+            if (other.pluginTypes != null) {
                 return false;
             }
         } else
-            if (!pluginType.equals(other.pluginType)) {
+            if (!pluginTypes.equals(other.pluginTypes)) {
                 return false;
             }
         return true;
