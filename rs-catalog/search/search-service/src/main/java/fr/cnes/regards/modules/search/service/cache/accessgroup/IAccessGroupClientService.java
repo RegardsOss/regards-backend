@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.search.service.cache.accessgroup;
 
 import java.util.List;
 
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
@@ -15,7 +14,7 @@ import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
  *
  * @author Xavier-Alexandre Brochard
  */
-public interface IAccessGroupClientService {
+public interface IAccessGroupClientService { //NOSONAR
 
     /**
      * The call will first check the cache "accessgroups" before actually invoking the method and then caching the

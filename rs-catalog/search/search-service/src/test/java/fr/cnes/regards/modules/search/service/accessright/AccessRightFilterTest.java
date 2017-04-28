@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.search.service.accessright;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -19,16 +18,17 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.queryparser.service.RegardsQueryParser;
+import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.AttributeModelCache;
+import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
-import fr.cnes.regards.modules.search.service.cache.attributemodel.AttributeModelCache;
-import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
-import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**
