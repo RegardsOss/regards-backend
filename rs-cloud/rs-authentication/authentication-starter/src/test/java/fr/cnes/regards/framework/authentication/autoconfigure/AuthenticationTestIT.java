@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -24,16 +25,14 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
- * Class GatewayApplicationTest
- *
- * Test class for the Gateway application
+ * Class GatewayApplicationTest Test class for the Gateway application
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:authentication-test.properties")
 public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
@@ -90,7 +89,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     private MockMvc mockMvc;
 
     /**
-     *
      * Check that the gateway spring context is valid
      *
      * @since 1.0-SNAPSHOT
@@ -102,7 +100,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Check access to unexisting endpoints. Response must be Unauthorized.
      *
      * @throws Exception
@@ -118,7 +115,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.
      *
      * @since 1.0-SNAPSHOT
@@ -150,7 +146,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Test the Oauth2 authentication process. Test unauthorized for user/password invalid.
      *
      * @since 1.0-SNAPSHOT
@@ -178,7 +173,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Test the Oauth2 authentication process. Get a valid token.
      *
      * @since 1.0-SNAPSHOT

@@ -28,14 +28,10 @@ import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticat
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
 
 /**
- *
- * Class AuthenticationControllerIT
- *
- * Test REST endpoints to manage Service provider plugins
+ * Class AuthenticationControllerIT Test REST endpoints to manage Service provider plugins
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
  * @since 1.0-SNAPSHOT
  */
 // @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
@@ -96,7 +92,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Init the context of the tests
      *
      * @since 1.0-SNAPSHOT
@@ -106,14 +101,13 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setInterfaceName(IServiceProviderPlugin.class.getName());
+        metadata.getInterfaceNames().add(IServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);
     }
 
     /**
-     *
      * Integration test to retrieve all configured Service Provider plugins of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -131,7 +125,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to retrieve one configured Service Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -151,7 +144,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to retrieve one configured Service Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -168,7 +160,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to create a configured Service Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -195,7 +186,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to update a configured Service Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -220,7 +210,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to update a configured Service Provider plugin of the Authentication module with error
      *
      * @since 1.0-SNAPSHOT
@@ -244,7 +233,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to update a configured Service Provider plugin of the Authentication module with eror
      *
      * @since 1.0-SNAPSHOT
@@ -267,7 +255,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to delete a configured Service Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -280,7 +267,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setInterfaceName("fr.cnes.regards.framework.some.modules.PluginToDelete");
+        metadata.getInterfaceNames().add("fr.cnes.regards.framework.some.modules.PluginToDelete");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
@@ -291,7 +278,6 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     }
 
     /**
-     *
      * Integration test to delete a configured Service Provider plugin of the Authentication module with error
      *
      * @since 1.0-SNAPSHOT
