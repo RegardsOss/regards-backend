@@ -28,8 +28,8 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
+import fr.cnes.regards.modules.queryparser.service.RegardsQueryParser;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
-import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**

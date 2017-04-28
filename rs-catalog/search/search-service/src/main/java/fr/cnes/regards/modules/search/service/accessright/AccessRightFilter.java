@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
@@ -46,9 +46,11 @@ public class AccessRightFilter implements IAccessRightFilter {
     private final IProjectUsersClient projectUserClient;
 
     /**
-     * @param pCache
-     * @param pRuntimeTenantResolver
-     */
+    * Constructor
+    * @param pCache the cache providing access groups
+    * @param pRuntimeTenantResolver get current tenant at runtime
+    * @param pProjectUserClient Feign client for project users
+    */
     public AccessRightFilter(IAccessGroupClientService pCache, IRuntimeTenantResolver pRuntimeTenantResolver,
             IProjectUsersClient pProjectUserClient) {
         super();
