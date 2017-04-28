@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+import fr.cnes.regards.framework.microservice.configurer.MaintenanceConfiguration;
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
@@ -43,6 +44,11 @@ public class MicroserviceAutoConfiguration {
     @Bean
     public MicroserviceWebConfiguration webConfig() {
         return new MicroserviceWebConfiguration();
+    }
+    
+    @Bean
+    public MaintenanceConfiguration maintenanceConf() {
+        return new MaintenanceConfiguration();
     }
 
 }

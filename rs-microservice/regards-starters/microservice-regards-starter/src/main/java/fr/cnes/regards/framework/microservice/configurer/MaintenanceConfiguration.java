@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.microservice.filter.MaintenanceFilter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.filter.CorsFilter;

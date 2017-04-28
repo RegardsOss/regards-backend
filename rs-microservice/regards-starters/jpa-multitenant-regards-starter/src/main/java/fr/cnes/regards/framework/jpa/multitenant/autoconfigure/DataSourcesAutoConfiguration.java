@@ -17,16 +17,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
+import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
 
 /**
  *
@@ -58,6 +65,18 @@ public class DataSourcesAutoConfiguration {
     private String microserviceName;
 
     /**
+     * Database schema name
+     */
+    @Value("${spring.jpa.properties.hibernate.default_schema:#{null}}")
+    private String schemaName;
+
+    @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
+    private String implicitNamingStrategyName;
+
+    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
+    private String physicalNamingStrategyName;
+
+    /**
      * Microservice globale configuration
      */
     @Autowired
@@ -67,7 +86,13 @@ public class DataSourcesAutoConfiguration {
      * Custom projects dao connection reader
      */
     @Autowired
-    private ITenantConnectionResolver multitenantResolver;
+    private ITenantConnectionResolver tenantConnectionResolver;
+
+    /**
+     * JPA Configuration
+     */
+    @Autowired
+    private JpaProperties jpaProperties;
 
     /**
      *
@@ -84,13 +109,45 @@ public class DataSourcesAutoConfiguration {
         Map<String, DataSource> datasources = new HashMap<>();
 
         // Retrieve microservice tenant connections from multitenant resolver
-        List<TenantConnection> connections = multitenantResolver.getTenantConnections(microserviceName);
+        List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(microserviceName);
         // Initialize tenant connections
         initDataSources(datasources, connections, false);
         // Add static datasource configuration from properties file if necessary
         initDataSources(datasources, daoProperties.getTenants(), true);
 
         return datasources;
+    }
+
+    /**
+     * Init programmatic schema update helper
+     *
+     * @return {@link UpdateDatasourceSchemaHelper}
+     */
+    @Bean
+    public UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper() {
+        return new UpdateDatasourceSchemaHelper(implicitNamingStrategyName, physicalNamingStrategyName, daoProperties,
+                jpaProperties);
+    }
+
+    /**
+     * Init JPA event handler manager
+     *
+     * @param instanceSubscriber
+     *            to subscribe to tenant connection events
+     * @param instancePublisher
+     *            to publish {@link TenantConnectionReady} or {@link TenantConnectionDiscarded} events
+     * @param multitenantResolver
+     *            to resolve tenant
+     * @return JPA event handler
+     * @throws JpaMultitenantException
+     *             if error occurs!
+     */
+    @Bean
+    public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
+            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver)
+            throws JpaMultitenantException {
+        return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties,
+                updateDatasourceSchemaHelper(), instanceSubscriber, instancePublisher, multitenantResolver);
     }
 
     /**
@@ -117,9 +174,11 @@ public class DataSourcesAutoConfiguration {
                 try {
                     // Init data source
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
+                    // Update database schema
+                    updateDatasourceSchemaHelper().updateDataSourceSchema(dataSource);
                     // Register connection
                     if (pNeedRegistration) {
-                        multitenantResolver.addTenantConnection(microserviceName, tenantConnection);
+                        tenantConnectionResolver.addTenantConnection(microserviceName, tenantConnection);
                     }
                     // Register data source
                     pExistingDataSources.put(tenantConnection.getTenant(), dataSource);

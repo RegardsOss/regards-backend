@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
@@ -27,30 +26,36 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  * @since 1.0
  */
 @RestController
-@RequestMapping("/maintenances")
+@RequestMapping(MaintenanceController.MAINTENANCE_URL)
 public class MaintenanceController {
 
-    @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-    @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
-    @ResponseBody
-    public HttpEntity<Resource<Map<String, Boolean>>> retrieveTenantsInMaintenance() {
+    public static final String ENABLE = "enable";
 
+    public static final String DISABLE = "disable";
+
+    public static final String MAINTENANCE_URL = "/maintenance";
+
+    public static final String MAINTENANCE_ACTIVATE_URL = "/{tenant}/" + ENABLE;
+
+    public static final String MAINTENANCE_DESACTIVATE_URL = "/{tenant}/" + DISABLE;
+
+    @RequestMapping(method = RequestMethod.GET)
+    @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
+    public HttpEntity<Resource<Map<String, Boolean>>> retrieveTenantsInMaintenance() {
         final Map<String, Boolean> maintenaceMap = MaintenanceManager.getMaintenanceMap();
         final Resource<Map<String, Boolean>> resource = new Resource<>(maintenaceMap);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/activate", produces = "application/json")
+    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
     @ResourceAccess(description = "set this tenant into maintenance mode")
-    @ResponseBody
     public HttpEntity<Resource<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.setMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/desactivate", produces = "application/json")
+    @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_DESACTIVATE_URL)
     @ResourceAccess(description = "unset this tenant from maintenance mode")
-    @ResponseBody
     public HttpEntity<Resource<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.unSetMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);

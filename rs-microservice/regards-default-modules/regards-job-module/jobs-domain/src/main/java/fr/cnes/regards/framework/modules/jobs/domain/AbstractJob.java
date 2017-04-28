@@ -93,4 +93,7 @@ public abstract class AbstractJob implements IJob {
         workspace = pWorkspace;
     }
 
+    public Path getWorkspace() {
+        return workspace;
+    }
 }

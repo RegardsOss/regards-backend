@@ -33,6 +33,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *
@@ -116,6 +118,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_PLG_500")
+    @Purpose("The system allows to list all the plugins of a specific plugin's type")
     public void getPluginOneType() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
@@ -146,6 +150,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_PLG_400")
+    @Purpose("The system allows to list all the plugin's type of a microservice")
     public void getAllPluginTypes() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
@@ -212,6 +218,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_210")
+    @Purpose("When a HTTP request GET is successed, the HTTP return code is 200")
     public void getAllPluginConfiguration() {
         // Get the added PluginConfiguration
         final List<ResultMatcher> expectations = new ArrayList<>();
@@ -252,6 +260,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_220")
+    @Purpose("When a HTTP request GET an unknown entity, the HTTP return code is 404")
     public void getAllPluginConfigurationByTypeError() {
         // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
@@ -284,6 +294,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_220")
+    @Purpose("When a HTTP request GET an unknown plugin configuration, the HTTP return code is 404")
     public void getPluginConfigurationErrorWithoutPluginId() {
         // Get an unknown PluginConfiguration
         final List<ResultMatcher> expectations = new ArrayList<>();
@@ -294,6 +306,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_210")
+    @Purpose("When a HTTP request PUT is successed, the HTTP return code is 200")
     public void updatePluginConfiguration() {
         // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
@@ -378,6 +392,8 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_210")
+    @Purpose("When a HTTP request POST is successed, the HTTP return code is 201")
     public void savePluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
@@ -400,15 +416,19 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_230")
+    @Purpose("If a HTTP request POST is unsopported or mal-formatted, the HTTP return code is 400")
     public void savePluginConfigurationErrorConfNull() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isServiceUnavailable());
+        expectations.add(status().isBadRequest());
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, null, expectations,
                            "unable to save a plugin configuration", PLUGIN_ID);
     }
 
     @Test
     @DirtiesContext
+    @Requirement("REGARDS_DSL_SYS_ARC_210")
+    @Purpose("When a HTTP request DELETE is successed, the HTTP return code is 204")
     public void deletePluginConfiguration() {
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
@@ -427,7 +447,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     private PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(SamplePlugin.class.getCanonicalName());
-        //        pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
+        // pluginMetaData.setInterfaceName(ISamplePlugin.class.getCanonicalName());
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);

@@ -440,6 +440,30 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         return jwt;
     }
 
+    /**
+     * Helper method to manage default security with :
+     * <ul>
+     * <li>a specific user</li>
+     * <li>a default role</li>
+     * </ul>
+     * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
+     * role.
+     *
+     * @param pUrlPath target endpoint
+     * @param pMethod target HTTP method
+     * @return security token to authenticate user
+     */
+    protected String manageDefaultSecurity(String userEmail, final String pUrlPath, final RequestMethod pMethod) {
+
+        String path = pUrlPath;
+        if (pUrlPath.contains("?")) {
+            path = path.substring(0, pUrlPath.indexOf('?'));
+        }
+        final String jwt = generateToken(userEmail, getDefaultRole());
+        setAuthorities(path, pMethod, getDefaultRole());
+        return jwt;
+    }
+
     protected static MultiValueMap<String, String> buildRequestParams() {
         return new LinkedMultiValueMap<String, String>();
     }
@@ -459,12 +483,10 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         Path contract = CONTRACT_REPOSITORY.resolve(pJSonFileName);
 
         if (Files.exists(contract)) {
-            JsonReader reader;
-            try {
-                reader = new JsonReader(new FileReader(contract.toFile()));
+            try (JsonReader reader = new JsonReader(new FileReader(contract.toFile()))) {
                 JsonElement el = Streams.parse(reader);
                 return el.toString();
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 String message = "Cannot read JSON contract";
                 getLogger().error(message, e);
                 throw new AssertionError(message, e);

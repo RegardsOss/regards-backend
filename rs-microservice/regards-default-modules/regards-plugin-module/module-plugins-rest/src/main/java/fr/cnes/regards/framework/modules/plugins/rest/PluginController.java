@@ -356,7 +356,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             throw new EntityNotFoundException(pPluginId, PluginConfiguration.class);
         }
 
-        if (pConfigId != pPluginConfiguration.getId()) {
+        if (!pConfigId.equals(pPluginConfiguration.getId())) {
             throw new EntityNotFoundException(pConfigId.toString(), PluginConfiguration.class);
         }
 

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.plugins.utils.PluginParameterUtils.PrimitiveObject;
 
 /**
@@ -35,6 +37,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      * Load all plugins
      */
     @Test
+    @Requirement("REGARDS_DSL_SYS_PLG_010")
+    @Purpose("A plugin is defined with mate-data like, a name, a description, the author, the version, the licence...")
     public void loadPlugins() {
         LOGGER.debug(STARTING + toString());
 
@@ -46,6 +50,15 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         // Get the PluginMetaData of the first plugin
         final PluginMetaData pluginMetaData = maps.get(maps.keySet().stream().findFirst().get());
         Assert.assertNotNull(pluginMetaData);
+
+        Assert.assertNotNull(pluginMetaData.getPluginId());
+        Assert.assertNotNull(pluginMetaData.getUrl());
+        Assert.assertNotNull(pluginMetaData.getDescription());
+        Assert.assertNotNull(pluginMetaData.getAuthor());
+        Assert.assertNotNull(pluginMetaData.getContact());
+        Assert.assertNotNull(pluginMetaData.getOwner());
+        Assert.assertNotNull(pluginMetaData.getVersion());
+        Assert.assertNotNull(pluginMetaData.getLicence());
 
         LOGGER.debug(ENDING + toString());
     }

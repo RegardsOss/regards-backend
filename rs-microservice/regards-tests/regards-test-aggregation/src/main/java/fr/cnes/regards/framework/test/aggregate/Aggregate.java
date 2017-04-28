@@ -28,13 +28,14 @@ public class Aggregate {
     /**
      * @param args
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws AggregationException, ReportException {
 
         LOGGER.info("Starting report aggregation");
 
         // Check argument length
         if ((args == null) || (args.length != 1)) {
             usage();
+            return;
         }
 
         // Check basedir exists
@@ -49,7 +50,7 @@ public class Aggregate {
             a.aggregate();
         } catch (AggregationException | ReportException e) {
             LOGGER.info("Aborting report aggregation");
-            System.exit(-1);
+            throw e;
         }
 
         LOGGER.info("Report aggregation finished successfully");
@@ -57,7 +58,6 @@ public class Aggregate {
 
     public static void usage() {
         LOGGER.info("Usage : java -jar {} <basedir>");
-        System.exit(-1);
     }
 
 }

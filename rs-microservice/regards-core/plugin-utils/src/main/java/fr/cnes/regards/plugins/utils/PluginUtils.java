@@ -60,7 +60,7 @@ public final class PluginUtils {
         // Static class
     }
 
-    public static void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
+     public static  synchronized void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
         pluginUtilsBean = pPluginUtilsBean;
     }
 
@@ -193,7 +193,7 @@ public final class PluginUtils {
     public static <T> T getPlugin(final PluginConfiguration pPluginConf, final PluginMetaData pPluginMetadata,
             final IPluginUtilsBean pPluginUtilsBean, final List<String> pPrefixs,
             final PluginParameter... pPluginParameters) {
-        pluginUtilsBean = pPluginUtilsBean;
+        setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPrefixs, pPluginParameters);
     }
 
@@ -249,7 +249,7 @@ public final class PluginUtils {
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
             final IPluginUtilsBean pPluginUtilsBean, final List<String> pPrefixs,
             final PluginParameter... pPluginParameters) {
-        pluginUtilsBean = pPluginUtilsBean;
+        setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPrefixs, pPluginParameters);
     }
 

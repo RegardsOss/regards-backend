@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules</groupId>
-	<artifactId>helloworld-module</artifactId>
+	<artifactId>helloworldmodule</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
@@ -18,11 +18,11 @@
 	
 
 	<modules>
-		<module>helloworld-module-domain</module>
-		<module>helloworld-module-client</module>
-		<module>helloworld-module-dao</module>
-		<module>helloworld-module-rest</module>
-		<module>helloworld-module-service</module>
+		<module>helloworldmodule-domain</module>
+		<module>helloworldmodule-client</module>
+		<module>helloworldmodule-dao</module>
+		<module>helloworldmodule-rest</module>
+		<module>helloworldmodule-service</module>
 	</modules>
 
 	<dependencyManagement>
@@ -30,27 +30,27 @@
 			<!-- Module layers -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>helloworld-module-dao</artifactId>
+				<artifactId>helloworldmodule-dao</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>helloworld-module-domain</artifactId>
+				<artifactId>helloworldmodule-domain</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>helloworld-module-rest</artifactId>
+				<artifactId>helloworldmodule-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>helloworld-module-service</artifactId>
+				<artifactId>helloworldmodule-service</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>helloworld-module-client</artifactId>
+				<artifactId>helloworldmodule-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
