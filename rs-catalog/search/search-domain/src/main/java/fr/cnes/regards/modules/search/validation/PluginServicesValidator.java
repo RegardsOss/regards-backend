@@ -13,7 +13,6 @@ import fr.cnes.regards.modules.search.domain.IService;
  * Validator enforcing {@link PluginServices} constraints
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class PluginServicesValidator implements ConstraintValidator<PluginServices, PluginConfiguration> {
 
@@ -24,6 +23,6 @@ public class PluginServicesValidator implements ConstraintValidator<PluginServic
 
     @Override
     public boolean isValid(PluginConfiguration pValue, ConstraintValidatorContext pContext) {
-        return (pValue != null) && pValue.getInterfaceName().equals(IService.class.getName());
+        return (pValue != null) && pValue.getInterfaceNames().contains(IService.class.getName());
     }
 }

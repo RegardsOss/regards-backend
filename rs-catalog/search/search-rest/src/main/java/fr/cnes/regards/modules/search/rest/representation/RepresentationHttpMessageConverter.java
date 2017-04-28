@@ -140,7 +140,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             }
             enabledRepresentationPluginMapByTenant.put(tenant, enabledRepresentationPluginMap);
         }
-        subscriber.subscribeTo(PluginConfigurationEvent.class, new DeletionPluginConfigurationHandler());
+        subscriber.subscribeTo(PluginConfigurationEvent.class, new PluginConfigurationHandler());
         setDefaultCharset(StandardCharsets.UTF_8);
     }
 
@@ -325,14 +325,14 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         enabledRepresentationForDeterminedTenant.entrySet().removeIf(entry -> entry.getValue().equals(confId));
     }
 
-    private class DeletionPluginConfigurationHandler implements IHandler<PluginConfigurationEvent> {
+    private class PluginConfigurationHandler implements IHandler<PluginConfigurationEvent> {
 
         @Override
         public void handle(TenantWrapper<PluginConfigurationEvent> pWrapper) {
             String tenantOfEvent = pWrapper.getTenant();
             tenantResolver.forceTenant(tenantOfEvent);
             PluginConfigurationEvent event = pWrapper.getContent();
-            if (IRepresentation.class.getName().equals(event.getPluginType())) {
+            if (event.getPluginTypes().contains(IRepresentation.class.getName())) {
                 Long confId = event.getPluginConfId();
                 switch (event.getAction()) {
                     case CREATE:

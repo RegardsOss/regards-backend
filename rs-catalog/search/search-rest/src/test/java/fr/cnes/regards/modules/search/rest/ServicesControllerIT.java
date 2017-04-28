@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogITConfiguration.class })
@@ -70,7 +69,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         metaData.setAuthor("toto");
         metaData.setDescription("titi");
         metaData.setVersion("tutu");
-        metaData.setInterfaceName(IService.class.getName());
+        metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(TestService.class.getName());
         conf = new PluginConfiguration(metaData, "testConf");
         conf.setParameters(Lists.newArrayList(parameter));
@@ -110,8 +109,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_030")
     @Requirement("REGARDS_DSL_DAM_ARC_010")
-    @Purpose(
-            "System has a joinpoint \"Service\" allow to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
+    @Purpose("System has a joinpoint \"Service\" allow to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
     public void testApplyService() {
         StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add("q=truc");
@@ -122,7 +120,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
                           expectations, "there should not be any error", 1L, conf.getLabel());
     }
-    
+
     @Test
     @Requirement("REGARDS_DSL_CMP_PLG_310")
     @Purpose("System allows to set a dynamic plugin parameter in the HTPP request")

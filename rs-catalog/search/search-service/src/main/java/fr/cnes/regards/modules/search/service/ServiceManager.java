@@ -42,6 +42,7 @@ public class ServiceManager implements IServiceManager {
 
     /**
      * Constructor
+     *
      * @param pPluginService the service managing plugins
      * @param pLinkPluginsDatasetsService service linking plugins with datasets
      */
@@ -54,15 +55,11 @@ public class ServiceManager implements IServiceManager {
      * retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset for a
      * given scope
      *
-     * @param pServiceScope
-     *            scope we are interrested in
-     * @param pDatasetId
-     *            id of dataset
-     *
+     * @param pServiceScope scope we are interrested in
+     * @param pDatasetId id of dataset
      * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
-     *         scope
-     * @throws EntityNotFoundException
-     *             thrown is the pDatasetId does not represent any Dataset.
+     * scope
+     * @throws EntityNotFoundException thrown is the pDatasetId does not represent any Dataset.
      */
     @Override
     public Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope) // NOSONAR
@@ -111,7 +108,7 @@ public class ServiceManager implements IServiceManager {
             throws ModuleException {
         PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
         // is it a Service configuration?
-        if (!conf.getInterfaceName().equals(IService.class.getName())) {
+        if (!conf.getInterfaceNames().contains(IService.class.getName())) {
             throw new EntityInvalidException(
                     pServiceName + " is not a label of a " + pServiceName + " plugin configuration");
         }

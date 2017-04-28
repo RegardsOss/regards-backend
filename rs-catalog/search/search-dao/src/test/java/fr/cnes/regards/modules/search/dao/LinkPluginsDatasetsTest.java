@@ -17,7 +17,6 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(locations = "classpath:tests.properties")
 public class LinkPluginsDatasetsTest extends AbstractDaoTransactionalTest {
@@ -38,7 +37,7 @@ public class LinkPluginsDatasetsTest extends AbstractDaoTransactionalTest {
         confService.setPluginId("pPluginId");
         confService.setVersion("pVersion");
         confService.setPriorityOrder(0);
-        confService.setInterfaceName(IService.class.getName());
+        confService.getInterfaceNames().add(IService.class.getName());
         confService = pluginRepo.save(confService);
 
         LinkPluginsDatasets link2 = new LinkPluginsDatasets(2L, Sets.newHashSet(confService));
