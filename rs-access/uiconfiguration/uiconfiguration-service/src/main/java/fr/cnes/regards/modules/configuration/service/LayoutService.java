@@ -102,7 +102,7 @@ public class LayoutService implements ILayoutService {
             // Multitenant version of the microservice.
             // Initialize subscriber for new tenant connection and initialize database if not already done
             instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
-            for (final String tenant : tenantResolver.getAllTenants()) {
+            for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 initProjectLayout(tenant);
             }
         } else {
