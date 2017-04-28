@@ -23,6 +23,7 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.AbstractGenericHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Component;
@@ -106,10 +107,13 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     /**
      * Constructor
      *
-     * @param pPluginService Plugin service
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws ClassNotFoundException
+     * @param pPluginService plugin service
+     * @param tenantResolver retrieve current tenant at runtime
+     * @param tenantsResolver retrieve all tenants
+     * @param subscriber subscribe to AMQP events
+     * @throws InstantiationException when error occured on plugin instanciation
+     * @throws IllegalAccessException when error occured on plugin instanciation
+     * @throws ClassNotFoundException when error occured on plugin instanciation
      */
     public RepresentationHttpMessageConverter(IPluginService pPluginService, IRuntimeTenantResolver tenantResolver,
             ITenantResolver tenantsResolver, ISubscriber subscriber)
@@ -232,8 +236,10 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             }
             pOutputMessage.getBody().flush();
         } catch (ModuleException e) {
-            LOG.error(String.format("Could not instanciate a plugin for the required media type %s", contentType), e);
-            throw new RuntimeException(e); // thrown if the configuration is deleted
+            String message = String.format("Could not instanciate a plugin for the required media type %s",
+                                           contentType);
+            LOG.error(message, e);
+            throw new HttpMessageConversionException(message, e); // thrown if the configuration is deleted
         }
     }
 

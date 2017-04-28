@@ -18,16 +18,17 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.queryparser.service.RegardsQueryParser;
+import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.AttributeModelCache;
+import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.domain.Terms;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupCache;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
-import fr.cnes.regards.modules.search.service.cache.attributemodel.AttributeModelCache;
-import fr.cnes.regards.modules.search.service.cache.attributemodel.IAttributeModelCache;
-import fr.cnes.regards.modules.search.service.queryparser.RegardsQueryParser;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**
@@ -39,34 +40,36 @@ public class AccessRightFilterTest {
     /**
      * Service under test
      */
-    public AccessRightFilter accessRightFilter;
+    private AccessRightFilter accessRightFilter;
 
     /**
      * Query Parse building criterions from a string query. Easier to build criterion then doing it manually
      */
-    public RegardsQueryParser parser;
+    private RegardsQueryParser parser;
 
     /**
      * Criterion visitor responsible for finding a "groups" criterion
      */
-    public static NamedCriterionFinderVisitor GROUPS_FINDER = new NamedCriterionFinderVisitor(Terms.GROUPS.getName());
+    private static NamedCriterionFinderVisitor GROUPS_FINDER = new NamedCriterionFinderVisitor(Terms.GROUPS.getName());
 
     /**
      * The tenant
      */
-    public static final String TENANT = "tenant";
+    private static final String TENANT = "tenant";
 
-    public ISubscriber subscriber;
+    private ISubscriber subscriber;
 
-    public IAttributeModelClient attributeModelClient;
+    private IAttributeModelClient attributeModelClient;
 
-    public IUserClient userClient;
+    private IUserClient userClient;
 
-    public IRuntimeTenantResolver runtimeTenantResolver;
+    private IProjectUsersClient projectUsersClient;
 
-    public IAttributeModelCache attributeModelCache;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
-    public IAccessGroupCache accessGroupCache;
+    private IAttributeModelCache attributeModelCache;
+
+    private IAccessGroupClientService accessGroupCache;
 
     /**
      * @throws java.lang.Exception
@@ -76,19 +79,22 @@ public class AccessRightFilterTest {
         subscriber = Mockito.mock(ISubscriber.class);
         attributeModelClient = Mockito.mock(IAttributeModelClient.class);
         userClient = Mockito.mock(IUserClient.class);
+        projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber, runtimeTenantResolver);
-        accessGroupCache = new AccessGroupCache(userClient, subscriber);
+        accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 
         Mockito.when(attributeModelClient.getAttributes(null, null))
                 .thenReturn(SampleDataUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(SampleDataUtils.USER_CLIENT_RESPONSE);
+        Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
+                .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
 
         parser = new RegardsQueryParser(attributeModelCache);
 
-        accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver);
+        accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 
     @After

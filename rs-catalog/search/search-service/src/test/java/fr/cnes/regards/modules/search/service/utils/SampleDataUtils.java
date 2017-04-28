@@ -176,6 +176,8 @@ public class SampleDataUtils {
     public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
+    public static final ResponseEntity<Boolean> PROJECT_USERS_CLIENT_RESPONSE = ResponseEntity.ok(Boolean.FALSE);
+
     /**
      * Dummy OpenSearch request
      */
@@ -190,17 +192,6 @@ public class SampleDataUtils {
      * A query with a term "groups"
      */
     public static final String QUERY_WITH_GROUPS = INTEGER_FIELD + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
-
-    /**
-     * A query like the ones the REGARDS frontend is likely to use
-     */
-    public static final String SMALL_REAL_LIFE_QUERY = "tags:plop AND tags:(A\\:A OR B\\:B OR C\\:C)";
-
-    /**
-     * A query with double quotes and special characters
-     */
-    public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE = STRING_FIELD
-            + ":\"texte avec:des caractères+spéciaux\"";
 
     /**
      * A dummy assembler for collections

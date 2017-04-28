@@ -12,8 +12,8 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
@@ -75,8 +75,8 @@ public class CatalogControllerTestUtils {
     /**
      * A dummy list of facets
      */
-    public static final List<String> FACETS = Lists.newArrayList(INTEGER_ATTRIBUTE_NAME, STRING_ATTRIBUTE_NAME,
-                                                                 DATE_ATTRIBUTE_NAME);
+    public static final List<String> FACETS = Lists
+            .newArrayList(INTEGER_ATTRIBUTE_NAME, STRING_ATTRIBUTE_NAME, DATE_ATTRIBUTE_NAME);
 
     /**
      * The dummy list of facets as array
@@ -92,8 +92,8 @@ public class CatalogControllerTestUtils {
     public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
             .build(DATE_ATTRIBUTE_NAME, AttributeType.DATE_ISO8601).get();
 
-    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL,
-                                                                       DATE_ATTRIBUTE_MODEL);
+    public static final List<AttributeModel> LIST = Lists
+            .newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL, DATE_ATTRIBUTE_MODEL);
 
     public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
@@ -108,11 +108,13 @@ public class CatalogControllerTestUtils {
      */
     public static final String ACCESS_GROUP_NAME_1 = "accessGroup1";
 
+    public static final String ACCESS_GROUP_NAME_2 = "accessGroup2";
+
     /**
      * The previous access group name as a {@link Set}
      */
-    public static final Set<String> ACCESS_GROUP_NAMES_AS_SET = Sets.newHashSet(ACCESS_GROUP_NAME_0,
-                                                                                ACCESS_GROUP_NAME_1);
+    public static final Set<String> ACCESS_GROUP_NAMES_AS_SET = Sets
+            .newHashSet(ACCESS_GROUP_NAME_0, ACCESS_GROUP_NAME_1);
 
     /**
      * A dummy access group
@@ -124,11 +126,26 @@ public class CatalogControllerTestUtils {
      */
     public static final AccessGroup ACCESS_GROUP_1 = new AccessGroup(ACCESS_GROUP_NAME_1);
 
+    public static final AccessGroup ACCESS_GROUP_2 = new AccessGroup(ACCESS_GROUP_NAME_2);
+
     /**
      * Sample response from the {@link IUserClient}
      */
     public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
+
+    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity
+            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
+
+    /**
+     * Sample response from the {@link IProjectUsersClient} isAdmin: false
+     */
+    public static final ResponseEntity<Boolean> PROJECT_USERS_CLIENT_RESPONSE = ResponseEntity.ok(Boolean.FALSE);
+
+    /**
+     * Sample response from the {@link IProjectUsersClient} isAdmin: true
+     */
+    public static final ResponseEntity<Boolean> PROJECT_USERS_CLIENT_RESPONSE_ADMIN = ResponseEntity.ok(Boolean.TRUE);
 
     /**
      * A sort query param

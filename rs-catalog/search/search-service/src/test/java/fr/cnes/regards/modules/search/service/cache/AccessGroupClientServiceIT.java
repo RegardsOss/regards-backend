@@ -25,10 +25,10 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
 
 /**
- * Test verifying {@link IAccessGroupCache} caching facilities.<br>
+ * Test verifying {@link IAccessGroupClientService} caching facilities.<br>
  * Widely inspired by Oliver Gierke (lead dev. of Spring Data project) example below.
  *
  * @see http://stackoverflow.com/questions/24221569/how-to-test-springs-declarative-caching-support-on-spring-data-repositories
@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCach
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 @Ignore
-public class AccessGroupCacheIT {
+public class AccessGroupClientServiceIT {
 
     @Configuration
     @EnableCaching
@@ -52,8 +52,8 @@ public class AccessGroupCacheIT {
         }
 
         @Bean
-        IAccessGroupCache cache() {
-            return Mockito.mock(IAccessGroupCache.class);
+        IAccessGroupClientService cache() {
+            return Mockito.mock(IAccessGroupClientService.class);
         }
 
     }
@@ -68,7 +68,7 @@ public class AccessGroupCacheIT {
      * Cache under test
      */
     @Autowired
-    private IAccessGroupCache cache;
+    private IAccessGroupClientService cache;
 
     @SuppressWarnings("unchecked")
     @Test

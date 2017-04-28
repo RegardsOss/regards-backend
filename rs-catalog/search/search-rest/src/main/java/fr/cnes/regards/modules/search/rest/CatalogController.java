@@ -151,9 +151,7 @@ public class CatalogController {
      * collection, dataset, dataobject and document.
      *
      * @param pQ the OpenSearch-format query
-     * @param pFacets the facets to apply
      * @param pPageable the page
-     * @param pAssembler injected by Spring
      * @return the page of entities matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
@@ -175,7 +173,6 @@ public class CatalogController {
      * @param pQ the OpenSearch-format query
      * @param pFacets the facets to apply
      * @param pPageable the page
-     * @param pAssembler injected by Spring
      * @return the page of entities matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
@@ -250,7 +247,6 @@ public class CatalogController {
      *
      * @param pQ the OpenSearch-format query
      * @param pPageable the page
-     * @param pAssembler injected by Spring
      * @return the page of datasets matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
@@ -370,7 +366,7 @@ public class CatalogController {
      * Convert a list of elements to a list of {@link Resource}
      *
      * @param pElements list of elements to convert
-     * @param pExtras Extra URL path parameters for links
+     * @param pAssembler page resources assembler
      * @return a list of {@link Resource}
      */
     private <T> PagedResources<Resource<T>> toPagedResources(final Page<T> pElements,

@@ -92,7 +92,6 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
     @Requirement("REGARDS_DSL_DAM_ARC_210")
     @Requirement("REGARDS_DSL_DAM_ARC_230")
     @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
-    @Test
     public void test() throws ModuleException, InterruptedException {
         // lets get a collection as geo+json
         acceptToUse = "application/geo+json";
