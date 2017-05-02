@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 
 /**
@@ -192,6 +193,7 @@ public class ProjectUserTest {
      * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#getRole()}.
      */
     @Test
+    @Requirement("REGARDS_DSL_DAM_ADM_ADM_230")
     public void testGetRole() {
         Assert.assertEquals(role, projectUser.getRole());
     }
@@ -200,6 +202,7 @@ public class ProjectUserTest {
      * Test method for {@link ProjectUser#setRole(fr.cnes.regards.modules.accessrights.domain.projects.Role)}.
      */
     @Test
+    @Requirement("REGARDS_DSL_DAM_ADM_ADM_230")
     public void testSetRole() {
         final Role newRole = new Role(DefaultRole.PUBLIC.toString(), null);
         projectUser.setRole(newRole);

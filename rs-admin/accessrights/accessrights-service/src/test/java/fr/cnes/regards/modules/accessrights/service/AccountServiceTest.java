@@ -105,7 +105,7 @@ public class AccountServiceTest {
 
         final IRuntimeTenantResolver resolver = Mockito.mock(IRuntimeTenantResolver.class);
 
-        // Construct serivice with mock deps
+        // Construct service with mock deps
         accountService = new AccountService(accountRepository, PASSWORD_REGEX, PASSWORD_RULES,
                 PASSWORD_VALIDITY_DURATION, ACCOUNT_VALIDIDTY_DURATION, ROOT_LOGIN, ROOT_PASSWORD,
                 FAILED_AUTHENTICATION_THRESHOLD, resolver);

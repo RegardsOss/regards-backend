@@ -46,7 +46,7 @@ public class LogEventHandler implements ILogEventHandler {
             runtimeTenantResolver.forceTenant(pWrapper.getTenant());
             LogEventJpa logEventToSave = new LogEventJpa(pWrapper.getContent());
             logEventRepository.save(logEventToSave);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
     }

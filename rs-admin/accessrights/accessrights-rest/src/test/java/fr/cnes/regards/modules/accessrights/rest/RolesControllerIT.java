@@ -233,7 +233,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
      * Check that the system allows to delete a role.
      *
      * @throws JwtException
-     *
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -295,7 +294,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Check hierarchy of roles
      *
      * @since 1.0-SNAPSHOT
