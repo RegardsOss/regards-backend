@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -86,7 +87,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
     @PostConstruct
     public void addPluginPackage() {
-        pluginService.addPluginPackage("fr.cnes.regards.cloud.gateway.authentication.plugins");
+        pluginService.addPluginPackage(IAuthenticationPlugin.class.getPackage().getName());
     }
 
     @Override
