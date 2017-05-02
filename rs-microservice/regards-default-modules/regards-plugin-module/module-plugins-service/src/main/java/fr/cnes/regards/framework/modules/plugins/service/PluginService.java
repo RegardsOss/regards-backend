@@ -74,7 +74,8 @@ public class PluginService implements IPluginService {
     /**
      * A constructor with the {@link IPluginConfigurationRepository}.
      *
-     * @param pPluginConfigurationRepository {@link PluginConfiguration} JPA repository
+     * @param pPluginConfigurationRepository
+     *            {@link PluginConfiguration} JPA repository
      */
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository, IPublisher publisher) {
         super();
@@ -239,11 +240,6 @@ public class PluginService implements IPluginService {
 
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
-
-        // final List<PluginMetaData> pluginImpls = getPluginsByType(pInterfacePluginType);
-        //
-        // pluginImpls.forEach(pMetaData -> configurations
-        // .addAll(pluginConfRepository.findByPluginIdOrderByPriorityOrderDesc(pMetaData.getPluginId())));
 
         Iterable<PluginConfiguration> plgConfs = pluginConfRepository.findAll();
         if (plgConfs != null) {
