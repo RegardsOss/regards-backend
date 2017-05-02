@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -44,10 +43,9 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-@RequestMapping(RolesController.REQUEST_MAPPING_ROOT)
-public class RolesController implements IResourceController<Role> {
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@RequestMapping(RoleController.REQUEST_MAPPING_ROOT)
+public class RoleController implements IResourceController<Role> {
 
     /**
      * Root mapping for requests of this rest controller
@@ -90,8 +88,7 @@ public class RolesController implements IResourceController<Role> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, path = PATH_BORROWABLE)
-    @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user",
-            role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user", role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<Role>>> retrieveBorrowableRoles() throws JwtException {
         final Set<Role> roles = roleService.retrieveBorrowableRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
@@ -105,8 +102,7 @@ public class RolesController implements IResourceController<Role> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, path = PATH_ROLE_WITH_RESOURCE)
-    @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
-            role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve the list of roles associated to the given resource", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<Role>>> retrieveRolesWithResource(
             @PathVariable("resourceId") final Long pResourceId) {
         final Set<Role> roles = roleService.retrieveRolesWithResource(pResourceId);
@@ -119,14 +115,14 @@ public class RolesController implements IResourceController<Role> {
      * @param pNewRole
      *            The new {@link Role} values
      * @return The created {@link Role}
-     * @throws EntityAlreadyExistsException
+     * @throws EntityException
      *             Thrown if a {@link Role} with same <code>id</code> already exists
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a role", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<Role>> createRole(@RequestBody final Role pNewRole) throws EntityException {
-        final Role created = roleService.createRoleWithNativeParentPermissions(pNewRole);
+        final Role created = roleService.createRole(pNewRole);
         return new ResponseEntity<>(toResource(created), HttpStatus.CREATED);
     }
 

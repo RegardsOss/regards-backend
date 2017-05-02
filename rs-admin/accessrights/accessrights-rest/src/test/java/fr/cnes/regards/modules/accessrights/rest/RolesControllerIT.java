@@ -95,7 +95,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() {
-        apiRoles = RolesController.REQUEST_MAPPING_ROOT;
+        apiRoles = RoleController.REQUEST_MAPPING_ROOT;
         apiRolesName = apiRoles + "/{role_name}";
 
         apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_name}";
@@ -225,7 +225,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(1)));
-        performDefaultGet(RolesController.REQUEST_MAPPING_ROOT + RolesController.PATH_ROLE_WITH_RESOURCE, expectations,
+        performDefaultGet(RoleController.REQUEST_MAPPING_ROOT + RoleController.PATH_ROLE_WITH_RESOURCE, expectations,
                           "TODO Error message", resourceAccessPublic.getId());
     }
 

@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.listener.exception.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -60,16 +59,15 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleLineageAssembler
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  */
 @Service
-@ImportResource({ "classpath*:defaultRoles.xml" })
 @MultitenantTransactional
 public class RoleService implements IRoleService {
 
     /**
      * Class logger
      */
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleService.class);
 
     /**
@@ -230,33 +228,25 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role createRole(final Role pNewRole) throws EntityAlreadyExistsException {
-        if (existByName(pNewRole.getName())) {
-            throw new EntityAlreadyExistsException(pNewRole.getName());
-        }
-        return saveAndPublish(pNewRole);
-    }
-
-    @Override
-    public Role createRoleWithNativeParentPermissions(final Role pRoleToCreate) throws EntityException {
-        if (existByName(pRoleToCreate.getName())) {
-            throw new EntityAlreadyExistsException(pRoleToCreate.getName());
+    public Role createRole(final Role role) throws EntityException {
+        if (existByName(role.getName())) {
+            throw new EntityAlreadyExistsException(role.getName());
         }
 
-        if ((pRoleToCreate.getParentRole() == null) || (pRoleToCreate.getParentRole().getName() == null)) {
-            throw new EntityException("Parent role required to create a new role.");
+        if ((role.getParentRole() == null) || (role.getParentRole().getName() == null)) {
+            throw new EntityException("A parent role is required to create a new role.");
         }
 
         // If parent role is a native role. Copy resources from the parent role.
-        final Optional<Role> roleOpt = roleRepository.findOneByName(pRoleToCreate.getParentRole().getName());
+        final Optional<Role> roleOpt = roleRepository.findOneByName(role.getParentRole().getName());
         if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(pRoleToCreate.getParentRole().getName(), Role.class);
+            throw new EntityNotFoundException(role.getParentRole().getName(), Role.class);
         }
 
         final Role parentRole = roleOpt.get();
         Role newCreatedRole;
         if (parentRole.isNative()) {
-            newCreatedRole = roleRepository.save(pRoleToCreate);
+            newCreatedRole = roleRepository.save(role);
             newCreatedRole.setPermissions(Sets.newHashSet(parentRole.getPermissions()));
         } else {
             // Retrieve parent native role of the given parent role.
@@ -265,9 +255,9 @@ public class RoleService implements IRoleService {
                         "There is no native parent associated to the given parent role " + parentRole.getName());
             }
 
-            newCreatedRole = new Role(pRoleToCreate.getName(), parentRole.getParentRole());
-            if (pRoleToCreate.getAuthorizedAddresses() != null) {
-                newCreatedRole.setAuthorizedAddresses(pRoleToCreate.getAuthorizedAddresses());
+            newCreatedRole = new Role(role.getName(), parentRole.getParentRole());
+            if (role.getAuthorizedAddresses() != null) {
+                newCreatedRole.setAuthorizedAddresses(role.getAuthorizedAddresses());
             }
             newCreatedRole = roleRepository.save(newCreatedRole);
             newCreatedRole.setPermissions(Sets.newHashSet(parentRole.getPermissions()));

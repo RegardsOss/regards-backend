@@ -41,7 +41,6 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Christophe Mertz
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
  */
 @MultitenantTransactional
 @Service

@@ -9,7 +9,6 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -70,17 +69,6 @@ public interface IRoleService {
     Role updateRole(String pRoleName, Role pUpdatedRole) throws EntityException;
 
     /**
-     * Create a new {@link Role}.
-     *
-     * @param pNewRole
-     *            The new {@link Role} values
-     * @return The created {@link Role}
-     * @throws EntityAlreadyExistsException
-     *             Thrown if a {@link Role} with same <code>id</code> already exists
-     */
-    Role createRole(Role pNewRole) throws EntityAlreadyExistsException;
-
-    /**
      *
      * Create a new {@link Role} using native parent permissions as own permissions.
      *
@@ -90,7 +78,7 @@ public interface IRoleService {
      * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Role createRoleWithNativeParentPermissions(Role pNewRole) throws EntityException;
+    Role createRole(Role role) throws EntityException;
 
     /**
      * Delete the {@link Role} of passed <code>id</code>.
