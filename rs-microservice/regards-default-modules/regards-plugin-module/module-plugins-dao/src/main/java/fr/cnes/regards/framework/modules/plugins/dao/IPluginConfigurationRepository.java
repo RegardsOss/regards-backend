@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.modules.plugins.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -44,5 +43,4 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
     @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     PluginConfiguration findById(Long id);
 
-    Collection<PluginConfiguration> findAllByInterfaceNameOrderByPriorityOrderDesc(String pName);
 }

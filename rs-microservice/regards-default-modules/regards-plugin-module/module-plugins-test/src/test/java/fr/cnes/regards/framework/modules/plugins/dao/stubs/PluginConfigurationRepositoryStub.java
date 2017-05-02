@@ -5,10 +5,8 @@ package fr.cnes.regards.framework.modules.plugins.dao.stubs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Primary;
@@ -94,7 +92,7 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
     public PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
-        pluginMetaData.setInterfaceName("TestInterface");
+        pluginMetaData.getInterfaceNames().add("TestInterface");
         pluginMetaData.setPluginId("plugin-id");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);
@@ -139,11 +137,6 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
             return conf.get();
         }
         return null;
-    }
-
-    @Override
-    public Collection<PluginConfiguration> findAllByInterfaceNameOrderByPriorityOrderDesc(String pName) {
-        return getEntities().stream().filter(e -> e.getInterfaceName().equals(pName)).collect(Collectors.toList());
     }
 
 }

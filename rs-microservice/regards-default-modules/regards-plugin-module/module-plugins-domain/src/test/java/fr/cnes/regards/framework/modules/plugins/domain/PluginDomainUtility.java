@@ -6,16 +6,12 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 import java.util.Arrays;
 import java.util.List;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import com.google.common.collect.Sets;
 
 /***
  * Constants and datas for unit testing of plugin's Domain.
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class PluginDomainUtility {
 
@@ -113,24 +109,25 @@ public class PluginDomainUtility {
     /**
      * A {@link PluginConfiguration}
      */
-    private PluginConfiguration pluginConfiguration1 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
             "a configuration", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
-    private PluginConfiguration pluginConfiguration2 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
             "second configuration", DYNAMICPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} without parameters.
      */
-    private PluginConfiguration pluginConfiguration3 = new PluginConfiguration(this.getPluginMetaData(),
+    private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
             "third configuration", QUATRE);
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
+        pluginMetaData.setInterfaceNames(Sets.newHashSet("TestInterface"));
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

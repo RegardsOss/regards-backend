@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
  * Unit testing of {@link PluginConfiguration} persistence.
  *
  * @author Christophe Mertz
- *
  */
 
 @ActiveProfiles("test")
@@ -77,7 +76,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
         Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
         Assert.assertEquals(1, plgRepository.count());
-        
+
         plgRepository.save(getPlgConfWithDynamicParameter());
 
         // find it
