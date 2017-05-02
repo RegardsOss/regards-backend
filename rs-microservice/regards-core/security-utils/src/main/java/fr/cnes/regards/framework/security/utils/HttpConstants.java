@@ -36,4 +36,7 @@ public final class HttpConstants {
      * Scope parameter to read in Header or request query parameters
      */
     public static final String SCOPE = "scope";
+
+    private HttpConstants() {
+    }
 }
