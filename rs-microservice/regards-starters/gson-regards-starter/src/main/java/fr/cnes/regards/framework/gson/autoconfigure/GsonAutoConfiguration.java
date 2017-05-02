@@ -30,6 +30,7 @@ import com.google.gson.TypeAdapterFactory;
 import fr.cnes.regards.framework.gson.adapters.LocalDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
@@ -68,6 +69,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         customizeBuilder(builder);
         addTypeAdapters(builder);
         addBeanFactories(builder);
+        addBeanAdapters(builder);
         return builder;
     }
 
@@ -125,7 +127,8 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated
      * with {@link GsonTypeAdapter}
      *
-     * @param pBuilder GSON builder to customize
+     * @param pBuilder
+     *            GSON builder to customize
      */
     private void addTypeAdapters(GsonBuilder pBuilder) {
         GsonAnnotationProcessor.process(pBuilder, properties.getScanPrefix());
@@ -134,7 +137,8 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactoryBean} with Spring support.
      *
-     * @param pBuilder GSON builder to customize
+     * @param pBuilder
+     *            GSON builder to customize
      */
     private void addBeanFactories(GsonBuilder pBuilder) {
 
@@ -142,6 +146,32 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         if (beanFactories != null) {
             for (Map.Entry<String, TypeAdapterFactory> beanFactory : beanFactories.entrySet()) {
                 pBuilder.registerTypeAdapterFactory(beanFactory.getValue());
+            }
+        }
+    }
+
+    /**
+     * Add {@link TypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
+     *
+     * @param pBuilder
+     *            GSON builder to customize
+     */
+    private void addBeanAdapters(GsonBuilder pBuilder) {
+
+        @SuppressWarnings("rawtypes")
+        Map<String, TypeAdapter> beanFactories = applicationContext.getBeansOfType(TypeAdapter.class);
+        if (beanFactories != null) {
+            for (@SuppressWarnings("rawtypes")
+            Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
+                TypeAdapter<?> current = beanFactory.getValue();
+                // Retrieve custom annotation
+                GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);
+                if (annot != null) {
+                    pBuilder.registerTypeAdapter(annot.type(), beanFactory.getValue());
+                } else {
+                    LOGGER.debug("No annotation found on type adapter bean {}, skipping registration",
+                                 beanFactory.getKey());
+                }
             }
         }
     }
