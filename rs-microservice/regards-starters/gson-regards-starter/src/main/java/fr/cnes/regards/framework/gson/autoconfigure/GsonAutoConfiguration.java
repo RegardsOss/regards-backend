@@ -4,7 +4,7 @@
 package fr.cnes.regards.framework.gson.autoconfigure;
 
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -26,8 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
-
-import fr.cnes.regards.framework.gson.adapters.LocalDateTimeAdapter;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
@@ -118,7 +117,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     private void customizeBuilder(GsonBuilder pBuilder) {
         pBuilder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
-        pBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe());
+        pBuilder.registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe());
         pBuilder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
 
     }
