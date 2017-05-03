@@ -41,7 +41,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AccountFeignClientIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceFeignClientIT.class);
 
     /**
      * Web server address for ResourceController
