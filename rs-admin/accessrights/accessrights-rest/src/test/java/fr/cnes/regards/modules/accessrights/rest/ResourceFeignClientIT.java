@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
+import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
 /**
@@ -52,7 +52,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     /**
      * Feign Client to test
      */
-    private IResourcesClient client;
+    private IMicroserviceResourceClient client;
 
     /**
      * Feign security manager
@@ -62,22 +62,9 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        client = FeignClientBuilder.build(new TokenClientProvider<>(IResourcesClient.class,
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IMicroserviceResourceClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();
-    }
-
-    /**
-     *
-     * Check that the accounts Feign Client can retrieve all accounts.
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @Test
-    public void retrieveResourcesListFromFeignClient() {
-        final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client.retrieveResourcesAccesses(0,
-                                                                                                                    20);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 
     @Test
@@ -91,7 +78,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveMicroserviceResourcesFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
-                .retrieveResourcesAccesses("rs-test", 0, 20);
+                .getAllResourceAccessesByMicroservice("rs-test", 0, 20);
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 

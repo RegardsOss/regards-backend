@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -27,37 +26,47 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
- *
- * Class RolesController
- *
- * Endpoints to manage Role entities.
+ * Role management API
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+ * @author Marc Sordi
  */
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
-@RequestMapping(RoleController.REQUEST_MAPPING_ROOT)
+@RequestMapping(RoleController.TYPE_MAPPING)
 public class RoleController implements IResourceController<Role> {
 
     /**
      * Root mapping for requests of this rest controller
      */
-    public static final String REQUEST_MAPPING_ROOT = "/roles";
+    public static final String TYPE_MAPPING = "/roles";
 
-    public static final String PATH_BORROWABLE = "/borrowables";
+    /**
+     * Mapping for managing a role mapping for requests of this rest controller
+     */
+    public static final String ROLE_MAPPING = "/{role_name}";
 
-    public static final String PATH_BORROWABLE_TARGET = PATH_BORROWABLE + "/{target}";
+    /**
+     * Mapping for retrieving borrowable role of the current user
+     */
+    public static final String BORROWABLE_MAPPING = "/borrowables";
 
-    public static final String PATH_ROLE_WITH_RESOURCE = "/resources/{resourceId}";
+    /**
+     * Mapping for retrieving all roles that can access the specified resource
+     */
+    public static final String ROLE_WITH_RESOURCE_MAPPING = "/resources/{resourceId}";
 
+    /**
+     * {@link RoleService}
+     */
     @Autowired
     private IRoleService roleService;
 
@@ -72,10 +81,9 @@ public class RoleController implements IResourceController<Role> {
      *
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<Role>>> retrieveRoles() {
+    public ResponseEntity<List<Resource<Role>>> getAllRoles() {
         final Set<Role> roles = roleService.retrieveRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
     }
@@ -83,27 +91,24 @@ public class RoleController implements IResourceController<Role> {
     /**
      * Define the endpoint for retrieving the list of borrowable Roles for the current user.
      *
-     * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
-     * @throws JwtException
+     * @return list of borrowable roles for current authenticated user
      */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, path = PATH_BORROWABLE)
+    @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user", role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<Role>>> retrieveBorrowableRoles() throws JwtException {
+    public ResponseEntity<List<Resource<Role>>> getBorrowableRoles() throws ModuleException {
         final Set<Role> roles = roleService.retrieveBorrowableRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
     }
 
     /**
-     * Define the endpoint for retrieving the list of borrowable Roles for the current user.
+     * Define the endpoint for retrieving the list of roles that can access the specified resource.
      *
-     * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
-     * @throws JwtException
+     * @param pResourceId
+     * @return list of borrowable roles for current authenticated user
      */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, path = PATH_ROLE_WITH_RESOURCE)
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of roles associated to the given resource", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<Role>>> retrieveRolesWithResource(
+    public ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(
             @PathVariable("resourceId") final Long pResourceId) {
         final Set<Role> roles = roleService.retrieveRolesWithResource(pResourceId);
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
@@ -118,7 +123,6 @@ public class RoleController implements IResourceController<Role> {
      * @throws EntityException
      *             Thrown if a {@link Role} with same <code>id</code> already exists
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a role", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<Role>> createRole(@RequestBody final Role pNewRole) throws EntityException {
@@ -135,8 +139,7 @@ public class RoleController implements IResourceController<Role> {
      * @throws EntityNotFoundException
      *             when no role with passed name could be found
      */
-    @ResponseBody
-    @RequestMapping(value = "/{role_name}", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
     @ResourceAccess(description = "Retrieve a role by name", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName)
             throws EntityNotFoundException {
@@ -147,23 +150,21 @@ public class RoleController implements IResourceController<Role> {
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
      *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
+     * @param pRoleName
+     *            The {@link Role}
      * @param pUpdatedRole
      *            The new {@link Role}
      * @return Updated {@link Role}
-     * @throws EntityException
+     * @throws ModuleException
      *             <br>
      *             {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br>
      *             {@link EntityOperationForbiddenException} Thrown when <code>pRoleId</code> is different from the id
      *             of <code>pUpdatedRole</code><br>
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{role_name}", method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, value = ROLE_MAPPING)
     @ResourceAccess(description = "Update the role of role_name with passed body", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_name") final String pRoleName,
-            @Valid @RequestBody final Role pUpdatedRole) throws EntityException {
+            @Valid @RequestBody final Role pUpdatedRole) throws ModuleException {
         final Role updatedRole = roleService.updateRole(pRoleName, pUpdatedRole);
         return new ResponseEntity<>(toResource(updatedRole), HttpStatus.OK);
     }
@@ -174,13 +175,12 @@ public class RoleController implements IResourceController<Role> {
      * @param pRoleName
      *            The {@link Role}'s <code>name</code>
      * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityOperationForbiddenException
+     * @throws ModuleException
      *             if the updated role is native. Native roles should not be modified.
      */
-    @ResponseBody
-    @RequestMapping(value = "/{role_name}", method = RequestMethod.DELETE)
+    @RequestMapping(method = RequestMethod.DELETE, value = ROLE_MAPPING)
     @ResourceAccess(description = "Remove the role of role_name", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName) throws EntityException {
+    public ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName) throws ModuleException {
         roleService.removeRole(pRoleName);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -200,7 +200,8 @@ public class RoleController implements IResourceController<Role> {
                 resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
                                         MethodParamFactory.build(String.class, pElement.getName()));
             }
-            resourceService.addLink(resource, this.getClass(), "retrieveRoles", LinkRels.LIST);
+            resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
+            resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");
         }
         return resource;
     }

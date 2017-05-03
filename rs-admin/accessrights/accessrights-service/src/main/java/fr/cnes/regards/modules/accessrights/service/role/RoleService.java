@@ -44,7 +44,6 @@ import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -631,7 +630,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Set<Role> retrieveBorrowableRoles() throws JwtException {
+    public Set<Role> retrieveBorrowableRoles() {
 
         final String email = SecurityUtils.getActualUser();
         final ProjectUser user = projectUserRepository.findOneByEmail(email).get();

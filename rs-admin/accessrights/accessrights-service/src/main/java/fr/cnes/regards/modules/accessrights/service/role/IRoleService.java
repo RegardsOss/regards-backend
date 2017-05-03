@@ -235,7 +235,7 @@ public interface IRoleService {
      * @return roles which are borrowable for the current user
      * @throws JwtException
      */
-    Set<Role> retrieveBorrowableRoles() throws JwtException;
+    Set<Role> retrieveBorrowableRoles();
 
     /**
      *

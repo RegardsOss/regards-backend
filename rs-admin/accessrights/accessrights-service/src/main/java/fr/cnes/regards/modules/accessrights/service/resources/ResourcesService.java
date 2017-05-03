@@ -170,13 +170,6 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public void removeRoleResourcesAccess(final String pRoleName, final Long pResourcesAccessId)
-            throws ModuleException {
-        final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
-        roleService.removeResourcesAccesses(pRoleName, resourcesAccess);
-    }
-
-    @Override
     public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(final String pMicroserviceName,
             final String pControllerName) {
         return resourceAccessRepo.findByMicroserviceAndControllerSimpleNameOrderByResource(pMicroserviceName,
@@ -186,6 +179,13 @@ public class ResourcesService implements IResourcesService {
     @Override
     public List<String> retrieveMicroserviceControllers(final String pMicroserviceName) {
         return resourceAccessRepo.findAllControllersByMicroservice(pMicroserviceName);
+    }
+
+    @Override
+    public void removeRoleResourcesAccess(final String pRoleName, final Long pResourcesAccessId)
+            throws ModuleException {
+        final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
+        roleService.removeResourcesAccesses(pRoleName, resourcesAccess);
     }
 
 }

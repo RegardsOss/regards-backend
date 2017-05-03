@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -29,19 +28,54 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/roles", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IRolesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRolesClient { // NOSONAR
 
-    public static final String PATH_BORROWABLE = "/borrowables";
+    /**
+     * Root mapping for requests of this rest controller
+     */
+    public static final String TYPE_MAPPING = "/roles";
+
+    /**
+     * Mapping for managing a role mapping for requests of this rest controller
+     */
+    public static final String ROLE_MAPPING = "/{role_name}";
+
+    /**
+     * Mapping for retrieving borrowable role of the current user
+     */
+    public static final String BORROWABLE_MAPPING = "/borrowables";
+
+    /**
+     * Mapping for retrieving all roles that can access the specified resource
+     */
+    public static final String ROLE_WITH_RESOURCE_MAPPING = "/resources/{resourceId}";
 
     /**
      * Define the endpoint for retrieving the list of all roles.
      *
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<Role>>> retrieveRoles();
+    public ResponseEntity<List<Resource<Role>>> getAllRoles();
+
+    /**
+     * Define the endpoint for retrieving the list of borrowable Roles for the current user.
+     *
+     * @return list of borrowable roles for current authenticated user
+     */
+    @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
+    public ResponseEntity<List<Resource<Role>>> getBorrowableRoles();
+
+    /**
+     * Define the endpoint for retrieving the list of roles that can access the specified resource.
+     *
+     * @param pResourceId
+     * @return list of borrowable roles for current authenticated user
+     */
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
+    public ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(
+            @PathVariable("resourceId") final Long pResourceId);
 
     /**
      * Define the endpoint for creating a new {@link Role}.
@@ -50,52 +84,40 @@ public interface IRolesClient { // NOSONAR
      *            The new {@link Role} values
      * @return The created {@link Role}
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<Role>> createRole(@Valid @RequestBody Role pNewRole);
+    public ResponseEntity<Resource<Role>> createRole(@RequestBody final Role pNewRole);
 
     /**
      * Define the endpoint for retrieving the {@link Role} of passed <code>id</code>.
      *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
+     * @param pRoleName
+     *            The {@link Role}'s <code>name</code>
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{role_name}", method = RequestMethod.GET)
-    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") String pRoleName);
+    @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
+    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
      *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
+     * @param pRoleName
+     *            The {@link Role}
      * @param pUpdatedRole
      *            The new {@link Role}
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
+     * @return Updated {@link Role}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{role_id}", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateRole(@PathVariable("role_id") Long pRoleId, @Valid @RequestBody Role pUpdatedRole);
+    @RequestMapping(method = RequestMethod.PUT, value = ROLE_MAPPING)
+    public ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_name") final String pRoleName,
+            @Valid @RequestBody final Role pUpdatedRole);
 
     /**
      * Define the endpoint for deleting the {@link Role} of passed <code>id</code>.
      *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
+     * @param pRoleName
+     *            The {@link Role}'s <code>name</code>
      * @return {@link Void} wrapped in an {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{role_id}", method = RequestMethod.DELETE)
-    ResponseEntity<Void> removeRole(@PathVariable("role_id") Long pRoleId);
-
-    /**
-     * Define the endpoint for retrieving the list of borrowable Roles for the current user.
-     *
-     * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
-     */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, path = PATH_BORROWABLE)
-    public ResponseEntity<List<Resource<Role>>> retrieveBorrowableRoles();
+    @RequestMapping(method = RequestMethod.DELETE, value = ROLE_MAPPING)
+    public ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName);
 
 }
