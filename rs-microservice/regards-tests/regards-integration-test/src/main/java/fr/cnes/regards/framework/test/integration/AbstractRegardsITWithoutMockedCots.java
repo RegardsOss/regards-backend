@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -231,13 +230,20 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Perform a REST request and control expectations
      *
-     * @param pAuthenticationToken JWT token
-     * @param pHttpMethod HTTP method
-     * @param pUrlTemplate URL template
-     * @param pContent content for {@link HttpMethod#POST} and {@link HttpMethod#PUT} methods
-     * @param pMatchers expectations
-     * @param pErrorMessage message if error occurs
-     * @param pUrlVariables URL variables
+     * @param pAuthenticationToken
+     *            JWT token
+     * @param pHttpMethod
+     *            HTTP method
+     * @param pUrlTemplate
+     *            URL template
+     * @param pContent
+     *            content for {@link HttpMethod#POST} and {@link HttpMethod#PUT} methods
+     * @param pMatchers
+     *            expectations
+     * @param pErrorMessage
+     *            message if error occurs
+     * @param pUrlVariables
+     *            URL variables
      * @return result
      */
     protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
@@ -276,9 +282,12 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     }
 
     /**
-     * @param pRequestBuilder request builder
-     * @param pMatchers expectations
-     * @param pErrorMessage message if error occurs
+     * @param pRequestBuilder
+     *            request builder
+     * @param pMatchers
+     *            expectations
+     * @param pErrorMessage
+     *            message if error occurs
      * @return result
      */
     protected ResultActions performRequest(final MockHttpServletRequestBuilder pRequestBuilder,
@@ -313,10 +322,14 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Build a multi-part request builder based on file {@link Path}
      *
-     * @param pAuthToken authorization token
-     * @param pFilePath {@link Path}
-     * @param pUrlTemplate URL template
-     * @param pUrlVars URL vars
+     * @param pAuthToken
+     *            authorization token
+     * @param pFilePath
+     *            {@link Path}
+     * @param pUrlTemplate
+     *            URL template
+     * @param pUrlVars
+     *            URL vars
      * @return {@link MockMultipartHttpServletRequestBuilder}
      */
     protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(final String pAuthToken,
@@ -353,7 +366,8 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Extract payload data from response optionally checking media type
      *
-     * @param pResultActions results
+     * @param pResultActions
+     *            results
      * @return payload data
      */
     protected String payload(final ResultActions pResultActions) {
@@ -373,8 +387,10 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Check response media type
      *
-     * @param pResultActions results
-     * @param pMediaType {@link MediaType}
+     * @param pResultActions
+     *            results
+     * @param pMediaType
+     *            {@link MediaType}
      */
     protected void assertMediaType(final ResultActions pResultActions, final MediaType pMediaType) {
         Assert.assertNotNull(pResultActions);
@@ -397,8 +413,10 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Generate token for default tenant
      *
-     * @param pName user name
-     * @param pRole user role
+     * @param pName
+     *            user name
+     * @param pRole
+     *            user role
      * @return JWT
      */
     protected String generateToken(final String pName, final String pRole) {
@@ -408,9 +426,12 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Set authorities for default tenant
      *
-     * @param pUrlPath endpoint
-     * @param pMethod HTTP method
-     * @param pRoleNames list of roles
+     * @param pUrlPath
+     *            endpoint
+     * @param pMethod
+     *            HTTP method
+     * @param pRoleNames
+     *            list of roles
      */
     protected void setAuthorities(final String pUrlPath, final RequestMethod pMethod, final String... pRoleNames) {
         authService.setAuthorities(DEFAULT_TENANT, pUrlPath, "osef", pMethod, pRoleNames);
@@ -425,8 +446,10 @@ public abstract class AbstractRegardsITWithoutMockedCots {
      * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
      * role.
      *
-     * @param pUrlPath target endpoint
-     * @param pMethod target HTTP method
+     * @param pUrlPath
+     *            target endpoint
+     * @param pMethod
+     *            target HTTP method
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
@@ -449,8 +472,10 @@ public abstract class AbstractRegardsITWithoutMockedCots {
      * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
      * role.
      *
-     * @param pUrlPath target endpoint
-     * @param pMethod target HTTP method
+     * @param pUrlPath
+     *            target endpoint
+     * @param pMethod
+     *            target HTTP method
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(String userEmail, final String pUrlPath, final RequestMethod pMethod) {
@@ -475,7 +500,8 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     /**
      * Utility method to read an external JSON file and get it as a string to perform a HTTP request
      *
-     * @param pJSonFileName JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
+     * @param pJSonFileName
+     *            JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
      * @return JSON as string
      */
     protected String readJsonContract(String pJSonFileName) {

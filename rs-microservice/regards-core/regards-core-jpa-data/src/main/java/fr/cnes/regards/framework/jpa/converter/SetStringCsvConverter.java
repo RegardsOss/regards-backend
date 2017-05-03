@@ -12,7 +12,7 @@ import javax.persistence.Converter;
 import com.google.common.collect.Sets;
 
 /**
- * Allow to convert a {@link Set} of String to a simple String which each value is separated by a come
+ * Allow to convert a {@link Set} of String to a simple String which each value is separated by a comma
  *
  * @author Sylvain Vissiere-Guerinet
  */

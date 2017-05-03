@@ -124,10 +124,10 @@ public final class PluginUtils {
      * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameters} if any.
      *
      * @param pPluginClass a class that must contains a {@link Plugin} annotation
-     * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param pPrefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return the {@link PluginMetaData} create
      */
-    public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass, final List<String> pPrefixs) {
+    public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass, final List<String> pPrefixes) {
         // Get implementation associated annotations
         final Plugin plugin = pPluginClass.getAnnotation(Plugin.class);
 
@@ -136,7 +136,7 @@ public final class PluginUtils {
         pluginMetaData.setPluginClassName(pPluginClass.getCanonicalName());
 
         // Search the plugin type of the plugin class : ie the interface has the @PluginInterface annotation
-        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(pPrefixs);
+        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(pPrefixes);
         List<String> types = new ArrayList<>(); // FIXME: is really used?
 
         for (Class<?> aInterface : TypeToken.of(pPluginClass).getTypes().interfaces().rawTypes()) {
@@ -147,7 +147,7 @@ public final class PluginUtils {
         }
 
         // Try to detect parameters if any
-        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass, pPrefixs));
+        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass, pPrefixes));
 
         return pluginMetaData;
     }
