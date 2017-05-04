@@ -4,7 +4,9 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 import javax.persistence.Convert;
 
@@ -25,7 +27,7 @@ public class JobConfiguration {
     /**
      * Job expiration time
      */
-    private LocalDateTime expirationDate;
+    private OffsetDateTime expirationDate;
 
     /**
      * Job workspace (nullable)
@@ -59,7 +61,7 @@ public class JobConfiguration {
     public JobConfiguration() {
         super();
         statusInfo = new StatusInfo();
-        statusInfo.setStartDate(LocalDateTime.now());
+        statusInfo.setStartDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
         statusInfo.setPercentCompleted(0);
         statusInfo.setJobStatus(JobStatus.QUEUED);
     }
@@ -83,7 +85,7 @@ public class JobConfiguration {
      *            job owner
      */
     public JobConfiguration(final String pDescription, final JobParameters pParameters, final String pClassName,
-            final LocalDateTime pEstimatedCompletion, final LocalDateTime pExpirationDate, final int pPriority,
+            final OffsetDateTime pEstimatedCompletion, final OffsetDateTime pExpirationDate, final int pPriority,
             final Path pWorkspace, final String pOwner) {
         this();
         statusInfo.setDescription(pDescription);
@@ -135,7 +137,7 @@ public class JobConfiguration {
      * @param pExpirationDate
      *            the expirationDate to set
      */
-    public void setExpirationDate(final LocalDateTime pExpirationDate) {
+    public void setExpirationDate(final OffsetDateTime pExpirationDate) {
         expirationDate = pExpirationDate;
     }
 
@@ -149,7 +151,7 @@ public class JobConfiguration {
     /**
      * @return the expirationDate
      */
-    public LocalDateTime getExpirationDate() {
+    public OffsetDateTime getExpirationDate() {
         return expirationDate;
     }
 

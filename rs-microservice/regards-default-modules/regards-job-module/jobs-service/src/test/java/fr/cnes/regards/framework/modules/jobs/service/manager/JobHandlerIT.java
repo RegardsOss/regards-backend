@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service.manager;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 import org.assertj.core.api.Assertions;
@@ -20,11 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.cnes.regards.framework.modules.jobs.domain.JobConfiguration;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameters;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.*;
 import fr.cnes.regards.framework.modules.jobs.service.Application;
 import fr.cnes.regards.framework.modules.jobs.service.JobHandlerTestConfiguration;
 import fr.cnes.regards.framework.modules.jobs.service.systemservice.IJobInfoSystemService;
@@ -57,7 +53,6 @@ public class JobHandlerIT {
     /**
      * Do some setup before each test
      *
-     * @param pRole
      * @throws JwtException
      */
     @Before
@@ -72,8 +67,8 @@ public class JobHandlerIT {
         final JobParameters pParameters = new JobParameters();
         pParameters.add("follow", "Kepler");
         final String jobClassName = "fr.cnes.regards.framework.modules.jobs.service.manager.AJob";
-        final LocalDateTime pEstimatedCompletion = LocalDateTime.now().plusHours(5);
-        final LocalDateTime pExpirationDate = LocalDateTime.now().plusDays(15);
+        final OffsetDateTime pEstimatedCompletion = OffsetDateTime.now().plusHours(5);
+        final OffsetDateTime pExpirationDate = OffsetDateTime.now().plusDays(15);
         final String description = "some job description";
         final String owner = "IntegrationTest";
         final JobConfiguration pJobConfiguration = new JobConfiguration(description, pParameters, jobClassName,

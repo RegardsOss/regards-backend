@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -17,7 +17,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.converters.LocalDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
@@ -56,15 +56,15 @@ public class StatusInfo implements IIdentifiable<Long> {
      * Job StatusInfo estimated date to job completion
      */
     @Column(name = "estimatedCompletion")
-    @Convert(converter = LocalDateTimeAttributeConverter.class)
-    private LocalDateTime estimatedCompletion;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime estimatedCompletion;
 
     /**
      * Job StatusInfo specify the date when the job should be expired
      */
     @Column(name = "expirationDate")
-    @Convert(converter = LocalDateTimeAttributeConverter.class)
-    private LocalDateTime expirationDate;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime expirationDate;
 
     /**
      * the job advancement
@@ -77,15 +77,15 @@ public class StatusInfo implements IIdentifiable<Long> {
      */
     @PastOrNow
     @Column(name = "startDate")
-    @Convert(converter = LocalDateTimeAttributeConverter.class)
-    private LocalDateTime startDate;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime startDate;
 
     /**
      * the job end date
      */
     @Column(name = "stopDate")
-    @Convert(converter = LocalDateTimeAttributeConverter.class)
-    private LocalDateTime stopDate;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime stopDate;
 
     public String getDescription() {
         return description;
@@ -95,19 +95,19 @@ public class StatusInfo implements IIdentifiable<Long> {
         description = pDescription;
     }
 
-    public LocalDateTime getEstimatedCompletion() {
+    public OffsetDateTime getEstimatedCompletion() {
         return estimatedCompletion;
     }
 
-    public void setEstimatedCompletion(final LocalDateTime pEstimatedCompletion) {
+    public void setEstimatedCompletion(final OffsetDateTime pEstimatedCompletion) {
         estimatedCompletion = pEstimatedCompletion;
     }
 
-    public LocalDateTime getExpirationDate() {
+    public OffsetDateTime getExpirationDate() {
         return expirationDate;
     }
 
-    public void setExpirationDate(final LocalDateTime pExpirationDate) {
+    public void setExpirationDate(final OffsetDateTime pExpirationDate) {
         expirationDate = pExpirationDate;
     }
 
@@ -119,11 +119,11 @@ public class StatusInfo implements IIdentifiable<Long> {
         percentCompleted = pPercentCompleted;
     }
 
-    public LocalDateTime getStartDate() {
+    public OffsetDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(final LocalDateTime pStartDate) {
+    public void setStartDate(final OffsetDateTime pStartDate) {
         startDate = pStartDate;
     }
 
@@ -135,11 +135,11 @@ public class StatusInfo implements IIdentifiable<Long> {
         status = pStatus;
     }
 
-    public LocalDateTime getStopDate() {
+    public OffsetDateTime getStopDate() {
         return stopDate;
     }
 
-    public void setStopDate(final LocalDateTime pStopDate) {
+    public void setStopDate(final OffsetDateTime pStopDate) {
         stopDate = pStopDate;
     }
 
