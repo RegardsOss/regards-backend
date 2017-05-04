@@ -2,10 +2,10 @@ package fr.cnes.regards.modules.search.service;
 
 import java.util.Map;
 
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
@@ -15,7 +15,8 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.queryparser.service.RegardsQueryParser;
+import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
@@ -32,9 +33,9 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final ISearchService searchService;
 
     /**
-     * The custom OpenSearch query parser building {@link ICriterion} from a string query. Autowired.
+     * The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring.
      */
-    private final RegardsQueryParser queryParser;
+    private final OpenSearchService openSearchService;
 
     /**
      * Service handling the access groups in criterion. Autowired by Spring.
@@ -42,16 +43,18 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IAccessRightFilter accessRightFilter;
 
     /**
-     * Constructor
-     * @param pSearchService
-     * @param pQueryParser
-     * @param pAccessRightFilter
+     * @param pSearchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
+     * @param pOpenSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
+     * @param pAccessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
      */
-    public CatalogSearchService(ISearchService pSearchService, RegardsQueryParser pQueryParser,
+    public CatalogSearchService(ISearchService pSearchService, OpenSearchService pOpenSearchService,
             IAccessRightFilter pAccessRightFilter) {
         super();
+        Assert.notNull(pSearchService);
+        Assert.notNull(pOpenSearchService);
+        Assert.notNull(pAccessRightFilter);
         searchService = pSearchService;
-        queryParser = pQueryParser;
+        openSearchService = pOpenSearchService;
         accessRightFilter = pAccessRightFilter;
     }
 
@@ -68,7 +71,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
         try {
             // Build criterion from query
-            ICriterion criterion = queryParser.parse(pQ);
+            ICriterion criterion = openSearchService.parse(pQ);
 
             // Apply security filter
             criterion = accessRightFilter.addUserGroups(criterion);
@@ -80,7 +83,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                 return searchService.search((JoinEntitySearchKey<S, R>) pSearchKey, pPageable, criterion);
             }
 
-        } catch (QueryNodeException e) {
+        } catch (OpenSearchParseException e) {
             throw new SearchException(pQ, e);
         }
     }

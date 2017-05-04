@@ -15,7 +15,7 @@ import com.thoughtworks.xstream.converters.ConversionException;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.IAttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.queryparser.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 import fr.cnes.regards.modules.search.rest.converter.AttributeNamesToFacetTypesMap;
 

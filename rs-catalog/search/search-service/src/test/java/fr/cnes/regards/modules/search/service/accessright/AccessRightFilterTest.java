@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.search.service.accessright;
 
 import java.util.List;
 
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -23,9 +22,12 @@ import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.queryparser.service.RegardsQueryParser;
-import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.AttributeModelCache;
-import fr.cnes.regards.modules.queryparser.service.cache.attributemodel.IAttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.geoparser.GeoParser;
+import fr.cnes.regards.modules.opensearch.service.queryparser.QueryParser;
+import fr.cnes.regards.modules.opensearch.service.queryparser.cache.attributemodel.AttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.queryparser.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
@@ -43,9 +45,9 @@ public class AccessRightFilterTest {
     private AccessRightFilter accessRightFilter;
 
     /**
-     * Query Parse building criterions from a string query. Easier to build criterion then doing it manually
+     * The OpenSearch service building {@link ICriterion} from a request string.  Easier to build criterion then doing it manually.
      */
-    private RegardsQueryParser parser;
+    private OpenSearchService openSearchService;
 
     /**
      * Criterion visitor responsible for finding a "groups" criterion
@@ -92,7 +94,7 @@ public class AccessRightFilterTest {
         Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
                 .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
 
-        parser = new RegardsQueryParser(attributeModelCache);
+        openSearchService = new OpenSearchService(new QueryParser(attributeModelCache), new GeoParser());
 
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
@@ -104,19 +106,19 @@ public class AccessRightFilterTest {
 
     /**
      * Test that a string query cannot use a "groups" term.
-     * @throws QueryNodeException
+     * @throws OpenSearchParseException
      */
-    @Test(expected = QueryNodeException.class)
-    public final void test_userCannotInjectGroupsTermInQuery() throws QueryNodeException {
-        parser.parse(SampleDataUtils.QUERY_WITH_GROUPS);
+    @Test(expected = OpenSearchParseException.class)
+    public final void test_userCannotInjectGroupsTermInQuery() throws OpenSearchParseException {
+        openSearchService.parse(SampleDataUtils.QUERY_WITH_GROUPS);
     }
 
     /**
      * Test method for {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addUserGroups(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
-     * @throws QueryNodeException
+     * @throws OpenSearchParseException
      */
     @Test
-    public final void testAddUserGroups() throws QueryNodeException {
+    public final void testAddUserGroups() throws OpenSearchParseException {
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
         final UserDetails details = new UserDetails();
@@ -125,7 +127,7 @@ public class AccessRightFilterTest {
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Init the criterion we add groups to
-        ICriterion criterion = parser.parse(SampleDataUtils.QUERY);
+        ICriterion criterion = openSearchService.parse(SampleDataUtils.QUERY);
 
         // Add groups
         ICriterion criterionWithGroups = accessRightFilter.addUserGroups(criterion);
