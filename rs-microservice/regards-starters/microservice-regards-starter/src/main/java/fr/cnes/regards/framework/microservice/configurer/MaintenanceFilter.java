@@ -27,21 +27,21 @@ public class MaintenanceFilter extends OncePerRequestFilter {
 
     private final IRuntimeTenantResolver resolver;
 
-    public MaintenanceFilter(IRuntimeTenantResolver pResolver) {
+    public MaintenanceFilter(final IRuntimeTenantResolver pResolver) {
         resolver = pResolver;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest pRequest, HttpServletResponse pResponse,
-            FilterChain pFilterChain) throws ServletException, IOException {
+    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+            final FilterChain pFilterChain) throws ServletException, IOException {
         // if it's a GET, request can be done even if the tenant is in maintenance
         if (pRequest.getMethod().equals(HttpMethod.GET.name())) {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
             // Only authorize to disable maintenance mode
-            if (!((pRequest.getPathInfo() != null)
-                    && pRequest.getPathInfo().contains(MaintenanceController.MAINTENANCE_URL)
-                    && pRequest.getPathInfo().contains(MaintenanceController.DISABLE))
+            if (!((pRequest.getRequestURI() != null)
+                    && pRequest.getRequestURI().contains(MaintenanceController.MAINTENANCE_URL)
+                    && pRequest.getRequestURI().contains(MaintenanceController.DISABLE))
                     && MaintenanceManager.getMaintenance(resolver.getTenant())) {
                 pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), "Tenant in maintenance");
             } else {

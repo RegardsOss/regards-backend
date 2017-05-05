@@ -77,14 +77,15 @@ public class PluginService implements IPluginService {
      * @param pPluginConfigurationRepository
      *            {@link PluginConfiguration} JPA repository
      */
-    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository, IPublisher publisher) {
+    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
+            final IPublisher publisher) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
         this.publisher = publisher;
     }
 
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
-            List<String> pPackagesToScan, IPublisher publisher) {
+            final List<String> pPackagesToScan, final IPublisher publisher) {
         super();
         pluginConfRepository = pPluginConfigurationRepository;
         addPluginPackages(pPackagesToScan);
@@ -164,9 +165,9 @@ public class PluginService implements IPluginService {
             }
         });
 
-        boolean shouldPublishCreation = pPluginConfiguration.getId() == null;
+        final boolean shouldPublishCreation = pPluginConfiguration.getId() == null;
 
-        PluginConfiguration newConf = pluginConfRepository.save(pPluginConfiguration);
+        final PluginConfiguration newConf = pluginConfRepository.save(pPluginConfiguration);
         if (shouldPublishCreation) {
             publisher.publish(new PluginConfigurationEvent(newConf.getId(), PluginServiceAction.CREATE,
                     newConf.getInterfaceNames()));
@@ -185,24 +186,24 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration loadPluginConfiguration(Long id) {
+    public PluginConfiguration loadPluginConfiguration(final Long id) {
         return pluginConfRepository.findById(id);
     }
 
     @Override
-    public boolean exists(Long pId) {
+    public boolean exists(final Long pId) {
         return pluginConfRepository.exists(pId);
     }
 
     @Override
     public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf) throws ModuleException {
-        PluginConfiguration oldConf = pluginConfRepository.findById(pPluginConf.getId());
+        final PluginConfiguration oldConf = pluginConfRepository.findById(pPluginConf.getId());
         if (oldConf == null) {
             LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pPluginConf.getId()));
             throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
         }
-        boolean oldConfActive = oldConf.isActive();
-        PluginConfiguration newPluginConfiguration = savePluginConfiguration(pPluginConf);
+        final boolean oldConfActive = oldConf.isActive();
+        final PluginConfiguration newPluginConfiguration = savePluginConfiguration(pPluginConf);
 
         if (oldConfActive != newPluginConfiguration.isActive()) {
             if (newPluginConfiguration.isActive()) {
@@ -223,7 +224,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public void deletePluginConfiguration(final Long pConfId) throws ModuleException {
-        PluginConfiguration toDelete = pluginConfRepository.findOne(pConfId);
+        final PluginConfiguration toDelete = pluginConfRepository.findOne(pConfId);
         if (toDelete == null) {
             LOGGER.error(String.format("Error while deleting the plugin configuration <%d>.", pConfId));
             throw new EntityNotFoundException(pConfId.toString(), PluginConfiguration.class);
@@ -241,7 +242,7 @@ public class PluginService implements IPluginService {
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
 
-        Iterable<PluginConfiguration> plgConfs = pluginConfRepository.findAll();
+        final Iterable<PluginConfiguration> plgConfs = pluginConfRepository.findAll();
         if (plgConfs != null) {
             return Lists.newArrayList(plgConfs).stream()
                     .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
@@ -306,7 +307,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getPlugin(PluginConfiguration pPluginConfiguration) throws ModuleException {
+    public <T> T getPlugin(final PluginConfiguration pPluginConfiguration) throws ModuleException {
         return getPlugin(pPluginConfiguration.getId(),
                          pPluginConfiguration.getParameters().toArray(new PluginParameter[0]));
     }
@@ -349,7 +350,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
-        Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
+        final Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
         return (confs != null) ? Lists.newArrayList(confs) : Collections.emptyList();
     }
 
@@ -363,16 +364,18 @@ public class PluginService implements IPluginService {
     @Override
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     public void addPluginPackage(final String pPluginPackage) {
-        getPluginPackage().add(pPluginPackage);
-        Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, pluginPackage);
-        if (plugins == null) {
-            // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
-            plugins = new HashMap<>();
+        if (!getPluginPackage().contains(pPluginPackage)) {
+            getPluginPackage().add(pPluginPackage);
+            final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, pluginPackage);
+            if (plugins == null) {
+                // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
+                plugins = new HashMap<>();
+            }
+            plugins.putAll(newPlugins);
         }
-        plugins.putAll(newPlugins);
     }
 
-    private void addPluginPackages(List<String> pPackagesToScan) {
+    private void addPluginPackages(final List<String> pPackagesToScan) {
         if ((pPackagesToScan != null) && !pPackagesToScan.isEmpty()) {
             getPluginPackage().addAll(pPackagesToScan);
             getLoadedPlugins();
@@ -380,12 +383,13 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginMetaData checkPluginClassName(Class<?> pClass, String pPluginClassName) throws EntityInvalidException {
+    public PluginMetaData checkPluginClassName(final Class<?> pClass, final String pPluginClassName)
+            throws EntityInvalidException {
         PluginMetaData metaData = null;
         boolean isFound = false;
 
         // Search all the plugins of type pClass
-        for (PluginMetaData pMd : getPluginsByType(pClass)) {
+        for (final PluginMetaData pMd : getPluginsByType(pClass)) {
             if (!isFound && pMd.getPluginClassName().equals(pPluginClassName)) {
                 isFound = true;
                 metaData = pMd;
@@ -400,9 +404,9 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel)
+    public PluginConfiguration getPluginConfigurationByLabel(final String pConfigurationLabel)
             throws EntityNotFoundException {
-        PluginConfiguration conf = pluginConfRepository.findOneByLabel(pConfigurationLabel);
+        final PluginConfiguration conf = pluginConfRepository.findOneByLabel(pConfigurationLabel);
         if (conf == null) {
             throw new EntityNotFoundException(pConfigurationLabel, PluginConfiguration.class);
         }
