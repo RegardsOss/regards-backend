@@ -40,6 +40,13 @@ public class AuthenticationPluginResponse {
     private final String email;
 
     /**
+     * PluginClassName from the plugin who created this response.
+     * This parameter is automaticly set by the authentication manager.
+     * Each plugin don't need to set this value.
+     */
+    private String pluginClassName = "";
+
+    /**
      * Error message
      */
     private String errorMessage = null;
@@ -87,4 +94,13 @@ public class AuthenticationPluginResponse {
     public String getEmail() {
         return email;
     }
+
+    public String getPluginClassName() {
+        return pluginClassName;
+    }
+
+    public void setPluginClassName(final String pPluginClassName) {
+        pluginClassName = pPluginClassName;
+    }
+
 }

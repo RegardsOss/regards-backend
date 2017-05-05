@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.authentication.plugins;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 
 /**
@@ -15,6 +16,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
  * @since 1.0-SNAPSHOT
  */
 @FunctionalInterface
+@PluginInterface(description = "Interface for all identity provider plugins.")
 public interface IAuthenticationPlugin {
 
     /**

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
  *
@@ -95,11 +96,16 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.modules.accessrights.client.IProjectUsersClient#isAdmin(java.lang.String)
      */
     @Override
-    public ResponseEntity<Boolean> isAdmin(String pUserEmail) {
+    public ResponseEntity<Boolean> isAdmin(final String pUserEmail) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Resource<ProjectUser>> createUser(final AccessRequestDto pDto) {
         return null;
     }
 

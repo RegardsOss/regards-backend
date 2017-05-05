@@ -38,8 +38,10 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -111,6 +113,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         }
 
         final Object details = pAuthentication.getDetails();
+        String origineUrl = "";
+        String requestLink = "";
         final String scope;
         if (details instanceof Map) {
             @SuppressWarnings("unchecked")
@@ -121,6 +125,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 LOG.error(message);
                 throw new BadCredentialsException(message);
             }
+            origineUrl = detailsMap.get("origineUrl");
+            requestLink = detailsMap.get("requestLink");
         } else {
             final String message = "Invalid scope";
             LOG.error(message);
@@ -131,7 +137,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // plugins service
         runTimeTenantResolver.forceTenant(scope);
         FeignSecurityManager.asSystem();
-        final Authentication auth = doAuthentication(name, password, scope);
+        final Authentication auth = doAuthentication(name, password, scope, origineUrl, requestLink);
         FeignSecurityManager.reset();
         return auth;
 
@@ -150,46 +156,48 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @return Authentication token
      * @since 1.0-SNAPSHOT
      */
-    private Authentication doAuthentication(final String pLogin, final String pPassword, final String pScope) {
+    private Authentication doAuthentication(final String pLogin, final String pPassword, final String pScope,
+            final String pOrigineUrl, final String pRequestLink) {
 
-        Boolean accessGranted = false;
+        AuthenticationPluginResponse response = new AuthenticationPluginResponse(false, null);
 
         // If the given is a valid project, then check for project authentication plugins
         if (checkScopeValidity(pScope)) {
-            accessGranted = doScopePluginsAuthentication(pLogin, pPassword, pScope);
+            response = doScopePluginsAuthentication(pLogin, pPassword, pScope);
         }
 
         // If authentication is not valid, try with the default plugin
-        if (!accessGranted) {
+        if (!response.getAccessGranted()) {
             // Use default REGARDS internal plugin
-            accessGranted = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
+            response = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
         }
-
-        if (accessGranted) {
-            // Create missing account
-            createMissingAccount(pLogin);
-        }
-        // TODO : If Identity provider is not the internal regards authentication plugin. Then
-        // the authentication plugin can validate the authentication and the account could not exists.
-        // In this case, we have to create the missing accounts. Nevertheless, the projectUser is not created.
-        // The projectUser is created only when admin validate the account. After that, the projectUser have to
-        // be validated by the user himself.
 
         // Before returning generating token, check user status.
-        final AuthenticationStatus status = checkUserStatus(pLogin, pScope);
+        AuthenticationStatus status = checkUserStatus(response.getEmail(), pScope);
+        // If authentication is granted and user does not exists and plugin is not the regards internal authentication.
+        if (response.getAccessGranted()
+                && (status.equals(AuthenticationStatus.USER_UNKNOWN)
+                        || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
+                && (!response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName()))) {
+            this.createMissingProjectUser(response.getEmail(), pOrigineUrl, pRequestLink);
+            status = checkUserStatus(response.getEmail(), pScope);
+        }
+
         if (!status.equals(AuthenticationStatus.ACCESS_GRANTED)) {
-            final String message = String.format("Access denied for user %s.", pLogin);
+            final String message = String.format("Access denied for user %s. cause : user status is %s",
+                                                 response.getEmail(), status.name());
             throw new AuthenticationException(message, status);
         }
 
-        if (!accessGranted) {
-            final String message = String.format("Access denied for user %s.", pLogin);
+        if (!response.getAccessGranted()) {
+            final String message = String.format("Access denied for user %s. cause: %s", response.getEmail(),
+                                                 response.getErrorMessage());
             throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
-        LOG.info("The user <{}> is authenticate for the project {}", pLogin, pScope);
+        LOG.info("The user <{}> is authenticate for the project {}", response.getEmail(), pScope);
 
-        return generateToken(pScope, pLogin, pPassword);
+        return generateToken(pScope, response.getEmail(), pPassword);
     }
 
     /**
@@ -205,9 +213,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @return Authentication
      * @since 1.0-SNAPSHOT
      */
-    private Boolean doScopePluginsAuthentication(final String pLogin, final String pPassword, final String pScope) {
+    private AuthenticationPluginResponse doScopePluginsAuthentication(final String pLogin, final String pPassword,
+            final String pScope) {
 
-        Boolean accessGranted = false;
+        AuthenticationPluginResponse pluginResponse = new AuthenticationPluginResponse(false, pLogin);
 
         final IPluginService pluginService = beanFactory.getBean(IPluginService.class);
         if (pluginService == null) {
@@ -220,15 +229,15 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         final List<PluginConfiguration> pluginConfigurations = pluginService
                 .getPluginConfigurationsByType(IAuthenticationPlugin.class);
         final Iterator<PluginConfiguration> it = pluginConfigurations.iterator();
-        while (it.hasNext() && (!accessGranted)) {
+        while (it.hasNext() && !pluginResponse.getAccessGranted()) {
             try {
-                accessGranted = doPluginAuthentication(pluginService.getPlugin(it.next().getId()), pLogin, pPassword,
-                                                       pScope);
+                pluginResponse = doPluginAuthentication(pluginService.getPlugin(it.next().getId()), pLogin, pPassword,
+                                                        pScope);
             } catch (final ModuleException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
-        return accessGranted;
+        return pluginResponse;
     }
 
     /**
@@ -255,26 +264,22 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      *
-     * Create account into REGARDS internal accounts system if the account does already exists
+     * Create new account and project user by bypassing validation process
      *
      * @param pUserEmail
-     *            User email to create if missing
      * @since 1.0-SNAPSHOT
      */
-    private void createMissingAccount(final String pUserEmail) {
-
-        final IAccountsClient accountClient = beanFactory.getBean(IAccountsClient.class);
-        if (accountClient == null) {
+    private void createMissingProjectUser(final String pUserEmail, final String pOrigineUrl,
+            final String pRequestLink) {
+        final IRegistrationClient client = beanFactory.getBean(IRegistrationClient.class);
+        if (client == null) {
             final String message = "Context not initialized, Accounts client is not available";
             LOG.error(message);
             throw new BadCredentialsException(message);
         }
-
-        final ResponseEntity<Resource<Account>> response = accountClient.retrieveAccounByEmail(pUserEmail);
-        if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-            accountClient.createAccount(new Account(pUserEmail, "", "", null));
-        }
-
+        LOG.info("Creating new account for user email=" + pUserEmail);
+        client.requestAccess(new AccessRequestDto(pUserEmail, pUserEmail, pUserEmail, DefaultRole.PUBLIC.name(), null,
+                null, pOrigineUrl, pRequestLink));
     }
 
     /**
@@ -381,20 +386,21 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      *            scope
      * @return AbstractAuthenticationToken
      */
-    private Boolean doPluginAuthentication(final IAuthenticationPlugin pPlugin, final String pUserName,
-            final String pUserPassword, final String pScope) {
+    private AuthenticationPluginResponse doPluginAuthentication(final IAuthenticationPlugin pPlugin,
+            final String pUserName, final String pUserPassword, final String pScope) {
 
         // Check user/password
-        Boolean accessGranted = true;
         final AuthenticationPluginResponse response = pPlugin.authenticate(pUserName, pUserPassword, pScope);
         final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         final Validator validator = factory.getValidator();
 
-        if ((response == null) || !validator.validate(response).isEmpty() || !response.getAccessGranted()) {
-            accessGranted = false;
+        if ((response == null) || !validator.validate(response).isEmpty()) {
+            return new AuthenticationPluginResponse(false, pUserName);
         }
 
-        return accessGranted;
+        response.setPluginClassName(pPlugin.getClass().getName());
+
+        return response;
 
     }
 

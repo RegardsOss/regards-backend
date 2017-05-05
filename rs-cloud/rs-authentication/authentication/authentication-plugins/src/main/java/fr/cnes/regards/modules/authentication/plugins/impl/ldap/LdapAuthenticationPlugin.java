@@ -231,6 +231,11 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
         String userMail = null;
         final String searchFilter = "(&" + ldapSearchUserFilter + "(" + ldapUserLoginAttribute + "=" + pLogin + "))";
         try {
+
+            LOGGER.info("LDAP DN=" + pDn);
+            LOGGER.info("SEARCH FILTER=" + searchFilter);
+            LOGGER.info("SEARCH SCOPE=" + SearchScope.SUBTREE);
+            LOGGER.info("EMAIL ATTRIBUTE=" + ldapEmailAttribute);
             cursor = pLdapContext.search(pDn, searchFilter, SearchScope.SUBTREE, ldapEmailAttribute);
 
             while (cursor.next() && (userMail == null)) {

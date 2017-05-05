@@ -16,7 +16,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
 
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
@@ -34,6 +33,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -71,9 +71,24 @@ public class Oauth2AuthenticationManagerTest {
     private static IAccountsClient accountsClientMock;
 
     /**
+     * Mock for new registration
+     */
+    private static IRegistrationClient registrationClientMock;
+
+    /**
      * Mock to retrieve project users
      */
     private static IProjectUsersClient projectUsersClientMock;
+
+    /**
+     * Mock for authentication plugin
+     */
+    private static IAuthenticationPlugin plugin;
+
+    /**
+     * Bean factory mock
+     */
+    private static BeanFactory beanFactoryMock;
 
     /**
      * Test valid Account
@@ -98,7 +113,7 @@ public class Oauth2AuthenticationManagerTest {
     public static void init() throws EntityNotFoundException, EntityException {
 
         // Create mock for default authentication plugin
-        final IAuthenticationPlugin plugin = Mockito.mock(IAuthenticationPlugin.class);
+        plugin = Mockito.mock(IAuthenticationPlugin.class);
         Mockito.when(plugin.authenticate(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(new AuthenticationPluginResponse(true, "test@regards.fr"));
 
@@ -120,7 +135,7 @@ public class Oauth2AuthenticationManagerTest {
         validUser.setStatus(UserStatus.ACCESS_GRANTED);
 
         // Mock Spring beanFactory to provide needed beans
-        final BeanFactory beanFactoryMock = Mockito.mock(BeanFactory.class);
+        beanFactoryMock = Mockito.mock(BeanFactory.class);
 
         // Mock Plugins service
         final IPluginService pluginServiceMock = Mockito.mock(IPluginService.class);
@@ -138,7 +153,10 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(resource, HttpStatus.OK));
 
+        registrationClientMock = Mockito.mock(IRegistrationClient.class);
+
         Mockito.when(beanFactoryMock.getBean(IAccountsClient.class)).thenReturn(accountsClientMock);
+        Mockito.when(beanFactoryMock.getBean(IRegistrationClient.class)).thenReturn(registrationClientMock);
 
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
@@ -185,16 +203,15 @@ public class Oauth2AuthenticationManagerTest {
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         try {
-            final Authentication authResult = manager.authenticate(auth);
+            manager.authenticate(auth);
             Assert.fail("There should be an AuthenticationException thronw here");
         } catch (final AuthenticationException e) {
             Assert.assertEquals(e.getAdditionalInformation().get("error"),
                                 AuthenticationStatus.ACCOUNT_UNKNOWN.toString());
         }
 
-        // An account should be created here as the authentication plugin return authentication true and
-        // the account does not exists.
-        Mockito.verify(accountsClientMock, Mockito.times(1)).createAccount(Mockito.any());
+        // Account creation is done only for plugins. No for regards internal plugin
+        Mockito.verify(registrationClientMock, Mockito.times(0)).requestAccess(Mockito.any());
     }
 
     /**
