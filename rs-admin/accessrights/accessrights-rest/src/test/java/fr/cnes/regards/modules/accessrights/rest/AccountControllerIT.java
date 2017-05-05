@@ -210,7 +210,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultPut(apiAccountSetting, toUpdate, expectations, errorMessage);
 
         expectations.clear();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isUnprocessableEntity());
         toUpdate.setMode("sdfqjkmfsdq");
         performDefaultPut(apiAccountSetting, toUpdate, expectations, errorMessage);
     }

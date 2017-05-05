@@ -8,6 +8,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,7 +31,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(IUserResourceClient.TYPE_MAPPING)
+@RequestMapping(value = IUserResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IUserResourceClient {
 
     /**
