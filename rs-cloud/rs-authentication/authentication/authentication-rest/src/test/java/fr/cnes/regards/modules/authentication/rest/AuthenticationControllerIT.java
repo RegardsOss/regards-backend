@@ -27,14 +27,10 @@ import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 
 /**
- *
- * Class AuthenticationControllerIT
- *
- * Test REST endpoints to manage Identity provider plugins
+ * Class AuthenticationControllerIT Test REST endpoints to manage Identity provider plugins
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
  * @since 1.0-SNAPSHOT
  */
 // FIXME remove lines
@@ -86,7 +82,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Init the context of the tests
      *
      * @since 1.0-SNAPSHOT
@@ -96,14 +91,13 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_LDAP);
         metadata.setPluginClassName(LdapAuthenticationPlugin.class.getName());
-        metadata.setInterfaceName(IAuthenticationPlugin.class.getName());
+        metadata.getInterfaceNames().add(IAuthenticationPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);
     }
 
     /**
-     *
      * Integration test to retrieve all configured Identity Provider plugins of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -122,7 +116,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to retrieve one configured Identity Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -142,7 +135,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to retrieve one configured Identity Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -159,7 +151,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to create a configured Identity Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -186,7 +177,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to update a configured Identity Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -211,7 +201,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to update a configured Identity Provider plugin of the Authentication module with error
      *
      * @since 1.0-SNAPSHOT
@@ -235,7 +224,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to update a configured Identity Provider plugin of the Authentication module with eror
      *
      * @since 1.0-SNAPSHOT
@@ -258,7 +246,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to delete a configured Identity Provider plugin of the Authentication module
      *
      * @since 1.0-SNAPSHOT
@@ -271,7 +258,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         final PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_LDAP);
         metadata.setPluginClassName(LdapAuthenticationPlugin.class.getName());
-        metadata.setInterfaceName("fr.cnes.regards.framework.some.modules.PluginToDelete");
+        metadata.getInterfaceNames().add("fr.cnes.regards.framework.some.modules.PluginToDelete");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
@@ -282,7 +269,6 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Integration test to delete a configured Identity Provider plugin of the Authentication module with error
      *
      * @since 1.0-SNAPSHOT

@@ -46,7 +46,7 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
 
     @PostConstruct
     public void addPluginPackage() {
-        pluginService.addPluginPackage("fr.cnes.regards.cloud.gateway.authentication.plugins");
+        pluginService.addPluginPackage(IAuthenticationPlugin.class.getPackage().getName());
     }
 
     @Override
