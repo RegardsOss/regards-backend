@@ -3,25 +3,17 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.SequenceGenerator;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -39,7 +31,8 @@ public class Notification implements IIdentifiable<Long> {
      * The date of the notification
      */
     @Column(name = "date")
-    private LocalDateTime date;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime date;
 
     /**
      * Unique Identifier
@@ -105,7 +98,7 @@ public class Notification implements IIdentifiable<Long> {
     /**
      * @return the date
      */
-    public LocalDateTime getDate() {
+    public OffsetDateTime getDate() {
         return date;
     }
 
@@ -160,7 +153,7 @@ public class Notification implements IIdentifiable<Long> {
      * @param pDate
      *            the date to set
      */
-    public void setDate(final LocalDateTime pDate) {
+    public void setDate(final OffsetDateTime pDate) {
         date = pDate;
     }
 

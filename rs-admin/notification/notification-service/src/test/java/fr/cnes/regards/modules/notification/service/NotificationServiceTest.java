@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -166,8 +166,8 @@ public class NotificationServiceTest {
         // Init some users
         projectUser0.setId(0L);
         projectUser0.setEmail(RECIPIENT_0);
-        projectUser0.setLastConnection(LocalDateTime.now().minusDays(2));
-        projectUser0.setLastUpdate(LocalDateTime.now().minusHours(1));
+        projectUser0.setLastConnection(OffsetDateTime.now().minusDays(2));
+        projectUser0.setLastUpdate(OffsetDateTime.now().minusHours(1));
         projectUser0.setMetaData(new ArrayList<>());
         projectUser0.setPermissions(new ArrayList<>());
         projectUser0.setStatus(UserStatus.ACCESS_GRANTED);
@@ -175,8 +175,8 @@ public class NotificationServiceTest {
 
         projectUser1.setId(1L);
         projectUser1.setEmail(RECIPIENT_1);
-        projectUser1.setLastConnection(LocalDateTime.now().minusDays(2));
-        projectUser1.setLastUpdate(LocalDateTime.now().minusHours(1));
+        projectUser1.setLastConnection(OffsetDateTime.now().minusDays(2));
+        projectUser1.setLastUpdate(OffsetDateTime.now().minusHours(1));
         projectUser1.setMetaData(new ArrayList<>());
         projectUser1.setPermissions(new ArrayList<>());
         projectUser1.setStatus(UserStatus.ACCESS_GRANTED);
@@ -184,8 +184,8 @@ public class NotificationServiceTest {
 
         projectUser2.setId(2L);
         projectUser2.setEmail(RECIPIENT_2);
-        projectUser2.setLastConnection(LocalDateTime.now().minusDays(2));
-        projectUser2.setLastUpdate(LocalDateTime.now().minusHours(1));
+        projectUser2.setLastConnection(OffsetDateTime.now().minusDays(2));
+        projectUser2.setLastUpdate(OffsetDateTime.now().minusHours(1));
         projectUser2.setMetaData(new ArrayList<>());
         projectUser2.setPermissions(new ArrayList<>());
         projectUser2.setStatus(UserStatus.ACCESS_GRANTED);
@@ -194,7 +194,7 @@ public class NotificationServiceTest {
         // Init the notification
         notification.setId(0L);
         notification.setMessage(MESSAGE);
-        notification.setDate(LocalDateTime.now().minusHours(2L));
+        notification.setDate(OffsetDateTime.now().minusHours(2L));
         notification.setSender(SENDER);
         notification.setStatus(NotificationStatus.UNREAD);
         notification.setTitle(TITLE);

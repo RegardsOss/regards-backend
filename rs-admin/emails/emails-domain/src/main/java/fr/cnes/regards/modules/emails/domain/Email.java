@@ -1,30 +1,22 @@
 package fr.cnes.regards.modules.emails.domain;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.ObjectUtils;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * Models a simple mail message, including data such as the from, to, cc, subject, and text fields.
  * <p>
- * This is a just a simplified representation of {@link SimpleMailMessage} for data base storage.
+ * This is a just a simplified representation of SimpleMailMessage for data base storage.
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  *
- * @see org.springframework.mail.SimpleMailMessage
  */
 @Entity(name = "T_EMAIL")
 @SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "SEQ_EMAIL")
@@ -68,7 +60,6 @@ public class Email implements IIdentifiable<Long> {
     /**
      * Date when the email was sent
      */
-    @PastOrNow
     @Column(name = "sentDate")
     private LocalDateTime sentDate;
 

@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,14 +202,14 @@ public class SendingSchedulerTest {
         notifications = new ArrayList<>();
         final Notification notification0 = new Notification();
         notification0.setId(ZERO);
-        notification0.setDate(LocalDateTime.now().minusDays(FOUR));
+        notification0.setDate(OffsetDateTime.now().minusDays(FOUR));
         notification0.setMessage("Notification 0 message");
         notification0.setProjectUserRecipients(projectUsers.subList(0, 2));
         notification0.setRoleRecipients(roles.subList(1, 2));
         notifications.add(notification0);
         final Notification notification1 = new Notification();
         notification1.setId(ONE);
-        notification1.setDate(LocalDateTime.now().minusHours(THREE));
+        notification1.setDate(OffsetDateTime.now().minusHours(THREE));
         notification1.setMessage("Notification 1 message");
         notification1.setProjectUserRecipients(projectUsers.subList(1, 2));
         notification1.setRoleRecipients(new ArrayList<>());
@@ -325,7 +325,7 @@ public class SendingSchedulerTest {
     public void testSendCustomDateExpired() {
         final Notification n = new Notification();
         n.setId(ONE);
-        n.setDate(LocalDateTime.now().minusDays(THREE));
+        n.setDate(OffsetDateTime.now().minusDays(THREE));
         n.setMessage(MESSAGE);
         n.setProjectUserRecipients(new ArrayList<>());
         n.getProjectUserRecipients().add(projectUsers.get(0));
@@ -360,7 +360,7 @@ public class SendingSchedulerTest {
     public void testSendCustomDateNotExpired() {
         final Notification n = new Notification();
         n.setId(ONE);
-        n.setDate(LocalDateTime.now().minusHours(2));
+        n.setDate(OffsetDateTime.now().minusHours(2));
         n.setMessage(MESSAGE);
         n.setProjectUserRecipients(new ArrayList<>());
         n.getProjectUserRecipients().add(projectUsers.get(0));

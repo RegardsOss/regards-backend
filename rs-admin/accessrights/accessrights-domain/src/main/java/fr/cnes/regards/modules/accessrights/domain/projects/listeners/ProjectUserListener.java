@@ -3,10 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects.listeners;
 
-import java.time.LocalDateTime;
-
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
@@ -30,6 +29,6 @@ public class ProjectUserListener {
     @PreUpdate
     @PrePersist
     public void setLastUpdate(final ProjectUser pProjectUser) {
-        pProjectUser.setLastUpdate(LocalDateTime.now());
+        pProjectUser.setLastUpdate(OffsetDateTime.now());
     }
 }

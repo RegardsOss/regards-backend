@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
 import org.junit.Assert;
@@ -70,7 +70,7 @@ public class ProjectUserDaoTest {
         final ProjectUser user = new ProjectUser("email@test.com", role, new ArrayList<>(), new ArrayList<>());
 
         // Init with a past date (2 days ago)
-        final LocalDateTime initial = LocalDateTime.now().minusDays(2);
+        final OffsetDateTime initial = OffsetDateTime.now().minusDays(2);
         user.setLastUpdate(initial);
         Assert.assertEquals(user.getLastUpdate(), initial);
 

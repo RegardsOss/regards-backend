@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class NotificationTest {
     /**
      * Date
      */
-    private static final LocalDateTime DATE = LocalDateTime.now().minusDays(1);
+    private static final OffsetDateTime DATE = OffsetDateTime.now().minusDays(1);
 
     /**
      * Message
