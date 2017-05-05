@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -45,7 +46,6 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * @author Marc Sordi
  * @author Sébastien Binda
  * @since 1.1-SNAPSHOT
- *
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
@@ -120,7 +120,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
-    /*
+    /**
      * Exception handler returning the code 404 when an element accessed does not exists (for example in a stream).
      */
     @ExceptionHandler(NoSuchElementException.class)
@@ -128,7 +128,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
     }
 
-    /*
+    /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
      */
     @ExceptionHandler(EntityInvalidException.class)
@@ -137,7 +137,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
                 .body(new ServerErrorResponse(pException.getMessages()));
     }
 
-    /*
+    /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.<br>
      * Thrown by Hibernate.
      */
@@ -148,11 +148,19 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
     /**
-     *
+     * Specification of the handler for MethodArgumentNotValidException. In REGARDS, we send a 422
+     */
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+            HttpHeaders headers, HttpStatus status, WebRequest request) {
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ServerErrorResponse(ex.getMessage()));
+    }
+
+    /**
      * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
      *
-     * @param pException
-     *            {@link EntityOperationForbiddenException}
+     * @param pException {@link EntityOperationForbiddenException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityOperationForbiddenException.class)
@@ -164,10 +172,8 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     /**
      * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
      *
-     * @param pException
-     *            {@link EntityTransitionForbiddenException}
+     * @param pException {@link EntityTransitionForbiddenException}
      * @return {@link ResponseEntity}
-     *
      */
     @ExceptionHandler(EntityTransitionForbiddenException.class)
     public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
@@ -179,8 +185,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
      * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
      * body.<br>
      *
-     * @param pException
-     *            {@link EntityInconsistentIdentifierException}
+     * @param pException {@link EntityInconsistentIdentifierException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityInconsistentIdentifierException.class)
@@ -192,9 +197,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     /**
      * Spring framework Access denied exception. Throw by security methodAccessVoter
      *
-     *
-     * @param pException
-     *            {@link AccessDeniedException}
+     * @param pException {@link AccessDeniedException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(AccessDeniedException.class)
@@ -212,8 +215,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     /**
      * Exception handler returning the code 4000 when an error occurs while processing an OpenSearch request.<br>
      *
-     * @param pException
-     *            {@link SearchException}
+     * @param pException {@link SearchException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(SearchException.class)
@@ -225,8 +227,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     /**
      * Exception returning 400 when a datasource connection is invalid
      *
-     * @param pException
-     *            {@link InvalidConnectionException}
+     * @param pException {@link InvalidConnectionException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(InvalidConnectionException.class)
