@@ -19,10 +19,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
- *
- * Class Project
- *
- * Project Entity
+ * Class Project Project Entity
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
@@ -89,6 +86,12 @@ public class Project implements IIdentifiable<Long> {
     @Column
     @Type(type = "text")
     private String licenceLink;
+
+    /**
+     * The project hostname(hostname+port is needed)
+     */
+    @Column
+    private String host;
 
     public Project() {
         super();
@@ -201,6 +204,14 @@ public class Project implements IIdentifiable<Long> {
 
     public void setDeleted(final boolean pIsDeleted) {
         isDeleted = pIsDeleted;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String pHost) {
+        host = pHost;
     }
 
 }
