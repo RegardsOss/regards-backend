@@ -4,13 +4,10 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.net.URISyntaxException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
 
 /**
  *
@@ -20,7 +17,7 @@ public class StatusInfoTest {
     @Test
     public void testDomain() throws URISyntaxException {
         final StatusInfo statusInfo = new StatusInfo();
-        final LocalDateTime now = LocalDateTime.now();
+        final OffsetDateTime now = OffsetDateTime.now();
         final int percentCompleted = 48;
         final JobStatus status = JobStatus.RUNNING;
         final String description = "gjkdfhngjdfn";
@@ -28,11 +25,11 @@ public class StatusInfoTest {
         
         statusInfo.setEstimatedCompletion(now);
         
-        LocalDateTime startDate = now;
+        OffsetDateTime startDate = now;
         startDate.withHour(15).minusDays(20);
         statusInfo.setStartDate(startDate);
         
-        LocalDateTime stopDate = now;
+        OffsetDateTime stopDate = now;
         startDate.withHour(0).minusDays(5);
         statusInfo.setStopDate(stopDate);
         

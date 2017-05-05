@@ -1,13 +1,12 @@
 package fr.cnes.regards.framework.jpa.converters;
 
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 import java.sql.Date;
 import java.time.LocalDate;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
-
 /**
- * This {@link AttributeConverter} allows to convert a {@link LocalDate} to persist with JPA.
+ * This {@link AttributeConverter} allows to convert a LocalDate to persist with JPA.
  * 
  * @author Christophe Mertz
  *

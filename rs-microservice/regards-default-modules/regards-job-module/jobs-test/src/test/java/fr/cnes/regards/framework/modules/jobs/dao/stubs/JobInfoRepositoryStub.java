@@ -7,7 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -89,7 +89,7 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
                                                                            "rs-microservice");
 
     private static JobConfiguration jobConfiguration1 = new JobConfiguration("", jobParameters1,
-            "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(15),
+            "fr.cnes.regards.modules.MyCustomJob", OffsetDateTime.now().plusDays(2), OffsetDateTime.now().plusDays(15),
             33, workspace, "owner@unix.org");
 
     private static final JobInfo jobInfo1 = new JobInfo(jobConfiguration1);
@@ -100,8 +100,8 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
             .getParameters();
 
     private static JobConfiguration jobConfiguration2 = new JobConfiguration("", jobParameters2,
-            "fr.cnes.regards.modules.MyOtherCustomJob", LocalDateTime.now().plusDays(2),
-            LocalDateTime.now().plusDays(15), 10, null, "master@ubuntu.org");
+            "fr.cnes.regards.modules.MyOtherCustomJob", OffsetDateTime.now().plusDays(2),
+            OffsetDateTime.now().plusDays(15), 10, null, "master@ubuntu.org");
 
     private static final JobInfo jobInfo2 = new JobInfo(jobConfiguration2);
 
@@ -111,8 +111,8 @@ public class JobInfoRepositoryStub extends RepositoryStub<JobInfo> implements IJ
             .addParameter("parameter35", "parameter value35").getParameters();
 
     private static JobConfiguration jobConfiguration3 = new JobConfiguration("", jobParameters3,
-            "fr.cnes.regards.modules.MyOtherCustomJob", LocalDateTime.now().plusDays(2),
-            LocalDateTime.now().plusDays(15), 10, null, "master@ubuntu.org");
+            "fr.cnes.regards.modules.MyOtherCustomJob", OffsetDateTime.now().plusDays(2),
+            OffsetDateTime.now().plusDays(15), 10, null, "master@ubuntu.org");
 
     private static final JobInfo jobInfo3 = new JobInfo(jobConfiguration3);
 

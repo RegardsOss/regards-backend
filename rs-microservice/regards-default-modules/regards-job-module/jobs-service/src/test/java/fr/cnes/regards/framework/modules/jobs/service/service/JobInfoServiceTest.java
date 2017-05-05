@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service.service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -47,8 +47,8 @@ public class JobInfoServiceTest {
         final JobParameters pParameters = new JobParameters();
         pParameters.add("follow", "Kepler");
         final String jobClassName = "fr.cnes.regards.framework.modules.jobs.service.manager.AJob";
-        final LocalDateTime pEstimatedCompletion = LocalDateTime.now().plusHours(5);
-        final LocalDateTime pExpirationDate = LocalDateTime.now().plusDays(15);
+        final OffsetDateTime pEstimatedCompletion = OffsetDateTime.now().plusHours(5);
+        final OffsetDateTime pExpirationDate = OffsetDateTime.now().plusDays(15);
         final String description = "some job description";
         final String owner = "IntegrationTest";
         final JobConfiguration pJobConfiguration = new JobConfiguration(description, pParameters, jobClassName,

@@ -5,18 +5,13 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-
-import fr.cnes.regards.framework.modules.jobs.domain.JobConfiguration;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameters;
-import fr.cnes.regards.framework.modules.jobs.domain.Output;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
 
 /**
  *
@@ -61,7 +56,7 @@ public class JobInfoTest {
         jobInfo.setWorkspace(null);
         Assertions.assertThat(jobInfo.needWorkspace()).isEqualTo(false);
 
-        final LocalDateTime now = LocalDateTime.now();
+        final OffsetDateTime now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
 
         final JobConfiguration jobConfiguration = new JobConfiguration("", parameters, pClassName, now, now, priority,
                 workspace, owner);
