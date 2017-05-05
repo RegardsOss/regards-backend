@@ -81,7 +81,7 @@ public class AccountSettingsControllerIT extends AbstractRegardsTransactionalIT 
                           "Error updating accountsSettings to auto-accept");
 
         expectations.clear();
-        expectations.add(status().isBadRequest());
+        expectations.add(status().isUnprocessableEntity());
         toUpdate.setMode("sdfqjkmfsdq");
         performDefaultPut(AccountSettingsController.REQUEST_MAPPING_ROOT, toUpdate, expectations,
                           "There should be an error when updating accountsSettings to invalid value");

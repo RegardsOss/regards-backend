@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +77,7 @@ public class ProjectUserTest {
 
     /**
      * Test method for
-     * {@link ProjectUser#createProjectUser(Long, LocalDateTime, LocalDateTime, UserStatus, List, Role, List, String)}.
+     * {@link ProjectUser#createProjectUser(Long, OffsetDateTime, OffsetDateTime, UserStatus, List, Role, List, String)}.
      */
     @Test
     public void testProjectUserWithParams() {
@@ -117,17 +117,17 @@ public class ProjectUserTest {
      */
     @Test
     public void testGetLastConnection() {
-        final LocalDateTime newValue = LocalDateTime.now().minusMinutes(5);
+        final OffsetDateTime newValue = OffsetDateTime.now().minusMinutes(5);
         projectUser.setLastConnection(newValue);
         Assert.assertEquals(newValue, projectUser.getLastConnection());
     }
 
     /**
-     * Test method for {@link ProjectUser#setLastConnection(java.time.LocalDateTime)}.
+     * Test method for {@link ProjectUser#setLastConnection(java.time.OffsetDateTime)}.
      */
     @Test
     public void testSetLastConnection() {
-        final LocalDateTime newLastConnection = LocalDateTime.now();
+        final OffsetDateTime newLastConnection = OffsetDateTime.now();
         projectUser.setLastConnection(newLastConnection);
         Assert.assertEquals(newLastConnection, projectUser.getLastConnection());
     }
@@ -137,18 +137,18 @@ public class ProjectUserTest {
      */
     @Test
     public void testGetLastUpdate() {
-        final LocalDateTime newValue = LocalDateTime.now().minusHours(2);
+        final OffsetDateTime newValue = OffsetDateTime.now().minusHours(2);
         projectUser.setLastUpdate(newValue);
         Assert.assertEquals(newValue, projectUser.getLastUpdate());
     }
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setLastUpdate(java.time.LocalDateTime)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setLastUpdate(java.time.OffsetDateTime)}.
      */
     @Test
     public void testSetLastUpdate() {
-        final LocalDateTime newLastUpdate = LocalDateTime.now();
+        final OffsetDateTime newLastUpdate = OffsetDateTime.now();
         projectUser.setLastUpdate(newLastUpdate);
         Assert.assertEquals(newLastUpdate, projectUser.getLastUpdate());
     }
