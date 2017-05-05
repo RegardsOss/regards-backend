@@ -87,7 +87,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @return Array of String
      * @since 1.0-SNAPSHOT
      */
-    @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1 and defaultRole <> INSTANCE_ADMIN")
+    @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1 and defaultRole <> 'INSTANCE_ADMIN'")
     List<String> findAllControllersByMicroservice(String pMicroservice);
 
 }
