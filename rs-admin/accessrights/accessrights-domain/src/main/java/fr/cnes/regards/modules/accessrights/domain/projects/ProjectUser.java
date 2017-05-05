@@ -3,25 +3,11 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -29,6 +15,7 @@ import org.hibernate.validator.constraints.Email;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUserListener;
@@ -64,14 +51,16 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     @PastOrNow
     @Column(name = "lastConnection")
-    private LocalDateTime lastConnection;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime lastConnection;
 
     /**
      * The last update date
      */
     @PastOrNow
     @Column(name = "lastUpdate")
-    private LocalDateTime lastUpdate;
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime lastUpdate;
 
     /**
      * The status of the user
@@ -165,7 +154,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      *
      * @return The last connection date
      */
-    public LocalDateTime getLastConnection() {
+    public OffsetDateTime getLastConnection() {
         return lastConnection;
     }
 
@@ -176,7 +165,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      *            The last connection date
      */
 
-    public void setLastConnection(final LocalDateTime pLastConnection) {
+    public void setLastConnection(final OffsetDateTime pLastConnection) {
         lastConnection = pLastConnection;
     }
 
@@ -185,7 +174,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      *
      * @return The last update date
      */
-    public LocalDateTime getLastUpdate() {
+    public OffsetDateTime getLastUpdate() {
         return lastUpdate;
     }
 
@@ -195,7 +184,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * @param pLastUpdate
      *            The last update date
      */
-    public void setLastUpdate(final LocalDateTime pLastUpdate) {
+    public void setLastUpdate(final OffsetDateTime pLastUpdate) {
         lastUpdate = pLastUpdate;
     }
 

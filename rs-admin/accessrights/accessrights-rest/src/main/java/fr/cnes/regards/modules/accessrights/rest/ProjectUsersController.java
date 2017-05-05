@@ -55,13 +55,13 @@ import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWork
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(ProjectUsersController.REQUEST_MAPPING_ROOT)
+@RequestMapping(ProjectUsersController.TYPE_MAPPING)
 public class ProjectUsersController implements IResourceController<ProjectUser> {
 
     /**
      * Root mapping for requests of this rest controller
      */
-    public static final String REQUEST_MAPPING_ROOT = "/users";
+    public static final String TYPE_MAPPING = "/users";
 
     /**
      * Service handling project users

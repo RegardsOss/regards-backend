@@ -54,17 +54,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
      */
     private static final String EMAIL = "email@test.com";
 
-    /**
-     * Specific user endpoint
-     */
-    private String apiUserId;
-
-    private String apiUserEmail;
-
-    private String apiUserPermissions;
-
-    private String apiUserPermissionsBorrowedRole;
-
     private String errorMessage;
 
     @Autowired
@@ -92,11 +81,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void setUp() {
-        apiUserId = ProjectUsersController.REQUEST_MAPPING_ROOT + "/{user_id}";
-        apiUserEmail = ProjectUsersController.REQUEST_MAPPING_ROOT + "/email/{user_email}";
-
-        apiUserPermissions = ResourceController.REQUEST_MAPPING_ROOT + apiUserId;
-        apiUserPermissionsBorrowedRole = apiUserPermissions + "?borrowedRoleName=";
 
         errorMessage = "Cannot reach model attributes";
 
@@ -117,13 +101,15 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void getAllUsers() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ProjectUsersController.REQUEST_MAPPING_ROOT, expectations, errorMessage);
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING, expectations, errorMessage);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve a single user on a project.")
     public void getUser() throws UnsupportedEncodingException {
+        String apiUserEmail = ProjectUsersController.TYPE_MAPPING + "/email/{user_email}";
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultGet(apiUserEmail, expectations, errorMessage, EMAIL);
@@ -153,6 +139,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_270")
     @Purpose("Check that the system allows a user to connect using a hierarchically inferior role.")
     public void getUserPermissions_withBorrowedRoleInferior() throws EntityNotFoundException {
+
+        String apiUserPermissionsBorrowedRole = UserResourceController.TYPE_MAPPING + "?borrowedRoleName=";
+
         // Prepare a project user with role admin
         final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);
@@ -180,6 +169,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_270")
     @Purpose("Check that the system prevents a user to connect using a hierarchically superior role.")
     public void getUserPermissions_withBorrowedRoleSuperior() throws EntityNotFoundException {
+
+        String apiUserPermissionsBorrowedRole = UserResourceController.TYPE_MAPPING + "?borrowedRoleName=";
+
         // Prepare a project user with role admin
         final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);
@@ -224,7 +216,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiUserPermissions, newPermissionList, expectations, errorMessage, EMAIL);
+        performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, expectations, errorMessage, EMAIL);
     }
 
     @Test
@@ -243,13 +235,15 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteUserPermissions() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(apiUserPermissions, expectations, errorMessage, projectUser.getEmail());
+        performDefaultDelete(UserResourceController.TYPE_MAPPING, expectations, errorMessage, projectUser.getEmail());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to update a project user and handles fail cases.")
     public void updateUser() {
+        String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
+
         projectUser.setEmail("new@email.com");
 
         // Same id
@@ -267,6 +261,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to delete a project user.")
     public void deleteUser() {
+        String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultDelete(apiUserId, expectations, errorMessage, projectUser.getId());

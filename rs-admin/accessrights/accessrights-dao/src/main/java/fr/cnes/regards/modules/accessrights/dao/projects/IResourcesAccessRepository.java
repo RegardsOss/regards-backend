@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
 /**
@@ -72,11 +73,12 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      *            microservice name
      * @param pControllerSimpleName
      *            controller name
+     * @param pExcludedDefaultRole excluded default role
      * @return List of {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
-    List<ResourcesAccess> findByMicroserviceAndControllerSimpleNameOrderByResource(String pMicroservice,
-            String pControllerSimpleName);
+    List<ResourcesAccess> findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(
+            String pMicroservice, String pControllerSimpleName, DefaultRole pExcludedDefaultRole);
 
     /**
      * Retrieve the list of controller names for a given microservice name
@@ -85,7 +87,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @return Array of String
      * @since 1.0-SNAPSHOT
      */
-    @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1")
+    @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1 and defaultRole <> 'INSTANCE_ADMIN'")
     List<String> findAllControllersByMicroservice(String pMicroservice);
 
 }

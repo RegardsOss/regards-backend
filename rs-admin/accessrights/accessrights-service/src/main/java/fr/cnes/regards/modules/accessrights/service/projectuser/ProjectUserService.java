@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -19,11 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -413,7 +409,7 @@ public class ProjectUserService implements IProjectUserService {
      *            The user to save
      */
     private ProjectUser save(final ProjectUser pProjectUser) {
-        pProjectUser.setLastUpdate(LocalDateTime.now());
+        pProjectUser.setLastUpdate(OffsetDateTime.now());
         return projectUserRepository.save(pProjectUser);
     }
 

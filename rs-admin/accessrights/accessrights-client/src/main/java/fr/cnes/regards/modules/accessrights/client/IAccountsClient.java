@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.CodeType;
@@ -31,8 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPas
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountsClient {
 
     /**
@@ -40,7 +38,6 @@ public interface IAccountsClient {
      *
      * @return The accounts list
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<PagedResources<Resource<Account>>> retrieveAccountList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
@@ -52,7 +49,6 @@ public interface IAccountsClient {
      *            The data transfer object containing values to create the account from
      * @return the created account
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount);
 
@@ -63,7 +59,6 @@ public interface IAccountsClient {
      *            The {@link Account}'s <code>id</code>
      * @return The account
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.GET)
     ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long pAccountId);
 
@@ -75,7 +70,6 @@ public interface IAccountsClient {
      *            email of the account to retrieve
      * @return Account
      */
-    @ResponseBody
     @RequestMapping(value = "/account/{account_email}", method = RequestMethod.GET)
     ResponseEntity<Resource<Account>> retrieveAccounByEmail(@PathVariable("account_email") String pAccountEmail);
 
@@ -87,7 +81,6 @@ public interface IAccountsClient {
      * @param pUpdatedAccount
      *            The new values to set
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.PUT)
     ResponseEntity<Resource<Account>> updateAccount(@PathVariable("account_id") Long pAccountId,
             @Valid @RequestBody Account pUpdatedAccount);
@@ -99,7 +92,6 @@ public interface IAccountsClient {
      * @param pAccountId
      *            The account <code>id</code>
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_id}", method = RequestMethod.DELETE)
     ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long pAccountId);
 
@@ -112,7 +104,6 @@ public interface IAccountsClient {
      *            the unlock code
      * @return void
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_id}/unlock/{unlock_code}", method = RequestMethod.GET)
     ResponseEntity<Void> unlockAccount(@PathVariable("account_id") Long pAccountId,
             @PathVariable("unlock_code") String pUnlockCode);
@@ -129,7 +120,6 @@ public interface IAccountsClient {
      * @return void
      * @throws EntityNotFoundException
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
     public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final RequestResetPasswordDto pDto);
@@ -144,7 +134,6 @@ public interface IAccountsClient {
      * @return void
      * @throws EntityException
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.PUT)
     ResponseEntity<Void> performResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final PerformResetPasswordDto pDto);
@@ -159,7 +148,6 @@ public interface IAccountsClient {
      * @param pType
      *            The type of code
      */
-    @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET)
     ResponseEntity<Void> sendAccountCode(@RequestParam("email") String pEmail, @RequestParam("type") CodeType pType);
 
@@ -173,7 +161,6 @@ public interface IAccountsClient {
      *            The password to check
      * @return <code>true</code> if the password is valid, else <code>false</code>
      */
-    @ResponseBody
     @RequestMapping(value = "/{account_email}/validate", method = RequestMethod.GET)
     ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String pEmail,
             @RequestParam("password") String pPassword);

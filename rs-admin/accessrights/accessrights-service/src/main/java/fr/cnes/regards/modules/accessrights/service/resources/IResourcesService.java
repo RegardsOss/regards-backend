@@ -79,18 +79,6 @@ public interface IResourcesService {
             throws ModuleException;
 
     /**
-     * remove a resource access from a role and its descendants
-     *
-     * @param pRoleId
-     *            role identifier
-     * @param pResourcesAccessId
-     *            resource identifier
-     * @throws ModuleException
-     *             if error occurs!
-     */
-    void removeRoleResourcesAccess(String pRoleName, Long pResourcesAccessId) throws ModuleException;
-
-    /**
      *
      * Retrieve all resources for the given microservice and the given controller name
      *
@@ -114,4 +102,15 @@ public interface IResourcesService {
      */
     List<String> retrieveMicroserviceControllers(String pMicroserviceName);
 
+    /**
+     * remove a resource access from a role and its descendants
+     *
+     * @param pRoleId
+     *            role identifier
+     * @param pResourcesAccessId
+     *            resource identifier
+     * @throws ModuleException
+     *             if error occurs!
+     */
+    void removeRoleResourcesAccess(String pRoleName, Long pResourcesAccessId) throws ModuleException;
 }
