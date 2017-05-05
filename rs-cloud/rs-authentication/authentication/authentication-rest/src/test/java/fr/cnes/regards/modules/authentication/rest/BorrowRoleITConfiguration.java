@@ -43,7 +43,7 @@ public class BorrowRoleITConfiguration {
         roleProjectAdmin.setNative(true);
         IRolesClient roleClient = Mockito.mock(IRolesClient.class);
         List<Role> borrowables = Lists.newArrayList(roleAdmin, roleRegisteredUser, rolePublic);
-        Mockito.when(roleClient.retrieveBorrowableRoles()).thenReturn(new ResponseEntity<List<Resource<Role>>>(
+        Mockito.when(roleClient.getBorrowableRoles()).thenReturn(new ResponseEntity<List<Resource<Role>>>(
                 HateoasUtils.wrapList(borrowables), HttpStatus.OK));
         return roleClient;
     }
