@@ -60,7 +60,7 @@ public class BorrowRoleService implements IBorrowRoleService {
 
     private Set<String> getBorrowableRoleNames() {
         FeignSecurityManager.asSystem();
-        ResponseEntity<List<Resource<Role>>> response = rolesClient.retrieveBorrowableRoles();
+        ResponseEntity<List<Resource<Role>>> response = rolesClient.getBorrowableRoles();
         FeignSecurityManager.reset();
         final HttpStatus responseStatus = response.getStatusCode();
         if (!HttpUtils.isSuccess(responseStatus)) {

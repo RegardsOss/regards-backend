@@ -26,9 +26,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.authentication.service.role.BorrowRoleService;
-import fr.cnes.regards.modules.authentication.service.role.CoupleJwtRole;
-import fr.cnes.regards.modules.authentication.service.role.IBorrowRoleService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -75,7 +72,7 @@ public class BorrowRoleServiceTest {
         List<Role> borrowableRolesForAdmin = Lists.newArrayList(roleAdmin, roleRegisteredUser, rolePublic);
         ResponseEntity<List<Resource<Role>>> mockedResponse = new ResponseEntity<>(
                 HateoasUtils.wrapList(borrowableRolesForAdmin), HttpStatus.OK);
-        Mockito.when(mockedRoleClient.retrieveBorrowableRoles()).thenReturn(mockedResponse);
+        Mockito.when(mockedRoleClient.getBorrowableRoles()).thenReturn(mockedResponse);
         // mock JWTAuthentication
         JwtService.injectToken("test", "ADMIN", "test@test.test");
 
@@ -97,7 +94,7 @@ public class BorrowRoleServiceTest {
         List<Role> borrowableRolesForAdmin = Lists.newArrayList();
         ResponseEntity<List<Resource<Role>>> mockedResponse = new ResponseEntity<>(
                 HateoasUtils.wrapList(borrowableRolesForAdmin), HttpStatus.OK);
-        Mockito.when(mockedRoleClient.retrieveBorrowableRoles()).thenReturn(mockedResponse);
+        Mockito.when(mockedRoleClient.getBorrowableRoles()).thenReturn(mockedResponse);
         // mock JWTAuthentication
         JwtService.injectToken("test", DefaultRole.PUBLIC.toString(), "test@test.test");
 
