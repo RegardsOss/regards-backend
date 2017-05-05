@@ -172,8 +172,10 @@ public class ResourcesService implements IResourcesService {
     @Override
     public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(final String pMicroserviceName,
             final String pControllerName) {
-        return resourceAccessRepo.findByMicroserviceAndControllerSimpleNameOrderByResource(pMicroserviceName,
-                                                                                           pControllerName);
+        return resourceAccessRepo
+                .findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(pMicroserviceName,
+                                                                                           pControllerName,
+                                                                                           DefaultRole.INSTANCE_ADMIN);
     }
 
     @Override
