@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
 import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
 import fr.cnes.regards.microservices.administration.RemoteClientAutoConfiguration;
-import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
+import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
@@ -89,7 +89,7 @@ public class JpaTenantConnectionConfiguration {
     @Primary
     public IRolesClient roleClient() {
         final IRolesClient rolesClientMock = Mockito.mock(IRolesClient.class);
-        Mockito.when(rolesClientMock.retrieveRoles()).thenReturn(ResponseEntity.ok(new ArrayList<>()));
+        Mockito.when(rolesClientMock.getAllRoles()).thenReturn(ResponseEntity.ok(new ArrayList<>()));
         return rolesClientMock;
     }
 
@@ -126,9 +126,9 @@ public class JpaTenantConnectionConfiguration {
      */
     @Bean
     @Primary
-    public IResourcesClient resourceClient() {
+    public IMicroserviceResourceClient resourceClient() {
         final ResponseEntity<Void> response = ResponseEntity.ok(null);
-        final IResourcesClient mock = Mockito.mock(IResourcesClient.class);
+        final IMicroserviceResourceClient mock = Mockito.mock(IMicroserviceResourceClient.class);
         Mockito.stub(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).toReturn(response);
 
         final PageMetadata md = new PageMetadata(0, 0, 0);
@@ -136,7 +136,7 @@ public class JpaTenantConnectionConfiguration {
                 new ArrayList<>());
         final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> resourcesResponse = ResponseEntity
                 .ok(pagedResources);
-        Mockito.stub(mock.retrieveResourcesAccesses(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.stub(mock.getAllResourceAccessesByMicroservice(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .toReturn(resourcesResponse);
         return mock;
     }

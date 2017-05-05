@@ -41,7 +41,6 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Christophe Mertz
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
  */
 @MultitenantTransactional
 @Service
@@ -171,22 +170,24 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
-    public void removeRoleResourcesAccess(final String pRoleName, final Long pResourcesAccessId)
-            throws ModuleException {
-        final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
-        roleService.removeResourcesAccesses(pRoleName, resourcesAccess);
-    }
-
-    @Override
     public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(final String pMicroserviceName,
             final String pControllerName) {
-        return resourceAccessRepo.findByMicroserviceAndControllerSimpleNameOrderByResource(pMicroserviceName,
-                                                                                           pControllerName);
+        return resourceAccessRepo
+                .findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(pMicroserviceName,
+                                                                                           pControllerName,
+                                                                                           DefaultRole.INSTANCE_ADMIN);
     }
 
     @Override
     public List<String> retrieveMicroserviceControllers(final String pMicroserviceName) {
         return resourceAccessRepo.findAllControllersByMicroservice(pMicroserviceName);
+    }
+
+    @Override
+    public void removeRoleResourcesAccess(final String pRoleName, final Long pResourcesAccessId)
+            throws ModuleException {
+        final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
+        roleService.removeResourcesAccesses(pRoleName, resourcesAccess);
     }
 
 }

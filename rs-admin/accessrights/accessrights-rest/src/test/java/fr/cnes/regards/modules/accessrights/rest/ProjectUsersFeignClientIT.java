@@ -33,7 +33,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AccountFeignClientIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersFeignClientIT.class);
 
     /**
      * Server

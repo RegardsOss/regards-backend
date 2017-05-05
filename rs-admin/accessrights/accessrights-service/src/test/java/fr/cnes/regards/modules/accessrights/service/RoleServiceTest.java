@@ -239,49 +239,50 @@ public class RoleServiceTest {
         Mockito.verify(roleRepository).findOneByName(NAME);
     }
 
-    /**
-     * Check that the system fails when trying to create an already existing role.
-     *
-     * @throws EntityAlreadyExistsException
-     * @throws EntityAlreadyExistsException
-     *             Thrown if a role with passed id already exists
-     */
-    @Test(expected = EntityAlreadyExistsException.class)
-    @Requirement("REGARDS_DSL_ADM_ADM_210")
-    @Purpose("Check that the system fails when trying to create an already existing role.")
-    public void createRoleDuplicate() throws EntityAlreadyExistsException {
-        Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
-
-        final Role duplicate = new Role(NAME, null);
-        roleService.createRole(duplicate);
-    }
-
-    /**
-     * Check that the system allows to create a role in a regular case.
-     *
-     * @throws EntityAlreadyExistsException
-     *             Thrown if a role with passed id already exists
-     */
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_210")
-    @Purpose("Check that the system allows to create a role in a regular case.")
-    public void createRole() throws EntityAlreadyExistsException {
-        final Long id = 4834848L;
-        final Role expected = new Role();
-        expected.setId(id);
-        Mockito.when(roleRepository.save(expected)).thenReturn(expected);
-
-        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.empty()));
-        final Role actual = roleService.createRole(expected);
-        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
-        Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
-
-        // Check that the expected and actual role have same values
-        checkRolesEqual(expected, actual);
-
-        // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).save(expected);
-    }
+    // FIXME delete
+    // /**
+    // * Check that the system fails when trying to create an already existing role.
+    // *
+    // * @throws EntityAlreadyExistsException
+    // * @throws EntityAlreadyExistsException
+    // * Thrown if a role with passed id already exists
+    // */
+    // @Test(expected = EntityAlreadyExistsException.class)
+    // @Requirement("REGARDS_DSL_ADM_ADM_210")
+    // @Purpose("Check that the system fails when trying to create an already existing role.")
+    // public void createRoleDuplicate() throws EntityAlreadyExistsException {
+    // Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
+    //
+    // final Role duplicate = new Role(NAME, null);
+    // roleService.createRole(duplicate);
+    // }
+    //
+    // /**
+    // * Check that the system allows to create a role in a regular case.
+    // *
+    // * @throws EntityAlreadyExistsException
+    // * Thrown if a role with passed id already exists
+    // */
+    // @Test
+    // @Requirement("REGARDS_DSL_ADM_ADM_210")
+    // @Purpose("Check that the system allows to create a role in a regular case.")
+    // public void createRole() throws EntityAlreadyExistsException {
+    // final Long id = 4834848L;
+    // final Role expected = new Role();
+    // expected.setId(id);
+    // Mockito.when(roleRepository.save(expected)).thenReturn(expected);
+    //
+    // Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.empty()));
+    // final Role actual = roleService.createRole(expected);
+    // Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
+    // Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
+    //
+    // // Check that the expected and actual role have same values
+    // checkRolesEqual(expected, actual);
+    //
+    // // Check that the repository's method was called with right arguments
+    // Mockito.verify(roleRepository).save(expected);
+    // }
 
     /**
      * Check that the system allows to create a role in a regular case.
@@ -308,7 +309,7 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOneByName(roleAdmin.getName())).thenReturn(Optional.of(roleAdmin));
         Mockito.when(roleRepository.findOneByName(adminSon.getName())).thenReturn(Optional.of(adminSon));
 
-        final Role actual = roleService.createRoleWithNativeParentPermissions(newRole);
+        final Role actual = roleService.createRole(newRole);
 
         Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
         Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
