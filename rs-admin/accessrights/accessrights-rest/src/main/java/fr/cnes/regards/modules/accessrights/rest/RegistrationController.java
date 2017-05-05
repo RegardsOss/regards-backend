@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -31,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenServi
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
+import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessQualification;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
@@ -160,7 +162,12 @@ public class RegistrationController {
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
-        projectUserWorkflowManager.grantAccess(projectUser);
+        if (UserStatus.WAITING_ACCESS.equals(projectUser.getStatus())) {
+            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
+        } else {
+            projectUserWorkflowManager.grantAccess(projectUser);
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

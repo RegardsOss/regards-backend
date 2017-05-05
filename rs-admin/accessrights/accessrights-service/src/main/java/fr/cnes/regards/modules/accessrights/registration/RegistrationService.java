@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.registration;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +22,17 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
+import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessQualification;
+import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
  * {@link IRegistrationService} implementation.
@@ -70,9 +75,19 @@ public class RegistrationService implements IRegistrationService {
     private final IAccountSettingsService accountSettingsService;
 
     /**
+     * CRUD repository handling {@link AccountSettingst}s. Autowired by Spring.
+     */
+    private final IAccessSettingsService accessSettingsService;
+
+    /**
      * Account workflow manager
      */
     private final AccountWorkflowManager accountWorkflowManager;
+
+    /**
+     * Account workflow manager
+     */
+    private final ProjectUserWorkflowManager projectUserWorkflowManager;
 
     /**
      * @param pAccountRepository
@@ -91,14 +106,17 @@ public class RegistrationService implements IRegistrationService {
     public RegistrationService(final IAccountRepository pAccountRepository,
             final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
             final IVerificationTokenService pTokenService, final IAccountSettingsService pAccountSettingsService,
-            final AccountWorkflowManager pAccountWorkflowManager) {
+            final IAccessSettingsService pAccessSettingsService, final AccountWorkflowManager pAccountWorkflowManager,
+            final ProjectUserWorkflowManager pProjectUserWorkflowManager) {
         super();
         accountRepository = pAccountRepository;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
         accountSettingsService = pAccountSettingsService;
+        accessSettingsService = pAccessSettingsService;
         accountWorkflowManager = pAccountWorkflowManager;
+        projectUserWorkflowManager = pProjectUserWorkflowManager;
     }
 
     /*
@@ -148,10 +166,12 @@ public class RegistrationService implements IRegistrationService {
         }
 
         // Create
-        accountRepository.save(account);
+        final Account newAccount = accountRepository.save(account);
 
         // Init the verification token
         tokenService.create(account, pDto.getOriginUrl(), pDto.getRequestLink());
+
+        final Optional<Account> test = accountRepository.findOneByEmail(pDto.getEmail());
 
         return account;
     }
@@ -163,8 +183,9 @@ public class RegistrationService implements IRegistrationService {
      * @throws EntityException
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
+        final Optional<Account> test = accountRepository.findOneByEmail(pDto.getEmail());
         // Check that an associated account exitsts
-        if (!accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
+        if (!test.isPresent()) {
             throw new EntityNotFoundException(pDto.getEmail(), Account.class);
         }
 
@@ -182,6 +203,12 @@ public class RegistrationService implements IRegistrationService {
         // Check the status
         Assert.isTrue(UserStatus.WAITING_ACCESS.equals(projectUser.getStatus()),
                       "Trying to create a ProjectUser with other status than WAITING_ACCESS.");
+
+        // Auto-accept if configured so
+        final AccessSettings settings = accessSettingsService.retrieve();
+        if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
+            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
+        }
 
         // Save
         projectUserRepository.save(projectUser);

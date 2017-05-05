@@ -3,16 +3,25 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import java.util.List;
+
+import javax.validation.Valid;
+
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
  *
@@ -52,6 +61,10 @@ public interface IProjectUsersClient {
     @RequestMapping(value = "/pendingaccesses", method = RequestMethod.GET)
     ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
+
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST)
+    ResponseEntity<Resource<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
