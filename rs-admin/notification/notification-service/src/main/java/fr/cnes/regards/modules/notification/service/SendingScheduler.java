@@ -3,10 +3,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -99,8 +96,7 @@ public class SendingScheduler {
         // Define a filter selecting only triplets (notif, user, setting) for which the duration between now and the
         // (past) notif's sent date is longer than the setting's custom duration (means we should re-send the notif)
         final Predicate<NotificationUserSetting> filterOnPeriodExceeded = n -> {
-            final Duration effectiveGap = Duration
-                    .between(n.getNotification().getDate().atZone(ZoneId.systemDefault()).toInstant(), Instant.now());
+            final Duration effectiveGap = Duration.between(n.getNotification().getDate(), OffsetDateTime.now());
             final Duration settingGap = Duration.ofDays(n.getSettings().getDays())
                     .plus(Duration.ofHours(n.getSettings().getHours()));
             return effectiveGap.compareTo(settingGap) >= 0;
@@ -124,7 +120,8 @@ public class SendingScheduler {
                 // Build the list of recipients
                 final String[] recipients = notificationService.findRecipients(notification)
                         .map(projectUser -> new NotificationUserSetting(notification, projectUser,
-                                notificationSettingsRepository.findOneByProjectUser(projectUser)))
+                                                                        notificationSettingsRepository
+                                                                                .findOneByProjectUser(projectUser)))
                         .filter(pFilter).map(n -> n.getProjectUser().getEmail()).distinct().toArray(s -> new String[s]);
 
                 // Send the notification to recipients
@@ -133,7 +130,7 @@ public class SendingScheduler {
                 }
 
                 // Update sent date
-                notification.setDate(LocalDateTime.now());
+                notification.setDate(OffsetDateTime.now());
             });
         }
     }

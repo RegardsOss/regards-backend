@@ -3,14 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -22,8 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -31,25 +23,16 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  *
- * Class ResourcesController
+ * Resource management API
  *
  * Rest controller to access ResourcesAccess entities. ResourceAccess are the security configuration to allow access for
  * given roles to microservices endpoints. This configuration is made for each project of the regards instance.
@@ -58,58 +41,31 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @since 1.0-SNASHOT
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
-@RequestMapping(value = ResourceController.REQUEST_MAPPING_ROOT)
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@RequestMapping(value = ResourceController.TYPE_MAPPING)
 public class ResourceController implements IResourceController<ResourcesAccess> {
 
     /**
      * Root mapping for requests of this rest controller
      */
-    public static final String REQUEST_MAPPING_ROOT = "/resources";
+    public static final String TYPE_MAPPING = "/resources";
 
     /**
-     * Root to retreive resources by microservice and controller name
+     * Single resource mapping
      */
-    public static final String REQUEST_MSERVICE_CONTROLLER = "/microservices/{microservicename}/controllers/{controllername}";
-
-    /**
-     * Root to retreive resources by microservice and controller name
-     */
-    public static final String REQUEST_MSERVICE_CONTROLLERS = "/microservices/{microservicename}/controllers";
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceController.class);
+    public static final String RESOURCE_MAPPING = "/{resource_id}";
 
     /**
      * Business service
      */
-    private final IResourcesService service;
-
-    /**
-     * Service handling project users
-     */
     @Autowired
-    private IProjectUserService projectUserService;
-
-    /**
-     * Service handling roles.
-     */
-    @Autowired
-    private IRoleService roleService;
+    private IResourcesService resourceService;
 
     /**
      * Resource service to manage visibles hateoas links
      */
-    private final IResourceService hateoasService;
-
-    public ResourceController(final IResourcesService pService, final IResourceService pHateoasService) {
-        super();
-        service = pService;
-        hateoasService = pHateoasService;
-    }
+    @Autowired
+    private IResourceService hateoasService;
 
     /**
      * Retrieve resource accesses available to the user
@@ -123,37 +79,11 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      *             if error occurs
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
-            role = DefaultRole.PUBLIC)
-    @ResponseBody
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(final Pageable pPageable,
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system", role = DefaultRole.PUBLIC)
+    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(final Pageable pPageable,
             final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws ModuleException {
         return new ResponseEntity<>(
-                toPagedResources(service.retrieveRessources(null, pPageable), pPagedResourcesAssembler), HttpStatus.OK);
-    }
-
-    /**
-     * Retrieve the resource accesses available to the user of the given microservice
-     *
-     * @param pMicroserviceName
-     *            microservice
-     * @param pPageable
-     *            pagination information
-     * @param pPagedResourcesAssembler
-     *            page assembler
-     * @return list of user resource accesses for given microservice
-     * @throws ModuleException
-     *             if error occurs
-     */
-    @RequestMapping(value = "/microservices/{microservice}", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
-            role = DefaultRole.PUBLIC)
-    @ResponseBody
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> retrieveResourcesAccesses(
-            @PathVariable("microservice") final String pMicroserviceName, final Pageable pPageable,
-            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws ModuleException {
-        return new ResponseEntity<>(
-                toPagedResources(service.retrieveRessources(pMicroserviceName, pPageable), pPagedResourcesAssembler),
+                toPagedResources(resourceService.retrieveRessources(null, pPageable), pPagedResourcesAssembler),
                 HttpStatus.OK);
     }
 
@@ -168,12 +98,11 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      *             Exception if resource with given id does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/{resource_id}", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
-    @ResponseBody
-    public ResponseEntity<Resource<ResourcesAccess>> retrieveResourceAccesses(
+    public ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(
             @PathVariable("resource_id") final Long pResourceId) throws ModuleException {
-        return new ResponseEntity<>(toResource(service.retrieveRessource(pResourceId)), HttpStatus.OK);
+        return new ResponseEntity<>(toResource(resourceService.retrieveRessource(pResourceId)), HttpStatus.OK);
     }
 
     /**
@@ -189,9 +118,8 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      *             Exception if resource with given id does not exists
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(value = "/{resource_id}", method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.ADMIN)
-    @ResponseBody
     public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(
             @PathVariable("resource_id") final Long pResourceId,
             @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate) throws ModuleException {
@@ -200,251 +128,20 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
                     String.format("Resource to update with id %d do not match the required resource id %d",
                                   pResourceAccessToUpdate.getId(), pResourceId));
         }
-        return new ResponseEntity<>(toResource(service.updateResource(pResourceAccessToUpdate)), HttpStatus.OK);
-    }
-
-    /**
-     * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
-     *
-     * @param pUserLogin
-     *            The {@link Account}'s <code>id</code>
-     * @param pBorrowedRoleName
-     *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
-     * @return the {@link List} list of resources access
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityOperationForbiddenException} Thrown when the passed {@link Role} is not hierarchically
-     *             inferior to the true {@link ProjectUser}'s <code>role</code>.<br>
-     *             {@link EntityNotFoundException} Thrown when no {@link ProjectUser} with passed <code>id</code> could
-     *             be found<br>
-     */
-    @ResponseBody
-    @RequestMapping(value = "/users/{user_email}", method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of specific access rights and the role of the project user",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserResources(
-            @PathVariable("user_email") final String pUserLogin,
-            @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName)
-            throws EntityException {
-        final List<ResourcesAccess> permissions = projectUserService.retrieveProjectUserAccessRights(pUserLogin,
-                                                                                                     pBorrowedRoleName);
-        final List<Resource<ResourcesAccess>> result = new ArrayList<>();
-        for (final ResourcesAccess item : permissions) {
-            result.add(new Resource<>(item));
-        }
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-
-    /**
-     * Update the the {@link List} of <code>permissions</code>.
-     *
-     * @param pLogin
-     *            The {@link ProjectUser}'s <code>login</code>
-     * @param pUpdatedUserAccessRights
-     *            The {@link List} of {@link ResourcesAccess} to set
-     * @return void
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/users/{user_email}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "update the list of specific user access rights", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") final String pLogin,
-            @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights) throws EntityNotFoundException {
-        projectUserService.updateUserAccessRights(pLogin, pUpdatedUserAccessRights);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
-     *
-     * @param pUserLogin
-     *            The {@link ProjectUser} <code>login</code>
-     * @return void
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/users/{user_email}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "remove all the specific access rights", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin)
-            throws EntityNotFoundException {
-        projectUserService.removeUserAccessRights(pUserLogin);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Define the endpoint for returning the {@link List} of {@link ResourcesAccess} on the {@link Role} of passed
-     * <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
-     * @return The {@link List} of permissions as {@link ResourcesAccess} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/roles/{role_name}", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve the list of permissions of the role with role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveRoleResourcesAccessList(
-            @PathVariable("role_name") final String pRoleName) throws EntityNotFoundException {
-        final Role role = roleService.retrieveRole(pRoleName);
-        final Set<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccesses(role.getId());
-        return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
-    }
-
-    /**
-     * Define the endpoint for setting the passed {@link List} of {@link ResourcesAccess} onto the {@link role} of
-     * passed <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role}'s <code>id</code>
-     * @param pResourcesAccessList
-     *            The {@link List} of {@link ResourcesAccess} to set
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityException
-     */
-    @ResponseBody
-    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Totally update the list of permissions of the role with role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId,
-            @Valid @RequestBody final Set<ResourcesAccess> pResourcesAccessList) throws EntityException {
-        roleService.updateRoleResourcesAccess(pRoleId, pResourcesAccessList);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
-     * Define the endpoint for clearing the {@link List} of {@link ResourcesAccess} of the {@link Role} with passed
-     * <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Clear the list of permissions of the given role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> clearRoleResourcesAccess(@PathVariable("role_id") final Long pRoleId)
-            throws EntityNotFoundException {
-        roleService.clearRoleResourcesAccess(pRoleId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
-     * Define the endpoint allowing the addition of a given resource access to the role of given role_id
-     *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Role} with passed <code>id</code> could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/roles/{role_name}", method = RequestMethod.POST)
-    @ResourceAccess(description = "Add the given resource access to the role of given role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ResourcesAccess>> addRoleResourcesAccess(
-            @PathVariable("role_name") final String pRoleName,
-            @RequestBody @Valid final ResourcesAccess pNewResourcesAccess) throws EntityNotFoundException {
-        final Role role = roleService.retrieveRole(pRoleName);
-        roleService.addResourceAccesses(role.getId(), pNewResourcesAccess);
-        return new ResponseEntity<>(toResource(pNewResourcesAccess), HttpStatus.CREATED);
-    }
-
-    /**
-     * Define the endpoint removing the given {@link ResourcesAccess} of the {@link Role} with passed <code>id</code>.
-     *
-     * @param pRoleId
-     *            The {@link Role} <code>id</code>
-     * @return {@link Void} wrapped in an {@link ResponseEntity}
-     * @throws ModuleException
-     *             if error occurs
-     */
-    @ResponseBody
-    @RequestMapping(value = "/roles/{role_name}/{resources_access_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Remove resource access of given resources_access_id from the role of given role_id",
-            role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeRoleResourcesAccess(@PathVariable("role_name") final String pRoleName,
-            @PathVariable("resources_access_id") final Long pResourcesAccessId) throws ModuleException {
-        service.removeRoleResourcesAccess(pRoleName, pResourcesAccessId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
-     *
-     * Register given resources for the given microservice.
-     *
-     * @return List<ResourceAccess>
-     * @throws ModuleException
-     *             if error occurs
-     * @since 1.0-SNAPSHOT
-     */
-    @RequestMapping(value = "/register/microservices/{microservicename}", method = RequestMethod.POST)
-    @ResourceAccess(description = "Endpoint to register all endpoints of a microservice to the administration service.",
-            role = DefaultRole.INSTANCE_ADMIN)
-    @ResponseBody
-    public ResponseEntity<Void> registerMicroserviceEndpoints(
-            @PathVariable("microservicename") final String pMicroserviceName,
-            @RequestBody @Valid final List<ResourceMapping> pResourcesToRegister) throws ModuleException {
-        service.registerResources(pResourcesToRegister, pMicroserviceName);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     *
-     * Retrieve all resources for the given microservice and the given controller name
-     *
-     * @return List<ResourceAccess>
-     * @since 1.0-SNAPSHOT
-     */
-    @RequestMapping(value = REQUEST_MSERVICE_CONTROLLER, method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
-            role = DefaultRole.PROJECT_ADMIN)
-    @ResponseBody
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
-            @PathVariable("microservicename") final String pMicroserviceName,
-            @PathVariable("controllername") final String pControllerName) {
-        final List<ResourcesAccess> resources = service.retrieveMicroserviceControllerEndpoints(pMicroserviceName,
-                                                                                                pControllerName);
-        return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
-    }
-
-    /**
-     *
-     * Retrieve all resources controller names for the given microservice.
-     *
-     * @return List<String>
-     * @since 1.0-SNAPSHOT
-     */
-    @RequestMapping(value = REQUEST_MSERVICE_CONTROLLERS, method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
-            role = DefaultRole.PROJECT_ADMIN)
-    @ResponseBody
-    public ResponseEntity<List<String>> retrieveMicroserviceControllers(
-            @PathVariable("microservicename") final String pMicroserviceName) {
-        final List<String> controllers = service.retrieveMicroserviceControllers(pMicroserviceName);
-        controllers.sort(null);
-        return new ResponseEntity<>(controllers, HttpStatus.OK);
+        return new ResponseEntity<>(toResource(resourceService.updateResource(pResourceAccessToUpdate)), HttpStatus.OK);
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(final ResourcesAccess pElement, final Object... pExtras) {
-        Resource<ResourcesAccess> resource = null;
-        if ((pElement != null) && (pElement.getId() != null)) {
-            resource = hateoasService.toResource(pElement);
-            hateoasService.addLink(resource, this.getClass(), "retrieveResourceAccesses", LinkRels.SELF,
-                                   MethodParamFactory.build(Long.class, pElement.getId()));
-            hateoasService.addLink(resource, this.getClass(), "updateResourceAccess", LinkRels.UPDATE,
-                                   MethodParamFactory.build(Long.class, pElement.getId()),
-                                   MethodParamFactory.build(ResourcesAccess.class, pElement));
-        } else {
-            LOG.warn(String.format("Invalid %s entity. Cannot create hateoas resources", this.getClass().getName()));
-        }
+    public Resource<ResourcesAccess> toResource(ResourcesAccess pElement, Object... pExtras) {
+        Resource<ResourcesAccess> resource = hateoasService.toResource(pElement);
+        hateoasService.addLink(resource, this.getClass(), "getAllResourceAccesses", LinkRels.LIST,
+                               MethodParamFactory.build(Pageable.class),
+                               MethodParamFactory.build(PagedResourcesAssembler.class));
+        hateoasService.addLink(resource, this.getClass(), "getResourceAccess", LinkRels.SELF,
+                               MethodParamFactory.build(Long.class, pElement.getId()));
+        hateoasService.addLink(resource, this.getClass(), "updateResourceAccess", LinkRels.UPDATE,
+                               MethodParamFactory.build(Long.class, pElement.getId()),
+                               MethodParamFactory.build(ResourceAccess.class));
         return resource;
     }
-
 }

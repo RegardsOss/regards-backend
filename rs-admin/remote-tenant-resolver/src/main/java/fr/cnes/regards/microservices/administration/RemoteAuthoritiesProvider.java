@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
+import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -52,7 +52,7 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
     /**
      * Administration microservice REST client
      */
-    private final IResourcesClient resourcesClient;
+    private final IMicroserviceResourceClient resourcesClient;
 
     /**
      * Administration microservice REST client
@@ -76,8 +76,9 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
      *            runtime tenant resolver
      * @since 1.0-SNAPSHOT
      */
-    public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient, final IResourcesClient pResourcesclient,
-            final IRolesClient pRolesClient, final IRuntimeTenantResolver runtimeTenantResolver) {
+    public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient,
+            final IMicroserviceResourceClient pResourcesclient, final IRolesClient pRolesClient,
+            final IRuntimeTenantResolver runtimeTenantResolver) {
         super(discoveryClient);
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
@@ -99,7 +100,7 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
         if (response.getStatusCode().equals(HttpStatus.OK)) {
 
             // get a map that for each ResourcesAccess ra links the roles containing ra
-            final List<Role> roles = HateoasUtils.unwrapList(roleClient.retrieveRoles().getBody());
+            final List<Role> roles = HateoasUtils.unwrapList(roleClient.getAllRoles().getBody());
             final SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
 
             roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
@@ -122,7 +123,7 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
         final List<RoleAuthority> roleAuths = new ArrayList<>();
 
         FeignSecurityManager.asSystem();
-        final ResponseEntity<List<Resource<Role>>> result = roleClient.retrieveRoles();
+        final ResponseEntity<List<Resource<Role>>> result = roleClient.getAllRoles();
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {
             final List<Resource<Role>> body = result.getBody();

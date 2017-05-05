@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -53,14 +52,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(RolesControllerIT.class);
-
-    private String apiRoles;
-
-    private String apiRolesName;
-
-    private String apiRolesPermissions;
-
-    private String apiRolesIdPermissions;
 
     private String apiRolesUsers;
 
@@ -95,12 +86,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() {
-        apiRoles = RolesController.REQUEST_MAPPING_ROOT;
-        apiRolesName = apiRoles + "/{role_name}";
-
-        apiRolesPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_name}";
-
-        apiRolesIdPermissions = ResourceController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
         apiRolesUsers = ProjectUsersController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
 
@@ -145,11 +130,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isCreated());
-        performDefaultPost(apiRoles, newRole, expectations, "TODO Error message");
+        performDefaultPost(RoleController.TYPE_MAPPING, newRole, expectations, "TODO Error message");
 
         expectations = new ArrayList<>(1);
         expectations.add(status().isConflict());
-        performDefaultPost(apiRoles, newRole, expectations, "TODO Error message");
+        performDefaultPost(RoleController.TYPE_MAPPING, newRole, expectations, "TODO Error message");
     }
 
     @Test
@@ -158,12 +143,14 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveRole() {
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultGet(apiRolesName, expectations, "TODO Error message", DefaultRole.REGISTERED_USER);
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations, "TODO Error message",
+                          DefaultRole.REGISTERED_USER);
 
         final String wrongRoleName = "WRONG_ROLE";
         expectations = new ArrayList<>(1);
         expectations.add(status().isNotFound());
-        performDefaultGet(apiRolesName, expectations, "TODO Error message", wrongRoleName);
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations, "TODO Error message",
+                          wrongRoleName);
     }
 
     @Test
@@ -176,12 +163,14 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Regular case
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(apiRolesName, roleTest, expectations, "TODO Error message", roleTest.getName());
+        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest, expectations,
+                          "TODO Error message", roleTest.getName());
 
         // Fail case: ids differ
         expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(apiRolesName, roleTest, expectations, "TODO Error message", 99L);
+        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest, expectations,
+                          "TODO Error message", 99L);
     }
 
     /**
@@ -197,7 +186,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final long nRole = roleRepository.count();
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultDelete(apiRolesName, expectations, "TODO Error message", publicRole.getName());
+        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations,
+                             "TODO Error message", publicRole.getName());
 
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole, roleRepository.count());
@@ -216,7 +206,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
         // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
-        performDefaultGet(apiRoles, expectations, "TODO Error message");
+        performDefaultGet(RoleController.TYPE_MAPPING, expectations, "TODO Error message");
     }
 
     @Test
@@ -225,7 +215,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(1)));
-        performDefaultGet(RolesController.REQUEST_MAPPING_ROOT + RolesController.PATH_ROLE_WITH_RESOURCE, expectations,
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_WITH_RESOURCE_MAPPING, expectations,
                           "TODO Error message", resourceAccessPublic.getId());
     }
 
@@ -242,7 +232,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Create a non-native role
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultDelete(apiRolesName, expectations, "TODO Error message", roleTest.getName());
+        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations,
+                             "TODO Error message", roleTest.getName());
 
         jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
         Assert.assertEquals(nRole - 1, roleRepository.count());
@@ -254,34 +245,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveRoleResourcesAccessList() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultGet(apiRolesPermissions, expectations, "TODO Error message", roleTest.getName());
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_210")
-    @Purpose("Check that the system allows to update resources accesses of a role.")
-    public void updateRoleResourcesAccess() throws EntityNotFoundException {
-
-        final Set<ResourcesAccess> newPermissionList = roleService.retrieveRoleResourcesAccesses(roleTest.getId());
-
-        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess(0L, "new", "new", "new", "Controller",
-                RequestMethod.PUT, DefaultRole.ADMIN)));
-        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess(1L, "neww", "neww", "neww",
-                "Controller", RequestMethod.DELETE, DefaultRole.ADMIN)));
-
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isNoContent());
-        performDefaultPut(apiRolesIdPermissions, newPermissionList, expectations, "TODO Error message",
-                          roleTest.getId());
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_210")
-    @Purpose("Check that the system allows to remove all resources accesses of a role.")
-    public void clearRoleResourcesAccess() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isNoContent());
-        performDefaultDelete(apiRolesIdPermissions, expectations, "TODO Error message", roleTest.getId());
+        performDefaultGet(RoleResourceController.TYPE_MAPPING, expectations, "TODO Error message", roleTest.getName());
     }
 
     @Test
@@ -303,9 +267,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check hierachy of roles")
     public void retrieveInheritedRoles() {
         final Set<Role> roles = roleService.retrieveInheritedRoles(publicRole);
-        // Number of roles should be all Default roles except PUBLIC(which is parent of the hierarchy wanted) and
-        // PROJECT_ADMIN, INSTANCE_ADMIN which has no parent plus the default ROLE Create for those tests.
-        final int defaultRoleSize = DefaultRole.values().length;
         Assert.assertTrue(roles.size() == ((DefaultRole.values().length - 3) + 1));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));

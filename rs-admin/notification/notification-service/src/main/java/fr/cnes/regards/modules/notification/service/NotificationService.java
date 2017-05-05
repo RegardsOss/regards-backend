@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -120,7 +120,7 @@ public class NotificationService implements INotificationService {
     @Override
     public Notification createNotification(final NotificationDTO pDto) {
         final Notification notification = new Notification();
-        notification.setDate(LocalDateTime.now());
+        notification.setDate(OffsetDateTime.now());
         notification.setMessage(pDto.getMessage());
         notification.setTitle(pDto.getTitle());
         notification.setSender(pDto.getSender());

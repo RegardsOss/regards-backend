@@ -16,7 +16,7 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResol
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
+import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.project.client.rest.ITenantClient;
 import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
@@ -67,7 +67,7 @@ public class RemoteTenantAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
-            final IResourcesClient resourcesClient, final IRolesClient rolesClient,
+            final IMicroserviceResourceClient resourcesClient, final IRolesClient rolesClient,
             final IRuntimeTenantResolver runtimeTenantResolver) {
         return new RemoteAuthoritiesProvider(discoveryClient, resourcesClient, rolesClient, runtimeTenantResolver);
     }
