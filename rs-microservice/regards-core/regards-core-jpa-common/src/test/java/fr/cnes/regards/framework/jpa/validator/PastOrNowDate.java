@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.framework.jpa.validator;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * @author svissier
@@ -15,18 +15,18 @@ public class PastOrNowDate {
      * Test date
      */
     @PastOrNow
-    private LocalDateTime dateTime;
+    private OffsetDateTime dateTime;
 
-    public PastOrNowDate(LocalDateTime pDateTime) {
+    public PastOrNowDate(OffsetDateTime pDateTime) {
         dateTime = pDateTime;
 
     }
 
-    public LocalDateTime getDateTime() {
+    public OffsetDateTime getDateTime() {
         return dateTime;
     }
 
-    public void setDateTime(LocalDateTime pDateTime) {
+    public void setDateTime(OffsetDateTime pDateTime) {
         dateTime = pDateTime;
     }
 

@@ -3,7 +3,8 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service.systemservice;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class JobInfoSystemService implements IJobInfoSystemService {
         final JobInfo jobInfo = findJobInfo(pTenantName, pJobInfoId);
         if (jobInfo != null) {
             jobInfo.getStatus().setJobStatus(pJobStatus);
-            jobInfo.getStatus().setStopDate(LocalDateTime.now());
+            jobInfo.getStatus().setStopDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
             updateJobInfo(pTenantName, jobInfo);
         } else {
             LOG.error(String.format("Job not found %d", pJobInfoId));

@@ -6,14 +6,10 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-
-import fr.cnes.regards.framework.modules.jobs.domain.JobConfiguration;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameters;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
 
 /**
  *
@@ -24,7 +20,7 @@ public class JobConfigurationTest {
     public void testDomain() throws URISyntaxException {
         final JobConfiguration jobConfiguration = new JobConfiguration();
         final String description = "my description";
-        final LocalDateTime now = LocalDateTime.now();
+        final OffsetDateTime now = OffsetDateTime.now();
         final JobParameters parameters = new JobParameters();
         parameters.add("param1", 17);
         jobConfiguration.setParameters(parameters);

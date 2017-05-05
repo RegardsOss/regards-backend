@@ -5,7 +5,8 @@ package fr.cnes.regards.framework.modules.jobs.dao;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -62,8 +63,12 @@ public class JobRepositoryIT extends AbstractDaoTest {
         final String description = "This is a simple job";
         final Path workspace = FileSystems.getDefault().getPath("some", "random", "path.xls");
         JobConfiguration jobConfiguration = new JobConfiguration(description, parameters,
-                "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2),
-                LocalDateTime.now().plusDays(15), 1, workspace, owner);
+                                                                 "fr.cnes.regards.modules.MyCustomJob",
+                                                                 OffsetDateTime.now()
+                                                                         .withOffsetSameInstant(ZoneOffset.UTC)
+                                                                         .plusDays(2), OffsetDateTime.now()
+                                                                         .withOffsetSameInstant(ZoneOffset.UTC)
+                                                                         .plusDays(15), 1, workspace, owner);
         jobConfiguration.getStatusInfo().setJobStatus(JobStatus.RUNNING);
         JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
 
@@ -93,7 +98,8 @@ public class JobRepositoryIT extends AbstractDaoTest {
 
         // a second job
         jobConfiguration = new JobConfiguration(description, parameters, "fr.cnes.regards.modules.MyCustomJob",
-                LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(15), 1, workspace, "system");
+                                                OffsetDateTime.now().plusDays(2), OffsetDateTime.now().plusDays(15), 1,
+                                                workspace, "system");
         jobConfiguration.getStatusInfo().setJobStatus(JobStatus.RUNNING);
         jobBeforeSave = new JobInfo(jobConfiguration);
 
@@ -124,8 +130,11 @@ public class JobRepositoryIT extends AbstractDaoTest {
         final JobParameters parametersConfAfter = JobParametersFactory.build().addParameter("source", "/path/to/folder")
                 .addParameter("answer", 42).getParameters();
         final JobConfiguration jobConfigurationToRunAfter = new JobConfiguration("job configuration to run after",
-                parametersConfAfter, "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().minusDays(10),
-                LocalDateTime.now().plusDays(2), 5, workspace, owner);
+                                                                                 parametersConfAfter,
+                                                                                 "fr.cnes.regards.modules.MyCustomJob",
+                                                                                 OffsetDateTime.now().minusDays(10),
+                                                                                 OffsetDateTime.now().plusDays(2), 5,
+                                                                                 workspace, owner);
         final JobInfo jobToRunAfter = new JobInfo(jobConfigurationToRunAfter);
 
         final String keyParam = "thenRun";
@@ -133,8 +142,10 @@ public class JobRepositoryIT extends AbstractDaoTest {
                 .getParameters();
 
         final JobConfiguration jobConfiguration = new JobConfiguration("some description", parameters,
-                "fr.cnes.regards.modules.MyCustomJob", LocalDateTime.now().plusDays(2),
-                LocalDateTime.now().plusDays(15), 1, workspace, owner);
+                                                                       "fr.cnes.regards.modules.MyCustomJob",
+                                                                       OffsetDateTime.now().plusDays(2),
+                                                                       OffsetDateTime.now().plusDays(15), 1, workspace,
+                                                                       owner);
         jobConfiguration.getStatusInfo().setJobStatus(JobStatus.RUNNING);
         final JobInfo jobBeforeSave = new JobInfo(jobConfiguration);
 

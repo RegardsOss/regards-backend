@@ -3,14 +3,13 @@
  */
 package fr.cnes.regards.framework.jpa.validator;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Set;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,9 +34,9 @@ public class PastOrNowValidatorTest {
 
     @Test
     public void testPast() {
-        final PastOrNowDate min = new PastOrNowDate(LocalDateTime.MIN);
+        final PastOrNowDate min = new PastOrNowDate(OffsetDateTime.MIN);
         final PastOrNowDate lastNano = new PastOrNowDate(
-                LocalDateTime.from(LocalDateTime.now().minus(Duration.ofNanos(1))));
+                OffsetDateTime.from(OffsetDateTime.now().minus(Duration.ofNanos(1))));
 
         final Set<ConstraintViolation<PastOrNowDate>> minConstraintViolations = validator.validate(min);
         final Set<ConstraintViolation<PastOrNowDate>> lastNanoConstraintViolations = validator.validate(lastNano);
@@ -48,7 +47,7 @@ public class PastOrNowValidatorTest {
 
     @Test
     public void testFuture() {
-        final PastOrNowDate future = new PastOrNowDate(LocalDateTime.now().plus(Duration.ofMinutes(1)));
+        final PastOrNowDate future = new PastOrNowDate(OffsetDateTime.now().plus(Duration.ofMinutes(1)));
 
         final Set<ConstraintViolation<PastOrNowDate>> futureConstraintViolations = validator.validate(future);
         Assert.assertEquals(1, futureConstraintViolations.size());
@@ -58,7 +57,7 @@ public class PastOrNowValidatorTest {
 
     @Test
     public void testNow() {
-        final PastOrNowDate now = new PastOrNowDate(LocalDateTime.now());
+        final PastOrNowDate now = new PastOrNowDate(OffsetDateTime.now());
 
         final Set<ConstraintViolation<PastOrNowDate>> nowConstraintViolations = validator.validate(now);
 
