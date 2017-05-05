@@ -566,12 +566,15 @@ public class RoleService implements IRoleService {
      * @param pResourcesAccesses accesses to remove
      */
     private void removeAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
-        // Remove accesses
-        pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
-        // Save changes
-        roleRepository.save(pRole);
-        // Propagate
-        removeAndPropagate(pRole.getParentRole(), pResourcesAccesses);
+
+        if (pRole != null) {
+            // Remove accesses
+            pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+            // Save changes
+            roleRepository.save(pRole);
+            // Propagate
+            removeAndPropagate(pRole.getParentRole(), pResourcesAccesses);
+        }
     }
 
     /**
