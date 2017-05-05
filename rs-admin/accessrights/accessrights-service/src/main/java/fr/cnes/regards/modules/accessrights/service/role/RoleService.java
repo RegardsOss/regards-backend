@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -346,8 +347,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void addResourceAccesses(final Long pRoleId, final ResourcesAccess... pNewOnes)
-            throws EntityNotFoundException {
+    public void addResourceAccesses(final Long pRoleId, final ResourcesAccess... pNewOnes) throws EntityException {
         final Role role = roleRepository.findOneById(pRoleId);
         if (role == null) {
             throw new EntityNotFoundException(pRoleId, Role.class);
@@ -362,137 +362,75 @@ public class RoleService implements IRoleService {
      *            role on which the modification has been made
      * @param pNewOnes
      *            accesses to add
+     * @throws EntityOperationForbiddenException if error occurs!
      */
-    private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes) {
-        final Set<Role> descendants = getDescendants(pRole);
-        final Set<Role> nativeDescendants = descendants.stream().filter(role -> role.isNative())
-                .collect(Collectors.toSet());
-        // access is added to this role, so we add it
-        descendants.add(pRole);
-        for (final Role descendant : descendants) {
-            descendant.getPermissions().addAll(Lists.newArrayList(pNewOnes));
-            changeParent(descendant, nativeDescendants);
-            roleRepository.save(descendant);
+    private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
+            throws EntityOperationForbiddenException {
+
+        if (pRole.isNative()) {
+            // If native role, propagate added resources to all descendants to maintain consistency
+            addAndPropagate(pRole, pNewOnes);
+        } else {
+            // Add resource access to current role and manage its parent
+            addAndManageParent(pRole, pNewOnes);
         }
 
-        // Compute concerned microservices
-        Set<String> microservices = new HashSet<>();
-        for (ResourcesAccess ra : pNewOnes) {
-            microservices.add(ra.getMicroservice());
-        }
-        // Publish an event for each microservice
-        microservices.forEach(this::publishResourceAccessEvent);
+        // Publish changes
+        publishResourceAccessEvent(pNewOnes);
+    }
+
+    /**
+     * Add accesses on all inheriting roles
+     *
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to add
+     */
+    private void addAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
+        // Add accesses
+        pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
+        // Save changes
+        roleRepository.save(pRole);
+        // Retrieve its descendants
+        Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
+        // Propagate
+        sons.forEach(son -> addAndPropagate(son, pResourcesAccesses));
+    }
+
+    /**
+     * Add accesses on current role only and change parent if required to maintain consistency
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to add
+     * @throws EntityOperationForbiddenException if parent cannot be found
+     */
+    private void addAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
+            throws EntityOperationForbiddenException {
+        // Add accesses
+        pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
+        // Save changes
+        roleRepository.save(pRole);
+        // Change parent if required
+        manageParentFromAdmin(pRole);
     }
 
     /**
      * Inform security starter an (or many) access(es) changed
      *
-     * @param microservice
-     *            concerned microservice (not current! the origin of the resource access endpoint)
+     * @param pResourcesAccesses
+     *            resource accesses that have changed
      */
-    private void publishResourceAccessEvent(String microservice) {
-        ResourceAccessEvent raEvent = new ResourceAccessEvent();
-        raEvent.setMicroservice(microservice);
-        publisher.publish(raEvent);
-    }
+    private void publishResourceAccessEvent(final ResourcesAccess... pResourcesAccesses) {
 
-    /**
-     * Used with {@link RoleService#addResourceAccesses(Role, Set)} so we just need to get the descendants of a given
-     * role until our actual role as we cannot add accesses that we do not have.
-     *
-     * @param pRole
-     * @return Set of descendants
-     */
-    private Set<Role> getDescendants(final Role pRole) {
-        // get sons of this role
-        final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
-        final Set<Role> descendants = Sets.newHashSet();
-        descendants.addAll(sons);
-        // for each son get its descendants
-        for (final Role son : sons) {
-            descendants.addAll(getDescendants(son));
+        // Compute concerned microservices
+        Set<String> microservices = new HashSet<>();
+        for (ResourcesAccess ra : pResourcesAccesses) {
+            microservices.add(ra.getMicroservice());
         }
-        return descendants;
-    }
-
-    /**
-     * Check if the pDescendant should change of parent or not. If pDescendant is a native role then it doesn't change.
-     * Otherwise, it may change to a role closer to ADMIN among the native roles
-     *
-     * @param pDescendant
-     *            role that may change of parent
-     * @param pNativeDescendants
-     *            set of native role among the descendants(without pDescendant's parent) of pDescendant(troncated to the
-     *            current role of the user asking for the change) passed as parameter to avoid looking for them all the
-     *            time.
-     */
-    private void changeParent(final Role pDescendant, final Set<Role> pNativeDescendants) {
-        if (!pDescendant.isNative()) {
-            // check for the native role which has the most resource accesses that do not contains all of the
-            // descendant accesses or has the same ones. One of the cases is encountered as Project Admin has all
-            // the resource accesses available.
-            // case one of the native roles has the same accesses:
-            final List<Role> nativesWithSameAccesses = pNativeDescendants.stream()
-                    .filter(nativeRole -> (nativeRole.getPermissions().size() == pDescendant.getPermissions().size())
-                            && nativeRole.getPermissions().containsAll(pDescendant.getPermissions()))
-                    .collect(Collectors.toList());
-            if (!nativesWithSameAccesses.isEmpty()) {
-                Role candidate = nativesWithSameAccesses.get(0);
-                if (nativesWithSameAccesses.size() != 1) {
-                    // when there is multiple possibilities: choose the one that is the closer from ADMIN
-                    candidate = searchBetterParent(candidate, nativesWithSameAccesses);
-                }
-                pDescendant.setParentRole(candidate);
-            } else {
-                // case none of the native roles has the same accesses:
-                final List<Role> nativeCandidates = pNativeDescendants.stream()
-                        .filter(nativeRole -> pDescendant.getPermissions().containsAll(nativeRole.getPermissions()))
-                        .collect(Collectors.toList());
-                if (!nativeCandidates.isEmpty()) {
-                    pDescendant.setParentRole(getRightCandidate(nativeCandidates));
-                }
-            }
+        // Publish an event for each concerned microservice
+        for (String microservice : microservices) {
+            ResourceAccessEvent raEvent = new ResourceAccessEvent();
+            raEvent.setMicroservice(microservice);
+            publisher.publish(raEvent);
         }
-    }
-
-    /**
-     * Used by {@link RoleService#changeParent(Role, Set)}.
-     *
-     * Look for a native role that is less likely to be changed in the future.
-     *
-     * @param pCandidate
-     *            initial candidate
-     * @param pNativesWithSameAccesses
-     *            list of possible candidate.
-     * @return pCandantite if there is no better choice, one of its descendants otherwise
-     */
-    private Role searchBetterParent(final Role pCandidate, final List<Role> pNativesWithSameAccesses) {
-        // we have at most one son as the hierarchy of native roles is a linear. Moreover, we are looking for the son of
-        // the candidate because he is less likely to have his accesses reduced in the future.
-        final Optional<Role> sonsOfCandidateAmongNativesWithSameAccesses = pNativesWithSameAccesses.stream()
-                .filter(otherCandidate -> otherCandidate.getParentRole().equals(pCandidate)).findFirst();
-        if (sonsOfCandidateAmongNativesWithSameAccesses.isPresent()) {
-            return searchBetterParent(sonsOfCandidateAmongNativesWithSameAccesses.get(), pNativesWithSameAccesses);
-        }
-        return pCandidate;
-
-    }
-
-    /**
-     * Used by {@link RoleService#changeParent(Role, Set)} to determine which one of the candidates has the most
-     * resource accesses
-     *
-     * @param pNativeCandidates
-     * @return the role having the most resource accesses between the pNativeCandidates
-     */
-    private Role getRightCandidate(final List<Role> pNativeCandidates) {
-        Role candidate = pNativeCandidates.get(0);
-        for (int i = 1; i < pNativeCandidates.size(); i++) {
-            if (pNativeCandidates.get(i).getPermissions().size() > candidate.getPermissions().size()) {
-                candidate = pNativeCandidates.get(i);
-            }
-        }
-        return candidate;
     }
 
     @Override
@@ -574,6 +512,9 @@ public class RoleService implements IRoleService {
         return results;
     }
 
+    /**
+     * Retrieve a role
+     */
     @Override
     public Role retrieveRole(final Long pRoleId) throws EntityNotFoundException {
         final Role role = roleRepository.findOne(pRoleId);
@@ -583,39 +524,9 @@ public class RoleService implements IRoleService {
         return role;
     }
 
-    private void removeResourcesAccesses(final Role pRole, final ResourcesAccess... pResourcesAccesses)
-            throws EntityException {
-        if (pRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
-            throw new EntityOperationForbiddenException(pRole.getName(), Role.class,
-                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
-        }
-
-        final Role father = pRole.getParentRole();
-        if (father != null) {
-            final Set<Role> ascendants = getAscendants(roleRepository.findOneById(pRole.getParentRole().getId()));
-            final Set<Role> nativeAscendants = ascendants.stream().filter(a -> a.isNative())
-                    .collect(Collectors.toSet());
-            if (pRole.isNative()) {
-                nativeAscendants.add(pRole); // adding myself so i am processed with the others
-                // remove the acces from the native ascendants
-                for (final Role nativeAscendant : nativeAscendants) {
-                    nativeAscendant.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
-                    roleRepository.save(nativeAscendant);
-                }
-                // custom role parent won't change on removal
-            } else {
-                // in case of a custom role, removal is not propagated to other roles
-                pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
-                // but a custom role can change parent
-                changeParent(pRole, nativeAscendants);
-                roleRepository.save(pRole);
-            }
-        } else {
-            pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
-            roleRepository.save(pRole);
-        }
-    }
-
+    /**
+     * Remove resource accesses from a role
+     */
     @Override
     public void removeResourcesAccesses(final String pRoleName, final ResourcesAccess... pResourcesAccesses)
             throws EntityException {
@@ -626,7 +537,123 @@ public class RoleService implements IRoleService {
             throw new EntityNotFoundException(pRoleName, Role.class);
         }
 
-        removeResourcesAccesses(roleOpt.get(), pResourcesAccesses);
+        Role role = roleOpt.get();
+
+        // If PROJECT_ADMIN, nothing to do / removal forbidden
+        if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
+            throw new EntityOperationForbiddenException(role.getName(), Role.class,
+                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
+        }
+
+        if (role.isNative()) {
+            // If native role, propagate removal to native ascendants to maintain consistency
+            removeAndPropagate(role, pResourcesAccesses);
+            // Check non native role parents
+            manageParentRoles();
+        } else {
+            // Else only remove accesses from role and change parent if required (may throw an exception if at least public role cannot be the parent)
+            removeAndManageParent(role, pResourcesAccesses);
+        }
+
+        // Publish changes
+        publishResourceAccessEvent(pResourcesAccesses);
+    }
+
+    /**
+     * Remove accesses on all inherited roles
+     *
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to remove
+     */
+    private void removeAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
+        // Remove accesses
+        pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+        // Save changes
+        roleRepository.save(pRole);
+        // Propagate
+        removeAndPropagate(pRole.getParentRole(), pResourcesAccesses);
+    }
+
+    /**
+     * Consider all non native roles to update its native parent after native role changes
+     * @throws EntityOperationForbiddenException
+     */
+    private void manageParentRoles() throws EntityOperationForbiddenException {
+
+        Set<Role> roles = retrieveRoles();
+        for (Role role : roles) {
+            if (!role.isNative()) {
+                manageParentFromAdmin(role);
+            }
+        }
+    }
+
+    /**
+     * Remove accesses on current role only and change parent if required to maintain consistency
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to remove
+     * @throws EntityOperationForbiddenException if parent cannot be found
+     */
+    private void removeAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
+            throws EntityOperationForbiddenException {
+        // Remove accesses
+        pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+        // Save changes
+        roleRepository.save(pRole);
+        // Change parent if required
+        manageParent(pRole, pRole.getParentRole());
+    }
+
+    /**
+     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available inherited parent.
+     *
+     * @param role role to consider
+     * @throws EntityOperationForbiddenException if no parent role matches
+     */
+    private void manageParentFromAdmin(final Role role) throws EntityOperationForbiddenException {
+
+        // Retrieve default admin role
+        Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.name()).get();
+        // Manage parent
+        manageParent(role, adminRole);
+    }
+
+    /**
+     * Found a consistent parent for the current role
+     *
+     * @param role role to consider
+     * @param parentRole parent role candidate
+     * @throws EntityOperationForbiddenException if no parent role matches
+     */
+    private void manageParent(final Role role, final Role parentRole) throws EntityOperationForbiddenException {
+
+        // role must not be null
+        Assert.notNull(role);
+
+        // if parent role is null, even public role cannot be the parent of the role
+        // throw exception
+        // a role must have a parent and cannot have less accesses than public
+        if (parentRole == null) {
+            String message = String.format(
+                                           "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                                           role.getName());
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(message);
+        }
+
+        // Check if role is consistent with its parent
+        // The parent cannot have more accesses!
+        Set<ResourcesAccess> rolePermissions = role.getPermissions();
+        Set<ResourcesAccess> parentPermissions = parentRole.getPermissions();
+
+        if (rolePermissions.containsAll(parentPermissions)) {
+            // Set parent
+            role.setParentRole(parentRole);
+            // Save changes
+            roleRepository.save(role);
+        } else {
+            manageParent(role, parentRole.getParentRole());
+        }
     }
 
     @Override

@@ -225,9 +225,9 @@ public interface IRoleService {
      *
      * @param pRoleId
      * @param pNewOnes
-     * @throws EntityNotFoundException
+     * @throws EntityException
      */
-    void addResourceAccesses(Long pRoleId, ResourcesAccess... pNewOnes) throws EntityNotFoundException;
+    void addResourceAccesses(Long pRoleId, ResourcesAccess... pNewOnes) throws EntityException;
 
     /**
      * Retrieve roles that a user can borrow.
