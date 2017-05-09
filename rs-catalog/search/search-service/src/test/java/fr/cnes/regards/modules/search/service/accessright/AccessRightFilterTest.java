@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.search.service.accessright;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import org.hamcrest.Matchers;
@@ -23,11 +25,12 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.opensearch.service.geoparser.GeoParser;
-import fr.cnes.regards.modules.opensearch.service.queryparser.QueryParser;
-import fr.cnes.regards.modules.opensearch.service.queryparser.cache.attributemodel.AttributeModelCache;
-import fr.cnes.regards.modules.opensearch.service.queryparser.cache.attributemodel.IAttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.parser.CircleParser;
+import fr.cnes.regards.modules.opensearch.service.parser.GeometryParser;
+import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
 import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
@@ -94,7 +97,8 @@ public class AccessRightFilterTest {
         Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
                 .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
 
-        openSearchService = new OpenSearchService(new QueryParser(attributeModelCache), new GeoParser());
+        openSearchService = new OpenSearchService(new QueryParser(attributeModelCache), new GeometryParser(),
+                new CircleParser());
 
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
@@ -107,18 +111,22 @@ public class AccessRightFilterTest {
     /**
      * Test that a string query cannot use a "groups" term.
      * @throws OpenSearchParseException
+     * @throws UnsupportedEncodingException
      */
     @Test(expected = OpenSearchParseException.class)
-    public final void test_userCannotInjectGroupsTermInQuery() throws OpenSearchParseException {
-        openSearchService.parse(SampleDataUtils.QUERY_WITH_GROUPS);
+    public final void test_userCannotInjectGroupsTermInQuery()
+            throws OpenSearchParseException, UnsupportedEncodingException {
+        String q = "q=" + URLEncoder.encode(SampleDataUtils.QUERY_WITH_GROUPS, "UTF-8");
+        openSearchService.parse(q);
     }
 
     /**
      * Test method for {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addUserGroups(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
      * @throws OpenSearchParseException
+     * @throws UnsupportedEncodingException
      */
     @Test
-    public final void testAddUserGroups() throws OpenSearchParseException {
+    public final void testAddUserGroups() throws OpenSearchParseException, UnsupportedEncodingException {
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
         final UserDetails details = new UserDetails();
@@ -127,7 +135,8 @@ public class AccessRightFilterTest {
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Init the criterion we add groups to
-        ICriterion criterion = openSearchService.parse(SampleDataUtils.QUERY);
+        String q = "q=" + URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8");
+        ICriterion criterion = openSearchService.parse(q);
 
         // Add groups
         ICriterion criterionWithGroups = accessRightFilter.addUserGroups(criterion);
