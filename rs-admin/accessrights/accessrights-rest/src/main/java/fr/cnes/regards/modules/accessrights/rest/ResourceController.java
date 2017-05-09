@@ -41,7 +41,8 @@ import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
  * @since 1.0-SNASHOT
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping(value = ResourceController.TYPE_MAPPING)
 public class ResourceController implements IResourceController<ResourcesAccess> {
 
@@ -79,7 +80,8 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      *             if error occurs
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(final Pageable pPageable,
             final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws ModuleException {
         return new ResponseEntity<>(
@@ -132,8 +134,8 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(ResourcesAccess pElement, Object... pExtras) {
-        Resource<ResourcesAccess> resource = hateoasService.toResource(pElement);
+    public Resource<ResourcesAccess> toResource(final ResourcesAccess pElement, final Object... pExtras) {
+        final Resource<ResourcesAccess> resource = hateoasService.toResource(pElement);
         hateoasService.addLink(resource, this.getClass(), "getAllResourceAccesses", LinkRels.LIST,
                                MethodParamFactory.build(Pageable.class),
                                MethodParamFactory.build(PagedResourcesAssembler.class));
@@ -141,7 +143,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
                                MethodParamFactory.build(Long.class, pElement.getId()));
         hateoasService.addLink(resource, this.getClass(), "updateResourceAccess", LinkRels.UPDATE,
                                MethodParamFactory.build(Long.class, pElement.getId()),
-                               MethodParamFactory.build(ResourceAccess.class));
+                               MethodParamFactory.build(pElement.getClass()));
         return resource;
     }
 }

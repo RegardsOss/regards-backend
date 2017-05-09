@@ -14,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -48,36 +49,37 @@ public class ResourcesAccess implements IIdentifiable<Long> {
      * Resource description
      */
     @Column(name = "description")
+    @Type(type = "text")
     private String description;
 
     /**
      * Microservice of the current resource
      */
     @NotBlank
-    @Column(name = "microservice")
+    @Column(name = "microservice", length = 32)
     private String microservice;
 
     @NotBlank
-    @Column(name = "controller_name")
+    @Column(name = "controller_name", length = 32)
     private String controllerSimpleName;
 
     /**
      * Path of the endpoint
      */
     @NotBlank
-    @Column(name = "resource")
+    @Column(name = "resource", length = 512)
     private String resource;
 
     /**
      * Http Verb of the endpoint
      */
     @NotNull
-    @Column(name = "verb")
+    @Column(name = "verb", length = 10)
     @Enumerated(EnumType.STRING)
     private RequestMethod verb;
 
     @NotNull
-    @Column(name = "defaultRole")
+    @Column(name = "defaultRole", length = 16)
     @Enumerated(EnumType.STRING)
     private DefaultRole defaultRole;
 
@@ -126,7 +128,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -136,21 +138,23 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ResourcesAccess other = (ResourcesAccess) obj;
+        final ResourcesAccess other = (ResourcesAccess) obj;
         if (microservice == null) {
             if (other.microservice != null) {
                 return false;
             }
-        } else if (!microservice.equals(other.microservice)) {
-            return false;
-        }
+        } else
+            if (!microservice.equals(other.microservice)) {
+                return false;
+            }
         if (resource == null) {
             if (other.resource != null) {
                 return false;
             }
-        } else if (!resource.equals(other.resource)) {
-            return false;
-        }
+        } else
+            if (!resource.equals(other.resource)) {
+                return false;
+            }
         if (verb != other.verb) {
             return false;
         }
@@ -197,7 +201,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         return controllerSimpleName;
     }
 
-    public void setControllerSimpleName(String pControllerSimpleName) {
+    public void setControllerSimpleName(final String pControllerSimpleName) {
         controllerSimpleName = pControllerSimpleName;
     }
 
@@ -205,7 +209,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         return defaultRole;
     }
 
-    public void setDefaultRole(DefaultRole pDefaultRole) {
+    public void setDefaultRole(final DefaultRole pDefaultRole) {
         defaultRole = pDefaultRole;
     }
 

@@ -31,9 +31,11 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -140,6 +142,30 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     }
 
     /**
+     * Retrieve the {@link ProjectUser} of current authenticated user
+     *
+     * @param pUserEmail
+     *            The {@link ProjectUser}'s <code>email</code>
+     * @return a {@link ProjectUser}
+     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/myuser", method = RequestMethod.GET)
+    @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
+            role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Resource<ProjectUser>> retrieveCurrentProjectUser()
+            throws EntityNotFoundException, EntityOperationForbiddenException {
+        final String curentUserEmail = SecurityUtils.getActualUser();
+        if ((curentUserEmail == null) || curentUserEmail.isEmpty()) {
+            throw new EntityOperationForbiddenException("Unable to retrieve current authenticated user.");
+
+        }
+        final ProjectUser user = projectUserService.retrieveOneByEmail(curentUserEmail);
+        return new ResponseEntity<>(toResource(user), HttpStatus.OK);
+    }
+
+    /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
      * @param pUserEmail
@@ -160,11 +186,11 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
     @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail)
+    public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") final String userEmail)
             throws EntityNotFoundException {
-        ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
-        if (user.getRole().getName().equals(DefaultRole.ADMIN.toString()) || user.getRole().getParentRole().getName()
-                .equals(DefaultRole.ADMIN.toString())) {
+        final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
+        if (user.getRole().getName().equals(DefaultRole.ADMIN.toString())
+                || user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString())) {
             return new ResponseEntity<>(true, HttpStatus.OK);
         }
         return new ResponseEntity<>(false, HttpStatus.OK);
@@ -192,6 +218,38 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
         final ProjectUser updatedUser = projectUserService.updateUserInfos(pUserId, pUpdatedProjectUser);
         return new ResponseEntity<>(toResource(updatedUser), HttpStatus.OK);
+    }
+
+    /**
+     * Update the {@link ProjectUser} of current projet user authenticated.
+     *
+     * @param pUpdatedProjectUser
+     *            The new {@link ProjectUser}
+     * @return void
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityInconsistentIdentifierException} Thrown when <code>pUserId</code> is different from the
+     *             id of <code>pUpdatedProjectUser</code><br>
+     *             {@link EntityNotFoundException} Thrown when no {@link ProjectUser} with passed <code>id</code> could
+     *             be found<br>
+     *             {@link EntityOperationForbiddenException} Thrown when the user to update is not the current
+     *             authenticated user<br>
+     */
+    @ResponseBody
+    @RequestMapping(value = "/myuser", method = RequestMethod.PUT)
+    @ResourceAccess(description = "Update the current authenticated project user", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Resource<ProjectUser>> updateCurrentProjectUser(
+            @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
+
+        final ProjectUser user = projectUserService.retrieveCurrentUser();
+
+        if (!user.getId().equals(pUpdatedProjectUser.getId())) {
+            throw new EntityOperationForbiddenException("You are only allowed to update your own user properties.");
+        }
+
+        final ProjectUser updatedUser = projectUserService.updateUserInfos(user.getId(), pUpdatedProjectUser);
+        return new ResponseEntity<>(toResourceRegisteredUser(updatedUser), HttpStatus.OK);
+
     }
 
     /**
@@ -272,6 +330,27 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(String.class, pElement.getStatus().toString()),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
+        }
+        return resource;
+    }
+
+    /**
+     *
+     * Special HATEOS resource maker for registered users asking for their own users. The toResource method is for
+     * project admins.
+     *
+     * @param pProjectUser
+     *            {@link ProjectUser} to transform to HATEOAS resources.
+     * @return HATEOAS resources for {@link ProjectUser}
+     * @since 1.0-SNAPSHOT
+     */
+    public Resource<ProjectUser> toResourceRegisteredUser(final ProjectUser pProjectUser) {
+        Resource<ProjectUser> resource = resourceService.toResource(pProjectUser);
+        if ((pProjectUser != null) && (pProjectUser.getId() != null)) {
+            resource = resourceService.toResource(pProjectUser);
+            resourceService.addLink(resource, this.getClass(), "retrieveCurrentProjectUser", LinkRels.SELF);
+            resourceService.addLink(resource, this.getClass(), "updateCurrentProjectUser", LinkRels.UPDATE,
+                                    MethodParamFactory.build(ProjectUser.class, pProjectUser));
         }
         return resource;
     }

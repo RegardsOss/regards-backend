@@ -169,11 +169,9 @@ public class RegistrationService implements IRegistrationService {
         final Account newAccount = accountRepository.save(account);
 
         // Init the verification token
-        tokenService.create(account, pDto.getOriginUrl(), pDto.getRequestLink());
+        tokenService.create(newAccount, pDto.getOriginUrl(), pDto.getRequestLink());
 
-        final Optional<Account> test = accountRepository.findOneByEmail(pDto.getEmail());
-
-        return account;
+        return newAccount;
     }
 
     /**
@@ -198,7 +196,7 @@ public class RegistrationService implements IRegistrationService {
         final Role role = roleService.getDefaultRole();
 
         // Create a new project user
-        final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), new ArrayList<>());
+        final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetaData());
 
         // Check the status
         Assert.isTrue(UserStatus.WAITING_ACCESS.equals(projectUser.getStatus()),

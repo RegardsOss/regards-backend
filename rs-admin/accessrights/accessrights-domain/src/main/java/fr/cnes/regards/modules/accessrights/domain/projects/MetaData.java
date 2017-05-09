@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -21,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  */
 @Entity
 @Table(name = "T_META_DATA")
-@SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "SEQ_META_DATA")
+@SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
     @Id
@@ -29,13 +31,14 @@ public class MetaData implements IIdentifiable<Long> {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "key", unique = true)
+    @Column(name = "key", unique = true, length = 64)
     private String key;
 
-    @Column(name = "value")
+    @Column(name = "value", length = 256)
     private String value;
 
     @Column(name = "visibility")
+    @Enumerated(EnumType.STRING)
     private UserVisibility visibility;
 
     public MetaData() {
