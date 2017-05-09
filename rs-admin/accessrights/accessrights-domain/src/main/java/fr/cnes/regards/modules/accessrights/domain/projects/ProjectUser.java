@@ -20,6 +20,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -46,6 +48,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
 @Table(name = "t_project_user")
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "seq_project_user")
+@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metaData"))
 public class ProjectUser implements IIdentifiable<Long> {
 
     /**

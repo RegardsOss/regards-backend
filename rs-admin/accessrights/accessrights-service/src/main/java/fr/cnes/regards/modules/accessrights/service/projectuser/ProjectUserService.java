@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -46,6 +47,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Sébastien Binda
  */
 @Service
+@MultitenantTransactional
 public class ProjectUserService implements IProjectUserService {
 
     /**
@@ -212,8 +214,8 @@ public class ProjectUserService implements IProjectUserService {
         }
 
         final ProjectUser user = projectUserRepository.findOne(pUserId);
-        user.setMetaData(pUpdatedProjectUser.getMetaData());
-        user.setPermissions(pUpdatedProjectUser.getPermissions());
+
+        // Set user role
         if (pUpdatedProjectUser.getRole() == null) {
             user.setRole(null);
         } else
@@ -229,6 +231,11 @@ public class ProjectUserService implements IProjectUserService {
                     }
                 }
 
+        // Set user new metadata
+        user.setMetaData(pUpdatedProjectUser.getMetaData());
+        // Set user new permissions
+        user.setPermissions(pUpdatedProjectUser.getPermissions());
+        // Save new user informations
         return save(user);
     }
 
