@@ -27,10 +27,19 @@ public interface IModuleRepository extends JpaRepository<Module, Long> {
      * Retrieve modules for the given application id.
      *
      * @param pApplicationId
-     * @return {@link Module}
+     * @return Page of {@link Module}
      * @since 1.0-SNAPSHOT
      */
     Page<Module> findByApplicationId(String pApplicationId, Pageable pPageable);
+
+    /**
+     * Retrieve all modules for the given application id
+     *
+     * @param pApplicationId
+     * @return List of {@link Module}
+     * @since 1.0-SNAPSHOT
+     */
+    List<Module> findByApplicationId(String pApplicationId);
 
     /**
      *

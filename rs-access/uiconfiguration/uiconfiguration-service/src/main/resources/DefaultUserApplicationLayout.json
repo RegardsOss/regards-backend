@@ -11,7 +11,14 @@
 	"styles": {}
 	},
 	{
-	"id": "content",
+	"id": "static-content",
+	"type": "RowContainer",
+	"classes": [],
+	"styles": {},
+	"dynamicContent": false
+	},
+	{
+	"id": "dynamic-content",
 	"type": "RowContainer",
 	"classes": [],
 	"styles": {},

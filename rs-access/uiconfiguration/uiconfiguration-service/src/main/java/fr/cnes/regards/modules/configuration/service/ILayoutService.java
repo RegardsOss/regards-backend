@@ -51,13 +51,4 @@ public interface ILayoutService {
      */
     Layout updateLayout(Layout pLayout) throws EntityException;
 
-    /**
-     *
-     * Initialize default layouts for given tenant.
-     *
-     * @param pTenant
-     * @since 1.0-SNAPSHOT
-     */
-    void initProjectLayout(String pTenant);
-
 }
