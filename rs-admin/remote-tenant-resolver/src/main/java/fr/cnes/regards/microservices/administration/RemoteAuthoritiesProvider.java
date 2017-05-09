@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
+import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -54,6 +55,8 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
      */
     private final IMicroserviceResourceClient resourcesClient;
 
+    private final IRoleResourceClient roleResourceClient;
+
     /**
      * Administration microservice REST client
      */
@@ -78,15 +81,16 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
      */
     public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient pResourcesclient, final IRolesClient pRolesClient,
-            final IRuntimeTenantResolver runtimeTenantResolver) {
+            final IRuntimeTenantResolver runtimeTenantResolver, final IRoleResourceClient pRoleResourceClient) {
         super(discoveryClient);
         resourcesClient = pResourcesclient;
         roleClient = pRolesClient;
+        roleResourceClient = pRoleResourceClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public List<ResourceMapping> registerEndpoints(String microserviceName, final String tenant,
+    public List<ResourceMapping> registerEndpoints(final String microserviceName, final String tenant,
             final List<ResourceMapping> localEndpoints) {
 
         // Specified the working tenant
@@ -103,7 +107,10 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
             final List<Role> roles = HateoasUtils.unwrapList(roleClient.getAllRoles().getBody());
             final SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
 
-            roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
+            // For each role retrieive permissions
+            for (final Role role : roles) {
+                retrieveRoleResources(role, microserviceName).forEach(ra -> multimap.put(ra, role));
+            }
 
             // create ResourceMappings
             return multimap.asMap().entrySet().stream()
@@ -114,7 +121,7 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
     }
 
     @Override
-    public List<RoleAuthority> getRoleAuthorities(String microserviceName, final String tenant) {
+    public List<RoleAuthority> getRoleAuthorities(final String microserviceName, final String tenant) {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -159,6 +166,31 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
         mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
                 .collect(Collectors.toList()));
         return mapping;
+    }
+
+    /**
+     *
+     * Retrieve all {@link ResourcesAccess} for the given role and the given microservices
+     *
+     * @param pRole
+     *            {link Role}'s to retrieve {@link ResourcesAccess}
+     * @param pMicroserviceName
+     *            Microservice to retrieve {link Role}'s {@link ResourcesAccess}s
+     * @return {link Role}'s {@link ResourcesAccess}s
+     * @since 1.0-SNAPSHOT
+     */
+    private List<ResourcesAccess> retrieveRoleResources(final Role pRole, final String pMicroserviceName) {
+        final List<ResourcesAccess> roleRessources = new ArrayList<>();
+        final ResponseEntity<List<Resource<ResourcesAccess>>> roleResourcesResponse = roleResourceClient
+                .getRoleResources(pRole.getName());
+        if (roleResourcesResponse.getStatusCode().equals(HttpStatus.OK) && (roleResourcesResponse.getBody() != null)) {
+            for (final Resource<ResourcesAccess> roleResource : roleResourcesResponse.getBody()) {
+                if (roleResource.getContent().getMicroservice().equals(pMicroserviceName)) {
+                    roleRessources.add(roleResource.getContent());
+                }
+            }
+        }
+        return roleRessources;
     }
 
 }
