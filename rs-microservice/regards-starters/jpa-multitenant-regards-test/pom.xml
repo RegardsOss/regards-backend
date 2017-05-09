@@ -29,4 +29,28 @@
 			<artifactId>regards-test</artifactId>
 		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<!-- Default properties -->
+				<filter.name>integration</filter.name>
+			</properties>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/${filter.name}.properties</filter>
+				</filters>
+			</build>
+		</profile>
+	</profiles>
 </project>

@@ -38,7 +38,7 @@ public class TenantConnection {
     /**
      * Tenant datasource driverClassName
      */
-    private String driverClassName;
+    private String driverClassName = "org.postgresql.Driver";
 
     /**
      *
