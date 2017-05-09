@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
 @Table(name = "T_PROJECT_USER")
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
+@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metadata"))
 public class ProjectUser implements IIdentifiable<Long> {
 
     /**

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -42,6 +43,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Sébastien Binda
  */
 @Service
+@MultitenantTransactional
 public class ProjectUserService implements IProjectUserService {
 
     /**
