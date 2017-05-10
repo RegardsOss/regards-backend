@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -205,6 +206,54 @@ public class AccountWorkflowManagerTest {
 
         // Verify the repository was correctly called
         Mockito.verify(accountRepository).delete(ID);
+    }
+
+    /**
+     * Check that the system does not delete an account linked to project users
+     */
+    @Test
+    @Purpose("Check that the system does not delete an account in right status linked to project users.")
+    public void canDelete_shouldReturnFalse() {
+        // Prepare the case
+        account.setId(ID);
+        account.setStatus(AccountStatus.ACTIVE);
+
+        // Mock
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
+        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
+
+        // Call the method
+        boolean result = accountWorkflowManager.canDelete(account);
+
+        // Verify the repository was correctly called
+        Assert.assertFalse(result);
+    }
+
+    /**
+     * Check that the system allows to delete an account in right status if not linked to project users.
+     */
+    @Test
+    @Purpose("Check that the system allows to delete an account in right status if not linked to project users.")
+    public void canDelete_shouldReturnTrue() {
+        // Prepare the case
+        account.setId(ID);
+        account.setStatus(AccountStatus.ACTIVE);
+
+        // Mock
+        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
+        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
+                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
+
+        // Call the method
+        boolean result = accountWorkflowManager.canDelete(account);
+
+        // Verify the repository was correctly called
+        Assert.assertTrue(result);
     }
 
 }

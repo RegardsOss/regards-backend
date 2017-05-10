@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -28,6 +29,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.accountunlock.IAccountUnlockTokenRepository;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
@@ -36,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 
@@ -111,6 +114,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IAccountRepository accountRepository;
+
+    /**
+     * Project user repository
+     */
+    @Autowired
+    private IProjectUserRepository projectUserRepository;
 
     /**
      * Account setting repository
@@ -307,6 +316,25 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_300")
+    @Purpose("Check that the system does not allow to delete an account linked to at least one project user")
+    public void deleteAccount_shouldNotAllowDeletion() {
+        // Must have account with status allowing deletion and have a linked project user
+        String email = "randomEmailMatchingAProjectUser@test.com";
+        account.setEmail(email);
+        account.setStatus(AccountStatus.LOCKED);
+        accountRepository.save(account);
+
+        ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
+        projectUser.setEmail(email);
+        projectUserRepository.save(projectUser);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDefaultDelete(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
     public void getAccountUser() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
@@ -358,6 +386,45 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         performDefaultGet(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, expectations,
                           errorMessage);
+    }
+
+    @Test
+    @Purpose("Check we do not add 'remove' HATEOAS link if the account is linked to project users")
+    public void checkHateoasLinks_doNotAddRemoveIfLinkedToUsers() {
+        // Must have account with status allowing deletion and have a linked project user
+        String email = "randomEmailMatchingAProjectUser@test.com";
+        account.setEmail(email);
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+
+        ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
+        projectUser.setEmail(email);
+        projectUserRepository.save(projectUser);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.hasSize(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[0].rel", Matchers.is("self")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we do add 'remove' HATEOAS link if the account is linked to no project users")
+    public void checkHateoasLinks_addRemoveIfNotLinkedToUsers() {
+        // Must have account with status allowing deletion and have a no linked project user
+        String email = "randomEmailMatchingNoProjectUser@test.com";
+        account.setEmail(email);
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+
+        // Insert authoriry
+        setAuthorities(apiAccountId, RequestMethod.DELETE, "INSTANCE_ADMIN");
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.hasSize(2)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[1].rel", Matchers.is("delete")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 
     @Override

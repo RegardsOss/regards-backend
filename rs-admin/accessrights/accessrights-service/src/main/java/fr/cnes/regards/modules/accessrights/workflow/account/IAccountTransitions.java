@@ -34,7 +34,7 @@ public interface IAccountTransitions {
     default void acceptAccount(final Account pAccount) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Validate an ACCEPTED account via email and passes it to ACTIVE status.
@@ -49,7 +49,7 @@ public interface IAccountTransitions {
         throw new EntityTransitionForbiddenException(pVerificationToken.getAccount().getId().toString(), Account.class,
                 pVerificationToken.getAccount().getStatus().toString(),
                 Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Passes an ACTIVE account to the status LOCKED.
@@ -62,7 +62,7 @@ public interface IAccountTransitions {
     default void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Send to the user an email containing a link with limited validity to unlock its account.
@@ -83,7 +83,7 @@ public interface IAccountTransitions {
             throws EntityOperationForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Unlocks a LOCKED account.
@@ -102,7 +102,7 @@ public interface IAccountTransitions {
     default void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Passes an ACTIVE account to the status INACTIVE.
@@ -115,7 +115,7 @@ public interface IAccountTransitions {
     default void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Passes an INACTIVE account to the status ACTIVE.
@@ -128,7 +128,7 @@ public interface IAccountTransitions {
     default void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
 
     /**
      * Remove an {@link Account} from db.<br>
@@ -143,5 +143,14 @@ public interface IAccountTransitions {
     default void deleteAccount(final Account pAccount) throws ModuleException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    };
+    }
+
+    /**
+     * Can we delete this account?
+     * @param pAccount the account
+     * @return <code>true</code> if we can, else <code>false</code>
+     */
+    default boolean canDelete(final Account pAccount) { // NOSONAR
+        return false;
+    }
 }
