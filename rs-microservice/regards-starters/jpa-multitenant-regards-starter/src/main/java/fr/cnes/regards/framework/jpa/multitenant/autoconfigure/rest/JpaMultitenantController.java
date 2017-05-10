@@ -5,7 +5,6 @@ package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mchange.v2.c3p0.PooledDataSource;
 
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
+import fr.cnes.regards.framework.module.rest.representation.GenericResponseBody;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
@@ -53,36 +53,38 @@ public class JpaMultitenantController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/test")
     @ResourceAccess(description = "Test the tenant connection", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Body> testTenantConnection(@PathVariable String tenant) {
+    public ResponseEntity<GenericResponseBody> testTenantConnection(@PathVariable String tenant) {
 
         DataSource dataSource = dataSources.get(tenant);
 
         if (dataSource == null) {
-            return ResponseEntity.badRequest().body(new Body("No datasource found for specified tenant"));
+            return ResponseEntity.badRequest()
+                    .body(new GenericResponseBody("No datasource found for specified tenant"));
         }
 
         try (Connection connection = dataSource.getConnection()) {
-            return ResponseEntity.ok(new Body("Valid connection"));
+            return ResponseEntity.ok(new GenericResponseBody("Valid connection"));
         } catch (SQLException e) {
             LOGGER.error("Connection test fail", e);
-            return ResponseEntity.badRequest().body(new Body("Invalid connection for specified tenant"));
+            return ResponseEntity.badRequest().body(new GenericResponseBody("Invalid connection for specified tenant"));
         }
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/status")
     @ResourceAccess(description = "Get the tenant datasource status (for pooled one)", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Body> getDataSourceStatus(@PathVariable String tenant) {
+    public ResponseEntity<GenericResponseBody> getDataSourceStatus(@PathVariable String tenant) {
 
         DataSource dataSource = dataSources.get(tenant);
 
         if (dataSource == null) {
-            return ResponseEntity.badRequest().body(new Body("No datasource found for specified tenant"));
+            return ResponseEntity.badRequest()
+                    .body(new GenericResponseBody("No datasource found for specified tenant"));
         }
 
         // Add datasource status if available
         if (dataSource instanceof PooledDataSource) {
             PooledDataSource pds = (PooledDataSource) dataSource;
-            Body body = new Body();
+            GenericResponseBody body = new GenericResponseBody();
             try {
                 body.getProperties().put("num_connections", Integer.valueOf(pds.getNumConnectionsDefaultUser()));
                 body.getProperties().put("num_busy_connections",
@@ -92,44 +94,11 @@ public class JpaMultitenantController {
                 return ResponseEntity.ok(body);
             } catch (SQLException e) {
                 LOGGER.error("Status check fail", e);
-                return ResponseEntity.badRequest().body(new Body("Cannot retrieve status for specified tenant"));
+                return ResponseEntity.badRequest()
+                        .body(new GenericResponseBody("Cannot retrieve status for specified tenant"));
             }
-
         } else {
-            return ResponseEntity.ok(new Body("Status not available for unpooled datasource"));
-        }
-    }
-
-    /**
-     * HTTP body response message
-     *
-     * @author Marc Sordi
-     *
-     */
-    private static class Body {
-
-        private String message;
-
-        private final Map<String, Object> properties = new HashMap<>();
-
-        public Body() {
-            // Default constructor
-        }
-
-        public Body(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Map<String, Object> getProperties() {
-            return properties;
-        }
-
-        public void setMessage(String pMessage) {
-            message = pMessage;
+            return ResponseEntity.ok(new GenericResponseBody("Status not available for unpooled datasource"));
         }
     }
 }

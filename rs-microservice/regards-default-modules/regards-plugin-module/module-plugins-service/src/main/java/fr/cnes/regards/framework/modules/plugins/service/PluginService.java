@@ -396,4 +396,14 @@ public class PluginService implements IPluginService {
         return conf;
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#cleanPluginCache(java.lang.Long)
+     */
+    @Override
+    public void cleanPluginCache(Long pConfId) {
+        if (pConfId != null) {
+            instantiatePlugins.remove(pConfId);
+        }
+    }
+
 }

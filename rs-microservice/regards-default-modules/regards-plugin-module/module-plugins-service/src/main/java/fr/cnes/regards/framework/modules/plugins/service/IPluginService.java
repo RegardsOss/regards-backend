@@ -180,4 +180,10 @@ public interface IPluginService {
      */
     PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel) throws EntityNotFoundException;
 
+    /**
+     * Remove plugin instance cache with specified configuration identifier
+     * @param pConfId plugin configuration identifier
+     */
+    void cleanPluginCache(Long pConfId);
+
 }

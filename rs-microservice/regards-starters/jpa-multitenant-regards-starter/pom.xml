@@ -37,6 +37,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-config</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>module-regards</artifactId>
+		</dependency>
 		<!-- COTS -->
 		<dependency>
 			<groupId>javax.el</groupId>
