@@ -64,6 +64,11 @@ public class RegistrationController {
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
 
     /**
+     * Relative path to the endpoint denying accesses (project users)
+     */
+    public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
+
+    /**
      * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired

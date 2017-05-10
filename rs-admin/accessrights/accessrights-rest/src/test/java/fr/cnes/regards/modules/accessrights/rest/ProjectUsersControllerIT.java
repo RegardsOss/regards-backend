@@ -92,6 +92,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         // Insert some authorizations
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACCEPT_ACCESS_RELATIVE_PATH,
                        RequestMethod.PUT, DEFAULT_ROLE);
+        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.DENY_ACCESS_RELATIVE_PATH,
+                       RequestMethod.PUT, DEFAULT_ROLE);
     }
 
     @Override
@@ -280,6 +282,17 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[4].rel", Matchers.is("accept")));
+        performDefaultGet(apiUserId, expectations, errorMessage, projectUser.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'deny' HATEOAS link")
+    public void checkHateoasLinks_shouldAddDenyink() {
+        String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[5].rel", Matchers.is("deny")));
         performDefaultGet(apiUserId, expectations, errorMessage, projectUser.getId());
     }
 
