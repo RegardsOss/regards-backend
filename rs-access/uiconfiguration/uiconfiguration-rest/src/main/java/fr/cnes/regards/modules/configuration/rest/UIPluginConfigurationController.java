@@ -78,7 +78,8 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to retrieve all IHM plugin configurations",
+            role = DefaultRole.REGISTERED_USER)
     public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurations(
             @RequestParam(value = "isActive", required = false) final Boolean pIsActive,
             @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean pIsLinkedToAllEntities,
@@ -110,7 +111,8 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      */
     @RequestMapping(value = REQUEST_PLUGIN_DEFINITION, method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to retrieve an IHM plugin for a given PluginDefinition",
+            role = DefaultRole.REGISTERED_USER)
     public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurationsByPlugin(
             @PathVariable("pluginId") final Long pPluginId,
             @RequestParam(value = "isActive", required = false) final Boolean pIsActive,
@@ -157,7 +159,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.PUT)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to update an IHM plugin configuration", role = DefaultRole.REGISTERED_USER)
     public HttpEntity<Resource<UIPluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginConfId") final Long pPluginConfigurationId,
             @Valid @RequestBody final UIPluginConfiguration pPluginConfiguration) throws EntityException {
@@ -182,7 +184,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to save a new IHM plugin configuration", role = DefaultRole.REGISTERED_USER)
     public HttpEntity<Resource<UIPluginConfiguration>> createPluginConfiguration(
             @Valid @RequestBody final UIPluginConfiguration pPluginConfiguration) throws EntityException {
         final UIPluginConfiguration pluginConf = service.createPluginconfiguration(pPluginConfiguration);
@@ -201,7 +203,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.DELETE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to delete an IHM plugin configuration", role = DefaultRole.REGISTERED_USER)
     public HttpEntity<Resource<Void>> deletePluginConfiguration(
             @PathVariable("pluginConfId") final Long pPluginConfigurationId) throws EntityException {
         final UIPluginConfiguration pluginConfToDelete = new UIPluginConfiguration();
@@ -220,6 +222,11 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
                                 MethodParamFactory.build(UIPluginDefinition.class));
         resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
+        return resource;
+    }
+
+    public Resource<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration pElement) {
+        final Resource<UIPluginConfiguration> resource = resourceService.toResource(pElement);
         return resource;
     }
 

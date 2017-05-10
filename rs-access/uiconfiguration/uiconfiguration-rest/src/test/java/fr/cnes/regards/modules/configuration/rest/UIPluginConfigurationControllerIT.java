@@ -75,6 +75,7 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         conf.setLinkedToAllEntities(pIsLinked);
         conf.setPluginDefinition(pPluginDef);
         conf.setConf("{}");
+        conf.setLabel("label");
         return conf;
     }
 

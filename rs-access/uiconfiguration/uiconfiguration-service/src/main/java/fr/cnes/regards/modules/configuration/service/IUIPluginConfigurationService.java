@@ -3,13 +3,15 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
 import fr.cnes.regards.modules.configuration.domain.UIPluginConfiguration;
+import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
 
 public interface IUIPluginConfigurationService {
 
@@ -96,5 +98,16 @@ public interface IUIPluginConfigurationService {
      * @since 1.0-SNAPSHOT
      */
     void deletePluginconfiguration(UIPluginConfiguration pPluginConfiguration) throws EntityException;
+
+    /**
+     *
+     * Return all {@link UIPluginConfiguration} for plugins type service and asscociated to the given dataset id.
+     *
+     * @param pDatasetId
+     * @param pServiceScope
+     * @return list of {@link UIPluginConfiguration}
+     * @since 1.0-SNAPSHOT
+     */
+    List<UIPluginConfiguration> retrieveActivePluginServices(String pDatasetId);
 
 }

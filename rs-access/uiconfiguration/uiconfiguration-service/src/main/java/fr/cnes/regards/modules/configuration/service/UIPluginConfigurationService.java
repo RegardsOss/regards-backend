@@ -3,20 +3,27 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.configuration.dao.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.configuration.dao.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.configuration.dao.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.configuration.domain.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.configuration.domain.UIPluginConfiguration;
 import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
+import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 
 /**
  *
@@ -28,10 +35,14 @@ import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
  * @since 1.0-SNAPSHOT
  */
 @Service(value = "pluginConfigurationService")
+@Transactional
 public class UIPluginConfigurationService implements IUIPluginConfigurationService {
 
     @Autowired
     private IUIPluginDefinitionRepository pluginRepository;
+
+    @Autowired
+    private ILinkUIPluginsDatasetsRepository linkedUiPluginRespository;
 
     @Autowired
     private IUIPluginConfigurationRepository repository;
@@ -128,6 +139,31 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
         repository.delete(pPluginConfiguration);
 
+    }
+
+    @Override
+    public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId) {
+        final List<UIPluginConfiguration> activePluginsConfigurations = new ArrayList<>();
+        final LinkUIPluginsDatasets link = linkedUiPluginRespository.findOneByDatasetId(pDatasetId);
+        if (link != null) {
+            link.getServices().forEach(pluginConf -> {
+                if (pluginConf.getActive()) {
+                    activePluginsConfigurations.add(pluginConf);
+                }
+            });
+        }
+
+        // Retrieve plugins linked to all dataset
+        final List<UIPluginConfiguration> linkedToAllDataset = repository
+                .findByActiveAndLinkedToAllEntitiesAndPluginDefinitionType(true, true, UIPluginTypesEnum.SERVICE);
+        if (linkedToAllDataset != null) {
+            linkedToAllDataset.forEach(pluginConf -> {
+                if (!activePluginsConfigurations.contains(pluginConf)) {
+                    activePluginsConfigurations.add(pluginConf);
+                }
+            });
+        }
+        return activePluginsConfigurations;
     }
 
 }
