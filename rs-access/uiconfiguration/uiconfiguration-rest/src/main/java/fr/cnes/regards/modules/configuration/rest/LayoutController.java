@@ -74,7 +74,7 @@ public class LayoutController implements IResourceController<Layout> {
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
-            role = DefaultRole.ADMIN)
+            role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Layout>> updateLayout(@PathVariable("applicationId") final String pApplicationId,
             @Valid @RequestBody final Layout pLayout) throws EntityException {
         final Layout layout = layoutService.updateLayout(pLayout);

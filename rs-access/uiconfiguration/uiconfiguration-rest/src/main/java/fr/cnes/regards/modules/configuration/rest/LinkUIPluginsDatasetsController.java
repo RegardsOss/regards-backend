@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.configuration.service.link.ILinkUIPluginsDatasetsService;
 
@@ -38,7 +39,8 @@ public class LinkUIPluginsDatasetsController {
     private ILinkUIPluginsDatasetsService linkService;
 
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset")
+    @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset",
+            role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<LinkUIPluginsDatasets> retrieveLink(@PathVariable("datasetId") final String pDatasetId)
             throws EntityNotFoundException {
@@ -47,7 +49,8 @@ public class LinkUIPluginsDatasetsController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
-    @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset")
+    @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset",
+            role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<LinkUIPluginsDatasets> updateLink(@PathVariable("datasetId") final String pDatasetId,
             @RequestBody final LinkUIPluginsDatasets pUpdatedLink) throws EntityException {
