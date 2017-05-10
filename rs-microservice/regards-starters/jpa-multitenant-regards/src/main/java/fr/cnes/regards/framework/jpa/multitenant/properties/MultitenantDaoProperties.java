@@ -46,7 +46,7 @@ public class MultitenantDaoProperties {
     /**
      * Global hibernate dialect for all tenants
      */
-    private String dialect;
+    private String dialect = "org.hibernate.dialect.PostgreSQLDialect";
 
     /**
      * For pooled data source, min available connections
