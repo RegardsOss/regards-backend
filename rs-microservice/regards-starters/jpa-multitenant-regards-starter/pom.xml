@@ -35,7 +35,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards</artifactId>
+			<artifactId>security-config</artifactId>
 		</dependency>
 		<!-- COTS -->
 		<dependency>

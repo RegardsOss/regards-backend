@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.endpoint.voter.InstanceAdminAccessVoter;
@@ -26,6 +28,8 @@ import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
  * @author Marc Sordi
  *
  */
+@Configuration
+@ConditionalOnWebApplication
 public class SecurityVoterAutoConfiguration {
 
     /**

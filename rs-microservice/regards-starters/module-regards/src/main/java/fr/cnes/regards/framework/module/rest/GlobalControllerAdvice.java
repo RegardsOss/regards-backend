@@ -12,7 +12,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,7 +47,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * @since 1.1-SNAPSHOT
  */
 @RestControllerAdvice(annotations = RestController.class)
-@Order(Ordered.LOWEST_PRECEDENCE - 1)
+@Order(Ordered.LOWEST_PRECEDENCE - 100)
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
@@ -192,17 +191,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(
             final EntityInconsistentIdentifierException pException) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /**
-     * Spring framework Access denied exception. Throw by security methodAccessVoter
-     *
-     * @param pException {@link AccessDeniedException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
     }
 
     @ExceptionHandler(EntityCorruptByNetworkException.class)
