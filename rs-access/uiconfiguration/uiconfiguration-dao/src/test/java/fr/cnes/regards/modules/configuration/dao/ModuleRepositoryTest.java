@@ -42,7 +42,7 @@ public class ModuleRepositoryTest extends AbstractDaoTransactionalTest {
         module.setConf("{}");
         module.setContainer("TestContainer");
         module.setDescription("Test module");
-        module.setName("module");
+        module.setType("module");
         return repository.save(module);
     }
 

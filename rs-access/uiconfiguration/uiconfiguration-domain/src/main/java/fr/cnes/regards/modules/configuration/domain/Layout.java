@@ -24,19 +24,19 @@ import org.hibernate.annotations.Type;
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "T_IHM_LAYOUTS")
+@Table(name = "t_ui_layout")
 public class Layout {
 
     /**
      * Unique id
      */
     @Id
-    @SequenceGenerator(name = "ihmLayoutsSequence", initialValue = 1, sequenceName = "SEQ_IHM_LAYOUTS")
+    @SequenceGenerator(name = "ihmLayoutsSequence", initialValue = 1, sequenceName = "seq_ui_layout")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmLayoutsSequence")
     private Long id;
 
     @NotNull
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 16)
     private String applicationId;
 
     /**
@@ -69,6 +69,42 @@ public class Layout {
 
     public void setLayout(final String pLayout) {
         layout = pLayout;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((applicationId == null) ? 0 : applicationId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Layout other = (Layout) obj;
+        if (applicationId == null) {
+            if (other.applicationId != null) {
+                return false;
+            }
+        } else
+            if (!applicationId.equals(other.applicationId)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Layout [id=" + id + ", applicationId=" + applicationId + ", layout=" + layout + "]";
     }
 
 }

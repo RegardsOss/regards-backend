@@ -5,13 +5,23 @@ package fr.cnes.regards.modules.configuration.service.link;
 
 import java.util.ArrayList;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.configuration.dao.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.configuration.domain.LinkUIPluginsDatasets;
+import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
+import fr.cnes.regards.modules.entities.domain.event.EventType;
+import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
@@ -22,19 +32,38 @@ import fr.cnes.regards.modules.configuration.domain.LinkUIPluginsDatasets;
 @Transactional
 public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsService {
 
-    private final ILinkUIPluginsDatasetsRepository linkRepo;
-
     /**
-     * Constructor
-     *
-     * @param pLinkRepo
-     *            the repository handling {@link LinkPluginsDatasets}
-     * @param pDatasetClient
-     *            Feign client providing {@link Dataset}s
+     * Runtime tenant resolver
      */
-    public LinkUIPluginsDatasetsService(final ILinkUIPluginsDatasetsRepository pLinkRepo) {
-        super();
-        linkRepo = pLinkRepo;
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private ISubscriber subscriber;
+
+    @Autowired
+    private ILinkUIPluginsDatasetsRepository linkRepo;
+
+    @PostConstruct
+    public void init() {
+        // Subscribe to entity events in order to delete links to deleted dataset.
+        subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
+    }
+
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
+                    final LinkUIPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
+                    if (link != null) {
+                        linkRepo.delete(link);
+                    }
+                }
+            }
+        }
     }
 
     /**

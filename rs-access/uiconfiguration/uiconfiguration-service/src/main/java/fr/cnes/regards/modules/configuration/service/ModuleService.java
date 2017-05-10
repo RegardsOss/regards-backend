@@ -152,7 +152,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setContainer("header");
             menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("%s menu", pTenant));
-            menu.setName("menu");
+            menu.setType("menu");
             try {
                 menu.setConf(readDefaultFileResource(defaultUserMenuResource));
             } catch (final IOException e) {
@@ -167,7 +167,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             catalog.setContainer("dynamic-content");
             catalog.setDefaultDynamicModule(true);
             catalog.setDescription("Catalog");
-            catalog.setName("search-results");
+            catalog.setType("search-results");
             try {
                 catalog.setConf(readDefaultFileResource(defaultUserCatalogModuleResource));
             } catch (final IOException e) {
@@ -188,7 +188,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setContainer("header");
             menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("Portal menu"));
-            menu.setName("menu");
+            menu.setType("menu");
             try {
                 menu.setConf(readDefaultFileResource(defaultPortalMenuResource));
             } catch (final IOException e) {
@@ -203,7 +203,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             projectList.setContainer("content");
             projectList.setDefaultDynamicModule(false);
             projectList.setDescription("List of projects");
-            projectList.setName("projects-list");
+            projectList.setType("projects-list");
             projectList.setConf("{}");
             repository.save(projectList);
         }

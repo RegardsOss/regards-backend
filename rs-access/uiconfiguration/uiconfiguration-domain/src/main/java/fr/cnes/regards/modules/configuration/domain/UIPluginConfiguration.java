@@ -25,15 +25,14 @@ import org.hibernate.annotations.Type;
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "T_IHM_PLUGIN_CONFIGURATIONS")
+@Table(name = "t_ui_plugin_configuration")
 public class UIPluginConfiguration {
 
     /**
      * Unique id
      */
     @Id
-    @SequenceGenerator(name = "ihmPluginConfsSequence", initialValue = 1,
-            sequenceName = "SEQ_IHM_PLUGIN_CONFIGURATIONS")
+    @SequenceGenerator(name = "ihmPluginConfsSequence", initialValue = 1, sequenceName = "seq_ihm_plugin_configuration")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmPluginConfsSequence")
     private Long id;
 
@@ -43,7 +42,7 @@ public class UIPluginConfiguration {
 
     @NotNull
     @Column(nullable = false)
-    private Boolean active;
+    private boolean active = false;
 
     @NotNull
     @Column(nullable = false, length = 32)
@@ -54,7 +53,7 @@ public class UIPluginConfiguration {
      */
     @NotNull
     @Column(nullable = false)
-    private Boolean linkedToAllEntities;
+    private boolean linkedToAllEntities = false;
 
     /**
      * Plugin configuration (JSON Object)

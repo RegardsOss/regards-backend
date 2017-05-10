@@ -24,36 +24,36 @@ import org.hibernate.annotations.Type;
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "T_IHM_MODULES")
+@Table(name = "t_ui_module")
 public class Module {
 
     /**
      * Unique id
      */
     @Id
-    @SequenceGenerator(name = "ihmModulesSequence", initialValue = 1, sequenceName = "SEQ_IHM_MODULES")
+    @SequenceGenerator(name = "ihmModulesSequence", initialValue = 1, sequenceName = "seq_ui_module")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmModulesSequence")
     private Long id;
 
     /**
-     * Module name. Use to instantiate the right module
+     * Module type. Use to instantiate the right module
      */
     @NotNull
-    @Column(nullable = false)
-    private String name;
+    @Column(nullable = false, length = 32)
+    private String type;
 
     /**
      * Module description label.
      */
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, length = 64)
     private String description;
 
     /**
      * The application where the module must be displayed
      */
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, length = 16)
     private String applicationId;
 
     /**
@@ -92,12 +92,12 @@ public class Module {
         id = pId;
     }
 
-    public String getName() {
-        return name;
+    public String getType() {
+        return type;
     }
 
-    public void setName(final String pName) {
-        name = pName;
+    public void setType(final String pType) {
+        type = pType;
     }
 
     public String getDescription() {
@@ -146,6 +146,44 @@ public class Module {
 
     public void setDefaultDynamicModule(final boolean pDefaultDynamicModule) {
         defaultDynamicModule = pDefaultDynamicModule;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Module other = (Module) obj;
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else
+            if (!id.equals(other.id)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Module [id=" + id + ", type=" + type + ", description=" + description + ", applicationId="
+                + applicationId + ", container=" + container + ", conf=" + conf + ", active=" + active
+                + ", defaultDynamicModule=" + defaultDynamicModule + "]";
     }
 
 }

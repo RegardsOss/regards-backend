@@ -58,7 +58,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         module.setContainer("TestContainer");
         module.setDefaultDynamicModule(pDefault);
         module.setDescription("Description");
-        module.setName("Module");
+        module.setType("Module");
         return module;
     }
 

@@ -24,14 +24,14 @@ import org.hibernate.annotations.Type;
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "T_IHM_THEMES")
+@Table(name = "t_ui_theme")
 public class Theme {
 
     /**
      * Unique id
      */
     @Id
-    @SequenceGenerator(name = "ihmThemesSequence", initialValue = 1, sequenceName = "SEQ_IHM_THEMES")
+    @SequenceGenerator(name = "ihmThemesSequence", initialValue = 1, sequenceName = "seq_ui_theme")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmThemesSequence")
     private Long id;
 
@@ -39,7 +39,7 @@ public class Theme {
      * Theme name. Use to instantiate the right module
      */
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, length = 16)
     private String name;
 
     /**
@@ -47,7 +47,7 @@ public class Theme {
      */
     @NotNull
     @Column(nullable = false)
-    private boolean active;
+    private boolean active = false;
 
     /**
      * Theme configuration
@@ -87,6 +87,42 @@ public class Theme {
 
     public void setConfiguration(final String pConfiguration) {
         configuration = pConfiguration;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Theme other = (Theme) obj;
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else
+            if (!id.equals(other.id)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Theme [id=" + id + ", name=" + name + ", active=" + active + ", configuration=" + configuration + "]";
     }
 
 }
