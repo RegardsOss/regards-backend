@@ -3,15 +3,15 @@
  */
 package fr.cnes.regards.framework.amqp.domain;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 /**
- * @param <T>
- *            type of event that is wrapped
  *
+ * @param <T> type of event that is wrapped
  * @author svissier
- *
  */
 public class TenantWrapper<T> {
 
@@ -25,6 +25,11 @@ public class TenantWrapper<T> {
      */
     private String tenant;
 
+    /**
+     * Event publishing date
+     */
+    private Date date;
+
     public TenantWrapper() {
         // constructor for serialization
     }
@@ -32,6 +37,7 @@ public class TenantWrapper<T> {
     public TenantWrapper(T pContent, String pTenant) {
         content = pContent;
         tenant = pTenant;
+        date = new Date();
     }
 
     @JsonTypeInfo(use = Id.CLASS)
@@ -49,6 +55,10 @@ public class TenantWrapper<T> {
 
     public void setTenant(String pTenant) {
         tenant = pTenant;
+    }
+
+    public Date getDate() {
+        return date;
     }
 
     @Override
