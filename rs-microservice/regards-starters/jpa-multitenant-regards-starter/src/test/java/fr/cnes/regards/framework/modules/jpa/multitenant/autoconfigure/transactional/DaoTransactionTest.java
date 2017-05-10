@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -48,9 +48,6 @@ public class DaoTransactionTest {
     /**
      *
      * Test for multitenant transactions.
-     *
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
      *
      * @since 1.0-SNAPSHOT
      */

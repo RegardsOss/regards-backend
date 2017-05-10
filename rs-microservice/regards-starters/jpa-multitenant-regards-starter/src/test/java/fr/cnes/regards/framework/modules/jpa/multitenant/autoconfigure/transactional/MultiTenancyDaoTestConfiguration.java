@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
@@ -16,9 +16,9 @@ import org.springframework.context.annotation.PropertySource;
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@ComponentScan(basePackages = { "fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional" })
+@ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional" })
 @EnableAutoConfiguration
-@PropertySource({ "classpath:dao-transaction.properties" })
-public class DaoTransactionTestConfiguration {
+@PropertySource({ "classpath:dao.properties", "classpath:default-amqp.properties" })
+public class MultiTenancyDaoTestConfiguration {
 
 }

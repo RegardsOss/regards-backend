@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**

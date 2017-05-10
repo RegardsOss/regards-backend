@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.multitransactional;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.multitransactional;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.PropertySource;
  *
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.framework.jpa.multitenant.autoconfigure.multitransactional" })
+@ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.multitransactional" })
 @EnableAutoConfiguration
 @PropertySource({ "classpath:multi-transaction.properties" })
 public class MultiTransactionTestConfiguration {

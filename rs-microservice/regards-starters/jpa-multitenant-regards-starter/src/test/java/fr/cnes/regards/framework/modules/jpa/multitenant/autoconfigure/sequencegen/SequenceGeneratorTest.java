@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.sequencegen;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequencegen;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.sequencegen.SequenceGeneratorTest.SequenceGeneratorTestConfiguration;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequencegen.SequenceGeneratorTest.SequenceGeneratorTestConfiguration;
 
 /**
  * @author Marc Sordi

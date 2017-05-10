@@ -3,12 +3,11 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

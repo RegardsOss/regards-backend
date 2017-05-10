@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +16,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.CannotCreateTransactionException;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.Company;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository.ICompanyRepository;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.Company;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.ICompanyRepository;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;

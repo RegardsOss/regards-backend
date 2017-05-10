@@ -1,11 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.repository;
+package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
 
 /**
  *
