@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_link_dataset")
+@Table(name = "t_link_uiservice_dataset")
 @NamedEntityGraph(name = "graph.link.configurations", attributeNodes = @NamedAttributeNode(value = "services"))
 public class LinkUIPluginsDatasets {
 
@@ -51,7 +51,7 @@ public class LinkUIPluginsDatasets {
      * Ids of plugin configuration of type IService
      */
     @ManyToMany
-    @JoinTable(name = "ta_link_dataset_services", joinColumns = @JoinColumn(name = "dataset_id"),
+    @JoinTable(name = "ta_link_dataset_uiservices", joinColumns = @JoinColumn(name = "dataset_id"),
             inverseJoinColumns = @JoinColumn(name = "service_configuration_id"))
     private List<UIPluginConfiguration> services;
 

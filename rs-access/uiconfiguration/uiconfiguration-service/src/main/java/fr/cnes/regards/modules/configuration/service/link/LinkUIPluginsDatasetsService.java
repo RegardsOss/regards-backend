@@ -67,13 +67,8 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
         // If exists retrieve previous link associated to the same datasetid
         final LinkUIPluginsDatasets existingOne = linkRepo.findOneByDatasetId(pDatasetId);
         if (existingOne != null) {
-            if (pUpdatedLink.getServices().isEmpty()) {
-                linkRepo.delete(existingOne);
-                return null;
-            } else {
-                existingOne.setServices(pUpdatedLink.getServices());
-                return linkRepo.save(existingOne);
-            }
+            existingOne.setServices(pUpdatedLink.getServices());
+            return linkRepo.save(existingOne);
         } else {
             return linkRepo.save(pUpdatedLink);
         }

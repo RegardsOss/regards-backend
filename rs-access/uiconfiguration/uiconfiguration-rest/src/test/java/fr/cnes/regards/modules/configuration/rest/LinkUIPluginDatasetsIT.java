@@ -133,7 +133,6 @@ public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
         link = new LinkUIPluginsDatasets();
         link.setDatasetId("firstOne");
         link.setServices(services);
-        // Update wit only one plugin
         expectations.add(status().isOk());
         performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, expectations,
                           "Error getting dataset linked UIPluginConfiguration", "firstOne");
@@ -148,13 +147,14 @@ public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
         link = new LinkUIPluginsDatasets();
         link.setDatasetId("firstOne");
         link.setServices(services);
-        // Update wit only one plugin
         expectations.add(status().isOk());
         performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, expectations,
                           "Error getting dataset linked UIPluginConfiguration", "firstOne");
 
         linkResult = linkRepo.findOneByDatasetId("firstOne");
-        Assert.assertEquals(null, linkResult);
+        Assert.assertNotEquals(null, linkResult);
+        Assert.assertNotEquals(null, linkResult.getServices());
+        Assert.assertEquals(0, linkResult.getServices().size());
 
     }
 
