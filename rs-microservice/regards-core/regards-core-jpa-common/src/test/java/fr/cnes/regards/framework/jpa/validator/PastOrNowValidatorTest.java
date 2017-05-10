@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.validator;
+package fr.cnes.regards.framework.modules.jpa.jpa.validator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -14,6 +14,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * @author svissier

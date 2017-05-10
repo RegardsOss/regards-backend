@@ -3,17 +3,10 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import javax.persistence.Entity;
+import java.lang.annotation.Annotation;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -24,9 +17,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.ClassPath;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
@@ -55,7 +45,7 @@ public final class DaoUtils {
     /**
      * Framework root package
      */
-    public static final String FRAMEWORK_PACKAGE = "fr.cnes.regards.framework";
+    public static final String FRAMEWORK_PACKAGE = "fr.cnes.regards.framework.modules";
 
     /**
      * Modules root package
@@ -88,8 +78,8 @@ public final class DaoUtils {
 
         final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
         final List<Class<?>> instanceClasses = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
-        final List<Class<?>> projectsClasses = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class,
-                                                                           packagesToScan);
+        final List<Class<?>> projectsClasses = DaoUtils
+                .scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
         final List<String> instancePackages = new ArrayList<>();
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
         final List<String> projectPackages = new ArrayList<>();
@@ -98,8 +88,8 @@ public final class DaoUtils {
             for (final String pack : projectPackages) {
                 if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
                     LOGGER.error(String.format(
-                                               "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
-                                               instancePackage));
+                            "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
+                            instancePackage));
                     throw new MultiDataBasesException(
                             "Invalid classpath for JPA multitenant and JPA instance databases.");
                 }
@@ -119,8 +109,7 @@ public final class DaoUtils {
      * <p>
      * Find all the class who extends {@link JpaRepository}
      *
-     * @param rootPackage
-     *            the base package
+     * @param pRootPackage the base package
      * @return the {@link Set} of package
      */
     @SuppressWarnings("rawtypes")
@@ -146,35 +135,22 @@ public final class DaoUtils {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
         }
 
-        try {
-            ClassPath classpath = ClassPath.from(DaoUtils.class.getClassLoader());
-
-            // Add the package that contains class in package "fr.cnes.regards.framework"
-            ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(pRootPackage);
-            for (ClassPath.ClassInfo info : classInfos) {
-                // Add all framework package if one of its class is into classpath (this always should be the case)
-                if (info.getPackageName().startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
-                    packagesToScan.add(info.getPackageName());
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e); // NOSONAR
-        }
-
         return packagesToScan;
     }
 
     /**
      * package name has format : fr.cnes.regards.modules.(name)....
-     * <p>
-     * We must only take fr.cnes.regards.modules.(name)
+     * or fr.cnes.regards.framework.modules.(name)...
+     *
+     * We must only take fr.cnes.regards[.framework].modules.(name)
      *
      * @param pPackageName
      * @return
      */
     public static String getPackageToScan(String pPackageName) {
         if (pPackageName.startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
-            return DaoUtils.FRAMEWORK_PACKAGE;
+            String packageEnd = pPackageName.substring(DaoUtils.FRAMEWORK_PACKAGE.length() + 1);
+            return DaoUtils.FRAMEWORK_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
         } else {
             String packageEnd = pPackageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
             return DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));

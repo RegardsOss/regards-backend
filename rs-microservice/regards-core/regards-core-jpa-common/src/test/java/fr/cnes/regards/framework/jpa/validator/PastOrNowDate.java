@@ -1,9 +1,11 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.validator;
+package fr.cnes.regards.framework.modules.jpa.jpa.validator;
 
 import java.time.OffsetDateTime;
+
+import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * @author svissier

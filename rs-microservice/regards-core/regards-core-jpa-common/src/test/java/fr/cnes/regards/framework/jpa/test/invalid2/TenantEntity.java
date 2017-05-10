@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.test.invalid2;
+package fr.cnes.regards.framework.modules.jpa.jpa.test.invalid2;
 
 import javax.persistence.Entity;
 
