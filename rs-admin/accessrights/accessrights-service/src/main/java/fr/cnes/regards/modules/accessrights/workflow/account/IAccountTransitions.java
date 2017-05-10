@@ -145,4 +145,12 @@ public interface IAccountTransitions {
                 pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
     }
 
+    /**
+     * Can we delete this account?
+     * @param pAccount the account
+     * @return <code>true</code> if we can, else <code>false</code>
+     */
+    default boolean canDelete(final Account pAccount) { // NOSONAR
+        return false;
+    }
 }

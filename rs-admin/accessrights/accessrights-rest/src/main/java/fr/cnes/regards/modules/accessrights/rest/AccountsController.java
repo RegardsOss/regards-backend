@@ -386,7 +386,7 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-            if (!pElement.getEmail().equals(rootAdminUserLogin)) {
+            if (!pElement.getEmail().equals(rootAdminUserLogin) && accountWorkflowManager.canDelete(pElement)) {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, pElement.getId()));
             }

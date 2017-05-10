@@ -137,4 +137,12 @@ public class AccountWorkflowManager implements IAccountTransitions {
         accountStateProvider.getState(pAccount).deleteAccount(pAccount);
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#canDelete(fr.cnes.regards.modules.accessrights.domain.instance.Account)
+     */
+    @Override
+    public boolean canDelete(Account pAccount) {
+        return accountStateProvider.getState(pAccount).canDelete(pAccount);
+    }
+
 }
