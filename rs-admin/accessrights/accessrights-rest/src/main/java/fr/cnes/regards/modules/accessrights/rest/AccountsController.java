@@ -107,7 +107,9 @@ public class AccountsController implements IResourceController<Account> {
 
     /**
      * Retrieve the list of all {@link Account}s.
-     *
+     * @param pPageable the pageable object used by Spring for building the page of result
+     * @param pAssembler injected by Spring to help assemble results as paged resources
+     * @param pStatus the account status to filter results on
      * @return The accounts list
      */
     @ResponseBody
@@ -258,6 +260,7 @@ public class AccountsController implements IResourceController<Account> {
      *             not be found<br>
      *             {@link EntityOperationForbiddenException} when the account is not in status LOCKED or the token is
      *             invalid<br>
+     * @return a no content HTTP response
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.PUT)
@@ -352,6 +355,7 @@ public class AccountsController implements IResourceController<Account> {
      *
      * @param pPassword
      *            password to check
+     * @return the password validity
      */
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.POST)

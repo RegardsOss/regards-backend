@@ -39,11 +39,16 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
 
     /**
      * Find all Account which status is not the one provided.
+     * @param pStatus the status we do not want
+     * @return the set of matching accounts
      */
     Set<Account> findAllByStatusNot(AccountStatus pStatus);
 
     /**
-     * Find all Account which status is not the one provided.
+     * Find all Account which status is the one provided.
+     * @param pStatus the status we want
+     * @param pPageable the pageable object used by Spring for building the page of result
+     * @return the page of matching accounts
      */
     Page<Account> findAllByStatus(AccountStatus pStatus, Pageable pPageable);
 
