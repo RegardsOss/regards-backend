@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.search.service.IServiceManager;
 
 /**
  * REST Controller handling operations on services.
+ * 
  * @author Sylvain Vissiere-Guerinet
  */
 @RestController
@@ -41,8 +42,11 @@ public class ServicesController {
 
     /**
      * Retrieve all services configured for a dataset and a given scope
-     * @param pDatasetId the id of the {@link Dataset}
-     * @param pServiceScope the {@link ServiceScope}
+     * 
+     * @param pDatasetId
+     *            the id of the {@link Dataset}
+     * @param pServiceScope
+     *            the {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      * @throws EntityNotFoundException
      */
@@ -50,18 +54,23 @@ public class ServicesController {
     @ResponseBody
     @ResourceAccess(
             description = "endpoint allowing to retrieve all services configured for a dataset and a given scope")
-    public ResponseEntity<Set<PluginConfiguration>> retrieveServices(@PathVariable("dataset_id") Long pDatasetId,
-            @RequestParam("scope") ServiceScope pServiceScope) throws EntityNotFoundException {
-        Set<PluginConfiguration> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
+    public ResponseEntity<Set<PluginConfiguration>> retrieveServices(@PathVariable("dataset_id") final Long pDatasetId,
+            @RequestParam("service_scope") final ServiceScope pServiceScope) throws EntityNotFoundException {
+        final Set<PluginConfiguration> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
 
     /**
      * Apply the given service.
-     * @param pDatasetId the id of the {@link Dataset}
-     * @param pServiceName the {@link PluginConfiguration}'s label to be executed
-     * @param pQuery the query to be interpreted to get the objects on which apply the service
-     * @param pQueryParameters the query parameters
+     * 
+     * @param pDatasetId
+     *            the id of the {@link Dataset}
+     * @param pServiceName
+     *            the {@link PluginConfiguration}'s label to be executed
+     * @param pQuery
+     *            the query to be interpreted to get the objects on which apply the service
+     * @param pQueryParameters
+     *            the query parameters
      * @return whatever is returned by the given service
      * @throws ModuleException
      */
@@ -69,9 +78,9 @@ public class ServicesController {
     @ResponseBody
     @ResourceAccess(
             description = "endpoint allowing to apply the given service on objects retrieved thanks to the given query")
-    public ResponseEntity<?> applyService(@PathVariable("dataset_id") Long pDatasetId,
-            @PathVariable("service_name") String pServiceName, @RequestParam Map<String, String> pQueryParameters)
-            throws ModuleException {
+    public ResponseEntity<?> applyService(@PathVariable("dataset_id") final Long pDatasetId,
+            @PathVariable("service_name") final String pServiceName,
+            @RequestParam final Map<String, String> pQueryParameters) throws ModuleException {
         return serviceManager.apply(pDatasetId, pServiceName, pQueryParameters);
     }
 
