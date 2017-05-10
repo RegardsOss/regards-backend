@@ -54,9 +54,14 @@ public class RegistrationController {
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     /**
-     * Relative path to endpoint for accepting accounts
+     * Relative path to the endpoint accepting accounts
      */
     public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/acceptAccount/{account_email}";
+
+    /**
+     * Relative path to the endpoint accepting accesses (project users)
+     */
+    public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
 
     /**
      * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
@@ -162,7 +167,7 @@ public class RegistrationController {
      *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
-    @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT)
+    @RequestMapping(value = ACCEPT_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
@@ -188,7 +193,7 @@ public class RegistrationController {
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
     @ResponseBody
-    @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT)
+    @RequestMapping(value = DENY_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Denies the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {

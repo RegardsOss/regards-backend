@@ -3,10 +3,13 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,13 +84,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void setUp() {
-
         errorMessage = "Cannot reach model attributes";
-
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+
+        // Insert some authorizations
+        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACCEPT_ACCESS_RELATIVE_PATH,
+                       RequestMethod.PUT, DEFAULT_ROLE);
     }
 
     @Override
@@ -242,7 +246,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to update a project user and handles fail cases.")
     public void updateUser() {
-        String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
+        String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
         projectUser.setEmail("new@email.com");
 
@@ -266,6 +270,17 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultDelete(apiUserId, expectations, errorMessage, projectUser.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'accept' HATEOAS link")
+    public void checkHateoasLinks_shouldAddAcceptLink() {
+        String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[4].rel", Matchers.is("accept")));
+        performDefaultGet(apiUserId, expectations, errorMessage, projectUser.getId());
     }
 
     @Override
