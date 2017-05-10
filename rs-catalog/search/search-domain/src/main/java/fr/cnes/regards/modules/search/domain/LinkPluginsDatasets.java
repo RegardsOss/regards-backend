@@ -5,12 +5,17 @@ package fr.cnes.regards.modules.search.domain;
 
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -27,14 +32,20 @@ import fr.cnes.regards.modules.search.validation.PluginServices;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_link_dataset")
+@Table(name = "t_link_service_dataset")
 public class LinkPluginsDatasets {
 
     /**
      * Id of the dataset which is concerned by this mapping
      */
     @Id
-    private Long datasetId;
+    @SequenceGenerator(name = "linkServiceSequence", initialValue = 1, sequenceName = "seq_link_service_dataset")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "linkServiceSequence")
+    private Long linkId;
+
+    @NotNull
+    @Column(name = "dataset_id", nullable = false, unique = true, length = 256)
+    private String datasetId;
 
     /**
      * Ids of plugin configuration of type IService
@@ -52,20 +63,23 @@ public class LinkPluginsDatasets {
 
     /**
      * Constructor
-     * @param pDatasetId Id of the dataset which is concerned by this mapping
-     * @param pServices Ids of plugin configuration of type IService
+     *
+     * @param pDatasetId
+     *            Id of the dataset which is concerned by this mapping
+     * @param pServices
+     *            Ids of plugin configuration of type IService
      */
-    public LinkPluginsDatasets(Long pDatasetId, @PluginServices Set<PluginConfiguration> pServices) {
+    public LinkPluginsDatasets(final String pDatasetId, @PluginServices final Set<PluginConfiguration> pServices) {
         super();
         datasetId = pDatasetId;
         services = pServices;
     }
 
-    public Long getDatasetId() {
+    public String getDatasetId() {
         return datasetId;
     }
 
-    public void setDatasetId(Long pDatasetId) {
+    public void setDatasetId(final String pDatasetId) {
         datasetId = pDatasetId;
     }
 
@@ -73,8 +87,44 @@ public class LinkPluginsDatasets {
         return services;
     }
 
-    public void setServices(@PluginServices Set<PluginConfiguration> pServices) {
+    public void setServices(@PluginServices final Set<PluginConfiguration> pServices) {
         services = pServices;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((datasetId == null) ? 0 : datasetId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LinkPluginsDatasets other = (LinkPluginsDatasets) obj;
+        if (datasetId == null) {
+            if (other.datasetId != null) {
+                return false;
+            }
+        } else
+            if (!datasetId.equals(other.datasetId)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "LinkPluginsDatasets [linkId=" + linkId + ", datasetId=" + datasetId + "]";
     }
 
 }

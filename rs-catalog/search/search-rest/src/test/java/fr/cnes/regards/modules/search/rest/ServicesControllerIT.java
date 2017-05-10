@@ -76,7 +76,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
         pluginService.addPluginPackage(IService.class.getPackage().getName());
         pluginService.savePluginConfiguration(conf);
-        linkService.updateLink(1L, new LinkPluginsDatasets(1L, Sets.newHashSet(conf)));
+        linkService.updateLink("test", new LinkPluginsDatasets("test", Sets.newHashSet(conf)));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=QUERY", expectations,
-                          "there should not be any error", 1L);
+                          "there should not be any error", "test");
     }
 
     @Test
@@ -94,7 +94,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=MANY", expectations,
-                          "there should not be any error", 1L);
+                          "there should not be any error", "test");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=ONE", expectations,
-                          "there should not be any error", 1L);
+                          "there should not be any error", "test");
     }
 
     @Test
@@ -118,7 +118,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", 1L, conf.getLabel());
+                          expectations, "there should not be any error", "test", conf.getLabel());
     }
 
     @Test
@@ -131,7 +131,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", 1L, conf.getLabel());
+                          expectations, "there should not be any error", "test", conf.getLabel());
     }
 
 }

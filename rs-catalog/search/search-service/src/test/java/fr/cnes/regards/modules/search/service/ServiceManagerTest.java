@@ -23,6 +23,7 @@ import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  * Unit test for {@link ServiceManager}
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class ServiceManagerTest {
@@ -32,7 +33,7 @@ public class ServiceManagerTest {
      */
     private static final Set<PluginConfiguration> PLUGIN_CONFIGURATIONS_WRONG_PLUGIN = new HashSet<>();
     static {
-        PluginMetaData pluginMetaData = new PluginMetaData();
+        final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName("FakePlugin");
         PLUGIN_CONFIGURATIONS_WRONG_PLUGIN.add(new PluginConfiguration(pluginMetaData, "First configuration"));
     };
@@ -42,7 +43,7 @@ public class ServiceManagerTest {
      */
     private static final Set<PluginConfiguration> PLUGIN_CONFIGURATIONS = new HashSet<>();
     static {
-        PluginMetaData pluginMetaData = new PluginMetaData();
+        final PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName("fr.cnes.regards.modules.search.service.utils.TestService");
         PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaData, "First configuration"));
     };
@@ -73,46 +74,53 @@ public class ServiceManagerTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.search.domain.ServiceScope)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.search.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.search.domain.ServiceScope)}.
+     *
      * @throws EntityNotFoundException
      */
     @SuppressWarnings("unchecked")
     @Test(expected = EntityNotFoundException.class)
     public final void testRetrieveServices_shouldThrowEntityNotFoundException() throws EntityNotFoundException {
         // Prepare test
-        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyLong()))
+        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString()))
                 .thenThrow(EntityNotFoundException.class);
 
         // Trigger exception
-        serviceManager.retrieveServices(0L, ServiceScope.ONE);
+        serviceManager.retrieveServices("test", ServiceScope.ONE);
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.search.domain.ServiceScope)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.search.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.search.domain.ServiceScope)}.
+     *
      * @throws EntityNotFoundException
      */
     @Test(expected = PluginUtilsRuntimeException.class)
     public final void testRetrieveServices_shouldThrowPluginUtilsRuntimeException() throws EntityNotFoundException {
         // Prepare test
-        LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets(0L, PLUGIN_CONFIGURATIONS_WRONG_PLUGIN);
-        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyLong())).thenReturn(linkPluginsDatasets);
+        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test",
+                PLUGIN_CONFIGURATIONS_WRONG_PLUGIN);
+        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Trigger exception
-        serviceManager.retrieveServices(0L, ServiceScope.ONE);
+        serviceManager.retrieveServices("test", ServiceScope.ONE);
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.search.domain.ServiceScope)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.search.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.search.domain.ServiceScope)}.
+     *
      * @throws EntityNotFoundException
      */
     @Test
     public final void testRetrieveServices() throws EntityNotFoundException {
         // Prepare test
-        LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets(0L, PLUGIN_CONFIGURATIONS);
-        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyLong())).thenReturn(linkPluginsDatasets);
+        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test", PLUGIN_CONFIGURATIONS);
+        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Call tested method
-        Set<PluginConfiguration> retrieveServices = serviceManager.retrieveServices(0L, ServiceScope.MANY);
+        final Set<PluginConfiguration> retrieveServices = serviceManager.retrieveServices("test", ServiceScope.MANY);
 
         // Check
         Assert.assertThat(retrieveServices, Matchers.is(Matchers.emptyCollectionOf(PluginConfiguration.class)));

@@ -34,18 +34,19 @@ public interface IServiceManager {
      * @throws EntityNotFoundException
      *             thrown is the pDatasetId does not represent any Dataset.
      */
-    Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope)
+    Set<PluginConfiguration> retrieveServices(String pDatasetId, ServiceScope pServiceScope)
             throws EntityNotFoundException;
 
     /**
      * Apply the service
+     * 
      * @param pDatasetId
      * @param pServiceName
      * @param pDynamicParameters
      * @return the result of the service call wrapped in a resonse entity
      * @throws ModuleException
      */
-    ResponseEntity<?> apply(Long pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
+    ResponseEntity<?> apply(String pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
             throws ModuleException;
 
 }
