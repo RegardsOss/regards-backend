@@ -160,6 +160,11 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         accountLocked = new Account(EMAIL_LOCKED, FIRST_NAME, LAST_NAME, PASSWORD);
         accountLocked.setStatus(AccountStatus.LOCKED);
         accountLocked = accountRepository.save(accountLocked);
+
+        // Insert some authorizations
+        setAuthorities(apiAccountId, RequestMethod.DELETE, DEFAULT_ROLE);
+        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.ACCEPT_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
     }
 
     @Test
@@ -403,7 +408,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.hasSize(1)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[0].rel", Matchers.is("self")));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
@@ -414,16 +418,25 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         // Must have account with status allowing deletion and have a no linked project user
         String email = "randomEmailMatchingNoProjectUser@test.com";
         account.setEmail(email);
-        account.setStatus(AccountStatus.ACTIVE);
+        account.setStatus(AccountStatus.PENDING);
         accountRepository.save(account);
-
-        // Insert authoriry
-        setAuthorities(apiAccountId, RequestMethod.DELETE, "INSTANCE_ADMIN");
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.hasSize(2)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[1].rel", Matchers.is("delete")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'accept' HATEOAS link if the account is in state PENDING")
+    public void checkHateoasLinks_shouldAddAcceptLink() {
+        // Prepare the account
+        account.setStatus(AccountStatus.PENDING);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[2].rel", Matchers.is("accept")));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 

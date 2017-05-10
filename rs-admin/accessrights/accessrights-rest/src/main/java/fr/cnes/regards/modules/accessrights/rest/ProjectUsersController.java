@@ -45,14 +45,12 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
- *
  * Controller responsible for the /users(/*)? endpoints
  *
  * @author svissier
+ * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
- *
  * @since 1.0-SNAPSHOT
- *
  */
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -64,6 +62,11 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * Root mapping for requests of this rest controller
      */
     public static final String TYPE_MAPPING = "/users";
+
+    /**
+     * Relative path to the endpoints managing a single project user
+     */
+    public static final String USER_ID_RELATIVE_PATH = "/{user_id}";
 
     /**
      * Service handling project users
@@ -132,7 +135,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @throws EntityNotFoundException
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.GET)
+    @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata",
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") final Long pUserId)
@@ -212,7 +215,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      *             be found<br>
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
+    @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "update the project user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<ProjectUser>> updateProjectUser(@PathVariable("user_id") final Long pUserId,
             @RequestBody final ProjectUser pUpdatedProjectUser) throws EntityException {
@@ -284,7 +287,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      *             {@link EntityNotFoundException} user not found<br>
      */
     @ResponseBody
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "remove the project user", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") final Long pUserId) throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pUserId);
@@ -330,6 +333,13 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(String.class, pElement.getStatus().toString()),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
+            // Accept and Deny links, only if the project user is in WAITING_ACCESS state
+            if (UserStatus.WAITING_ACCESS.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", "deny",
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+            }
         }
         return resource;
     }

@@ -58,9 +58,6 @@ public class AccountStateProvider {
     public IAccountTransitions getState(final AccountStatus pStatus) {
         final IAccountTransitions state;
         switch (pStatus) {
-            case PENDING:
-                state = pendingState;
-                break;
             case ACCEPTED:
                 state = acceptedState;
                 break;
@@ -73,6 +70,7 @@ public class AccountStateProvider {
             case LOCKED:
                 state = lockedState;
                 break;
+            case PENDING:
             default:
                 state = pendingState;
                 break;
