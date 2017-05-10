@@ -54,6 +54,11 @@ public class RegistrationController {
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     /**
+     * Relative path to endpoint for accepting accounts
+     */
+    public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/acceptAccount/{account_email}";
+
+    /**
      * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
@@ -117,7 +122,7 @@ public class RegistrationController {
      *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
-    @RequestMapping(value = "/acceptAccount/{account_email}", method = RequestMethod.PUT)
+    @RequestMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String pAccountEmail)
             throws EntityException {

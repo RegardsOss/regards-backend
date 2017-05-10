@@ -417,13 +417,31 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
 
-        // Insert authoriry
+        // Insert authority
         setAuthorities(apiAccountId, RequestMethod.DELETE, "INSTANCE_ADMIN");
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.hasSize(2)));
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[1].rel", Matchers.is("delete")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'accept' HATEOAS link if the account is in state PENDING")
+    public void checkHateoasLinks_shouldAddAcceptLink() {
+        // Prepare the account
+        account.setStatus(AccountStatus.PENDING);
+        accountRepository.save(account);
+
+        // Insert authority
+        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.ACCEPT_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.hasSize(2)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[1].rel", Matchers.is("accept")));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 
