@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
@@ -34,6 +35,7 @@ public class ActiveState extends AbstractDeletableState {
      *            the tenant resolver
      * @param pRuntimeTenantResolver
      *            runtime tenant resolver
+     * @param pPasswordResetTokenService the service handling {@link PasswordResetToken}
      */
     public ActiveState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,

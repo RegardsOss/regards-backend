@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -70,8 +70,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      *            the tenant resolver
      */
     public AbstractDeletableState(final IProjectUserService pProjectUserService,
-            final IAccountRepository pAccountRepository,
-            final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
+            final IAccountRepository pAccountRepository, final ITenantResolver pTenantResolver,
+            final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IPasswordResetService pPasswordResetTokenService) {
         super();
         projectUserService = pProjectUserService;
@@ -95,6 +95,21 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         }
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#canDelete(fr.cnes.regards.modules.accessrights.domain.instance.Account)
+     */
+    @Override
+    public boolean canDelete(Account pAccount) {
+        // Get all tenants
+        final Set<String> tenants = tenantResolver.getAllTenants();
+
+        Predicate<? super String> hasUserOnTenant = tenant -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            return projectUserService.existUser(pAccount.getEmail());
+        };
+        return tenants.stream().noneMatch(hasUserOnTenant);
+    }
+
     /**
      * Delete an account
      *
@@ -104,20 +119,12 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      *             when the account is linked to at least a project user
      */
     private void doDelete(final Account pAccount) throws EntityOperationForbiddenException {
-        // Get all tenants
-        final Set<String> tenants = tenantResolver.getAllTenants();
-
-        for (final String tenant : tenants) {
-            runtimeTenantResolver.forceTenant(tenant);
-
-            // Is there a project user associated to the account on the passed tenant?
-            if (projectUserService.existUser(pAccount.getEmail())) {
-                final String errorMessage = String.format(
-                                                          "Cannot remove account %s because it is linked to at least one project.",
-                                                          pAccount.getEmail());
-                LOGGER.error(errorMessage);
-                throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, errorMessage);
-            }
+        // Fail if not allowed to delete
+        if (!canDelete(pAccount)) {
+            String message = String.format("Cannot remove account %s because it is linked to at least one project.",
+                                           pAccount.getEmail());
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
         }
 
         LOGGER.info("Deleting tokens associated to account {} from instance.", pAccount.getEmail());

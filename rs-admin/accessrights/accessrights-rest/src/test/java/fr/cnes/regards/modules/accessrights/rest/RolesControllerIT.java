@@ -87,7 +87,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() {
 
-        apiRolesUsers = ProjectUsersController.REQUEST_MAPPING_ROOT + "/roles/{role_id}";
+        apiRolesUsers = ProjectUsersController.TYPE_MAPPING + "/roles/{role_id}";
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();

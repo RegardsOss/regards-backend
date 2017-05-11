@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,8 +22,8 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  * @author CS
  */
 @Entity
-@Table(name = "T_META_DATA")
-@SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "SEQ_META_DATA")
+@Table(name = "t_meta_data")
+@SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
     @Id
@@ -29,13 +31,14 @@ public class MetaData implements IIdentifiable<Long> {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "key", unique = true)
+    @Column(name = "key", unique = true, length = 64)
     private String key;
 
-    @Column(name = "value")
+    @Column(name = "value", length = 256)
     private String value;
 
     @Column(name = "visibility")
+    @Enumerated(EnumType.STRING)
     private UserVisibility visibility;
 
     public MetaData() {
@@ -73,6 +76,42 @@ public class MetaData implements IIdentifiable<Long> {
 
     public void setVisibility(final UserVisibility pVisibility) {
         visibility = pVisibility;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MetaData other = (MetaData) obj;
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else
+            if (!id.equals(other.id)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "MetaData [id=" + id + ", key=" + key + ", value=" + value + ", visibility=" + visibility + "]";
     }
 
 }

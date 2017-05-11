@@ -107,7 +107,9 @@ public class AccountsController implements IResourceController<Account> {
 
     /**
      * Retrieve the list of all {@link Account}s.
-     *
+     * @param pPageable the pageable object used by Spring for building the page of result
+     * @param pAssembler injected by Spring to help assemble results as paged resources
+     * @param pStatus the account status to filter results on
      * @return The accounts list
      */
     @ResponseBody
@@ -258,6 +260,7 @@ public class AccountsController implements IResourceController<Account> {
      *             not be found<br>
      *             {@link EntityOperationForbiddenException} when the account is not in status LOCKED or the token is
      *             invalid<br>
+     * @return a no content HTTP response
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.PUT)
@@ -352,6 +355,7 @@ public class AccountsController implements IResourceController<Account> {
      *
      * @param pPassword
      *            password to check
+     * @return the password validity
      */
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.POST)
@@ -377,14 +381,22 @@ public class AccountsController implements IResourceController<Account> {
         Resource<Account> resource = null;
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
+            // Self retrieve link
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, pElement.getId()));
+            // Update link
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-            if (!pElement.getEmail().equals(rootAdminUserLogin)) {
+            // Delete link only if the account is not admin and the account is deletable (not linked to exisisting users)
+            if (!pElement.getEmail().equals(rootAdminUserLogin) && accountWorkflowManager.canDelete(pElement)) {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, pElement.getId()));
+            }
+            // Accept link, only if the account is in PENDING state
+            if (AccountStatus.PENDING.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccount", "accept",
+                                        MethodParamFactory.build(String.class, pElement.getEmail()));
             }
         }
         return resource;

@@ -14,11 +14,15 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
@@ -32,7 +36,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  */
 @Component
 @InstanceTransactional
-public class PendingState implements IAccountTransitions {
+public class PendingState extends AbstractDeletableState {
 
     /**
      * Class logger
@@ -60,7 +64,6 @@ public class PendingState implements IAccountTransitions {
     private final IVerificationTokenService tokenService;
 
     /**
-     *
      * Creates a new PENDING state
      *
      * @param pAccountRepository
@@ -69,9 +72,13 @@ public class PendingState implements IAccountTransitions {
      * @param pTokenService
      * @since 1.0-SNAPSHOT
      */
-    public PendingState(final IAccountRepository pAccountRepository, final ITemplateService pTemplateService,
-            final IEmailClient pEmailClient, final IVerificationTokenService pTokenService) {
-        super();
+    public PendingState(final IAccountRepository pAccountRepository, final ITemplateService pTemplateService, // NOSONAR
+            final IEmailClient pEmailClient, final IVerificationTokenService pTokenService,
+            final IProjectUserService pProjectUserService, final ITenantResolver pTenantResolver,
+            final IRuntimeTenantResolver pRuntimeTenantResolver,
+            final IPasswordResetService pPasswordResetTokenService) {
+        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+              pPasswordResetTokenService);
         accountRepository = pAccountRepository;
         templateService = pTemplateService;
         emailClient = pEmailClient;

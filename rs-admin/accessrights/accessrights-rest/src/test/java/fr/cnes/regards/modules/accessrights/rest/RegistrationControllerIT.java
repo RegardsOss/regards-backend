@@ -137,7 +137,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         apiAccessDeny = apiAccessId + "/deny";
         apiAccessSettings = apiAccesses + "/settings";
 
-        apiAccessesPending = ProjectUsersController.REQUEST_MAPPING_ROOT + "/pendingaccesses";
+        apiAccessesPending = ProjectUsersController.TYPE_MAPPING + "/pendingaccesses";
 
         errorMessage = "Cannot reach model attributes";
 

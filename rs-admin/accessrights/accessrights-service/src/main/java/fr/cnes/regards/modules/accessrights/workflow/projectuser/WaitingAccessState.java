@@ -8,9 +8,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link ProjectUser} in status
@@ -23,11 +21,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
 public class WaitingAccessState extends AbstractDeletableState {
 
     /**
-     * Project User Settings Repository. Autowired by Spring.
-     */
-    private final IAccessSettingsService accessSettingsService;
-
-    /**
      * Creates a new PENDING state
      *
      * @param pProjectUserRepository
@@ -35,10 +28,8 @@ public class WaitingAccessState extends AbstractDeletableState {
      * @param pAccessSettingsService
      *            the project user settings repository
      */
-    public WaitingAccessState(final IProjectUserRepository pProjectUserRepository,
-            final IAccessSettingsService pAccessSettingsService) {
+    public WaitingAccessState(final IProjectUserRepository pProjectUserRepository) {
         super(pProjectUserRepository);
-        accessSettingsService = pAccessSettingsService;
     }
 
     /*
@@ -51,29 +42,20 @@ public class WaitingAccessState extends AbstractDeletableState {
     @Override
     public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
             throws EntityNotFoundException {
-        final AccessSettings settings = accessSettingsService.retrieve();
 
-        if ("auto-accept".equals(settings.getMode())) {
-            pProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
-            getProjectUserRepository().save(pProjectUser);
-        } else {
-            switch (pQualification) {
-                case GRANTED:
-                    pProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
-                    getProjectUserRepository().save(pProjectUser);
-                    break;
-                case DENIED:
-                    pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
-                    getProjectUserRepository().save(pProjectUser);
-                    break;
-                case REJECTED:
-                    doDelete(pProjectUser);
-                    break;
-                default:
-                    pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
-                    getProjectUserRepository().save(pProjectUser);
-                    break;
-            }
+        switch (pQualification) {
+            case GRANTED:
+                pProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
+                getProjectUserRepository().save(pProjectUser);
+                break;
+            case REJECTED:
+                doDelete(pProjectUser);
+                break;
+            case DENIED:
+            default:
+                pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
+                getProjectUserRepository().save(pProjectUser);
+                break;
         }
     }
 

@@ -16,6 +16,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -23,18 +25,22 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.workflow.account.PendingState;
+import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
@@ -118,6 +124,10 @@ public class RegistrationServiceTest {
 
     private AccountWorkflowManager accountWorkflowManager;
 
+    private IAccessSettingsService accessSettingsService;
+
+    private ProjectUserWorkflowManager accessWorkflowManager;
+
     private ITemplateService templateService;
 
     private IEmailClient emailClient;
@@ -132,6 +142,12 @@ public class RegistrationServiceTest {
 
     private AccountStateProvider accountStateProvider;
 
+    private ITenantResolver tenantResolver;
+
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    private IPasswordResetService passwordResetTokenService;
+
     /**
      * Do some setup before each test
      */
@@ -143,20 +159,28 @@ public class RegistrationServiceTest {
         tokenService = Mockito.mock(IVerificationTokenService.class);
         accountSettingsService = Mockito.mock(IAccountSettingsService.class);
         accountWorkflowManager = Mockito.mock(AccountWorkflowManager.class);
+        accessSettingsService = Mockito.mock(IAccessSettingsService.class);
+        accessWorkflowManager = Mockito.mock(ProjectUserWorkflowManager.class);
         templateService = Mockito.mock(ITemplateService.class);
         emailClient = Mockito.mock(IEmailClient.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         accountService = Mockito.mock(IAccountService.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
+        tenantResolver = Mockito.mock(ITenantResolver.class);
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        passwordResetTokenService = Mockito.mock(IPasswordResetService.class);
 
         // Mock
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
         Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService));
+                //        .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService));
+                .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService,
+                        projectUserService, tenantResolver, runtimeTenantResolver, passwordResetTokenService));
 
         // Create the tested service
         registrationService = new RegistrationService(accountRepository, projectUserRepository, roleService,
-                tokenService, accountSettingsService, accountWorkflowManager);
+                tokenService, accountSettingsService, accessSettingsService, accountWorkflowManager,
+                accessWorkflowManager);
 
         // Prepare the access request
         dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
@@ -222,6 +246,7 @@ public class RegistrationServiceTest {
         Mockito.when(accountRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(account));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
+        Mockito.when(accessSettingsService.retrieve()).thenReturn(new AccessSettings());
 
         // Call the service
         registrationService.requestAccess(dto);

@@ -44,10 +44,15 @@ public class AccessSettingsService implements IAccessSettingsService {
     @Override
     public AccessSettings retrieve() throws EntityNotFoundException {
         final List<AccessSettings> list = accessSettingsRepository.findAll();
+        AccessSettings result;
         if (list.isEmpty()) {
-            throw new EntityNotFoundException(0L, AccessSettings.class);
+            result = new AccessSettings();
+            result.setId(0L);
+            result = accessSettingsRepository.save(result);
+        } else {
+            result = list.get(0);
         }
-        return list.get(0);
+        return result;
     }
 
     /*

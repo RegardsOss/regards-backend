@@ -175,7 +175,7 @@ public class ProjectUserWorkflowManagerTest {
         // Mock repository's content
         Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pageable)).thenReturn(expectedPage);
         Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new WaitingAccessState(projectUserRepository, accessSettingsService));
+                .thenReturn(new WaitingAccessState(projectUserRepository));
 
         // Call the tested method
         projectUserWorkflowManager.removeAccess(projectUser);

@@ -7,10 +7,29 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.hibernate.validator.constraints.Email;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
@@ -26,9 +45,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
  * @author CS
  */
 @Entity
-@Table(name = "T_PROJECT_USER")
+@Table(name = "t_project_user")
 @EntityListeners(ProjectUserListener.class)
-@SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_USER")
+@SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "seq_project_user")
+@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metaData"))
 public class ProjectUser implements IIdentifiable<Long> {
 
     /**
@@ -43,14 +63,14 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The user's email. Used to associate the Project User to its Account.
      */
     @Email
-    @Column(name = "email")
+    @Column(name = "email", length = 128, unique = true)
     private String email;
 
     /**
      * The last connection date
      */
     @PastOrNow
-    @Column(name = "lastConnection")
+    @Column(name = "last_connection")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastConnection;
 
@@ -58,7 +78,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The last update date
      */
     @PastOrNow
-    @Column(name = "lastUpdate")
+    @Column(name = "last_update")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdate;
 
@@ -66,7 +86,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The status of the user
      */
     @NotNull
-    @Column(name = "status")
+    @Column(name = "status", length = 20)
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
@@ -74,8 +94,9 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The list of meta data on the user
      */
     @Valid
-    @OneToMany(fetch = FetchType.EAGER)
-    @Column(name = "metaData")
+    @OneToMany
+    @Cascade(value = { CascadeType.ALL })
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_metadata"))
     private List<MetaData> metaData;
 
     /**
@@ -83,7 +104,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     @Valid
     @ManyToOne
-    @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
+    @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_user_role"))
     private Role role;
 
     /**
@@ -91,14 +112,15 @@ public class ProjectUser implements IIdentifiable<Long> {
      */
     @Valid
     @OneToMany(fetch = FetchType.LAZY)
-    @Column(name = "permissions")
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_permissions"))
     @GsonIgnore
     private List<ResourcesAccess> permissions;
 
     /**
      * whether the project user accepted the licence or not.
      */
-    private boolean licenseAccepted;
+    @Column(name = "licence_accepted")
+    private boolean licenseAccepted = false;
 
     /**
      * Create a new {@link ProjectUser} with empty values.
@@ -289,6 +311,43 @@ public class ProjectUser implements IIdentifiable<Long> {
 
     public void setLicenseAccepted(final boolean pLicenceAccepted) {
         licenseAccepted = pLicenceAccepted;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((email == null) ? 0 : email.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ProjectUser other = (ProjectUser) obj;
+        if (email == null) {
+            if (other.email != null) {
+                return false;
+            }
+        } else
+            if (!email.equals(other.email)) {
+                return false;
+            }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ProjectUser [id=" + id + ", email=" + email + ", lastConnection=" + lastConnection + ", lastUpdate="
+                + lastUpdate + ", status=" + status + ", licenseAccepted=" + licenseAccepted + "]";
     }
 
 }

@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -31,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenServi
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
+import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessQualification;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
@@ -50,6 +52,21 @@ public class RegistrationController {
      * Root mapping for requests of this rest controller
      */
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
+
+    /**
+     * Relative path to the endpoint accepting accounts
+     */
+    public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/acceptAccount/{account_email}";
+
+    /**
+     * Relative path to the endpoint accepting accesses (project users)
+     */
+    public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
+
+    /**
+     * Relative path to the endpoint denying accesses (project users)
+     */
+    public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
 
     /**
      * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
@@ -115,7 +132,7 @@ public class RegistrationController {
      *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
-    @RequestMapping(value = "/acceptAccount/{account_email}", method = RequestMethod.PUT)
+    @RequestMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String pAccountEmail)
             throws EntityException {
@@ -155,12 +172,17 @@ public class RegistrationController {
      *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
-    @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT)
+    @RequestMapping(value = ACCEPT_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
-        projectUserWorkflowManager.grantAccess(projectUser);
+        if (UserStatus.WAITING_ACCESS.equals(projectUser.getStatus())) {
+            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
+        } else {
+            projectUserWorkflowManager.grantAccess(projectUser);
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -176,7 +198,7 @@ public class RegistrationController {
      *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
     @ResponseBody
-    @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT)
+    @RequestMapping(value = DENY_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Denies the access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
