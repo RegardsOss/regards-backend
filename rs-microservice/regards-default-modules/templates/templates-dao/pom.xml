@@ -26,11 +26,6 @@
 		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-test</artifactId>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
