@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -42,7 +43,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.opensearch.service.descriptor.OpenSearchDescriptorBuilder;
+import fr.cnes.regards.modules.opensearch.service.descriptor.OpenSearchDescriptionBuilder;
 import fr.cnes.regards.modules.search.domain.IRepresentation;
 import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
 import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
@@ -75,42 +76,21 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @RequestMapping(path = CatalogController.PATH)
 public class CatalogController {
 
-    /**
-     *
-     */
-    private static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
+    public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
 
-    /**
-     *
-     */
-    private static final String DOCUMENTS_SEARCH = "/documents/search";
+    public static final String DOCUMENTS_SEARCH = "/documents/search";
 
-    /**
-     *
-     */
-    private static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
+    public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
 
-    /**
-     *
-     */
-    private static final String DATASETS_SEARCH = "/datasets/search";
+    public static final String DATASETS_SEARCH = "/datasets/search";
 
-    /**
-     *
-     */
-    private static final String COLLECTIONS_SEARCH = "/collections/search";
+    public static final String COLLECTIONS_SEARCH = "/collections/search";
 
-    /**
-     *
-     */
-    private static final String SEARCH_WITH_FACETS = "/searchwithfacets";
+    public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
 
-    /**
-     *
-     */
-    private static final String SEARCH = "/search";
+    public static final String SEARCH = "/search";
 
-    private static final String DESCRIPTOR = "/descriptor.xml";
+    public static final String DESCRIPTOR = "/descriptor.xml";
 
     /**
      * The main path
@@ -157,7 +137,7 @@ public class CatalogController {
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final OpenSearchDescriptorBuilder osDescriptorBuilder;
+    private final OpenSearchDescriptionBuilder osDescriptorBuilder;
 
     /**
      * @param pCatalogSearchService Service performing the search from the query string. Autowired by Spring.
@@ -177,7 +157,7 @@ public class CatalogController {
             FacettedPagedResourcesAssembler<DataObject> pDataobjectResourcesAssembler,
             DatasetResourcesAssembler pDatasetResourcesAssembler,
             PagedDatasetResourcesAssembler pPagedDatasetResourcesAssembler,
-            IRuntimeTenantResolver pRuntimeTenantResolver, OpenSearchDescriptorBuilder osDescriptorBuilder) {
+            IRuntimeTenantResolver pRuntimeTenantResolver, OpenSearchDescriptionBuilder osDescriptorBuilder) {
         super();
         catalogSearchService = pCatalogSearchService;
         searchService = pSearchService;
@@ -215,7 +195,7 @@ public class CatalogController {
             description = "endpoint allowing to get the OpenSearch descriptor for searches on every type of entities",
             role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<OpenSearchDescription> searchAllDescriptor() {
+    public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
                 HttpStatus.OK);
     }
@@ -285,7 +265,7 @@ public class CatalogController {
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on collections",
             role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() {
+    public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
                 HttpStatus.OK);
     }
@@ -330,7 +310,7 @@ public class CatalogController {
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on datasets",
             role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() {
+    public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATASET, PATH + DATASETS_SEARCH),
                 HttpStatus.OK);
     }
@@ -379,7 +359,7 @@ public class CatalogController {
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on data",
             role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() {
+    public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH),
                 HttpStatus.OK);
     }
@@ -415,7 +395,8 @@ public class CatalogController {
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned are datasets",
             role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor() {
+    public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
+            throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
                 HttpStatus.OK);
     }
@@ -463,7 +444,7 @@ public class CatalogController {
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned are datasets",
             role = DefaultRole.PUBLIC)
     @ResponseBody
-    public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() {
+    public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DOCUMENT, PATH + DOCUMENTS_SEARCH),
                 HttpStatus.OK);
     }
