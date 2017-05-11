@@ -41,9 +41,8 @@ public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<
      * wrapping the contained elements into {@link Resource} instances. Will add pagination links based on the given the
      * self link.
      *
-     * @param page must not be {@literal null}.
-     * @param selfLink must not be {@literal null}.
-     * @return
+     * @param pFacetPage must not be {@literal null}.
+     * @return the facetted page of resources
      */
     public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> pFacetPage) {
         PagedResources<Resource<T>> pagedResources = super.toResource(pFacetPage);

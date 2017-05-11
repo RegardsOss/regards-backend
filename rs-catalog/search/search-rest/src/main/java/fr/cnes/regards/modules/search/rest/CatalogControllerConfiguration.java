@@ -22,11 +22,19 @@ public class CatalogControllerConfiguration {
     @Autowired
     HateoasPageableHandlerMethodArgumentResolver pageableResolver;
 
+    /**
+     * Custom resources assembler for pages of {@link AbstractEntity} with facets
+     * @return the bean
+     */
     @Bean
     public FacettedPagedResourcesAssembler<AbstractEntity> abstractEntityResourcesAssembler() {
         return new FacettedPagedResourcesAssembler<>(pageableResolver, null);
     }
 
+    /**
+     * Custom resources assembler for pages of {@link DataObject} with facets
+     * @return the bean
+     */
     @Bean
     public FacettedPagedResourcesAssembler<DataObject> dataobjectResourcesAssembler() {
         return new FacettedPagedResourcesAssembler<>(pageableResolver, null);
