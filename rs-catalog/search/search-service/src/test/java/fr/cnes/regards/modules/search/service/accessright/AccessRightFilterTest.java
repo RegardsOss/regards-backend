@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.models.service.IAttributeModelService;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
@@ -62,44 +62,28 @@ public class AccessRightFilterTest {
      */
     private static final String TENANT = "tenant";
 
-    private ISubscriber subscriber;
-
-    private IAttributeModelClient attributeModelClient;
-
-    private IUserClient userClient;
-
-    private IProjectUsersClient projectUsersClient;
-
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    private IAttributeModelCache attributeModelCache;
-
-    private IAccessGroupClientService accessGroupCache;
-
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
-        subscriber = Mockito.mock(ISubscriber.class);
-        attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        userClient = Mockito.mock(IUserClient.class);
-        projectUsersClient = Mockito.mock(IProjectUsersClient.class);
-        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
-        attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber, runtimeTenantResolver);
-        accessGroupCache = new AccessGroupClientService(userClient, subscriber);
-
-        Mockito.when(attributeModelClient.getAttributes(null, null))
-                .thenReturn(SampleDataUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
+        ISubscriber subscriber = Mockito.mock(ISubscriber.class);
+        IUserClient userClient = Mockito.mock(IUserClient.class);
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(SampleDataUtils.USER_CLIENT_RESPONSE);
+        IProjectUsersClient projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
                 .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
+        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
+        IAttributeModelService attributeModelService = Mockito.mock(IAttributeModelService.class);
+        Mockito.when(attributeModelService.getAttributes(null, null)).thenReturn(SampleDataUtils.LIST);
+        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelService, subscriber,
+                runtimeTenantResolver);
+        IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 
         openSearchService = new OpenSearchService(new QueryParser(attributeModelCache), new GeometryParser(),
                 new CircleParser());
-
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 
