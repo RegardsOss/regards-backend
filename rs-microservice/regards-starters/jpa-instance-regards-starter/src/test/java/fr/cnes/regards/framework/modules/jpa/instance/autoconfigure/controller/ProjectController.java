@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.instance.autoconfigure.controller;
+package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.controller;
 
 /**
  * Test controller for JWT and DAO Integration tests
@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.TestProject;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectTestRepository;
+import fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.pojo.TestProject;
+import fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.repository.IProjectTestRepository;
 
 /**
  *

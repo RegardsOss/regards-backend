@@ -7,4 +7,4 @@
  * @author msordi
  *
  */
-package fr.cnes.regards.framework.jpa.instance.autoconfigure.repository;
+package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.repository;

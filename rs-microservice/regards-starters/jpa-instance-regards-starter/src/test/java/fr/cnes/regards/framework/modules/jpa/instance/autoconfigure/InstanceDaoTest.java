@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.instance.autoconfigure;
+package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +14,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.pojo.TestProject;
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.repository.IProjectTestRepository;
+import fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.pojo.TestProject;
+import fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.repository.IProjectTestRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 

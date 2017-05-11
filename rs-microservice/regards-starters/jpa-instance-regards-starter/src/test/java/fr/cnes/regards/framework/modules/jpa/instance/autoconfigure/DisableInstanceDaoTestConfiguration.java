@@ -1,11 +1,11 @@
-package fr.cnes.regards.framework.jpa.instance.autoconfigure;
+package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.framework.jpa.instance.autoconfigure.controller.ProjectController;
+import fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.controller.ProjectController;
 
 /**
  *
@@ -16,7 +16,7 @@ import fr.cnes.regards.framework.jpa.instance.autoconfigure.controller.ProjectCo
  * @author CS
  * @since 1.0-SNAPSHOT
  */
-@ComponentScan(basePackages = "fr.cnes.regards.framework.jpa.instance",
+@ComponentScan(basePackages = "fr.cnes.regards.framework.modules.jpa.instance",
         excludeFilters = @ComponentScan.Filter(value = ProjectController.class, type = FilterType.ASSIGNABLE_TYPE))
 @EnableAutoConfiguration
 @PropertySource("classpath:disable-dao.properties")

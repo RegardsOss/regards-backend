@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.jpa.instance.autoconfigure;
+package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

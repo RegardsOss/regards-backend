@@ -4,21 +4,21 @@
         <test>
             <purpose>Unit test to check JPA instance desactivation</purpose>
             <name>checkSpringContext</name>
-            <class>fr.cnes.regards.framework.jpa.instance.autoconfigure.DisableInstanceDaoTest</class>
+            <class>fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.DisableInstanceDaoTest</class>
         </test>
     </requirement>
     <requirement ref="REGARDS_DSL_SYS_ARC_050">
         <test>
             <purpose>Unit test to check that the spring JPA multitenancy context is loaded successfully</purpose>
             <name>contextLoads</name>
-            <class>fr.cnes.regards.framework.jpa.instance.autoconfigure.InstanceDaoTest</class>
+            <class>fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.InstanceDaoTest</class>
         </test>
     </requirement>
     <requirement ref="REGARDS_DSL_SYS_ARC_050">
         <test>
             <purpose>Unit test to check JPA uses the good tenant through the tenant resolver</purpose>
             <name>multitenancyAccessTest</name>
-            <class>fr.cnes.regards.framework.jpa.instance.autoconfigure.InstanceDaoTest</class>
+            <class>fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.InstanceDaoTest</class>
         </test>
     </requirement>
 </requirements>
