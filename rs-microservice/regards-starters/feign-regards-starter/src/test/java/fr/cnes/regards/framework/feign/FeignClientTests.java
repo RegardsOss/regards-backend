@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.feign;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +32,11 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
  *
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
-        "spring.application.name=feignclienttest", "server.port=30333",
-        "logging.level.org.springframework.cloud.netflix.feign.valid=DEBUG", "feign.httpclient.enabled=false",
-        "feign.okhttp.enabled=false", "jwt.secret=123456789" })
+@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT,
+        value = { "spring.application.name=feignclienttest", "server.port=30333",
+                "logging.level.org.springframework.cloud.netflix.feign.valid=DEBUG", "feign.httpclient.enabled=false",
+                "feign.okhttp.enabled=false", "jwt.secret=123456789" })
+@Ignore
 public class FeignClientTests {
 
     private static final String HELLO_MESSAGE = "Hello world";
