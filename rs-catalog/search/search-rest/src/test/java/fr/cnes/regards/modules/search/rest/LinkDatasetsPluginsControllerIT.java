@@ -34,7 +34,7 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_230")
     @Purpose("The system allows to get the list of plugin's service for a dataset")
     public void retrieveLink() {
-        List<ResultMatcher> expectations = new ArrayList<>();
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         performDefaultGet(LinkPluginsDatasetsController.PATH_LINK, expectations,
@@ -45,12 +45,12 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_210")
     @Purpose("The system allows to link a plugin's service to a dataset")
     public void updateLink() {
-        List<ResultMatcher> expectations = new ArrayList<>();
+        final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        LinkPluginsDatasets newLink = new LinkPluginsDatasets(1L, Sets.newHashSet());
+        final LinkPluginsDatasets newLink = new LinkPluginsDatasets("test", Sets.newHashSet());
         performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink, expectations,
-                          "Failed to fetch a specific dataset using its id", 1L);
+                          "Failed to fetch a specific dataset using its id", "test");
     }
 
     @Override

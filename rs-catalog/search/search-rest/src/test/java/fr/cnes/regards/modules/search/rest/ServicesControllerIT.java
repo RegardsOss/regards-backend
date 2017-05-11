@@ -62,9 +62,9 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() throws ModuleException {
         expectations = new ArrayList<>();
-        PluginParameter parameter = new PluginParameter("para", "never used");
+        final PluginParameter parameter = new PluginParameter("para", "never used");
         parameter.setIsDynamic(true);
-        PluginMetaData metaData = new PluginMetaData();
+        final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginId("tata");
         metaData.setAuthor("toto");
         metaData.setDescription("titi");
@@ -76,7 +76,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
         pluginService.addPluginPackage(IService.class.getPackage().getName());
         pluginService.savePluginConfiguration(conf);
-        linkService.updateLink(1L, new LinkPluginsDatasets(1L, Sets.newHashSet(conf)));
+        linkService.updateLink("test", new LinkPluginsDatasets("test", Sets.newHashSet(conf)));
     }
 
     @Test
@@ -84,8 +84,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        performDefaultGet(ServicesController.PATH_SERVICES + "?scope=QUERY", expectations,
-                          "there should not be any error", 1L);
+        performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=QUERY", expectations,
+                          "there should not be any error", "test");
     }
 
     @Test
@@ -93,8 +93,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
-        performDefaultGet(ServicesController.PATH_SERVICES + "?scope=MANY", expectations,
-                          "there should not be any error", 1L);
+        performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=MANY", expectations,
+                          "there should not be any error", "test");
     }
 
     @Test
@@ -102,8 +102,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        performDefaultGet(ServicesController.PATH_SERVICES + "?scope=ONE", expectations,
-                          "there should not be any error", 1L);
+        performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=ONE", expectations,
+                          "there should not be any error", "test");
     }
 
     @Test
@@ -111,27 +111,27 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_DAM_ARC_010")
     @Purpose("System has a joinpoint \"Service\" allow to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
     public void testApplyService() {
-        StringJoiner sj = new StringJoiner("&", "?", "");
+        final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add("q=truc");
         sj.add("para=" + TestService.EXPECTED_VALUE);
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", 1L, conf.getLabel());
+                          expectations, "there should not be any error", "test", conf.getLabel());
     }
 
     @Test
     @Requirement("REGARDS_DSL_CMP_PLG_310")
     @Purpose("System allows to set a dynamic plugin parameter in the HTPP request")
     public void testApplyServiceSetSpecificParamValue() {
-        StringJoiner sj = new StringJoiner("&", "?", "");
+        final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add("q=truc");
         sj.add("para=HelloWorld");
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", 1L, conf.getLabel());
+                          expectations, "there should not be any error", "test", conf.getLabel());
     }
 
 }

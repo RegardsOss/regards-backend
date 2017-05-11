@@ -13,4 +13,6 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
  */
 public interface ILinkPluginsDatasetsRepository extends JpaRepository<LinkPluginsDatasets, Long> {
 
+    LinkPluginsDatasets findOneByDatasetId(String pDatasetId);
+
 }
