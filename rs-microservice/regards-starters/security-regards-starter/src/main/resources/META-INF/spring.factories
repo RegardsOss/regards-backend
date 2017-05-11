@@ -3,5 +3,6 @@ fr.cnes.regards.framework.security.autoconfigure.SecurityVoterAutoConfiguration,
 fr.cnes.regards.framework.security.autoconfigure.WebSecurityAutoConfiguration,\
 fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoConfiguration,\
 fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration,\
-fr.cnes.regards.framework.security.utils.SpringBeanHelper
+fr.cnes.regards.framework.security.utils.SpringBeanHelper,\
+fr.cnes.regards.framework.security.controller.SecurityControllerAdvice
 

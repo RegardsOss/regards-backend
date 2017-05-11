@@ -16,6 +16,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-dao</artifactId>
 		</dependency>

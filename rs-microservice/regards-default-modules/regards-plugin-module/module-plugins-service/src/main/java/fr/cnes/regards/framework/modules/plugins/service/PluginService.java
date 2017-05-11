@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Propagation;
 
 import com.google.common.collect.Lists;
@@ -46,10 +47,13 @@ public class PluginService implements IPluginService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
+    @Value("${regards.plugins.packagesToScan:#{null}}")
+    private String[] packagesToScan;
+
     /**
      * The plugin's package to scan
      */
-    private List<String> pluginPackage;
+    private final List<String> pluginPackage;
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -71,37 +75,30 @@ public class PluginService implements IPluginService {
 
     private final IPublisher publisher;
 
-    /**
-     * A constructor with the {@link IPluginConfigurationRepository}.
-     *
-     * @param pPluginConfigurationRepository
-     *            {@link PluginConfiguration} JPA repository
-     */
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
             final IPublisher publisher) {
-        super();
-        pluginConfRepository = pPluginConfigurationRepository;
+        this.pluginConfRepository = pPluginConfigurationRepository;
         this.publisher = publisher;
-    }
 
-    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
-            final List<String> pPackagesToScan, final IPublisher publisher) {
-        super();
-        pluginConfRepository = pPluginConfigurationRepository;
-        addPluginPackages(pPackagesToScan);
-        this.publisher = publisher;
+        // Manage scan packages
+        pluginPackage = new ArrayList<>();
+        if ((packagesToScan != null) && (packagesToScan.length > 0)) {
+            for (String packageToScan : packagesToScan) {
+                pluginPackage.add(packageToScan);
+            }
+        }
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
         if (plugins == null) {
-            plugins = PluginUtils.getPlugins(getPluginPackage());
+            plugins = PluginUtils.getPlugins(pluginPackage);
         }
         return plugins;
     }
 
     @Override
     public List<String> getPluginTypes() {
-        return PluginInterfaceUtils.getInterfaces(getPluginPackage());
+        return PluginInterfaceUtils.getInterfaces(pluginPackage);
     }
 
     @Override
@@ -334,7 +331,7 @@ public class PluginService implements IPluginService {
                                           pluginConf.getVersion(), pluginMetadata.getVersion()));
             }
 
-            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
+            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, pluginPackage, pPluginParameters);
 
             // Put in the map, only if there is no dynamic parameters
             if (pPluginParameters.length == 0) {
@@ -354,31 +351,17 @@ public class PluginService implements IPluginService {
         return (confs != null) ? Lists.newArrayList(confs) : Collections.emptyList();
     }
 
-    private List<String> getPluginPackage() {
-        if (pluginPackage == null) {
-            pluginPackage = new ArrayList<>();
-        }
-        return pluginPackage;
-    }
-
     @Override
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     public void addPluginPackage(final String pPluginPackage) {
-        if (!getPluginPackage().contains(pPluginPackage)) {
-            getPluginPackage().add(pPluginPackage);
+        if (!pluginPackage.contains(pPluginPackage)) {
+            pluginPackage.add(pPluginPackage);
             final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, pluginPackage);
             if (plugins == null) {
                 // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
                 plugins = new HashMap<>();
             }
             plugins.putAll(newPlugins);
-        }
-    }
-
-    private void addPluginPackages(final List<String> pPackagesToScan) {
-        if ((pPackagesToScan != null) && !pPackagesToScan.isEmpty()) {
-            getPluginPackage().addAll(pPackagesToScan);
-            getLoadedPlugins();
         }
     }
 
@@ -411,6 +394,16 @@ public class PluginService implements IPluginService {
             throw new EntityNotFoundException(pConfigurationLabel, PluginConfiguration.class);
         }
         return conf;
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#cleanPluginCache(java.lang.Long)
+     */
+    @Override
+    public void cleanPluginCache(Long pConfId) {
+        if (pConfId != null) {
+            instantiatePlugins.remove(pConfId);
+        }
     }
 
 }
