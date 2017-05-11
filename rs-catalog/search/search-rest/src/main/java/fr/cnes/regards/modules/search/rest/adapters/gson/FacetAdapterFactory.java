@@ -12,7 +12,6 @@ import fr.cnes.regards.modules.indexer.domain.facet.NumericFacet;
 import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
 
 /**
- *
  * Facet adapter factory
  *
  * @author Xavier-Alenxandre Brochard
@@ -21,6 +20,9 @@ import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
 @GsonTypeAdapterFactory
 public class FacetAdapterFactory extends PolymorphicTypeAdapterFactory<IFacet> {
 
+    /**
+     * Constructor
+     */
     public FacetAdapterFactory() {
         super(IFacet.class, "type", true);
         registerSubtype(StringFacet.class, FacetType.STRING);
