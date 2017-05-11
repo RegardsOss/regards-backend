@@ -12,6 +12,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 
 /**
@@ -27,6 +28,11 @@ public class DefaultTestConfiguration {
     @Bean
     public ISubscriber mockSubscriber() {
         return Mockito.mock(ISubscriber.class);
+    }
+
+    @Bean
+    public IPublisher mockPublisher() {
+        return Mockito.mock(IPublisher.class);
     }
 
     @Bean
