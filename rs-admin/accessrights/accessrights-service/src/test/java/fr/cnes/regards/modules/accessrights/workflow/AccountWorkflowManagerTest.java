@@ -14,7 +14,6 @@ import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -26,6 +25,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountStateProvider;
@@ -151,31 +151,9 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
-
-        // Trigger the exception
-        accountWorkflowManager.deleteAccount(account);
-    }
-
-    /**
-     * Check that the system prevents from deleting an account for certain status (ACCEPTED...).
-     *
-     * @throws ModuleException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
-     */
-    @Test(expected = EntityTransitionForbiddenException.class)
-    @Purpose("Check that the system prevents from deleting an account for certain status (ACCEPTED...).")
-    public void removeAccountWrongStatus() throws ModuleException {
-        // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
-        Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
-        // Prepare the case
-        account.setId(ID);
-        account.setStatus(AccountStatus.ACCEPTED);
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, passwordResetService, Mockito.mock(IVerificationTokenService.class)));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -198,8 +176,9 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, passwordResetService, Mockito.mock(IVerificationTokenService.class)));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);
@@ -222,11 +201,12 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, passwordResetService, Mockito.mock(IVerificationTokenService.class)));
 
         // Call the method
-        boolean result = accountWorkflowManager.canDelete(account);
+        final boolean result = accountWorkflowManager.canDelete(account);
 
         // Verify the repository was correctly called
         Assert.assertFalse(result);
@@ -246,11 +226,12 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, passwordResetService, Mockito.mock(IVerificationTokenService.class)));
 
         // Call the method
-        boolean result = accountWorkflowManager.canDelete(account);
+        final boolean result = accountWorkflowManager.canDelete(account);
 
         // Verify the repository was correctly called
         Assert.assertTrue(result);

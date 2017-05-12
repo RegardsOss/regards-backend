@@ -60,7 +60,7 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
      * regards .modules.accessrights.domain.instance.Account, java.lang.String)
      */
     @Override
-    public void create(final Account pAccount) {
+    public String create(final Account pAccount) {
 
         AccountUnlockToken token;
 
@@ -74,7 +74,8 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
             final String uuid = UUID.randomUUID().toString();
             token = new AccountUnlockToken(uuid, pAccount);
         }
-        tokenRepository.save(token);
+        token = tokenRepository.save(token);
+        return token.getToken();
     }
 
 }

@@ -12,6 +12,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
@@ -36,9 +37,10 @@ public class InactiveState extends AbstractDeletableState {
      */
     public InactiveState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IPasswordResetService pPasswordResetTokenService) {
+            final IPasswordResetService pPasswordResetTokenService,
+            final IVerificationTokenService pVerificationTokenService) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pVerificationTokenService);
     }
 
     @Override

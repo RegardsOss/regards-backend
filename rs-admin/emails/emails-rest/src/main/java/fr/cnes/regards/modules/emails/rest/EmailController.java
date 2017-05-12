@@ -20,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.modules.emails.service.EmailService;
 import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.emails.service.SimpleEmailService;
 
 /**
  * Controller defining the REST entry points of the module
@@ -31,7 +34,8 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  *
  */
 @RestController
-@ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping(value = "/emails")
 public class EmailController {
 
@@ -39,7 +43,19 @@ public class EmailController {
      * The service responsible for handling CRUD and mailing operations
      */
     @Autowired
-    private IEmailService emailService;
+    private EmailService emailService;
+
+    /**
+     * Mail service without persistence of email sent
+     */
+    @Autowired
+    private SimpleEmailService simpleEmailService;
+
+    /**
+     * Tenant resolver used to know current tenant.
+     */
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Define the endpoint for retrieving the list of sent emails
@@ -49,8 +65,12 @@ public class EmailController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all emails")
     public ResponseEntity<List<Email>> retrieveEmails() {
-        final List<Email> emails = emailService.retrieveEmails();
-        return new ResponseEntity<>(emails, HttpStatus.OK);
+        if (!runtimeTenantResolver.isInstance()) {
+            final List<Email> emails = emailService.retrieveEmails();
+            return new ResponseEntity<>(emails, HttpStatus.OK);
+        }
+        // This method is only allowed with tenant.
+        return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -64,7 +84,11 @@ public class EmailController {
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Send an email to recipients")
     public ResponseEntity<SimpleMailMessage> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
-        final SimpleMailMessage created = emailService.sendEmail(pMessage);
+        IEmailService service = emailService;
+        if (runtimeTenantResolver.isInstance()) {
+            service = simpleEmailService;
+        }
+        final SimpleMailMessage created = service.sendEmail(pMessage);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
@@ -80,8 +104,13 @@ public class EmailController {
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve an email")
     public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) throws ModuleException {
-        final Email email = emailService.retrieveEmail(pId);
-        return new ResponseEntity<>(email, HttpStatus.OK);
+        if (!runtimeTenantResolver.isInstance()) {
+            final Email email = emailService.retrieveEmail(pId);
+            return new ResponseEntity<>(email, HttpStatus.OK);
+        }
+
+        // This method is only allowed with tenant.
+        return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -96,7 +125,9 @@ public class EmailController {
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Send again an email")
     public void resendEmail(@PathVariable("mail_id") final Long pId) throws ModuleException {
-        emailService.resendEmail(pId);
+        if (!runtimeTenantResolver.isInstance()) {
+            emailService.resendEmail(pId);
+        }
     }
 
     /**
@@ -109,7 +140,9 @@ public class EmailController {
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "Delete an email")
     public void deleteEmail(@PathVariable("mail_id") final Long pId) {
-        emailService.deleteEmail(pId);
+        if (!runtimeTenantResolver.isInstance()) {
+            emailService.deleteEmail(pId);
+        }
     }
 
 }

@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.registration;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -89,5 +91,14 @@ public class VerificationTokenService implements IVerificationTokenService {
     public VerificationToken findByAccount(final Account pAccount) throws EntityNotFoundException {
         return tokenRepository.findByAccount(pAccount)
                 .orElseThrow(() -> new EntityNotFoundException(pAccount.getEmail(), VerificationToken.class));
+    }
+
+    @Override
+    public void deletePasswordResetTokenForAccount(final Account pAccount) {
+        final Optional<VerificationToken> token = tokenRepository.findByAccount(pAccount);
+        if (token.isPresent()) {
+            tokenRepository.delete(token.get());
+        }
+
     }
 }

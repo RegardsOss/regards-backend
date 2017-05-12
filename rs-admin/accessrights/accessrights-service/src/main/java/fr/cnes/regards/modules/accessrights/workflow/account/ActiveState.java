@@ -13,6 +13,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
@@ -35,13 +36,15 @@ public class ActiveState extends AbstractDeletableState {
      *            the tenant resolver
      * @param pRuntimeTenantResolver
      *            runtime tenant resolver
-     * @param pPasswordResetTokenService the service handling {@link PasswordResetToken}
+     * @param pPasswordResetTokenService
+     *            the service handling {@link PasswordResetToken}
      */
     public ActiveState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IPasswordResetService pPasswordResetTokenService) {
+            final IPasswordResetService pPasswordResetTokenService,
+            final IVerificationTokenService pVerificationTokenService) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pVerificationTokenService);
     }
 
     @Override

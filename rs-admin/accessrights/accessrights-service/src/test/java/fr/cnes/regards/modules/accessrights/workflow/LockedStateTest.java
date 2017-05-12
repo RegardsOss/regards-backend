@@ -3,10 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -28,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockTo
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
@@ -175,8 +172,9 @@ public class LockedStateTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUserService,
-                accountRepository, tenantResolver, runtimeTenantResolver, passwordResetService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
+                        runtimeTenantResolver, passwordResetService, Mockito.mock(IVerificationTokenService.class)));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Trigger exception
@@ -202,7 +200,7 @@ public class LockedStateTest {
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
                         runtimeTenantResolver, accountService, accountUnlockTokenService, templateService, emailClient,
-                        passwordResetService));
+                        passwordResetService, Mockito.mock(IVerificationTokenService.class)));
         Mockito.when(accountUnlockTokenService.findByToken(wrongToken)).thenThrow(new EntityNotFoundException(ID));
 
         // Trigger exception
@@ -224,7 +222,7 @@ public class LockedStateTest {
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
                         runtimeTenantResolver, accountService, accountUnlockTokenService, templateService, emailClient,
-                        passwordResetService));
+                        passwordResetService, Mockito.mock(IVerificationTokenService.class)));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Prepare the case

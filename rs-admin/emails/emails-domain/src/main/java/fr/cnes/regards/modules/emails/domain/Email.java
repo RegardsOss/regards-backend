@@ -1,9 +1,15 @@
 package fr.cnes.regards.modules.emails.domain;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.ObjectUtils;
 
@@ -53,7 +59,6 @@ public class Email implements IIdentifiable<Long> {
     /**
      * Email address of the replyTo recipient
      */
-    @NotBlank
     @Column(name = "replyTo")
     private String replyTo;
 
@@ -73,6 +78,7 @@ public class Email implements IIdentifiable<Long> {
      * Body of the email
      */
     @Column(name = "text")
+    @Type(type = "text")
     private String text;
 
     /**

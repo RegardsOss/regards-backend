@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
@@ -107,9 +108,13 @@ public class AccountsController implements IResourceController<Account> {
 
     /**
      * Retrieve the list of all {@link Account}s.
-     * @param pPageable the pageable object used by Spring for building the page of result
-     * @param pAssembler injected by Spring to help assemble results as paged resources
-     * @param pStatus the account status to filter results on
+     *
+     * @param pPageable
+     *            the pageable object used by Spring for building the page of result
+     * @param pAssembler
+     *            injected by Spring to help assemble results as paged resources
+     * @param pStatus
+     *            the account status to filter results on
      * @return The accounts list
      */
     @ResponseBody
@@ -266,12 +271,12 @@ public class AccountsController implements IResourceController<Account> {
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.PUT)
     @ResourceAccess(description = "unlock the account of provided email", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") final String pAccountEmail,
-            @Valid @RequestBody final String pToken) throws EntityException {
+            @Valid @RequestBody final PerformUnlockAccountDto pTokenDto) throws EntityException {
         // Retrieve the account
         final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
 
         // Perform account unlock
-        accountWorkflowManager.performUnlockAccount(account, pToken);
+        accountWorkflowManager.performUnlockAccount(account, pTokenDto.getToken());
         return ResponseEntity.noContent().build();
     }
 
@@ -296,7 +301,7 @@ public class AccountsController implements IResourceController<Account> {
         final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
 
         // Publish an application event
-        eventPublisher.publishEvent(new OnPasswordResetEvent(account, pDto.getOriginUrl(), pDto.getResetUrl()));
+        eventPublisher.publishEvent(new OnPasswordResetEvent(account, pDto.getOriginUrl(), pDto.getRequestLink()));
         return ResponseEntity.noContent().build();
     }
 
@@ -388,7 +393,8 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
-            // Delete link only if the account is not admin and the account is deletable (not linked to exisisting users)
+            // Delete link only if the account is not admin and the account is deletable (not linked to exisisting
+            // users)
             if (!pElement.getEmail().equals(rootAdminUserLogin) && accountWorkflowManager.canDelete(pElement)) {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, pElement.getId()));

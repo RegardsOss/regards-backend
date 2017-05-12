@@ -13,7 +13,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
@@ -50,6 +52,8 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
      * Email Client. Autowired by Spring.
      */
     private final IEmailClient emailClient;
+
+    private IRuntimeTenantResolver runTimeTenantResolver;
 
     /**
      * @param pPasswordResetService
@@ -92,7 +96,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
         // Create a hash map in order to store the data to inject in the mail
         final Map<String, String> data = new HashMap<>();
         data.put("name", account.getFirstName());
-        data.put("resetUrl", pEvent.getResetUrl());
+        data.put("requestLink", pEvent.getRequestLink());
         data.put("originUrl", pEvent.getOriginUrl());
         data.put("token", token);
         data.put("accountEmail", account.getEmail());
@@ -106,13 +110,20 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
             email.setTo(recipients);
             email.setSubject("REGARDS - Password Reset");
 
-            final String linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
-            final String linkUrl = String.format(linkUrlTemplate, pEvent.getResetUrl(), pEvent.getOriginUrl(), token,
+            String linkUrlTemplate;
+            if ((pEvent.getRequestLink() != null) && pEvent.getRequestLink().contains("?")) {
+                linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
+            } else {
+                linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+            }
+            final String linkUrl = String.format(linkUrlTemplate, pEvent.getRequestLink(), pEvent.getOriginUrl(), token,
                                                  account.getEmail());
             email.setText("Please click on the following link to set a new password for your account: " + linkUrl);
         }
 
         // Send it
+        FeignSecurityManager.asSystem();
         emailClient.sendEmail(email);
+        FeignSecurityManager.reset();
     }
 }

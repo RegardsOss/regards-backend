@@ -16,6 +16,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
+import fr.cnes.regards.modules.accessrights.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 
 /**
@@ -75,8 +76,15 @@ public class PasswordResetService implements IPasswordResetService {
      */
     @Override
     public void createPasswordResetToken(final Account pAccount, final String pToken) {
-        final PasswordResetToken token = new PasswordResetToken(pToken, pAccount);
-        tokenRepository.save(token);
+        final Optional<PasswordResetToken> currentToken = tokenRepository.findByAccount(pAccount);
+        if (currentToken.isPresent()) {
+            final PasswordResetToken token = currentToken.get();
+            token.updateToken(pToken);
+            tokenRepository.save(token);
+        } else {
+            final PasswordResetToken token = new PasswordResetToken(pToken, pAccount);
+            tokenRepository.save(token);
+        }
     }
 
     /*
@@ -90,7 +98,7 @@ public class PasswordResetService implements IPasswordResetService {
             throws EntityException {
         final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
         validatePasswordResetToken(pAccountEmail, pResetCode);
-        accountService.changePassword(account.getId(), accountService.encryptPassword(pNewPassword));
+        accountService.changePassword(account.getId(), EncryptionUtils.encryptPassword(pNewPassword));
     }
 
     /**

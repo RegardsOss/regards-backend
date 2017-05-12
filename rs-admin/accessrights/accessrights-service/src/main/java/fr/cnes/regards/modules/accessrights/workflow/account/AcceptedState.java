@@ -8,10 +8,15 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
+import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status ACCEPTED.
@@ -20,7 +25,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
  * @author Christophe Mertz
  */
 @Component
-public class AcceptedState implements IAccountTransitions {
+public class AcceptedState extends AbstractDeletableState {
 
     /**
      * Account repository
@@ -31,8 +36,12 @@ public class AcceptedState implements IAccountTransitions {
      * @param pAccountRepository
      *            the account repository
      */
-    public AcceptedState(final IAccountRepository pAccountRepository) {
-        super();
+    public AcceptedState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
+            final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
+            final IPasswordResetService pPasswordResetTokenService,
+            final IVerificationTokenService pVerificationTokenService) {
+        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+              pPasswordResetTokenService, pVerificationTokenService);
         accountRepository = pAccountRepository;
     }
 

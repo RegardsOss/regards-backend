@@ -6,13 +6,13 @@ package fr.cnes.regards.modules.accessrights.workflow.account;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockTo
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -81,9 +82,10 @@ public class LockedState extends AbstractDeletableState {
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IAccountService pAccountService, final IAccountUnlockTokenService pTokenService,
             final ITemplateService pTemplateService, final IEmailClient pEmailClient,
-            final IPasswordResetService pPasswordResetTokenService) {
+            final IPasswordResetService pPasswordResetTokenService,
+            final IVerificationTokenService pVerificationTokenService) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pVerificationTokenService);
         accountService = pAccountService;
         tokenService = pTokenService;
         templateService = pTemplateService;
@@ -101,8 +103,7 @@ public class LockedState extends AbstractDeletableState {
     public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
             throws EntityOperationForbiddenException {
         // Create the token
-        final String token = UUID.randomUUID().toString();
-        tokenService.create(pAccount);
+        final String token = tokenService.create(pAccount);
 
         // Build the list of recipients
         final String[] recipients = { pAccount.getEmail() };
@@ -119,18 +120,25 @@ public class LockedState extends AbstractDeletableState {
         try {
             email = templateService.writeToEmail(ACCOUNT_UNLOCK_RESET_TEMPLATE, data, recipients);
         } catch (final EntityNotFoundException e) {
-            LOG.warn("Could not find the template to generate a password reset email. Falling back to default.", e);
+            LOG.warn("Could not find the template to generate a unlock account email. Falling back to default.", e);
             email = new SimpleMailMessage();
             email.setTo(recipients);
-            email.setSubject("REGARDS - Password Reset");
+            email.setSubject("REGARDS - Unlock account");
 
-            final String linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+            String linkUrlTemplate;
+            if (pRequestLink.contains("?")) {
+                linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
+            } else {
+                linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+            }
             final String linkUrl = String.format(linkUrlTemplate, pRequestLink, pOriginUrl, token, pAccount.getEmail());
-            email.setText("Please click on the following link to set a new password for your account: " + linkUrl);
+            email.setText("Please click on the following link unlock your account: " + linkUrl);
         }
 
         // Send it
+        FeignSecurityManager.asSystem();
         emailClient.sendEmail(email);
+        FeignSecurityManager.reset();
     }
 
     /*

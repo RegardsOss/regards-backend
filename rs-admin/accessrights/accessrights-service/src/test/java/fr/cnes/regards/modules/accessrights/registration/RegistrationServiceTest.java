@@ -173,9 +173,10 @@ public class RegistrationServiceTest {
         // Mock
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
         Mockito.when(accountStateProvider.getState(account))
-                //        .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService));
+                // .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService));
                 .thenReturn(new PendingState(accountRepository, templateService, emailClient, tokenService,
-                        projectUserService, tenantResolver, runtimeTenantResolver, passwordResetTokenService));
+                        projectUserService, tenantResolver, runtimeTenantResolver, passwordResetTokenService,
+                        Mockito.mock(IVerificationTokenService.class)));
 
         // Create the tested service
         registrationService = new RegistrationService(accountRepository, projectUserRepository, roleService,

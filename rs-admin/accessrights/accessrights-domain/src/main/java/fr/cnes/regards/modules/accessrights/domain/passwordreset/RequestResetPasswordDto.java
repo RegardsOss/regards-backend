@@ -15,16 +15,16 @@ public class RequestResetPasswordDto {
     /**
      * The new password
      */
-    private String resetUrl;
+    private String requestLink;
 
     /**
      * @param pOriginUrl
      * @param pResetUrl
      */
-    public RequestResetPasswordDto(final String pOriginUrl, final String pResetUrl) {
+    public RequestResetPasswordDto(final String pOriginUrl, final String pRequestLink) {
         super();
         originUrl = pOriginUrl;
-        resetUrl = pResetUrl;
+        requestLink = pRequestLink;
     }
 
     /**
@@ -42,19 +42,12 @@ public class RequestResetPasswordDto {
         originUrl = pOriginUrl;
     }
 
-    /**
-     * @return the resetUrl
-     */
-    public String getResetUrl() {
-        return resetUrl;
+    public String getRequestLink() {
+        return requestLink;
     }
 
-    /**
-     * @param pResetUrl
-     *            the resetUrl to set
-     */
-    public void setResetUrl(final String pResetUrl) {
-        resetUrl = pResetUrl;
+    public void setRequestLink(final String pRequestLink) {
+        requestLink = pRequestLink;
     }
 
 }

@@ -58,4 +58,12 @@ public interface IVerificationTokenService {
      */
     Account getAccountByVerificationToken(String pVerificationToken) throws EntityNotFoundException;
 
+    /**
+     * Delete a {@link VerificationToken} for the passed {@link Account}
+     *
+     * @param pAccount
+     *            the account
+     */
+    void deletePasswordResetTokenForAccount(final Account pAccount);
+
 }

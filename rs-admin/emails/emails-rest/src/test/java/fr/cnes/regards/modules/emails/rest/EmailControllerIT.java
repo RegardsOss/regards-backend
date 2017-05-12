@@ -15,16 +15,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 
@@ -34,9 +33,9 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  * @author xbrochar
  *
  */
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
+@MultitenantTransactional
 @ContextConfiguration(classes = EmailConfiguration.class)
-public class EmailControllerIT extends AbstractRegardsIT {
+public class EmailControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
@@ -53,11 +52,19 @@ public class EmailControllerIT extends AbstractRegardsIT {
     @Autowired
     private IEmailService emailService;
 
-    /**
-     * Do some setup before each test
-     */
+    @Autowired
+    private IEmailRepository emailRepo;
+
+    private Email testEmail;
+
     @Before
-    public void init() {
+    public void setUp() {
+        final Email email = new Email();
+        email.setSubject("test");
+        email.setText("test");
+        email.setFrom("regards@noreply.fr");
+        email.setTo(new String[] { "user@user.fr" });
+        testEmail = emailRepo.save(email);
     }
 
     /**
@@ -77,7 +84,6 @@ public class EmailControllerIT extends AbstractRegardsIT {
      * Check that the system allows to send an email to a list of recipients.
      */
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to send an email to a list of recipients.")
@@ -96,12 +102,11 @@ public class EmailControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the allows to retrieve a single email and handle fail cases.")
     public void retrieveEmail() {
-        final Long id = 0L;
-        assertTrue(emailService.exists(id));
+        assertTrue(emailService.exists(testEmail.getId()));
 
         List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultGet("/emails/{mail_id}", expectations, "Unable to retrieve email", id);
+        performDefaultGet("/emails/{mail_id}", expectations, "Unable to retrieve email", testEmail.getId());
 
         final Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
@@ -139,17 +144,15 @@ public class EmailControllerIT extends AbstractRegardsIT {
      * Check that the system allows to delete an email.
      */
     @Test
-    @DirtiesContext
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to delete an email.")
     public void deleteEmail() {
-        final Long id = 0L;
-        assertTrue(emailService.exists(id));
+        assertTrue(emailService.exists(testEmail.getId()));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultDelete("/emails/{mail_id}", expectations, "Unable to delete the email", id);
+        performDefaultDelete("/emails/{mail_id}", expectations, "Unable to delete the email", testEmail.getId());
     }
 
     /**

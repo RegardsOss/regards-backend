@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.emails.dao;
 
 import org.springframework.data.domain.Example;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.emails.domain.Email;
@@ -16,6 +16,6 @@ import fr.cnes.regards.modules.emails.domain.Email;
  *
  * @author CS SI
  */
-public interface IEmailRepository extends CrudRepository<Email, Long> {
+public interface IEmailRepository extends JpaRepository<Email, Long> {
 
 }

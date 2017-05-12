@@ -30,7 +30,8 @@ public interface IAccountUnlockTokenService {
      *
      * @param pAccount
      *            the account
+     * @return generated token
      */
-    void create(Account pAccount);
+    String create(Account pAccount);
 
 }

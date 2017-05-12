@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
@@ -55,9 +56,14 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
+     * Service to manage reset tokens for accounts.
      */
     private final IPasswordResetService passwordResetTokenService;
+
+    /**
+     * Service to manage verification tokens for accounts.
+     */
+    private final IVerificationTokenService verificationTokenService;
 
     /**
      * Constructor
@@ -71,14 +77,15 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      */
     public AbstractDeletableState(final IProjectUserService pProjectUserService,
             final IAccountRepository pAccountRepository, final ITenantResolver pTenantResolver,
-            final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IPasswordResetService pPasswordResetTokenService) {
+            final IRuntimeTenantResolver pRuntimeTenantResolver, final IPasswordResetService pPasswordResetTokenService,
+            final IVerificationTokenService pVerificationTokenService) {
         super();
         projectUserService = pProjectUserService;
         accountRepository = pAccountRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
         passwordResetTokenService = pPasswordResetTokenService;
+        verificationTokenService = pVerificationTokenService;
     }
 
     @Override
@@ -86,6 +93,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         switch (pAccount.getStatus()) {
             case ACTIVE:
             case LOCKED:
+            case ACCEPTED:
             case INACTIVE:
                 doDelete(pAccount);
                 break;
@@ -95,15 +103,18 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#canDelete(fr.cnes.regards.modules.accessrights.domain.instance.Account)
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#canDelete(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
      */
     @Override
-    public boolean canDelete(Account pAccount) {
+    public boolean canDelete(final Account pAccount) {
         // Get all tenants
         final Set<String> tenants = tenantResolver.getAllTenants();
 
-        Predicate<? super String> hasUserOnTenant = tenant -> {
+        final Predicate<? super String> hasUserOnTenant = tenant -> {
             runtimeTenantResolver.forceTenant(tenant);
             return projectUserService.existUser(pAccount.getEmail());
         };
@@ -121,14 +132,16 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private void doDelete(final Account pAccount) throws EntityOperationForbiddenException {
         // Fail if not allowed to delete
         if (!canDelete(pAccount)) {
-            String message = String.format("Cannot remove account %s because it is linked to at least one project.",
-                                           pAccount.getEmail());
+            final String message = String.format(
+                                                 "Cannot remove account %s because it is linked to at least one project.",
+                                                 pAccount.getEmail());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
         }
 
         LOGGER.info("Deleting tokens associated to account {} from instance.", pAccount.getEmail());
         passwordResetTokenService.deletePasswordResetTokenForAccount(pAccount);
+        verificationTokenService.deletePasswordResetTokenForAccount(pAccount);
         LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
         accountRepository.delete(pAccount.getId());
     }

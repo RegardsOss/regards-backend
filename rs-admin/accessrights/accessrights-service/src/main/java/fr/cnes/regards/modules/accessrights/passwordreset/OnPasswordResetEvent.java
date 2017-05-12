@@ -32,7 +32,7 @@ public class OnPasswordResetEvent extends ApplicationEvent {
     /**
      * The url to redirect the user to the password reset interface
      */
-    private final String resetUrl;
+    private final String requestLink;
 
     /**
      * Class constructor
@@ -48,7 +48,7 @@ public class OnPasswordResetEvent extends ApplicationEvent {
         super(pAccount);
         this.account = pAccount;
         this.originUrl = pOriginUrl;
-        this.resetUrl = pResetUrl;
+        this.requestLink = pResetUrl;
     }
 
     /**
@@ -76,8 +76,8 @@ public class OnPasswordResetEvent extends ApplicationEvent {
     /**
      * @return the resetUrl
      */
-    public String getResetUrl() {
-        return resetUrl;
+    public String getRequestLink() {
+        return requestLink;
     }
 
 }

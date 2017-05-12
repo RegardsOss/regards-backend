@@ -75,10 +75,10 @@ public class PendingState extends AbstractDeletableState {
     public PendingState(final IAccountRepository pAccountRepository, final ITemplateService pTemplateService, // NOSONAR
             final IEmailClient pEmailClient, final IVerificationTokenService pTokenService,
             final IProjectUserService pProjectUserService, final ITenantResolver pTenantResolver,
-            final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IPasswordResetService pPasswordResetTokenService) {
+            final IRuntimeTenantResolver pRuntimeTenantResolver, final IPasswordResetService pPasswordResetTokenService,
+            final IVerificationTokenService pVerificationTokenService) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pVerificationTokenService);
         accountRepository = pAccountRepository;
         templateService = pTemplateService;
         emailClient = pEmailClient;
@@ -118,7 +118,12 @@ public class PendingState extends AbstractDeletableState {
         final Map<String, String> data = new HashMap<>();
         data.put("name", pAccount.getFirstName());
 
-        final String linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+        String linkUrlTemplate;
+        if ((token != null) && token.getRequestLink().contains("?")) {
+            linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
+        } else {
+            linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+        }
         final String confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(), token.getOriginUrl(),
                                                      token.getToken(), pAccount.getEmail());
 

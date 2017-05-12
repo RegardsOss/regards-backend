@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepo
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
+import fr.cnes.regards.modules.accessrights.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -266,10 +267,11 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to reset an instance user's password.")
     public void performUnlockAccount() throws EntityAlreadyExistsException {
         // Prepare the test
-        final String token = "token";
+        final PerformUnlockAccountDto token = new PerformUnlockAccountDto();
+        token.setToken("token");
 
         // Create the token in db
-        accountUnlockTokenRepository.save(new AccountUnlockToken(token, accountLocked));
+        accountUnlockTokenRepository.save(new AccountUnlockToken("token", accountLocked));
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isNoContent());
@@ -325,12 +327,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system does not allow to delete an account linked to at least one project user")
     public void deleteAccount_shouldNotAllowDeletion() {
         // Must have account with status allowing deletion and have a linked project user
-        String email = "randomEmailMatchingAProjectUser@test.com";
+        final String email = "randomEmailMatchingAProjectUser@test.com";
         account.setEmail(email);
         account.setStatus(AccountStatus.LOCKED);
         accountRepository.save(account);
 
-        ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
+        final ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
         projectUser.setEmail(email);
         projectUserRepository.save(projectUser);
 
@@ -397,12 +399,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check we do not add 'remove' HATEOAS link if the account is linked to project users")
     public void checkHateoasLinks_doNotAddRemoveIfLinkedToUsers() {
         // Must have account with status allowing deletion and have a linked project user
-        String email = "randomEmailMatchingAProjectUser@test.com";
+        final String email = "randomEmailMatchingAProjectUser@test.com";
         account.setEmail(email);
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
 
-        ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
+        final ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
         projectUser.setEmail(email);
         projectUserRepository.save(projectUser);
 
@@ -416,7 +418,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check we do add 'remove' HATEOAS link if the account is linked to no project users")
     public void checkHateoasLinks_addRemoveIfNotLinkedToUsers() {
         // Must have account with status allowing deletion and have a no linked project user
-        String email = "randomEmailMatchingNoProjectUser@test.com";
+        final String email = "randomEmailMatchingNoProjectUser@test.com";
         account.setEmail(email);
         account.setStatus(AccountStatus.PENDING);
         accountRepository.save(account);

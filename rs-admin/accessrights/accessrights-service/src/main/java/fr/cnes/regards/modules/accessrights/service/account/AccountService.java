@@ -3,9 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +29,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.encryption.EncryptionUtils;
 
 /**
  * {@link IAccountService} implementation.
@@ -50,11 +48,6 @@ public class AccountService implements IAccountService {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
-
-    /**
-     * Encryption algorithm
-     */
-    private static final String SHA_512 = "SHA-512";
 
     /**
      * Regex that the password should respect. Provided by property file.
@@ -174,30 +167,9 @@ public class AccountService implements IAccountService {
     @Override
     public Account createAccount(final Account pAccount) {
         pAccount.setId(null);
-        pAccount.setPassword(encryptPassword(pAccount.getPassword()));
+        pAccount.setPassword(EncryptionUtils.encryptPassword(pAccount.getPassword()));
         pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         return accountRepository.save(pAccount);
-    }
-
-    /**
-     * helper method to centralize the password encryption process.
-     *
-     * @return encrypted password
-     */
-    @Override
-    public String encryptPassword(final String pPassword) {
-        try {
-            final MessageDigest md = MessageDigest.getInstance(SHA_512);
-            final Charset charset = Charset.forName("UTF-8");
-            final byte[] bytes = md.digest(pPassword.getBytes(charset));
-            final StringBuilder sb = new StringBuilder();
-            for (final byte b : bytes) {
-                sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-            }
-            return sb.toString();
-        } catch (final NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);// NOSONAR: this is only a developpement exception and should never happens
-        }
     }
 
     /*
@@ -261,7 +233,7 @@ public class AccountService implements IAccountService {
 
         // Check password validity and account active status.
         final boolean activeAccount = toValidate.get().getStatus().equals(AccountStatus.ACTIVE);
-        final boolean validPassword = toValidate.get().getPassword().equals(encryptPassword(pPassword));
+        final boolean validPassword = toValidate.get().getPassword().equals(EncryptionUtils.encryptPassword(pPassword));
 
         // If password is invalid
         if (!validPassword && !runtimeTenantResolver.isInstance()) {

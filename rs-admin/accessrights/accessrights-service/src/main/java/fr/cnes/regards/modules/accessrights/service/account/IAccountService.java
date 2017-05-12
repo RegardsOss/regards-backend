@@ -137,8 +137,6 @@ public interface IAccountService {
 
     String getPasswordRules();
 
-    String encryptPassword(String pPassword);
-
     void checkAccountValidity();
 
     void changePassword(Long pId, String pEncryptPassword) throws EntityNotFoundException;
