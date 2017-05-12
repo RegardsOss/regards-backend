@@ -129,7 +129,7 @@ public class ProjectUser implements IIdentifiable<Long> {
         super();
         permissions = new ArrayList<>();
         metaData = new ArrayList<>();
-        status = UserStatus.WAITING_ACCESS;
+        status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
     /**
@@ -150,7 +150,7 @@ public class ProjectUser implements IIdentifiable<Long> {
         role = pRole;
         permissions = pPermissions;
         metaData = pMetaData;
-        status = UserStatus.WAITING_ACCESS;
+        status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
     /**
@@ -337,10 +337,9 @@ public class ProjectUser implements IIdentifiable<Long> {
             if (other.email != null) {
                 return false;
             }
-        } else
-            if (!email.equals(other.email)) {
-                return false;
-            }
+        } else if (!email.equals(other.email)) {
+            return false;
+        }
         return true;
     }
 

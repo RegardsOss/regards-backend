@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -277,6 +278,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check we add 'accept' HATEOAS link")
     public void checkHateoasLinks_shouldAddAcceptLink() {
+        // Set project user in WAITING_ACCESS
+        projectUser.setStatus(UserStatus.WAITING_ACCESS);
+        projectUserRepository.save(projectUser);
+
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -287,7 +292,11 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Purpose("Check we add 'deny' HATEOAS link")
-    public void checkHateoasLinks_shouldAddDenyink() {
+    public void checkHateoasLinks_shouldAddDenyLink() {
+        // Set project user in WAITING_ACCESS
+        projectUser.setStatus(UserStatus.WAITING_ACCESS);
+        projectUserRepository.save(projectUser);
+
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);

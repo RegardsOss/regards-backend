@@ -52,15 +52,16 @@ public class AccessRequestDto {
     private String requestLink;
 
     /**
-     * @param pEmail
-     * @param pFirstName
-     * @param pLastName
-     * @param pMetaData
-     * @param pPassword
-     * @param pOriginUrl
-     * @param pRequestLink
+     * @param pEmail the email
+     * @param pFirstName the first name
+     * @param pLastName the last name
+     * @param pRoleName the role name
+     * @param pMetaData the meta data
+     * @param pPassword the password
+     * @param pOriginUrl necessary for frontend to redirect when the user clicks on validation link in email
+     * @param pRequestLink necessary for frontend to redirect when the user clicks on validation link in email
      */
-    public AccessRequestDto(final String pEmail, final String pFirstName, final String pLastName,
+    public AccessRequestDto(final String pEmail, final String pFirstName, final String pLastName, //NOSONAR
             final String pRoleName, final List<MetaData> pMetaData, final String pPassword, final String pOriginUrl,
             final String pRequestLink) {
         super();

@@ -10,13 +10,20 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
  * State pattern implementation defining the actions managing the state of a project user.<br>
- * Default implementation is to throw an exception stating that the called action is not allowed for the account's
- * current status.
  *
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
 public interface IProjectUserTransitions {
+
+    /**
+    * Passes the project user from status WAITING_ACCOUNT_ACTIVE to WAITING_ACCESS.
+    *
+    * @param pProjectUser
+    *            the project user
+    * @throws EntityTransitionForbiddenException if the project user is not in status WAITING_ACCOUNT_ACTIVE<br>
+    */
+    void makeProjectUserWaitForQualification(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
      * Passes the project user from status WAITING_ACCESS to ACCESS_GRANTED or ACCESS_DENIED according to the project
@@ -31,11 +38,7 @@ public interface IProjectUserTransitions {
      *             {@link EntityTransitionForbiddenException} when the project user is not in status WAITING_ACCESS<br>
      *             {@link EntityNotFoundException} Thrown when no access settings could be found<br>
      */
-    default void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
-            throws EntityException {
-        throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
+    void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification) throws EntityException;
 
     /**
      * Passes an ACCESS_GRANTED project user to the status ACCESS_INACTIVE.
@@ -45,10 +48,7 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status ACCESS_GRANTED
      */
-    default void inactiveAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
+    void inactiveAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
      * Passes an ACCESS_INACTIVE project user to the status ACCESS_GRANTED.
@@ -58,10 +58,7 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status ACCESS_INACTIVE
      */
-    default void activeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
+    void activeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
      * Passes an ACCESS_GRANTED project user to the status ACCESS_DENIED.
@@ -71,10 +68,7 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status ACCESS_GRANTED
      */
-    default void denyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
+    void denyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
      * Passes an ACCESS_DENIED project user to the status ACCESS_GRANTED.
@@ -84,10 +78,7 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status ACCESS_DENIED
      */
-    default void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
+    void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
      * Passes a WAITING_ACCESS/ACCESS_GRANTED/ACCESS_INACTIVE/ACCESS_DENIED project user to the status NO_ACCESS and
@@ -98,9 +89,6 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status WAITING_ACCESS/ACCESS_GRANTED/ACCESS_INACTIVE/ACCESS_DENIED
      */
-    default void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
-    }
+    void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
 }

@@ -3,10 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,7 +37,7 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 /**
  * Test class for {@link ProjectUserService}.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  */
 public class LockedStateTest {
 

@@ -46,10 +46,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidP
 @HasValidParent
 @NamedEntityGraphs(value = {
         @NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions")),
-        @NamedEntityGraph(name = "graph.role.parent", attributeNodes = { @NamedAttributeNode(value = "permissions"),
-                @NamedAttributeNode(value = "parentRole", subgraph = "parentGraph") }, subgraphs = {
-                        @NamedSubgraph(name = "parentGraph", attributeNodes = {
-                                @NamedAttributeNode(value = "permissions") }) }) })
+        @NamedEntityGraph(name = "graph.role.parent",
+                attributeNodes = { @NamedAttributeNode(value = "permissions"),
+                        @NamedAttributeNode(value = "parentRole", subgraph = "parentGraph") },
+                subgraphs = { @NamedSubgraph(name = "parentGraph",
+                        attributeNodes = { @NamedAttributeNode(value = "permissions") }) }) })
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -82,7 +83,8 @@ public class Role implements IIdentifiable<Long> {
     @Valid
     @ManyToMany
     @OrderBy("resource")
-    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
+    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
+            inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
     @GsonIgnore
     private Set<ResourcesAccess> permissions;
 
@@ -118,6 +120,11 @@ public class Role implements IIdentifiable<Long> {
         permissions = new HashSet<>();
     }
 
+    /**
+     * Constructor
+     * @param pName the name
+     * @param pParentRole the parent
+     */
     public Role(final String pName, final Role pParentRole) {
         this();
         name = pName;

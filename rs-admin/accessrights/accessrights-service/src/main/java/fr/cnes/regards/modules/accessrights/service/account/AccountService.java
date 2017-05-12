@@ -102,12 +102,18 @@ public class AccountService implements IAccountService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * Create new service with passed deps
-     *
-     * @param pAccountRepository
-     *            the account repo
-     */
-    public AccountService(final IAccountRepository pAccountRepository,
+    * Constructor
+    * @param pAccountRepository account repository
+    * @param passwordRegex password regex
+    * @param passwordRules password rules
+    * @param accountPasswordValidityDuration account password validity duration
+    * @param accountValidityDuration account validity duration
+    * @param rootAdminUserLogin root admin user login
+    * @param rootAdminUserPassword root admin user password
+    * @param thresholdFailedAuthentication threshold faild autentication
+    * @param pRuntimeTenantResolver runtime tenant resolver
+    */
+    public AccountService(final IAccountRepository pAccountRepository, //NOSONAR
             @Value("${regards.accounts.password.regex}") final String passwordRegex,
             @Value("${regards.accounts.password.rules}") final String passwordRules,
             @Value("${regards.accounts.password.validity.duration}") final Long accountPasswordValidityDuration,
@@ -128,6 +134,9 @@ public class AccountService implements IAccountService {
         this.runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
+    /**
+     * Call after Spring sucessfully build the bean
+     */
     @PostConstruct
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {

@@ -35,6 +35,15 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
         projectUserStateProvider = pProjectUserStateProvider;
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.workflow.projectuser.IProjectUserTransitions#makeProjectUserWaitForQualification(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
+     */
+    @Override
+    public void makeProjectUserWaitForQualification(ProjectUser pProjectUser)
+            throws EntityTransitionForbiddenException {
+        projectUserStateProvider.createState(pProjectUser).makeProjectUserWaitForQualification(pProjectUser);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -106,4 +115,5 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
     public void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         projectUserStateProvider.createState(pProjectUser).removeAccess(pProjectUser);
     }
+
 }

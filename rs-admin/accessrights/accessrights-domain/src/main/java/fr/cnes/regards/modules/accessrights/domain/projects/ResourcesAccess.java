@@ -83,17 +83,34 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Enumerated(EnumType.STRING)
     private DefaultRole defaultRole;
 
+    /**
+     * Default constructor
+     */
     public ResourcesAccess() {
         super();
         verb = RequestMethod.GET;
     }
 
+    /**
+     * Constructor
+     * @param pResourcesAccessId the resources access id
+     */
     public ResourcesAccess(final Long pResourcesAccessId) {
         super();
         id = pResourcesAccessId;
         verb = RequestMethod.GET;
     }
 
+    /**
+     * Constructor
+     * @param pResourcesAccessId the resources access id
+     * @param pDescription the description
+     * @param pMicroservice the microservice name
+     * @param pResource the resource
+     * @param pControllerSimpleName the controller name
+     * @param pVerb the verb
+     * @param pDefaultRole the default role
+     */
     public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,
             final String pResource, final String pControllerSimpleName, final RequestMethod pVerb,
             final DefaultRole pDefaultRole) {
@@ -107,6 +124,15 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         this.defaultRole = pDefaultRole;
     }
 
+    /**
+     * Constructor
+     * @param pDescription the description
+     * @param pMicroservice the microservice name
+     * @param pResource the resource
+     * @param pControllerSimpleName the controller name
+     * @param pVerb the verb
+     * @param pDefaultRole the default role
+     */
     public ResourcesAccess(final String pDescription, final String pMicroservice, final String pResource,
             final String pControllerSimpleName, final RequestMethod pVerb, final DefaultRole pDefaultRole) {
         this(null, pDescription, pMicroservice, pResource, pControllerSimpleName, pVerb, pDefaultRole);
@@ -143,18 +169,16 @@ public class ResourcesAccess implements IIdentifiable<Long> {
             if (other.microservice != null) {
                 return false;
             }
-        } else
-            if (!microservice.equals(other.microservice)) {
-                return false;
-            }
+        } else if (!microservice.equals(other.microservice)) {
+            return false;
+        }
         if (resource == null) {
             if (other.resource != null) {
                 return false;
             }
-        } else
-            if (!resource.equals(other.resource)) {
-                return false;
-            }
+        } else if (!resource.equals(other.resource)) {
+            return false;
+        }
         if (verb != other.verb) {
             return false;
         }

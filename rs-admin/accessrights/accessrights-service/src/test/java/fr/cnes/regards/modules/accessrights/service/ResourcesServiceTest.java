@@ -20,7 +20,6 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
@@ -64,11 +63,6 @@ public class ResourcesServiceTest {
      * Mock to manage projects resolver
      */
     private ITenantResolver tenantResolverMock;
-
-    /**
-     * Mock
-     */
-    private IRuntimeTenantResolver runtimeTenantResolverMock;
 
     /**
      * Stub for JPA Repository
@@ -133,8 +127,6 @@ public class ResourcesServiceTest {
         Mockito.when(tenantResolverMock.getAllTenants()).thenReturn(tenants);
 
         SecurityUtils.mockActualRole("ADMIN");
-
-        runtimeTenantResolverMock = Mockito.mock(IRuntimeTenantResolver.class);
 
         resourcesService = Mockito.spy(new ResourcesService(resourcesRepo, roleServiceMock));
     }

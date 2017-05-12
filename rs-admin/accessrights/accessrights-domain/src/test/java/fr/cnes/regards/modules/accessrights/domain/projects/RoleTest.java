@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,16 +53,6 @@ public class RoleTest {
      * Test authorizedAddresses
      */
     private final List<String> authorizedAddresses = new ArrayList<>();
-
-    /**
-     * Test isCorsRequestsAuthorized
-     */
-    private final boolean isCorsRequestsAuthorized = true;
-
-    /**
-     * Test corsRequestsAuthorizationEndDate
-     */
-    private final LocalDateTime corsRequestsAuthorizationEndDate = LocalDateTime.now();
 
     /**
      * Test isDefault
