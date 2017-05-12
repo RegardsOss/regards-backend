@@ -3,8 +3,10 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,13 +24,12 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 
 /**
- *
  * Class DaoUtils
  *
  * Tools class for DAO
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+ * @author oroussel
  */
 public final class DaoUtils {
 
@@ -48,32 +49,25 @@ public final class DaoUtils {
     public static final String FRAMEWORK_PACKAGE = "fr.cnes.regards.framework.modules";
 
     /**
+     * Test Framework root package
+     */
+    public static final String TEST_PACKAGE = "fr.cnes.regards.framework.test";
+
+    /**
      * Modules root package
      */
     public static final String MODULES_PACKAGE = "fr.cnes.regards.modules";
 
-    /**
-     *
-     * Constructor
-     *
-     * @since 1.0-SNAPSHOT
-     */
     private DaoUtils() {
     }
 
     /**
-     *
      * This method check that the classPatch is valid. That the scan packages for instance database and the projects
      * database are not in conflict.
-     *
-     * @param pPackageToScan
-     *            package name to scan for JPA entities and repositories
+     * @param pPackageToScan package name to scan for JPA entities and repositories
      * @throws MultiDataBasesException
-     *
-     * @since 1.0-SNAPSHOT
      */
     public static void checkClassPath(final String pPackageToScan) throws MultiDataBasesException {
-
         LOGGER.info("Checking classpath for conflicts between instance and projects databases ...");
 
         final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
@@ -102,13 +96,9 @@ public final class DaoUtils {
 
     /**
      * Find the packages for the JPA. Find the class who used Jpa and extracts their package name.
-     * <p>
      * Find all the class annotated with {@link org.springframework.data.repository.Repository}
-     * <p>
      * Find all the class who extends {@link CrudRepository}
-     * <p>
      * Find all the class who extends {@link JpaRepository}
-     *
      * @param pRootPackage the base package
      * @return the {@link Set} of package
      */
@@ -143,17 +133,19 @@ public final class DaoUtils {
      * or fr.cnes.regards.framework.modules.(name)...
      *
      * We must only take fr.cnes.regards[.framework].modules.(name)
-     *
-     * @param pPackageName
-     * @return
      */
     public static String getPackageToScan(String pPackageName) {
         if (pPackageName.startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
             String packageEnd = pPackageName.substring(DaoUtils.FRAMEWORK_PACKAGE.length() + 1);
             return DaoUtils.FRAMEWORK_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
-        } else {
+        } else if (pPackageName.startsWith(DaoUtils.MODULES_PACKAGE)) {
             String packageEnd = pPackageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
             return DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
+        } else if (pPackageName.startsWith(DaoUtils.TEST_PACKAGE)) {
+            String packageEnd = pPackageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
+            return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
+        } else {
+            throw new Error("Bullshits everywhere !!!!");
         }
     }
 
@@ -164,6 +156,9 @@ public final class DaoUtils {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Method called by JpaAutoConfiguration entity manager factories to find all elligible Jpa classes
+     */
     public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
             Class<? extends Annotation> pExcludeAnnotation, Collection<String> pPackages) {
         return pPackages.stream()
@@ -173,19 +168,16 @@ public final class DaoUtils {
 
     /**
      * Scan classpath into given package with given filters and return matching classes
-     *
-     * @param pPackageToScan
-     *            Package to scan
-     * @param pIncludeAnnotation
-     *            Include filter
-     * @param pExcludeAnnotation
-     *            Exclude filter
-     * @return matching classes
      */
-    public static List<Class<?>> scanPackageForJpa(final String pPackageToScan,
-            final Class<? extends Annotation> pIncludeAnnotation,
-            final Class<? extends Annotation> pExcludeAnnotation) {
-        final List<Class<?>> packages = new ArrayList<>();
+    public static Set<Class<?>> scanPackageForJpa(String pPackageToScan, Class<? extends Annotation> pIncludeAnnotation,
+            Class<? extends Annotation> pExcludeAnnotation) {
+        return scanPackageForJpa(pPackageToScan, pIncludeAnnotation, pExcludeAnnotation, null);
+    }
+
+    private static Set<Class<?>> scanPackageForJpa(String pPackageToScan,
+            Class<? extends Annotation> pIncludeAnnotation, Class<? extends Annotation> pExcludeAnnotation,
+            Set<Class<?>> pClasses) {
+        final Set<Class<?>> classes = (pClasses == null) ? new HashSet<>() : pClasses;
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         if (pExcludeAnnotation != null) {
@@ -196,16 +188,46 @@ public final class DaoUtils {
             LOGGER.debug("Including JPA entities with {} annotation", pIncludeAnnotation.getName());
             scanner.addIncludeFilter(new AnnotationTypeFilter(pIncludeAnnotation));
         }
+        // Find all components ie classes annotated with Entity by example
         for (final BeanDefinition def : scanner.findCandidateComponents(pPackageToScan)) {
             try {
                 LOGGER.debug("Package {} selected for scanning", def.getBeanClassName());
-                packages.add(Class.forName(def.getBeanClassName()));
+                Class<?> clazz = Class.forName(def.getBeanClassName());
+                // There is one HUGE particular case...When an Entity has a relation (OneToMany, ...) to an external
+                // entity whom Repository (ie. dao) is not into classpath (ie. PluginConfiguration for Model)
+                Set<Class<?>> inRelationClasses = new HashSet<>();
+                for (Field field : clazz.getDeclaredFields()) {
+                    Class<?> inRelationClass = null;
+                    if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToMany.class)) {
+                        // Must be a List<...> or Set<...> or Bag<...>, not too musch complicated
+                        if (field.getGenericType() instanceof ParameterizedType) {
+                            inRelationClass = (Class<?>) ((ParameterizedType) field.getGenericType())
+                                    .getActualTypeArguments()[0];
+                        }
+                    } else if (field.isAnnotationPresent(ManyToOne.class) || field
+                            .isAnnotationPresent(OneToOne.class)) {
+                        inRelationClass = field.getType();
+                    }
+                    // Adding found class if not already present into classes (to avoid infinite recursion)
+                    if ((inRelationClass != null) && !classes.contains(inRelationClass)) {
+                        classes.add(inRelationClass);
+                        inRelationClasses.add(inRelationClass);
+                    }
+                }
+                // Manage relations into relations (ie. PluginConfiguration -> PluginParameter)
+                if (!inRelationClasses.isEmpty()) {
+                    for (Class<?> inRelationClass : inRelationClasses) {
+                        scanPackageForJpa(getPackageToScan(inRelationClass.getCanonicalName()), pIncludeAnnotation,
+                                          pExcludeAnnotation, classes);
+                    }
+                }
+                classes.add(clazz);
             } catch (final ClassNotFoundException e) {
                 LOGGER.error("Error adding entity " + def.getBeanClassName() + " for hibernate database update");
                 LOGGER.error(e.getMessage(), e);
             }
         }
-        return packages;
+        return classes;
     }
 
 }

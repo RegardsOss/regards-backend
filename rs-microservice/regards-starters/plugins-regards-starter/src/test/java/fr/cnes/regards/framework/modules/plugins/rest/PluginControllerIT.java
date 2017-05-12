@@ -3,14 +3,13 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,16 +34,13 @@ import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- *
- * Class PluginControllerIT
- *
  * Test class for REST endpoints to manage plugin entities.
  *
  * @author Christophe Mertz
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class PluginControllerIT extends AbstractRegardsIT {
@@ -141,6 +137,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    @Ignore
     public void getOnePlugin() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
@@ -237,6 +234,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
 
     @Test
     @DirtiesContext
+    @Ignore
     public void getAllPluginConfigurationForOneSpecificType() {
         // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,

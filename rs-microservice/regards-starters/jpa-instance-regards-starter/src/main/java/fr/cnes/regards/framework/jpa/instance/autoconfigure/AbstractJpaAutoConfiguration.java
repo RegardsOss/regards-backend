@@ -88,12 +88,8 @@ public abstract class AbstractJpaAutoConfiguration {
     private EntityManagerFactoryBuilder builder;
 
     /**
-     *
      * Constructor. Check for classpath errors.
-     *
      * @throws MultiDataBasesException
-     *
-     * @since 1.0-SNAPSHOT
      */
     public AbstractJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
@@ -116,13 +112,8 @@ public abstract class AbstractJpaAutoConfiguration {
     }
 
     /**
-     *
      * Create EntityManagerFactory for instance datasource
-     *
-     * @param pBuilder
-     *            EntityManagerFactoryBuilder
      * @return LocalContainerEntityManagerFactoryBean
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
