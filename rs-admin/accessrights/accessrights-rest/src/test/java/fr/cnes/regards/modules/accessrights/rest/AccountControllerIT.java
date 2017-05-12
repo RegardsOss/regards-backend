@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -438,6 +439,57 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[2].rel", Matchers.is("accept")));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to activate an inactive account")
+    public void activeAccount_shouldFailOnWrongStatus() {
+        // In order to trigger the expected fail case, we must ensure the accoun has wrong status
+        Assert.assertNotEquals(AccountStatus.INACTIVE, account.getStatus());
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT, null,
+                          expectations, "Should fail because the account is not in ACTIVE status", account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to activate an account which has been previously deactivated")
+    public void activeAccount() {
+        // Prepare the account
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT, null,
+                          expectations, "Should activate the account", account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to deactivate an active account")
+    public void inactiveAccount_shouldFailOnWrongStatus() {
+        // In order to trigger the expected fail case, we must ensure the accoun has wrong status
+        Assert.assertNotEquals(AccountStatus.ACTIVE, account.getStatus());
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT, null,
+                          expectations, "Should fail because the account is not in INACTIVE status",
+                          account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to deactivate an active account")
+    public void inactiveAccount() {
+        // Prepare the account
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT, null,
+                          expectations, "Should deactivate the account", account.getEmail());
     }
 
     @Override
