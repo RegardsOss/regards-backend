@@ -91,6 +91,18 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
+     * Map discriminator value to its corresponding type adapter often called delegate
+     */
+    protected final Map<String, Map<String, TypeAdapter<?>>> discriminatorToDelegate = Collections
+            .synchronizedMap(new HashMap<>());
+
+    /**
+     * Map explicit type to its corresponding type adapter often called delegate
+     */
+    protected final Map<String, Map<Class<?>, TypeAdapter<?>>> subtypeToDelegate = Collections
+            .synchronizedMap(new HashMap<>());
+
+    /**
      * Constructor
      *
      * @param pTenantResolver tenant resolver
@@ -402,6 +414,8 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         return jsonObject;
     }
 
+    // The create() is called many types and return null for unmanaged types.
+    // A factory is typically called once per type, but the returned type adapter may be used many times.
     // CHECKSTYLE:OFF
     @Override
     public <T> TypeAdapter<T> create(Gson pGson, TypeToken<T> pType) { // NOSONAR
@@ -409,18 +423,6 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         if (!baseType.isAssignableFrom(requestedType)) {
             return null;
         }
-
-        // If factory not already created, refresh not needed
-        resetRefreshMapping();
-
-        // Tenant maps
-        final Map<String, Map<String, TypeAdapter<?>>> discriminatorToDelegate = Collections
-                .synchronizedMap(new HashMap<>());
-        final Map<String, Map<Class<?>, TypeAdapter<?>>> subtypeToDelegate = Collections
-                .synchronizedMap(new HashMap<>());
-
-        // Register TypeAdapter delegation mapping from discriminator and type
-        doMapping(pGson, discriminatorToDelegate, subtypeToDelegate, null);
 
         return new TypeAdapter<T>() { // NOSONAR
 
@@ -467,8 +469,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
              */
             @Override
             public T read(JsonReader pIn) throws IOException {
-                if (needRefreshMapping(runtimeTenantResolver.getTenant())) {
-                    doMapping(pGson, discriminatorToDelegate, subtypeToDelegate, runtimeTenantResolver.getTenant());
+                String tenant = runtimeTenantResolver.getTenant();
+                if (needRefreshMapping(tenant)) {
+                    doMapping(pGson, discriminatorToDelegate, subtypeToDelegate, tenant);
                     setRefreshMapping(runtimeTenantResolver.getTenant(), false);
                 }
 
