@@ -106,7 +106,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Commit
     @Requirement("REGARDS_DSL_DAM_ARC_030")
     @Requirement("REGARDS_DSL_DAM_ARC_010")
     @Purpose("System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
