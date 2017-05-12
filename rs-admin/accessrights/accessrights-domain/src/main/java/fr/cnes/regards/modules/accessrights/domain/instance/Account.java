@@ -25,6 +25,11 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
+/**
+ * Account entity
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @InstanceEntity
 @Entity(name = "T_ACCOUNT")
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")

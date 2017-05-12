@@ -64,10 +64,18 @@ public class AccountUnlockToken {
      */
     private boolean verified;
 
+    /**
+     * Default constructor
+     */
     public AccountUnlockToken() {
         super();
     }
 
+    /**
+     * Constructor
+     * @param pToken the the token string
+     * @param pAccount the linked account
+     */
     public AccountUnlockToken(final String pToken, final Account pAccount) {
         super();
         this.token = pToken;

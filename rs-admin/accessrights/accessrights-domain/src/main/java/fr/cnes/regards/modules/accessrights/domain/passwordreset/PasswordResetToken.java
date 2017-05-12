@@ -55,17 +55,28 @@ public class PasswordResetToken {
      */
     private LocalDateTime expiryDate;
 
+    /**
+     * Default constructor
+     */
     public PasswordResetToken() {
         super();
     }
 
+    /**
+     * Constructor
+     * @param pToken the token string
+     */
     public PasswordResetToken(final String pToken) {
         super();
-
         this.token = pToken;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
+    /**
+     * Constructor
+     * @param pToken the token string
+     * @param pAccount the linked account
+     */
     public PasswordResetToken(final String pToken, final Account pAccount) {
         super();
 
@@ -122,6 +133,10 @@ public class PasswordResetToken {
         this.expiryDate = pExpiryDate;
     }
 
+    /**
+     * Refresh the expiry date
+     * @param pToken
+     */
     public void updateToken(final String pToken) {
         this.token = pToken;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
@@ -153,26 +168,23 @@ public class PasswordResetToken {
             if (other.expiryDate != null) {
                 return false;
             }
-        } else
-            if (!expiryDate.equals(other.expiryDate)) {
-                return false;
-            }
+        } else if (!expiryDate.equals(other.expiryDate)) {
+            return false;
+        }
         if (token == null) {
             if (other.token != null) {
                 return false;
             }
-        } else
-            if (!token.equals(other.token)) {
-                return false;
-            }
+        } else if (!token.equals(other.token)) {
+            return false;
+        }
         if (account == null) {
             if (other.account != null) {
                 return false;
             }
-        } else
-            if (!account.equals(other.account)) {
-                return false;
-            }
+        } else if (!account.equals(other.account)) {
+            return false;
+        }
         return true;
     }
 

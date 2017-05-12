@@ -98,6 +98,9 @@ public class RoleFactory {
         return toCreate;
     }
 
+    /**
+     * @return the ADMIN role
+     */
     public Role createAdmin() {
         final Role toCreate = create();
         final RoleFactory factoryForParentRole = new RoleFactory();
@@ -109,6 +112,9 @@ public class RoleFactory {
         return toCreate;
     }
 
+    /**
+     * @return the INSTANCE_ADMIN role
+     */
     public Role createInstanceAdmin() {
         final Role toCreate = create();
         toCreate.setName(DefaultRole.INSTANCE_ADMIN.toString());
@@ -117,6 +123,9 @@ public class RoleFactory {
         return toCreate;
     }
 
+    /**
+     * @return the PROJECT_ADMIN role
+     */
     public Role createProjectAdmin() {
         final Role toCreate = create();
         toCreate.setName(DefaultRole.PROJECT_ADMIN.toString());
@@ -125,6 +134,9 @@ public class RoleFactory {
         return toCreate;
     }
 
+    /**
+     * @return the PUBLIC role
+     */
     public Role createPublic() {
         final Role toCreate = create();
         toCreate.setName(DefaultRole.PUBLIC.toString());
@@ -134,6 +146,9 @@ public class RoleFactory {
         return toCreate;
     }
 
+    /**
+     * @return the REGISTERED_USER role
+     */
     public Role createRegisteredUser() {
         final Role toCreate = create();
         final RoleFactory factoryForParentRole = new RoleFactory();
