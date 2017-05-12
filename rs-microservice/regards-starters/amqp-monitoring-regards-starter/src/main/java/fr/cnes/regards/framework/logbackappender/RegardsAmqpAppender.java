@@ -31,6 +31,11 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAppender.class);
+    
+    /**
+     * Unknow user. No user authenticated (JWT Token).
+     */
+    private static final String UNDEFINED_USER = "unknown";
 
     /**
      * The {@link Publisher} used to send {@link LogEvent}
@@ -55,6 +60,9 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     protected void append(ILoggingEvent eventObject) {
 
         String user = SecurityUtils.getActualUser();
+        if (user == null){
+            user = UNDEFINED_USER;
+        }
         String tenant = runtimeTenantResolver.getTenant();
 
         if (tenant != null) {

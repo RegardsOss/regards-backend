@@ -86,7 +86,7 @@ public class TemplateServiceConfiguration {
 
     @Bean
     public Template accountUnlockTemplate() throws IOException {
-        try (InputStream is = passwordResetTemplate.getInputStream()) {
+        try (InputStream is = accountUnlockTemplate.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
             return new Template(ACCOUNT_UNLOCK_TEMPLATE, text, dataStructure, "Account Unlock");

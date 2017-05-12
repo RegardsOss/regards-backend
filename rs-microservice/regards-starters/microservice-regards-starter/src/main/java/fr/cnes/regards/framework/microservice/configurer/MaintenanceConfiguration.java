@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.microservice.configurer;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 
@@ -28,9 +29,14 @@ public class MaintenanceConfiguration implements ICustomWebSecurityConfiguration
     @Autowired
     private IRuntimeTenantResolver pResolver;
 
+    @Value("${regards.microservices.enable.maintenance.mode:true}")
+    private static final boolean ENABLE_MAINTENANCE_MODE = true;
+
     @Override
     public void configure(final HttpSecurity pHttp) {
-        pHttp.addFilterAfter(new MaintenanceFilter(pResolver), CorsFilter.class);
+        if (ENABLE_MAINTENANCE_MODE) {
+            pHttp.addFilterAfter(new MaintenanceFilter(pResolver), CorsFilter.class);
+        }
     }
 
 }
