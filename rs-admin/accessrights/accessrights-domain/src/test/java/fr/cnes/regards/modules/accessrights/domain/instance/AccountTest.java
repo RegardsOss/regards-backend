@@ -144,7 +144,6 @@ public class AccountTest {
         Assert.assertEquals(lastName, account.getLastName());
         Assert.assertEquals(password, account.getPassword());
         Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-        Assert.assertNotNull(account.getCode());
     }
 
     /**
@@ -255,25 +254,6 @@ public class AccountTest {
         final Long newId = 4L;
         accountTest.setId(newId);
         Assert.assertEquals(newId, accountTest.getId());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getCode()}.
-     */
-    @Test
-    public void testGetCode() {
-        accountTest.setCode(code);
-        Assert.assertEquals(code, accountTest.getCode());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setCode(java.lang.String)}.
-     */
-    @Test
-    public void testSetCode() {
-        final String newCode = "newCode";
-        accountTest.setCode(newCode);
-        Assert.assertEquals(newCode, accountTest.getCode());
     }
 
     /**

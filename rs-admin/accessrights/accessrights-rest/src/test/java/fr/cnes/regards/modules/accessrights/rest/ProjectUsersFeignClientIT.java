@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * @since 1.0-SNAPSHOT
      */
+    @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
@@ -101,6 +103,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * @since 1.0-SNAPSHOT
      */
+    @Ignore
     @Test
     public void retrieveProjectUserFromFeignClient() {
         final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUser(1L);

@@ -125,20 +125,39 @@ public interface IAccountService {
      * Validate the password according to the regex provided by file. Mainly used by create and update methods so an
      * invalid password wouldn't be used
      *
+     * @param pNewAccount the account which we are checking the password from
      * @throws EntityInvalidException
      *             thrown if the provided password does not respect the configured regex
      */
     void checkPassword(Account pNewAccount) throws EntityInvalidException;
 
     /**
+     * @param pPassword the password to validate
      * @return whether the password respect the regex
      */
     boolean validPassword(String pPassword);
 
+    /**
+     * @return password rules
+     */
     String getPasswordRules();
 
+    /**
+     * Encrypt password
+     * @param pPassword the password to encrypt
+     * @return the encrypted password
+     */
+    /**
+     * Check account validity
+     */
     void checkAccountValidity();
 
+    /**
+     * Change password
+     * @param pId account id
+     * @param pEncryptPassword encrypted password
+     * @throws EntityNotFoundException if no account of passed id could be found
+     */
     void changePassword(Long pId, String pEncryptPassword) throws EntityNotFoundException;
 
 }

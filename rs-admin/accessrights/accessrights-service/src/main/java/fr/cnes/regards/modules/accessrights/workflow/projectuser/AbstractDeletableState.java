@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
-abstract class AbstractDeletableState implements IProjectUserTransitions {
+public abstract class AbstractDeletableState extends AbstractProjectUserState {
 
     /**
      * Repository managing {@link ProjectUser}s. Autowired by Spring.
@@ -35,6 +35,7 @@ abstract class AbstractDeletableState implements IProjectUserTransitions {
     @Override
     public void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         switch (pProjectUser.getStatus()) {
+            case WAITING_ACCOUNT_ACTIVE:
             case WAITING_ACCESS:
             case ACCESS_DENIED:
             case ACCESS_GRANTED:

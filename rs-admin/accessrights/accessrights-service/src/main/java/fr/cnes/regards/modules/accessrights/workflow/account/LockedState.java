@@ -20,9 +20,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PasswordResetToken;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
@@ -69,16 +71,17 @@ public class LockedState extends AbstractDeletableState {
     private final IEmailClient emailClient;
 
     /**
-     * @param pProjectUserService
-     * @param pAccountRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pAccountService
-     * @param pTokenService
-     * @param pTemplateService
-     * @param pEmailClient
+     * Constructor
+     * @param pProjectUserService Service managing {@link ProjectUser}s. Autowired by Spring.
+     * @param pAccountRepository Account Repository
+     * @param pTenantResolver Tenant resolver
+     * @param pRuntimeTenantResolver Runtime Tenant resolver
+     * @param pAccountService CRUD service handling {@link Account}s. Autowired by Spring.
+     * @param pTokenService CRUD service handling {@link PasswordResetToken}s. Autowired by Spring.
+     * @param pTemplateService Template Service. Autowired by Spring.
+     * @param pEmailClient Email Client. Autowired by Spring.
      */
-    public LockedState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
+    public LockedState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository, //NOSONAR
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IAccountService pAccountService, final IAccountUnlockTokenService pTokenService,
             final ITemplateService pTemplateService, final IEmailClient pEmailClient,
@@ -151,6 +154,7 @@ public class LockedState extends AbstractDeletableState {
     @Override
     public void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
         validateToken(pAccount.getEmail(), pToken);
+        pAccount.setStatus(AccountStatus.ACTIVE);
         accountService.updateAccount(pAccount.getId(), pAccount);
     }
 

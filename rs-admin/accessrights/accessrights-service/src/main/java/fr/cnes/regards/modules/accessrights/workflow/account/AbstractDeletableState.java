@@ -41,7 +41,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private final IProjectUserService projectUserService;
 
     /**
-     * Repository
+     * Account Repository
      */
     private final IAccountRepository accountRepository;
 

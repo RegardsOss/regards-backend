@@ -35,7 +35,7 @@ public class ProjectUserTest {
     /**
      * Test status
      */
-    private final UserStatus status = UserStatus.WAITING_ACCESS;
+    private final UserStatus status = UserStatus.WAITING_ACCOUNT_ACTIVE;
 
     /**
      * Test metaData
@@ -68,7 +68,7 @@ public class ProjectUserTest {
         Assert.assertEquals(null, testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testUser.getMetaData());
-        Assert.assertEquals(UserStatus.WAITING_ACCESS, testUser.getStatus());
+        Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
         Assert.assertEquals(null, testUser.getLastConnection());
         Assert.assertEquals(null, testUser.getLastUpdate());
         Assert.assertEquals(null, testUser.getRole());
@@ -85,7 +85,7 @@ public class ProjectUserTest {
         Assert.assertEquals(null, testUser.getId());
         Assert.assertEquals(null, testUser.getLastConnection());
         Assert.assertEquals(null, testUser.getLastUpdate());
-        Assert.assertEquals(UserStatus.WAITING_ACCESS, testUser.getStatus());
+        Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
         Assert.assertEquals(email, testUser.getEmail());
         Assert.assertEquals(metaData, testUser.getMetaData());
         Assert.assertEquals(role, testUser.getRole());

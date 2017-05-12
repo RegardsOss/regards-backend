@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 /**
  * Test class for {@link ProjectUserService}.
  *
- * @author xbrochar
+ * @author Xavier-Alexandre Brochard
  */
 public class LockedStateTest {
 
@@ -227,7 +227,6 @@ public class LockedStateTest {
 
         // Prepare the case
         account.setStatus(AccountStatus.LOCKED);
-        account.setCode(TOKEN);
 
         // Call tested method
         accountWorkflowManager.performUnlockAccount(account, TOKEN);

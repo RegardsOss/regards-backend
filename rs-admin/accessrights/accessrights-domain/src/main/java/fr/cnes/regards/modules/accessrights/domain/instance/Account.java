@@ -14,7 +14,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.Email;
@@ -25,6 +24,11 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
+/**
+ * Account entity
+ *
+ * @author Xavier-Alexandre Brochard
+ */
 @InstanceEntity
 @Entity(name = "T_ACCOUNT")
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")
@@ -73,11 +77,6 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "status")
     private AccountStatus status;
 
-    @NotBlank
-    @GsonIgnore
-    @Column(name = "code")
-    private String code;
-
     /**
      * Default empty constructor used by serializers
      */
@@ -85,7 +84,6 @@ public class Account implements IIdentifiable<Long> {
     private Account() {
         super();
         status = AccountStatus.PENDING;
-        code = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
     }
 
     /**
@@ -103,7 +101,6 @@ public class Account implements IIdentifiable<Long> {
     public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
         super();
         status = AccountStatus.PENDING;
-        code = RandomStringUtils.randomAlphanumeric(RANDOM_STRING_LENGTH);
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;
@@ -200,21 +197,6 @@ public class Account implements IIdentifiable<Long> {
      */
     public void setStatus(final AccountStatus pStatus) {
         status = pStatus;
-    }
-
-    /**
-     * @return the code
-     */
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * @param pCode
-     *            the code to set
-     */
-    public void setCode(final String pCode) {
-        code = pCode;
     }
 
     public LocalDateTime getPasswordUpdateDate() {

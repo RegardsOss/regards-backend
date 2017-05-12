@@ -19,6 +19,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 public class ProjectUserStateProvider {
 
     /**
+     * Waiting account active state
+     */
+    @Autowired
+    private WaitingAccountActiveState waitingAccountActiveState;
+
+    /**
      * Waiting access state
      */
     @Autowired
@@ -64,8 +70,9 @@ public class ProjectUserStateProvider {
             case ACCESS_INACTIVE:
                 state = accessInactiveState;
                 break;
+            case WAITING_ACCOUNT_ACTIVE:
             default:
-                state = waitingAccessState;
+                state = waitingAccountActiveState;
                 break;
         }
         return state;

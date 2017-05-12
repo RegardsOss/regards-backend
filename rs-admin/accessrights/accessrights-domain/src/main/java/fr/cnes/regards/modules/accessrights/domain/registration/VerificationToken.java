@@ -80,6 +80,9 @@ public class VerificationToken {
      */
     private boolean verified;
 
+    /**
+     * Default constructor
+     */
     public VerificationToken() {
         super();
     }

@@ -5,7 +5,10 @@ package fr.cnes.regards.modules.accessrights.workflow.account;
 
 import java.time.LocalDateTime;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -17,6 +20,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.workflow.account.event.OnAccountEmailValidationEvent;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status ACCEPTED.
@@ -25,6 +29,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * @author Christophe Mertz
  */
 @Component
+@Transactional
 public class AcceptedState extends AbstractDeletableState {
 
     /**
@@ -33,16 +38,27 @@ public class AcceptedState extends AbstractDeletableState {
     private final IAccountRepository accountRepository;
 
     /**
+     * Use this to publish Spring application events
+     */
+    private final ApplicationEventPublisher eventPublisher;
+
+    /**
      * @param pAccountRepository
-     *            the account repository
+     *            Account repository. Autowired by Spring. Must not be null.
+     * @param pEventPublisher
+     *            Use this to publish Spring application events. Auowired by Spring. Must not be null.
      */
     public AcceptedState(final IProjectUserService pProjectUserService, final IAccountRepository pAccountRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IPasswordResetService pPasswordResetTokenService,
-            final IVerificationTokenService pVerificationTokenService) {
+            final IVerificationTokenService pVerificationTokenService,
+            final ApplicationEventPublisher pEventPublisher) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
               pPasswordResetTokenService, pVerificationTokenService);
+        Assert.notNull(pAccountRepository);
+        Assert.notNull(pEventPublisher);
         accountRepository = pAccountRepository;
+        eventPublisher = pEventPublisher;
     }
 
     @Override
@@ -55,6 +71,7 @@ public class AcceptedState extends AbstractDeletableState {
         }
 
         account.setStatus(AccountStatus.ACTIVE);
+        eventPublisher.publishEvent(new OnAccountEmailValidationEvent(account.getEmail()));
         accountRepository.save(account);
     }
 
