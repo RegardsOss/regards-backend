@@ -35,6 +35,7 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
     @Override
     public void removeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         switch (pProjectUser.getStatus()) {
+            case WAITING_ACCOUNT_ACTIVE:
             case WAITING_ACCESS:
             case ACCESS_DENIED:
             case ACCESS_GRANTED:

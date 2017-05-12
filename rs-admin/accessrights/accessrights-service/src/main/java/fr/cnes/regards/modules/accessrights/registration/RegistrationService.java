@@ -4,11 +4,9 @@
 package fr.cnes.regards.modules.accessrights.registration;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -22,17 +20,13 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
-import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessQualification;
-import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
 
 /**
  * {@link IRegistrationService} implementation.
@@ -66,7 +60,6 @@ public class RegistrationService implements IRegistrationService {
     /**
      * CRUD service handling {@link VerificationToken}s. Autowired by Spring.
      */
-    @Autowired
     private final IVerificationTokenService tokenService;
 
     /**
@@ -75,48 +68,34 @@ public class RegistrationService implements IRegistrationService {
     private final IAccountSettingsService accountSettingsService;
 
     /**
-     * CRUD repository handling {@link AccountSettingst}s. Autowired by Spring.
-     */
-    private final IAccessSettingsService accessSettingsService;
-
-    /**
-     * Account workflow manager
+     * Account workflow manager. Autowired by Spring.
      */
     private final AccountWorkflowManager accountWorkflowManager;
 
     /**
-     * Account workflow manager
+     * @param pAccountRepository CRUD repository handling {@link Account}s. Autowired by Spring. Must no be null.
+     * @param pProjectUserRepository CRUD repository handling {@link ProjectUser}s. Autowired by Spring. Must not be null.
+     * @param pRoleService CRUD repository handling {@link Role}s. Autowired by Spring. Must not be null.
+     * @param pTokenService  CRUD service handling {@link VerificationToken}s. Autowired by Spring. Must not be null.
+     * @param pAccountSettingsService CRUD repository handling {@link AccountSettingst}s. Autowired by Spring. Must not be null.
+     * @param pAccountWorkflowManagerAccount workflow manager. Autowired by Spring. Must not be null.
      */
-    private final ProjectUserWorkflowManager projectUserWorkflowManager;
-
-    /**
-     * @param pAccountRepository
-     *            the account repository
-     * @param pProjectUserRepository
-     *            the project user repository
-     * @param pRoleService
-     *            the role service
-     * @param pTokenService
-     *            the token service
-     * @param pAccountSettingsService
-     *            the account settings service
-     * @param pAccountWorkflowManager
-     *            the account workflow manager
-     */
-    public RegistrationService(final IAccountRepository pAccountRepository,
-            final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
-            final IVerificationTokenService pTokenService, final IAccountSettingsService pAccountSettingsService,
-            final IAccessSettingsService pAccessSettingsService, final AccountWorkflowManager pAccountWorkflowManager,
-            final ProjectUserWorkflowManager pProjectUserWorkflowManager) {
+    public RegistrationService(IAccountRepository pAccountRepository, IProjectUserRepository pProjectUserRepository,
+            IRoleService pRoleService, IVerificationTokenService pTokenService,
+            IAccountSettingsService pAccountSettingsService, AccountWorkflowManager pAccountWorkflowManager) {
         super();
+        Assert.notNull(pAccountRepository);
+        Assert.notNull(pProjectUserRepository);
+        Assert.notNull(pRoleService);
+        Assert.notNull(pTokenService);
+        Assert.notNull(pAccountSettingsService);
+        Assert.notNull(pAccountWorkflowManager);
         accountRepository = pAccountRepository;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
         accountSettingsService = pAccountSettingsService;
-        accessSettingsService = pAccessSettingsService;
         accountWorkflowManager = pAccountWorkflowManager;
-        projectUserWorkflowManager = pProjectUserWorkflowManager;
     }
 
     /*
@@ -129,27 +108,24 @@ public class RegistrationService implements IRegistrationService {
     @Override
     public void requestAccess(final AccessRequestDto pDto) throws EntityException {
         // Create the account if needed
-        try {
-            requestAccount(pDto);
-        } catch (final EntityException e) {
-            LOG.info("Requesting access with an existing account. Ok, no account created", e);
-        }
+        requestAccountIfNecessary(pDto);
 
         // Create the project user
         requestProjectUser(pDto);
     }
 
     /**
-     * Create the account
+     * Create the account if necessary
      *
      * @param pDto
      * @return
      * @throws EntityException
      */
-    private Account requestAccount(final AccessRequestDto pDto) throws EntityException {
+    private void requestAccountIfNecessary(final AccessRequestDto pDto) throws EntityException {
         // Check existence
         if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + " is already in use.");
+            LOG.info("Requesting access with an existing account. Ok, no account created");
+            return;
         }
 
         // Create the new account
@@ -171,8 +147,6 @@ public class RegistrationService implements IRegistrationService {
 
         // Init the verification token
         tokenService.create(newAccount, pDto.getOriginUrl(), pDto.getRequestLink());
-
-        return newAccount;
     }
 
     /**
@@ -182,9 +156,8 @@ public class RegistrationService implements IRegistrationService {
      * @throws EntityException
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
-        // Check that an associated account exitsts
-        final Optional<Account> test = accountRepository.findOneByEmail(pDto.getEmail());
-        if (!test.isPresent()) {
+        // Check that an associated account exists
+        if (!accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
             throw new EntityNotFoundException(pDto.getEmail(), Account.class);
         }
 
@@ -202,12 +175,6 @@ public class RegistrationService implements IRegistrationService {
         // Check the status
         Assert.isTrue(UserStatus.WAITING_ACCOUNT_ACTIVE.equals(projectUser.getStatus()),
                       "Trying to create a ProjectUser with other status than WAITING_ACCOUNT_ACTIVE.");
-
-        // Auto-accept if configured so
-        final AccessSettings settings = accessSettingsService.retrieve();
-        if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
-        }
 
         // Save
         projectUserRepository.save(projectUser);

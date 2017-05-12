@@ -402,9 +402,10 @@ public class AccountsController implements IResourceController<Account> {
         return resource;
     }
 
+    @SuppressWarnings("unused")
     private static class Validity {
 
-        private Boolean validity;
+        private Boolean validity; //NOSONAR
 
         private Validity() {
         }
