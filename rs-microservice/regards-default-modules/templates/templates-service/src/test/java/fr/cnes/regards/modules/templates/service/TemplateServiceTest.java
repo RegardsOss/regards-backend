@@ -5,7 +5,9 @@ package fr.cnes.regards.modules.templates.service;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
@@ -24,7 +26,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Test suite for {@link TemplateService}.
@@ -32,6 +33,54 @@ import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
  * @author Xavier-Alexandre Brochard
  */
 public class TemplateServiceTest {
+
+    /**
+     * Code
+     */
+    public static final String CODE = "DEFAULT";
+
+    /**
+     * Content
+     */
+    public static final String CONTENT = "Hello ${name}. You are ${age} years old and ${height} m tall.";
+
+    /**
+     * Subject
+     */
+    public static final String SUBJECT = "Subject of a templated mail";
+
+    /**
+     * A value stored in the data map
+     */
+    public static final String DATA_VALUE_1 = "26";
+
+    /**
+     * A value stored in the data map
+     */
+    public static final String DATA_VALUE_2 = "1.79";
+
+    /**
+     * A recipient for the mail
+     */
+    public static final String RECIPIENT_0 = "email@test.com";
+
+    /**
+     * A recipient for the mail
+     */
+    public static final String RECIPIENT_1 = "otheremail@test.com";
+
+    /**
+     * The recipients as an array
+     */
+    public static final String[] RECIPIENTS = { RECIPIENT_0, RECIPIENT_1 };
+
+    /**
+     * Data
+     */
+    // @formatter:off
+    @SuppressWarnings("serial")
+    public static final Map<String, String> DATA = new HashMap<String, String>() {{ put("name", "Defaultname");put("age", DATA_VALUE_1);put("height", DATA_VALUE_2); }};
+    // @formatter:on
 
     /**
      * A template
@@ -65,8 +114,7 @@ public class TemplateServiceTest {
 
     @Before
     public void setUp() throws IOException {
-        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
-                TemplateTestConstants.SUBJECT);
+        template = new Template(CODE, CONTENT, DATA, SUBJECT);
         templateRepository = Mockito.mock(ITemplateRepository.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
@@ -292,21 +340,19 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testWrite() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.findOneByCode(TemplateTestConstants.CODE))
-                .thenReturn(Optional.ofNullable(template));
+        Mockito.when(templateRepository.findOneByCode(CODE)).thenReturn(Optional.ofNullable(template));
 
         // Define expected
-        final String expectedSubject = TemplateTestConstants.SUBJECT;
+        final String expectedSubject = SUBJECT;
         final String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
 
         // Define actual
-        final SimpleMailMessage message = templateService
-                .writeToEmail(TemplateTestConstants.CODE, TemplateTestConstants.DATA, TemplateTestConstants.RECIPIENTS);
+        final SimpleMailMessage message = templateService.writeToEmail(CODE, DATA, RECIPIENTS);
 
         // Check
         Assert.assertEquals(expectedSubject, message.getSubject());
         Assert.assertEquals(expectedText, message.getText());
-        Assert.assertArrayEquals(TemplateTestConstants.RECIPIENTS, message.getTo());
+        Assert.assertArrayEquals(RECIPIENTS, message.getTo());
     }
 
 }

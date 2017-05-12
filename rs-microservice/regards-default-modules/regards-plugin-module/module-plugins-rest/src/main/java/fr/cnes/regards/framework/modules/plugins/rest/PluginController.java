@@ -3,10 +3,9 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,13 +14,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -232,9 +225,7 @@ public class PluginController implements IResourceController<PluginConfiguration
         List<PluginConfiguration> pluginConfs;
 
         if (pPluginType != null) {
-            /*
-             * Get all the PluginConfiguration for a specific plugin type
-             */
+            // Get all the PluginConfiguration for a specific plugin type
             try {
                 pluginConfs = pluginService.getPluginConfigurationsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
@@ -242,9 +233,7 @@ public class PluginController implements IResourceController<PluginConfiguration
                 throw new EntityNotIdentifiableException(e.getMessage());
             }
         } else {
-            /*
-             * Get all the PluginConfiguration
-             */
+            // Get all the PluginConfiguration
             pluginConfs = pluginService.getAllPluginConfigurations();
         }
 
@@ -352,7 +341,7 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
-                    + ">- config id= <" + pConfigId + ">");
+                                 + ">- config id= <" + pConfigId + ">");
             throw new EntityNotFoundException(pPluginId, PluginConfiguration.class);
         }
 
