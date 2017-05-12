@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -165,6 +166,10 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         setAuthorities(apiAccountId, RequestMethod.DELETE, DEFAULT_ROLE);
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
                 + RegistrationController.ACCEPT_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
+        setAuthorities(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT,
+                       RequestMethod.PUT, DEFAULT_ROLE);
+        setAuthorities(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT,
+                       RequestMethod.PUT, DEFAULT_ROLE);
     }
 
     @Test
@@ -394,8 +399,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Purpose("Check we do not add 'remove' HATEOAS link if the account is linked to project users")
-    public void checkHateoasLinks_doNotAddRemoveIfLinkedToUsers() {
+    @Purpose("Check we do not add 'delete' HATEOAS link if the account is linked to project users")
+    public void checkHateoasLinks_shouldNotAddDeleteIfLinkedToUsers() {
         // Must have account with status allowing deletion and have a linked project user
         String email = "randomEmailMatchingAProjectUser@test.com";
         account.setEmail(email);
@@ -408,13 +413,13 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[0].rel", Matchers.is("self")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.not(Matchers.hasItem("delete"))));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 
     @Test
-    @Purpose("Check we do add 'remove' HATEOAS link if the account is linked to no project users")
-    public void checkHateoasLinks_addRemoveIfNotLinkedToUsers() {
+    @Purpose("Check we do add 'delete' HATEOAS link if the account is linked to no project users")
+    public void checkHateoasLinks_shouldAddDeleteIfNotLinkedToUsers() {
         // Must have account with status allowing deletion and have a no linked project user
         String email = "randomEmailMatchingNoProjectUser@test.com";
         account.setEmail(email);
@@ -423,7 +428,20 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[1].rel", Matchers.is("delete")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("delete")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we do not add 'accept' HATEOAS link if the account is not in state PENDING")
+    public void checkHateoasLinks_shouldNotAddAcceptLinkIfWrongStatus() {
+        // Prepare the account
+        account.setStatus(AccountStatus.LOCKED);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.not(Matchers.hasItem("accept"))));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 
@@ -436,7 +454,110 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[2].rel", Matchers.is("accept")));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("accept")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to deactivate an active account")
+    public void inactiveAccount() {
+        // Prepare the account
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT, null,
+                          expectations, "Should deactivate the account", account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to deactivate an active account")
+    public void inactiveAccount_shouldFailOnWrongStatus() {
+        // In order to trigger the expected fail case, we must ensure the accoun has wrong status
+        Assert.assertNotEquals(AccountStatus.ACTIVE, account.getStatus());
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT, null,
+                          expectations, "Should fail because the account is not in INACTIVE status",
+                          account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check we do not add 'inactive' HATEOAS link if the account is not in state ACTIVE")
+    public void checkHateoasLinks_shouldNotAddInactiveLinkIfWrongStatus() {
+        // Prepare the account
+        account.setStatus(AccountStatus.PENDING);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.not(Matchers.hasItem("inactive"))));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'inactive' HATEOAS link if the account is in state ACTIVE")
+    public void checkHateoasLinks_shouldAddInactiveLinkIfRightStatus() {
+        // Prepare the account
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("inactive")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to activate an inactive account")
+    public void activeAccount_shouldFailOnWrongStatus() {
+        // In order to trigger the expected fail case, we must ensure the accoun has wrong status
+        Assert.assertNotEquals(AccountStatus.INACTIVE, account.getStatus());
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isForbidden());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT, null,
+                          expectations, "Should fail because the account is not in ACTIVE status", account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check that the system allows to activate an account which has been previously deactivated")
+    public void activeAccount() {
+        // Prepare the account
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT, null,
+                          expectations, "Should activate the account", account.getEmail());
+    }
+
+    @Test
+    @Purpose("Check we do not add 'active' HATEOAS link if the account is not in state INACTIVE")
+    public void checkHateoasLinks_shouldNotAddActiveLinkIfWrongStatus() {
+        // Prepare the account
+        account.setStatus(AccountStatus.PENDING);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.not(Matchers.hasItem("active"))));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'active' HATEOAS link if the account is in state INACTIVE")
+    public void checkHateoasLinks_shouldAddActiveLinkIfRightStatus() {
+        // Prepare the account
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("active")));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 

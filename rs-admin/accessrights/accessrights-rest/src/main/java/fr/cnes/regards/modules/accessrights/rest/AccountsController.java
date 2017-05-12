@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -69,6 +70,10 @@ public class AccountsController implements IResourceController<Account> {
     public static final String PATH_ACCOUNT_ACCOUNT_EMAIL = "/account/{account_email}";
 
     public static final String PATH_ACCOUNT_ID = "/{account_id}";
+
+    public static final String PATH_ACTIVE_ACCOUNT = "/{account_email}/active";
+
+    public static final String PATH_INACTIVE_ACCOUNT = "/{account_email}/inactive";
 
     /**
      * Root mapping for requests of this rest controller
@@ -376,6 +381,51 @@ public class AccountsController implements IResourceController<Account> {
         return new ResponseEntity<>(accountService.getPasswordRules(), HttpStatus.OK);
     }
 
+    /**
+     * Deactivates an {@link Account} in status ACTIVE.
+     *
+     * @param pAccountEmail the account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if no account with given email could be found<br>
+     *             {@link EntityTransitionForbiddenException} if account is not in ACTIVE status<br>
+     */
+    @RequestMapping(value = PATH_INACTIVE_ACCOUNT, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Deactivates an active account", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> inactiveAccount(@PathVariable("account_email") final String pAccountEmail)
+            throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Dactivate it
+        accountWorkflowManager.inactiveAccount(account);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Activates an {@link Account} in status INACTIVE.
+     *
+     * @param pAccountEmail the account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if no account with given email could be found<br>
+     *             {@link EntityTransitionForbiddenException} if account is not in INACTIVE status<br>
+     */
+    @RequestMapping(value = PATH_ACTIVE_ACCOUNT, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Activates an account which has been previously deactivated",
+            role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> activeAccount(@PathVariable("account_email") final String pAccountEmail)
+            throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Activate it
+        accountWorkflowManager.activeAccount(account);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @Override
     public Resource<Account> toResource(final Account pElement, final Object... pExtras) {
         Resource<Account> resource = null;
@@ -396,6 +446,16 @@ public class AccountsController implements IResourceController<Account> {
             // Accept link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(pElement.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccount", "accept",
+                                        MethodParamFactory.build(String.class, pElement.getEmail()));
+            }
+            // Inactive link, only if the account is in ACTIVE state
+            if (AccountStatus.ACTIVE.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, this.getClass(), "inactiveAccount", "inactive",
+                                        MethodParamFactory.build(String.class, pElement.getEmail()));
+            }
+            // Active link, only if the account is in INACTIVE state
+            if (AccountStatus.INACTIVE.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, this.getClass(), "activeAccount", "active",
                                         MethodParamFactory.build(String.class, pElement.getEmail()));
             }
         }
