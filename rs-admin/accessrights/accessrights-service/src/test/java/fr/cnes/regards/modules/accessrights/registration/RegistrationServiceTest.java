@@ -32,7 +32,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
@@ -114,8 +113,6 @@ public class RegistrationServiceTest {
 
     private IRoleService roleService;
 
-    private IAccountService accountService;
-
     private IProjectUserService projectUserService;
 
     private IVerificationTokenService tokenService;
@@ -164,7 +161,6 @@ public class RegistrationServiceTest {
         templateService = Mockito.mock(ITemplateService.class);
         emailClient = Mockito.mock(IEmailClient.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
-        accountService = Mockito.mock(IAccountService.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
@@ -195,7 +191,7 @@ public class RegistrationServiceTest {
         projectUser.setPermissions(PERMISSIONS);
         projectUser.setRole(ROLE);
         projectUser.setMetaData(META_DATA);
-        projectUser.setStatus(UserStatus.WAITING_ACCESS);
+        projectUser.setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
 
         // Prepare account settings
         accountSettings = new AccountSettings();

@@ -23,10 +23,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessDeniedState;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessGrantedState;
 import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserStateProvider;
@@ -50,24 +46,9 @@ public class ProjectUserWorkflowManagerTest {
     private static final String EMAIL = "email@test.com";
 
     /**
-     * Stub constant value for a first name
-     */
-    private static final String FIRST_NAME = "Firstname";
-
-    /**
-     * Stub constant value for a last name
-     */
-    private static final String LAST_NAME = "Lirstname";
-
-    /**
      * Stub constant value for a lsit of meta data
      */
     private static final List<MetaData> META_DATA = new ArrayList<>();
-
-    /**
-     * Stub constant value for a password
-     */
-    private static final String PASSOWRD = "password";
 
     /**
      * Stub constant value for a list of permissions
@@ -80,16 +61,6 @@ public class ProjectUserWorkflowManagerTest {
     private static final Role ROLE = new Role("role name", null);
 
     /**
-     * Dummy origin url
-     */
-    private static final String ORIGIN_URL = "originUrl";
-
-    /**
-     * Dummy request link
-     */
-    private static final String REQUEST_LINK = "requestLink";
-
-    /**
      * Mock repository of tested service
      */
     private IProjectUserRepository projectUserRepository;
@@ -98,21 +69,6 @@ public class ProjectUserWorkflowManagerTest {
      * Workflow manager for project users. Tested service.
      */
     private ProjectUserWorkflowManager projectUserWorkflowManager;
-
-    /**
-     * Mock role servvice
-     */
-    private IRoleService roleService;
-
-    /**
-     * Mock account servvice
-     */
-    private IAccountService accountService;
-
-    /**
-     * The dto used to make an access request
-     */
-    private AccessRequestDto dto;
 
     /**
      * The project user which should be created by the dto
@@ -125,27 +81,15 @@ public class ProjectUserWorkflowManagerTest {
     private ProjectUserStateProvider projectUserStateProvider;
 
     /**
-     * Mocked access settings service
-     */
-    private IAccessSettingsService accessSettingsService;
-
-    /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
-        roleService = Mockito.mock(IRoleService.class);
-        accountService = Mockito.mock(IAccountService.class);
         projectUserStateProvider = Mockito.mock(ProjectUserStateProvider.class);
-        accessSettingsService = Mockito.mock(IAccessSettingsService.class);
 
         // Create the tested service
         projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider);
-
-        // Prepare the access request
-        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
-                REQUEST_LINK);
 
         // Prepare the project user we expect to be created by the access request
         projectUser = new ProjectUser();

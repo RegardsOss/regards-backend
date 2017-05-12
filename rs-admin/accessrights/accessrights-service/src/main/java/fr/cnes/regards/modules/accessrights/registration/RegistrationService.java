@@ -151,6 +151,7 @@ public class RegistrationService implements IRegistrationService {
         if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
             throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + " is already in use.");
         }
+
         // Create the new account
         final Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
                 pDto.getPassword());
@@ -181,8 +182,8 @@ public class RegistrationService implements IRegistrationService {
      * @throws EntityException
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
-        final Optional<Account> test = accountRepository.findOneByEmail(pDto.getEmail());
         // Check that an associated account exitsts
+        final Optional<Account> test = accountRepository.findOneByEmail(pDto.getEmail());
         if (!test.isPresent()) {
             throw new EntityNotFoundException(pDto.getEmail(), Account.class);
         }
@@ -199,8 +200,8 @@ public class RegistrationService implements IRegistrationService {
         final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetaData());
 
         // Check the status
-        Assert.isTrue(UserStatus.WAITING_ACCESS.equals(projectUser.getStatus()),
-                      "Trying to create a ProjectUser with other status than WAITING_ACCESS.");
+        Assert.isTrue(UserStatus.WAITING_ACCOUNT_ACTIVE.equals(projectUser.getStatus()),
+                      "Trying to create a ProjectUser with other status than WAITING_ACCOUNT_ACTIVE.");
 
         // Auto-accept if configured so
         final AccessSettings settings = accessSettingsService.retrieve();

@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
-abstract class AbstractDeletableState implements IProjectUserTransitions {
+public abstract class AbstractDeletableState extends AbstractProjectUserState {
 
     /**
      * Repository managing {@link ProjectUser}s. Autowired by Spring.

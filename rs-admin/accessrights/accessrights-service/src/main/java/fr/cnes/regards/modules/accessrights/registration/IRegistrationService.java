@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  *
  * @author Xavier-Alexandre Brochard
  */
-public interface IRegistrationService {
+public interface IRegistrationService { //NOSONAR
 
     /**
      * Creates a new account if needed and creates a new project user.
