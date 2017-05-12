@@ -13,9 +13,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
@@ -23,7 +26,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.models.service.IAttributeModelService;
+import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
@@ -76,9 +79,9 @@ public class AccessRightFilterTest {
                 .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
-        IAttributeModelService attributeModelService = Mockito.mock(IAttributeModelService.class);
-        Mockito.when(attributeModelService.getAttributes(null, null)).thenReturn(SampleDataUtils.LIST);
-        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelService, subscriber,
+        IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
+        Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(SampleDataUtils.LIST), HttpStatus.OK));
+        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
         IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 

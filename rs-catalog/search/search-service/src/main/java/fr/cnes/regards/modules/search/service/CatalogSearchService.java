@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.search.service;
 
 import java.util.Map;
+import java.util.StringJoiner;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,7 +68,7 @@ public class CatalogSearchService implements ICatalogSearchService {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <S, R extends IIndexable> Page<R> search(String pQ, SearchKey<S, R> pSearchKey,
+    public <S, R extends IIndexable> Page<R> search(Map<String,String> pQ, SearchKey<S, R> pSearchKey,
             Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
         try {
             // Build criterion from query
@@ -84,7 +85,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
         } catch (OpenSearchParseException e) {
-            throw new SearchException(pQ, e);
+            StringJoiner sj=new StringJoiner("&");
+            pQ.forEach((key,value)->sj.add(key+"="+value));
+            throw new SearchException(sj.toString(), e);
         }
     }
 

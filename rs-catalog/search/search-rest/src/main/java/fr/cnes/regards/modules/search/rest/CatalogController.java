@@ -3,10 +3,9 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
-
-import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,12 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -30,11 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.entities.domain.*;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -43,12 +33,12 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.opensearch.service.descriptor.OpenSearchDescriptionBuilder;
-import fr.cnes.regards.modules.search.domain.IRepresentation;
-import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.opensearch.service.description.OpenSearchDescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.PagedDatasetResourcesAssembler;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.representation.IRepresentation;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
@@ -183,7 +173,7 @@ public class CatalogController {
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
     @ResponseBody
-    public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam("q") String pQ,
+    public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam Map<String,String> pQ,
             final Pageable pPageable) throws SearchException {
         SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(runtimeTenantResolver.getTenant());
         Page<AbstractEntity> result = catalogSearchService.search(pQ, searchKey, null, pPageable);
@@ -214,7 +204,7 @@ public class CatalogController {
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
     @ResponseBody
-    public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam("q") String pQ,
+    public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> searchAll(@RequestParam Map<String,String> pQ,
             @RequestParam(value = "facets", required = false) Map<String, FacetType> pFacets, final Pageable pPageable)
             throws SearchException {
         SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(runtimeTenantResolver.getTenant());
@@ -252,7 +242,7 @@ public class CatalogController {
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on collection.")
     @ResponseBody
-    public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(@RequestParam("q") String pQ,
+    public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(@RequestParam Map<String,String> pQ,
             final Pageable pPageable, final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
         SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                         EntityType.COLLECTION);
@@ -297,7 +287,7 @@ public class CatalogController {
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.")
     @ResponseBody
-    public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam("q") String pQ,
+    public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam Map<String,String> pQ,
             final Pageable pPageable) throws SearchException {
         SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                      EntityType.DATASET);
@@ -344,7 +334,7 @@ public class CatalogController {
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     @ResponseBody
-    public ResponseEntity<FacettedPagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam("q") String pQ,
+    public ResponseEntity<FacettedPagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam Map<String,String> pQ,
             @RequestParam(value = "facets", required = false) Map<String, FacetType> pFacets, final Pageable pPageable)
             throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
@@ -379,7 +369,7 @@ public class CatalogController {
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.")
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
-            @RequestParam("q") String pQ,
+            @RequestParam Map<String,String> pQ,
             @RequestParam(value = "facets", required = false) Map<String, FacetType> pFacets, final Pageable pPageable,
             final PagedResourcesAssembler<Dataset> pAssembler) throws SearchException {
         JoinEntitySearchKey<DataObject, Dataset> searchKey = Searches
@@ -430,7 +420,7 @@ public class CatalogController {
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on document.")
     @ResponseBody
-    public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(@RequestParam("q") String pQ,
+    public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(@RequestParam Map<String,String> pQ,
             final Pageable pPageable, final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
         SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                       EntityType.DOCUMENT);

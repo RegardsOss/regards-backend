@@ -115,7 +115,7 @@ public class ServiceManager implements IServiceManager {
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
             throw new EntityInvalidException(
-                    pServiceName + " is not a label of a " + pServiceName + " plugin configuration");
+                    pServiceName + " is not a label of a " + IService.class.getName() + " plugin configuration");
         }
         // is it a service applyable to this dataset?
         if (!linkPluginsDatasetsService.retrieveLink(pDatasetId).getServices().contains(conf)) {

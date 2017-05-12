@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.domain.assembler.resource;
+package fr.cnes.regards.modules.search.rest.assembler.resource;
 
 import java.util.Collection;
 import java.util.Set;

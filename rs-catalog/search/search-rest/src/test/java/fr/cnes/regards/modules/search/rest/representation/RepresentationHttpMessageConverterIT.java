@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-import fr.cnes.regards.modules.search.domain.IRepresentation;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 import fr.cnes.regards.modules.search.rest.plugin.MarkdownRepresentation;
 import fr.cnes.regards.plugins.utils.PluginUtils;

@@ -15,8 +15,8 @@ import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.domain.IRepresentation;
-import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.representation.IRepresentation;
 
 /**
  * @author Sylvain Vissiere-Guerinet

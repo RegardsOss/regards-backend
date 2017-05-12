@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.search.rest.assembler.link;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
@@ -48,8 +49,10 @@ public class DatasetLinkAdder implements ILinksAdder {
         resourceService.addLink(pResource, CatalogController.class, "getDataset", LinkRels.SELF,
                                 MethodParamFactory.build(UniformResourceName.class, pResource.getContent().getIpId()));
 
+        Map<String, String> q=new HashMap<>();
+        q.put("q","tags:" + ipId.toString());
         resourceService.addLinkWithParams(pResource, CatalogController.class, "searchDataobjects", LinkRels.NEXT,
-                                          MethodParamFactory.build(String.class, "tags:" + ipId.toString()),
+                                          MethodParamFactory.build(Map.class, q),
                                           MethodParamFactory.build(Map.class), //
                                           MethodParamFactory.build(Pageable.class));
 
