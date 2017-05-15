@@ -159,13 +159,13 @@ public class RoleService implements IRoleService {
             if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
 
                 // Retrieve new tenant to manage
-                String tenant = pWrapper.getContent().getTenant();
+                final String tenant = pWrapper.getContent().getTenant();
                 try {
                     // Init default role for this tenant
                     initDefaultRoles(tenant);
                     // Populate default roles with resources informing security starter to process
                     publisher.publish(new ResourceAccessInit());
-                } catch (ListenerExecutionFailedException e) {
+                } catch (final ListenerExecutionFailedException e) {
                     LOGGER.error("Cannot initialize connection  for tenant " + tenant, e);
                     instancePublisher.publish(new TenantConnectionFailed(tenant, microserviceName));
                 }
@@ -179,17 +179,17 @@ public class RoleService implements IRoleService {
      * @param tenant
      *            tenant
      */
-    private void initDefaultRoles(String tenant) {
+    private void initDefaultRoles(final String tenant) {
 
         // Init factory to create missing roles
-        RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
+        final RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
 
         // Set working tenant
         runtimeTenantResolver.forceTenant(tenant);
         // Manage public
-        Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
+        final Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
         // Manage registered user
-        Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
+        final Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
         // Manage admin
         createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
         // Manage project admin
@@ -207,10 +207,10 @@ public class RoleService implements IRoleService {
      *            parent role to attach
      * @return created role
      */
-    private Role createOrLoadDefaultRole(Role defaultRole, Role parentRole) {
+    private Role createOrLoadDefaultRole(final Role defaultRole, final Role parentRole) {
 
         // Retrieve role from database
-        Optional<Role> role = roleRepository.findOneByName(defaultRole.getName());
+        final Optional<Role> role = roleRepository.findOneByName(defaultRole.getName());
 
         if (role.isPresent()) {
             return role.get();
@@ -288,11 +288,12 @@ public class RoleService implements IRoleService {
         final Role previous = roleRepository.findOne(pRoleId);
         if ((previous != null) && previous.isNative()) {
             throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else if (previous == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
-        } else {
-            deleteAndPublish(previous);
-        }
+        } else
+            if (previous == null) {
+                throw new EntityNotFoundException(pRoleId, Role.class);
+            } else {
+                deleteAndPublish(previous);
+            }
     }
 
     @Override
@@ -300,11 +301,12 @@ public class RoleService implements IRoleService {
         final Optional<Role> role = roleRepository.findOneByName(pRoleName);
         if (!role.isPresent()) {
             throw new EntityNotFoundException(pRoleName, Role.class);
-        } else if (role.get().isNative()) {
-            throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else {
-            deleteAndPublish(role.get());
-        }
+        } else
+            if (role.get().isNative()) {
+                throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+            } else {
+                deleteAndPublish(role.get());
+            }
 
     }
 
@@ -362,7 +364,8 @@ public class RoleService implements IRoleService {
      *            role on which the modification has been made
      * @param pNewOnes
      *            accesses to add
-     * @throws EntityOperationForbiddenException if error occurs!
+     * @throws EntityOperationForbiddenException
+     *             if error occurs!
      */
     private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
             throws EntityOperationForbiddenException {
@@ -382,8 +385,10 @@ public class RoleService implements IRoleService {
     /**
      * Add accesses on all inheriting roles
      *
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to add
+     * @param pRole
+     *            role to manage
+     * @param pResourcesAccesses
+     *            accesses to add
      */
     private void addAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
         // Add accesses
@@ -391,16 +396,20 @@ public class RoleService implements IRoleService {
         // Save changes
         roleRepository.save(pRole);
         // Retrieve its descendants
-        Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
+        final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
         // Propagate
         sons.forEach(son -> addAndPropagate(son, pResourcesAccesses));
     }
 
     /**
      * Add accesses on current role only and change parent if required to maintain consistency
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to add
-     * @throws EntityOperationForbiddenException if parent cannot be found
+     *
+     * @param pRole
+     *            role to manage
+     * @param pResourcesAccesses
+     *            accesses to add
+     * @throws EntityOperationForbiddenException
+     *             if parent cannot be found
      */
     private void addAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
             throws EntityOperationForbiddenException {
@@ -421,13 +430,13 @@ public class RoleService implements IRoleService {
     private void publishResourceAccessEvent(final ResourcesAccess... pResourcesAccesses) {
 
         // Compute concerned microservices
-        Set<String> microservices = new HashSet<>();
-        for (ResourcesAccess ra : pResourcesAccesses) {
+        final Set<String> microservices = new HashSet<>();
+        for (final ResourcesAccess ra : pResourcesAccesses) {
             microservices.add(ra.getMicroservice());
         }
         // Publish an event for each concerned microservice
-        for (String microservice : microservices) {
-            ResourceAccessEvent raEvent = new ResourceAccessEvent();
+        for (final String microservice : microservices) {
+            final ResourceAccessEvent raEvent = new ResourceAccessEvent();
             raEvent.setMicroservice(microservice);
             publisher.publish(raEvent);
         }
@@ -537,7 +546,7 @@ public class RoleService implements IRoleService {
             throw new EntityNotFoundException(pRoleName, Role.class);
         }
 
-        Role role = roleOpt.get();
+        final Role role = roleOpt.get();
 
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
@@ -551,7 +560,8 @@ public class RoleService implements IRoleService {
             // Check non native role parents
             manageParentRoles();
         } else {
-            // Else only remove accesses from role and change parent if required (may throw an exception if at least public role cannot be the parent)
+            // Else only remove accesses from role and change parent if required (may throw an exception if at least
+            // public role cannot be the parent)
             removeAndManageParent(role, pResourcesAccesses);
         }
 
@@ -562,8 +572,10 @@ public class RoleService implements IRoleService {
     /**
      * Remove accesses on all inherited roles
      *
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to remove
+     * @param pRole
+     *            role to manage
+     * @param pResourcesAccesses
+     *            accesses to remove
      */
     private void removeAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
 
@@ -579,12 +591,13 @@ public class RoleService implements IRoleService {
 
     /**
      * Consider all non native roles to update its native parent after native role changes
+     *
      * @throws EntityOperationForbiddenException
      */
     private void manageParentRoles() throws EntityOperationForbiddenException {
 
-        Set<Role> roles = retrieveRoles();
-        for (Role role : roles) {
+        final Set<Role> roles = retrieveRoles();
+        for (final Role role : roles) {
             if (!role.isNative()) {
                 manageParentFromAdmin(role);
             }
@@ -593,9 +606,13 @@ public class RoleService implements IRoleService {
 
     /**
      * Remove accesses on current role only and change parent if required to maintain consistency
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to remove
-     * @throws EntityOperationForbiddenException if parent cannot be found
+     *
+     * @param pRole
+     *            role to manage
+     * @param pResourcesAccesses
+     *            accesses to remove
+     * @throws EntityOperationForbiddenException
+     *             if parent cannot be found
      */
     private void removeAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
             throws EntityOperationForbiddenException {
@@ -608,15 +625,18 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available inherited parent.
+     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available
+     * inherited parent.
      *
-     * @param role role to consider
-     * @throws EntityOperationForbiddenException if no parent role matches
+     * @param role
+     *            role to consider
+     * @throws EntityOperationForbiddenException
+     *             if no parent role matches
      */
     private void manageParentFromAdmin(final Role role) throws EntityOperationForbiddenException {
 
         // Retrieve default admin role
-        Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.name()).get();
+        final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.name()).get();
         // Manage parent
         manageParent(role, adminRole);
     }
@@ -624,9 +644,12 @@ public class RoleService implements IRoleService {
     /**
      * Found a consistent parent for the current role
      *
-     * @param role role to consider
-     * @param parentRole parent role candidate
-     * @throws EntityOperationForbiddenException if no parent role matches
+     * @param role
+     *            role to consider
+     * @param parentRole
+     *            parent role candidate
+     * @throws EntityOperationForbiddenException
+     *             if no parent role matches
      */
     private void manageParent(final Role role, final Role parentRole) throws EntityOperationForbiddenException {
 
@@ -637,17 +660,17 @@ public class RoleService implements IRoleService {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            String message = String.format(
-                                           "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                                           role.getName());
+            final String message = String.format(
+                                                 "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                                                 role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }
 
         // Check if role is consistent with its parent
         // The parent cannot have more accesses!
-        Set<ResourcesAccess> rolePermissions = role.getPermissions();
-        Set<ResourcesAccess> parentPermissions = parentRole.getPermissions();
+        final Set<ResourcesAccess> rolePermissions = role.getPermissions();
+        final Set<ResourcesAccess> parentPermissions = parentRole.getPermissions();
 
         if (rolePermissions.containsAll(parentPermissions)) {
             // Set parent
@@ -662,8 +685,15 @@ public class RoleService implements IRoleService {
     @Override
     public Set<Role> retrieveBorrowableRoles() {
 
+        final Set<Role> brrowablesRoles = new HashSet<>();
+
         final String email = SecurityUtils.getActualUser();
-        final ProjectUser user = projectUserRepository.findOneByEmail(email).get();
+        final Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
+        if (!optionnalUser.isPresent()) {
+            return brrowablesRoles;
+        }
+
+        final ProjectUser user = optionnalUser.get();
         // get Original Role of the user
         final Role originalRole = user.getRole();
         final List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
@@ -674,20 +704,19 @@ public class RoleService implements IRoleService {
             return Sets.newHashSet();
         }
         // get ascendants of the original Role
-        final Set<Role> ascendants = new HashSet<>();
         if (originalRole.getParentRole() != null) {
             // only adds the ascendants of my role's parent as my role's brotherhood is not part of my role's ascendants
-            ascendants.addAll(getAscendants(roleRepository.findOneById(originalRole.getParentRole().getId())));
+            brrowablesRoles.addAll(getAscendants(roleRepository.findOneById(originalRole.getParentRole().getId())));
         } else {
             // handle ProjectAdmin by considering that ADMIN is its parent(projectAdmin is not considered admin's
             // son so no resources accesses are added or removed from him but has to be considered for role borrowing)
             if (originalRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
-                ascendants.addAll(getAscendants(originalRole));
+                brrowablesRoles.addAll(getAscendants(originalRole));
             } // INSTANCE_ADMIN and PUBLIC do not have ascendants
         }
         // add my original role because i can always borrow my own role
-        ascendants.add(originalRole);
-        return ascendants;
+        brrowablesRoles.add(originalRole);
+        return brrowablesRoles;
     }
 
     /**
@@ -729,19 +758,19 @@ public class RoleService implements IRoleService {
      * @param role
      *            role
      */
-    private void publishRoleEvent(Role role) {
-        RoleEvent roleEvent = new RoleEvent();
+    private void publishRoleEvent(final Role role) {
+        final RoleEvent roleEvent = new RoleEvent();
         roleEvent.setRole(role.getName());
         publisher.publish(roleEvent);
     }
 
-    private Role saveAndPublish(Role role) {
-        Role savedRole = roleRepository.save(role);
+    private Role saveAndPublish(final Role role) {
+        final Role savedRole = roleRepository.save(role);
         publishRoleEvent(role);
         return savedRole;
     }
 
-    private void deleteAndPublish(Role role) {
+    private void deleteAndPublish(final Role role) {
         roleRepository.delete(role.getId());
         publishRoleEvent(role);
     }
