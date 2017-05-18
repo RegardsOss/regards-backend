@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import fr.cnes.regards.framework.jpa.utils.MigrationTool;
+
 /**
  *
  * POJO for microservice configuration
@@ -62,6 +64,11 @@ public class MultitenantDaoProperties {
      * Default test query
      */
     private String preferredTestQuery = "SELECT 1";
+
+    /**
+     * Migration tool. Default to hbm2ddl.
+     */
+    private MigrationTool migrationTool = MigrationTool.HBM2DDL;
 
     public List<TenantConnection> getTenants() {
         return tenants;
@@ -125,6 +132,14 @@ public class MultitenantDaoProperties {
 
     public void setPreferredTestQuery(String pPreferredTestQuery) {
         preferredTestQuery = pPreferredTestQuery;
+    }
+
+    public MigrationTool getMigrationTool() {
+        return migrationTool;
+    }
+
+    public void setMigrationTool(MigrationTool pMigrationTool) {
+        migrationTool = pMigrationTool;
     }
 
 }

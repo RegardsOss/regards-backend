@@ -48,8 +48,8 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifie
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -61,8 +61,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter(value = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
@@ -88,7 +90,7 @@ public class MultitenantJpaAutoConfiguration {
     private Map<String, DataSource> dataSources;
 
     @Autowired
-    private UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper;
+    private IDatasourceSchemaHelper datasourceSchemaHelper;
 
     /**
      * Multitenant connection provider
@@ -175,7 +177,7 @@ public class MultitenantJpaAutoConfiguration {
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
         // Init with common properties
-        final Map<String, Object> hibernateProps = updateDatasourceSchemaHelper.getDbProperties(defaultDataSource);
+        final Map<String, Object> hibernateProps = datasourceSchemaHelper.getHibernateProperties();
 
         // Add multitenant properties
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
@@ -215,5 +217,4 @@ public class MultitenantJpaAutoConfiguration {
         GsonUtil.setGson(pGson);
         return null;
     }
-
 }

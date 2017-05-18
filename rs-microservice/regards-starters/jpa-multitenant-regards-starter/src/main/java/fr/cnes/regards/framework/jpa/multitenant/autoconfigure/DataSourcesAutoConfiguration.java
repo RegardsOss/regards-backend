@@ -3,12 +3,16 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
+import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +22,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
@@ -32,7 +38,11 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
-import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.MigrationTool;
 
 /**
  *
@@ -118,14 +128,34 @@ public class DataSourcesAutoConfiguration {
     }
 
     /**
-     * Init programmatic schema update helper
+     * Initialize programmatic schema update helper
      *
-     * @return {@link UpdateDatasourceSchemaHelper}
+     * @return {@link IDatasourceSchemaHelper}
+     * @throws JpaMultitenantException if error occurs!
+     * @throws JpaException if error occurs!
      */
     @Bean
-    public UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper() {
-        return new UpdateDatasourceSchemaHelper(implicitNamingStrategyName, physicalNamingStrategyName, daoProperties,
-                jpaProperties);
+    public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaMultitenantException, JpaException {
+
+        // Use the first dataSource configuration to init hibernate properties
+        if (getDataSources().isEmpty()) {
+            throw new ApplicationContextException("No datasource defined. JPA is not able to start."
+                    + " You should define a datasource in the application.properties of the current microservice");
+        }
+        final DataSource defaultDataSource = getDataSources().values().iterator().next();
+
+        Map<String, Object> hibernateProperties = getHibernateProperties(defaultDataSource);
+
+        if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
+            String dialect = daoProperties.getDialect();
+            if (daoProperties.getEmbedded()) {
+                // Force dialect if embedded
+                dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+            }
+            return new Hbm2ddlDatasourceSchemaHelper(hibernateProperties);
+        } else {
+            return new FlywayDatasourceSchemaHelper(hibernateProperties);
+        }
     }
 
     /**
@@ -140,13 +170,14 @@ public class DataSourcesAutoConfiguration {
      * @return JPA event handler
      * @throws JpaMultitenantException
      *             if error occurs!
+     * @throws JpaException if error occurs!
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
             IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver)
-            throws JpaMultitenantException {
+            throws JpaMultitenantException, JpaException {
         return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties,
-                updateDatasourceSchemaHelper(), instanceSubscriber, instancePublisher, multitenantResolver);
+                datasourceSchemaHelper(), instanceSubscriber, instancePublisher, multitenantResolver);
     }
 
     /**
@@ -174,14 +205,14 @@ public class DataSourcesAutoConfiguration {
                     // Init data source
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
                     // Update database schema
-                    updateDatasourceSchemaHelper().updateDataSourceSchema(dataSource);
+                    datasourceSchemaHelper().migrate(dataSource);
                     // Register connection
                     if (pNeedRegistration) {
                         tenantConnectionResolver.addTenantConnection(microserviceName, tenantConnection);
                     }
                     // Register data source
                     pExistingDataSources.put(tenantConnection.getTenant(), dataSource);
-                } catch (PropertyVetoException | JpaMultitenantException e) {
+                } catch (PropertyVetoException | JpaMultitenantException | JpaException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);
@@ -215,5 +246,46 @@ public class DataSourcesAutoConfiguration {
             LOGGER.error("No datasource defined for MultitenantcyJpaAutoConfiguration !");
         }
         return datasource;
+    }
+
+    /**
+     * Compute database properties
+     *
+     * @param dataSource data source
+     * @return database properties
+     * @throws JpaException if error occurs!
+     */
+    public Map<String, Object> getHibernateProperties(final DataSource dataSource) throws JpaException {
+        Map<String, Object> dbProperties = new HashMap<>();
+
+        // Add Spring JPA hibernate properties
+        // Schema must be retrieved here if managed with property :
+        // spring.jpa.properties.hibernate.default_schema
+        dbProperties.putAll(jpaProperties.getHibernateProperties(dataSource));
+        // Remove hbm2ddl as schema update is done programmatically
+        dbProperties.remove(Environment.HBM2DDL_AUTO);
+
+        // Dialect
+        String dialect = daoProperties.getDialect();
+        if (daoProperties.getEmbedded()) {
+            // Force dialect for embedded database
+            dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+        }
+        dbProperties.put(Environment.DIALECT, dialect);
+
+        dbProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
+
+        try {
+            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
+                    .forName(physicalNamingStrategyName).newInstance();
+            dbProperties.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
+            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
+                    .forName(implicitNamingStrategyName).newInstance();
+            dbProperties.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            LOGGER.error("Error occurs with naming strategy", e);
+            throw new JpaException(e);
+        }
+        return dbProperties;
     }
 }
