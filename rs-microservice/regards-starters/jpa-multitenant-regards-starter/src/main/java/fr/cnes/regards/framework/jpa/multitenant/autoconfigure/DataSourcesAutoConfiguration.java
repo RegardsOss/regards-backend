@@ -22,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -131,27 +130,14 @@ public class DataSourcesAutoConfiguration {
      * Initialize programmatic schema update helper
      *
      * @return {@link IDatasourceSchemaHelper}
-     * @throws JpaMultitenantException if error occurs!
      * @throws JpaException if error occurs!
      */
     @Bean
-    public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaMultitenantException, JpaException {
+    public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaException {
 
-        // Use the first dataSource configuration to init hibernate properties
-        if (getDataSources().isEmpty()) {
-            throw new ApplicationContextException("No datasource defined. JPA is not able to start."
-                    + " You should define a datasource in the application.properties of the current microservice");
-        }
-        final DataSource defaultDataSource = getDataSources().values().iterator().next();
-
-        Map<String, Object> hibernateProperties = getHibernateProperties(defaultDataSource);
+        Map<String, Object> hibernateProperties = getHibernateProperties();
 
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
-            String dialect = daoProperties.getDialect();
-            if (daoProperties.getEmbedded()) {
-                // Force dialect if embedded
-                dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
-            }
             return new Hbm2ddlDatasourceSchemaHelper(hibernateProperties);
         } else {
             return new FlywayDatasourceSchemaHelper(hibernateProperties);
@@ -174,10 +160,10 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
-            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver)
-            throws JpaMultitenantException, JpaException {
-        return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties,
-                datasourceSchemaHelper(), instanceSubscriber, instancePublisher, multitenantResolver);
+            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver,
+            IDatasourceSchemaHelper datasourceSchemaHelper) throws JpaMultitenantException, JpaException {
+        return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties, datasourceSchemaHelper,
+                instanceSubscriber, instancePublisher, multitenantResolver);
     }
 
     /**
@@ -251,17 +237,18 @@ public class DataSourcesAutoConfiguration {
     /**
      * Compute database properties
      *
-     * @param dataSource data source
      * @return database properties
      * @throws JpaException if error occurs!
      */
-    public Map<String, Object> getHibernateProperties(final DataSource dataSource) throws JpaException {
+    private Map<String, Object> getHibernateProperties() throws JpaException {
         Map<String, Object> dbProperties = new HashMap<>();
 
         // Add Spring JPA hibernate properties
         // Schema must be retrieved here if managed with property :
         // spring.jpa.properties.hibernate.default_schema
-        dbProperties.putAll(jpaProperties.getHibernateProperties(dataSource));
+        // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
+        jpaProperties.getHibernate().setDdlAuto("none");
+        dbProperties.putAll(jpaProperties.getHibernateProperties(null));
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 
