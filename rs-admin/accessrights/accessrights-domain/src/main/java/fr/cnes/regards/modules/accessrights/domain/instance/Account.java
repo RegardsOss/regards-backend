@@ -3,16 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.instance;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -43,15 +36,15 @@ public class Account implements IIdentifiable<Long> {
     private Long id;
 
     @Email
-    @Column(name = "email", unique = true)
+    @Column(name = "email", unique = true, length = 100)
     private String email;
 
     @NotBlank
-    @Column(name = "firstName")
+    @Column(name = "firstName", length = 100)
     private String firstName;
 
     @NotBlank
-    @Column(name = "lastName")
+    @Column(name = "lastName", length = 100)
     private String lastName;
 
     @Column
@@ -67,14 +60,15 @@ public class Account implements IIdentifiable<Long> {
     private Long authenticationFailedCounter = 0L;
 
     @GsonIgnore
-    @Column(name = "password")
+    @Column(name = "password", length = 200)
     private String password;
 
     @Column(name = "password_update_date")
     private LocalDateTime passwordUpdateDate;
 
     @NotNull
-    @Column(name = "status")
+    @Column(name = "status", length = 10)
+    @Enumerated(value = EnumType.STRING)
     private AccountStatus status;
 
     /**
