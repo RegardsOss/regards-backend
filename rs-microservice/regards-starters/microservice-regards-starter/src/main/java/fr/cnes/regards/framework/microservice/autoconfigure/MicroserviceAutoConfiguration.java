@@ -12,10 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+import fr.cnes.regards.framework.microservice.actuator.MaintenanceHealthIndicator;
 import fr.cnes.regards.framework.microservice.configurer.MaintenanceConfiguration;
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  *
@@ -49,6 +51,11 @@ public class MicroserviceAutoConfiguration {
     @Bean
     public MaintenanceConfiguration maintenanceConf() {
         return new MaintenanceConfiguration();
+    }
+
+    @Bean
+    public MaintenanceHealthIndicator maintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
+        return new MaintenanceHealthIndicator(runtimeTenantResolver);
     }
 
 }

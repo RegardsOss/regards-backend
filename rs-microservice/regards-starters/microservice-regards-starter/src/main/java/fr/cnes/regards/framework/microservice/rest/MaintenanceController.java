@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.microservice.manager.MaintenanceInfo;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
@@ -41,10 +42,9 @@ public class MaintenanceController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
-    public HttpEntity<Resource<Map<String, Boolean>>> retrieveTenantsInMaintenance() {
-        final Map<String, Boolean> maintenaceMap = MaintenanceManager.getMaintenanceMap();
-        final Resource<Map<String, Boolean>> resource = new Resource<>(maintenaceMap);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+    public HttpEntity<Resource<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
+        final Map<String, MaintenanceInfo> maintenaceMap = MaintenanceManager.getMaintenanceMap();
+        return new ResponseEntity<>(new Resource<>(maintenaceMap), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
