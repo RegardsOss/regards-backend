@@ -6,14 +6,7 @@ package fr.cnes.regards.modules.accessrights.domain.registration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -29,7 +22,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
-@Entity(name = "T_VERIFICATION_TOKEN")
+@Entity
+@Table(name = "t_verification_token")
 public class VerificationToken {
 
     /**
@@ -47,37 +41,40 @@ public class VerificationToken {
     /**
      * Randomly generated string
      */
+    @Column(name = "token", length = 255)
     private String token;
 
     /**
      * The link back to the {@link Account}
      */
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "FK_VERIFICATION_TOKEN"))
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "fk_verification_token"))
     private Account account;
 
     /**
      * The origin url
      */
     @NotBlank
-    @Column(name = "originUrl")
+    @Column(name = "origin_url", length = 255)
     private String originUrl;
 
     /**
      * The request link
      */
     @NotBlank
-    @Column(name = "requestLink")
+    @Column(name = "request_link", length = 255)
     private String requestLink;
 
     /**
      * The computed expiration date based on EXPIRATION delay in minutes
      */
+    @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
 
     /**
      * Verified?
      */
+    @Column(name = "verified")
     private boolean verified;
 
     /**

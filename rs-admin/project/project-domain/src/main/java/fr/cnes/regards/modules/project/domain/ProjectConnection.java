@@ -30,9 +30,9 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  */
 @ValidateOnExecution
 @InstanceEntity
-@Entity(name = "T_PROJECT_CONNECTION")
-@SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "SEQ_PROJECT_CONNECTION")
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "project_id", "microservice" }) })
+@Entity
+@SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "seq_project_connection")
+@Table(name = "t_project_connection", uniqueConstraints = { @UniqueConstraint(columnNames = { "project_id", "microservice" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
     /**
@@ -47,42 +47,42 @@ public class ProjectConnection implements IIdentifiable<Long> {
      * Associated Project
      */
     @ManyToOne
-    @JoinColumn(name = "project_id", foreignKey = @javax.persistence.ForeignKey(name = "FK_PROJECT_CONNECTION"))
+    @JoinColumn(name = "project_id", foreignKey = @javax.persistence.ForeignKey(name = "fk_project_connection"))
     @NotNull
     private Project project;
 
     /**
      * Microservice name
      */
-    @Column(name = "microservice", nullable = false)
+    @Column(name = "microservice", nullable = false, length = 50)
     @NotNull
     private String microservice;
 
     /**
      * Database username
      */
-    @Column(name = "userName", nullable = false)
+    @Column(name = "userName", nullable = false, length = 30)
     @NotNull
     private String userName;
 
     /**
      * Database password
      */
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = false, length = 255)
     @NotNull
     private String password;
 
     /**
      * Database driver class name
      */
-    @Column(name = "driverClassName", nullable = false)
+    @Column(name = "driverClassName", nullable = false, length = 200)
     @NotNull
     private String driverClassName;
 
     /**
      * Database URL
      */
-    @Column(name = "url", nullable = false)
+    @Column(name = "url", nullable = false, length = 255)
     @NotNull
     private String url;
 

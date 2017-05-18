@@ -5,13 +5,7 @@ package fr.cnes.regards.modules.accessrights.domain.accountunlock;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.Valid;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -26,7 +20,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
-@Entity(name = "T_ACCOUNT_UNLOCK_TOKEN")
+@Entity
+@Table(name = "t_account_unlock_token")
 public class AccountUnlockToken {
 
     /**
@@ -44,6 +39,7 @@ public class AccountUnlockToken {
     /**
      * Randomly generated string
      */
+    @Column(name = "token", length = 255)
     private String token;
 
     /**
@@ -51,17 +47,19 @@ public class AccountUnlockToken {
      */
     @Valid
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "FK_UNLOCK_TOKEN"))
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "fk_unlock_token"))
     private Account account;
 
     /**
      * The computed expiration date based on EXPIRATION delay in minutes
      */
+    @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
 
     /**
      * Verified?
      */
+    @Column(name = "verified")
     private boolean verified;
 
     /**

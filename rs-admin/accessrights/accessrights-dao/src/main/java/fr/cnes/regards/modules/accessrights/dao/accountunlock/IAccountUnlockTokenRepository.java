@@ -33,6 +33,6 @@ public interface IAccountUnlockTokenRepository extends JpaRepository<AccountUnlo
     void deleteByExpiryDateLessThan(LocalDateTime pNow);
 
     @Modifying
-    @Query("delete from T_ACCOUNT_UNLOCK_TOKEN t where t.expiryDate <= ?1")
+    @Query("delete from AccountUnlockToken t where t.expiryDate <= ?1")
     void deleteAllExpiredSince(LocalDateTime pNow);
 }

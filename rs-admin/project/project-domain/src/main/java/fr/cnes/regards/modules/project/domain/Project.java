@@ -3,12 +3,7 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.executable.ValidateOnExecution;
@@ -26,8 +21,9 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  */
 @ValidateOnExecution
 @InstanceEntity
-@Entity(name = "T_PROJECT")
-@SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "SEQ_PROJECT")
+@Entity
+@Table(name = "t_project")
+@SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "seq_project")
 public class Project implements IIdentifiable<Long> {
 
     /**
@@ -43,40 +39,40 @@ public class Project implements IIdentifiable<Long> {
      */
     @NotNull
     @Pattern(regexp = "[a-zA-Z0-9-_]*", message = "Valid caracters for project name are 'a-z','A-Z','0-9','-' and '_'")
-    @Column(name = "name", unique = true)
+    @Column(name = "name", unique = true, length = 30)
     private String name;
 
     /**
      * Project description
      */
     @NotNull
-    @Column(name = "description")
+    @Column(name = "description", length = 200)
     private String description;
 
     /**
      * Project image icon
      */
-    @Column(name = "icon")
+    @Column(name = "icon", length = 255)
     private String icon;
 
     /**
      * IS the project public ?
      */
-    @Column(name = "ispublic")
+    @Column(name = "public")
     @NotNull
     private Boolean isPublic;
 
     /**
      * IS the project accessible from portal ?
      */
-    @Column(name = "isaccessible")
+    @Column(name = "accessible")
     @NotNull
     private final Boolean isAccessible;
 
     /**
      * Is the project deleted ?
      */
-    @Column(name = "isdeleted")
+    @Column(name = "deleted")
     @NotNull
     private Boolean isDeleted;
 

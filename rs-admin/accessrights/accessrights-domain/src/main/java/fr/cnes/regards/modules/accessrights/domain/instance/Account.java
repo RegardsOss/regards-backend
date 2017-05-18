@@ -23,8 +23,9 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
  * @author Xavier-Alexandre Brochard
  */
 @InstanceEntity
-@Entity(name = "T_ACCOUNT")
-@SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT")
+@Entity
+@Table(name = "t_account")
+@SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "seq_account")
 public class Account implements IIdentifiable<Long> {
 
     @Transient

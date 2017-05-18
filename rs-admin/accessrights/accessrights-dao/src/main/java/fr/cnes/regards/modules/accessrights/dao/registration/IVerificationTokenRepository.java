@@ -33,6 +33,6 @@ public interface IVerificationTokenRepository extends JpaRepository<Verification
     void deleteByExpiryDateLessThan(LocalDateTime pNow);
 
     @Modifying
-    @Query("delete from T_VERIFICATION_TOKEN t where t.expiryDate <= ?1")
+    @Query("delete from VerificationToken t where t.expiryDate <= ?1")
     void deleteAllExpiredSince(LocalDateTime pNow);
 }

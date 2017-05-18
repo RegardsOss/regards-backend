@@ -3,12 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.instance;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -22,8 +17,9 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  * @author Xavier-Alexandre Brochard
  */
 @InstanceEntity
-@Entity(name = "T_ACCOUNT_SETTINGS")
-@SequenceGenerator(name = "accountSettingsSequence", initialValue = 1, sequenceName = "SEQ_ACCOUNT_SETTINGS")
+@Entity
+@Table(name = "t_account_settings")
+@SequenceGenerator(name = "accountSettingsSequence", initialValue = 1, sequenceName = "seq_account_settings")
 public class AccountSettings implements IIdentifiable<Long> {
 
     /**
@@ -49,7 +45,7 @@ public class AccountSettings implements IIdentifiable<Long> {
      * The acceptance mode
      */
     @Pattern(regexp = MANUAL_MODE + "|" + AUTO_ACCEPT_MODE, flags = Pattern.Flag.CASE_INSENSITIVE)
-    @Column(name = "mode")
+    @Column(name = "mode", length = 16)
     private String mode = MANUAL_MODE;
 
     @Override

@@ -3,13 +3,7 @@ package fr.cnes.regards.modules.accessrights.domain.passwordreset;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -23,7 +17,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  * @see <a>http://www.baeldung.com/spring-security-registration-i-forgot-my-password</a>
  */
 @InstanceEntity
-@Entity(name = "T_PASSWORD_RESET_TOKEN")
+@Entity
+@Table(name = "t_password_reset_token")
 public class PasswordResetToken {
 
     /**
