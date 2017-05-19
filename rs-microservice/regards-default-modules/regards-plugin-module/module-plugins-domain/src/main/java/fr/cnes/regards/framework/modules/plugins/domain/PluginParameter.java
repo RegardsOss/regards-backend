@@ -4,22 +4,10 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 
@@ -32,7 +20,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  */
 @Entity
 @Table(name = "t_plugin_parameter")
-@SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "SEQ_PLUGIN_PARAMETER")
+@SequenceGenerator(name = "pluginParameterSequence", initialValue = 1, sequenceName = "seq_plugin_parameter")
 public class PluginParameter implements IIdentifiable<Long> {
 
     /**
