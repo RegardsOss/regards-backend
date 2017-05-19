@@ -47,13 +47,13 @@ public class PluginService implements IPluginService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
-    @Value("${regards.plugins.packagesToScan:#{null}}")
+    @Value("${regards.plugins.packages-to-scan:#{null}}")
     private String[] packagesToScan;
 
     /**
      * The plugin's package to scan
      */
-    private final List<String> pluginPackage;
+    private List<String> pluginPackage;
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -79,26 +79,18 @@ public class PluginService implements IPluginService {
             final IPublisher publisher) {
         this.pluginConfRepository = pPluginConfigurationRepository;
         this.publisher = publisher;
-
-        // Manage scan packages
-        pluginPackage = new ArrayList<>();
-        if ((packagesToScan != null) && (packagesToScan.length > 0)) {
-            for (String packageToScan : packagesToScan) {
-                pluginPackage.add(packageToScan);
-            }
-        }
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
         if (plugins == null) {
-            plugins = PluginUtils.getPlugins(pluginPackage);
+            plugins = PluginUtils.getPlugins(getPluginPackage());
         }
         return plugins;
     }
 
     @Override
     public List<String> getPluginTypes() {
-        return PluginInterfaceUtils.getInterfaces(pluginPackage);
+        return PluginInterfaceUtils.getInterfaces(getPluginPackage());
     }
 
     @Override
@@ -331,7 +323,7 @@ public class PluginService implements IPluginService {
                                           pluginConf.getVersion(), pluginMetadata.getVersion()));
             }
 
-            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, pluginPackage, pPluginParameters);
+            resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), pPluginParameters);
 
             // Put in the map, only if there is no dynamic parameters
             if (pPluginParameters.length == 0) {
@@ -350,13 +342,26 @@ public class PluginService implements IPluginService {
         final Iterable<PluginConfiguration> confs = pluginConfRepository.findAll();
         return (confs != null) ? Lists.newArrayList(confs) : Collections.emptyList();
     }
+    
+    private List<String> getPluginPackage() {
+        // Manage scan packages
+        if (pluginPackage == null) {
+            pluginPackage = new ArrayList<>();
+            if ((packagesToScan != null) && (packagesToScan.length > 0)) {
+                for (String packageToScan : packagesToScan) {
+                    pluginPackage.add(packageToScan);
+                }
+            }
+        }
+        return pluginPackage;
+    }
 
     @Override
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     public void addPluginPackage(final String pPluginPackage) {
-        if (!pluginPackage.contains(pPluginPackage)) {
-            pluginPackage.add(pPluginPackage);
-            final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, pluginPackage);
+        if (!getPluginPackage().contains(pPluginPackage)) {
+            getPluginPackage().add(pPluginPackage);
+            final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, getPluginPackage());
             if (plugins == null) {
                 // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
                 plugins = new HashMap<>();
