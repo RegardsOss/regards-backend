@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
@@ -22,7 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  * @author CS
  */
 @Entity
-@Table(name = "t_meta_data")
+@Table(name = "t_meta_data", uniqueConstraints = @UniqueConstraint(name = "uk_meta_data_key", columnNames = { "key" }))
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
@@ -31,10 +32,10 @@ public class MetaData implements IIdentifiable<Long> {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "key", unique = true, length = 64)
+    @Column(name = "key", length = 64)
     private String key;
 
-    @Column(name = "value", length = 256)
+    @Column(name = "value", length = 255)
     private String value;
 
     @Column(name = "visibility")
@@ -102,10 +103,9 @@ public class MetaData implements IIdentifiable<Long> {
             if (other.id != null) {
                 return false;
             }
-        } else
-            if (!id.equals(other.id)) {
-                return false;
-            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
         return true;
     }
 

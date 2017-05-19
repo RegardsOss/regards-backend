@@ -3,7 +3,14 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.executable.ValidateOnExecution;
@@ -22,7 +29,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @ValidateOnExecution
 @InstanceEntity
 @Entity
-@Table(name = "t_project")
+@Table(name = "t_project", uniqueConstraints = @UniqueConstraint(name = "uk_project_name", columnNames = { "name" }))
 @SequenceGenerator(name = "projectSequence", initialValue = 1, sequenceName = "seq_project")
 public class Project implements IIdentifiable<Long> {
 
@@ -39,7 +46,7 @@ public class Project implements IIdentifiable<Long> {
      */
     @NotNull
     @Pattern(regexp = "[a-zA-Z0-9-_]*", message = "Valid caracters for project name are 'a-z','A-Z','0-9','-' and '_'")
-    @Column(name = "name", unique = true, length = 30)
+    @Column(name = "name", length = 30)
     private String name;
 
     /**

@@ -5,7 +5,16 @@ package fr.cnes.regards.modules.accessrights.domain.accountunlock;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -21,7 +30,9 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  */
 @InstanceEntity
 @Entity
-@Table(name = "t_account_unlock_token")
+@Table(name = "t_account_unlock_token",
+        uniqueConstraints = @UniqueConstraint(name = "uk_account_unlock_token_account_id",
+                columnNames = { "account_id" }))
 public class AccountUnlockToken {
 
     /**

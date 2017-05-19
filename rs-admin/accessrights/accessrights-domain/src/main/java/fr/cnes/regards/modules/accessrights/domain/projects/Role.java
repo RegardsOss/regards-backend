@@ -26,6 +26,7 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.OrderBy;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -41,8 +42,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidP
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "T_ROLE", indexes = { @Index(name = "IDX_ROLE_NAME", columnList = "name") })
-@SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "SEQ_ROLE")
+@Table(name = "t_role", indexes = { @Index(name = "idx_role_name", columnList = "name") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_role_name", columnNames = { "name" }))
+@SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "seq_role")
 @HasValidParent
 @NamedEntityGraphs(value = {
         @NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions")),
@@ -65,7 +67,7 @@ public class Role implements IIdentifiable<Long> {
      * Role name
      */
     @NotBlank
-    @Column(unique = true)
+    @Column
     private String name;
 
     /**
@@ -74,7 +76,7 @@ public class Role implements IIdentifiable<Long> {
      * Must not be null except if current role is PUBLIC. Validated via type-level {@link HasValidParent} annotation.
      */
     @ManyToOne
-    @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "FK_ROLE_PARENT_ROLE"))
+    @JoinColumn(name = "parent_role_id", foreignKey = @ForeignKey(name = "fk_role_parent_role"))
     private Role parentRole;
 
     /**
@@ -83,8 +85,11 @@ public class Role implements IIdentifiable<Long> {
     @Valid
     @ManyToMany
     @OrderBy("resource")
-    @JoinTable(name = "TA_RESOURCE_ROLE", joinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"),
-            inverseJoinColumns = @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID"))
+    @JoinTable(name = "ta_resource_role",
+            joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "fk_resource_role_role_id")),
+            inverseJoinColumns = @JoinColumn(name = "resource_id", referencedColumnName = "ID",
+                    foreignKey = @ForeignKey(name = "fk_resource_role_resource_id")))
     @GsonIgnore
     private Set<ResourcesAccess> permissions;
 

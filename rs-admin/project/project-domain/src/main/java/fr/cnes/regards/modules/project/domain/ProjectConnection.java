@@ -32,7 +32,9 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @InstanceEntity
 @Entity
 @SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "seq_project_connection")
-@Table(name = "t_project_connection", uniqueConstraints = { @UniqueConstraint(columnNames = { "project_id", "microservice" }) })
+@Table(name = "t_project_connection",
+        uniqueConstraints = { @UniqueConstraint(name = "uk_project_connection_project_microservice",
+                columnNames = { "project_id", "microservice" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
     /**

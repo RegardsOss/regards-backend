@@ -24,8 +24,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  *
  * @author Xavier-Alexandre Brochard
  */
-@Entity(name = "T_NOTIFICATION_SETTINGS")
-@SequenceGenerator(name = "notificationSettingsSequence", initialValue = 1, sequenceName = "SEQ_NOTIFICATION_SETTINGS")
+@Entity(name = "t_notification_settings")
+@SequenceGenerator(name = "notificationSettingsSequence", initialValue = 1, sequenceName = "seq_notification_settings")
 public class NotificationSettings implements IIdentifiable<Long> {
 
     /**
@@ -69,7 +69,7 @@ public class NotificationSettings implements IIdentifiable<Long> {
      */
     @NotNull
     @OneToOne
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_NOTIFICATION_SETTINGS_USER"))
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_notification_settings_user"))
     private ProjectUser projectUser;
 
     /**

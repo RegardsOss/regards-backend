@@ -6,7 +6,16 @@ package fr.cnes.regards.modules.accessrights.domain.registration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -23,7 +32,8 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  */
 @InstanceEntity
 @Entity
-@Table(name = "t_verification_token")
+@Table(name = "t_verification_token", uniqueConstraints = @UniqueConstraint(name = "uk_verification_token_account_id",
+        columnNames = { "account_id" }))
 public class VerificationToken {
 
     /**

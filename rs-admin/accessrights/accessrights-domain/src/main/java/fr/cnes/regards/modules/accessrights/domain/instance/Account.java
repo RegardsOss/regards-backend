@@ -3,9 +3,20 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.instance;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -24,7 +35,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
  */
 @InstanceEntity
 @Entity
-@Table(name = "t_account")
+@Table(name = "t_account", uniqueConstraints = @UniqueConstraint(name = "uk_account_email", columnNames = { "email" }))
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "seq_account")
 public class Account implements IIdentifiable<Long> {
 
@@ -37,7 +48,7 @@ public class Account implements IIdentifiable<Long> {
     private Long id;
 
     @Email
-    @Column(name = "email", unique = true, length = 100)
+    @Column(name = "email", length = 100)
     private String email;
 
     @NotBlank

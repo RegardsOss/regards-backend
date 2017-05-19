@@ -3,7 +3,15 @@ package fr.cnes.regards.modules.accessrights.domain.passwordreset;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
@@ -18,7 +26,9 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
  */
 @InstanceEntity
 @Entity
-@Table(name = "t_password_reset_token")
+@Table(name = "t_password_reset_token",
+        uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_token_account_id",
+                columnNames = { "account_id" }))
 public class PasswordResetToken {
 
     /**
@@ -42,7 +52,7 @@ public class PasswordResetToken {
      * The link back to the {@link Account}
      */
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "FK_PASSWORD_RESET_TOKEN"))
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "fk_password_reset_token"))
     private Account account;
 
     /**

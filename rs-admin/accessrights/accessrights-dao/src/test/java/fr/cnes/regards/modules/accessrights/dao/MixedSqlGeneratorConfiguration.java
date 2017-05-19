@@ -15,62 +15,29 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 
 /**
+ * @author Marc Sordi
  *
- * Class AccessRightsDaoTestConfiguration
- *
- * Test Configuration class
- *
- * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableAutoConfiguration
-@PropertySource("classpath:tests-embedded.properties")
-public class AccessRightsDaoTestConfiguration {
+@PropertySource("classpath:tests-postgresql.properties")
+public class MixedSqlGeneratorConfiguration {
 
-    /**
-     *
-     * Mock AMQP
-     *
-     * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
-     */
     @Bean
     public IPublisher eventPublisher() {
         return Mockito.mock(IPublisher.class);
     }
 
-    /**
-     *
-     * Mock AMQP
-     *
-     * @return {@link ISubscriber}
-     * @since 1.0-SNAPSHOT
-     */
     @Bean
     public ISubscriber eventSubscriber() {
         return Mockito.mock(ISubscriber.class);
     }
 
-    /**
-     *
-     * Mock AMQP
-     *
-     * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
-     */
     @Bean
     public IInstanceSubscriber eventInstanceSubscriber() {
         return Mockito.mock(IInstanceSubscriber.class);
     }
 
-    /**
-     *
-     * Mock AMQP
-     *
-     * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
-     */
     @Bean
     public IInstancePublisher eventInstancePublisher() {
         return Mockito.mock(IInstancePublisher.class);

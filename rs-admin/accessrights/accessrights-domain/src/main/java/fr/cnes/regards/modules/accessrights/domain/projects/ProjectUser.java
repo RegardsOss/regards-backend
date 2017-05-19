@@ -25,6 +25,7 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -45,7 +46,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
  * @author CS
  */
 @Entity
-@Table(name = "t_project_user")
+@Table(name = "t_project_user",
+        uniqueConstraints = @UniqueConstraint(name = "uk_project_user_email", columnNames = { "email" }))
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "seq_project_user")
 @NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metaData"))
@@ -63,7 +65,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The user's email. Used to associate the Project User to its Account.
      */
     @Email
-    @Column(name = "email", length = 128, unique = true)
+    @Column(name = "email", length = 128)
     private String email;
 
     /**

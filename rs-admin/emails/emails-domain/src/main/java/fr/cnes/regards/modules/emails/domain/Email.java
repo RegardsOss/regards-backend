@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * @author Christophe Mertz
  *
  */
-@Entity(name = "T_EMAIL")
-@SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "SEQ_EMAIL")
+@Entity(name = "t_email")
+@SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "seq_email")
 public class Email implements IIdentifiable<Long> {
 
     /**

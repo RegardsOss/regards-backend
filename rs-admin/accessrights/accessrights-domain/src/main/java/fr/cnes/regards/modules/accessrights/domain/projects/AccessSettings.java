@@ -21,8 +21,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * @author Xavier-Alexandre Brochard
  */
 @Entity
-@Table(name = "T_ACCESS_SETTINGS")
-@SequenceGenerator(name = "accessSettingsSequence", initialValue = 1, sequenceName = "SEQ_ACCESS_SETTINGS")
+@Table(name = "t_access_settings")
+@SequenceGenerator(name = "accessSettingsSequence", initialValue = 1, sequenceName = "seq_access_settings")
 public class AccessSettings implements IIdentifiable<Long> {
 
     /**

@@ -33,8 +33,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "T_RESOURCES_ACCESS")
-@SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "SEQ_RESOURCES_ACCESS")
+@Table(name = "t_resources_access")
+@SequenceGenerator(name = "resourcesAccessSequence", initialValue = 1, sequenceName = "seq_resources_access")
 public class ResourcesAccess implements IIdentifiable<Long> {
 
     /**

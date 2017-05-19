@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
+			<artifactId>regards-core-jpa-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -26,7 +26,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards</artifactId>
+			<artifactId>security-config</artifactId>
 		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>

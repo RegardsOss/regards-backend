@@ -6,7 +6,17 @@ package fr.cnes.regards.modules.notification.domain;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -23,8 +33,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-@Entity(name = "T_NOTIFICATION")
-@SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "SEQ_NOTIFICATION")
+@Entity(name = "t_notification")
+@SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "seq_notification")
 public class Notification implements IIdentifiable<Long> {
 
     /**
@@ -54,11 +64,11 @@ public class Notification implements IIdentifiable<Long> {
      */
     @NotNull
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "TA_NOTIFICATION_PROJECTUSER",
-            joinColumns = @JoinColumn(name = "NOTIFICATION_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_NOTIFICATION_PROJECTUSER")),
-            inverseJoinColumns = @JoinColumn(name = "PROJECTUSER_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_PROJECTUSER_NOTIFICATION")))
+    @JoinTable(name = "ta_notification_projectuser",
+            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser")),
+            inverseJoinColumns = @JoinColumn(name = "projectuser_id", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "fk_projectuser_notification")))
     private List<ProjectUser> projectUserRecipients;
 
     /**
@@ -67,11 +77,11 @@ public class Notification implements IIdentifiable<Long> {
     @NotNull
     @Valid
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "TA_NOTIFICATION_ROLE",
-            joinColumns = @JoinColumn(name = "NOTIFICATION_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_NOTIFICATION_ROLE")),
-            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID",
-                    foreignKey = @javax.persistence.ForeignKey(name = "FK_ROLE_NOTIFICATION")))
+    @JoinTable(name = "ta_notification_role",
+            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role")),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id",
+                    foreignKey = @javax.persistence.ForeignKey(name = "fk_role_notification")))
     private List<Role> roleRecipients;
 
     /**
