@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.persistence.Entity;
 import javax.sql.DataSource;
 
+import org.flywaydb.core.Flyway;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
@@ -19,8 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -48,8 +51,8 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifie
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -61,11 +64,14 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
-@EnableJpaRepositories(excludeFilters = {
-        @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) }, basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory", transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(
+        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
-@AutoConfigureAfter(value = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
+@AutoConfigureAfter({ GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
+@AutoConfigureBefore({ FlywayAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -88,7 +94,7 @@ public class MultitenantJpaAutoConfiguration {
     private Map<String, DataSource> dataSources;
 
     @Autowired
-    private UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper;
+    private IDatasourceSchemaHelper datasourceSchemaHelper;
 
     /**
      * Multitenant connection provider
@@ -118,6 +124,16 @@ public class MultitenantJpaAutoConfiguration {
      */
     public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
+    }
+
+    /**
+     * This bean is not used at the moment but prevent flyway auto configuration in a single point
+     * @return
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public Flyway flyway() {
+        return new Flyway();
     }
 
     /**
@@ -175,7 +191,7 @@ public class MultitenantJpaAutoConfiguration {
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
         // Init with common properties
-        final Map<String, Object> hibernateProps = updateDatasourceSchemaHelper.getDbProperties(defaultDataSource);
+        final Map<String, Object> hibernateProps = datasourceSchemaHelper.getHibernateProperties();
 
         // Add multitenant properties
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
@@ -215,5 +231,4 @@ public class MultitenantJpaAutoConfiguration {
         GsonUtil.setGson(pGson);
         return null;
     }
-
 }

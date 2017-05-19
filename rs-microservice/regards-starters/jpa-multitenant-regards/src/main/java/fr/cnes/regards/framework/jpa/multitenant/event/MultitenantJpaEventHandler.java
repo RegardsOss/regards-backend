@@ -20,12 +20,13 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
-import fr.cnes.regards.framework.jpa.multitenant.utils.UpdateDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 
 /**
  *
@@ -74,16 +75,16 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     /**
      * Schema update helper
      */
-    private final UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper;
+    private final IDatasourceSchemaHelper datasourceSchemaHelper;
 
     public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
-            MultitenantDaoProperties daoProperties, UpdateDatasourceSchemaHelper updateDatasourceSchemaHelper,
+            MultitenantDaoProperties daoProperties, IDatasourceSchemaHelper datasourceSchemaHelper,
             IInstanceSubscriber instanceSubscriber, IInstancePublisher instancePublisher,
             ITenantConnectionResolver multitenantResolver) {
         this.microserviceName = microserviceName;
         this.dataSources = dataSources;
         this.daoProperties = daoProperties;
-        this.updateDatasourceSchemaHelper = updateDatasourceSchemaHelper;
+        this.datasourceSchemaHelper = datasourceSchemaHelper;
         this.instancePublisher = instancePublisher;
         this.instanceSubscriber = instanceSubscriber;
         this.multitenantResolver = multitenantResolver;
@@ -146,7 +147,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     oldDataSource.getConnection().close();
                 }
                 // Update schema
-                updateDatasourceSchemaHelper.updateDataSourceSchema(dataSource);
+                datasourceSchemaHelper.migrate(dataSource);
                 // Enable data source
                 multitenantResolver.enableTenantConnection(microserviceName, tenantConnection.getTenant());
                 // Register data source
@@ -167,6 +168,9 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 LOGGER.error(e.getMessage(), e);
             } catch (HibernateException e) {
                 // An error may occurs when update schema
+                LOGGER.error(e.getMessage(), e);
+            } catch (JpaException e) {
+                LOGGER.error("Cannot migrate datasource for tenant {}. Update fails.", tenantConnection.getTenant());
                 LOGGER.error(e.getMessage(), e);
             }
         }
