@@ -8,6 +8,8 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
+ *
+ * @See {@link AbstractScriptGeneratorTest}
  * @author Marc Sordi
  *
  */
