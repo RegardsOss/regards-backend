@@ -3,10 +3,10 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.boot.MetadataSources;
@@ -17,16 +17,13 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.exception.JpaException;
-
 /**
  * Help to update datasource schema using hbm2ddl
  *
  * @author Marc Sordi
  *
  */
-public class Hbm2ddlDatasourceSchemaHelper implements IDatasourceSchemaHelper {
+public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper {
 
     /**
      * Class logger
@@ -35,17 +32,25 @@ public class Hbm2ddlDatasourceSchemaHelper implements IDatasourceSchemaHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(Hbm2ddlDatasourceSchemaHelper.class);
 
     /**
-     * Hibernate properties that may impact migration configuration
-     */
-    private final Map<String, Object> hibernateProperties;
-
-    /**
      * If set, allows to export initialization script
      */
     private String outputFile = null;
 
-    public Hbm2ddlDatasourceSchemaHelper(Map<String, Object> hibernateProperties) {
-        this.hibernateProperties = hibernateProperties;
+    /**
+     * Entity annotation to manage
+     */
+    private final Class<? extends Annotation> includeAnnotation;
+
+    /**
+     * Entity annotation to skip
+     */
+    private final Class<? extends Annotation> excludeAnnotation;
+
+    public Hbm2ddlDatasourceSchemaHelper(Map<String, Object> hibernateProperties,
+            Class<? extends Annotation> includeAnnotation, Class<? extends Annotation> excludeAnnotation) {
+        super(hibernateProperties);
+        this.includeAnnotation = includeAnnotation;
+        this.excludeAnnotation = excludeAnnotation;
     }
 
     /**
@@ -55,9 +60,8 @@ public class Hbm2ddlDatasourceSchemaHelper implements IDatasourceSchemaHelper {
      * @param dataSource datasource to update
      * @param rootPackageToScan package to scan for JPA entities
      * @param schema forced target database schema removing existing (if any) from properties
-     * @throws JpaException if error occurs!
      */
-    public void migrate(final DataSource dataSource, String rootPackageToScan, String schema) throws JpaException {
+    public void migrate(final DataSource dataSource, String rootPackageToScan, String schema) {
 
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
 
@@ -73,14 +77,15 @@ public class Hbm2ddlDatasourceSchemaHelper implements IDatasourceSchemaHelper {
         final MetadataSources metadata = new MetadataSources(builder.build());
 
         Set<String> packagesToScan = DaoUtils.findPackagesForJpa(rootPackageToScan);
-        packagesToScan.stream()
-                .flatMap(pPackage -> DaoUtils.scanPackageForJpa(pPackage, Entity.class, InstanceEntity.class).stream())
+        packagesToScan.stream().flatMap(pPackage -> DaoUtils
+                .scanPackageForJpa(pPackage, includeAnnotation, excludeAnnotation).stream())
                 .forEach(metadata::addAnnotatedClass);
 
         final SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
 
         if (outputFile != null) {
             export.setOutputFile(outputFile);
+            export.setDelimiter(";");
             export.execute(true, true);
         } else {
             export.execute(false, true);
@@ -88,12 +93,12 @@ public class Hbm2ddlDatasourceSchemaHelper implements IDatasourceSchemaHelper {
 
     }
 
-    public void migrate(final DataSource dataSource, String rootPackageToScan) throws JpaException {
+    public void migrate(final DataSource dataSource, String rootPackageToScan) {
         migrate(dataSource, rootPackageToScan, null);
     }
 
     @Override
-    public void migrate(final DataSource dataSource) throws JpaException {
+    public void migrate(final DataSource dataSource) {
         migrate(dataSource, DaoUtils.ROOT_PACKAGE, null);
     }
 
@@ -107,13 +112,5 @@ public class Hbm2ddlDatasourceSchemaHelper implements IDatasourceSchemaHelper {
      */
     public void setOutputFile(String pOutputFile) {
         outputFile = pOutputFile;
-    }
-
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper#getHibernateProperties()
-     */
-    @Override
-    public Map<String, Object> getHibernateProperties() {
-        return hibernateProperties;
     }
 }

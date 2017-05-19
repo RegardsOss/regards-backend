@@ -7,8 +7,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import fr.cnes.regards.framework.jpa.exception.JpaException;
-
 /**
  *
  * Datasource schema migration interface
@@ -22,9 +20,19 @@ public interface IDatasourceSchemaHelper {
     * Migrate datasource
     *
     * @param dataSource datasource to migrate
-    * @throws JpaException if error occurs
     */
-    void migrate(DataSource dataSource) throws JpaException;
+    void migrate(DataSource dataSource);
+
+    /**
+     * Set datasource before {@link IDatasourceSchemaHelper#migrate()}
+     * @param dataSource datasource to migrate
+     */
+    void setDataSource(DataSource dataSource);
+
+    /**
+     * Migrate datasource specified with {@link IDatasourceSchemaHelper#setDataSource(DataSource)}
+     */
+    void migrate();
 
     /**
      * @return Hibernate properties

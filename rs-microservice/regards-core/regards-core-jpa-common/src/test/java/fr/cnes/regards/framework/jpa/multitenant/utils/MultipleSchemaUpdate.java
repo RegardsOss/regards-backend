@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.junit.After;
@@ -94,7 +95,8 @@ public class MultipleSchemaUpdate {
     @Test
     public void testWithHbm2ddl() throws JpaException {
 
-        Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties);
+        Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
+                Entity.class, null);
 
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl1");
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl2");

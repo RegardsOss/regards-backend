@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import fr.cnes.regards.framework.jpa.utils.MigrationTool;
+
 /**
  *
  * Class InstanceDaoProperties
@@ -64,6 +66,16 @@ public class InstanceDaoProperties {
      * Default test query
      */
     private String preferredTestQuery = "SELECT 1";
+
+    /**
+     * Migration tool. Default to hbm2ddl.
+     */
+    private MigrationTool migrationTool = MigrationTool.HBM2DDL;
+
+    /**
+     * Optional script output file for {@link MigrationTool#HBM2DDL}
+     */
+    private String outputFile = null;
 
     /**
      *
@@ -157,6 +169,22 @@ public class InstanceDaoProperties {
 
     public void setPreferredTestQuery(String pPreferredTestQuery) {
         preferredTestQuery = pPreferredTestQuery;
+    }
+
+    public MigrationTool getMigrationTool() {
+        return migrationTool;
+    }
+
+    public void setMigrationTool(MigrationTool pMigrationTool) {
+        migrationTool = pMigrationTool;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(String pOutputFile) {
+        outputFile = pOutputFile;
     }
 
 }

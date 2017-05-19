@@ -22,8 +22,7 @@ public class DisableInstanceCondition implements Condition {
     public boolean matches(final ConditionContext pArg0, final AnnotatedTypeMetadata pArg1) {
         final String result = pArg0.getEnvironment()
                 .getProperty("regards.jpa.instance.disableInstanceEntityAnnotation");
-        final boolean bool = Boolean.parseBoolean(result);
-        return bool == true;
+        return Boolean.parseBoolean(result);
     }
 
 }

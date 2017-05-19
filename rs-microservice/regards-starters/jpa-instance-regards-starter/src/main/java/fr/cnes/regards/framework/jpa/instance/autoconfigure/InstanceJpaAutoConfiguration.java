@@ -5,14 +5,11 @@ package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
 import java.lang.annotation.Annotation;
 
-import org.flywaydb.core.Flyway;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -57,15 +54,4 @@ public class InstanceJpaAutoConfiguration extends AbstractJpaAutoConfiguration {
     public Class<? extends Annotation> getEntityAnnotationScan() {
         return InstanceEntity.class;
     }
-
-    /**
-     * This bean is not used at the moment but prevent flyway auto configuration in a single point
-     * @return
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public Flyway flyway() {
-        return new Flyway();
-    }
-
 }

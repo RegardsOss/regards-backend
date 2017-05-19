@@ -70,6 +70,11 @@ public class MultitenantDaoProperties {
      */
     private MigrationTool migrationTool = MigrationTool.HBM2DDL;
 
+    /**
+     * Optional script output file for {@link MigrationTool#HBM2DDL}
+     */
+    private String outputFile = null;
+
     public List<TenantConnection> getTenants() {
         return tenants;
     }
@@ -140,6 +145,14 @@ public class MultitenantDaoProperties {
 
     public void setMigrationTool(MigrationTool pMigrationTool) {
         migrationTool = pMigrationTool;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(String pOutputFile) {
+        outputFile = pOutputFile;
     }
 
 }

@@ -4,23 +4,28 @@
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
 import java.lang.annotation.Annotation;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.flywaydb.core.Flyway;
 import org.hibernate.MultiTenancyStrategy;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -28,11 +33,16 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.MigrationTool;
 
 /**
  *
@@ -48,7 +58,6 @@ public abstract class AbstractJpaAutoConfiguration {
     /**
      * Class logger
      */
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJpaAutoConfiguration.class);
 
     /**
@@ -57,10 +66,21 @@ public abstract class AbstractJpaAutoConfiguration {
     private static final String PERSITENCE_UNIT_NAME = "instance";
 
     /**
+     * {@link IDatasourceSchemaHelper} instance bean
+     */
+    private static final String DATASOURCE_SCHEMA_HELPER_BEAN_NAME = "instanceDataSourceSchemaHelper";
+
+    /**
      * Current microservice name
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
+    private String implicitNamingStrategyName;
+
+    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
+    private String physicalNamingStrategyName;
 
     /**
      * Microservice global configuration
@@ -95,6 +115,42 @@ public abstract class AbstractJpaAutoConfiguration {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
     }
 
+    /*
+     * This bean is not used at the moment but prevent flyway auto configuration in a single point
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public Flyway flyway() {
+        return new Flyway();
+    }
+
+    /**
+     * Use schema helper to migrate database schema.
+     * {@link IDatasourceSchemaHelper#migrate()} is called immediatly after bean creation on instance datasource.
+     *
+     * @return {@link IDatasourceSchemaHelper}
+     * @throws JpaException if error occurs!
+     */
+    @Bean(initMethod = "migrate", name = DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
+    public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaException {
+
+        Map<String, Object> hibernateProperties = getHibernateProperties();
+
+        if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
+            Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
+                    getEntityAnnotationScan(), null);
+            helper.setDataSource(instanceDataSource);
+            // Set output file, may be null.
+            helper.setOutputFile(daoProperties.getOutputFile());
+            return helper;
+        } else {
+            FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties);
+            helper.setDataSource(instanceDataSource);
+            helper.setScriptLocationPath("instancescripts");
+            return helper;
+        }
+    }
+
     /**
      *
      * Create TransactionManager for instance datasource
@@ -102,10 +158,12 @@ public abstract class AbstractJpaAutoConfiguration {
      * @param pBuilder
      *            EntityManagerFactoryBuilder
      * @return PlatformTransactionManager
+     * @throws JpaException if error occurs
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
-    public PlatformTransactionManager instanceJpaTransactionManager() {
+    @DependsOn(DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
+    public PlatformTransactionManager instanceJpaTransactionManager() throws JpaException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(instanceEntityManagerFactory().getObject());
         return jtm;
@@ -114,24 +172,18 @@ public abstract class AbstractJpaAutoConfiguration {
     /**
      * Create EntityManagerFactory for instance datasource
      * @return LocalContainerEntityManagerFactoryBean
+     * @throws JpaException if error occurs!
      */
     @Bean
     @Primary
-    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory() throws JpaException {
 
-        final Map<String, Object> hibernateProps = new LinkedHashMap<>();
-        hibernateProps.putAll(jpaProperties.getHibernateProperties(instanceDataSource));
+        // Init with common properties
+        final Map<String, Object> hibernateProps = getHibernateProperties();
 
-        if (daoProperties.getEmbedded()) {
-            hibernateProps.put(Environment.DIALECT, DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT);
-        } else {
-            hibernateProps.put(Environment.DIALECT, daoProperties.getDialect());
-        }
         hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
         hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
         hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
-        hibernateProps.put(Environment.HBM2DDL_AUTO, "update");
-        hibernateProps.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
 
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         List<Class<?>> packages;
@@ -156,5 +208,47 @@ public abstract class AbstractJpaAutoConfiguration {
     }
 
     public abstract Class<? extends Annotation> getEntityAnnotationScan();
+
+    /**
+     * Compute database properties
+     *
+     * @return database properties
+     * @throws JpaException if error occurs!
+     */
+    private Map<String, Object> getHibernateProperties() throws JpaException {
+        Map<String, Object> dbProperties = new HashMap<>();
+
+        // Add Spring JPA hibernate properties
+        // Schema must be retrieved here if managed with property :
+        // spring.jpa.properties.hibernate.default_schema
+        // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
+        jpaProperties.getHibernate().setDdlAuto("none");
+        dbProperties.putAll(jpaProperties.getHibernateProperties(null));
+        // Remove hbm2ddl as schema update is done programmatically
+        dbProperties.remove(Environment.HBM2DDL_AUTO);
+
+        // Dialect
+        String dialect = daoProperties.getDialect();
+        if (daoProperties.getEmbedded()) {
+            // Force dialect for embedded database
+            dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+        }
+        dbProperties.put(Environment.DIALECT, dialect);
+
+        dbProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
+
+        try {
+            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
+                    .forName(physicalNamingStrategyName).newInstance();
+            dbProperties.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
+            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
+                    .forName(implicitNamingStrategyName).newInstance();
+            dbProperties.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            LOGGER.error("Error occurs with naming strategy", e);
+            throw new JpaException(e);
+        }
+        return dbProperties;
+    }
 
 }
