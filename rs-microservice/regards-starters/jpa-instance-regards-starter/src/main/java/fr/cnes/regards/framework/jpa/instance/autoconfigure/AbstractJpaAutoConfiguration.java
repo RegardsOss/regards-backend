@@ -162,7 +162,6 @@ public abstract class AbstractJpaAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
-    @DependsOn(DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
     public PlatformTransactionManager instanceJpaTransactionManager() throws JpaException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(instanceEntityManagerFactory().getObject());
@@ -176,6 +175,7 @@ public abstract class AbstractJpaAutoConfiguration {
      */
     @Bean
     @Primary
+    @DependsOn(DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
     public LocalContainerEntityManagerFactoryBean instanceEntityManagerFactory() throws JpaException {
 
         // Init with common properties
