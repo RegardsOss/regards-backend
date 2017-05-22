@@ -45,8 +45,12 @@ import fr.cnes.regards.modules.configuration.service.IThemeService;
 @RestController
 @ModuleInfo(name = "Theme", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/themes")
+@RequestMapping(ThemeController.ROOT_MAPPING)
 public class ThemeController implements IResourceController<Theme> {
+
+    public static final String ROOT_MAPPING = "/themes";
+
+    public static final String THEME_ID_MAPPING = "/{themeId}";
 
     @Autowired
     private IThemeService service;
@@ -60,7 +64,7 @@ public class ThemeController implements IResourceController<Theme> {
      * @return {@link Layout}
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{themeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM theme", role = DefaultRole.PUBLIC)
     public HttpEntity<Resource<Theme>> retrieveTheme(@PathVariable("themeId") final Long pThemeId)
@@ -109,7 +113,7 @@ public class ThemeController implements IResourceController<Theme> {
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{themeId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM theme", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Theme>> updateTheme(@PathVariable("themeId") final Long pThemeId,
@@ -130,7 +134,8 @@ public class ThemeController implements IResourceController<Theme> {
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{themeId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a theme", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Void>> deleteTheme(@PathVariable("themeId") final Long pThemeId)

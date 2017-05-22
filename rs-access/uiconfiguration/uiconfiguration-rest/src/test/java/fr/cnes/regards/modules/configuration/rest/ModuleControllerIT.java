@@ -45,6 +45,10 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IModuleRepository repository;
 
+    private Module moduleTest;
+
+    private final static String APPLICATION_TEST = "TEST";
+
     @Override
     protected Logger getLogger() {
         return LOG;
@@ -53,7 +57,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
     private Module createModule(final boolean pActive, final boolean pDefault) {
         final Module module = new Module();
         module.setActive(pActive);
-        module.setApplicationId("TEST");
+        module.setApplicationId(APPLICATION_TEST);
         module.setConf("{\"test\":\"test\"}");
         module.setContainer("TestContainer");
         module.setDefaultDynamicModule(pDefault);
@@ -69,7 +73,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
 
         final Module module2 = createModule(false, true);
 
-        repository.save(module);
+        moduleTest = repository.save(module);
         repository.save(module2);
 
     }
@@ -79,12 +83,14 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(2)));
-        performDefaultGet("/applications/{applicationId}/modules", expectations, "Plop", "TEST");
+        performDefaultGet("/applications/{applicationId}/modules", expectations,
+                          "The module list of TEST application should contains two modules", APPLICATION_TEST);
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(0)));
-        performDefaultGet("/applications/{applicationId}/modules", expectations, "Plop", "TEST2");
+        performDefaultGet("/applications/{applicationId}/modules", expectations,
+                          "The module list of TEST2 application should be empty", "TEST2");
     }
 
     @Test
@@ -93,7 +99,8 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(1)));
-        performDefaultGet("/applications/{applicationId}/modules", expectations, "Plop", param, "TEST");
+        performDefaultGet("/applications/{applicationId}/modules", expectations,
+                          "The active module list should contains only one module", param, APPLICATION_TEST);
     }
 
     @Test
@@ -101,12 +108,29 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         final Module module = createModule(true, true);
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPost("/applications/{applicationId}/modules", module, expectations, "Plop", "TEST");
+        performDefaultPost("/applications/{applicationId}/modules", module, expectations,
+                           "The POST to save a new module should be a success", APPLICATION_TEST);
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(3)));
-        performDefaultGet("/applications/{applicationId}/modules", expectations, "Plop", "TEST");
+        performDefaultGet("/applications/{applicationId}/modules", expectations,
+                          "The previously created module should be retrieved", APPLICATION_TEST);
+    }
+
+    @Test
+    public void deleteModule() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultDelete(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING, expectations,
+                             "The deletion of a given existing module should be a success", APPLICATION_TEST,
+                             moduleTest.getId());
+
+        expectations.clear();
+        expectations.add(status().isNotFound());
+        performDefaultGet(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING, expectations,
+                          "The previously deleted module should not exist anymore", APPLICATION_TEST,
+                          moduleTest.getId().toString());
     }
 
 }

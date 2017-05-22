@@ -19,7 +19,6 @@
 	<modules>
 		<module>bootstrap-access-instance</module>
 		<module>bootstrap-access-project</module>
-		<module>access</module>
 		<module>uiconfiguration</module>
 	</modules>
 

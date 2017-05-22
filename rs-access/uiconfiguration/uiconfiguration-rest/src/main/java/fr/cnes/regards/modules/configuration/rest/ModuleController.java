@@ -46,8 +46,12 @@ import fr.cnes.regards.modules.configuration.service.IModuleService;
 @RestController
 @ModuleInfo(name = "Module", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/applications/{applicationId}/modules")
+@RequestMapping(ModuleController.ROOT_MAPPING)
 public class ModuleController implements IResourceController<Module> {
+
+    public static final String ROOT_MAPPING = "/applications/{applicationId}/modules";
+
+    public static final String MODULE_ID_MAPPING = "/{moduleId}";
 
     @Autowired
     private IModuleService service;
@@ -61,7 +65,7 @@ public class ModuleController implements IResourceController<Module> {
      * @return {@link Layout}
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{moduleId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<Resource<Module>> retrieveModule(@PathVariable("applicationId") final String pApplicationId,
@@ -124,7 +128,7 @@ public class ModuleController implements IResourceController<Module> {
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{moduleId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
@@ -151,7 +155,8 @@ public class ModuleController implements IResourceController<Module> {
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
-    @RequestMapping(value = "/{moduleId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
