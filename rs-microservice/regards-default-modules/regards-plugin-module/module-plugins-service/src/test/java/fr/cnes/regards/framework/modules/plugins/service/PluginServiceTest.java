@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
-import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfigurationEvent;
+import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
@@ -170,8 +170,8 @@ public class PluginServiceTest extends PluginServiceUtility {
                     .thenReturn(aPluginConfiguration);
             pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getId());
             Mockito.verify(pluginConfRepositoryMocked).delete(aPluginConfiguration.getId());
-            Mockito.verify(publisherMocked).publish(new PluginConfigurationEvent(aPluginConfiguration.getId(),
-                    PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
+            Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                                                                                 PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
 
         } catch (final ModuleException e) {
             Assert.fail();
@@ -198,8 +198,8 @@ public class PluginServiceTest extends PluginServiceUtility {
             Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
-            Mockito.verify(publisherMocked).publish(new PluginConfigurationEvent(aPluginConfigurationWithId.getId(),
-                    PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
+            Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(),
+                                                                                 PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
         } catch (final ModuleException e) {
             Assert.fail();
         }
@@ -242,8 +242,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Mockito.verify(publisherMocked).publish(new PluginConfigurationEvent(aPluginConfiguration.getId(),
-                PluginServiceAction.DESACTIVATE, aPluginConfiguration.getInterfaceNames()));
+        Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                                                                             PluginServiceAction.DISABLE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test
@@ -263,8 +263,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Mockito.verify(publisherMocked).publish(new PluginConfigurationEvent(aPluginConfiguration.getId(),
-                PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
+        Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                                                                             PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test

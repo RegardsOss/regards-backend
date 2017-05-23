@@ -1,34 +1,25 @@
-/*
- * LICENSE_PLACEHOLDER
- */
 package fr.cnes.regards.framework.modules.plugins.domain.event;
 
 import java.util.Set;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-
 /**
- * @author Sylvain Vissiere-Guerinet
+ * @author oroussel
  */
-@Event(target = Target.ALL)
-public class PluginConfigurationEvent implements ISubscribable {
-
+public class AbstractPluginConfEvent {
     private Long pluginConfId;
 
     private PluginServiceAction action;
 
     private Set<String> pluginTypes;
 
-    public PluginConfigurationEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {
+    protected AbstractPluginConfEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {
         super();
         pluginConfId = pPluginConfId;
         action = pAction;
         pluginTypes = pPluginTypes;
     }
 
-    private PluginConfigurationEvent() {
+    protected AbstractPluginConfEvent() {
         this(null, null, null);
     }
 
@@ -77,7 +68,7 @@ public class PluginConfigurationEvent implements ISubscribable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        PluginConfigurationEvent other = (PluginConfigurationEvent) obj;
+        AbstractPluginConfEvent other = (AbstractPluginConfEvent) obj;
         if (action != other.action) {
             return false;
         }
@@ -86,17 +77,17 @@ public class PluginConfigurationEvent implements ISubscribable {
                 return false;
             }
         } else
-            if (!pluginConfId.equals(other.pluginConfId)) {
-                return false;
-            }
+        if (!pluginConfId.equals(other.pluginConfId)) {
+            return false;
+        }
         if (pluginTypes == null) {
             if (other.pluginTypes != null) {
                 return false;
             }
         } else
-            if (!pluginTypes.equals(other.pluginTypes)) {
-                return false;
-            }
+        if (!pluginTypes.equals(other.pluginTypes)) {
+            return false;
+        }
         return true;
     }
 
