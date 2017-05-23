@@ -133,7 +133,7 @@ public class RoleService implements IRoleService {
 
     @PostConstruct
     public void init() {
-        // Ensure the existence of default roles. If not, add them from their bean definition in defaultRoles.xml
+        // Ensure the existence of default roles.
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
             initDefaultRoles(tenant);
         }
@@ -288,12 +288,11 @@ public class RoleService implements IRoleService {
         final Role previous = roleRepository.findOne(pRoleId);
         if ((previous != null) && previous.isNative()) {
             throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else
-            if (previous == null) {
-                throw new EntityNotFoundException(pRoleId, Role.class);
-            } else {
-                deleteAndPublish(previous);
-            }
+        } else if (previous == null) {
+            throw new EntityNotFoundException(pRoleId, Role.class);
+        } else {
+            deleteAndPublish(previous);
+        }
     }
 
     @Override
@@ -301,12 +300,11 @@ public class RoleService implements IRoleService {
         final Optional<Role> role = roleRepository.findOneByName(pRoleName);
         if (!role.isPresent()) {
             throw new EntityNotFoundException(pRoleName, Role.class);
-        } else
-            if (role.get().isNative()) {
-                throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-            } else {
-                deleteAndPublish(role.get());
-            }
+        } else if (role.get().isNative()) {
+            throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+        } else {
+            deleteAndPublish(role.get());
+        }
 
     }
 

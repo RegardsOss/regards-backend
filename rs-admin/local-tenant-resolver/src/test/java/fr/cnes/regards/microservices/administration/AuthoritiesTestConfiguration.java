@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
@@ -37,7 +36,6 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 @ComponentScan("fr.cnes.regards.modules")
 @PropertySource("classpath:application-test.properties")
 @EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfiguration.class)
-@ImportResource({ "classpath*:defaultRoles.xml" })
 public class AuthoritiesTestConfiguration {
 
     /**
