@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Entity;
 import javax.sql.DataSource;
 
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
@@ -16,6 +17,7 @@ import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
@@ -67,16 +70,15 @@ public class DataSourcesAutoConfiguration {
     public static final String DATA_SOURCE_BEAN_NAME = "multitenantsDataSources";
 
     /**
+     * {@link IDatasourceSchemaHelper} instance bean
+     */
+    public static final String DATASOURCE_SCHEMA_HELPER_BEAN_NAME = "multitenantDataSourceSchemaHelper";
+
+    /**
      * Current microservice name
      */
     @Value("${spring.application.name}")
     private String microserviceName;
-
-    /**
-     * Database schema name
-     */
-    @Value("${spring.jpa.properties.hibernate.default_schema:#{null}}")
-    private String schemaName;
 
     @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
     private String implicitNamingStrategyName;
@@ -132,13 +134,17 @@ public class DataSourcesAutoConfiguration {
      * @return {@link IDatasourceSchemaHelper}
      * @throws JpaException if error occurs!
      */
-    @Bean
+    @Bean(name = DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
     public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaException {
 
         Map<String, Object> hibernateProperties = getHibernateProperties();
 
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
-            return new Hbm2ddlDatasourceSchemaHelper(hibernateProperties);
+            Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties, Entity.class,
+                    InstanceEntity.class);
+            // Set output file, may be null.
+            helper.setOutputFile(daoProperties.getOutputFile());
+            return helper;
         } else {
             return new FlywayDatasourceSchemaHelper(hibernateProperties);
         }
@@ -156,12 +162,12 @@ public class DataSourcesAutoConfiguration {
      * @return JPA event handler
      * @throws JpaMultitenantException
      *             if error occurs!
-     * @throws JpaException if error occurs!
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
             IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver,
-            IDatasourceSchemaHelper datasourceSchemaHelper) throws JpaMultitenantException, JpaException {
+            @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper)
+            throws JpaMultitenantException {
         return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties, datasourceSchemaHelper,
                 instanceSubscriber, instancePublisher, multitenantResolver);
     }

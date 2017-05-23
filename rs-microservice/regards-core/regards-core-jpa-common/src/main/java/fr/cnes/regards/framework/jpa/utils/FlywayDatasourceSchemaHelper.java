@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
  * @author Marc Sordi
  *
  */
-public class FlywayDatasourceSchemaHelper implements IDatasourceSchemaHelper {
+public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper {
 
     /**
      * Class logger
@@ -51,13 +51,8 @@ public class FlywayDatasourceSchemaHelper implements IDatasourceSchemaHelper {
      */
     private String scriptLocationPath = "scripts";
 
-    /**
-     * Hibernate properties that may impact migration configuration
-     */
-    private final Map<String, Object> hibernateProperties;
-
     public FlywayDatasourceSchemaHelper(Map<String, Object> hibernateProperties) {
-        this.hibernateProperties = hibernateProperties;
+        super(hibernateProperties);
     }
 
     /**
@@ -99,7 +94,7 @@ public class FlywayDatasourceSchemaHelper implements IDatasourceSchemaHelper {
     public void migrate(DataSource dataSource, String schema) {
 
         Assert.notNull(dataSource);
-        Assert.notNull(schema);
+        Assert.notNull(schema, "Flyway migration tool requires a database schema");
 
         // Use flyway scanner to be consistent
         Scanner scanner = new Scanner(classLoader);
@@ -145,11 +140,4 @@ public class FlywayDatasourceSchemaHelper implements IDatasourceSchemaHelper {
         scriptLocationPath = pScriptLocationPath;
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper#getHibernateProperties()
-     */
-    @Override
-    public Map<String, Object> getHibernateProperties() {
-        return hibernateProperties;
-    }
 }

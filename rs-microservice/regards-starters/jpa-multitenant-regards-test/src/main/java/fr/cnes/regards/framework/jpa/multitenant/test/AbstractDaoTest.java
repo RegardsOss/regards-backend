@@ -32,8 +32,9 @@ public abstract class AbstractDaoTest {
 
     /**
      * JPA entity manager : use it to flush context to prevent false positive
+     * @see MultitenantJpaAutoConfiguration#PERSITENCE_UNIT_NAME for unit name
      */
-    @PersistenceContext
+    @PersistenceContext(unitName = "multitenant")
     protected EntityManager entityManager;
 
     @Autowired

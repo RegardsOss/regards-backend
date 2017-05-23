@@ -78,7 +78,7 @@ public class MultitenantJpaAutoConfiguration {
     /**
      * JPA Persistence unit name. Used to separate multiples databases.
      */
-    private static final String PERSITENCE_UNIT_NAME = "multitenant";
+    public static final String PERSITENCE_UNIT_NAME = "multitenant";
 
     /**
      * Current microservice name
@@ -94,6 +94,7 @@ public class MultitenantJpaAutoConfiguration {
     private Map<String, DataSource> dataSources;
 
     @Autowired
+    @Qualifier(DataSourcesAutoConfiguration.DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
     private IDatasourceSchemaHelper datasourceSchemaHelper;
 
     /**
