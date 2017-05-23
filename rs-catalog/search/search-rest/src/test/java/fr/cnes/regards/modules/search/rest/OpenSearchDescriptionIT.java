@@ -62,13 +62,13 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Model modDs = Model.build("modDs", "pDescription", EntityType.DATASET);
         Model modData = Model.build("modData", "pDescription", EntityType.DATA);
         Model modDoc = Model.build("modDoc", "pDescription", EntityType.DOCUMENT);
-        AttributeModel attrCol = AttributeModelBuilder.build("attrCol", AttributeType.BOOLEAN)
+        AttributeModel attrCol = AttributeModelBuilder.build("attrCol", AttributeType.BOOLEAN, "attrCol")
                 .fragment(Fragment.buildDefault()).get();
-        AttributeModel attrDs = AttributeModelBuilder.build("attrDs", AttributeType.BOOLEAN)
+        AttributeModel attrDs = AttributeModelBuilder.build("attrDs", AttributeType.BOOLEAN, "attrDs")
                 .fragment(Fragment.buildDefault()).get();
-        AttributeModel attrData = AttributeModelBuilder.build("attrData", AttributeType.BOOLEAN)
+        AttributeModel attrData = AttributeModelBuilder.build("attrData", AttributeType.BOOLEAN, "attrData")
                 .fragment(Fragment.buildDefault()).get();
-        AttributeModel attrDoc = AttributeModelBuilder.build("attrDoc", AttributeType.BOOLEAN)
+        AttributeModel attrDoc = AttributeModelBuilder.build("attrDoc", AttributeType.BOOLEAN, "attrDoc")
                 .fragment(Fragment.buildDefault()).get();
         ModelAttrAssoc assocCol = new ModelAttrAssoc(attrCol, modCol);
         ModelAttrAssoc assocData = new ModelAttrAssoc(attrData, modData);
@@ -101,7 +101,8 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Model modCol = Model.build("modCol", "pDescription", EntityType.COLLECTION);
         int i = 0;
         for (AttributeType type : AttributeType.values()) {
-            AttributeModel attr = AttributeModelBuilder.build("attr" + i, type).fragment(Fragment.buildDefault()).get();
+            AttributeModel attr = AttributeModelBuilder.build("attr" + i, type, "attr" + i)
+                    .fragment(Fragment.buildDefault()).get();
             ModelAttrAssoc assoc = new ModelAttrAssoc(attr, modCol);
             assocs.add(assoc);
             i++;
@@ -127,7 +128,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
     public void testDatasetDescriptor() {
         java.util.Collection<ModelAttrAssoc> assocs = new ArrayList<>();
         Model modDs = Model.build("modDs", "pDescription", EntityType.DATASET);
-        AttributeModel attrDs = AttributeModelBuilder.build("attrDs", AttributeType.BOOLEAN)
+        AttributeModel attrDs = AttributeModelBuilder.build("attrDs", AttributeType.BOOLEAN, "attrDs")
                 .fragment(Fragment.buildDefault()).get();
         ModelAttrAssoc assocDs = new ModelAttrAssoc(attrDs, modDs);
         assocs.add(assocDs);
@@ -152,7 +153,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
     public void testDataDescriptor() {
         java.util.Collection<ModelAttrAssoc> assocs = new ArrayList<>();
         Model modData = Model.build("modData", "pDescription", EntityType.DATA);
-        AttributeModel attrData = AttributeModelBuilder.build("attrData", AttributeType.BOOLEAN)
+        AttributeModel attrData = AttributeModelBuilder.build("attrData", AttributeType.BOOLEAN, "attrData")
                 .fragment(Fragment.buildDefault()).get();
         ModelAttrAssoc assocData = new ModelAttrAssoc(attrData, modData);
         assocs.add(assocData);
@@ -177,7 +178,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
     public void testDataDatasetDescriptor() {
         java.util.Collection<ModelAttrAssoc> assocs = new ArrayList<>();
         Model modData = Model.build("modData", "pDescription", EntityType.DATA);
-        AttributeModel attrData = AttributeModelBuilder.build("attrData", AttributeType.BOOLEAN)
+        AttributeModel attrData = AttributeModelBuilder.build("attrData", AttributeType.BOOLEAN, "attrData")
                 .fragment(Fragment.buildDefault()).get();
         ModelAttrAssoc assocData = new ModelAttrAssoc(attrData, modData);
         assocs.add(assocData);
@@ -202,7 +203,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
     public void testDocumentDescriptor() {
         java.util.Collection<ModelAttrAssoc> assocs = new ArrayList<>();
         Model modDoc = Model.build("modDoc", "pDescription", EntityType.DOCUMENT);
-        AttributeModel attrDoc = AttributeModelBuilder.build("attrDoc", AttributeType.BOOLEAN)
+        AttributeModel attrDoc = AttributeModelBuilder.build("attrDoc", AttributeType.BOOLEAN, "attrDoc")
                 .fragment(Fragment.buildDefault()).get();
         ModelAttrAssoc assocDoc = new ModelAttrAssoc(attrDoc, modDoc);
         assocs.add(assocDoc);

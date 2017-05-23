@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfigurationEvent;
+import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -139,7 +139,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             }
             enabledRepresentationPluginMapByTenant.put(tenant, enabledRepresentationPluginMap);
         }
-        subscriber.subscribeTo(PluginConfigurationEvent.class, new PluginConfigurationHandler());
+        subscriber.subscribeTo(BroadcastPluginConfEvent.class, new PluginConfigurationHandler());
         setDefaultCharset(StandardCharsets.UTF_8);
     }
 
@@ -282,7 +282,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         return null;
     }
 
-    private void handleCreation(String tenantOfEvent, PluginConfigurationEvent event, Long confId) {
+    private void handleCreation(String tenantOfEvent, BroadcastPluginConfEvent event, Long confId) {
         try {
             PluginConfiguration conf = pluginService.getPluginConfiguration(confId);
             if (conf.isActive()) {
@@ -301,7 +301,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         }
     }
 
-    private void handleActivation(String tenantOfEvent, PluginConfigurationEvent event, Long confId) {
+    private void handleActivation(String tenantOfEvent, BroadcastPluginConfEvent event, Long confId) {
         try {
             PluginConfiguration conf = pluginService.getPluginConfiguration(confId);
             MediaType newMediaType = ((IRepresentation) Class.forName(conf.getPluginClassName()).newInstance())
@@ -324,13 +324,13 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         enabledRepresentationForDeterminedTenant.entrySet().removeIf(entry -> entry.getValue().equals(confId));
     }
 
-    private class PluginConfigurationHandler implements IHandler<PluginConfigurationEvent> {
+    private class PluginConfigurationHandler implements IHandler<BroadcastPluginConfEvent> {
 
         @Override
-        public void handle(TenantWrapper<PluginConfigurationEvent> pWrapper) {
+        public void handle(TenantWrapper<BroadcastPluginConfEvent> pWrapper) {
             String tenantOfEvent = pWrapper.getTenant();
             tenantResolver.forceTenant(tenantOfEvent);
-            PluginConfigurationEvent event = pWrapper.getContent();
+            BroadcastPluginConfEvent event = pWrapper.getContent();
             if (event.getPluginTypes().contains(IRepresentation.class.getName())) {
                 Long confId = event.getPluginConfId();
                 switch (event.getAction()) {
@@ -343,7 +343,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
                     // desactivation and deletion of a configuration for a representation plugin means the same thing
                     // for the message handler: we cannot handle the corresponding MediaType so lets just remove it from
                     // those we can handle
-                    case DESACTIVATE:
+                    case DISABLE:
                     case DELETE:
                         handleDesactivationAndDelete(tenantOfEvent, confId);
                         break;
