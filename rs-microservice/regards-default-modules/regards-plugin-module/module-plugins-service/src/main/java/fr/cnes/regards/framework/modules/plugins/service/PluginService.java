@@ -139,6 +139,11 @@ public class PluginService implements IPluginService {
         if (!throwError && ((pPluginConfiguration.getLabel() == null) || pPluginConfiguration.getLabel().isEmpty())) {
             msg.append(String.format(" <%s> without label.", pPluginConfiguration.getPluginId()));
         }
+        PluginConfiguration pluginConfInDb = pluginConfRepository.findOneByLabel(pPluginConfiguration.getLabel());
+        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pPluginConfiguration.getId()) &&
+            !pluginConfInDb.getLabel().equals(pPluginConfiguration.getLabel())) {
+            msg.append(String.format(". A plugin configuration with same label (%s) already exists.", pPluginConfiguration.getLabel()));
+        }
 
         if (throwError) {
             throw new ModuleException(msg.toString());
