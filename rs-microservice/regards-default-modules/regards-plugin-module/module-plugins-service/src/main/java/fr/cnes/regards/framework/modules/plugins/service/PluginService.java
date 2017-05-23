@@ -116,7 +116,7 @@ public class PluginService implements IPluginService {
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
             throws ModuleException {
         // Check plugin configuration validity
-        final StringBuilder msg = new StringBuilder("Impossible to save a plugin configuration");
+        final StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
 
         boolean throwError = false;
 
