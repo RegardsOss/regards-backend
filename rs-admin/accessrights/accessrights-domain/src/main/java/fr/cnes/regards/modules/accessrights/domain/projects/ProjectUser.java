@@ -88,7 +88,7 @@ public class ProjectUser implements IIdentifiable<Long> {
      * The status of the user
      */
     @NotNull
-    @Column(name = "status", length = 20)
+    @Column(name = "status", length = 30)
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
