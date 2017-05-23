@@ -81,7 +81,8 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     public void testGetAllPlugins() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(3)));
+        // 6 default plugins + 3 created during this test
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(9)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
     }
 
@@ -95,15 +96,18 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     public void testGetPluginsByType() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(2)));
+        // 6 default plugins + 2 created during this test
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(8)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting all criteria plugins", RequestParamBuilder.build().param("type", "criteria"));
+                          "Error getting all criteria plugins",
+                          RequestParamBuilder.build().param("type", UIPluginTypesEnum.CRITERIA.toString()));
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(1)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting all criteria plugins", RequestParamBuilder.build().param("type", "service"));
+                          "Error getting all criteria plugins",
+                          RequestParamBuilder.build().param("type", UIPluginTypesEnum.SERVICE.toString()));
     }
 
     /**
@@ -155,7 +159,8 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
 
         expectations.clear();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(4)));
+        // 6 default plugins + 4 created during this test
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(10)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
     }
 

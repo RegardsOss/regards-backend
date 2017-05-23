@@ -89,16 +89,12 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugins", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<UIPluginDefinition>>> retrievePlugins(final Pageable pPageable,
-            @RequestParam(value = "type", required = false) final String pType,
+            @RequestParam(value = "type", required = false) final UIPluginTypesEnum pType,
             final PagedResourcesAssembler<UIPluginDefinition> pAssembler) throws EntityInvalidException {
 
         final Page<UIPluginDefinition> plugins;
         if (pType != null) {
-            final UIPluginTypesEnum type = UIPluginTypesEnum.parse(pType);
-            if (type == null) {
-                throw new EntityInvalidException(String.format("Unknown plugin type %s", pType));
-            }
-            plugins = service.retrievePlugins(type, pPageable);
+            plugins = service.retrievePlugins(pType, pPageable);
         } else {
             plugins = service.retrievePlugins(pPageable);
         }
