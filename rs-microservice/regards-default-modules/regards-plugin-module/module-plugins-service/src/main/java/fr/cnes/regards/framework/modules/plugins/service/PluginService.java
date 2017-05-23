@@ -120,43 +120,37 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration savePluginConfiguration(final PluginConfiguration pPluginConfiguration)
-            throws ModuleException {
+            throws EntityInvalidException {
         // Check plugin configuration validity
         final StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
 
-        boolean throwError = false;
-
         if (pPluginConfiguration == null) {
             msg.append(". The plugin configuration cannot be null.");
-            throwError = true;
+            throw new EntityInvalidException(msg.toString());
         }
-        if (!throwError && (pPluginConfiguration.getPluginId() == null)) {
+        if (pPluginConfiguration.getPluginId() == null) {
             msg.append(". The unique identifier of the plugin (attribute pluginId) is required.");
-            throwError = true;
+            throw new EntityInvalidException(msg.toString());
         }
-        if (!throwError && (pPluginConfiguration.getPriorityOrder() == null)) {
+        if (pPluginConfiguration.getPriorityOrder() == null) {
             msg.append(String.format(" <%s> without priority order.", pPluginConfiguration.getPluginId()));
-            throwError = true;
+            throw new EntityInvalidException(msg.toString());
         }
-        if (!throwError && (pPluginConfiguration.getVersion() == null)) {
+        if (pPluginConfiguration.getVersion() == null) {
             msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
-            throwError = true;
+            throw new EntityInvalidException(msg.toString());
         }
-        if (!throwError && ((pPluginConfiguration.getLabel() == null) || pPluginConfiguration.getLabel().isEmpty())) {
+        if ((pPluginConfiguration.getLabel() == null) || pPluginConfiguration.getLabel().isEmpty()) {
             msg.append(String.format(" <%s> without label.", pPluginConfiguration.getPluginId()));
+            throw new EntityInvalidException(msg.toString());
         }
-
-        if (!throwError && (pPluginConfiguration.getLabel() != null) && !pPluginConfiguration.getLabel().isEmpty()) {
+        if (pPluginConfiguration != null) {
             PluginConfiguration pluginConfInDb = pluginConfRepository.findOneByLabel(pPluginConfiguration.getLabel());
-            if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pPluginConfiguration.getId())
-                    && !pluginConfInDb.getLabel().equals(pPluginConfiguration.getLabel())) {
+            if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pPluginConfiguration.getId()) && !pluginConfInDb.getLabel().equals(pPluginConfiguration.getLabel())) {
                 msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
                                          pPluginConfiguration.getLabel()));
+                throw new EntityInvalidException(msg.toString());
             }
-        }
-
-        if (throwError) {
-            throw new ModuleException(msg.toString());
         }
 
         getLoadedPlugins().forEach((pKey, pValue) -> {
