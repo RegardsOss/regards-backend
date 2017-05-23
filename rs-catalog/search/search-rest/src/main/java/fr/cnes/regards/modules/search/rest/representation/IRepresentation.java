@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.domain;
+package fr.cnes.regards.modules.search.rest.representation;
 
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -12,7 +12,7 @@ import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
  * IRepresentation are used in a HttpMessageConverter so we can transform http outputs to different MIME Type. Each

@@ -63,7 +63,8 @@ public class ServiceManager implements IServiceManager {
                     throw new IllegalArgumentException(pServiceScope + " is not a valid value for the Service scope");
             }
         } catch (NullPointerException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            // No exception should occurs there. If any occurs it should set the application into maintenance mode so we can safely rethrow as a runtime
+            // No exception should occurs there. If any occurs it should set the application into maintenance mode so we
+            // can safely rethrow as a runtime
             throw new PluginUtilsRuntimeException("Could not instanciate plugin", e);
         }
     };
@@ -71,10 +72,13 @@ public class ServiceManager implements IServiceManager {
     /**
      * Constructor
      *
-     * @param pPluginService the service managing plugins
-     * @param pLinkPluginsDatasetsService service linking plugins with datasets
+     * @param pPluginService
+     *            the service managing plugins
+     * @param pLinkPluginsDatasetsService
+     *            service linking plugins with datasets
      */
-    public ServiceManager(IPluginService pPluginService, ILinkPluginsDatasetsService pLinkPluginsDatasetsService) {
+    public ServiceManager(final IPluginService pPluginService,
+            final ILinkPluginsDatasetsService pLinkPluginsDatasetsService) {
         pluginService = pPluginService;
         linkPluginsDatasetsService = pLinkPluginsDatasetsService;
     }
@@ -83,17 +87,20 @@ public class ServiceManager implements IServiceManager {
      * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset for a
      * given scope
      *
-     * @param pServiceScope scope we are interrested in
-     * @param pDatasetId id of dataset
+     * @param pServiceScope
+     *            scope we are interrested in
+     * @param pDatasetId
+     *            id of dataset
      * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
-     * scope
-     * @throws EntityNotFoundException thrown is the pDatasetId does not represent any Dataset.
+     *         scope
+     * @throws EntityNotFoundException
+     *             thrown is the pDatasetId does not represent any Dataset.
      */
     @Override
-    public Set<PluginConfiguration> retrieveServices(Long pDatasetId, ServiceScope pServiceScope)
+    public Set<PluginConfiguration> retrieveServices(final String pDatasetId, final ServiceScope pServiceScope)
             throws EntityNotFoundException {
-        LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
-        Set<PluginConfiguration> servicesConf = datasetPlugins.getServices();
+        final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
+        final Set<PluginConfiguration> servicesConf = datasetPlugins.getServices();
 
         try (Stream<PluginConfiguration> stream = servicesConf.stream()) {
             return stream.filter(IS_APPLICABLE_ON.apply(pServiceScope)).collect(Collectors.toSet());
@@ -102,13 +109,13 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public ResponseEntity<?> apply(Long pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
-            throws ModuleException {
-        PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
+    public ResponseEntity<?> apply(final String pDatasetId, final String pServiceName,
+            final Map<String, String> pDynamicParameters) throws ModuleException {
+        final PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
             throw new EntityInvalidException(
-                    pServiceName + " is not a label of a " + pServiceName + " plugin configuration");
+                    pServiceName + " is not a label of a " + IService.class.getName() + " plugin configuration");
         }
         // is it a service applyable to this dataset?
         if (!linkPluginsDatasetsService.retrieveLink(pDatasetId).getServices().contains(conf)) {
@@ -116,7 +123,7 @@ public class ServiceManager implements IServiceManager {
                     pServiceName + " is not a service applyable to the dataset with id " + pDatasetId);
         }
         pDynamicParameters.forEach(conf::setParameterDynamicValue);
-        IService toExecute = (IService) pluginService.getPlugin(conf);
+        final IService toExecute = (IService) pluginService.getPlugin(conf);
         return toExecute.apply();
     }
 

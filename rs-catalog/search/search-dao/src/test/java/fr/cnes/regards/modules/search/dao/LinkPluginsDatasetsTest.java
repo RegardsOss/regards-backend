@@ -29,9 +29,9 @@ public class LinkPluginsDatasetsTest extends AbstractDaoTransactionalTest {
 
     @Test
     public void testMapping() {
-        LinkPluginsDatasets link1 = new LinkPluginsDatasets(1L, Sets.newHashSet());
+        final LinkPluginsDatasets link1 = new LinkPluginsDatasets("test-dao-dataset", Sets.newHashSet());
         linkRepo.save(link1);
-        linkRepo.findOne(link1.getDatasetId());
+        linkRepo.findOneByDatasetId(link1.getDatasetId());
 
         PluginConfiguration confService = new PluginConfiguration();
         confService.setPluginId("pPluginId");
@@ -40,7 +40,7 @@ public class LinkPluginsDatasetsTest extends AbstractDaoTransactionalTest {
         confService.getInterfaceNames().add(IService.class.getName());
         confService = pluginRepo.save(confService);
 
-        LinkPluginsDatasets link2 = new LinkPluginsDatasets(2L, Sets.newHashSet(confService));
+        final LinkPluginsDatasets link2 = new LinkPluginsDatasets("test-dao-dataset-2", Sets.newHashSet(confService));
         linkRepo.save(link2);
     }
 

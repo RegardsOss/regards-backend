@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,14 +96,17 @@ public class CatalogSearchServiceTest {
      *
      * @throws SearchException
      * @throws OpenSearchParseException
+     * @throws UnsupportedEncodingException
      */
     @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
-    public void doSearch_shouldPerformASimpleSearch() throws SearchException, OpenSearchParseException {
+    public void doSearch_shouldPerformASimpleSearch()
+            throws SearchException, OpenSearchParseException, UnsupportedEncodingException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        String q = SampleDataUtils.QUERY;
+        Map<String,String> q=new HashMap<>();
+        q.put("q=",URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
         Map<String, FacetType> facets = SampleDataUtils.FACETS;
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
@@ -138,7 +143,8 @@ public class CatalogSearchServiceTest {
     public void doSearch_withNoFacet() throws SearchException, OpenSearchParseException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        String q = SampleDataUtils.QUERY;
+        Map<String,String> q=new HashMap<>();
+        q.put("q=","whatever");
         Map<String, FacetType> facets = new HashMap<>();
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;

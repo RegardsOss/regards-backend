@@ -3,17 +3,22 @@
  */
 package fr.cnes.regards.modules.search.service.link;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.http.ResponseEntity;
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
+import fr.cnes.regards.modules.entities.domain.event.EventType;
+import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 
@@ -25,19 +30,66 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 @Service
 public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
-    private final ILinkPluginsDatasetsRepository linkRepo;
+    /**
+     * Runtime tenant resolver
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final IDatasetClient datasetClient;
+    /**
+     * AMQ Subscriber
+     */
+    private final ISubscriber subscriber;
+
+    /**
+     * JPA Respository to access {@link LinkPluginsDatasets} entities
+     */
+    private final ILinkPluginsDatasetsRepository linkRepo;
 
     /**
      * Constructor
-     * @param pLinkRepo the repository handling {@link LinkPluginsDatasets}
-     * @param pDatasetClient Feign client providing {@link Dataset}s
+     *
+     * @param pLinkRepo
+     *            the repository handling {@link LinkPluginsDatasets}
+     * @param pDatasetClient
+     *            Feign client providing {@link Dataset}s
      */
-    public LinkPluginsDatasetsService(ILinkPluginsDatasetsRepository pLinkRepo, IDatasetClient pDatasetClient) {
+    public LinkPluginsDatasetsService(final IRuntimeTenantResolver pRunTimeTenantResolver,
+            final ISubscriber pSubscriber, final ILinkPluginsDatasetsRepository pLinkRepo) {
         super();
+        runtimeTenantResolver = pRunTimeTenantResolver;
+        subscriber = pSubscriber;
         linkRepo = pLinkRepo;
-        datasetClient = pDatasetClient;
+    }
+
+    @PostConstruct
+    public void init() {
+        // Subscribe to entity events in order to delete links to deleted dataset.
+        subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
+    }
+
+    /**
+     *
+     * Class DeleteEntityEventHandler
+     *
+     * Handler to delete {@link LinkPluginsDatasets} for deleted datasets.
+     *
+     * @author Sébastien Binda
+     * @since 1.0-SNAPSHOT
+     */
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
+                    final LinkPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
+                    if (link != null) {
+                        linkRepo.delete(link);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -46,28 +98,13 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
      * @throws EntityNotFoundException
      */
     @Override
-    public LinkPluginsDatasets retrieveLink(Long pDatasetId) throws EntityNotFoundException {
-        if (linkRepo.exists(pDatasetId)) {
-            return linkRepo.findOne(pDatasetId);
-        }
-        if (!existsDataset(pDatasetId)) {
-            throw new EntityNotFoundException(pDatasetId, Dataset.class);
-        }
-        return linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
-    }
+    public LinkPluginsDatasets retrieveLink(final String pDatasetId) throws EntityNotFoundException {
 
-    /**
-     * @param pDatasetId
-     * @return
-     */
-    private boolean existsDataset(Long pDatasetId) {
-        FeignSecurityManager.asSystem();
-        ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(pDatasetId);
-        FeignSecurityManager.reset();
-        if (HttpUtils.isSuccess(response.getStatusCode())) {
-            return true;
+        final LinkPluginsDatasets linkPluginsDatasets = linkRepo.findOneByDatasetId(pDatasetId);
+        if (linkPluginsDatasets == null) {
+            return linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
         }
-        return false;
+        return linkPluginsDatasets;
     }
 
     /**
@@ -75,14 +112,24 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
      * @param pUpdatedLink
      * @return
      * @throws EntityNotFoundException
+     * @throws EntityInvalidException
      */
     @Override
-    public LinkPluginsDatasets updateLink(Long pDatasetId, LinkPluginsDatasets pUpdatedLink)
-            throws EntityNotFoundException {
-        if (!existsDataset(pDatasetId)) {
-            throw new EntityNotFoundException(pDatasetId, Dataset.class);
+    public LinkPluginsDatasets updateLink(final String pDatasetId, final LinkPluginsDatasets pUpdatedLink)
+            throws EntityNotFoundException, EntityInvalidException {
+
+        if (!pDatasetId.equals(pUpdatedLink.getDatasetId())) {
+            throw new EntityInvalidException(String.format("Invalid datasetId %s ", pDatasetId));
         }
-        return linkRepo.save(pUpdatedLink);
+
+        // If exists retrieve previous link associated to the same datasetid
+        final LinkPluginsDatasets existingOne = linkRepo.findOneByDatasetId(pDatasetId);
+        if (existingOne != null) {
+            existingOne.setServices(pUpdatedLink.getServices());
+            return linkRepo.save(existingOne);
+        } else {
+            return linkRepo.save(pUpdatedLink);
+        }
     }
 
 }

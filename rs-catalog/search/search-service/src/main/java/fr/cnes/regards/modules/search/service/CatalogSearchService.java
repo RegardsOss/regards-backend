@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.search.service;
 
 import java.util.Map;
+import java.util.StringJoiner;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
@@ -35,7 +36,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     /**
      * The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring.
      */
-    private final OpenSearchService openSearchService;
+    private final IOpenSearchService openSearchService;
 
     /**
      * Service handling the access groups in criterion. Autowired by Spring.
@@ -47,7 +48,7 @@ public class CatalogSearchService implements ICatalogSearchService {
      * @param pOpenSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
      * @param pAccessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
      */
-    public CatalogSearchService(ISearchService pSearchService, OpenSearchService pOpenSearchService,
+    public CatalogSearchService(ISearchService pSearchService, IOpenSearchService pOpenSearchService,
             IAccessRightFilter pAccessRightFilter) {
         super();
         Assert.notNull(pSearchService);
@@ -67,7 +68,7 @@ public class CatalogSearchService implements ICatalogSearchService {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <S, R extends IIndexable> Page<R> search(String pQ, SearchKey<S, R> pSearchKey,
+    public <S, R extends IIndexable> Page<R> search(Map<String,String> pQ, SearchKey<S, R> pSearchKey,
             Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
         try {
             // Build criterion from query
@@ -84,7 +85,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
         } catch (OpenSearchParseException e) {
-            throw new SearchException(pQ, e);
+            StringJoiner sj=new StringJoiner("&");
+            pQ.forEach((key,value)->sj.add(key+"="+value));
+            throw new SearchException(sj.toString(), e);
         }
     }
 

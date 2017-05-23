@@ -16,7 +16,7 @@ import org.springframework.web.util.UriComponents;
 
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
-import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
  * Custom {@link PagedResourcesAssembler}
@@ -41,9 +41,8 @@ public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<
      * wrapping the contained elements into {@link Resource} instances. Will add pagination links based on the given the
      * self link.
      *
-     * @param page must not be {@literal null}.
-     * @param selfLink must not be {@literal null}.
-     * @return
+     * @param pFacetPage must not be {@literal null}.
+     * @return the facetted page of resources
      */
     public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> pFacetPage) {
         PagedResources<Resource<T>> pagedResources = super.toResource(pFacetPage);

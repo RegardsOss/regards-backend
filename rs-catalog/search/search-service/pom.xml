@@ -74,9 +74,8 @@
 			<artifactId>dataaccess-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.queryparser</groupId>
+			<groupId>fr.cnes.regards.modules.opensearch</groupId>
 			<artifactId>opensearch-service</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

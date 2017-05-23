@@ -16,7 +16,7 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
-import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
  * Unit test for {@link FacettedPagedResources}.
@@ -32,7 +32,7 @@ public class FacettedPagedResourcesTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources#hashCode()}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources#hashCode()}.
      */
     @Test
     public final void testHashCode_shouldBeEqual() {
@@ -42,7 +42,7 @@ public class FacettedPagedResourcesTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources#hashCode()}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources#hashCode()}.
      */
     @Test
     public final void testHashCode_shouldBeDifferent() {
@@ -52,7 +52,7 @@ public class FacettedPagedResourcesTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources#getFacets()}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources#getFacets()}.
      */
     @Test
     public final void testGetFacets() {
@@ -61,7 +61,7 @@ public class FacettedPagedResourcesTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources#equals(java.lang.Object)}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources#equals(java.lang.Object)}.
      */
     @Test
     public final void testEqualsObject_shouldBeDifferent() {
@@ -71,7 +71,7 @@ public class FacettedPagedResourcesTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources#equals(java.lang.Object)}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources#equals(java.lang.Object)}.
      */
     @Test
     public final void testEqualsObject_shouldBeEqual() {
@@ -81,7 +81,7 @@ public class FacettedPagedResourcesTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources#toString()}.
+     * Test method for {@link fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources#toString()}.
      */
     @Test
     public final void testToString() {

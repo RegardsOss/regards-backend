@@ -40,8 +40,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.domain.IRepresentation;
-import fr.cnes.regards.modules.search.domain.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
  * HttpMessageConverter implementation allowing us to use the IRepresentation plugins. Declared as an

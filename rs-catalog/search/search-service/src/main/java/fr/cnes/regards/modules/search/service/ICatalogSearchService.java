@@ -32,6 +32,6 @@ public interface ICatalogSearchService { // NOSONAR
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
-    <S, R extends IIndexable> Page<R> search(String pQ, SearchKey<S, R> pSearchKey, Map<String, FacetType> pFacets,
+    <S, R extends IIndexable> Page<R> search(Map<String,String> pQ, SearchKey<S, R> pSearchKey, Map<String, FacetType> pFacets,
             final Pageable pPageable) throws SearchException;
 }
