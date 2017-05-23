@@ -4,10 +4,22 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 
@@ -62,7 +74,8 @@ public class PluginParameter implements IIdentifiable<Long> {
      * The list of values for a dynamic parameters
      */
     @ElementCollection
-    @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"))
+    @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"),
+            foreignKey = @ForeignKey(name = "fk_plugin_param_dyn_value_param_id"))
     private List<PluginDynamicValue> dynamicsValues;
 
     /**
@@ -182,10 +195,9 @@ public class PluginParameter implements IIdentifiable<Long> {
             if (other.name != null) {
                 return false;
             }
-        } else
-            if (!name.equals(other.name)) {
-                return false;
-            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
         return true;
     }
 

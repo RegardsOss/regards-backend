@@ -9,6 +9,7 @@ package fr.cnes.regards.framework.jpa.exception;
  * @author Marc Sordi
  *
  */
+@SuppressWarnings("serial")
 public class JpaException extends Exception {
 
     public JpaException(final String pMessage, final Throwable pCause) {

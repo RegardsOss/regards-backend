@@ -22,6 +22,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -42,8 +43,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-        @Index(name = "idx_plugin_configuration_label", columnList = "label") })
+@Table(name = "t_plugin_configuration",
+        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+                @Index(name = "idx_plugin_configuration_label", columnList = "label") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_plugin_configuration_label", columnNames = { "label" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
@@ -76,7 +79,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Label to identify the configuration.
      */
     @NotBlank
-    @Column(unique = true, name = "label", length = MAX_STRING_LENGTH)
+    @Column(name = "label", length = MAX_STRING_LENGTH)
     private String label;
 
     /**
@@ -390,18 +393,16 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             if (other.label != null) {
                 return false;
             }
-        } else
-            if (!label.equals(other.label)) {
-                return false;
-            }
+        } else if (!label.equals(other.label)) {
+            return false;
+        }
         if (pluginId == null) {
             if (other.pluginId != null) {
                 return false;
             }
-        } else
-            if (!pluginId.equals(other.pluginId)) {
-                return false;
-            }
+        } else if (!pluginId.equals(other.pluginId)) {
+            return false;
+        }
         return true;
     }
 

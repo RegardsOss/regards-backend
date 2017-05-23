@@ -4,8 +4,15 @@
 package fr.cnes.regards.framework.jpa.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -114,8 +121,85 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                             resource.getLocation(), resourcePattern.toString());
             }
         }
-        // Apply module migration
-        modules.forEach(module -> migrate(dataSource, schema, module));
+        // Apply dependency check
+        List<DatabaseModule> depModules = buildDatabaseModules(modules);
+
+        // Apply module migration on sorted modules
+        depModules.forEach(module -> migrate(dataSource, schema, module.getName()));
+    }
+
+    /**
+     * Build database module tree and sort all module by priority
+     *
+     * @param modules list of modules to consider
+     * @return a list of modules ordered according to its dependencies
+     */
+    private List<DatabaseModule> buildDatabaseModules(Set<String> modules) {
+
+        Map<String, DatabaseModule> moduleMap = new HashMap<>();
+
+        // Init each database module
+        modules.forEach(module -> moduleMap.put(module, new DatabaseModule(module)));
+
+        // Init dependencies
+        initModuleDependencies(moduleMap);
+
+        // Compute weight
+        moduleMap.values().forEach(dbModule -> dbModule.computeWeight());
+
+        // Compute sorted result list
+        List<DatabaseModule> dbModules = new ArrayList<>();
+        dbModules.addAll(moduleMap.values());
+        Collections.sort(dbModules, new DatabaseModuleComparator());
+
+        return dbModules;
+    }
+
+    private void initModuleDependencies(Map<String, DatabaseModule> moduleMap) {
+
+        for (DatabaseModule dbModule : moduleMap.values()) {
+
+            // Retrieve module properties
+            Properties ppties = getModuleProperties(dbModule.getName());
+            String depPpty = ppties.getProperty("module.dependencies");
+            if ((depPpty != null) && !depPpty.isEmpty()) {
+                for (String depModule : depPpty.split(",")) {
+                    // Retrieve database module
+                    DatabaseModule depDbModule = moduleMap.get(depModule);
+                    if (depDbModule == null) {
+                        LOGGER.warn("Dependent module \"{}\" of module \"{}\" not found in classpath", depModule,
+                                    dbModule.getName());
+                    } else {
+                        LOGGER.debug("Dependency found for module \"{}\": \"{}\"", dbModule.getName(),
+                                     depDbModule.getName());
+                        moduleMap.get(dbModule.getName()).addDependency(depDbModule);
+                    }
+                }
+            } else {
+                LOGGER.debug("No dependency found for module \"{}\"", dbModule.getName());
+            }
+        }
+    }
+
+    /**
+     * Load module properties if any
+     * @param module name of the module
+     * @return {@link Properties}
+     */
+    private Properties getModuleProperties(String module) {
+        Properties ppties = new Properties();
+
+        try (InputStream input = classLoader.getResourceAsStream(scriptLocationPath + File.separator + module
+                + File.separator + "dbmodule.properties")) {
+            if (input == null) {
+                LOGGER.info("No module property found for module \"{}\"", module);
+            } else {
+                ppties.load(input);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Error reading or closing database module properties", e);
+        }
+        return ppties;
     }
 
     /**
@@ -139,5 +223,4 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
     public void setScriptLocationPath(String pScriptLocationPath) {
         scriptLocationPath = pScriptLocationPath;
     }
-
 }
