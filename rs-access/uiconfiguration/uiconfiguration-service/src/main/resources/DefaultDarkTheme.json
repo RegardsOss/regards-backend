@@ -1,7 +1,7 @@
 {
 "palette": 
   {
-    "backgroundImage":"http://localhost:3333/img/background.jpg",
+    "backgroundImage":"/img/background.jpg",
     "primary2Color":"#0097A7",
     "primary3Color":"#757575",
     "textColor":"#FFFFFF",
@@ -55,5 +55,12 @@
   {
     "disabledTextColor":"#757575",
     "textColor":"#ffffff"
+  },
+  "toggle":{
+    "thumbOnColor":"#8bc34a",
+    "thumbOffColor":"#f44336",
+    "thumbDisabledColor":"#757575",
+    "trackOffColor":"#f5f5f5",
+    "trackOnColor":"#f5f5f5"
   }
 }
