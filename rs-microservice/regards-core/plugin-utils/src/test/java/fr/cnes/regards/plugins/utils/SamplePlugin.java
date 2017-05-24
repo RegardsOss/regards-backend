@@ -33,7 +33,7 @@ public class SamplePlugin implements ISamplePlugin {
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF)
+    @PluginParameter(description = "int parameter", name = COEFF, value="-100")
     private Integer coef;
 
     /**

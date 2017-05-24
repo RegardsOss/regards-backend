@@ -46,7 +46,7 @@ public class SampleErrorPlugin implements ISamplePlugin {
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
         if (isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + suffix);
+            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
         } else {
 
             str.append(this.getClass().getName() + ":is not active");
@@ -63,11 +63,9 @@ public class SampleErrorPlugin implements ISamplePlugin {
 
     /**
      * Init method
-     * 
-     * @
      */
     @PluginInit
-    private void aInit()  {
+    private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
                 + "|coeff:" + coef);
         throw new PluginUtilsRuntimeException("error");
