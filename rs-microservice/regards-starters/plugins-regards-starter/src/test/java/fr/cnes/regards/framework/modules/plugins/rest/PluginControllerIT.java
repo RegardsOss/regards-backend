@@ -108,8 +108,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
     public void getAllPlugins() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
-                                                        Matchers.hasSize(pluginService.getPlugins().size())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(6)));
         performGet(PluginController.PLUGINS, token, expectations, "unable to load all plugins");
     }
 
@@ -120,9 +119,7 @@ public class PluginControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         final String pluginType = ISamplePlugin.class.getCanonicalName();
-        expectations.add(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_STAR,
-                          Matchers.hasSize(pluginService.getPluginsByType(ISamplePlugin.class).size())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(4)));
         performDefaultGet(PluginController.PLUGINS + "?pluginType=" + pluginType, expectations,
                           String.format("unable to load plugins of type <%s>", pluginType));
     }

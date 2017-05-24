@@ -249,26 +249,51 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     /**
-     * Unable to get {@link SamplePlugin} an Integer parameter is missing @ An error occurs
+     * Used the default parameter value when the Integer parameter is missing
      */
-    @Test(expected = PluginUtilsRuntimeException.class)
-    public void getSamplePluginMissingCoeffParameter() {
+    @Test
+    public void getSamplePluginMissingIntegerParameter() {
+        SamplePlugin samplePlugin = null;
+
         LOGGER.debug(STARTING + toString());
 
-        /*
-         * Set parameters : Missing coeff parameter
-         */
+        // Set parameters : Missing coeff parameter
         final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.ACTIVE, "false").addParameter(SamplePlugin.SUFFIXE, "chris_test_3")
-                .getParameters();
+                .build().addParameter(SamplePlugin.ACTIVE, "true")
+                .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.RED).getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePlugin.class,
-                              Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                             Arrays.asList(SamplePlugin.class.getPackage().getName()));
+
+        Assert.assertNotNull(samplePlugin);
+
+        // Use the plugin
+        Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.RED));
+        Assert.assertTrue(0 > samplePlugin.add(10, 15));
+    }
+
+    @Test
+    public void getSamplePluginMissingStringParameter() {
+        SamplePlugin samplePlugin = null;
+
+        LOGGER.debug(STARTING + toString());
+
+        // Set parameters : Missing suffix parameter
+        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
+                .build().addParameter(SamplePlugin.ACTIVE, "true")
+                .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
+
+        // instantiate plugin
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                             Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"));
+
+        // Use the plugin
+        Assert.assertNotNull(samplePlugin);
     }
 
     /**
-     * Unable to get {@link SamplePlugin} an Integer parameter is missing @ An error occurs
+     * Unable to get {@link SamplePlugin} an Integer parameter is missing
      */
     @Test(expected = PluginUtilsRuntimeException.class)
     public void getSamplePluginWithErrorInitMethod() {

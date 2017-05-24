@@ -37,6 +37,13 @@ public @interface PluginParameter {
      * @return the plugin parameter name
      */
     String name();
+    
+    /**
+     * Plugin parameter default value.
+     * 
+     * @return the default parameter value
+     */
+    String value() default "";
 
     /**
      *

@@ -16,6 +16,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -338,6 +340,11 @@ public final class PluginParameterUtils {
                     paramValue = postProcessDynamicValues(paramValue, cfd, aDynamicPlgParam);
                 }
             }
+        }
+        
+        // If the parameter value is not defined, get the default parameter value
+        if (Strings.isNullOrEmpty(paramValue)) {
+            paramValue = pPlgParamAnnotation.value();
         }
 
         if (LOGGER.isDebugEnabled()) {
