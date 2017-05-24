@@ -3,20 +3,8 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
+import javax.persistence.*;
 import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -31,7 +19,8 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_link_uiservice_dataset")
+@Table(name = "t_link_uiservice_dataset",
+        uniqueConstraints = @UniqueConstraint(name="uk_link_uiservice_dataset_dataset_id", columnNames = "dataset_id"))
 @NamedEntityGraph(name = "graph.link.configurations", attributeNodes = @NamedAttributeNode(value = "services"))
 public class LinkUIPluginsDatasets {
 
@@ -44,15 +33,15 @@ public class LinkUIPluginsDatasets {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmLinkUiPluginDatasetSequence")
     private Long linkId;
 
-    @Column(name = "dataset_id", unique = true, length = 256)
+    @Column(name = "dataset_id", length = 256)
     private String datasetId;
 
     /**
      * Ids of plugin configuration of type IService
      */
     @ManyToMany
-    @JoinTable(name = "ta_link_dataset_uiservices", joinColumns = @JoinColumn(name = "dataset_id"),
-            inverseJoinColumns = @JoinColumn(name = "service_configuration_id"))
+    @JoinTable(name = "ta_link_dataset_uiservices", joinColumns = @JoinColumn(name = "dataset_id", foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_dataset_id_service_configuration_id")),
+            inverseJoinColumns = @JoinColumn(name = "service_configuration_id", foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_service_configuration_id_dataset_id")))
     private List<UIPluginConfiguration> services;
 
     /**
