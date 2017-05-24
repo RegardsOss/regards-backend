@@ -3,19 +3,9 @@
  */
 package fr.cnes.regards.modules.search.domain;
 
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -32,7 +22,8 @@ import fr.cnes.regards.modules.search.validation.PluginServices;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_link_service_dataset")
+@Table(name = "t_link_service_dataset",
+        uniqueConstraints = @UniqueConstraint(columnNames = { "dataset_id" }, name = "uk_link_service_dataset_dataset_id"))
 public class LinkPluginsDatasets {
 
     /**
@@ -44,15 +35,15 @@ public class LinkPluginsDatasets {
     private Long linkId;
 
     @NotNull
-    @Column(name = "dataset_id", nullable = false, unique = true, length = 256)
+    @Column(name = "dataset_id", nullable = false, length = 256)
     private String datasetId;
 
     /**
      * Ids of plugin configuration of type IService
      */
     @ManyToMany
-    @JoinTable(name = "ta_link_dataset_services", joinColumns = @JoinColumn(name = "dataset_id"),
-            inverseJoinColumns = @JoinColumn(name = "service_configuration_id"))
+    @JoinTable(name = "ta_link_service_dataset_plugins", joinColumns = @JoinColumn(name = "dataset_id", foreignKey = @ForeignKey(name = "fk_link_service_dataset_plugin")),
+            inverseJoinColumns = @JoinColumn(name = "service_configuration_id", foreignKey = @ForeignKey(name = "fk_plugin_link_service_dataset")))
     private Set<PluginConfiguration> services;
 
     /**
