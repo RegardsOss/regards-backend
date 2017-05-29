@@ -11,7 +11,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -50,9 +49,9 @@ public interface IProjectConnectionService {
      * @return Created ProjectConnection
      * @throws ModuleException
      *             <br/>
-     *             {@link AlreadyExistingException} Project connection already exists for couple (project name/
+     *             {@link fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException} Project connection already exists for couple (project name/
      *             microservice name)<br/>
-     *             {@link AlreadyExistingException} ModuleEntityNotFoundException The Project referenced doesn't exists
+     *             {@link EntityAlreadyExistsException} ModuleEntityNotFoundException The Project referenced doesn't exists
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection createProjectConnection(ProjectConnection pProjectConnection, boolean silent)
