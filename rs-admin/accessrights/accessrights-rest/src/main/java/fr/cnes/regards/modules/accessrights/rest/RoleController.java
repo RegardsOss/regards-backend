@@ -40,7 +40,8 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Marc Sordi
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping(RoleController.TYPE_MAPPING)
 public class RoleController implements IResourceController<Role> {
 
@@ -94,7 +95,8 @@ public class RoleController implements IResourceController<Role> {
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
-    @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<Role>>> getBorrowableRoles() throws ModuleException {
         final Set<Role> roles = roleService.retrieveBorrowableRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
@@ -107,7 +109,8 @@ public class RoleController implements IResourceController<Role> {
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
-    @ResourceAccess(description = "Retrieve the list of roles associated to the given resource", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(
             @PathVariable("resourceId") final Long pResourceId) {
         final Set<Role> roles = roleService.retrieveRolesWithResource(pResourceId);
@@ -192,11 +195,11 @@ public class RoleController implements IResourceController<Role> {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, pElement.getName()));
-            resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
-                                    MethodParamFactory.build(String.class, pElement.getName()),
-                                    MethodParamFactory.build(Role.class));
-            // Disable deletion of native roles.
+            // Disable eddition and deletion of native roles.
             if (!pElement.isNative()) {
+                resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
+                                        MethodParamFactory.build(String.class, pElement.getName()),
+                                        MethodParamFactory.build(Role.class));
                 resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
                                         MethodParamFactory.build(String.class, pElement.getName()));
             }
