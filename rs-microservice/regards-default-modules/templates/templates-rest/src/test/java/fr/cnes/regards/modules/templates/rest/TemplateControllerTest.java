@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.test.MockDefaultResourceService;
 import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**

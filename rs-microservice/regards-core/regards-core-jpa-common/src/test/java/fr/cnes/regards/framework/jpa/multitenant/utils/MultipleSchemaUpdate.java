@@ -3,16 +3,11 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import java.beans.PropertyVetoException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.persistence.Entity;
 import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.sql.SQLException;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -26,11 +21,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.jpa.exception.JpaException;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.framework.jpa.utils.DatabaseModule;
-import fr.cnes.regards.framework.jpa.utils.DatabaseModuleComparator;
-import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
+import fr.cnes.regards.framework.jpa.utils.*;
 import fr.cnes.regards.framework.modules.person.Person;
 
 /**
@@ -138,7 +129,7 @@ public class MultipleSchemaUpdate {
         DatabaseModule entities = new DatabaseModule("entities", plugins, models);
         DatabaseModule dataAccess = new DatabaseModule("dataAccess", plugins, entities);
 
-        // TODO add comparator
+
         List<DatabaseModule> modules = new ArrayList<>();
         modules.add(models);
         modules.add(entities);

@@ -12,10 +12,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>

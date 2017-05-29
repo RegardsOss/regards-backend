@@ -3,19 +3,10 @@
  */
 package fr.cnes.regards.modules.templates.domain;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
@@ -28,7 +19,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * @author Xavier-Alexandre Brochard
  */
 @Entity
-@Table(name = "t_template")
+@Table(name = "t_template", uniqueConstraints = @UniqueConstraint(name = "uk_template_code", columnNames = { "code" }))
 @SequenceGenerator(name = "templateSequence", initialValue = 1, sequenceName = "seq_template")
 public class Template implements IIdentifiable<Long> {
 
@@ -43,7 +34,7 @@ public class Template implements IIdentifiable<Long> {
      * A human readable code identifying the template
      */
     @NotBlank
-    @Column(unique = true)
+    @Column(name = "code")
     private final String code;
 
     /**
@@ -60,7 +51,7 @@ public class Template implements IIdentifiable<Long> {
      */
     @NotNull
     @ElementCollection
-    @CollectionTable(name = "t_template_data")
+    @CollectionTable(name = "t_template_data",joinColumns = @JoinColumn(name = "template_id"),foreignKey = @ForeignKey(name = "fk_template_data_template_id"))
     private Map<String, String> dataStructure;
 
     /**
