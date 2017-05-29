@@ -28,6 +28,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -160,6 +161,15 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
 
     @Override
     public List<MediaType> getSupportedMediaTypes() {
+        // if no map then we handle nothing so we support nothing
+        if(enabledRepresentationPluginMapByTenant==null) {
+            return Lists.newArrayList();
+        }
+        //if no map for the required tenant, then we do not handle anything for this tenant, so we do not support anything for this tenant
+        if(enabledRepresentationPluginMapByTenant.get(tenantResolver.getTenant())==null) {
+            return Lists.newArrayList();
+        }
+        //otherwise we shoudl eb handling something which is the keyset
         return new ArrayList<>(enabledRepresentationPluginMapByTenant.get(tenantResolver.getTenant()).keySet());
     }
 
