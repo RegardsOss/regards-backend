@@ -3,16 +3,19 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
 
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -20,18 +23,22 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.search.domain.IService;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
+import fr.cnes.regards.modules.search.plugin.SampleServicePlugin;
 import fr.cnes.regards.modules.search.rest.plugin.TestService;
 import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
+import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -43,6 +50,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServicesControllerIT.class);
 
+    private static final String DATA_SET_NAME = "test";
+
     private ArrayList<ResultMatcher> expectations;
 
     @Autowired
@@ -52,6 +61,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
     private ILinkPluginsDatasetsService linkService;
 
     private PluginConfiguration conf;
+
+    private PluginConfiguration samplePlgConf;
 
     @Override
     protected Logger getLogger() {
@@ -74,8 +85,23 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         conf.setParameters(Lists.newArrayList(parameter));
         pluginService.addPluginPackage(IService.class.getPackage().getName());
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
+        pluginService.addPluginPackage(SampleServicePlugin.class.getPackage().getName());
         pluginService.savePluginConfiguration(conf);
-        linkService.updateLink("test", new LinkPluginsDatasets("test", Sets.newHashSet(conf)));
+
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameterDynamic(SampleServicePlugin.ACTIVE, "false")
+                .addParameterDynamic(SampleServicePlugin.COEFF, "0")
+                .addParameterDynamic(SampleServicePlugin.SUFFIXE, "Hello Toulouse",
+                                     Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h"))
+                .getParameters();
+        samplePlgConf = new PluginConfiguration(
+                PluginUtils.createPluginMetaData(SampleServicePlugin.class,
+                                                 Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
+                "SampleServicePlugin", parameters);
+        pluginService.savePluginConfiguration(samplePlgConf);
+
+        linkService.updateLink(DATA_SET_NAME,
+                               new LinkPluginsDatasets(DATA_SET_NAME, Sets.newHashSet(conf, samplePlgConf)));
     }
 
     @Test
@@ -84,7 +110,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=QUERY", expectations,
-                          "there should not be any error", "test");
+                          "there should not be any error", DATA_SET_NAME);
     }
 
     @Test
@@ -93,7 +119,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=MANY", expectations,
-                          "there should not be any error", "test");
+                          "there should not be any error", DATA_SET_NAME);
     }
 
     @Test
@@ -102,7 +128,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + "?service_scope=ONE", expectations,
-                          "there should not be any error", "test");
+                          "there should not be any error", DATA_SET_NAME);
     }
 
     @Test
@@ -117,7 +143,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", "test", conf.getLabel());
+                          expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
     }
 
     @Test
@@ -130,7 +156,45 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", "test", conf.getLabel());
+                          expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
+    }
+
+    @Test
+    public void testSampleServiceNotActive() {
+        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
+        final StringJoiner sj = new StringJoiner("&", "?", "");
+        sj.add(SampleServicePlugin.COEFF + "=-1");
+        sj.add(SampleServicePlugin.SUFFIXE + "=b");
+
+        expectations.add(MockMvcResultMatchers.status().isNoContent());
+        performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
+                          expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
+    }
+
+    @Test
+    public void testSampleServiceActive() {
+        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
+        final StringJoiner sj = new StringJoiner("&", "?", "");
+        sj.add(SampleServicePlugin.ACTIVE + "=true");
+        sj.add(SampleServicePlugin.COEFF + "=100");
+        sj.add(SampleServicePlugin.SUFFIXE + "=h");
+
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
+                          expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
+    }
+
+    @Test
+    public void testSampleServiceBadDynamicParameterValue() {
+        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
+        final StringJoiner sj = new StringJoiner("&", "?", "");
+        sj.add(SampleServicePlugin.ACTIVE + "=true");
+        sj.add(SampleServicePlugin.COEFF + "=0");
+        sj.add(SampleServicePlugin.SUFFIXE + "=z");
+
+        expectations.add(MockMvcResultMatchers.status().isServiceUnavailable());
+        performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
+                          expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
     }
 
 }
