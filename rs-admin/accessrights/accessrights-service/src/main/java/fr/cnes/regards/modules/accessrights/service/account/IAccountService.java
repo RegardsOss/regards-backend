@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.service.account;
 
+import java.util.ArrayList;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -140,7 +142,7 @@ public interface IAccountService {
     /**
      * @return password rules
      */
-    String getPasswordRules();
+    ArrayList<String> getPasswordRules();
 
     /**
      * Encrypt password
