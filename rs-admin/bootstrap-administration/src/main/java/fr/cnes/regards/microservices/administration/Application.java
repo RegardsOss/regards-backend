@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules" })
 // CHECKSTYLE:ON
 @MicroserviceInfo(name = "administration", version = "1.0-SNAPSHOT")
-@ImportResource({ "classpath*:defaultRoles.xml", "classpath*:mailSender.xml" })
+@ImportResource({ "classpath*:mailSender.xml" })
 @EnableDiscoveryClient
 @EnableScheduling
 public class Application { // NOSONAR

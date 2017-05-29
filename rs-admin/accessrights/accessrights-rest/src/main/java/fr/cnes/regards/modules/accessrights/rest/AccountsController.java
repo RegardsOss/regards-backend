@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,24 +15,14 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -380,8 +371,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.GET)
-    @ResourceAccess(description = "Validate a password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<String> getPasswordRules() {
+    @ResourceAccess(description = "Get validation rules of password", role = DefaultRole.PUBLIC)
+    public ResponseEntity<List<String>> getPasswordRules() {
         // JSON object is not reflected by a POJO because a POJO for ONE attribute would be overkill
         return new ResponseEntity<>(accountService.getPasswordRules(), HttpStatus.OK);
     }
