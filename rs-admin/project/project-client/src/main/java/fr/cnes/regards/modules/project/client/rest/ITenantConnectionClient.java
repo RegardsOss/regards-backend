@@ -25,18 +25,19 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  *
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ITenantConnectionClient {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/enable")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/enable")
     public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
             @PathVariable("tenant") String tenant);
 
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/disable")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/disable")
     public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
             @PathVariable("tenant") String tenant);
 
