@@ -253,7 +253,7 @@ public class AccountsController implements IResourceController<Account> {
      *
      * @param pAccountEmail
      *            The {@link Account}'s <code>email</code>
-     * @param pToken
+     * @param pTokenDto
      *            The token
      * @throws EntityException
      *             <br>
@@ -361,9 +361,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.POST)
     @ResourceAccess(description = "Validate a password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Validity> checkPassword(@RequestBody final String pPassword) {
+    public ResponseEntity<Validity> checkPassword(@RequestBody final Password pPassword) {
         // JSON object is not reflected by a POJO because a POJO for ONE attribute would be overkill
-        return new ResponseEntity<>(new Validity(accountService.validPassword(pPassword)), HttpStatus.OK);
+        return new ResponseEntity<>(new Validity(accountService.validPassword(pPassword.getPassword())), HttpStatus.OK);
     }
 
     /**
@@ -459,7 +459,27 @@ public class AccountsController implements IResourceController<Account> {
         return resource;
     }
 
-    @SuppressWarnings("unused")
+    private static class Password {
+
+        private String password; //NOSONAR
+
+        public Password() {
+        }
+
+        public Password(String password) {
+            this.password = password;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
+        @SuppressWarnings("unused")
     private static class Validity {
 
         private Boolean validity; //NOSONAR

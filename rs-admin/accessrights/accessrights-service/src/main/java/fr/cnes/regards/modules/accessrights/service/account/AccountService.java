@@ -56,7 +56,7 @@ public class AccountService implements IAccountService {
     private final String passwordRegex;
 
     /**
-     * Description of the regex to respect in natural language. Provided by property file.
+     * Description of the regex to respect in natural language. Provided by property file. Parsed according to "\n" to transform it into a list
      */
     private final String passwordRules;
 
