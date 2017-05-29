@@ -3,13 +3,7 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
@@ -24,7 +18,8 @@ import org.hibernate.annotations.Type;
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "t_ui_layout")
+@Table(name = "t_ui_layout",
+        uniqueConstraints = { @UniqueConstraint(name = "uk_ui_layout_application_id", columnNames = {"application_id"})})
 public class Layout {
 
     /**
@@ -36,7 +31,7 @@ public class Layout {
     private Long id;
 
     @NotNull
-    @Column(nullable = false, unique = true, length = 16)
+    @Column(name="application_id",nullable = false, length = 16)
     private String applicationId;
 
     /**

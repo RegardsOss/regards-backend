@@ -3,14 +3,7 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
@@ -38,6 +31,7 @@ public class UIPluginConfiguration {
 
     @NotNull
     @ManyToOne
+    @JoinColumn(name = "ui_plugin_id", foreignKey = @ForeignKey(name = "fk_ui_plugin_configuration_ui_plugin_id"))
     private UIPluginDefinition pluginDefinition;
 
     @NotNull
