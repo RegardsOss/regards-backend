@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.microservice.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -47,13 +48,17 @@ public class MicroserviceAutoConfiguration {
     public MicroserviceWebConfiguration webConfig() {
         return new MicroserviceWebConfiguration();
     }
-    
+
     @Bean
-    public MaintenanceConfiguration maintenanceConf() {
-        return new MaintenanceConfiguration();
+    @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
+            matchIfMissing = true)
+    public MaintenanceConfiguration maintenanceConf(IRuntimeTenantResolver runtimeTenantResolver) {
+        return new MaintenanceConfiguration(runtimeTenantResolver);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
+            matchIfMissing = true)
     public MaintenanceHealthIndicator maintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceHealthIndicator(runtimeTenantResolver);
     }
