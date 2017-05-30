@@ -6,10 +6,13 @@ package fr.cnes.regards.microservices.administration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
@@ -32,6 +35,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  * @since 1.0-SNAPSHOT
  */
 @Configuration
+@EnableCaching
 @AutoConfigureBefore({ DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class })
 public class RemoteTenantAutoConfiguration {
 
@@ -89,5 +93,17 @@ public class RemoteTenantAutoConfiguration {
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantResolver tenantResolver(final DiscoveryClient pDiscoveryClient, final ITenantClient tenantClient) {
         return new RemoteTenantResolver(pDiscoveryClient, tenantClient, microserviceName);
+    }
+
+    /**
+     * Handle tenant and tenant connection events for managing cache evictions
+     * @param subscriber {@link ISubscriber}
+     * @return {@link RemoteTenantEventHandler}
+     */
+    @Bean
+    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
+    RemoteTenantEventHandler remoteTenantEventHandler(final IInstanceSubscriber subscriber,
+            RemoteTenantResolver remoteTenantResolver) {
+        return new RemoteTenantEventHandler(subscriber, remoteTenantResolver);
     }
 }
