@@ -211,17 +211,27 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         return performDelete(pUrlTemplate, jwt, pMatchers, pErrorMessage, pUrlVariables);
     }
 
-    protected ResultActions performDefaultFileUpload(final String pUrlTemplate, final Path pFilePath,
+    protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate, final Path pFilePath,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
-        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFilePath, pUrlTemplate,
+        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFilePath, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate, final List<MockMultipartFile> pFileList,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFileList, pMatchers, pErrorMessage, pUrlVariables);
+    }
+
+    protected ResultActions performDefaultFileUpload(RequestMethod verb,final String pUrlTemplate, final Path filePath,
+            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+        final String jwt = manageDefaultSecurity(pUrlTemplate, verb);
+        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, filePath, pUrlTemplate,
                                                                                         pUrlVariables);
         return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
-    protected ResultActions performDefaultFileUpload(final String pUrlTemplate, final List<MockMultipartFile> pFileList,
+    protected ResultActions performDefaultFileUpload(RequestMethod verb,final String pUrlTemplate, final List<MockMultipartFile> pFileList,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
+        final String jwt = manageDefaultSecurity(pUrlTemplate, verb);
         final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFileList, pUrlTemplate,
                                                                                         pUrlVariables);
         return performRequest(requestBuilder, pMatchers, pErrorMessage);
@@ -358,6 +368,7 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         addSecurityHeader(multipartRequestBuilder, pAuthToken);
         return multipartRequestBuilder;
     }
+
 
     protected void addSecurityHeader(final MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {
         pRequestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
