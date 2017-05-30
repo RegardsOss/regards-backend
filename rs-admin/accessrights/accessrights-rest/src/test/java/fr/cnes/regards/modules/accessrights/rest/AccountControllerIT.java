@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +41,7 @@ import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPas
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for accounts.
@@ -380,15 +379,17 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_SYS_SEC_300")
     @Purpose("password respects a regular expression which is configurable by instance")
     public void checkPassword() {
+        //test valid password
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(true)));
-        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, PASSWORD,
+        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD),
                            expectations, errorMessage);
         expectations.clear();
+        //test invalid password
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(false)));
-        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, PASSWORD + "ZE",
+        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD+ "ZE"),
                            expectations, errorMessage);
     }
 

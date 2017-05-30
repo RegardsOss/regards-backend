@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import javax.validation.Valid;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -372,9 +371,9 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_PASSWORD, method = RequestMethod.GET)
     @ResourceAccess(description = "Get validation rules of password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<String>> getPasswordRules() {
+    public ResponseEntity<PasswordRules> getPasswordRules() {
         // JSON object is not reflected by a POJO because a POJO for ONE attribute would be overkill
-        return new ResponseEntity<>(accountService.getPasswordRules(), HttpStatus.OK);
+        return new ResponseEntity<>(new PasswordRules(accountService.getPasswordRules()), HttpStatus.OK);
     }
 
     /**
@@ -459,7 +458,7 @@ public class AccountsController implements IResourceController<Account> {
         return resource;
     }
 
-    private static class Password {
+    static class Password {
 
         private String password; //NOSONAR
 
@@ -501,4 +500,20 @@ public class AccountsController implements IResourceController<Account> {
 
     }
 
+    private static class PasswordRules {
+
+        private String rules;
+
+        public PasswordRules(String passwordRules) {
+            rules=passwordRules;
+        }
+
+        public String getRules() {
+            return rules;
+        }
+
+        public void setRules(String rules) {
+            this.rules = rules;
+        }
+    }
 }

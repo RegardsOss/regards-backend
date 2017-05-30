@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.accessrights.service.account;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -20,7 +19,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -287,11 +285,8 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public ArrayList<String> getPasswordRules() {
-        if(passwordRules==null || passwordRules.equals("")) {
-            return Lists.newArrayList();
-        }
-        return Lists.newArrayList(passwordRules.split("\\n"));
+    public String getPasswordRules() {
+        return passwordRules;
     }
 
     @Override
