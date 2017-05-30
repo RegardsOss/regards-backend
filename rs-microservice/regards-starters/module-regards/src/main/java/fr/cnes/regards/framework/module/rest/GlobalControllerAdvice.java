@@ -3,9 +3,9 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
-import java.util.NoSuchElementException;
-
 import javax.validation.ValidationException;
+import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -71,6 +71,13 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ServerErrorResponse("Internal server error"));
     }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ServerErrorResponse> handleModelException(final IOException pEx) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ServerErrorResponse("Internal server error"));
+    }
+
 
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public ResponseEntity<ServerErrorResponse> handleModelException(final EntityAlreadyExistsException pEx) {
