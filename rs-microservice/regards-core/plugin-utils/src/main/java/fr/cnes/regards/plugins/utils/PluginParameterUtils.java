@@ -163,7 +163,7 @@ public final class PluginParameterUtils {
         PluginParameterType paramType;
         if (pIsPrimitive) {
             paramType = new PluginParameterType(pluginParameter.name(), pField.getType().getName(),
-                    ParamType.PRIMITIVE);
+                    pluginParameter.defaultValue(), pluginParameter.optional(), ParamType.PRIMITIVE);
         } else {
             paramType = new PluginParameterType(pluginParameter.name(), pField.getType().getName(), ParamType.PLUGIN);
         }
@@ -341,10 +341,10 @@ public final class PluginParameterUtils {
                 }
             }
         }
-        
+
         // If the parameter value is not defined, get the default parameter value
         if (Strings.isNullOrEmpty(paramValue)) {
-            paramValue = pPlgParamAnnotation.value();
+            paramValue = pPlgParamAnnotation.defaultValue();
         }
 
         if (LOGGER.isDebugEnabled()) {

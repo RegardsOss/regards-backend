@@ -4,6 +4,8 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import com.google.common.base.Strings;
+
 /**
  * Plugin parameter type
  *
@@ -27,6 +29,16 @@ public class PluginParameterType {
     private ParamType paramType;
 
     /**
+     * A default value for the paramater
+     */
+    private String defaultValue;
+
+    /**
+     * Define if the parameter is optional or mandatory
+     */
+    private Boolean optional;
+
+    /**
      * A constructor with the attribute
      * 
      * @param pName
@@ -42,6 +54,17 @@ public class PluginParameterType {
         this.name = pName;
         this.type = pType;
         this.paramType = pTypeEnum;
+    }
+
+    public PluginParameterType(String pName, String pType, String pDefValue, boolean pOptional, ParamType pTypeEnum) {
+        super();
+        this.name = pName;
+        this.type = pType;
+        this.paramType = pTypeEnum;
+        if (!Strings.isNullOrEmpty(pDefValue)) {
+            this.defaultValue = pDefValue;
+        }
+        this.optional = pOptional;
     }
 
     public String getName() {
@@ -68,8 +91,24 @@ public class PluginParameterType {
         this.paramType = pParamType;
     }
 
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public Boolean isOptional() {
+        return optional;
+    }
+
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
+    }
+
     /**
-     * An enumeration with PRIMITIVE and PLUGIN value
+     * An enumeration with PRIMITIVE and PLUGIN defaultValue
      * 
      * @author Christophe Mertz
      *

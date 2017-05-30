@@ -27,13 +27,13 @@ public class SamplePlugin implements ISamplePlugin {
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", name = SUFFIXE)
+    @PluginParameter(description = "string parameter", name = SUFFIXE, defaultValue="Hello")
     private String suffix;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF)
+    @PluginParameter(description = "int parameter", name = COEFF, defaultValue="-333", optional=true)
     private Integer coef;
 
     /**

@@ -37,13 +37,20 @@ public @interface PluginParameter {
      * @return the plugin parameter name
      */
     String name();
-    
+
     /**
      * Plugin parameter default value.
      * 
      * @return the default parameter value
      */
-    String value() default "";
+    String defaultValue() default "";
+
+    /**
+     * Is the Plugin parameter is mandatory ?
+     * 
+     * @return true if the plugin parameter is mandatory. 
+     */
+    boolean optional() default false;
 
     /**
      *
