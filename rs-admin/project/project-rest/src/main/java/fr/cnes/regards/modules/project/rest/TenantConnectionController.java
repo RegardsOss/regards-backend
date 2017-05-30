@@ -69,7 +69,7 @@ public class TenantConnectionController {
     }
 
     @ResourceAccess(description = "Enable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/enable")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/enable")
     public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
             @PathVariable("tenant") String tenant) throws ModuleException {
 
@@ -78,7 +78,7 @@ public class TenantConnectionController {
     }
 
     @ResourceAccess(description = "Disable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{tenant}/disable")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/disable")
     public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
             @PathVariable("tenant") String tenant) throws ModuleException {
 
@@ -86,7 +86,8 @@ public class TenantConnectionController {
         return ResponseEntity.ok(toTenantConnection(connection));
     }
 
-    @ResourceAccess(description = "List all enabled tenant connections for a specified microservice", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "List all enabled tenant connections for a specified microservice",
+            role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice)
             throws ModuleException {
