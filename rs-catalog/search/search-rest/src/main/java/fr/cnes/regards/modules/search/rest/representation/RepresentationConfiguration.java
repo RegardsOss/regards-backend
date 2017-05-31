@@ -62,12 +62,6 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
             pluginService.addPluginPackage(GeoJsonRepresentation.class.getPackage().getName());
             setDefaultPluginConfiguration();
         }
-        // try {
-        // converters.add(new RepresentationHttpMessageConverter(pluginService, tenantResolver, tenantsResolver,
-        // subscriber));
-        // } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        // throw new RuntimeException(e); // NOSONAR: if the converter was a component we would have the same behaviour
-        // }
         converters.add(representationHttpMessageConverter);
         super.configureMessageConverters(converters);
     }
