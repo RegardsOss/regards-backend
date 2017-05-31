@@ -104,7 +104,7 @@
 						</resource>
 						<resource>
 							<targetPath>/</targetPath>
-							<directory>src/main/docker</directory>
+							<directory>./src/main/docker</directory>
 							<include>prestart.sh</include>
 						</resource>
 					</resources>
