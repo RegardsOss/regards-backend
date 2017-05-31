@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -44,8 +45,13 @@ public class LicenseServiceTest {
 
     private Project projectWithoutLicense;
 
+    private JWTService jwtService = new JWTService();
+
     @Before
     public void init() throws EntityNotFoundException {
+
+        jwtService.setSecret("123456789");
+
         projectClient = Mockito.mock(IProjectsClient.class);
         projectUserService = Mockito.mock(IProjectUserService.class);
 
@@ -69,10 +75,12 @@ public class LicenseServiceTest {
 
     @Test
     public void testRetrieveState() throws EntityNotFoundException {
+        jwtService.injectMockToken(projectWithLicense.getName(), currentUser.getRole().getName());
         LicenseDTO dto = licenseService.retrieveLicenseState(projectWithLicense.getName());
         Assert.assertEquals(projectWithLicense.getLicenceLink(), dto.getLicenceLink());
         Assert.assertEquals(currentUser.isLicenseAccepted(), dto.isAccepted());
 
+        jwtService.injectMockToken(projectWithoutLicense.getName(), currentUser.getRole().getName());
         dto = licenseService.retrieveLicenseState(projectWithoutLicense.getName());
         Assert.assertEquals("", dto.getLicenceLink());
         Assert.assertEquals(true, dto.isAccepted());
@@ -80,6 +88,7 @@ public class LicenseServiceTest {
 
     @Test
     public void testAccept() throws EntityException {
+        jwtService.injectMockToken(projectWithLicense.getName(), currentUser.getRole().getName());
         LicenseDTO dto = licenseService.acceptLicense(projectWithLicense.getName());
         Assert.assertEquals(projectWithLicense.getLicenceLink(), dto.getLicenceLink());
         Assert.assertEquals(true, currentUser.isLicenseAccepted());
