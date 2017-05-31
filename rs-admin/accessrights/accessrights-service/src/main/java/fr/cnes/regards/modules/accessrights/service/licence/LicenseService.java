@@ -14,6 +14,8 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
@@ -43,12 +45,16 @@ public class LicenseService {
     }
 
     public LicenseDTO retrieveLicenseState(String pProjectName) throws EntityNotFoundException {
-        ProjectUser pu = projectUserService.retrieveCurrentUser();
         Project project = retrieveProject(pProjectName);
-        if ((project.getLicenceLink() != null) && !project.getLicenceLink().isEmpty()) {
-            return new LicenseDTO(pu.isLicenseAccepted(), project.getLicenceLink());
+        if(!SecurityUtils.getActualRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+            ProjectUser pu = projectUserService.retrieveCurrentUser();
+            if ((project.getLicenceLink() != null) && !project.getLicenceLink().isEmpty()) {
+                return new LicenseDTO(pu.isLicenseAccepted(), project.getLicenceLink());
+            }
+            return new LicenseDTO(true, project.getLicenceLink());
+        } else {
+            return new LicenseDTO(true, project.getLicenceLink());
         }
-        return new LicenseDTO(true, project.getLicenceLink());
     }
 
     /**

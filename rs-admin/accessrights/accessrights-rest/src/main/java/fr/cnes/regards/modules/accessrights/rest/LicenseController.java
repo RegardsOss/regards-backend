@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.accessrights.service.licence.LicenseService;
 @RequestMapping(LicenseController.PATH_LICENSE)
 public class LicenseController implements IResourceController<LicenseDTO> {
 
-    public static final String PATH_LICENSE = "/license/{project_name}";
+    public static final String PATH_LICENSE = "/license/{projectName}";
 
     private static final String PATH_RESET = "/reset";
 
@@ -51,19 +51,19 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve if the current user has accepted the license of the project",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<LicenseDTO>> retrieveLicense(@PathVariable("project_name") String pProjectName)
+    public ResponseEntity<Resource<LicenseDTO>> retrieveLicense(@PathVariable("projectName") String pProjectName)
             throws EntityNotFoundException {
         LicenseDTO licenseDto = licenseService.retrieveLicenseState(pProjectName);
-        return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
+        return new ResponseEntity<>(toResource(licenseDto, pProjectName), HttpStatus.OK);
     }
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Allow current user to accept the license of the project", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<LicenseDTO>> acceptLicense(@PathVariable("project_name") String pProjectName)
+    public ResponseEntity<Resource<LicenseDTO>> acceptLicense(@PathVariable("projectName") String pProjectName)
             throws EntityException {
         LicenseDTO licenseDto = licenseService.acceptLicense(pProjectName);
-        return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
+        return new ResponseEntity<>(toResource(licenseDto, pProjectName), HttpStatus.OK);
     }
 
     @ResponseBody
@@ -71,21 +71,29 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     @ResourceAccess(
             description = "Allow admins to invalidate the license of the project for all the users of the project",
             role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<LicenseDTO>> resetLicense(@PathVariable("project_name") String pProjectName)
+    public ResponseEntity<Resource<LicenseDTO>> resetLicense(@PathVariable("projectName") String pProjectName)
             throws EntityException {
         licenseService.resetLicence();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     *
+     * @param pElement
+     *            element to convert
+     * @param pExtras
+     *            Extra URL path parameters for links extra[0] has to be given and should be the projectName
+     * @return
+     */
     @Override
     public Resource<LicenseDTO> toResource(LicenseDTO pElement, Object... pExtras) {
         Resource<LicenseDTO> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveLicense", LinkRels.SELF,
-                                MethodParamFactory.build(String.class));
+                                MethodParamFactory.build(String.class,(String) pExtras[0]));
         resourceService.addLink(resource, this.getClass(), "acceptLicense", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class));
+                                MethodParamFactory.build(String.class,(String) pExtras[0]));
         resourceService.addLink(resource, this.getClass(), "resetLicense", LinkRels.DELETE,
-                                MethodParamFactory.build(String.class));
+                                MethodParamFactory.build(String.class,(String) pExtras[0]));
         return resource;
     }
 
