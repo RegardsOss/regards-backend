@@ -3,12 +3,11 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
-
-import javax.transaction.Transactional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +22,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -173,7 +171,8 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceActive() {
-        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
+        List<PluginConfiguration> confs=pluginService.getAllPluginConfigurations();
+        Assert.assertEquals(3, confs.size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.ACTIVE + "=true");
         sj.add(SampleServicePlugin.COEFF + "=100");

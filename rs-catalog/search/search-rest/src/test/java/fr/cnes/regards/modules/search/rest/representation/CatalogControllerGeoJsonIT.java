@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.search.rest.representation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -14,6 +15,8 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -104,15 +107,6 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
      */
     public static final Document DOCUMENT = new Document(null, DEFAULT_TENANT, "mydocument");
 
-    // @BeforeTransaction
-    // protected void beforeTransaction() {
-    // injectToken();
-    // }
-    //
-    // private void injectToken() {
-    // jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
-    // }
-
     /**
      * @throws java.lang.Exception
      */
@@ -164,6 +158,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testSearchAll() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
         performDefaultGet("/search", expectations, "Error searching all entities", builder);
     }
@@ -177,6 +172,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testSearchAll_withFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                         Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
@@ -196,6 +192,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testGetCollection() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations
@@ -213,6 +210,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testSearchCollections_shouldFindOneWithoutFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
@@ -230,6 +228,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testGetDataset() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydataset")));
@@ -238,12 +237,13 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDatasets(java.lang.String, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDatasets(Map, Pageable)}.
      */
     @Test
     public final void testSearchDatasets_shouldFindTwoWithoutFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
@@ -265,6 +265,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testGetDataobject() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations
@@ -274,12 +275,13 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(java.lang.String, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(Map, Map, Pageable)}.
      */
     @Test
     public final void testSearchDataobjects_shouldFindOneWithFacets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
@@ -297,12 +299,13 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjectsReturnDatasets(java.lang.String, java.util.List, org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjectsReturnDatasets(Map, Map, Pageable, PagedResourcesAssembler)}.
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
         performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
                           builder);
@@ -317,6 +320,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testGetDocument() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydocument")));
@@ -333,6 +337,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testSearchDocuments() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
@@ -351,6 +356,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
     public final void testSearch_withSort() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
@@ -374,6 +380,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
@@ -399,6 +406,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCo
 
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
