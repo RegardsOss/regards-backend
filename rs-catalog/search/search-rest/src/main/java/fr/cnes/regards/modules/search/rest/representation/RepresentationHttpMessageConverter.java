@@ -7,12 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +25,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -91,18 +85,18 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     /**
      * Plugin service
      */
-    private final IPluginService pluginService;
+    private IPluginService pluginService;
 
-    private final IRuntimeTenantResolver tenantResolver;
+    private IRuntimeTenantResolver tenantResolver;
 
-    private final ITenantResolver tenantsResolver;
+    private ITenantResolver tenantsResolver;
 
-    private final ISubscriber subscriber;
+    private ISubscriber subscriber;
 
     /**
      * Map of pluginConfiguration to be used for a specific MediaType
      */
-    private final Map<String, Map<MediaType, Long>> enabledRepresentationPluginMapByTenant;
+    private Map<String, Map<MediaType, Long>> enabledRepresentationPluginMapByTenant;
 
     /**
      * Constructor
@@ -115,10 +109,9 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
      * @throws IllegalAccessException when error occured on plugin instanciation
      * @throws ClassNotFoundException when error occured on plugin instanciation
      */
-    public RepresentationHttpMessageConverter(IPluginService pPluginService, IRuntimeTenantResolver tenantResolver,
+    public void init(IPluginService pPluginService, IRuntimeTenantResolver tenantResolver,
             ITenantResolver tenantsResolver, ISubscriber subscriber)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        super();
         this.tenantResolver = tenantResolver;
         this.tenantsResolver = tenantsResolver;
         pluginService = pPluginService;

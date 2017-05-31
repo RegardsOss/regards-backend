@@ -96,6 +96,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         acceptToUse = "application/geo+json";
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(acceptToUse));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations
