@@ -3,18 +3,17 @@
  */
 package fr.cnes.regards.modules.search.rest.representation;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,12 +30,15 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@Configuration
-public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
+@Component
+public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ implements BeanFactoryAware,
+        ApplicationListener<ApplicationReadyEvent> {
 
     private static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
 
     private static final Logger LOG = LoggerFactory.getLogger(RepresentationConfiguration.class);
+
+    private BeanFactory beanFactory;
 
     @Autowired
     private IPluginService pluginService;
@@ -50,11 +52,8 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
     @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
-    private RepresentationHttpMessageConverter representationHttpMessageConverter;
-
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    public void configureRepresentationMessageConverter(RepresentationHttpMessageConverter representationHttpMessageConverter)
+            throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         LOG.info("starting to configure http message converters");
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
             tenantResolver.forceTenant(tenant);
@@ -62,14 +61,7 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
             pluginService.addPluginPackage(GeoJsonRepresentation.class.getPackage().getName());
             setDefaultPluginConfiguration();
         }
-        // try {
-        // converters.add(new RepresentationHttpMessageConverter(pluginService, tenantResolver, tenantsResolver,
-        // subscriber));
-        // } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        // throw new RuntimeException(e); // NOSONAR: if the converter was a component we would have the same behaviour
-        // }
-        converters.add(representationHttpMessageConverter);
-        super.configureMessageConverters(converters);
+        representationHttpMessageConverter.init(pluginService, tenantResolver, tenantsResolver, subscriber);
     }
 
     private void setDefaultPluginConfiguration() {
@@ -96,7 +88,18 @@ public class RepresentationConfiguration extends WebMvcConfigurerAdapter {
     }
 
     @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.defaultContentType(GeoJsonRepresentation.MEDIA_TYPE);
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory=beanFactory;
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        RepresentationHttpMessageConverter representationHttpMessageConverter=(RepresentationHttpMessageConverter) beanFactory.getBean(RepresentationHttpMessageConverter.class);
+        try {
+            configureRepresentationMessageConverter(representationHttpMessageConverter);
+        } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+            LOG.error("Could not initialize RepresentationHttpMessageConverter", e);
+            Runtime.getRuntime().exit(1);
+        }
     }
 }
