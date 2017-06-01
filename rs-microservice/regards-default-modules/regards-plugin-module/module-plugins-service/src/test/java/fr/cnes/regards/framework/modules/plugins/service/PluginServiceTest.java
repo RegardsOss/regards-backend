@@ -79,9 +79,6 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         Assert.assertNotNull(metadaDatas);
         Assert.assertFalse(metadaDatas.isEmpty());
-        
-        
-        
 
         LOGGER.debug("List all plugins :");
         metadaDatas.forEach(p -> LOGGER.debug(p.getPluginId()));
@@ -171,7 +168,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getId());
             Mockito.verify(pluginConfRepositoryMocked).delete(aPluginConfiguration.getId());
             Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                                                                                 PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
+                    PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
 
         } catch (final ModuleException e) {
             Assert.fail();
@@ -191,18 +188,46 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfigurationWithId.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
+
             final PluginConfiguration savedPluginConfiguration = pluginServiceMocked
                     .savePluginConfiguration(aPluginConfiguration);
+
             Assert.assertEquals(aPluginConfiguration.getLabel(), savedPluginConfiguration.getLabel());
             Assert.assertEquals(aPluginConfiguration.getPluginId(), savedPluginConfiguration.getPluginId());
             Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
+
             Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(),
-                                                                                 PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
+                    PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
         } catch (final ModuleException e) {
             Assert.fail();
         }
+    }
+
+    @Test(expected = ModuleException.class)
+    public void saveTwoPluginConfigurationWithSameLabel() throws ModuleException {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
+        final PluginConfiguration aPluginConfigurationWithId = new PluginConfiguration(aPluginConfiguration);
+        aPluginConfigurationWithId.setId(AN_ID);
+
+        final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
+
+        // save a first plugin configuration
+        Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
+        try {
+            pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
+        } catch (ModuleException e) {
+            Assert.fail();
+        }
+
+        // save a second plugin configuration with the same label
+        Mockito.when(pluginConfRepositoryMocked.findOneByLabel(theSamePluginConfiguration.getLabel()))
+                .thenReturn(aPluginConfigurationWithId);
+        pluginServiceMocked.savePluginConfiguration(theSamePluginConfiguration);
+        
+        // An exception is throw, otherwise the test is failed
+        Assert.fail();
     }
 
     /**
@@ -243,7 +268,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
         Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                                                                             PluginServiceAction.DISABLE, aPluginConfiguration.getInterfaceNames()));
+                PluginServiceAction.DISABLE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test
@@ -264,7 +289,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
         Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                                                                             PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
+                PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test

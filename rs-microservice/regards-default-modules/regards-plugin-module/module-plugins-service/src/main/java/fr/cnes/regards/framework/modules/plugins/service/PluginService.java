@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Propagation;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -140,13 +141,15 @@ public class PluginService implements IPluginService {
             msg.append(String.format(" <%s> without version.", pPluginConfiguration.getPluginId()));
             throw new EntityInvalidException(msg.toString());
         }
-        if ((pPluginConfiguration.getLabel() == null) || pPluginConfiguration.getLabel().isEmpty()) {
+        
+        if (Strings.isNullOrEmpty(pPluginConfiguration.getLabel())) {
             msg.append(String.format(" <%s> without label.", pPluginConfiguration.getPluginId()));
             throw new EntityInvalidException(msg.toString());
         }
+        
         if (pPluginConfiguration != null) {
             PluginConfiguration pluginConfInDb = pluginConfRepository.findOneByLabel(pPluginConfiguration.getLabel());
-            if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pPluginConfiguration.getId()) && !pluginConfInDb.getLabel().equals(pPluginConfiguration.getLabel())) {
+            if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pPluginConfiguration.getId()) && pluginConfInDb.getLabel().equals(pPluginConfiguration.getLabel())) {
                 msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
                                          pPluginConfiguration.getLabel()));
                 throw new EntityInvalidException(msg.toString());
