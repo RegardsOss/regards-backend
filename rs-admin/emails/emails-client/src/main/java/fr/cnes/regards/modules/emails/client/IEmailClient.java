@@ -37,7 +37,7 @@ public interface IEmailClient {
     /**
      * Define the endpoint for sending an email to recipients
      *
-     * @param pEmail
+     * @param pMessage
      *            The email in a simple representation.
      * @return The sent email as {@link Email} wrapped in an {@link ResponseEntity}
      */
