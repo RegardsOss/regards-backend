@@ -1,6 +1,6 @@
 create table t_access_settings (id int8 not null, mode varchar(255), primary key (id));
 create table t_meta_data (id int8 not null, key varchar(64), value varchar(255), visibility varchar(255), user_id int8, primary key (id));
-create table t_project_user (id int8 not null, email varchar(128), last_connection timestamp, last_update timestamp, licence_accepted boolean, status varchar(20), role_id int8, primary key (id));
+create table t_project_user (id int8 not null, email varchar(128), last_connection timestamp, last_update timestamp, licence_accepted boolean, status varchar(30), role_id int8, primary key (id));
 create table t_resources_access (id int8 not null, controller_name varchar(32), defaultRole varchar(16), description text, microservice varchar(32), resource varchar(512), verb varchar(10), user_id int8, primary key (id));
 create table t_role (id int8 not null, authorized_addresses varchar(255), is_default boolean, is_native boolean, name varchar(255), parent_role_id int8, primary key (id));
 create table ta_resource_role (role_id int8 not null, resource_id int8 not null, primary key (role_id, resource_id));
