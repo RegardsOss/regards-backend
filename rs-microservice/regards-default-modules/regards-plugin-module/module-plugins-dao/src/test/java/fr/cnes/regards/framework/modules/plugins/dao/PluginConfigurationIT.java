@@ -148,17 +148,15 @@ public class PluginConfigurationIT extends PluginDaoUtility {
     @Test
     public void deleteAPluginParameter() {
         // save a plugin configuration
-        plgRepository.save(getPlgConfWithParameters());
-        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
+        PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
+        Assert.assertEquals(aPluginConf.getParameters().size(), paramRepository.count());
         Assert.assertEquals(1, plgRepository.count());
-
-        Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
 
         // delete a parameter
-        paramRepository.delete(getPlgConfWithParameters().getParameters().get(0));
+        paramRepository.delete(aPluginConf.getParameters().get(0));
 
         Assert.assertEquals(1, plgRepository.count());
-        Assert.assertEquals(getPlgConfWithParameters().getParameters().size() - 1, paramRepository.count());
+        Assert.assertEquals(aPluginConf.getParameters().size() - 1, paramRepository.count());
     }
 
     @Test
