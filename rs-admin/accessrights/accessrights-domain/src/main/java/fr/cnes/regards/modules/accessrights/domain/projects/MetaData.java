@@ -23,7 +23,8 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  * @author CS
  */
 @Entity
-@Table(name = "t_meta_data", uniqueConstraints = @UniqueConstraint(name = "uk_meta_data_key", columnNames = { "key" }))
+// user_id is the JoinColumn defined in ProjectUser
+@Table(name = "t_metadata", uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = { "key", "user_id" }))
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
