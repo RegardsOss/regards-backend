@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -97,6 +98,19 @@ public class PluginConfigurationIT extends PluginDaoUtility {
             Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
                                 jpaConf.getParameterConfiguration(p.getName()));
         }
+    }
+    
+    @Test(expected=DataIntegrityViolationException.class)
+    public void createTwoPluginConfigurationWithSameLabel() {
+        // save a plugin configuration
+        plgRepository.save(getPlgConfWithParameters());
+        Assert.assertEquals(1, plgRepository.count());
+
+        // try to save a plugin configuration with the same label
+        resetId();
+        plgRepository.save(getPlgConfWithParameters());
+        
+        Assert.fail();
     }
 
     /**
