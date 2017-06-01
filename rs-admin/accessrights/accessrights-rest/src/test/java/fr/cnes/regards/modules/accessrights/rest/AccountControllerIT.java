@@ -166,9 +166,9 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         setAuthorities(apiAccountId, RequestMethod.DELETE, DEFAULT_ROLE);
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
                 + RegistrationController.ACCEPT_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
-        setAuthorities(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT,
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT,
                        RequestMethod.PUT, DEFAULT_ROLE);
-        setAuthorities(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT,
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT,
                        RequestMethod.PUT, DEFAULT_ROLE);
     }
 
@@ -383,13 +383,13 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(true)));
-        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD),
+        performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD),
                            expectations, errorMessage);
         expectations.clear();
         //test invalid password
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(false)));
-        performDefaultPost(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD+ "ZE"),
+        performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD+ "ZE"),
                            expectations, errorMessage);
     }
 
@@ -397,7 +397,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     public void getPasswordRules() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        performDefaultGet(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_PASSWORD, expectations,
+        performDefaultGet(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD, expectations,
                           errorMessage);
     }
 
@@ -470,7 +470,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT, null,
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT, null,
                           expectations, "Should deactivate the account", account.getEmail());
     }
 
@@ -482,7 +482,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_INACTIVE_ACCOUNT, null,
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT, null,
                           expectations, "Should fail because the account is not in INACTIVE status",
                           account.getEmail());
     }
@@ -521,7 +521,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT, null,
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null,
                           expectations, "Should fail because the account is not in ACTIVE status", account.getEmail());
     }
 
@@ -534,7 +534,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(AccountsController.REQUEST_MAPPING_ROOT + AccountsController.PATH_ACTIVE_ACCOUNT, null,
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null,
                           expectations, "Should activate the account", account.getEmail());
     }
 

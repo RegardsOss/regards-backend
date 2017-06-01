@@ -3,9 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
-import java.util.Set;
-import java.util.function.Predicate;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,14 +108,18 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      */
     @Override
     public boolean canDelete(final Account pAccount) {
-        // Get all tenants
-        final Set<String> tenants = tenantResolver.getAllTenants();
 
-        final Predicate<? super String> hasUserOnTenant = tenant -> {
-            runtimeTenantResolver.forceTenant(tenant);
-            return projectUserService.existUser(pAccount.getEmail());
-        };
-        return tenants.stream().noneMatch(hasUserOnTenant);
+        try {
+            for (String tenant : tenantResolver.getAllActiveTenants()) {
+                runtimeTenantResolver.forceTenant(tenant);
+                if (projectUserService.existUser(pAccount.getEmail())) {
+                    return false;
+                }
+            }
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+        return true;
     }
 
     /**
