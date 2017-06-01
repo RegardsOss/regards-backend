@@ -66,7 +66,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * A {@link PluginParameter}
      */
-    static final PluginParameter A_PARAMETER = PluginParametersFactory.build().addParameter("param11", "value11")
+    static final PluginParameter ONE_PARAMETER = PluginParametersFactory.build().addParameter("param11", "value11")
             .getParameters().get(0);
 
     /**
@@ -77,7 +77,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * A {@link List} of {@link PluginParameter}
      */
-    static final List<PluginParameter> PARAMETERS2 = PluginParametersFactory.build()
+    static final List<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
             .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES)
             .addParameterDynamic("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
             .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
@@ -99,7 +99,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
     private static PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration", PARAMETERS2, 0);
+            "second configuration", LIST_PARAMETERS, 0);
 
     /**
      * IPluginConfigurationRepository

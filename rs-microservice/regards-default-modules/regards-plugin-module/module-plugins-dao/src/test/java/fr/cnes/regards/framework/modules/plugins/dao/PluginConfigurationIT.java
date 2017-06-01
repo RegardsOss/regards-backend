@@ -108,7 +108,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
 
         // set two new parameters to the plugin configuration
-        aPluginConf.setParameters(PARAMETERS2);
+        aPluginConf.setParameters(LIST_PARAMETERS);
 
         // update the plugin configuration
         final PluginConfiguration jpaConf = plgRepository.save(aPluginConf);

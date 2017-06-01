@@ -62,12 +62,6 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-test</artifactId>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>module-plugins-client</artifactId>
 			<scope>test</scope>
 		</dependency>

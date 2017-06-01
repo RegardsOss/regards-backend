@@ -45,10 +45,10 @@ public class PluginParameterIT extends PluginDaoUtility {
     public void createPluginParameter() {
         final long nPluginParameter = paramRepository.count();
 
-        paramRepository.save(A_PARAMETER);
-        paramRepository.save(PARAMETERS2);
+        paramRepository.save(ONE_PARAMETER);
+        paramRepository.save(LIST_PARAMETERS);
 
-        Assert.assertEquals(nPluginParameter + 1 + PARAMETERS2.size(), paramRepository.count());
+        Assert.assertEquals(nPluginParameter + 1 + LIST_PARAMETERS.size(), paramRepository.count());
 
         plgRepository.deleteAll();
     }
@@ -59,8 +59,8 @@ public class PluginParameterIT extends PluginDaoUtility {
     @Test
     public void updatePluginParameter() {
         paramRepository.save(INTERFACEPARAMETERS.get(0));
-        final PluginParameter paramJpa = paramRepository.save(PARAMETERS2.get(0));
-        Assert.assertEquals(paramJpa.getName(), PARAMETERS2.get(0).getName());
+        final PluginParameter paramJpa = paramRepository.save(LIST_PARAMETERS.get(0));
+        Assert.assertEquals(paramJpa.getName(), LIST_PARAMETERS.get(0).getName());
 
         paramRepository.findAll().forEach(p -> LOGGER.info(p.getName()));
 
@@ -78,17 +78,17 @@ public class PluginParameterIT extends PluginDaoUtility {
      */
     @Test
     public void deletePluginParameter() {
-        final PluginParameter paramJpa = paramRepository.save(A_PARAMETER);
-        paramRepository.save(PARAMETERS2);
-        Assert.assertEquals(1 + PARAMETERS2.size(), paramRepository.count());
+        final PluginParameter paramJpa = paramRepository.save(ONE_PARAMETER);
+        paramRepository.save(LIST_PARAMETERS);
+        Assert.assertEquals(1 + LIST_PARAMETERS.size(), paramRepository.count());
 
         // Delete a plugin parameter
         paramRepository.delete(paramJpa);
-        Assert.assertEquals(PARAMETERS2.size(), paramRepository.count());
+        Assert.assertEquals(LIST_PARAMETERS.size(), paramRepository.count());
 
         // Delete a plugin parameter
-        paramRepository.delete(PARAMETERS2.get(0));
-        Assert.assertEquals(PARAMETERS2.size() - 1, paramRepository.count());
+        paramRepository.delete(LIST_PARAMETERS.get(0));
+        Assert.assertEquals(LIST_PARAMETERS.size() - 1, paramRepository.count());
     }
 
     /**
@@ -97,12 +97,12 @@ public class PluginParameterIT extends PluginDaoUtility {
     @Test
     public void createAndFindPluginParameter() {
         // first plugin parameter
-        final PluginParameter savedParam = paramRepository.save(A_PARAMETER);
+        final PluginParameter savedParam = paramRepository.save(ONE_PARAMETER);
         Assert.assertNotNull(savedParam.getId());
         Assert.assertEquals(1, paramRepository.count());
 
         // second plugin parameter with dynamic values
-        final PluginParameter paramWithDynValues = paramRepository.save(PARAMETERS2.get(0));
+        final PluginParameter paramWithDynValues = paramRepository.save(LIST_PARAMETERS.get(0));
         Assert.assertNotNull(paramWithDynValues.getId());
         Assert.assertEquals(2, paramRepository.count());
 
@@ -122,12 +122,12 @@ public class PluginParameterIT extends PluginDaoUtility {
     @Test
     public void controlPluginParameterDynamicValues() {
         // first plugin parameter
-        final PluginParameter savedParam = paramRepository.save(A_PARAMETER);
+        final PluginParameter savedParam = paramRepository.save(ONE_PARAMETER);
         Assert.assertNotNull(savedParam.getId());
         Assert.assertEquals(1, paramRepository.count());
 
         // second plugin parameter with dynamic values
-        final PluginParameter paramWithDynValues = paramRepository.save(PARAMETERS2.get(0));
+        final PluginParameter paramWithDynValues = paramRepository.save(LIST_PARAMETERS.get(0));
         Assert.assertNotNull(paramWithDynValues.getId());
         Assert.assertEquals(2, paramRepository.count());
 
