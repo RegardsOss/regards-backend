@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(AccountsController.REQUEST_MAPPING_ROOT)
+@RequestMapping(AccountsController.TYPE_MAPPING)
 public class AccountsController implements IResourceController<Account> {
 
     public static final String PATH_PASSWORD = "/password"; // NOSONAR: not a password
@@ -69,7 +69,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Root mapping for requests of this rest controller
      */
-    public static final String REQUEST_MAPPING_ROOT = "/accounts";
+    public static final String TYPE_MAPPING = "/accounts";
 
     @Autowired
     private IAccountService accountService;
