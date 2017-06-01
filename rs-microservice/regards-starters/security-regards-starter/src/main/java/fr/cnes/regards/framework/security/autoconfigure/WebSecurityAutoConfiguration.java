@@ -21,6 +21,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
@@ -59,6 +60,9 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private MethodAuthorizationService authorizationService;
 
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * Custom web security configuration
      */
@@ -85,7 +89,8 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         pHttp.addFilterAfter(new PublicAuthenticationFilter(jwtService), RequestLogFilter.class);
 
         // Add JWT Authentication filter
-        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager()), PublicAuthenticationFilter.class);
+        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
+                             PublicAuthenticationFilter.class);
 
         // Add Ip filter after Authentication filter
         pHttp.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);

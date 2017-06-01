@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
@@ -42,18 +43,12 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
      */
     private final AuthenticationManager authenticationManager;
 
-    /**
-     *
-     * Constructor
-     *
-     * @param pAuthenticationManager
-     *            Authentication manager
-     * @param pJwtService
-     *            security JWT Service
-     * @since 1.0-SNAPSHOT
-     */
-    public JWTAuthenticationFilter(final AuthenticationManager pAuthenticationManager) {
-        authenticationManager = pAuthenticationManager;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public JWTAuthenticationFilter(final AuthenticationManager authenticationManager,
+            IRuntimeTenantResolver runtimeTenantResolver) {
+        this.authenticationManager = authenticationManager;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -87,6 +82,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
                 // Set security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                // Clear forced tenant if any
+                runtimeTenantResolver.clearTenant();
 
                 LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 

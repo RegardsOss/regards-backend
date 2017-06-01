@@ -23,6 +23,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.servlet.DispatcherServlet;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -71,7 +72,8 @@ public class JWTAuthenticationFilterTest {
 
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
-        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
+        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
@@ -105,7 +107,8 @@ public class JWTAuthenticationFilterTest {
 
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
+        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -143,7 +146,8 @@ public class JWTAuthenticationFilterTest {
 
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
+        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -182,7 +186,8 @@ public class JWTAuthenticationFilterTest {
 
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
-        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
+        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         // Header whithout Bearer: prefix.
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(token.getJwt());
@@ -220,7 +225,8 @@ public class JWTAuthenticationFilterTest {
 
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
-        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager);
+        final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION))
                 .thenReturn(String.format("%s: %s", HttpConstants.BEARER, token.getJwt()));

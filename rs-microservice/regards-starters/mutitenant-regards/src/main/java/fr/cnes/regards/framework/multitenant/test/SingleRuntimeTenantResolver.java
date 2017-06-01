@@ -14,14 +14,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
 
-    /**
-     * serialVersionUID field.
-     *
-     * @author CS
-     * @since 1.0-SNAPSHOT
-     */
-    private static final long serialVersionUID = 3055171991646021858L;
-
     // Thread safe tenant holder for forced tenant
     private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
 
@@ -42,6 +34,11 @@ public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
     @Override
     public Boolean isInstance() {
         return Boolean.FALSE;
+    }
+
+    @Override
+    public void clearTenant() {
+        tenantHolder.remove();
     }
 
 }
