@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -107,12 +109,14 @@ public final class PluginUtils {
     /**
      * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
      * identifier and value the required {@link PluginMetaData}.
-     *
+     * <b>Note: </b> This method is used by PluginService which is used in multi-thread environment (see IngesterService
+     * and CrawlerService) so ConcurrentHashMap is used instead of HashMap
+
      * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return all class annotated {@link Plugin}
      */
-    public static Map<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
-        final Map<String, PluginMetaData> plugins = new HashMap<>();
+    public static ConcurrentMap<String, PluginMetaData> getPlugins(final List<String> pPrefixs) {
+        final ConcurrentMap<String, PluginMetaData> plugins = new ConcurrentHashMap<>();
 
         for (final String p : pPrefixs) {
             plugins.putAll(getPlugins(p, pPrefixs));

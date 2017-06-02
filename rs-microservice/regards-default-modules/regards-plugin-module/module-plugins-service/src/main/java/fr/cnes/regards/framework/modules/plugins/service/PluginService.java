@@ -6,10 +6,11 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Propagation;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -66,15 +66,19 @@ public class PluginService implements IPluginService {
     /**
      * Plugins implementation list sorted by plugin id. Plugin id, is the id of the "@PluginMetaData" annotation of the
      * implementation class.
+     * <b>Note: </b> PluginService is used in multi-thread environment (see IngesterService and CrawlerService) so
+     * ConcurrentHashMap is used instead of HashMap
      */
-    private Map<String, PluginMetaData> plugins;
+    private ConcurrentMap<String, PluginMetaData> plugins;
 
     /**
      * A {@link Map} with all the {@link Plugin} currently instantiate.</br>
      * This Map is used because for a {@link PluginConfiguration}, one and only one {@link Plugin} should be
      * instantiate.
+     * <b>Note: </b> PluginService is used in multi-thread environment (see IngesterService and CrawlerService) so
+     * ConcurrentHashMap is used instead of HashMap
      */
-    private final Map<Long, Object> instantiatePlugins = new HashMap<Long, Object>();
+    private final ConcurrentMap<Long, Object> instantiatePlugins = new ConcurrentHashMap<>();
 
     private final IPublisher publisher;
 
@@ -193,6 +197,11 @@ public class PluginService implements IPluginService {
     @Override
     public boolean exists(final Long pId) {
         return pluginConfRepository.exists(pId);
+    }
+
+    @Override
+    public boolean existsByLabel(String pluginConfLabel) {
+        return (pluginConfRepository.findOneByLabel(pluginConfLabel) != null);
     }
 
     @Override
@@ -377,7 +386,7 @@ public class PluginService implements IPluginService {
             final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, getPluginPackage());
             if (plugins == null) {
                 // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
-                plugins = new HashMap<>();
+                plugins = new ConcurrentHashMap<>();
             }
             plugins.putAll(newPlugins);
         }

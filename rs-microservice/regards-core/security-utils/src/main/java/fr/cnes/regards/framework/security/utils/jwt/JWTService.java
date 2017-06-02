@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
+import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +65,12 @@ public class JWTService {
      */
     @Value("${jwt.secret}")
     private String secret;
+
+    /**
+     * validity delay expressed in minutes. Defaults to 120.
+     */
+    @Value("${jwt.validityDelay:120}")
+    private long validityDelay;
 
     /**
      *
@@ -188,7 +196,7 @@ public class JWTService {
      */
     public String generateToken(String tenant, String pName, String pRole) {
         return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, pRole, pName)).setSubject(pName)
-                .signWith(ALGO, TextCodec.BASE64.encode(secret)).compact();
+                .signWith(ALGO, TextCodec.BASE64.encode(secret)).setExpiration(Date.from(OffsetDateTime.now().plusMinutes(validityDelay).toInstant())).compact();
     }
 
     /**

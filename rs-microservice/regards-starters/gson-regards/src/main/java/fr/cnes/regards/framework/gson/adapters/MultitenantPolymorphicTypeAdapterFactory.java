@@ -12,6 +12,7 @@ package fr.cnes.regards.framework.gson.adapters;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,17 +70,17 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Map discriminator value to its corresponding explicit type
      */
-    protected final Map<String, Map<String, Class<?>>> discriminatorToSubtype = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Map<String, Class<?>>> discToSubtypeMap = new ConcurrentHashMap<>();
 
     /**
      * Map explicit type to its corresponding discriminator value
      */
-    protected final Map<String, Map<Class<?>, String>> subtypeToDiscriminator = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Map<Class<?>, String>> subtypeToDiscMap = new ConcurrentHashMap<>();
 
     /**
      * Whether to refresh mapping after factory creation at runtime
      */
-    protected Map<String, Boolean> refreshMapping = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, Boolean> refreshMappingMap = new ConcurrentHashMap<>();
 
     /**
      * Resolve thread tenant at runtime
@@ -89,12 +90,12 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Map discriminator value to its corresponding type adapter often called delegate
      */
-    protected final Map<String, Map<String, TypeAdapter<?>>> discriminatorToDelegate = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Map<String, TypeAdapter<?>>> discToDelegateMap = new ConcurrentHashMap<>();
 
     /**
      * Map explicit type to its corresponding type adapter often called delegate
      */
-    protected final Map<String, Map<Class<?>, TypeAdapter<?>>> subtypeToDelegate = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Map<Class<?>, TypeAdapter<?>>> subtypeToDelegateMap = new ConcurrentHashMap<>();
 
     /**
      * Constructor
@@ -170,11 +171,11 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         // Retrieve tenant map
         Map<String, Class<?>> tenantDiscriminatorToSubtype = getTenantDiscriminatorToSubtype(pTenant);
         // Check if map not already contains value with a different mapping
-        if (tenantDiscriminatorToSubtype.containsKey(pDiscriminatorFieldValue)
-                && (pType != tenantDiscriminatorToSubtype.get(pDiscriminatorFieldValue))) {
+        if (tenantDiscriminatorToSubtype.containsKey(pDiscriminatorFieldValue) && (pType != tenantDiscriminatorToSubtype
+                .get(pDiscriminatorFieldValue))) {
 
-            final String errorMessage = String.format("Discrimator field value %s must be unique",
-                                                      pDiscriminatorFieldValue);
+            final String errorMessage = String
+                    .format("Discrimator field value %s must be unique", pDiscriminatorFieldValue);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
@@ -233,36 +234,36 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     }
 
     protected void setRefreshMapping(String pTenant, Boolean pRefreshMapping) {
-        refreshMapping.put(pTenant, pRefreshMapping);
+        refreshMappingMap.put(pTenant, pRefreshMapping);
     }
 
     protected void resetRefreshMapping() {
-        for (String tenant : refreshMapping.keySet()) {
-            refreshMapping.put(tenant, false);
+        for (String tenant : refreshMappingMap.keySet()) {
+            refreshMappingMap.put(tenant, false);
         }
     }
 
     protected Boolean needRefreshMapping(String pTenant) {
-        if (!refreshMapping.containsKey(pTenant)) {
+        if (!refreshMappingMap.containsKey(pTenant)) {
             LOGGER.warn("Empty mapping for tenant {}", pTenant);
         }
-        return refreshMapping.get(pTenant);
+        return refreshMappingMap.get(pTenant);
     }
 
     protected Map<String, Class<?>> getTenantDiscriminatorToSubtype(String pTenant) {
-        Map<String, Class<?>> map = discriminatorToSubtype.get(pTenant);
+        Map<String, Class<?>> map = discToSubtypeMap.get(pTenant);
         if (map == null) {
             map = new ConcurrentHashMap<>();
-            discriminatorToSubtype.put(pTenant, map);
+            discToSubtypeMap.put(pTenant, map);
         }
         return map;
     }
 
     protected Map<Class<?>, String> getTenantSubtypeToDiscriminator(String pTenant) {
-        Map<Class<?>, String> map = subtypeToDiscriminator.get(pTenant);
+        Map<Class<?>, String> map = subtypeToDiscMap.get(pTenant);
         if (map == null) {
             map = new ConcurrentHashMap<>();
-            subtypeToDiscriminator.put(pTenant, map);
+            subtypeToDiscMap.put(pTenant, map);
         }
         return map;
     }
@@ -297,7 +298,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             doTenantMapping(pGson, getTenantDiscriminatorToDelegate(pDiscriminatorToDelegate, pTenant),
                             getTenantSubtypeToDelegate(pSubtypeToDelegate, pTenant), pTenant);
         } else {
-            for (String tenant : discriminatorToSubtype.keySet()) {
+            for (String tenant : discToSubtypeMap.keySet()) {
                 doTenantMapping(pGson, getTenantDiscriminatorToDelegate(pDiscriminatorToDelegate, tenant),
                                 getTenantSubtypeToDelegate(pSubtypeToDelegate, tenant), tenant);
             }
@@ -421,7 +422,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             public void write(JsonWriter pOut, T pValue) throws IOException {
                 String tenant = runtimeTenantResolver.getTenant();
                 if (needRefreshMapping(tenant)) {
-                    doMapping(pGson, discriminatorToDelegate, subtypeToDelegate, tenant);
+                    doMapping(pGson, discToDelegateMap, subtypeToDelegateMap, tenant);
                     setRefreshMapping(tenant, false);
                 }
 
@@ -431,9 +432,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
                 TypeAdapter<T> delegate = getDelegate(srcType);
 
                 if (delegate == null) {
-                    String errorMessage = String.format(
-                                                        "Cannot serialize attribute '%s' of type %s. Did you forget to register a subtype ? (tenant = %s)",
-                                                        pValue, srcType.getName(), tenant);
+                    String errorMessage = String
+                            .format("Cannot serialize attribute '%s' of type %s. Did you forget to register a subtype ? (tenant = %s)",
+                                    pValue, srcType.getName(), tenant);
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
@@ -445,7 +446,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
 
             @SuppressWarnings("unchecked")
             protected TypeAdapter<T> getDelegate(Class<?> pType) {
-                Map<Class<?>, TypeAdapter<?>> map = subtypeToDelegate.get(runtimeTenantResolver.getTenant());
+                Map<Class<?>, TypeAdapter<?>> map = subtypeToDelegateMap.get(runtimeTenantResolver.getTenant());
                 if (map != null) {
                     return (TypeAdapter<T>) map.get(pType);
                 }
@@ -459,7 +460,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             public T read(JsonReader pIn) throws IOException {
                 String tenant = runtimeTenantResolver.getTenant();
                 if (needRefreshMapping(tenant)) {
-                    doMapping(pGson, discriminatorToDelegate, subtypeToDelegate, tenant);
+                    doMapping(pGson, discToDelegateMap, subtypeToDelegateMap, tenant);
                     setRefreshMapping(runtimeTenantResolver.getTenant(), false);
                 }
 
@@ -471,9 +472,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
 
                 // Check value found
                 if (discriminatorEl == null) {
-                    String errorMessage = String.format(
-                                                        "Cannot deserialize %s because it does not define a field named %s.",
-                                                        baseType, discriminatorFieldName);
+                    String errorMessage = String
+                            .format("Cannot deserialize %s because it does not define a field named %s.", baseType,
+                                    discriminatorFieldName);
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
@@ -483,22 +484,20 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
                 TypeAdapter<T> delegate = getDelegate(discriminator);
 
                 if (delegate == null) {
-                    String errorMessage = String.format(
-                                                        "Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
-                                                        baseType, discriminator);
+                    String errorMessage = String
+                            .format("Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
+                                    baseType, discriminator);
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
 
-                return delegate
-                        .fromJsonTree(beforeRead(jsonElement, discriminator,
-                                                 getTenantDiscriminatorToSubtype(runtimeTenantResolver.getTenant())
-                                                         .get(discriminator)));
+                return delegate.fromJsonTree(beforeRead(jsonElement, discriminator, getTenantDiscriminatorToSubtype(
+                        runtimeTenantResolver.getTenant()).get(discriminator)));
             }
 
             @SuppressWarnings("unchecked")
             protected TypeAdapter<T> getDelegate(String pDiscriminatorFieldValue) {
-                Map<String, TypeAdapter<?>> map = discriminatorToDelegate.get(runtimeTenantResolver.getTenant());
+                Map<String, TypeAdapter<?>> map = discToDelegateMap.get(runtimeTenantResolver.getTenant());
                 if (map != null) {
                     return (TypeAdapter<T>) map.get(pDiscriminatorFieldValue);
                 }

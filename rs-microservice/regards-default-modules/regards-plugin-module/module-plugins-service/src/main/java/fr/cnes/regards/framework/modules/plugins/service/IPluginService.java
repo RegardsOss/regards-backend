@@ -128,7 +128,19 @@ public interface IPluginService {
      */
     PluginConfiguration loadPluginConfiguration(Long id);
 
+    /**
+     * Does given PluginConfiguration exist ?
+     * @param pId PluginConfiguration id to test
+     * @return true or false (it's a boolean !!!)
+     */
     boolean exists(Long pId);
+
+    /**
+     * Does given PluginConfiguration exist ?
+     * @param pluginConfLabel PluginConfiguration label to test
+     * @return true or false (it's a boolean !!!)
+     */
+    boolean existsByLabel(String pluginConfLabel);
 
     /**
      * Get all plugin's configuration for a specific plugin type.
