@@ -41,11 +41,13 @@ import fr.cnes.regards.modules.configuration.service.IUIPluginConfigurationServi
 @RequestMapping(UIPluginConfigurationController.REQUEST_MAPPING_ROOT)
 public class UIPluginConfigurationController implements IResourceController<UIPluginConfiguration> {
 
-    public static final String REQUEST_MAPPING_ROOT = "/plugins/configurations";
+    public static final String REQUEST_MAPPING_ROOT = "/plugins";
 
-    public static final String REQUEST_PLUGIN_CONFIGURATION = "/{pluginConfId}";
+    public static final String REQUEST_PLUGIN_CONFIGURATIONS = "/configurations";
 
-    public static final String REQUEST_PLUGIN_DEFINITION = "/plugins/{pluginId}/configurations";
+    public static final String REQUEST_PLUGIN_CONFIGURATION = "/configurations/{pluginConfId}";
+
+    public static final String REQUEST_PLUGIN_DEFINITION = "/{pluginId}/configurations";
 
     /**
      * Business service to manage {@link UIPluginConfiguration} entities
@@ -76,7 +78,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      *             error occurred.
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugin configurations", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurations(
@@ -181,7 +183,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<UIPluginConfiguration>> createPluginConfiguration(

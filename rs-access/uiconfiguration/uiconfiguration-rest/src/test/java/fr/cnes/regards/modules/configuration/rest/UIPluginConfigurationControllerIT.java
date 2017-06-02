@@ -104,19 +104,22 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(4)));
-        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT, expectations,
+        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
                           "Error getting all plugins");
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(2)));
-        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT, expectations,
+        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
                           "Error getting all active plugins", RequestParamBuilder.build().param("isActive", "true"));
 
         expectations.clear();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(2)));
-        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT, expectations,
+        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
                           "Error getting all linked plugins",
                           RequestParamBuilder.build().param("isLinkedToAllEntities", "true"));
 
@@ -126,7 +129,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
 
         final RequestParamBuilder builder = RequestParamBuilder.build().param("isActive", "true");
         builder.param("isLinkedToAllEntities", "true");
-        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT, expectations,
+        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
                           "Error getting all active and linked plugins", builder);
 
     }
@@ -226,7 +230,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         conf.setConf("{invalidJson");
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().is(422));
-        performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT, conf, expectations,
+        performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf, expectations,
                            "Error getting all plugins");
 
     }
