@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.accessrights.workflow.account.event.OnAccountEmai
  * @author Christophe Mertz
  */
 @Component
-@Transactional
+@InstanceTransactional
 public class AcceptedState extends AbstractDeletableState {
 
     /**

@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.workflow.account;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
@@ -22,6 +23,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToke
  */
 @Service
 @Primary
+@InstanceTransactional
 public class AccountWorkflowManager implements IAccountTransitions {
 
     /**

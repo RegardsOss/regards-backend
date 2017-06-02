@@ -47,6 +47,12 @@ public class MetaData implements IIdentifiable<Long> {
         super();
     }
 
+    public MetaData(String key, String value, UserVisibility visibility) {
+        this.key=key;
+        this.value=value;
+        this.visibility=visibility;
+    }
+
     @Override
     public Long getId() {
         return id;
