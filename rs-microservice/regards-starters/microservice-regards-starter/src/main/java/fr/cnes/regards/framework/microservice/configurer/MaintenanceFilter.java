@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.google.common.net.HttpHeaders;
@@ -59,7 +58,7 @@ public class MaintenanceFilter extends OncePerRequestFilter {
                 LOGGER.error(message);
                 LOGGER.error(REQUEST_IGNORED, pRequest.getMethod(), pRequest.getRequestURI(),
                              pRequest.getHeader(HttpHeaders.X_FORWARDED_FOR));
-                pResponse.sendError(HttpStatus.SERVICE_UNAVAILABLE.value(), message);
+                pResponse.sendError(515, message);
             } else {
                 pFilterChain.doFilter(pRequest, pResponse);
             }

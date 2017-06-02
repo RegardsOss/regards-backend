@@ -19,14 +19,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     /**
-     * serialVersionUID field.
-     *
-     * @author CS
-     * @since 1.0-SNAPSHOT
-     */
-    private static final long serialVersionUID = 1L;
-
-    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SecureRuntimeTenantResolver.class);
@@ -39,16 +31,9 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
      */
     private final String instanceTenantName;
 
-    /**
-     *
-     * Constructeur
-     *
-     * @param pInstanceTenantName
-     * @since 1.0-SNAPSHOT
-     */
-    public SecureRuntimeTenantResolver(final String pInstanceTenantName) {
+    public SecureRuntimeTenantResolver(String pInstanceTenantName) {
         super();
-        instanceTenantName = pInstanceTenantName;
+        this.instanceTenantName = pInstanceTenantName;
     }
 
     @Override
@@ -73,8 +58,9 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
         tenantHolder.set(pTenant);
     }
 
+    @Override
     public void clearTenant() {
-        LOGGER.info("Clearing tenant");
+        LOGGER.debug("Clearing tenant");
         tenantHolder.remove();
     }
 
