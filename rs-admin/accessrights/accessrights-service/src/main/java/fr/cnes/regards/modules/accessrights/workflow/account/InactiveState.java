@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.workflow.account;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -21,6 +22,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * @author Xavier-Alexandre Brochard
  */
 @Component
+@InstanceTransactional
 public class InactiveState extends AbstractDeletableState {
 
     /**

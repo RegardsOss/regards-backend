@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.workflow.account;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriUtils;
 
+import com.google.common.base.Throwables;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -124,10 +128,17 @@ public class PendingState extends AbstractDeletableState {
         } else {
             linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
         }
-        final String confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(), token.getOriginUrl(),
-                                                     token.getToken(), pAccount.getEmail());
+        final String confirmationUrl;
+        try {
+            confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(), UriUtils.encode(token.getOriginUrl(),
+                                                                                             StandardCharsets.UTF_8.name()),
+                                    token.getToken(), pAccount.getEmail());
+            data.put("confirmationUrl", confirmationUrl);
+        } catch (UnsupportedEncodingException e) {
+            LOG.error("This system does not support UTF-8",e);
+            throw new RuntimeException(e);//NOSONAR: this should only be a development error, if it happens the system has to explode
+        }
 
-        data.put("confirmationUrl", confirmationUrl);
 
         SimpleMailMessage email;
         try {
