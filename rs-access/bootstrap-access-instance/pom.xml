@@ -60,7 +60,7 @@
 		</profile>
 		<profile>
 			<id>docker</id>
-			<properties> 
+			<properties>
 				<!-- Default properties -->
 				<filter.name>docker</filter.name>
 			</properties>
