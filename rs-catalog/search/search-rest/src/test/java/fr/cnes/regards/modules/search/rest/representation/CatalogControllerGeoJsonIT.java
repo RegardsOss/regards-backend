@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.search.rest.representation;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsITWithoutMockedCots;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -43,12 +45,14 @@ import fr.cnes.regards.modules.search.rest.CatalogController;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 
 /**
- * Integration test for {@link CatalogController}
+ * Integration test for {@link CatalogController} with Representation plugin
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(locations = { "classpath:dao.properties", "classpath:test-representation.properties" })
-public class CatalogControllerGeoJsonIT extends AbstractRegardsITWithoutMockedCots {
+@Transactional
+public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT{
 
     /**
      * Class logger

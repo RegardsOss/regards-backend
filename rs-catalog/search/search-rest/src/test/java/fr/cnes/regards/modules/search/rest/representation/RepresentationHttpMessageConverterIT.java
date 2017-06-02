@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -88,12 +90,27 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         esRepository.save(DEFAULT_TENANT, COLLECTION);
     }
 
+    @After
+    public void cleanUp() {
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        PluginConfiguration geoJson= null;
+        try {
+            geoJson = pluginService.getPluginConfigurationByLabel(RepresentationConfiguration.DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
+            pluginService.deletePluginConfiguration(geoJson.getId());
+        } catch (EntityNotFoundException e) {
+            e.printStackTrace();
+        } catch (ModuleException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Requirement("REGARDS_DSL_DAM_ARC_210")
     @Requirement("REGARDS_DSL_DAM_ARC_230")
     @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
+    @Test
     public void test() throws ModuleException, InterruptedException {
         // lets get a collection as geo+json
-        acceptToUse = "application/geo+json";
+        acceptToUse = "application/geo+json; charset=UTF-8";
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(acceptToUse));
@@ -112,6 +129,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
                                                          MarkdownRepresentation.class.getPackage().getName()));
 
         PluginConfiguration markdownConf = new PluginConfiguration(markdownMeta, "dummy reprensentation plugin conf");
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         markdownConf = pluginService.savePluginConfiguration(markdownConf);
         pluginConfToDelete.add(markdownConf.getId());
         // lets build the byte array we should have :
@@ -126,6 +144,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         // now that we have seen that the creation of the plugin was taken into account lets desactivate it and take the
         // exception!
         markdownConf.setIsActive(false);
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.updatePluginConfiguration(markdownConf);
         Thread.sleep(5000);
         expectations.clear();
@@ -133,6 +152,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         performDefaultGet("/collections/{urn}", expectations, "Error retrieving a collection", COLLECTION.getIpId());
         // now lets reactivate it
         markdownConf.setIsActive(true);
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.updatePluginConfiguration(markdownConf);
         Thread.sleep(5000);
         expectations.clear();
@@ -141,6 +161,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         expectations.add(MockMvcResultMatchers.content().bytes(expectedContent));
         performDefaultGet("/collections/{urn}", expectations, "Error retrieving a collection", COLLECTION.getIpId());
         // now lets delete it
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.deletePluginConfiguration(markdownConf.getId());
         Thread.sleep(5000);
         expectations.clear();

@@ -34,7 +34,7 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
 public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ implements BeanFactoryAware,
         ApplicationListener<ApplicationReadyEvent> {
 
-    private static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
+    protected static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
 
     private static final Logger LOG = LoggerFactory.getLogger(RepresentationConfiguration.class);
 
