@@ -159,7 +159,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceNotActive() {
-        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.COEFF + "=-1");
         sj.add(SampleServicePlugin.SUFFIXE + "=b");
@@ -171,8 +170,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceActive() {
-        List<PluginConfiguration> confs=pluginService.getAllPluginConfigurations();
-        Assert.assertEquals(3, confs.size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.ACTIVE + "=true");
         sj.add(SampleServicePlugin.COEFF + "=100");
@@ -185,7 +182,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceBadDynamicParameterValue() {
-        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.ACTIVE + "=true");
         sj.add(SampleServicePlugin.COEFF + "=0");
