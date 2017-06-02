@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +71,12 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Map discriminator value to its corresponding explicit type
      */
-    protected final Map<String, Class<?>> discriminatorToSubtype = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Class<?>> discriminatorToSubtype = new ConcurrentHashMap<>();
 
     /**
      * Map explicit type to its corresponding discriminator value
      */
-    protected final Map<Class<?>, String> subtypeToDiscriminator = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<Class<?>, String> subtypeToDiscriminator = new ConcurrentHashMap<>();
 
     /**
      * Whether to refresh mapping after factory creation at runtime

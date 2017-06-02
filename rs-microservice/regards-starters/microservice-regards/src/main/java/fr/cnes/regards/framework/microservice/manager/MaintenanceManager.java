@@ -5,8 +5,8 @@ package fr.cnes.regards.framework.microservice.manager;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  *
@@ -21,13 +21,13 @@ public final class MaintenanceManager {
     /**
      * map linking each tenant with his mode
      */
-    private static Map<String, MaintenanceInfo> maintenanceMap = new ConcurrentHashMap<>();
+    private static ConcurrentMap<String, MaintenanceInfo> maintenanceMap = new ConcurrentHashMap<>();
 
     private MaintenanceManager() {
         // override of public because it's an utility class
     }
 
-    public static Map<String, MaintenanceInfo> getMaintenanceMap() {
+    public static ConcurrentMap<String, MaintenanceInfo> getMaintenanceMap() {
         return maintenanceMap;
     }
 
