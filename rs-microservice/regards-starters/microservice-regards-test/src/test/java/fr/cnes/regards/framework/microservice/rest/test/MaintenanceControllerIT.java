@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import fr.cnes.regards.framework.microservice.configurer.MaintenanceFilter;
 import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -51,8 +52,8 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
     public void setMaintenanceTest() {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null, expectations, ERROR_MSG, TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, TENANT);
     }
 
     @Test
@@ -79,9 +80,9 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".active",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".active",
                                                         Matchers.hasToString("true")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".lastUpdate",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".lastUpdate",
                                                         Matchers.notNullValue()));
         performDefaultGet(MaintenanceController.MAINTENANCE_URL, expectations, ERROR_MSG);
 
@@ -97,16 +98,16 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // Set the maintenance mode is for the tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null, expectations, ERROR_MSG, DEFAULT_TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is in maintenance for the default tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".active",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".active",
                                                         Matchers.hasToString("true")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".lastUpdate",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".lastUpdate",
                                                         Matchers.notNullValue()));
         performDefaultGet(MaintenanceController.MAINTENANCE_URL, expectations, ERROR_MSG);
 
@@ -117,7 +118,7 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
 
         // try a POST request : the service is unavailable
         expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isServiceUnavailable());
+        expectations.add(MockMvcResultMatchers.status().is(MaintenanceFilter.MAINTENANCE_HTTP_STATUS));
         performDefaultPost(TestController.MAINTENANCE_TEST_URL, null, expectations, ERROR_MSG);
 
         resetMaintenanceMode();
@@ -130,16 +131,16 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // Set the maintenance mode is for the tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null, expectations, ERROR_MSG, DEFAULT_TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is in maintenance for the default tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".active",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".active",
                                                         Matchers.hasToString("true")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".lastUpdate",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".lastUpdate",
                                                         Matchers.notNullValue()));
         performDefaultGet(MaintenanceController.MAINTENANCE_URL, expectations, ERROR_MSG);
 
@@ -153,9 +154,9 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".active",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".active",
                                                         Matchers.hasToString("false")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".lastUpdate",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".lastUpdate",
                                                         Matchers.notNullValue()));
         performDefaultGet(MaintenanceController.MAINTENANCE_URL, expectations, ERROR_MSG);
 
@@ -172,16 +173,16 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // Set the maintenance mode is for the default tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null, expectations, ERROR_MSG, DEFAULT_TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is in maintenance for the default tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".active",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".active",
                                                         Matchers.hasToString("true")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT+".lastUpdate",
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + "." + DEFAULT_TENANT + ".lastUpdate",
                                                         Matchers.notNullValue()));
         performDefaultGet(MaintenanceController.MAINTENANCE_URL, expectations, ERROR_MSG);
 

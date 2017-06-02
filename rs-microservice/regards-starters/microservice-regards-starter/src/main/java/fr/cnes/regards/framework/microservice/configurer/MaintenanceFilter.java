@@ -35,6 +35,8 @@ public class MaintenanceFilter extends OncePerRequestFilter {
 
     private static Logger LOGGER = LoggerFactory.getLogger(MaintenanceFilter.class);
 
+    public static int MAINTENANCE_HTTP_STATUS = 515;
+
     private final IRuntimeTenantResolver resolver;
 
     public MaintenanceFilter(final IRuntimeTenantResolver pResolver) {
@@ -58,7 +60,7 @@ public class MaintenanceFilter extends OncePerRequestFilter {
                 LOGGER.error(message);
                 LOGGER.error(REQUEST_IGNORED, pRequest.getMethod(), pRequest.getRequestURI(),
                              pRequest.getHeader(HttpHeaders.X_FORWARDED_FOR));
-                pResponse.sendError(515, message);
+                pResponse.sendError(MAINTENANCE_HTTP_STATUS, message);
             } else {
                 pFilterChain.doFilter(pRequest, pResponse);
             }
