@@ -149,7 +149,7 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
@@ -174,7 +174,7 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
@@ -199,7 +199,7 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
@@ -224,7 +224,7 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
