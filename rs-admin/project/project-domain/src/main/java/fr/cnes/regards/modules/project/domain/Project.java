@@ -74,7 +74,7 @@ public class Project implements IIdentifiable<Long> {
      */
     @Column(name = "accessible")
     @NotNull
-    private final Boolean isAccessible;
+    private Boolean isAccessible = false;
 
     /**
      * Is the project deleted ?
