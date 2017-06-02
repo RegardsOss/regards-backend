@@ -45,7 +45,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
 
     public static final String REQUEST_PLUGIN_CONFIGURATION = "/{pluginConfId}";
 
-    public static final String REQUEST_PLUGIN_DEFINITION = "/plugin/{pluginId}";
+    public static final String REQUEST_PLUGIN_DEFINITION = "/plugins/{pluginId}/configurations";
 
     /**
      * Business service to manage {@link UIPluginConfiguration} entities
