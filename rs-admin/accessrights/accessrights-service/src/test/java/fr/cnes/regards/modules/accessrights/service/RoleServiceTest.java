@@ -423,7 +423,7 @@ public class RoleServiceTest {
     /**
      * Check that the system allows to delete a role in a regular case.
      *
-     * @throws EntityOperationForbiddenException
+     * @throws EntityException
      *             when the updated role is native. Native roles should not be modified.
      */
     @Test
