@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.models.domain.Model;
-import fr.cnes.regards.modules.search.domain.IService;
+import fr.cnes.regards.modules.search.plugin.IService;
 
 /**
  * @author Sylvain Vissiere-Guerinet

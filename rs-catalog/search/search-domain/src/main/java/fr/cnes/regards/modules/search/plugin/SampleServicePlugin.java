@@ -30,7 +30,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", name = SUFFIXE)
+    @PluginParameter(description = "string parameter", name = SUFFIXE, defaultValue = "Hello", optional = true)
     private String suffix;
 
     /**
@@ -42,7 +42,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     /**
      * A {@link Boolean} parameter
      */
-    @PluginParameter(description = "boolean parameter", name = ACTIVE)
+    @PluginParameter(description = "boolean parameter", name = ACTIVE, defaultValue = "false")
     private Boolean isActive;
 
     @Override
