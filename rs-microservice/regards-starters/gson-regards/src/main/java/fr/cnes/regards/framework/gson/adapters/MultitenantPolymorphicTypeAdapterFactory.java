@@ -10,9 +10,8 @@
 package fr.cnes.regards.framework.gson.adapters;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,6 @@ import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -71,19 +69,17 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Map discriminator value to its corresponding explicit type
      */
-    protected final Map<String, Map<String, Class<?>>> discriminatorToSubtype = Collections
-            .synchronizedMap(new HashMap<>());
+    protected final Map<String, Map<String, Class<?>>> discriminatorToSubtype = new ConcurrentHashMap<>();
 
     /**
      * Map explicit type to its corresponding discriminator value
      */
-    protected final Map<String, Map<Class<?>, String>> subtypeToDiscriminator = Collections
-            .synchronizedMap(new HashMap<>());
+    protected final Map<String, Map<Class<?>, String>> subtypeToDiscriminator = new ConcurrentHashMap<>();
 
     /**
      * Whether to refresh mapping after factory creation at runtime
      */
-    protected Map<String, Boolean> refreshMapping = Collections.synchronizedMap(new HashMap<>());
+    protected Map<String, Boolean> refreshMapping = new ConcurrentHashMap<>();
 
     /**
      * Resolve thread tenant at runtime
@@ -93,14 +89,12 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     /**
      * Map discriminator value to its corresponding type adapter often called delegate
      */
-    protected final Map<String, Map<String, TypeAdapter<?>>> discriminatorToDelegate = Collections
-            .synchronizedMap(new HashMap<>());
+    protected final Map<String, Map<String, TypeAdapter<?>>> discriminatorToDelegate = new ConcurrentHashMap<>();
 
     /**
      * Map explicit type to its corresponding type adapter often called delegate
      */
-    protected final Map<String, Map<Class<?>, TypeAdapter<?>>> subtypeToDelegate = Collections
-            .synchronizedMap(new HashMap<>());
+    protected final Map<String, Map<Class<?>, TypeAdapter<?>>> subtypeToDelegate = new ConcurrentHashMap<>();
 
     /**
      * Constructor
@@ -258,7 +252,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     protected Map<String, Class<?>> getTenantDiscriminatorToSubtype(String pTenant) {
         Map<String, Class<?>> map = discriminatorToSubtype.get(pTenant);
         if (map == null) {
-            map = Collections.synchronizedMap(new HashMap<>());
+            map = new ConcurrentHashMap<>();
             discriminatorToSubtype.put(pTenant, map);
         }
         return map;
@@ -267,7 +261,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     protected Map<Class<?>, String> getTenantSubtypeToDiscriminator(String pTenant) {
         Map<Class<?>, String> map = subtypeToDiscriminator.get(pTenant);
         if (map == null) {
-            map = Collections.synchronizedMap(new HashMap<>());
+            map = new ConcurrentHashMap<>();
             subtypeToDiscriminator.put(pTenant, map);
         }
         return map;
@@ -289,15 +283,11 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         pSubtypeToDelegate.clear();
 
         Map<String, Class<?>> tenantDiscriminatorToSubtype = getTenantDiscriminatorToSubtype(pTenant);
-        /**
-         * Register TypeAdapter delegation mapping from discriminator and type
-         */
-        synchronized (tenantDiscriminatorToSubtype) {
-            for (Map.Entry<String, Class<?>> mapping : tenantDiscriminatorToSubtype.entrySet()) {
-                final TypeAdapter<?> delegate = pGson.getDelegateAdapter(this, TypeToken.get(mapping.getValue()));
-                pDiscriminatorToDelegate.put(mapping.getKey(), delegate);
-                pSubtypeToDelegate.put(mapping.getValue(), delegate);
-            }
+        // Register TypeAdapter delegation mapping from discriminator and type
+        for (Map.Entry<String, Class<?>> mapping : tenantDiscriminatorToSubtype.entrySet()) {
+            final TypeAdapter<?> delegate = pGson.getDelegateAdapter(this, TypeToken.get(mapping.getValue()));
+            pDiscriminatorToDelegate.put(mapping.getKey(), delegate);
+            pSubtypeToDelegate.put(mapping.getValue(), delegate);
         }
     }
 
@@ -307,11 +297,9 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             doTenantMapping(pGson, getTenantDiscriminatorToDelegate(pDiscriminatorToDelegate, pTenant),
                             getTenantSubtypeToDelegate(pSubtypeToDelegate, pTenant), pTenant);
         } else {
-            synchronized (discriminatorToSubtype) {
-                for (String tenant : discriminatorToSubtype.keySet()) {
-                    doTenantMapping(pGson, getTenantDiscriminatorToDelegate(pDiscriminatorToDelegate, tenant),
-                                    getTenantSubtypeToDelegate(pSubtypeToDelegate, tenant), tenant);
-                }
+            for (String tenant : discriminatorToSubtype.keySet()) {
+                doTenantMapping(pGson, getTenantDiscriminatorToDelegate(pDiscriminatorToDelegate, tenant),
+                                getTenantSubtypeToDelegate(pSubtypeToDelegate, tenant), tenant);
             }
         }
     }
@@ -320,7 +308,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             Map<String, Map<String, TypeAdapter<?>>> pDiscriminatorToDelegate, String pTenant) {
         Map<String, TypeAdapter<?>> map = pDiscriminatorToDelegate.get(pTenant);
         if (map == null) {
-            map = Collections.synchronizedMap(new HashMap<>());
+            map = new ConcurrentHashMap<>();
             pDiscriminatorToDelegate.put(pTenant, map);
         }
         return map;
@@ -330,7 +318,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             Map<String, Map<Class<?>, TypeAdapter<?>>> pSubtypeToDelegate, String pTenant) {
         Map<Class<?>, TypeAdapter<?>> map = pSubtypeToDelegate.get(pTenant);
         if (map == null) {
-            map = Collections.synchronizedMap(new HashMap<>());
+            map = new ConcurrentHashMap<>();
             pSubtypeToDelegate.put(pTenant, map);
         }
         return map;
