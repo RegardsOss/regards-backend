@@ -13,7 +13,7 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.search.domain.IService;
+import fr.cnes.regards.modules.search.plugin.IService;
 
 /**
  *

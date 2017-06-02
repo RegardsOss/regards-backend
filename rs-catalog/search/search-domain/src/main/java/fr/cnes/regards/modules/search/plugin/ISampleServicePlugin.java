@@ -4,7 +4,6 @@
 package fr.cnes.regards.modules.search.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.search.domain.IService;
 
 /**
  * ISampleServicePlugin

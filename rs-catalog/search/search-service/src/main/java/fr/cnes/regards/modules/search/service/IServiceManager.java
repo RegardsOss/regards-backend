@@ -11,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.search.domain.IService;
 import fr.cnes.regards.modules.search.domain.ServiceScope;
+import fr.cnes.regards.modules.search.plugin.IService;
 
 /**
  * @author Sylvain Vissiere-Guerinet

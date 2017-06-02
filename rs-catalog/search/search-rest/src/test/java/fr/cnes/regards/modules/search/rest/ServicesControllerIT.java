@@ -31,8 +31,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.search.domain.IService;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
+import fr.cnes.regards.modules.search.plugin.IService;
 import fr.cnes.regards.modules.search.plugin.SampleServicePlugin;
 import fr.cnes.regards.modules.search.rest.plugin.TestService;
 import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
@@ -159,7 +159,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceNotActive() {
-        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.COEFF + "=-1");
         sj.add(SampleServicePlugin.SUFFIXE + "=b");
@@ -171,8 +170,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceActive() {
-        List<PluginConfiguration> confs=pluginService.getAllPluginConfigurations();
-        Assert.assertEquals(3, confs.size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.ACTIVE + "=true");
         sj.add(SampleServicePlugin.COEFF + "=100");
@@ -185,7 +182,6 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testSampleServiceBadDynamicParameterValue() {
-        Assert.assertEquals(3, pluginService.getAllPluginConfigurations().size());
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add(SampleServicePlugin.ACTIVE + "=true");
         sj.add(SampleServicePlugin.COEFF + "=0");

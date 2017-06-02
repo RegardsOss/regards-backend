@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.domain;
+package fr.cnes.regards.modules.search.plugin;
 
 import org.springframework.http.ResponseEntity;
 
