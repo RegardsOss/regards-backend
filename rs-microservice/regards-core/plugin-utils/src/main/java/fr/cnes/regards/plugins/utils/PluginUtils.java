@@ -18,6 +18,7 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -121,7 +122,18 @@ public final class PluginUtils {
     }
 
     /**
-     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameters} if any.
+     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameter} if any.
+     *
+     * @param pPluginClass a class that must contains a {@link Plugin} annotation
+     * @param pPrefixes packages to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @return the {@link PluginMetaData} create
+     */
+    public static PluginMetaData createPluginMetaData(final Class<?> pPluginClass, final String... pPrefixes) {
+        return createPluginMetaData(pPluginClass, Lists.newArrayList(pPrefixes));
+    }
+
+    /**
+     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameter} if any.
      *
      * @param pPluginClass a class that must contains a {@link Plugin} annotation
      * @param pPrefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
