@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
@@ -30,6 +31,7 @@ import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
@@ -41,6 +43,7 @@ import fr.cnes.regards.modules.search.domain.Terms;
 
 /**
  * Define sample data for tests.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @SuppressWarnings("unchecked")
@@ -253,6 +256,12 @@ public class SampleDataUtils {
      * A dummy page of dataobjects
      */
     public static final Page<DataObject> PAGE_DATAOBJECT = new PageImpl<>(Lists.newArrayList(DATAOBJECT));
+
+    /**
+     * A dummy page of dataobjects
+     */
+    public static final FacetPage<DataObject> FACET_PAGE_DATAOBJECT = new FacetPage<>(Lists.newArrayList(DATAOBJECT),
+            Sets.newHashSet());
 
     /**
      * A dummy page of dataobjects

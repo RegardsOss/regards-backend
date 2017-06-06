@@ -3,12 +3,12 @@ package fr.cnes.regards.modules.search.service;
 import java.util.Map;
 import java.util.StringJoiner;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -62,17 +62,16 @@ public class CatalogSearchService implements ICatalogSearchService {
     /*
      * (non-Javadoc)
      *
-     * @see fr.cnes.regards.modules.search.service.ICatalogSearchService#search(java.lang.String,
-     * org.elasticsearch.action.search.SearchType, java.lang.Class, java.util.List,
+     * @see fr.cnes.regards.modules.search.service.ICatalogSearchService#search(java.lang.String, org.elasticsearch.action.search.SearchType, java.lang.Class, java.util.List,
      * org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <S, R extends IIndexable> Page<R> search(Map<String,String> pQ, SearchKey<S, R> pSearchKey,
-            Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
+    public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> pOpensearchParams,
+            SearchKey<S, R> pSearchKey, Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
         try {
             // Build criterion from query
-            ICriterion criterion = openSearchService.parse(pQ);
+            ICriterion criterion = openSearchService.parse(pOpensearchParams);
 
             // Apply security filter
             criterion = accessRightFilter.addUserGroups(criterion);
@@ -85,8 +84,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
         } catch (OpenSearchParseException e) {
-            StringJoiner sj=new StringJoiner("&");
-            pQ.forEach((key,value)->sj.add(key+"="+value));
+            StringJoiner sj = new StringJoiner("&");
+            pOpensearchParams.forEach((key, value) -> sj.add(key + "=" + value));
             throw new SearchException(sj.toString(), e);
         }
     }

@@ -198,7 +198,8 @@ public class CatalogController {
             @RequestParam final Map<String, String> pOpensearchParams, final Pageable pPageable)
             throws SearchException {
         final SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(runtimeTenantResolver.getTenant());
-        final Page<AbstractEntity> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
+        final FacetPage<AbstractEntity> result = catalogSearchService.search(pOpensearchParams, searchKey, null,
+                                                                             pPageable);
         return new ResponseEntity<>(abstractEntityResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -235,8 +236,8 @@ public class CatalogController {
             @RequestParam(value = "facets", required = false) final Map<String, FacetType> pFacets,
             final Pageable pPageable) throws SearchException {
         final SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(runtimeTenantResolver.getTenant());
-        final FacetPage<AbstractEntity> result = (FacetPage<AbstractEntity>) catalogSearchService
-                .search(pOpensearchParams, searchKey, pFacets, pPageable);
+        final FacetPage<AbstractEntity> result = catalogSearchService.search(pOpensearchParams, searchKey, pFacets,
+                                                                             pPageable);
         return new ResponseEntity<>(abstractEntityResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -279,7 +280,7 @@ public class CatalogController {
             final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
         final SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                               EntityType.COLLECTION);
-        final Page<Collection> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
+        final FacetPage<Collection> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
@@ -329,7 +330,7 @@ public class CatalogController {
             throws SearchException {
         final SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                            EntityType.DATASET);
-        final Page<Dataset> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
+        final FacetPage<Dataset> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
         return new ResponseEntity<>(pagedDatasetResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -384,8 +385,8 @@ public class CatalogController {
             final Pageable pPageable) throws SearchException {
         final SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                               EntityType.DATA);
-        final FacetPage<DataObject> result = (FacetPage<DataObject>) catalogSearchService
-                .search(pOpensearchParams, searchKey, pFacets, pPageable);
+        final FacetPage<DataObject> result = catalogSearchService.search(pOpensearchParams, searchKey, pFacets,
+                                                                         pPageable);
         return new ResponseEntity<>(dataobjectResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -416,7 +417,8 @@ public class CatalogController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.",
+    @ResourceAccess(
+            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the associated datasets.",
             role = DefaultRole.PUBLIC)
     @ResponseBody
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
@@ -426,7 +428,7 @@ public class CatalogController {
         final JoinEntitySearchKey<DataObject, Dataset> searchKey = Searches
                 .onSingleEntityReturningJoinEntity(runtimeTenantResolver.getTenant(), EntityType.DATA,
                                                    EntityType.DATASET);
-        final Page<Dataset> result = catalogSearchService.search(pOpensearchParams, searchKey, pFacets, pPageable);
+        final FacetPage<Dataset> result = catalogSearchService.search(pOpensearchParams, searchKey, pFacets, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
@@ -481,7 +483,7 @@ public class CatalogController {
             final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
         final SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
                                                                             EntityType.DOCUMENT);
-        final Page<Document> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
+        final FacetPage<Document> result = catalogSearchService.search(pOpensearchParams, searchKey, null, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 

@@ -15,6 +15,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.web.util.UriComponents;
 
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
@@ -24,10 +25,11 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
  * @param <T> The type wrapped by the resources
  * @author Xavier-Alexandre Brochard
  */
-public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<T> {
+public class FacettedPagedResourcesAssembler<T extends IIndexable> extends PagedResourcesAssembler<T> {
 
     /**
      * Constructor
+     *
      * @param pResolver
      * @param pBaseUri
      */
@@ -37,9 +39,8 @@ public class FacettedPagedResourcesAssembler<T> extends PagedResourcesAssembler<
     }
 
     /**
-     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a {@link PageMetadata} instance and
-     * wrapping the contained elements into {@link Resource} instances. Will add pagination links based on the given the
-     * self link.
+     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
+     * Will add pagination links based on the given the self link.
      *
      * @param pFacetPage must not be {@literal null}.
      * @return the facetted page of resources

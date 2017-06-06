@@ -67,17 +67,21 @@ public class AccessRightFilter implements IAccessRightFilter {
      * indexer.domain.criterion.ICriterion)
      */
     @Override
-    public ICriterion addUserGroups(ICriterion pCriterion) {
-        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ICriterion addUserGroups(final ICriterion pCriterion) {
+        final String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         FeignSecurityManager.asSystem();
         try {
             if (!projectUserClient.isAdmin(userEmail).getBody()) {
-                List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant());
+                final List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail,
+                                                                             runtimeTenantResolver.getTenant());
 
                 // Create a list with all group criterions plus the initial criterion
-                List<ICriterion> rootWithGroups = accessGroups.stream().map(GROUP_TO_CRITERION)
+                final List<ICriterion> rootWithGroups = accessGroups.stream().map(GROUP_TO_CRITERION)
                         .collect(Collectors.toList());
-                rootWithGroups.add(pCriterion);
+
+                if (pCriterion != null) {
+                    rootWithGroups.add(pCriterion);
+                }
                 // Build the final "and" criterion
                 return ICriterion.and(rootWithGroups);
             }

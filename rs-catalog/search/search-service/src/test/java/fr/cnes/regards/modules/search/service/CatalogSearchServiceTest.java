@@ -11,7 +11,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
@@ -23,6 +22,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -105,15 +105,15 @@ public class CatalogSearchServiceTest {
             throws SearchException, OpenSearchParseException, UnsupportedEncodingException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        Map<String,String> q=new HashMap<>();
-        q.put("q=",URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+        Map<String, String> q = new HashMap<>();
+        q.put("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
         Map<String, FacetType> facets = SampleDataUtils.FACETS;
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
         // Define expected values
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
-        Page<DataObject> expectedSearchResult = SampleDataUtils.PAGE_DATAOBJECT;
+        FacetPage<DataObject> expectedSearchResult = SampleDataUtils.FACET_PAGE_DATAOBJECT;
 
         // Mock dependencies
         Mockito.when(openSearchService.parse(q)).thenReturn(expectedCriterion);
@@ -143,15 +143,15 @@ public class CatalogSearchServiceTest {
     public void doSearch_withNoFacet() throws SearchException, OpenSearchParseException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        Map<String,String> q=new HashMap<>();
-        q.put("q=","whatever");
+        Map<String, String> q = new HashMap<>();
+        q.put("q=", "whatever");
         Map<String, FacetType> facets = new HashMap<>();
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
         // Define expected values
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
-        Page<DataObject> expectedSearchResult = SampleDataUtils.PAGE_DATAOBJECT;
+        FacetPage<DataObject> expectedSearchResult = SampleDataUtils.FACET_PAGE_DATAOBJECT;
 
         // Mock dependencies
         Mockito.when(openSearchService.parse(q)).thenReturn(expectedCriterion);
