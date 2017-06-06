@@ -91,7 +91,9 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr",
                                                       DefaultRole.INSTANCE_ADMIN.name());
 
-        final Project project = projectRepo.findOneByName(PROJECT_TEST);
+        Project project = projectRepo.findOneByName(PROJECT_TEST);
+        project.setLabel("project");
+        project=projectRepo.save(project);
         connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName", "newPassword", "newDriver",
                 "newUrl");
         projectConnRepo.save(connection);

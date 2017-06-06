@@ -158,7 +158,9 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isCreated());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performPost("/projects", instanceAdmintoken, new Project("description", "icon", true, "create-project"),
+        Project project=new Project("description", "icon", true, "create-project");
+                project.setLabel("create-project");
+        performPost("/projects", instanceAdmintoken, project,
                     expectations, "Error there must be project results");
     }
 

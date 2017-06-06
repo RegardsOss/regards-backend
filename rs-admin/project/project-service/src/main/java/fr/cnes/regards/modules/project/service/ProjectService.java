@@ -82,7 +82,10 @@ public class ProjectService implements IProjectService {
             if (projectRepository.findOneByName(tenant.getTenant()) == null) {
                 LOG.info(String.format("Creating new project %s from static properties configuration",
                                        tenant.getTenant()));
-                createProject(new Project("", "", true, tenant.getTenant()));
+                Project project=new Project("", "", true, tenant.getTenant());
+                project.setLabel(tenant.getTenant());
+                project.setAccessible(true);
+                createProject(project);
             }
         }
     }
