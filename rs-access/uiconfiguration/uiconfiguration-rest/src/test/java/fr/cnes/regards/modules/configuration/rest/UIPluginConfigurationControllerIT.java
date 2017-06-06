@@ -197,7 +197,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
                 .value(Matchers.equalTo(conf.getLinkedToAllEntities().booleanValue())));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".conf")
                 .value(Matchers.equalTo(conf.getConf())));
-        performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT, conf, expectations,
+        performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf, expectations,
                            "Error getting all plugins");
 
     }
