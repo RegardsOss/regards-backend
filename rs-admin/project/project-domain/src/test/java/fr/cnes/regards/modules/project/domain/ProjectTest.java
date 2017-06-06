@@ -73,6 +73,7 @@ public class ProjectTest {
     @Test
     public void testProject() {
         final Project project = new Project();
+        project.setLabel(project.getName());
 
         Assert.assertEquals(null, project.getId());
         Assert.assertNotEquals(null, project.getDescription());
@@ -87,58 +88,72 @@ public class ProjectTest {
     @Test
     public void testProjectName() {
         Project project = new Project(id, description, icon, ispublic, "invalid project");
+        project.setLabel(project.getName());
         Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid,project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid;project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid (project)");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid [project]");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid [project]");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid=project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid&project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid\"project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "invalid/project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertNotEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "valid-project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "valid_project");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "validproject0");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertEquals(0, constraintViolations.size());
 
         project = new Project(id, description, icon, ispublic, "validProject");
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertEquals(0, constraintViolations.size());
     }
@@ -149,6 +164,7 @@ public class ProjectTest {
     @Test
     public void testProjectWithId() {
         Project project = new Project(id, description, icon, ispublic, name);
+        project.setLabel(project.getName());
 
         Assert.assertEquals(id, project.getId());
         Assert.assertEquals(description, project.getDescription());
@@ -161,11 +177,13 @@ public class ProjectTest {
 
         // Check one constraint violation
         project = new Project(id, null, icon, ispublic, name);
+        project.setLabel(project.getName());
         constraintViolations = validator.validate(project);
         Assert.assertEquals(1, constraintViolations.size());
 
         // Check two constraint violation
         project = new Project(id, null, icon, ispublic, null);
+        project.setLabel("jfkf");
         constraintViolations = validator.validate(project);
         Assert.assertEquals(2, constraintViolations.size());
     }
@@ -176,7 +194,7 @@ public class ProjectTest {
     @Test
     public void testProjectWithoutId() {
         Project project = new Project(description, icon, ispublic, name);
-
+        project.setLabel(project.getName());
         Assert.assertEquals(description, project.getDescription());
         Assert.assertEquals(icon, project.getIcon());
         Assert.assertEquals(ispublic, project.isPublic());
@@ -187,11 +205,13 @@ public class ProjectTest {
 
         // Check one constraint violation
         project = new Project(id, description, icon, ispublic, null);
+        project.setLabel("jfkf");
         constraintViolations = validator.validate(project);
         Assert.assertEquals(1, constraintViolations.size());
 
         // Check two constraint violation
         project = new Project(id, null, icon, ispublic, null);
+        project.setLabel("jfkf");
         constraintViolations = validator.validate(project);
         Assert.assertEquals(2, constraintViolations.size());
     }

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -53,8 +54,12 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Autowired
     private FeignSecurityManager feignSecurityManager;
 
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Before
     public void init() {
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectUsersClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();
