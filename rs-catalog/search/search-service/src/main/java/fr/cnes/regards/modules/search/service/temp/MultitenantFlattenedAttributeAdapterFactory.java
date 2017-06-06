@@ -85,6 +85,7 @@ public class MultitenantFlattenedAttributeAdapterFactory
     @PostConstruct
     public void init() {
         registerSubtype("project1", ObjectAttribute.class, "FragmentDataobject");
+        registerSubtype("project1", StringAttribute.class, "test");
         registerSubtype("project1", StringAttribute.class, "Name", "FragmentDataobject");
     }
 
