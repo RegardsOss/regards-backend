@@ -16,6 +16,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.executable.ValidateOnExecution;
 
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -50,10 +51,18 @@ public class Project implements IIdentifiable<Long> {
     private String name;
 
     /**
+     * Project Label
+     */
+    @NotBlank
+    @Column(length = 256)
+    private String label;
+
+    /**
      * Project description
      */
     @NotNull
-    @Column(name = "description", length = 200)
+    @Type(type = "text")
+    @Column
     private String description;
 
     /**
@@ -217,4 +226,19 @@ public class Project implements IIdentifiable<Long> {
         host = pHost;
     }
 
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public Boolean getAccessible() {
+        return isAccessible;
+    }
+
+    public void setAccessible(Boolean accessible) {
+        isAccessible = accessible;
+    }
 }

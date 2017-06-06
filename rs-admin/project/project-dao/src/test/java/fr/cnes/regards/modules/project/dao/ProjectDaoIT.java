@@ -111,11 +111,15 @@ public class ProjectDaoIT {
         projectConnectionRepository.deleteAll();
         projectRepository.deleteAll();
 
+        Project project1=new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_1);
+        project1.setLabel("project1");
+        Project project2=new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_2);
+        project2.setLabel("project2");
         // Create a new projects
         project = projectRepository
-                .save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_1));
+                .save(project1);
         projectRepository
-                .save(new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_2));
+                .save(project2);
 
         // Check results
         final Iterable<Project> projects = projectRepository.findAll();
