@@ -44,7 +44,6 @@ import fr.cnes.regards.framework.security.event.ResourceAccessEvent;
 import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -191,11 +190,11 @@ public class RoleService implements IRoleService {
         // Manage registered user
         final Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
         // Manage admin
-        final Role adminRole = createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
+        createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
         // Manage project admin
-        final Role adminProjectRole = createOrLoadDefaultRole(roleFactory.createProjectAdmin(), adminRole);
+        createOrLoadDefaultRole(roleFactory.createProjectAdmin(), null);
         // Manage instance admin
-        createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), adminProjectRole);
+        createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), null);
     }
 
     /**
@@ -362,11 +361,8 @@ public class RoleService implements IRoleService {
      * @param pNewOnes accesses to add
      * @throws EntityOperationForbiddenException if error occurs!
      */
-    private void addResourceAccesses(Role pRole, ResourcesAccess... pNewOnes) throws EntityOperationForbiddenException {
-
-        // Check if current user can add resources to specified role
-        canManageRole(pRole);
-        canAddResourceAccesses(pNewOnes);
+    private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
+            throws EntityOperationForbiddenException {
 
         if (pRole.isNative()) {
             // If native role, propagate added resources to all descendants to maintain consistency
@@ -378,94 +374,6 @@ public class RoleService implements IRoleService {
 
         // Publish changes
         publishResourceAccessEvent(pNewOnes);
-    }
-
-    /**
-     * Check authenticated user can manage target role resource accesses.
-     * @param pRole target role to manage
-     * @throws EntityOperationForbiddenException if operation forbidden
-     */
-    private void canManageRole(Role pRole) throws EntityOperationForbiddenException {
-
-        String securityRole = SecurityUtils.getActualRole();
-
-        if (securityRole == null) {
-            LOGGER.debug("No security role set. Internal call granted");
-            return;
-        }
-
-        // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
-                || RoleAuthority.isProjectAdminRole(securityRole)) {
-            LOGGER.debug("Priviledged call granted");
-            return;
-        }
-
-        Optional<Role> currentRole = roleRepository.findByName(securityRole);
-
-        // Compare with native role
-        Role refRole = pRole;
-        if (!pRole.isNative()) {
-            refRole = pRole.getParentRole();
-        }
-
-        // Check if target role is hierarchically inferior so current user can alter it
-        if (currentRole.isPresent() && isHierarchicallyInferior(refRole, currentRole.get())) {
-
-            LOGGER.debug("User with role {} can add resource accesses to role {}", currentRole.get().getName(),
-                         pRole.getName());
-
-        } else if (currentRole.isPresent()) {
-            String message = "A user can only add resources on role hierarchically inferior to its own.";
-            LOGGER.error(message);
-            throw new EntityOperationForbiddenException(message);
-        } else {
-            String message = String.format("Unknown role %s.", securityRole);
-            LOGGER.error(message);
-            throw new EntityOperationForbiddenException(message);
-        }
-
-    }
-
-    /**
-     * Check authenticated user can add specified resources.
-     * @param pNewOnes resources to add only if they are a subset of use ones.
-     * @throws EntityOperationForbiddenException
-     */
-    private void canAddResourceAccesses(ResourcesAccess... pNewOnes) throws EntityOperationForbiddenException {
-        String securityRole = SecurityUtils.getActualRole();
-
-        if (securityRole == null) {
-            LOGGER.debug("No security role set. Internal call granted");
-            return;
-        }
-
-        // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
-                || RoleAuthority.isProjectAdminRole(securityRole)) {
-            LOGGER.debug("Priviledged call granted");
-            return;
-        }
-
-        Optional<Role> currentRole = roleRepository.findOneByName(securityRole);
-
-        Set<ResourcesAccess> resourcesToAdd = new HashSet<>();
-        for (ResourcesAccess ra : pNewOnes) {
-            resourcesToAdd.add(ra);
-        }
-
-        // Check if current user has itself the resource accesses he wants to add
-        if (currentRole.isPresent() && currentRole.get().getPermissions().containsAll(resourcesToAdd)) {
-            LOGGER.debug("User with role {} can add specified resource accesses", currentRole.get().getName());
-        } else if (currentRole.isPresent()) {
-            String message = "A user can only add resources he has yet. One or more resources doesn't match this requirement.";
-            LOGGER.error(message);
-            throw new EntityOperationForbiddenException(message);
-        } else {
-            String message = String.format("Unknown role %s.", securityRole);
-            LOGGER.error(message);
-            throw new EntityOperationForbiddenException(message);
-        }
     }
 
     /**
@@ -627,9 +535,6 @@ public class RoleService implements IRoleService {
         }
 
         final Role role = roleOpt.get();
-
-        // Check if current user can remove resources to specified role
-        canManageRole(role);
 
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
