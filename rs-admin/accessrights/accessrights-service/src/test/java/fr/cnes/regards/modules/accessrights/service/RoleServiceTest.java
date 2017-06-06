@@ -477,8 +477,14 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to add resources accesses on a role.")
     public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityException {
         // Mock
+        final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
+        final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
+                                                                         RequestMethod.PATCH, DefaultRole.ADMIN);
+        resourcesAccesses.add(addedResourcesAccess);
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
+        // As ADMIN is the considered role of the caller, we have to add those resources to ADMIN so ADMIN can add those to the desired role
+        roleAdmin.setPermissions(resourcesAccesses);
 
         // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
@@ -502,11 +508,9 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         Mockito.when(roleRepository.save(rolePublic)).thenReturn(rolePublic);
+        // because we consider that ADMIN is the role of the caller, we have to be able to return it
+        Mockito.when(roleRepository.findByName(DefaultRole.ADMIN.name())).thenReturn(Optional.ofNullable(roleAdmin));
 
-        final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                RequestMethod.PATCH, DefaultRole.ADMIN);
-        resourcesAccesses.add(addedResourcesAccess);
 
         // Perform the update
         roleService.updateRoleResourcesAccess(PUBLIC_ID, resourcesAccesses);
@@ -532,12 +536,21 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210") // FIXME: change the requirement to PM003, ask to claire the naming
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityException {
-        final List<ResourcesAccess> initRAs = new ArrayList<>();
+        final Set<ResourcesAccess> initRAs = new HashSet<>();
         initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
                 DefaultRole.ADMIN));
 
+        final Set<ResourcesAccess> passedRAs = new HashSet<>();
+        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
+                                          DefaultRole.ADMIN));
+
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
+        // so lets add initRas to PUBLIC...
+        rolePublic.setPermissions(initRAs);
+        // ... and lets add to ADMIN the right that PUBLIC already has and the one we are adding
+        roleAdmin.setPermissions(initRAs);
+        roleAdmin.getPermissions().addAll(passedRAs);
         // mock the hierarchy done into init(PUBLIC <- REGISTERED USER <- ADMIN <- PROJECT ADMIN)
         Mockito.when(roleRepository.findByParentRoleName(rolePublic.getName())).thenAnswer(pInvocation -> {
             final Set<Role> sonsOfPublic = new HashSet<>();
@@ -557,10 +570,9 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
+        // because we consider that ADMIN is the role of the caller, we have to be able to return it
+        Mockito.when(roleRepository.findByName(DefaultRole.ADMIN.name())).thenReturn(Optional.ofNullable(roleAdmin));
 
-        final Set<ResourcesAccess> passedRAs = new HashSet<>();
-        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
-                DefaultRole.ADMIN));
 
         // Ensure new permission's attributes are different from the previous
 
