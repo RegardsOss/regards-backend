@@ -13,6 +13,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -38,6 +39,7 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
  * @author Xavier-Alexandre Brochard
  */
 @Component
+@InstanceTransactional
 public class LockedState extends AbstractDeletableState {
 
     /**

@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.modules.accessrights.dao.accountunlock.IAccountUnlockTokenRepository;
 
 /**
@@ -19,7 +19,7 @@ import fr.cnes.regards.modules.accessrights.dao.accountunlock.IAccountUnlockToke
  * @author Christophe Mertz
  */
 @Service
-@Transactional
+@InstanceTransactional
 public class AccountUnlockTokensPurgeTask {
 
     /**

@@ -19,7 +19,7 @@ import fr.cnes.regards.modules.metrics.domain.LogEventJpa;
 /**
  * This class defines the handler executed for each {@link LogEventJpa} send by each microservice through the
  * {@link RegardsAmqpAppender} used in logger.
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -28,9 +28,9 @@ public class LogEventHandler implements ILogEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogEvent.class);
 
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private ILogEventRepository logEventRepository;
+    private final ILogEventRepository logEventRepository;
 
     public LogEventHandler(IRuntimeTenantResolver runtimeTenantResolver, ILogEventRepository logEventRepository) {
         LOGGER.debug("Creation bean of type <LogEventHandler>");
@@ -38,6 +38,7 @@ public class LogEventHandler implements ILogEventHandler {
         this.logEventRepository = logEventRepository;
     }
 
+    @Override
     public void handle(TenantWrapper<LogEvent> pWrapper) {
         try {
             LogEvent logEvent = pWrapper.getContent();

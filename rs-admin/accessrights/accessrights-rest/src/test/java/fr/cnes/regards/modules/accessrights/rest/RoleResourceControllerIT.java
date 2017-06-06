@@ -124,9 +124,13 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Remove resource access
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().is(expectedStatus.value()));
-        performDefaultDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
-                             expectations, "Error retrieving resourcesAccess for user.", newRole.getName(),
-                             resourceToRemove.getId());
+        // Delete resource with PROJECT ADMIN
+        String projectAdminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING
+                + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, DEFAULT_USER_EMAIL,
+                                                DefaultRole.PROJECT_ADMIN.name());
+        performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                      projectAdminJwt, expectations, "Error retrieving resourcesAccess for user.", newRole.getName(),
+                      resourceToRemove.getId());
 
         // Check new role associated to expected one
         if (expected != null) {
@@ -164,9 +168,13 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Remove resource access
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isNoContent());
-        performDefaultDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
-                             expectations, "Error retrieving resourcesAccess for user.", newRole.getName(),
-                             resourceToRemove.getId());
+        // Delete resource with PROJECT ADMIN
+        String projectAdminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING
+                + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, DEFAULT_USER_EMAIL,
+                                                DefaultRole.PROJECT_ADMIN.name());
+        performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                      projectAdminJwt, expectations, "Error retrieving resourcesAccess for user.", newRole.getName(),
+                      resourceToRemove.getId());
 
         // Check new role associated to REGISTERED USER instead of ADMIN
         Assert.assertTrue(DefaultRole.REGISTERED_USER.name().equals(newRole.getParentRole().getName()));
@@ -174,8 +182,11 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Add resource to admin group
         expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(RoleResourceController.TYPE_MAPPING, resourceToRemove, expectations,
-                           "Access should be added to ADMIN role", newRole.getName());
+        // Add resource with ADMIN
+        String adminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING, RequestMethod.POST, DEFAULT_USER_EMAIL,
+                                         DefaultRole.ADMIN.name());
+        performPost(RoleResourceController.TYPE_MAPPING, adminJwt, resourceToRemove, expectations,
+                    "Access should be added to ADMIN role", newRole.getName());
 
         // Check new role associated to REGISTERED USER instead of ADMIN
         Assert.assertTrue(DefaultRole.ADMIN.name().equals(newRole.getParentRole().getName()));
@@ -201,9 +212,13 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Remove resource access
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isNoContent());
-        performDefaultDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
-                             expectations, "Error retrieving resourcesAccess for user.", adminRole.getName(),
-                             resource.getId());
+        // Delete resource with PROJECT ADMIN
+        String projectAdminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING
+                + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, DEFAULT_USER_EMAIL,
+                                                DefaultRole.PROJECT_ADMIN.name());
+        performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                      projectAdminJwt, expectations, "Error retrieving resourcesAccess for user.", adminRole.getName(),
+                      resource.getId());
     }
 
     @Override
