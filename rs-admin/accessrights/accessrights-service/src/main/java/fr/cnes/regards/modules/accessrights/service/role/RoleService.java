@@ -176,8 +176,7 @@ public class RoleService implements IRoleService {
     /**
      * Init default roles for a specified tenant
      *
-     * @param tenant
-     *            tenant
+     * @param tenant tenant
      */
     private void initDefaultRoles(final String tenant) {
 
@@ -191,20 +190,18 @@ public class RoleService implements IRoleService {
         // Manage registered user
         final Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
         // Manage admin
-        createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
+        final Role adminRole = createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
         // Manage project admin
-        createOrLoadDefaultRole(roleFactory.createProjectAdmin(), null);
+        final Role adminProjectRole = createOrLoadDefaultRole(roleFactory.createProjectAdmin(), adminRole);
         // Manage instance admin
-        createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), null);
+        createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), adminProjectRole);
     }
 
     /**
      * Create or load a default role
      *
-     * @param defaultRole
-     *            default role to create
-     * @param parentRole
-     *            parent role to attach
+     * @param defaultRole default role to create
+     * @param parentRole parent role to attach
      * @return created role
      */
     private Role createOrLoadDefaultRole(final Role defaultRole, final Role parentRole) {
@@ -288,11 +285,12 @@ public class RoleService implements IRoleService {
         final Role previous = roleRepository.findOne(pRoleId);
         if ((previous != null) && previous.isNative()) {
             throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else if (previous == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
-        } else {
-            deleteAndPublish(previous);
-        }
+        } else
+            if (previous == null) {
+                throw new EntityNotFoundException(pRoleId, Role.class);
+            } else {
+                deleteAndPublish(previous);
+            }
     }
 
     @Override
@@ -300,11 +298,12 @@ public class RoleService implements IRoleService {
         final Optional<Role> role = roleRepository.findOneByName(pRoleName);
         if (!role.isPresent()) {
             throw new EntityNotFoundException(pRoleName, Role.class);
-        } else if (role.get().isNative()) {
-            throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else {
-            deleteAndPublish(role.get());
-        }
+        } else
+            if (role.get().isNative()) {
+                throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+            } else {
+                deleteAndPublish(role.get());
+            }
 
     }
 
@@ -358,12 +357,9 @@ public class RoleService implements IRoleService {
     /**
      * Add a set of accesses to a role and its descendants(according to PM003)
      *
-     * @param pRole
-     *            role on which the modification has been made
-     * @param pNewOnes
-     *            accesses to add
-     * @throws EntityOperationForbiddenException
-     *             if error occurs!
+     * @param pRole role on which the modification has been made
+     * @param pNewOnes accesses to add
+     * @throws EntityOperationForbiddenException if error occurs!
      */
     private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
             throws EntityOperationForbiddenException {
@@ -383,10 +379,8 @@ public class RoleService implements IRoleService {
     /**
      * Add accesses on all inheriting roles
      *
-     * @param pRole
-     *            role to manage
-     * @param pResourcesAccesses
-     *            accesses to add
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to add
      */
     private void addAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
         // Add accesses
@@ -402,12 +396,9 @@ public class RoleService implements IRoleService {
     /**
      * Add accesses on current role only and change parent if required to maintain consistency
      *
-     * @param pRole
-     *            role to manage
-     * @param pResourcesAccesses
-     *            accesses to add
-     * @throws EntityOperationForbiddenException
-     *             if parent cannot be found
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to add
+     * @throws EntityOperationForbiddenException if parent cannot be found
      */
     private void addAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
             throws EntityOperationForbiddenException {
@@ -422,8 +413,7 @@ public class RoleService implements IRoleService {
     /**
      * Inform security starter an (or many) access(es) changed
      *
-     * @param pResourcesAccesses
-     *            resource accesses that have changed
+     * @param pResourcesAccesses resource accesses that have changed
      */
     private void publishResourceAccessEvent(final ResourcesAccess... pResourcesAccesses) {
 
@@ -570,10 +560,8 @@ public class RoleService implements IRoleService {
     /**
      * Remove accesses on all inherited roles
      *
-     * @param pRole
-     *            role to manage
-     * @param pResourcesAccesses
-     *            accesses to remove
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to remove
      */
     private void removeAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
 
@@ -605,12 +593,9 @@ public class RoleService implements IRoleService {
     /**
      * Remove accesses on current role only and change parent if required to maintain consistency
      *
-     * @param pRole
-     *            role to manage
-     * @param pResourcesAccesses
-     *            accesses to remove
-     * @throws EntityOperationForbiddenException
-     *             if parent cannot be found
+     * @param pRole role to manage
+     * @param pResourcesAccesses accesses to remove
+     * @throws EntityOperationForbiddenException if parent cannot be found
      */
     private void removeAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
             throws EntityOperationForbiddenException {
@@ -623,13 +608,10 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available
-     * inherited parent.
+     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available inherited parent.
      *
-     * @param role
-     *            role to consider
-     * @throws EntityOperationForbiddenException
-     *             if no parent role matches
+     * @param role role to consider
+     * @throws EntityOperationForbiddenException if no parent role matches
      */
     private void manageParentFromAdmin(final Role role) throws EntityOperationForbiddenException {
 
@@ -642,12 +624,9 @@ public class RoleService implements IRoleService {
     /**
      * Found a consistent parent for the current role
      *
-     * @param role
-     *            role to consider
-     * @param parentRole
-     *            parent role candidate
-     * @throws EntityOperationForbiddenException
-     *             if no parent role matches
+     * @param role role to consider
+     * @param parentRole parent role candidate
+     * @throws EntityOperationForbiddenException if no parent role matches
      */
     private void manageParent(final Role role, final Role parentRole) throws EntityOperationForbiddenException {
 
@@ -753,8 +732,7 @@ public class RoleService implements IRoleService {
     /**
      * Inform security starter of a role change
      *
-     * @param role
-     *            role
+     * @param role role
      */
     private void publishRoleEvent(final Role role) {
         final RoleEvent roleEvent = new RoleEvent();
