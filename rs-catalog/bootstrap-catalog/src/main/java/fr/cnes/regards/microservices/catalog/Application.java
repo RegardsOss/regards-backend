@@ -5,16 +5,14 @@ package fr.cnes.regards.microservices.catalog;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
 
 /**
  *
  * Start microservice catalog
  *
- * @author TODO
+ * @author Marc Sordi
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
@@ -29,10 +27,5 @@ public class Application {
      */
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
-    }
-
-    @Bean
-    public IProjectAdminAccessVoter projectAdminVoter() {
-        return new AcceptProjectAdminVoter();
     }
 }
