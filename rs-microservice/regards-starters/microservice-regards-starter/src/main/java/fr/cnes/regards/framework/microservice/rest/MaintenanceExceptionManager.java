@@ -39,7 +39,7 @@ public class MaintenanceExceptionManager {
     private IRuntimeTenantResolver resolver;
 
     /**
-     * Exception handler catching any exception that are not already handled
+     * Exception handler catching {@link MaintenanceException} that are not already handled
      *
      * @param pException
      *            exception thrown
@@ -51,6 +51,20 @@ public class MaintenanceExceptionManager {
         LOGGER.error("Maintenance mode activated for tenant {}", resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ServerErrorResponse(pException.getMessage()));
+    }
+
+    /**
+     * Exception handler catching any exception that are not already handled
+     *
+     * @param throwable
+     *            exception thrown
+     * @return response
+     */
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<ServerErrorResponse> handleThrowable(Throwable throwable) {
+        LOGGER.error("Unexpected server error", throwable);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ServerErrorResponse(throwable.getMessage()));
     }
 
 }
