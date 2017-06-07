@@ -247,6 +247,7 @@ public class PluginService implements IPluginService {
         /**
          * Remove the PluginConfiguratin from the map
          */
+        PluginUtils.doDestroyPlugin(instantiatePlugins.get(pConfId));
         instantiatePlugins.remove(pConfId);
     }
 
@@ -306,6 +307,8 @@ public class PluginService implements IPluginService {
 
                 // Put in the map, only if there is no dynamic parameters
                 if (pPluginParameters.length == 0) {
+                    // But first, destroy current instance
+                    PluginUtils.doDestroyPlugin(instantiatePlugins.get(configuration.getId()));
                     instantiatePlugins.put(configuration.getId(), resultPlugin);
                 }
 
@@ -349,6 +352,8 @@ public class PluginService implements IPluginService {
 
             // Put in the map, only if there is no dynamic parameters
             if (pPluginParameters.length == 0) {
+                // But first destroy current instance
+                PluginUtils.doDestroyPlugin(instantiatePlugins.get(pPluginConfigurationId));
                 instantiatePlugins.put(pPluginConfigurationId, resultPlugin);
             }
 
@@ -429,6 +434,7 @@ public class PluginService implements IPluginService {
     @Override
     public void cleanPluginCache(Long pConfId) {
         if (pConfId != null) {
+            PluginUtils.doDestroyPlugin(instantiatePlugins.get(pConfId));
             instantiatePlugins.remove(pConfId);
         }
     }
