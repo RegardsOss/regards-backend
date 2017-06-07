@@ -236,12 +236,14 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             final String resourceId = pResourceMapping.getResourceMappingId();
             final ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource.containsKey(resourceId)) {
-                final Set<GrantedAuthority> set = new LinkedHashSet<>(grantedAuthoritiesByResource.get(resourceId));
-                for (final GrantedAuthority grant : pResourceMapping.getAutorizedRoles()) {
-                    set.add(grant);
+                // we already have some authorities(roles) in the system, so lets get them and add the new ones
+                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(grantedAuthoritiesByResource.get(resourceId));
+                for (final GrantedAuthority granted : pResourceMapping.getAutorizedRoles()) {
+                    grantedAuthorities.add(granted);
                 }
-                newAuthorities = new ArrayList<>(set);
+                newAuthorities = new ArrayList<>(grantedAuthorities);
             } else {
+                // we do not have any authorities(roles) for this resource, so lets just take the new ones
                 newAuthorities = new ArrayList<>();
                 newAuthorities.addAll(pResourceMapping.getAutorizedRoles());
             }
@@ -416,5 +418,10 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             pluginResourceManager = applicationContext.getBean(IPluginResourceManager.class);
         }
         return pluginResourceManager;
+    }
+
+    public void updateAuthoritiesFor(String tenant, String roleName) {
+        Set<ResourceMapping> newMappings=getAuthoritiesProvider().getResourceMappings(microserviceName, tenant, roleName);
+        newMappings.forEach(mapping->setAuthorities(tenant,mapping));
     }
 }

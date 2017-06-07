@@ -8,12 +8,14 @@ package fr.cnes.regards.framework.security.endpoint;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -84,6 +86,14 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
             }
         }
         return defaultRoleAuthorities;
+    }
+
+    @Override
+    public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
+        // for now this method is only used for updates, as we are in the default authority provider that means there is
+        // no updates possible, so nothing to do
+        LOG.warn("NO Authority provided defined. We cannot update resource accesses");
+        return Sets.newHashSet();
     }
 
     /**

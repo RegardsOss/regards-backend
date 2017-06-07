@@ -23,6 +23,27 @@ public class ResourceAccessEvent implements ISubscribable {
      */
     private String microservice;
 
+    private String roleName;
+
+    /**
+     * for serialization needs
+     */
+    private ResourceAccessEvent() {
+    }
+
+    public ResourceAccessEvent(String microservice, String roleName) {
+        this.microservice = microservice;
+        this.roleName = roleName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
     public String getMicroservice() {
         return microservice;
     }

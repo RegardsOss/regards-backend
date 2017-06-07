@@ -75,11 +75,14 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
         @Override
         public void handle(TenantWrapper<ResourceAccessEvent> pWrapper) {
+            String tenant=pWrapper.getTenant();
+            ResourceAccessEvent event=pWrapper.getContent();
 
             // Only manage event for the concerned microservice
-            if ((pWrapper.getContent() != null) && microservice.equals(pWrapper.getContent().getMicroservice())) {
+            if ((event != null) && microservice.equals(event.getMicroservice())) {
                 try {
-                    methodAuthorizationService.collectRolesByTenant(pWrapper.getTenant());
+                    methodAuthorizationService.collectRolesByTenant(tenant);
+                    methodAuthorizationService.updateAuthoritiesFor(tenant, event.getRoleName());
                 } catch (SecurityException e) {
                     LOGGER.error("Security cache cannot be refresh for tenant {} and microservice {}",
                                  pWrapper.getTenant(), microservice);

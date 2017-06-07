@@ -1,6 +1,7 @@
 package fr.cnes.regards.framework.security.endpoint;
 
 import java.util.List;
+import java.util.Set;
 
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
@@ -49,4 +50,15 @@ public interface IAuthoritiesProvider {
      * @since 1.0-SNAPSHOT
      */
     List<RoleAuthority> getRoleAuthorities(String microserviceName, String tenant) throws SecurityException;
+
+    /**
+     *
+     * Retrieve ResourcesAccesses from a given role on a given tenant and microservice and then build ResourceMappings corresponding
+     *
+     * @param microserviceName microservice from which we want the resources
+     * @param tenant tenant on which we are working
+     * @param roleName role considered
+     * @return current ResourceMapping for a given role on a given microservice type for a given tenant
+     */
+    Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName);
 }
