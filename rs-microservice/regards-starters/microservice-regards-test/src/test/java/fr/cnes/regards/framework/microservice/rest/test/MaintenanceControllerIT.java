@@ -15,7 +15,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.microservice.configurer.MaintenanceFilter;
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceFilter;
 import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;

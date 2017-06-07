@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -63,7 +63,7 @@ public final class PluginUtils {
         // Static class
     }
 
-     public static  synchronized void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
+    public static synchronized void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
         pluginUtilsBean = pPluginUtilsBean;
     }
 
@@ -242,8 +242,7 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
-                | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pPluginClassName), e);
         }
 
@@ -277,7 +276,7 @@ public final class PluginUtils {
      * @param pReturnInterfaceType the required returned type
      * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pPluginParameters an optional {@link List} of {@link PluginParameter}
-     * @return a {@link Plugin} instance @ if a problem occurs
+     * @return a {@link Plugin} instance
      */
     public static <T> T getPlugin(final List<PluginParameter> pParameters, final Class<T> pReturnInterfaceType,
             final List<String> pPrefixs, final PluginParameter... pPluginParameters) {
@@ -289,8 +288,30 @@ public final class PluginUtils {
     }
 
     /**
+     * Look for {@link PluginDestroy} annotation and launch corresponding method if found.
+     * @param <T> a {@link Plugin}
+     * @param pPluginInstance the {@link Plugin} instance
+     */
+    public static <T> void doDestroyPlugin(final T pPluginInstance) {
+        final Method[] allMethods = pPluginInstance.getClass().getDeclaredMethods();
+        for (final Method method : allMethods) {
+            if (method.isAnnotationPresent(PluginDestroy.class)) {
+                // Invoke method
+                ReflectionUtils.makeAccessible(method);
+
+                try {
+                    method.invoke(pPluginInstance);
+                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
+                                               pPluginInstance.getClass()), e);
+                    throw new PluginUtilsRuntimeException(e);
+                }
+            }
+        }
+    }
+
+    /**
      * Look for {@link PluginInit} annotation and launch corresponding method if found.
-     *
      * @param <T> a {@link Plugin}
      * @param pPluginInstance the {@link Plugin} instance @ if a problem occurs
      */
@@ -305,8 +326,7 @@ public final class PluginUtils {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               pPluginInstance.getClass()),
-                                 e);
+                                               pPluginInstance.getClass()), e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }

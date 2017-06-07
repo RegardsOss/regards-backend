@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.microservice.configurer;
+package fr.cnes.regards.framework.microservice.maintenance;
 
 import java.io.IOException;
 
@@ -24,18 +24,22 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 /**
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 public class MaintenanceFilter extends OncePerRequestFilter {
 
     /**
+     * REGARDS maintenance HTTP status
+     */
+    public static final int MAINTENANCE_HTTP_STATUS = 515;
+
+    /**
      * {verb}@{path} request from {x-forwarded-for} was ignored because the service is in Maintenance!
      */
-    private static String REQUEST_IGNORED = "{}@{} request from {} was ignored because the service is in Maintenance!";
+    private static final String REQUEST_IGNORED = "{}@{} request from {} was ignored because the service is in Maintenance!";
 
     private static Logger LOGGER = LoggerFactory.getLogger(MaintenanceFilter.class);
-
-    public static int MAINTENANCE_HTTP_STATUS = 515;
 
     private final IRuntimeTenantResolver resolver;
 
@@ -65,7 +69,6 @@ public class MaintenanceFilter extends OncePerRequestFilter {
                 pFilterChain.doFilter(pRequest, pResponse);
             }
         }
-
     }
 
 }
