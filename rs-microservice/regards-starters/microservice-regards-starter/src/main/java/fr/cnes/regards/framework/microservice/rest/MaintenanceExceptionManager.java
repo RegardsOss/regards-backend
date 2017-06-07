@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -24,12 +25,12 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE)
-public class GlobalNonFunctionnalExceptionManager {
+public class MaintenanceExceptionManager {
 
     /**
      * Logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalNonFunctionnalExceptionManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MaintenanceExceptionManager.class);
 
     /**
      * Tenant resolver
@@ -44,8 +45,8 @@ public class GlobalNonFunctionnalExceptionManager {
      *            exception thrown
      * @return response
      */
-    @ExceptionHandler(Throwable.class)
-    public ResponseEntity<ServerErrorResponse> nonFunctionnalException(Throwable pException) {
+    @ExceptionHandler(MaintenanceException.class)
+    public ResponseEntity<ServerErrorResponse> handleMaintenanceException(MaintenanceException pException) {
         LOGGER.error("Unexpected server error", pException);
         MaintenanceManager.setMaintenance(resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

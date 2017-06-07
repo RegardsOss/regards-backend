@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class MaintenanceInfo{
+public class MaintenanceInfo {
 
     /**
      * is maintenance mode active?

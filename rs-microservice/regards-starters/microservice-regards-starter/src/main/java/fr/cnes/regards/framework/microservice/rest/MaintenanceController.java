@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.microservice.rest;
 
 import java.util.Map;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  * @since 1.0
  */
 @RestController
+@ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
+        matchIfMissing = true)
 @RequestMapping(MaintenanceController.MAINTENANCE_URL)
 public class MaintenanceController {
 

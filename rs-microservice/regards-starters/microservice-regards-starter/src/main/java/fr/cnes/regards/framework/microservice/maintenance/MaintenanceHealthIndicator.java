@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.microservice.actuator;
+package fr.cnes.regards.framework.microservice.maintenance;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
