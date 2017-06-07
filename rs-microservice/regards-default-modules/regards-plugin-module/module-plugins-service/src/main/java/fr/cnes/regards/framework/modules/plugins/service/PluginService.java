@@ -247,7 +247,7 @@ public class PluginService implements IPluginService {
         /**
          * Remove the PluginConfiguratin from the map
          */
-        PluginUtils.doDestroyPlugin(instantiatePlugins.get(pConfId));
+        PluginUtils.doDestroyPlugin(toDelete);
         instantiatePlugins.remove(pConfId);
     }
 
@@ -287,7 +287,7 @@ public class PluginService implements IPluginService {
                                                     pInterfacePluginType.getName()));
         }
 
-        // Search the configuration the most priority
+        // Search configuration with upper priority
         PluginConfiguration configuration = null;
 
         for (final PluginConfiguration conf : confs) {
@@ -434,7 +434,10 @@ public class PluginService implements IPluginService {
     @Override
     public void cleanPluginCache(Long pConfId) {
         if (pConfId != null) {
-            PluginUtils.doDestroyPlugin(instantiatePlugins.get(pConfId));
+            Object plugin = instantiatePlugins.get(pConfId);
+            if (plugin != null) {
+                PluginUtils.doDestroyPlugin(plugin);
+            }
             instantiatePlugins.remove(pConfId);
         }
     }
