@@ -3,13 +3,13 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
-import org.junit.Assert;
+import javax.transaction.Transactional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -187,7 +188,7 @@ public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
         sj.add(SampleServicePlugin.COEFF + "=0");
         sj.add(SampleServicePlugin.SUFFIXE + "=z");
 
-        expectations.add(MockMvcResultMatchers.status().isServiceUnavailable());
+        expectations.add(MockMvcResultMatchers.status().isInternalServerError());
         performDefaultGet(ServicesController.PATH_SERVICES + ServicesController.PATH_SERVICE_NAME + sj.toString(),
                           expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
     }

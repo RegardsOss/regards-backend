@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.search.service;
 
 import java.util.List;
 
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -44,10 +46,15 @@ public class CatalogAttributeHelper implements IAttributeHelper {
         try {
             runtimeTenantResolver.forceTenant(pTenant);
             FeignSecurityManager.asSystem();
-            return HateoasUtils.unwrapList(attributeModelClient.getAttributes(null, null).getBody());
+
+            ResponseEntity<List<Resource<AttributeModel>>> resources = attributeModelClient.getAttributes(null, null);
+            if (resources != null) {
+                return HateoasUtils.unwrapList(resources.getBody());
+            }
         } finally {
             runtimeTenantResolver.clearTenant();
             FeignSecurityManager.reset();
         }
+        return null;
     }
 }
