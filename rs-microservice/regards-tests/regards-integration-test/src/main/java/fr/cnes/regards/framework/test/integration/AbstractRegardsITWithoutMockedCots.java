@@ -213,15 +213,18 @@ public abstract class AbstractRegardsITWithoutMockedCots {
 
     protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate, final Path pFilePath,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFilePath, pMatchers, pErrorMessage, pUrlVariables);
+        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFilePath, pMatchers, pErrorMessage,
+                                        pUrlVariables);
     }
 
-    protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate, final List<MockMultipartFile> pFileList,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFileList, pMatchers, pErrorMessage, pUrlVariables);
+    protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate,
+            final List<MockMultipartFile> pFileList, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            final Object... pUrlVariables) {
+        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFileList, pMatchers, pErrorMessage,
+                                        pUrlVariables);
     }
 
-    protected ResultActions performDefaultFileUpload(RequestMethod verb,final String pUrlTemplate, final Path filePath,
+    protected ResultActions performDefaultFileUpload(RequestMethod verb, final String pUrlTemplate, final Path filePath,
             final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, verb);
         final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, filePath, pUrlTemplate,
@@ -229,8 +232,9 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         return performRequest(requestBuilder, pMatchers, pErrorMessage);
     }
 
-    protected ResultActions performDefaultFileUpload(RequestMethod verb,final String pUrlTemplate, final List<MockMultipartFile> pFileList,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
+    protected ResultActions performDefaultFileUpload(RequestMethod verb, final String pUrlTemplate,
+            final List<MockMultipartFile> pFileList, final List<ResultMatcher> pMatchers, final String pErrorMessage,
+            final Object... pUrlVariables) {
         final String jwt = manageDefaultSecurity(pUrlTemplate, verb);
         final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFileList, pUrlTemplate,
                                                                                         pUrlVariables);
@@ -369,7 +373,6 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         return multipartRequestBuilder;
     }
 
-
     protected void addSecurityHeader(final MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {
         pRequestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
@@ -449,6 +452,32 @@ public abstract class AbstractRegardsITWithoutMockedCots {
     }
 
     /**
+     * Helper method to manage security with :
+     * <ul>
+     * <li>an email representing the user</li>
+     * <li>the user role </li>
+     * </ul>
+     * The helper generates a JWT using its configuration and grants access to the endpoint for the specified role
+     * role.
+     *
+     * @param pUrlPath
+     *            target endpoint
+     * @param pMethod
+     *            target HTTP method
+     * @return security token to authenticate user
+     */
+    protected String manageSecurity(final String pUrlPath, final RequestMethod pMethod, String email, String roleName) {
+
+        String path = pUrlPath;
+        if (pUrlPath.contains("?")) {
+            path = path.substring(0, pUrlPath.indexOf('?'));
+        }
+        final String jwt = generateToken(email, roleName);
+        setAuthorities(path, pMethod, roleName);
+        return jwt;
+    }
+
+    /**
      * Helper method to manage default security with :
      * <ul>
      * <li>a default user</li>
@@ -464,14 +493,7 @@ public abstract class AbstractRegardsITWithoutMockedCots {
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
-
-        String path = pUrlPath;
-        if (pUrlPath.contains("?")) {
-            path = path.substring(0, pUrlPath.indexOf('?'));
-        }
-        final String jwt = generateToken(DEFAULT_USER_EMAIL, getDefaultRole());
-        setAuthorities(path, pMethod, getDefaultRole());
-        return jwt;
+        return manageSecurity(pUrlPath, pMethod, DEFAULT_USER_EMAIL, getDefaultRole());
     }
 
     /**
@@ -483,6 +505,7 @@ public abstract class AbstractRegardsITWithoutMockedCots {
      * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
      * role.
      *
+     * @param userEmail specific user
      * @param pUrlPath
      *            target endpoint
      * @param pMethod
@@ -490,14 +513,7 @@ public abstract class AbstractRegardsITWithoutMockedCots {
      * @return security token to authenticate user
      */
     protected String manageDefaultSecurity(String userEmail, final String pUrlPath, final RequestMethod pMethod) {
-
-        String path = pUrlPath;
-        if (pUrlPath.contains("?")) {
-            path = path.substring(0, pUrlPath.indexOf('?'));
-        }
-        final String jwt = generateToken(userEmail, getDefaultRole());
-        setAuthorities(path, pMethod, getDefaultRole());
-        return jwt;
+        return manageSecurity(pUrlPath, pMethod, userEmail, getDefaultRole());
     }
 
     protected static MultiValueMap<String, String> buildRequestParams() {

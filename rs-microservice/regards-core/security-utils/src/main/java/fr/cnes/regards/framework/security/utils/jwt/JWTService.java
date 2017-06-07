@@ -70,7 +70,7 @@ public class JWTService {
      * validity delay expressed in minutes. Defaults to 120.
      */
     @Value("${jwt.validityDelay:120}")
-    private long validityDelay;
+    private long validityDelay = 120;
 
     /**
      *
@@ -196,7 +196,8 @@ public class JWTService {
      */
     public String generateToken(String tenant, String pName, String pRole) {
         return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, pRole, pName)).setSubject(pName)
-                .signWith(ALGO, TextCodec.BASE64.encode(secret)).setExpiration(Date.from(OffsetDateTime.now().plusMinutes(validityDelay).toInstant())).compact();
+                .signWith(ALGO, TextCodec.BASE64.encode(secret))
+                .setExpiration(Date.from(OffsetDateTime.now().plusMinutes(validityDelay).toInstant())).compact();
     }
 
     /**
@@ -245,6 +246,10 @@ public class JWTService {
      */
     public void setSecret(final String pSecret) {
         secret = pSecret;
+    }
+
+    public void setValidityDelay(long pValidityDelay) {
+        validityDelay = pValidityDelay;
     }
 
 }
