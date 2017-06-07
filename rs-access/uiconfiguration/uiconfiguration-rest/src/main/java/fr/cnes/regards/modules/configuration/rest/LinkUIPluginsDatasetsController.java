@@ -3,9 +3,11 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.hateoas.Resource;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,24 +40,32 @@ public class LinkUIPluginsDatasetsController {
     @Autowired
     private ILinkUIPluginsDatasetsService linkService;
 
+    /**
+     * The resource service. Autowired by Spring.
+     */
+    @Autowired
+    private IResourceService resourceService;
+    
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset",
             role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
-    public ResponseEntity<LinkUIPluginsDatasets> retrieveLink(@PathVariable("datasetId") final String pDatasetId)
+    public ResponseEntity<Resource<LinkUIPluginsDatasets>> retrieveLink(@PathVariable("datasetId") final String pDatasetId)
             throws EntityNotFoundException {
         final LinkUIPluginsDatasets link = linkService.retrieveLink(pDatasetId);
-        return new ResponseEntity<>(link, HttpStatus.OK);
+        Resource<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset",
             role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
-    public ResponseEntity<LinkUIPluginsDatasets> updateLink(@PathVariable("datasetId") final String pDatasetId,
+    public ResponseEntity<Resource<LinkUIPluginsDatasets>> updateLink(@PathVariable("datasetId") final String pDatasetId,
             @RequestBody final LinkUIPluginsDatasets pUpdatedLink) throws EntityException {
         final LinkUIPluginsDatasets link = linkService.updateLink(pDatasetId, pUpdatedLink);
-        return new ResponseEntity<>(link, HttpStatus.OK);
+        Resource<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
 }
