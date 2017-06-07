@@ -47,8 +47,8 @@ public class MaintenanceExceptionManager {
      */
     @ExceptionHandler(MaintenanceException.class)
     public ResponseEntity<ServerErrorResponse> handleMaintenanceException(MaintenanceException pException) {
-        LOGGER.error("Unexpected server error", pException);
         MaintenanceManager.setMaintenance(resolver.getTenant());
+        LOGGER.error("Maintenance mode activated for tenant {}", resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
