@@ -310,7 +310,6 @@ public class RoleService implements IRoleService {
     /**
      * Each role contains all its permission.
      *
-     * @see PM003
      */
     @Override
     public Set<ResourcesAccess> retrieveRoleResourcesAccesses(final Long pRoleId) throws EntityNotFoundException {
@@ -371,9 +370,6 @@ public class RoleService implements IRoleService {
             // Add resource access to current role and manage its parent
             addAndManageParent(pRole, pNewOnes);
         }
-
-        // Publish changes
-        publishResourceAccessEvent(pNewOnes);
     }
 
     /**
@@ -384,9 +380,10 @@ public class RoleService implements IRoleService {
      */
     private void addAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
         // Add accesses
-        pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
+        boolean changed=pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
         // Save changes
         roleRepository.save(pRole);
+        if(changed) {publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);}
         // Retrieve its descendants
         final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
         // Propagate
@@ -403,9 +400,10 @@ public class RoleService implements IRoleService {
     private void addAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
             throws EntityOperationForbiddenException {
         // Add accesses
-        pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
+        boolean changed=pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
         // Save changes
         roleRepository.save(pRole);
+        if(changed) {publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);}
         // Change parent if required
         manageParentFromAdmin(pRole);
     }
@@ -415,7 +413,7 @@ public class RoleService implements IRoleService {
      *
      * @param pResourcesAccesses resource accesses that have changed
      */
-    private void publishResourceAccessEvent(final ResourcesAccess... pResourcesAccesses) {
+    private void publishResourceAccessEvent( String roleName,final ResourcesAccess... pResourcesAccesses) {
 
         // Compute concerned microservices
         final Set<String> microservices = new HashSet<>();
@@ -424,8 +422,7 @@ public class RoleService implements IRoleService {
         }
         // Publish an event for each concerned microservice
         for (final String microservice : microservices) {
-            final ResourceAccessEvent raEvent = new ResourceAccessEvent();
-            raEvent.setMicroservice(microservice);
+            final ResourceAccessEvent raEvent = new ResourceAccessEvent(microservice, roleName);
             publisher.publish(raEvent);
         }
     }
@@ -542,6 +539,8 @@ public class RoleService implements IRoleService {
                     "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
+        // Apply changes and publish changes inside removeAndPropagate or RemoveAndManageParent so we are sure that
+        // every updates has been published
         if (role.isNative()) {
             // If native role, propagate removal to native ascendants to maintain consistency
             removeAndPropagate(role, pResourcesAccesses);
@@ -553,8 +552,6 @@ public class RoleService implements IRoleService {
             removeAndManageParent(role, pResourcesAccesses);
         }
 
-        // Publish changes
-        publishResourceAccessEvent(pResourcesAccesses);
     }
 
     /**
@@ -567,9 +564,11 @@ public class RoleService implements IRoleService {
 
         if (pRole != null) {
             // Remove accesses
-            pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+            boolean changed=pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
             // Save changes
             roleRepository.save(pRole);
+            // publish event
+            if(changed) {publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);}
             // Propagate
             removeAndPropagate(pRole.getParentRole(), pResourcesAccesses);
         }
@@ -600,9 +599,11 @@ public class RoleService implements IRoleService {
     private void removeAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
             throws EntityOperationForbiddenException {
         // Remove accesses
-        pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+        boolean changed=pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
         // Save changes
         roleRepository.save(pRole);
+        // publish event
+        if(changed) {publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);}
         // Change parent if required
         manageParent(pRole, pRole.getParentRole());
     }

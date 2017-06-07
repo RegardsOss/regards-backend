@@ -3,19 +3,22 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
@@ -98,8 +101,8 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         final ResourceMapping mapping = new ResourceMapping(
                 ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
                 pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
-        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList()));
+        mapping.setAutorizedRoles(
+                pRoles.stream().map(role -> new RoleAuthority(role.getName())).collect(Collectors.toList()));
         return mapping;
     }
 
@@ -117,6 +120,23 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
             results.add(roleAuth);
         }
         return results;
+    }
+
+    @Override
+    public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
+        runtimeTenantResolver.forceTenant(tenant);
+
+        try {
+            final Role role = roleService.retrieveRole(roleName);
+            return role.getPermissions().stream()
+                    .filter(resource -> resource.getMicroservice().equals(microserviceName))
+                    .map(resource -> buildResourceMapping(resource, Collections.singleton(role)))
+                    .collect(Collectors.toSet());
+        } catch (EntityNotFoundException e) {
+            LOGGER.warn("Role {} seems to have been deleted. We are skipping the resource update", roleName);
+            return Sets.newHashSet();
+        }
+
     }
 
 }
