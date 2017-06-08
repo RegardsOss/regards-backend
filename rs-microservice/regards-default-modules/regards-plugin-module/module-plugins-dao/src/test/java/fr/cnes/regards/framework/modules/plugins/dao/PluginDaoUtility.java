@@ -93,13 +93,13 @@ public class PluginDaoUtility extends AbstractDaoTest {
      * A {@link PluginConfiguration}
      */
     private static PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-            "a configuration", INTERFACEPARAMETERS, 0);
+            "a configuration from PluginDaoUtility", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
     private static PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration", LIST_PARAMETERS, 0);
+            "second configuration from PluginDaoUtility", LIST_PARAMETERS, 0);
 
     /**
      * IPluginConfigurationRepository
