@@ -135,19 +135,19 @@ public class PluginServiceUtility {
      * A {@link PluginConfiguration}
      */
     private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-            "a configuration", INTERFACEPARAMETERS, 0);
+            "a configuration from PluginServiceUtility", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration", DYNAMICPARAMETERS, 0);
+            "second configuration from PluginServiceUtility", DYNAMICPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
-            "third configuration", CINQ);
+            "third configuration from PluginServiceUtility", CINQ);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.

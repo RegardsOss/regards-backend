@@ -76,13 +76,13 @@ public class PluginConfigurationRepositoryStub extends RepositoryStub<PluginConf
      * A {@link PluginConfiguration}
      */
     private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-            "a configuration", INTERFACEPARAMETERS, 0);
+            "a configuration from PluginConfigurationRepositoryStub", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration", PARAMETERS2, 0);
+            "second configuration from PluginConfigurationRepositoryStub", PARAMETERS2, 0);
 
     public PluginConfigurationRepositoryStub() {
         getEntities().add(getPluginConfigurationWithDynamicParameter());

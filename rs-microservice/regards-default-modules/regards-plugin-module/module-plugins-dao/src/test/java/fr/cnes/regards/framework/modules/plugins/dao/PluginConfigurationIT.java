@@ -5,6 +5,7 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +34,12 @@ public class PluginConfigurationIT extends PluginDaoUtility {
 
     @Before
     public void before() {
+        injectToken(PROJECT);
+        cleanDb();
+    }
+
+    @After
+    public void after() {
         injectToken(PROJECT);
         cleanDb();
     }
@@ -99,8 +106,8 @@ public class PluginConfigurationIT extends PluginDaoUtility {
                                 jpaConf.getParameterConfiguration(p.getName()));
         }
     }
-    
-    @Test(expected=DataIntegrityViolationException.class)
+
+    @Test(expected = DataIntegrityViolationException.class)
     public void createTwoPluginConfigurationWithSameLabel() {
         // save a plugin configuration
         plgRepository.save(getPlgConfWithParameters());
@@ -109,7 +116,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         // try to save a plugin configuration with the same label
         resetId();
         plgRepository.save(getPlgConfWithParameters());
-        
+
         Assert.fail();
     }
 

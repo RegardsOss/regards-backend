@@ -414,6 +414,9 @@ public class PluginService implements IPluginService {
     @Override
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     public void addPluginPackage(final String pPluginPackage) {
+        // First time initiliaze the plugins for the configured package  
+        getLoadedPlugins();
+        
         if (!getPluginPackage().contains(pPluginPackage)) {
             getPluginPackage().add(pPluginPackage);
             final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, getPluginPackage());
