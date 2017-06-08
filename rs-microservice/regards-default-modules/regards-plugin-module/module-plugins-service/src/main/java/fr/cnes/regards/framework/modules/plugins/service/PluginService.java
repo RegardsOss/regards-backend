@@ -5,6 +5,7 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -302,23 +303,24 @@ public class PluginService implements IPluginService {
         T resultPlugin = null;
 
         if (configuration != null) {
-            if (!instantiatePlugins.containsKey(configuration.getId()) || (
-                    instantiatePlugins.containsKey(configuration.getId()) && (pPluginParameters.length > 0))) {
-
-                resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
-
-                // Put in the map, only if there is no dynamic parameters
-                if (pPluginParameters.length == 0) {
-                    // But first, destroy current instance
-                    if (instantiatePlugins.containsKey(configuration.getId())) {
-                        PluginUtils.doDestroyPlugin(instantiatePlugins.get(configuration.getId()));
-                    }
-                    instantiatePlugins.put(configuration.getId(), resultPlugin);
-                }
-
-            } else {
-                resultPlugin = (T) instantiatePlugins.get(configuration.getId());
-            }
+            return getPlugin(configuration.getId(), pPluginParameters);
+//            if (!instantiatePlugins.containsKey(configuration.getId()) || (
+//                    instantiatePlugins.containsKey(configuration.getId()) && (pPluginParameters.length > 0))) {
+//
+//                resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
+//
+//                // Put in the map, only if there is no dynamic parameters
+//                if (pPluginParameters.length == 0) {
+//                    // But first, destroy current instance
+//                    if (instantiatePlugins.containsKey(configuration.getId())) {
+//                        PluginUtils.doDestroyPlugin(instantiatePlugins.get(configuration.getId()));
+//                    }
+//                    instantiatePlugins.put(configuration.getId(), resultPlugin);
+//                }
+//
+//            } else {
+//                resultPlugin = (T) instantiatePlugins.get(configuration.getId());
+//            }
         }
 
         return resultPlugin;
@@ -326,15 +328,17 @@ public class PluginService implements IPluginService {
 
     @Override
     public <T> T getPlugin(final PluginConfiguration pPluginConfiguration) throws ModuleException {
-        return getPlugin(pPluginConfiguration.getId(),
-                         pPluginConfiguration.getParameters().stream().filter(PluginParameter::isDynamic)
-                                 .toArray(PluginParameter[]::new));
+        return getPlugin(pPluginConfiguration.getId(), pPluginConfiguration.getParameters()
+                .toArray(new PluginParameter[pPluginConfiguration.getParameters().size()]));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... dynamicPlgParams)
+    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pluginParameters)
             throws ModuleException {
+        // We keep only dynamic plugin parameters
+        PluginParameter[] dynamicPlgParams = Arrays.stream(pluginParameters).filter(PluginParameter::isDynamic)
+                .toArray(PluginParameter[]::new);
         // Get the plugin associated to this configuration
         T resultPlugin;
 
@@ -416,7 +420,7 @@ public class PluginService implements IPluginService {
     public void addPluginPackage(final String pPluginPackage) {
         // First time initiliaze the plugins for the configured package  
         getLoadedPlugins();
-        
+
         if (!getPluginPackage().contains(pPluginPackage)) {
             getPluginPackage().add(pPluginPackage);
             final Map<String, PluginMetaData> newPlugins = PluginUtils.getPlugins(pPluginPackage, getPluginPackage());

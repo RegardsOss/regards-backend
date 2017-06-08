@@ -50,7 +50,7 @@ public interface IPluginService {
      *
      * @param <T> a plugin instance
      * @param pPluginConfigurationId the id of a {@link PluginConfiguration}.
-     * @param pPluginParameters list of dynamic {@link PluginParameter}
+     * @param pPluginParameters list of {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
