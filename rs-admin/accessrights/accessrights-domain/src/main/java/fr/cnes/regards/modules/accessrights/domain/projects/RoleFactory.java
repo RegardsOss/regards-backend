@@ -142,7 +142,6 @@ public class RoleFactory {
         toCreate.setName(DefaultRole.PUBLIC.toString());
         toCreate.setParentRole(null);
         toCreate.setNative(true);
-        toCreate.setDefault(true);
         return toCreate;
     }
 
@@ -154,6 +153,7 @@ public class RoleFactory {
         final RoleFactory factoryForParentRole = new RoleFactory();
         toCreate.setName(DefaultRole.REGISTERED_USER.toString());
         toCreate.setNative(true);
+        toCreate.setDefault(true);
         if (autoCreateParents) {
             toCreate.setParentRole(factoryForParentRole.createPublic());
         }
