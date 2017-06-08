@@ -401,7 +401,7 @@ public final class PluginParameterUtils {
 
         try {
             // Retrieve instantated plugin from cache map
-            Object effectiveVal = instantiatedPluginMap.get(pPlgConf.getId());
+            Object effectiveVal = instantiatedPluginMap.get(paramValue.getId());
             pField.set(pPluginInstance, effectiveVal);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
