@@ -185,7 +185,12 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     }
 
     private Long getCurrentTenantPluginConfigurationFor(MediaType pMediaType) {
-        return enabledRepresentationPluginMapByTenant.get(tenantResolver.getTenant()).get(pMediaType);
+        Map<MediaType, Long> tenantEnabledRepresentationPluginMapByMediaType = enabledRepresentationPluginMapByTenant
+                .get(tenantResolver.getTenant());
+        if(tenantEnabledRepresentationPluginMapByMediaType!=null) {
+            return tenantEnabledRepresentationPluginMapByMediaType.get(pMediaType);
+        }
+        return null;
     }
 
     @Override
