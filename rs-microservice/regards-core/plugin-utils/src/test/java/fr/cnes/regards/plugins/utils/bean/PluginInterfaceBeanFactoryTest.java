@@ -4,6 +4,7 @@
 package fr.cnes.regards.plugins.utils.bean;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -63,7 +64,7 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
                 .addParameter(SampleBeanFactoryPlugin.SUFFIXE, "chris_test_1").getParameters();
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, pluginUtilsBean,
-                                             Arrays.asList("fr.cnes.regards.plugins.utils.bean"));
+                                             Arrays.asList("fr.cnes.regards.plugins.utils.bean"), new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
         final String toulouse = "Toulouse";

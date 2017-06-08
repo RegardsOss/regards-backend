@@ -4,6 +4,7 @@
 package fr.cnes.regards.plugins.utils.plugintypes;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -141,17 +142,22 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexPlugin.ACTIVE, TRUE)
                 .addParameter(ComplexPlugin.COEFF, PluginInterfaceUtilsTest.CINQ).getParameters();
 
+        HashMap<Long, Object> instantiatedPluginMap = new HashMap<>();
+        instantiatedPluginMap.put(pluginConfigurationInterface.getId(), PluginUtils
+                .getPlugin(pluginConfigurationInterface, pluginConfigurationInterface.getPluginClassName(),
+                           Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap));
         /*
          * Instantiate the parent plugin
          */
-        complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
-                                              Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        complexPlugin = PluginUtils
+                .getPlugin(complexParameters, ComplexPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
+                           instantiatedPluginMap);
         Assert.assertNotNull(complexPlugin);
 
         Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
                                             Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
         Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
-                .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
+                                  .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 
         LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 
@@ -176,7 +182,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
+                              new HashMap<>());
     }
 
     /**
@@ -196,7 +203,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
+                              new HashMap<>());
     }
 
 }
