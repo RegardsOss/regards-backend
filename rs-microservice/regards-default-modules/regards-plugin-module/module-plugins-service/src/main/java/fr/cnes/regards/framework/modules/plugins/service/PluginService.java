@@ -300,30 +300,7 @@ public class PluginService implements IPluginService {
         }
 
         // Get the plugin associated to this configuration
-        T resultPlugin = null;
-
-        if (configuration != null) {
-            return getPlugin(configuration.getId(), pPluginParameters);
-//            if (!instantiatePlugins.containsKey(configuration.getId()) || (
-//                    instantiatePlugins.containsKey(configuration.getId()) && (pPluginParameters.length > 0))) {
-//
-//                resultPlugin = getPlugin(configuration.getId(), pPluginParameters);
-//
-//                // Put in the map, only if there is no dynamic parameters
-//                if (pPluginParameters.length == 0) {
-//                    // But first, destroy current instance
-//                    if (instantiatePlugins.containsKey(configuration.getId())) {
-//                        PluginUtils.doDestroyPlugin(instantiatePlugins.get(configuration.getId()));
-//                    }
-//                    instantiatePlugins.put(configuration.getId(), resultPlugin);
-//                }
-//
-//            } else {
-//                resultPlugin = (T) instantiatePlugins.get(configuration.getId());
-//            }
-        }
-
-        return resultPlugin;
+        return (configuration != null) ? getPlugin(configuration.getId(), pPluginParameters) : null;
     }
 
     @Override
