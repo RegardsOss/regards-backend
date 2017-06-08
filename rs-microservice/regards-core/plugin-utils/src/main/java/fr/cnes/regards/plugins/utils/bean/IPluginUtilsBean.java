@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.plugins.utils.bean;
 
-import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
-
 /**
  * @author Christophe Mertz
  *
