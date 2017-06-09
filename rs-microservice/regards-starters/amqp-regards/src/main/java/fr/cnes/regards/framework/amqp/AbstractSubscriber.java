@@ -42,7 +42,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     /**
      * method from {@link fr.cnes.regards.framework.amqp.domain.IHandler}
      */
-    private static final String DEFAULT_HANDLING_METHOD = "handle";
+    private static final String DEFAULT_HANDLING_METHOD = "handleAndLog";
 
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
