@@ -20,6 +20,7 @@ import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
+import fr.cnes.regards.modules.models.domain.attributes.Fragment;
 
 /**
  *
@@ -76,25 +77,27 @@ public class CatalogControllerTestUtils {
     /**
      * A dummy list of facets
      */
-    public static final List<String> FACETS = Lists.newArrayList(INTEGER_ATTRIBUTE_NAME, STRING_ATTRIBUTE_NAME,
-                                                                 DATE_ATTRIBUTE_NAME);
+    public static final List<String> FACETS = Lists.newArrayList(getFullyQualifiedField(INTEGER_ATTRIBUTE_NAME),
+                                                                 STRING_ATTRIBUTE_NAME,
+                                                                 getFullyQualifiedField(DATE_ATTRIBUTE_NAME));
 
     /**
      * The dummy list of facets as array
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
+    public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
+
     public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_ATTRIBUTE_NAME, AttributeType.INTEGER, INTEGER_ATTRIBUTE_NAME).get();
+            .build(INTEGER_ATTRIBUTE_NAME, AttributeType.INTEGER, INTEGER_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
             .build(STRING_ATTRIBUTE_NAME, AttributeType.STRING, STRING_ATTRIBUTE_NAME).get();
 
     public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DATE_ATTRIBUTE_NAME, AttributeType.DATE_ISO8601, DATE_ATTRIBUTE_NAME).get();
+            .build(DATE_ATTRIBUTE_NAME, AttributeType.DATE_ISO8601, DATE_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
 
-    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, STRING_ATTRIBUTE_MODEL,
-                                                                       DATE_ATTRIBUTE_MODEL);
+    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, DATE_ATTRIBUTE_MODEL);
 
     public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
@@ -152,5 +155,9 @@ public class CatalogControllerTestUtils {
      * A sort query param
      */
     public static final String SORT = "ipId,asc";
+
+    private static String getFullyQualifiedField(String name) {
+        return Fragment.getDefaultName() + "." + name;
+    }
 
 }

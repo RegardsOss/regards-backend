@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -193,7 +192,6 @@ public class CatalogController {
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(
             @RequestParam final Map<String, String> pOpensearchParams, final Pageable pPageable)
             throws SearchException {
@@ -207,7 +205,6 @@ public class CatalogController {
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on every type of entities",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
                 HttpStatus.OK);
@@ -230,7 +227,6 @@ public class CatalogController {
     @RequestMapping(path = SEARCH_WITH_FACETS, method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
-    @ResponseBody
     public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> searchAll(
             @RequestParam final Map<String, String> pOpensearchParams,
             @RequestParam(value = "facets", required = false) final Map<String, FacetType> pFacets,
@@ -251,7 +247,6 @@ public class CatalogController {
      */
     @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<Resource<Collection>> getCollection(
             @Valid @PathVariable("urn") final UniformResourceName pUrn) throws SearchException {
         final Collection collection = searchService.get(pUrn);
@@ -274,7 +269,6 @@ public class CatalogController {
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on collection.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(
             @RequestParam final Map<String, String> pOpensearchParams, final Pageable pPageable,
             final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
@@ -288,7 +282,6 @@ public class CatalogController {
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on collections",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
                 HttpStatus.OK);
@@ -304,7 +297,6 @@ public class CatalogController {
      */
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<Resource<Dataset>> getDataset(@Valid @PathVariable("urn") final UniformResourceName pUrn)
             throws SearchException {
         final Dataset dataset = searchService.get(pUrn);
@@ -324,7 +316,6 @@ public class CatalogController {
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(
             @RequestParam final Map<String, String> pOpensearchParams, final Pageable pPageable)
             throws SearchException {
@@ -338,7 +329,6 @@ public class CatalogController {
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on datasets",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATASET, PATH + DATASETS_SEARCH),
                 HttpStatus.OK);
@@ -354,7 +344,6 @@ public class CatalogController {
      */
     @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<Resource<DataObject>> getDataobject(
             @Valid @PathVariable("urn") final UniformResourceName pUrn) throws SearchException {
         final DataObject dataobject = searchService.get(pUrn);
@@ -378,7 +367,6 @@ public class CatalogController {
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<FacettedPagedResources<Resource<DataObject>>> searchDataobjects(
             @RequestParam final Map<String, String> pOpensearchParams,
             @RequestParam(value = "facets", required = false) final Map<String, FacetType> pFacets,
@@ -394,7 +382,6 @@ public class CatalogController {
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on data",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH),
                 HttpStatus.OK);
@@ -420,7 +407,6 @@ public class CatalogController {
     @ResourceAccess(
             description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the associated datasets.",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam final Map<String, String> pOpensearchParams,
             @RequestParam(value = "facets", required = false) final Map<String, FacetType> pFacets,
@@ -437,7 +423,6 @@ public class CatalogController {
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned are datasets",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
@@ -454,7 +439,6 @@ public class CatalogController {
      */
     @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the document of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<Resource<Document>> getDocument(@Valid @PathVariable("urn") final UniformResourceName pUrn)
             throws SearchException {
         final Document document = searchService.get(pUrn);
@@ -477,7 +461,6 @@ public class CatalogController {
      */
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on document.", role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(
             @RequestParam final Map<String, String> pOpensearchParams, final Pageable pPageable,
             final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
@@ -492,7 +475,6 @@ public class CatalogController {
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned are datasets",
             role = DefaultRole.PUBLIC)
-    @ResponseBody
     public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DOCUMENT, PATH + DOCUMENTS_SEARCH),
                 HttpStatus.OK);

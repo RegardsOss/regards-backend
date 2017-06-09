@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
+import fr.cnes.regards.modules.models.domain.attributes.Fragment;
 import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.domain.Terms;
 
@@ -87,57 +88,63 @@ public class SampleDataUtils {
 
     public static final String TAGS_FIELD = "tags";
 
+    public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
+
     // Build some attribute models for all attribute types
     public static final AttributeModel BOOLEAN_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(BOOLEAN_FIELD, AttributeType.BOOLEAN, BOOLEAN_FIELD).get();
+            .build(BOOLEAN_FIELD, AttributeType.BOOLEAN, BOOLEAN_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_FIELD, AttributeType.INTEGER, INTEGER_FIELD).get();
+            .build(INTEGER_FIELD, AttributeType.INTEGER, INTEGER_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel DOUBLE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DOUBLE_FIELD, AttributeType.DOUBLE, DOUBLE_FIELD).get();
+            .build(DOUBLE_FIELD, AttributeType.DOUBLE, DOUBLE_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LONG_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LONG_FIELD, AttributeType.LONG, LONG_FIELD).get();
+            .build(LONG_FIELD, AttributeType.LONG, LONG_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(STRING_FIELD, AttributeType.STRING, STRING_FIELD).get();
+            .build(STRING_FIELD, AttributeType.STRING, STRING_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL_1 = AttributeModelBuilder
-            .build(STRING_FIELD_1, AttributeType.STRING, STRING_FIELD_1).get();
+            .build(STRING_FIELD_1, AttributeType.STRING, STRING_FIELD_1).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LOCAL_DATE_TIME_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LOCAL_DATE_TIME_FIELD, AttributeType.DATE_ISO8601, LOCAL_DATE_TIME_FIELD).get();
+            .build(LOCAL_DATE_TIME_FIELD, AttributeType.DATE_ISO8601, LOCAL_DATE_TIME_FIELD).fragment(TEST_FRAGMENT)
+            .get();
 
     public static final AttributeModel INTEGER_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_RANGE_FIELD, AttributeType.INTEGER_INTERVAL, INTEGER_RANGE_FIELD).get();
+            .build(INTEGER_RANGE_FIELD, AttributeType.INTEGER_INTERVAL, INTEGER_RANGE_FIELD).fragment(TEST_FRAGMENT)
+            .get();
 
     public static final AttributeModel DOUBLE_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DOUBLE_RANGE_FIELD, AttributeType.DOUBLE_INTERVAL, DOUBLE_RANGE_FIELD).get();
+            .build(DOUBLE_RANGE_FIELD, AttributeType.DOUBLE_INTERVAL, DOUBLE_RANGE_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LONG_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LONG_RANGE_FIELD, AttributeType.LONG_INTERVAL, LONG_RANGE_FIELD).get();
+            .build(LONG_RANGE_FIELD, AttributeType.LONG_INTERVAL, LONG_RANGE_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LOCAL_DATE_TIME_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LOCAL_DATE_TIME_RANGE_FIELD, AttributeType.DATE_INTERVAL, LOCAL_DATE_TIME_RANGE_FIELD).get();
+            .build(LOCAL_DATE_TIME_RANGE_FIELD, AttributeType.DATE_INTERVAL, LOCAL_DATE_TIME_RANGE_FIELD)
+            .fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel INTEGER_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_ARRAY_FIELD, AttributeType.INTEGER_ARRAY, INTEGER_ARRAY_FIELD).get();
+            .build(INTEGER_ARRAY_FIELD, AttributeType.INTEGER_ARRAY, INTEGER_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel DOUBLE_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DOUBLE_ARRAY_FIELD, AttributeType.DOUBLE_ARRAY, DOUBLE_ARRAY_FIELD).get();
+            .build(DOUBLE_ARRAY_FIELD, AttributeType.DOUBLE_ARRAY, DOUBLE_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LONG_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LONG_ARRAY_FIELD, AttributeType.LONG_ARRAY, LONG_ARRAY_FIELD).get();
+            .build(LONG_ARRAY_FIELD, AttributeType.LONG_ARRAY, LONG_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(STRING_ARRAY_FIELD, AttributeType.STRING_ARRAY, STRING_ARRAY_FIELD).get();
+            .build(STRING_ARRAY_FIELD, AttributeType.STRING_ARRAY, STRING_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LOCAL_DATE_TIME_ARRAY, AttributeType.DATE_ARRAY, LOCAL_DATE_TIME_ARRAY).get();
+            .build(LOCAL_DATE_TIME_ARRAY, AttributeType.DATE_ARRAY, LOCAL_DATE_TIME_ARRAY).fragment(TEST_FRAGMENT)
+            .get();
 
     public static final AttributeModel TAGS_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(TAGS_FIELD, AttributeType.STRING_ARRAY, TAGS_FIELD).get();
+            .build(TAGS_FIELD, AttributeType.STRING_ARRAY, TAGS_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final List<AttributeModel> LIST = Lists
             .newArrayList(BOOLEAN_ATTRIBUTE_MODEL, INTEGER_ATTRIBUTE_MODEL, DOUBLE_ATTRIBUTE_MODEL,
@@ -184,7 +191,8 @@ public class SampleDataUtils {
     /**
      * Dummy OpenSearch request
      */
-    public static final String QUERY = INTEGER_FIELD + ":(2 AND 3) OR " + STRING_FIELD + ":hello";
+    public static final String QUERY = getFullyQualifiedField(INTEGER_FIELD) + ":(2 AND 3) OR "
+            + getFullyQualifiedField(STRING_FIELD) + ":hello";
 
     /**
      * A query with no "groups" term
@@ -345,5 +353,9 @@ public class SampleDataUtils {
      * A sample email representing the current user
      */
     public static final String EMAIL = "user@email.com";
+
+    private static String getFullyQualifiedField(String name) {
+        return Fragment.getDefaultName() + "." + name;
+    }
 
 }

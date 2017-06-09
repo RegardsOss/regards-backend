@@ -28,7 +28,9 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.opensearch.service.parser.CircleParser;
@@ -80,13 +82,14 @@ public class AccessRightFilterTest {
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
-        Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(SampleDataUtils.LIST), HttpStatus.OK));
+        Mockito.when(attributeModelClient.getAttributes(null, null))
+                .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(SampleDataUtils.LIST), HttpStatus.OK));
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
+        IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
         IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 
-        openSearchService = new OpenSearchService(new QueryParser(attributeModelCache), new GeometryParser(),
-                new CircleParser());
+        openSearchService = new OpenSearchService(new QueryParser(finder), new GeometryParser(), new CircleParser());
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 

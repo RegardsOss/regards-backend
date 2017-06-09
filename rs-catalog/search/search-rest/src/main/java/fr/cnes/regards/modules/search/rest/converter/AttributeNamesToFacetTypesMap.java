@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import com.google.common.collect.ImmutableMap;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
 /**
  * Teaches Spring how to convert a list of attribute names into a map of facet types.
@@ -45,16 +45,16 @@ public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<St
     // @formatter:on
 
     /**
-     * Provides the {@link AttributeModel}s with caching facilities.
+     * Service retrieving the up-to-date list of {@link AttributeModel}s. Autowired by Spring.
      */
-    private final IAttributeModelCache attributeModelCache;
+    private final IAttributeFinder finder;
 
     /**
      * @param pAttributeModelCache
      */
-    public AttributeNamesToFacetTypesMap(IAttributeModelCache pAttributeModelCache) {
+    public AttributeNamesToFacetTypesMap(IAttributeFinder finder) {
         super();
-        attributeModelCache = pAttributeModelCache;
+        this.finder = finder;
     }
 
     /**
@@ -66,11 +66,12 @@ public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<St
 
         try {
             for (String attributeName : pAttributeNames) {
-                AttributeModel model = attributeModelCache.findByName(attributeName);
+                AttributeModel model = finder.findByName(attributeName);
+                // FIXME : add properties wrapper if does not exists
                 facetMapBuilder.put(attributeName, MAP.get(model.getType()));
             }
-        } catch (EntityNotFoundException e) {
-            throw new ConversionException(e);
+        } catch (OpenSearchUnknownParameter e) {
+            throw new ConversionException(e.getMessage(), e);
         }
 
         return facetMapBuilder.build();

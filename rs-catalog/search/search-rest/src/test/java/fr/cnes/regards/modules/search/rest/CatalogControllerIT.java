@@ -361,7 +361,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT)
                 .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
-        performDefaultGet("/dataobjects/search", expectations, "Error searching dataobjects", builder);
+        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
     }
 
     /**
@@ -382,7 +382,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.empty()));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT);
-        performDefaultGet("/dataobjects/search", expectations, "Error searching dataobjects", builder);
+        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
     }
 
     /**
@@ -402,7 +402,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.empty()));
         final RequestParamBuilder builder = RequestParamBuilder.build();
-        performDefaultGet("/dataobjects/search", expectations, "Error searching dataobjects", builder);
+        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
     }
 
     /**

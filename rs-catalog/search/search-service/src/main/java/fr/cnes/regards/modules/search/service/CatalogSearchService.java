@@ -1,8 +1,11 @@
 package fr.cnes.regards.modules.search.service;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringJoiner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -27,6 +30,11 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  */
 @Service
 public class CatalogSearchService implements ICatalogSearchService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -72,6 +80,13 @@ public class CatalogSearchService implements ICatalogSearchService {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(pOpensearchParams);
+
+            if (LOGGER.isDebugEnabled() && (pOpensearchParams != null)) {
+                for (Entry<String, String> osEntry : pOpensearchParams.entrySet()) {
+                    LOGGER.debug("OpenSearch entry key \"{}\" mapped to query \"{}\"", osEntry.getKey(),
+                                 osEntry.getValue());
+                }
+            }
 
             // Apply security filter
             criterion = accessRightFilter.addUserGroups(criterion);
