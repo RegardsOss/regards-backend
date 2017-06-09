@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -431,6 +432,11 @@ public class ProjectUserService implements IProjectUserService {
             anyone.setLicenseAccepted(false);
         }
         projectUserRepository.save(everyone);
+    }
+
+    @Override
+    public Collection<ProjectUser> retrieveUserByRole(Role role) {
+        return projectUserRepository.findByRoleName(role.getName());
     }
 
 }

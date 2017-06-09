@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -233,4 +234,5 @@ public interface IProjectUserService {
      */
     void resetLicence();
 
+    Collection<ProjectUser> retrieveUserByRole(Role role);
 }
