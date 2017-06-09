@@ -4,6 +4,7 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -71,7 +72,7 @@ public class PluginMetaData {
     /**
      * The parameters of the plugin
      */
-    private List<PluginParameterType> parameters;
+    private List<PluginParameterType> parameters = new ArrayList<>();
 
     public PluginMetaData(Plugin plugin) {
         author = plugin.author();
@@ -176,7 +177,11 @@ public class PluginMetaData {
     }
 
     public void setParameters(List<PluginParameterType> pParameters) {
-        parameters = pParameters;
+        if (pParameters == null) {
+            this.parameters.clear();
+        } else {
+            parameters = pParameters;
+        }
     }
 
 }
