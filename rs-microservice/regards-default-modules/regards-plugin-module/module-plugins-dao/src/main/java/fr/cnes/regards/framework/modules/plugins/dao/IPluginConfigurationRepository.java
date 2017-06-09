@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -43,4 +44,8 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
     @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     PluginConfiguration findById(Long id);
 
+    @Override
+    @Modifying
+    @Query(value = "DELETE FROM t_plugin_configuration CASCADE", nativeQuery = true)
+    void deleteAll();
 }

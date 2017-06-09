@@ -4,9 +4,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -20,6 +17,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.Type;
 
@@ -57,7 +56,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     private String value;
 
     /**
-     * {@link PluginConfiguration} parameter is optional This is used when a plugin paramter leads to a plugin
+     * {@link PluginConfiguration} parameter is optional This is used when a plugin parameter leads to a plugin
      * configuration. For example, a datasource (used by Dataset) is a plugin configuration and has a paramater
      * "connection" which is also a plugin configuration (the connection to database)
      */
