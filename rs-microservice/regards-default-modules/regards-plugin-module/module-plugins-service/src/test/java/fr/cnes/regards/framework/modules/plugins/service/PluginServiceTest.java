@@ -225,7 +225,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findOneByLabel(theSamePluginConfiguration.getLabel()))
                 .thenReturn(aPluginConfigurationWithId);
         pluginServiceMocked.savePluginConfiguration(theSamePluginConfiguration);
-        
+
         // An exception is throw, otherwise the test is failed
         Assert.fail();
     }
@@ -451,7 +451,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
+                .addParameterDynamic(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
@@ -485,7 +485,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
+                .addParameterDynamic(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
@@ -522,8 +522,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build().addParameter(SamplePlugin.COEFF, "-1")
-                .getParameters().get(0);
+        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+                .addParameterDynamic(SamplePlugin.COEFF, "-1").getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
@@ -592,7 +592,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
+                .addParameterDynamic(SamplePlugin.SUFFIXE, BLUE).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
