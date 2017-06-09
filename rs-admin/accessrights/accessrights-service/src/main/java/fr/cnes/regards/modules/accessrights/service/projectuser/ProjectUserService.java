@@ -383,8 +383,8 @@ public class ProjectUserService implements IProjectUserService {
             final ProjectUser newProjectUser = new ProjectUser();
             newProjectUser.setEmail(pDto.getEmail());
             newProjectUser.setRole(role);
-            if (pDto.getMetaData() != null) {
-                newProjectUser.setMetaData(pDto.getMetaData());
+            if (pDto.getMetadata() != null) {
+                newProjectUser.setMetaData(pDto.getMetadata());
             }
             newProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
             return save(newProjectUser);

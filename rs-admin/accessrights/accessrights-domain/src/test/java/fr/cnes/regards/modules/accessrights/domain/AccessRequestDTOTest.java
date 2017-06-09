@@ -94,11 +94,11 @@ public class AccessRequestDTOTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getMetaData()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#getMetadata()}.
      */
     @Test
     public void testGetMetaData() {
-        Assert.assertEquals(metaDatas, access.getMetaData());
+        Assert.assertEquals(metaDatas, access.getMetadata());
     }
 
     /**
@@ -144,14 +144,14 @@ public class AccessRequestDTOTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setMetaData(java.util.List)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto#setMetadata(java.util.List)}.
      */
     @Test
     public void testSetMetaData() {
         final List<MetaData> newMetaData = new ArrayList<MetaData>();
         newMetaData.add(new MetaData());
-        access.setMetaData(newMetaData);
-        Assert.assertEquals(newMetaData, access.getMetaData());
+        access.setMetadata(newMetaData);
+        Assert.assertEquals(newMetaData, access.getMetadata());
     }
 
     /**

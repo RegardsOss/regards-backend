@@ -206,10 +206,17 @@ public class RoleController implements IResourceController<Role> {
                 resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
                                         MethodParamFactory.build(String.class, pElement.getName()),
                                         MethodParamFactory.build(Role.class));
-                if(isDeletable(pElement)) {
+                if (isDeletable(pElement)) {
                     resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
                                             MethodParamFactory.build(String.class, pElement.getName()));
                 }
+            }
+            if (!(pElement.getName().equals(DefaultRole.PROJECT_ADMIN) || pElement.getName()
+                    .equals(DefaultRole.INSTANCE_ADMIN))) {
+                //we add the link to manage a role resources accesses except for PROEJCT_ADMIN and INSTANCE_ADMIN
+                resourceService
+                        .addLink(resource, RoleResourceController.class, "getRoleResources", "manage-resource-access",
+                                 MethodParamFactory.build(String.class, pElement.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");
@@ -218,7 +225,7 @@ public class RoleController implements IResourceController<Role> {
     }
 
     private boolean isDeletable(Role role) {
-        Collection<ProjectUser> users=projectUserService.retrieveUserByRole(role);
+        Collection<ProjectUser> users = projectUserService.retrieveUserByRole(role);
         return users.isEmpty();
     }
 

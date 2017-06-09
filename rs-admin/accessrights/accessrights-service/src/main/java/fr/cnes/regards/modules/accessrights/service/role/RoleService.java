@@ -219,7 +219,8 @@ public class RoleService implements IRoleService {
 
     @Override
     public Set<Role> retrieveRoles() {
-        try (Stream<Role> stream = StreamSupport.stream(roleRepository.findAllDistinctLazy().spliterator(), true)) {
+        // Instance Admin role is only usable by one user: the project admin configured at install, so we have not to send it back to the front
+        try (Stream<Role> stream = StreamSupport.stream(roleRepository.findAllDistinctLazy().spliterator(), true).filter(r->!r.getName().equals(DefaultRole.INSTANCE_ADMIN.name()))) {
             return stream.collect(Collectors.toSet());
         }
     }
