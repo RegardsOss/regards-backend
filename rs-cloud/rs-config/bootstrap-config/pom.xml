@@ -83,6 +83,17 @@
 		</profile>
 		<profile>
 			<id>delivery</id>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/delivery.properties</filter>
+				</filters>
+			</build>
 		</profile>
 	</profiles>
 	<build>
