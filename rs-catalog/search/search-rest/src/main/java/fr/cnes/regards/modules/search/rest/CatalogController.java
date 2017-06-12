@@ -447,6 +447,29 @@ public class CatalogController {
     }
 
     /**
+     * Unified entity retrieval endpoint
+     * @param pUrn the entity URN
+     * @return an entity
+     * @throws SearchException if error occurs.
+     */
+    @SuppressWarnings("unchecked")
+    @RequestMapping(path = "/entities/{urn}", method = RequestMethod.GET)
+    @ResourceAccess(description = "Return the entity of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
+    public <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
+            @Valid @PathVariable("urn") final UniformResourceName pUrn) throws SearchException {
+        // Retrieve entity
+        E indexable = searchService.get(pUrn);
+        // Prepare resource according to its type
+        Resource<E> resource;
+        if (EntityType.DATASET.name().equals(indexable.getType())) {
+            resource = (Resource<E>) datasetResourcesAssembler.toResource((Dataset) indexable);
+        } else {
+            resource = toResource(indexable);
+        }
+        return new ResponseEntity<>(resource, HttpStatus.OK);
+    }
+
+    /**
      * Perform an OpenSearch request on documents.
      *
      * @param pOpensearchParams

@@ -14,8 +14,8 @@ import org.mockito.Mockito;
 import com.thoughtworks.xstream.converters.ConversionException;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.models.domain.attributes.Fragment;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 import fr.cnes.regards.modules.search.rest.converter.AttributeNamesToFacetTypesMap;
@@ -40,11 +40,15 @@ public class AttributeNamesToFacetTypesMapTest {
         IAttributeFinder attributeFinder = Mockito.mock(IAttributeFinder.class);
         Mockito.when(attributeFinder.findByName(CatalogControllerTestUtils.STRING_ATTRIBUTE_NAME))
                 .thenReturn(CatalogControllerTestUtils.STRING_ATTRIBUTE_MODEL);
-        Mockito.when(attributeFinder
-                .findByName(getFullyQualifiedField(CatalogControllerTestUtils.INTEGER_ATTRIBUTE_NAME)))
+        Mockito.when(attributeFinder.findByName(CatalogControllerTestUtils.INTEGER_ATTRIBUTE_MODEL
+                .buildJsonPath(StaticProperties.PROPERTIES)))
                 .thenReturn(CatalogControllerTestUtils.INTEGER_ATTRIBUTE_MODEL);
-        Mockito.when(attributeFinder.findByName(getFullyQualifiedField(CatalogControllerTestUtils.DATE_ATTRIBUTE_NAME)))
+        Mockito.when(attributeFinder
+                .findByName(CatalogControllerTestUtils.DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES)))
                 .thenReturn(CatalogControllerTestUtils.DATE_ATTRIBUTE_MODEL);
+        Mockito.when(attributeFinder.findByName(CatalogControllerTestUtils.EXTRA_ATTRIBUTE_MODEL
+                .buildJsonPath(StaticProperties.PROPERTIES)))
+                .thenReturn(CatalogControllerTestUtils.EXTRA_ATTRIBUTE_MODEL);
         Mockito.when(attributeFinder.findByName(CatalogControllerTestUtils.UNEXISTNG_ATTRIBUTE_NAME))
                 .thenThrow(ConversionException.class);
 
@@ -60,14 +64,14 @@ public class AttributeNamesToFacetTypesMapTest {
         // Define expected conversion result
         Map<String, FacetType> expected = new HashMap<>();
         expected.put(CatalogControllerTestUtils.STRING_ATTRIBUTE_NAME, FacetType.STRING);
-        expected.put(getFullyQualifiedField(CatalogControllerTestUtils.INTEGER_ATTRIBUTE_NAME), FacetType.NUMERIC);
-        expected.put(getFullyQualifiedField(CatalogControllerTestUtils.DATE_ATTRIBUTE_NAME), FacetType.DATE);
+        expected.put(CatalogControllerTestUtils.INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES),
+                     FacetType.NUMERIC);
+        expected.put(CatalogControllerTestUtils.DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES),
+                     FacetType.DATE);
+        expected.put(CatalogControllerTestUtils.EXTRA_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES),
+                     FacetType.STRING);
 
         Assert.assertEquals(expected, converter.convert(CatalogControllerTestUtils.FACETS_AS_ARRAY));
-    }
-
-    private static String getFullyQualifiedField(String name) {
-        return Fragment.getDefaultName() + "." + name;
     }
 
     /**

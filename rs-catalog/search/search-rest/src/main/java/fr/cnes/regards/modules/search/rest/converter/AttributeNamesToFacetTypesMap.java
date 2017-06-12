@@ -66,9 +66,8 @@ public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<St
 
         try {
             for (String attributeName : pAttributeNames) {
-                AttributeModel model = finder.findByName(attributeName);
-                // FIXME : add properties wrapper if does not exists
-                facetMapBuilder.put(attributeName, MAP.get(model.getType()));
+                AttributeModel attModel = finder.findByName(attributeName);
+                facetMapBuilder.put(attributeName, MAP.get(attModel.getType()));
             }
         } catch (OpenSearchUnknownParameter e) {
             throw new ConversionException(e.getMessage(), e);

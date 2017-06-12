@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
@@ -125,32 +126,8 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
                 .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(attModels)));
 
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "(" + fragmentName + "." + attributeName
-                + ":\"lmlml*\" AND (tags:(URN\\:AIP\\:DATASET\\:project1\\:3874e16e\\-f729\\-49c0\\-bae0\\-2c6903ec64e4\\:V1)))");
-        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
-
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_DAM_ARC_810")
-    @Requirement("REGARDS_DSL_DAM_ARC_820")
-    public final void searchTagsAndFragmentAttribute2() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-
-        String fragmentName = "FragmentDataobject";
-        String attributeName = "Name";
-
-        // Mock required attribute
-        Fragment fragment = new Fragment();
-        fragment.setName(fragmentName);
-        AttributeModel attModel = AttributeModelBuilder.build(attributeName, AttributeType.STRING, null)
-                .fragment(fragment).get();
-        List<AttributeModel> attModels = Lists.newArrayList(attModel);
-        Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
-                .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(attModels)));
-
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "(" + fragmentName + "." + attributeName
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "("
+                + attModel.buildJsonPath(StaticProperties.PROPERTIES)
                 + ":\"lmlml*\" AND (tags:(URN\\:AIP\\:DATASET\\:project1\\:3874e16e\\-f729\\-49c0\\-bae0\\-2c6903ec64e4\\:V1)))");
         performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
 

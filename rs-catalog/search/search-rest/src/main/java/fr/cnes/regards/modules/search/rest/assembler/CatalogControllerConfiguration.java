@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.rest.assembler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +10,6 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
 
 /**
  *

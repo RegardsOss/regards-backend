@@ -4,8 +4,10 @@
 package fr.cnes.regards.modules.search.rest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -37,6 +39,10 @@ import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.entities.domain.attribute.StringAttribute;
+import fr.cnes.regards.modules.entities.domain.attribute.builder.AttributeBuilder;
+import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 
@@ -81,6 +87,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private MultitenantFlattenedAttributeAdapterFactory factory;
 
     /**
      * A dummy collection
@@ -157,6 +166,12 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         esRepository.save(DEFAULT_TENANT, COLLECTION2);
         esRepository.save(DEFAULT_TENANT, DATASET);
         esRepository.save(DEFAULT_TENANT, DATASET_1);
+
+        Set<AbstractAttribute<?>> ppties = new HashSet<>();
+        ppties.add(AttributeBuilder.buildString(CatalogControllerTestUtils.EXTRA_ATTRIBUTE_NAME, "extrafacet"));
+        DATAOBJECT.setProperties(ppties);
+
+        factory.registerSubtype(DEFAULT_TENANT, StringAttribute.class, CatalogControllerTestUtils.EXTRA_ATTRIBUTE_NAME);
         esRepository.save(DEFAULT_TENANT, DATAOBJECT);
         esRepository.save(DEFAULT_TENANT, DOCUMENT);
         esRepository.refresh(DEFAULT_TENANT);
@@ -356,6 +371,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                         Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.hasItem(Matchers
+                .hasEntry("attributeName", "properties." + CatalogControllerTestUtils.EXTRA_ATTRIBUTE_NAME))));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                         Matchers.hasItem(Matchers.hasEntry("type", "STRING"))));
         final RequestParamBuilder builder = RequestParamBuilder.build()

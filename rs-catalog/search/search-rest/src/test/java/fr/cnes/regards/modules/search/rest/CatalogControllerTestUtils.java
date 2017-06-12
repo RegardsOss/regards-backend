@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
@@ -49,6 +50,11 @@ public class CatalogControllerTestUtils {
     public static final String UNEXISTNG_ATTRIBUTE_NAME = "unexisting";
 
     /**
+     * The name of an attribute of type integer
+     */
+    public static final String EXTRA_ATTRIBUTE_NAME = "extra";
+
+    /**
      * Dummy OpenSearch request
      */
     // public static final String QUERY = "integer:(2 AND 3) OR string:hello";
@@ -74,18 +80,6 @@ public class CatalogControllerTestUtils {
      */
     public static final String Q_FINDS_ONE_DOCUMENT = "label:mydocument";
 
-    /**
-     * A dummy list of facets
-     */
-    public static final List<String> FACETS = Lists.newArrayList(getFullyQualifiedField(INTEGER_ATTRIBUTE_NAME),
-                                                                 STRING_ATTRIBUTE_NAME,
-                                                                 getFullyQualifiedField(DATE_ATTRIBUTE_NAME));
-
-    /**
-     * The dummy list of facets as array
-     */
-    public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
-
     public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
 
     public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
@@ -97,7 +91,24 @@ public class CatalogControllerTestUtils {
     public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
             .build(DATE_ATTRIBUTE_NAME, AttributeType.DATE_ISO8601, DATE_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
 
-    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, DATE_ATTRIBUTE_MODEL);
+    public static final AttributeModel EXTRA_ATTRIBUTE_MODEL = AttributeModelBuilder
+            .build(EXTRA_ATTRIBUTE_NAME, AttributeType.STRING, EXTRA_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+
+    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, DATE_ATTRIBUTE_MODEL,
+                                                                       EXTRA_ATTRIBUTE_MODEL);
+
+    /**
+     * A dummy list of facets
+     */
+    public static final List<String> FACETS = Lists
+            .newArrayList(INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES), STRING_ATTRIBUTE_NAME,
+                          DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES),
+                          EXTRA_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES));
+
+    /**
+     * The dummy list of facets as array
+     */
+    public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
     public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
@@ -155,9 +166,4 @@ public class CatalogControllerTestUtils {
      * A sort query param
      */
     public static final String SORT = "ipId,asc";
-
-    private static String getFullyQualifiedField(String name) {
-        return Fragment.getDefaultName() + "." + name;
-    }
-
 }
