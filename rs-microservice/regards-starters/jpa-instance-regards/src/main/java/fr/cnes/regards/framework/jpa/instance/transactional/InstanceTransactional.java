@@ -3,16 +3,10 @@
  */
 package fr.cnes.regards.framework.jpa.instance.transactional;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.springframework.transaction.annotation.Transactional;
+import java.lang.annotation.*;
 
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
  * Meta annotation to manage instance transaction
@@ -24,7 +18,7 @@ import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Transactional(transactionManager = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+@RegardsTransactional(transactionManager = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 public @interface InstanceTransactional {
 
 }

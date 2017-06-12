@@ -3,18 +3,14 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.transactional;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
  * Meta annotation to manage multitenant transaction
@@ -26,7 +22,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProper
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Transactional(transactionManager = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@RegardsTransactional(transactionManager = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 public @interface MultitenantTransactional {
 
     /**

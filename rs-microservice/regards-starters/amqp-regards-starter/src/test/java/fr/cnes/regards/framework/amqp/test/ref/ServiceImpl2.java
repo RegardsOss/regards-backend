@@ -31,7 +31,6 @@ public class ServiceImpl2 implements Service {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    // @Transactional
     public void process(boolean crash) throws Exception {
         Object o = template.receiveAndConvert(Config.QUEUE_NAME);
         Assert.assertNotNull(o);

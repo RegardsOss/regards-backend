@@ -3,12 +3,11 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
+import javax.persistence.Entity;
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.Entity;
-import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
 import org.hibernate.MultiTenancyStrategy;
@@ -39,7 +38,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;

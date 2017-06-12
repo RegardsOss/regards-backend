@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.multitransactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
  * Minimal test service to test transaction synchronization between data source and message
@@ -38,7 +38,7 @@ public class TodoService implements ITodoService {
     }
 
     @Override
-    @Transactional
+    @RegardsTransactional
     public Todo saveAndPublish(Todo pTodo, boolean pCrash) {
         // Save in database
         Todo todo = todoRepository.save(pTodo);
@@ -54,7 +54,7 @@ public class TodoService implements ITodoService {
     }
 
     @Override
-    @Transactional
+    @RegardsTransactional
     public Todo pollAndSave(boolean pCrash) {
         // Poll todo
         TenantWrapper<TodoEvent> wrapper = poller.poll(TodoEvent.class);
