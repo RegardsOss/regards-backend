@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -191,8 +192,8 @@ public class SampleDataUtils {
     /**
      * Dummy OpenSearch request
      */
-    public static final String QUERY = getFullyQualifiedField(INTEGER_FIELD) + ":(2 AND 3) OR "
-            + getFullyQualifiedField(STRING_FIELD) + ":hello";
+    public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES)
+            + ":(2 AND 3) OR " + STRING_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":hello";
 
     /**
      * A query with no "groups" term
@@ -353,9 +354,4 @@ public class SampleDataUtils {
      * A sample email representing the current user
      */
     public static final String EMAIL = "user@email.com";
-
-    private static String getFullyQualifiedField(String name) {
-        return Fragment.getDefaultName() + "." + name;
-    }
-
 }
