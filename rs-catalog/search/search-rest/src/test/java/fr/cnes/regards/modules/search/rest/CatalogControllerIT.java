@@ -356,7 +356,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(String, Map, Pageable)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects}.
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
@@ -383,7 +383,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(String, Map, Pageable)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects}.
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
@@ -404,7 +404,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects(String, Map, Pageable)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjects}.
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
@@ -424,7 +424,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjectsReturnDatasets(String, Map, Pageable, PagedResourcesAssembler)}.
+     * {@link fr.cnes.regards.modules.search.rest.CatalogController#searchDataobjectsReturnDatasets}.
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
@@ -434,6 +434,16 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
                           builder);
     }
+
+    @Test
+    public final void testSearchDataobjectsReturnDatasetsNoCriterion() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        final RequestParamBuilder builder = RequestParamBuilder.build();
+        performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
+                          builder);
+    }
+
 
     /**
      * Le système doit permettre de manière synchrone d’accéder aux informations d’un document via son IP_ID.

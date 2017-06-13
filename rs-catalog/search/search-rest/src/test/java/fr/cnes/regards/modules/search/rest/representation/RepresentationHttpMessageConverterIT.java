@@ -97,10 +97,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWitho
         try {
             geoJson = pluginService.getPluginConfigurationByLabel(RepresentationConfiguration.DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
             pluginService.deletePluginConfiguration(geoJson.getId());
-        } catch (EntityNotFoundException e) {
-            e.printStackTrace();
-        } catch (ModuleException e) {
-            e.printStackTrace();
+        } catch (ModuleException e) { // NOSONAR
         }
     }
 
