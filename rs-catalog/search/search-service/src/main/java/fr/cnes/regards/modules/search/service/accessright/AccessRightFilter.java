@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -68,9 +69,13 @@ public class AccessRightFilter implements IAccessRightFilter {
      */
     @Override
     public ICriterion addUserGroups(final ICriterion pCriterion) {
-        final String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        FeignSecurityManager.asSystem();
+
+        // Retrieve current user from security context
+        String userEmail = SecurityUtils.getActualUser();
+        Assert.notNull(userEmail, "No user found!");
+
         try {
+            FeignSecurityManager.asSystem();
             if (!projectUserClient.isAdmin(userEmail).getBody()) {
                 final List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail,
                                                                              runtimeTenantResolver.getTenant());

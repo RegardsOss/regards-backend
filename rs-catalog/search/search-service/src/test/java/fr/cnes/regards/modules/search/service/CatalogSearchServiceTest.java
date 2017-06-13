@@ -52,6 +52,11 @@ public class CatalogSearchServiceTest {
     private OpenSearchService openSearchService;
 
     /**
+     * Facet converter
+     */
+    private IFacetConverter facetConverter;
+
+    /**
      * Adds user group and data access filters
      */
     private IAccessRightFilter accessRightFilter;
@@ -79,6 +84,9 @@ public class CatalogSearchServiceTest {
         searchService = Mockito.mock(ISearchService.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
+        facetConverter = Mockito.mock(IFacetConverter.class);
+
+        Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
 
         // Globally mock what's mockable yet
         Mockito.when(accessRightFilter.addUserGroups(Mockito.any()))
@@ -88,7 +96,8 @@ public class CatalogSearchServiceTest {
                 .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter);
+        catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
+                facetConverter);
     }
 
     /**
@@ -107,7 +116,6 @@ public class CatalogSearchServiceTest {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
         Map<String, String> q = new HashMap<>();
         q.put("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
-        Map<String, FacetType> facets = SampleDataUtils.FACETS;
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
@@ -124,10 +132,10 @@ public class CatalogSearchServiceTest {
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogSearchService.search(q, searchKey, facets, pageable);
+        catalogSearchService.search(q, searchKey, SampleDataUtils.QUERY_FACETS, pageable);
 
         // Check
-        Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets);
+        Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, SampleDataUtils.FACETS);
     }
 
     /**
@@ -162,7 +170,7 @@ public class CatalogSearchServiceTest {
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogSearchService.search(q, searchKey, facets, pageable);
+        catalogSearchService.search(q, searchKey, null, pageable);
 
         // Check
         Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets);

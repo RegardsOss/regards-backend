@@ -262,6 +262,11 @@ public class SampleDataUtils {
             .put("integer", FacetType.NUMERIC).put("string", FacetType.STRING).build();
 
     /**
+     * A dummy list of facets
+     */
+    public static final String[] QUERY_FACETS = { "integer", "string" };
+
+    /**
      * A dummy page of dataobjects
      */
     public static final Page<DataObject> PAGE_DATAOBJECT = new PageImpl<>(Lists.newArrayList(DATAOBJECT));
