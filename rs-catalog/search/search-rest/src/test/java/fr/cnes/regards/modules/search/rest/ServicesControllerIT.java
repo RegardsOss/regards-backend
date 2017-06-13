@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
-import javax.transaction.Transactional;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -22,7 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -44,7 +42,7 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
  */
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogITConfiguration.class })
-@Transactional
+@MultitenantTransactional
 public class ServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServicesControllerIT.class);
