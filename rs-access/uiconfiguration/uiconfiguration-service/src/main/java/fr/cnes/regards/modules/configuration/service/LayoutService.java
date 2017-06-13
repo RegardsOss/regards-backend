@@ -64,7 +64,9 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
             final Layout layout = new Layout();
             layout.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             layout.setLayout(layoutConf);
-            tryRetrieveLayout(layout);
+            if (!repository.findByApplicationId(layout.getApplicationId()).isPresent()) {
+                repository.save(layout);
+            }
         } catch (final IOException e) {
             throw new InitUIException(e);
         }
@@ -77,21 +79,11 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
             final Layout layout = new Layout();
             layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             layout.setLayout(layoutConf);
-            tryRetrieveLayout(layout);
+            if (!repository.findByApplicationId(layout.getApplicationId()).isPresent()) {
+                repository.save(layout);
+            }
         } catch (final IOException e) {
             throw new InitUIException(e);
-        }
-    }
-
-    /**
-     * @param layout
-     */
-    private void tryRetrieveLayout(final Layout layout) {
-        try {
-            retrieveLayout(layout.getApplicationId());
-        } catch (final EntityNotFoundException e) {
-            repository.save(layout);
-            LOG.info("Could not retrieve the project layout", e);
         }
     }
 
