@@ -544,7 +544,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
                                   .or(Matchers.startsWith("http://localhost/datasets/"))));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
-        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
+        performDefaultGet(CatalogController.DATASETS_SEARCH, expectations, "Error searching datasets", builder);
     }
 
     /*
