@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.module.rest.utils.Validity;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -479,26 +480,7 @@ public class AccountsController implements IResourceController<Account> {
     }
 
         @SuppressWarnings("unused")
-    private static class Validity {
 
-        private Boolean validity; //NOSONAR
-
-        private Validity() {
-        }
-
-        private Validity(final Boolean pValidity) {
-            validity = pValidity;
-        }
-
-        public Boolean getValidity() {
-            return validity;
-        }
-
-        public void setValidity(final Boolean pValidity) {
-            validity = pValidity;
-        }
-
-    }
 
     private static class PasswordRules {
 
