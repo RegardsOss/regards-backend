@@ -80,13 +80,13 @@ public class CatalogSearchService implements ICatalogSearchService {
         try {
             SearchKey<?, ?> searchKey = pSearchKey;
             // Build criterion from query
-            ICriterion criterion = openSearchService.parse(pOpensearchParams);
+            ICriterion criterion = openSearchService.parse(allParams);
 
-        if (LOGGER.isDebugEnabled() && (allParams != null)) {
-            for (Entry<String, String> osEntry : allParams.entrySet()) {
-                LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
+            if (LOGGER.isDebugEnabled() && (allParams != null)) {
+                for (Entry<String, String> osEntry : allParams.entrySet()) {
+                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
+                }
             }
-        }
 
             // Build search facets from query facets
             Map<String, FacetType> searchFacets = facetConverter.convert(facets);
@@ -96,7 +96,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             // This is correct because all
             if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey) && (
                     TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
+                searchKey = Searches
+                        .onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Apply security filter
@@ -104,7 +105,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
             // Perform search
             if (searchKey instanceof SimpleSearchKey) {
-                return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, pFacets);
+                return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
                 return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
             }
