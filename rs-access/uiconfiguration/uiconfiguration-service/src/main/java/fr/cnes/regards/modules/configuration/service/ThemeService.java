@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
@@ -23,7 +24,7 @@ import fr.cnes.regards.modules.configuration.domain.Theme;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
 
 @Service(value = "themeService")
-@Transactional
+@RegardsTransactional
 public class ThemeService extends AbstractUiConfigurationService implements IThemeService {
 
     /**

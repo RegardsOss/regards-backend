@@ -10,10 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
-
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -35,7 +34,7 @@ import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
  * @since 1.0-SNAPSHOT
  */
 @Service(value = "pluginConfigurationService")
-@Transactional
+@RegardsTransactional
 public class UIPluginConfigurationService implements IUIPluginConfigurationService {
 
     @Autowired

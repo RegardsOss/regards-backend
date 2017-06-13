@@ -7,12 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
 import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 
-@Transactional
+@RegardsTransactional
 public interface IUIPluginDefinitionService {
 
     /**
