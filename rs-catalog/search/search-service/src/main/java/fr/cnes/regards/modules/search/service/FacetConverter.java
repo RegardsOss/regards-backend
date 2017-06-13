@@ -1,13 +1,12 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.search.rest.converter;
+package fr.cnes.regards.modules.search.service;
 
 import java.util.Map;
 
 import org.apache.commons.configuration.ConversionException;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -18,12 +17,14 @@ import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttribut
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
 /**
- * Teaches Spring how to convert a list of attribute names into a map of facet types.
+ * The converter retrieves attributes regarding their names. It may be static or dynamic attributes.
+ * And then build facets according to attribute properties.
  *
- * @author Xavier-Alexandre Brochard
+ * @author Marc Sordi
+ *
  */
-@ControllerAdvice
-public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<String, FacetType>> {
+@Service
+public class FacetConverter implements IFacetConverter {
 
     // @formatter:off
     private static final Map<AttributeType, FacetType> MAP = new ImmutableMap.Builder<AttributeType, FacetType>()
@@ -49,25 +50,22 @@ public class AttributeNamesToFacetTypesMap implements Converter<String[], Map<St
      */
     private final IAttributeFinder finder;
 
-    /**
-     * @param pAttributeModelCache
-     */
-    public AttributeNamesToFacetTypesMap(IAttributeFinder finder) {
-        super();
+    public FacetConverter(IAttributeFinder finder) {
         this.finder = finder;
     }
 
-    /**
-     * Converts a list of attribute names like ["altitude", "lastUpdate"] to the map of corresponding facets.
-     */
     @Override
-    public Map<String, FacetType> convert(String[] pAttributeNames) {
+    public Map<String, FacetType> convert(String[] propertyNames) {
+        if (propertyNames == null) {
+            return null;
+        }
+
         ImmutableMap.Builder<String, FacetType> facetMapBuilder = new ImmutableMap.Builder<>();
 
         try {
-            for (String attributeName : pAttributeNames) {
-                AttributeModel attModel = finder.findByName(attributeName);
-                facetMapBuilder.put(attributeName, MAP.get(attModel.getType()));
+            for (String propertyName : propertyNames) {
+                AttributeModel attModel = finder.findByName(propertyName);
+                facetMapBuilder.put(propertyName, MAP.get(attModel.getType()));
             }
         } catch (OpenSearchUnknownParameter e) {
             throw new ConversionException(e.getMessage(), e);

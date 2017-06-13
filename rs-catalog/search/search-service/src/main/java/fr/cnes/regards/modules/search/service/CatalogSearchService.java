@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -52,56 +51,59 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IAccessRightFilter accessRightFilter;
 
     /**
-     * @param pSearchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
-     * @param pOpenSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
-     * @param pAccessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
+     * Facet converter
      */
-    public CatalogSearchService(ISearchService pSearchService, IOpenSearchService pOpenSearchService,
-            IAccessRightFilter pAccessRightFilter) {
-        super();
-        Assert.notNull(pSearchService);
-        Assert.notNull(pOpenSearchService);
-        Assert.notNull(pAccessRightFilter);
-        searchService = pSearchService;
-        openSearchService = pOpenSearchService;
-        accessRightFilter = pAccessRightFilter;
+    private final IFacetConverter facetConverter;
+
+    /**
+     * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
+     * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
+     * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
+     * @param facetConverter manage facet conversion
+     */
+    public CatalogSearchService(ISearchService searchService, IOpenSearchService openSearchService,
+            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter) {
+        this.searchService = searchService;
+        this.openSearchService = openSearchService;
+        this.accessRightFilter = accessRightFilter;
+        this.facetConverter = facetConverter;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.search.service.ICatalogSearchService#search(java.lang.String, org.elasticsearch.action.search.SearchType, java.lang.Class, java.util.List,
-     * org.springframework.data.domain.Pageable, org.springframework.data.web.PagedResourcesAssembler)
-     */
     @SuppressWarnings("unchecked")
     @Override
-    public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> pOpensearchParams,
-            SearchKey<S, R> pSearchKey, Map<String, FacetType> pFacets, Pageable pPageable) throws SearchException {
-        try {
-            // Build criterion from query
-            ICriterion criterion = openSearchService.parse(pOpensearchParams);
+    public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> pSearchKey,
+            String[] facets, Pageable pPageable) throws SearchException {
 
-            if (LOGGER.isDebugEnabled() && (pOpensearchParams != null)) {
-                for (Entry<String, String> osEntry : pOpensearchParams.entrySet()) {
-                    LOGGER.debug("OpenSearch entry key \"{}\" mapped to query \"{}\"", osEntry.getKey(),
-                                 osEntry.getValue());
-                }
+        if (LOGGER.isDebugEnabled() && (allParams != null)) {
+            for (Entry<String, String> osEntry : allParams.entrySet()) {
+                LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
             }
+        }
 
+        try {
+            // Build search facets from query facets
+            Map<String, FacetType> searchFacets = facetConverter.convert(facets);
+
+            // Build criterion from OpenSearch parameters extracted from query parameters
+            ICriterion criterion = openSearchService.parse(allParams);
             // Apply security filter
             criterion = accessRightFilter.addUserGroups(criterion);
 
             // Perform search
             if (pSearchKey instanceof SimpleSearchKey) {
-                return searchService.search((SimpleSearchKey<R>) pSearchKey, pPageable, criterion, pFacets);
+                return searchService.search((SimpleSearchKey<R>) pSearchKey, pPageable, criterion, searchFacets);
             } else {
                 return searchService.search((JoinEntitySearchKey<S, R>) pSearchKey, pPageable, criterion);
             }
 
         } catch (OpenSearchParseException e) {
-            StringJoiner sj = new StringJoiner("&");
-            pOpensearchParams.forEach((key, value) -> sj.add(key + "=" + value));
-            throw new SearchException(sj.toString(), e);
+            String message = "No query parameter";
+            if (allParams != null) {
+                StringJoiner sj = new StringJoiner("&");
+                allParams.forEach((key, value) -> sj.add(key + "=" + value));
+                message = sj.toString();
+            }
+            throw new SearchException(message, e);
         }
     }
 
