@@ -12,7 +12,7 @@ import org.hibernate.annotations.TypeDefs;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 
 /**
- * Class to link a dataset to a UIPuginConfigurations
+ * Class to link a dataset to a UIPluginConfigurations
  *
  * @author Sébastien Binda
  *

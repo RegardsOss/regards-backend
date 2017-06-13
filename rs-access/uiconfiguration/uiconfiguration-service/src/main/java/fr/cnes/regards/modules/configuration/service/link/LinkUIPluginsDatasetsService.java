@@ -3,17 +3,16 @@
  */
 package fr.cnes.regards.modules.configuration.service.link;
 
-import java.util.ArrayList;
-
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -29,7 +28,7 @@ import fr.cnes.regards.modules.entities.urn.UniformResourceName;
  * @author Sébastien Binda
  */
 @Service
-@Transactional
+@RegardsTransactional
 public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsService {
 
     /**

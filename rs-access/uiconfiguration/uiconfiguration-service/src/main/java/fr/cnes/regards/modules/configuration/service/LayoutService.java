@@ -11,10 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
-
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -34,7 +33,7 @@ import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
  * @since 1.0-SNAPSHOT
  */
 @Service(value = "layoutService")
-@Transactional
+@RegardsTransactional
 public class LayoutService extends AbstractUiConfigurationService implements ILayoutService {
 
     /**

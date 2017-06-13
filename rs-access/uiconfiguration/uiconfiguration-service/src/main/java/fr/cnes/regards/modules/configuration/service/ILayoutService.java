@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.configuration.service;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Layout;
@@ -18,7 +19,7 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@Transactional
+@RegardsTransactional
 public interface ILayoutService {
 
     /**
