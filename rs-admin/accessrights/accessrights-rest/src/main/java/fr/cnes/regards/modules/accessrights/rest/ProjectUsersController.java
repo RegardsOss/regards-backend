@@ -180,7 +180,9 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
         if (user.getRole().getName().equals(DefaultRole.ADMIN.toString())
-                || user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString())) {
+                || (user.getRole().getName().equals(DefaultRole.PROJECT_ADMIN.toString()))
+                || ((user.getRole().getParentRole() != null)
+                && user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString()))) {
             return new ResponseEntity<>(true, HttpStatus.OK);
         }
         return new ResponseEntity<>(false, HttpStatus.OK);
