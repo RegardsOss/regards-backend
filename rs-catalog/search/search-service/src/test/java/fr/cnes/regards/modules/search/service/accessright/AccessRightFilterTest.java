@@ -111,12 +111,14 @@ public class AccessRightFilterTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addUserGroups(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
+     * Test method for {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addAccessRights(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
      * @throws OpenSearchParseException
      * @throws UnsupportedEncodingException
+     * @throws AccessRightFilterException
      */
     @Test
-    public final void testAddUserGroups() throws OpenSearchParseException, UnsupportedEncodingException {
+    public final void testAddUserGroups()
+            throws OpenSearchParseException, UnsupportedEncodingException, AccessRightFilterException {
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
         final UserDetails details = new UserDetails();
@@ -129,7 +131,7 @@ public class AccessRightFilterTest {
         ICriterion criterion = openSearchService.parse(q);
 
         // Add groups
-        ICriterion criterionWithGroups = accessRightFilter.addUserGroups(criterion);
+        ICriterion criterionWithGroups = accessRightFilter.addAccessRights(criterion);
 
         // Check we found two "groups" criterion in the generated criterion
         List<ICriterion> found = (List<ICriterion>) criterionWithGroups.accept(GROUPS_FINDER);

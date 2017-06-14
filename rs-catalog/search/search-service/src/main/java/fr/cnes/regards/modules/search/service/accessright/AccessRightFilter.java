@@ -3,10 +3,12 @@
  */
 package fr.cnes.regards.modules.search.service.accessright;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -27,6 +29,11 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClie
  */
 @Service
 public class AccessRightFilter implements IAccessRightFilter {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightFilter.class);
 
     /**
      * Function which creates a {@link StringMatchCriterion} from an {@link AccessGroup}.
@@ -68,7 +75,7 @@ public class AccessRightFilter implements IAccessRightFilter {
      * indexer.domain.criterion.ICriterion)
      */
     @Override
-    public ICriterion addUserGroups(final ICriterion pCriterion) {
+    public ICriterion addAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
 
         // Retrieve current user from security context
         String userEmail = SecurityUtils.getActualUser();
@@ -77,20 +84,29 @@ public class AccessRightFilter implements IAccessRightFilter {
         try {
             FeignSecurityManager.asSystem();
             if (!projectUserClient.isAdmin(userEmail).getBody()) {
-                final List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail,
-                                                                             runtimeTenantResolver.getTenant());
+                List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant());
 
-                // Create a list with all group criterions plus the initial criterion
-                final List<ICriterion> rootWithGroups = accessGroups.stream().map(GROUP_TO_CRITERION)
-                        .collect(Collectors.toList());
+                // Throw an error if no access group
+                if ((accessGroups == null) || accessGroups.isEmpty()) {
+                    String errorMessage = String.format(
+                                                        "Cannot set access right filter cause user %s does not have any access group",
+                                                        userEmail);
+                    LOGGER.error(errorMessage);
+                    throw new AccessRightFilterException(errorMessage);
+                }
 
-                if (pCriterion != null) {
-                    rootWithGroups.add(pCriterion);
+                List<ICriterion> searchCriterion = new ArrayList<>();
+
+                // Add security filter
+                accessGroups.forEach(accessGroup -> searchCriterion.add(GROUP_TO_CRITERION.apply(accessGroup)));
+                // Add user criterion
+                if (userCriterion != null) {
+                    searchCriterion.add(userCriterion);
                 }
                 // Build the final "and" criterion
-                return ICriterion.and(rootWithGroups);
+                return ICriterion.and(searchCriterion);
             }
-            return pCriterion;
+            return userCriterion;
         } finally {
             FeignSecurityManager.reset();
         }

@@ -87,7 +87,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Build criterion from OpenSearch parameters extracted from query parameters
             ICriterion criterion = openSearchService.parse(allParams);
             // Apply security filter
-            criterion = accessRightFilter.addUserGroups(criterion);
+            criterion = accessRightFilter.addAccessRights(criterion);
 
             // Perform search
             if (pSearchKey instanceof SimpleSearchKey) {

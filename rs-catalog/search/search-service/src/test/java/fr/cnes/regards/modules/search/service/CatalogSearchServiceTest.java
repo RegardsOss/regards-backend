@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
@@ -77,7 +78,7 @@ public class CatalogSearchServiceTest {
     private IResourceService resourceService;
 
     @Before
-    public void setUp() {
+    public void setUp() throws AccessRightFilterException {
         // Declare mocks
         openSearchService = Mockito.mock(OpenSearchService.class);
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
@@ -89,7 +90,7 @@ public class CatalogSearchServiceTest {
         Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
 
         // Globally mock what's mockable yet
-        Mockito.when(accessRightFilter.addUserGroups(Mockito.any()))
+        Mockito.when(accessRightFilter.addAccessRights(Mockito.any()))
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(SampleDataUtils.TENANT);
         Mockito.when(resourceService.toResource(Mockito.any()))

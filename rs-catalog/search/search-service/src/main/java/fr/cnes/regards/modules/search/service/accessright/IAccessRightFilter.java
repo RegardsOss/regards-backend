@@ -15,6 +15,7 @@ public interface IAccessRightFilter {
      *
      * @param criterion
      * @return the passed criterion agremented of the current user's groups
+     * @throws AccessRightFilterException if access rights cannot be set
      */
-    ICriterion addUserGroups(ICriterion criterion);
+    ICriterion addAccessRights(ICriterion criterion) throws AccessRightFilterException;
 }
