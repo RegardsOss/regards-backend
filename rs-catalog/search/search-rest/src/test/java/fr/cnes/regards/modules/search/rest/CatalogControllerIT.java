@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.search.rest;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.hamcrest.Matchers;
@@ -16,8 +15,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -443,7 +440,6 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
                           builder);
     }
-
 
     /**
      * Le système doit permettre de manière synchrone d’accéder aux informations d’un document via son IP_ID.

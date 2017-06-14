@@ -1,16 +1,17 @@
 package fr.cnes.regards.modules.search.service;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringJoiner;
 
-import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -22,7 +23,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
@@ -96,10 +96,10 @@ public class CatalogSearchService implements ICatalogSearchService {
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey) && (
-                    TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches
-                        .onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
+            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
+                    && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
+                searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(),
+                                                    Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Apply security filter
@@ -122,7 +122,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             throw new SearchException(message, e);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty page", e);
-            return new FacetPage<>(Lists.newArrayList(), null);
+            return new FacetPage<>(new ArrayList<>(), null);
         }
     }
 
