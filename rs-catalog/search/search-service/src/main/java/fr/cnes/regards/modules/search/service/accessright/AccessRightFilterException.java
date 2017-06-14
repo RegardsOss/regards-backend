@@ -3,7 +3,7 @@
  */
 package fr.cnes.regards.modules.search.service.accessright;
 
-import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  *
@@ -13,7 +13,7 @@ import fr.cnes.regards.framework.module.rest.exception.SearchException;
  *
  */
 @SuppressWarnings("serial")
-public class AccessRightFilterException extends SearchException {
+public class AccessRightFilterException extends ModuleException {
 
     public AccessRightFilterException(String pErrorMessage) {
         super(pErrorMessage);

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringJoiner;
 
+import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
@@ -104,6 +106,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                 message = sj.toString();
             }
             throw new SearchException(message, e);
+        } catch (AccessRightFilterException e) {
+            LOGGER.debug("Falling back to empty page", e);
+            return new FacetPage<>(Lists.newArrayList(), null);
         }
     }
 
