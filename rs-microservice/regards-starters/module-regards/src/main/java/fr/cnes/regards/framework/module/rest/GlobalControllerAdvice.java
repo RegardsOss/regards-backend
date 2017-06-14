@@ -3,9 +3,10 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
-import javax.validation.ValidationException;
 import java.io.IOException;
 import java.util.NoSuchElementException;
+
+import javax.validation.ValidationException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -77,7 +78,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ServerErrorResponse("Internal server error"));
     }
-
 
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public ResponseEntity<ServerErrorResponse> handleModelException(final EntityAlreadyExistsException pEx) {
@@ -215,8 +215,11 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(SearchException.class)
     public ResponseEntity<ServerErrorResponse> searchException(final SearchException pException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
-                pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
+        String message = pException.getMessage();
+        if (pException.getCause() != null) {
+            message += ". Cause: " + pException.getCause().getMessage();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message));
     }
 
     /**
