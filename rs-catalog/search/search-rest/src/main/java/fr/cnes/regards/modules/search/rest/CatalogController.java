@@ -155,7 +155,8 @@ public class CatalogController {
      * @param pRuntimeTenantResolver
      *            Get current tenant at runtime and allows tenant forcing. Autowired.
      */
-    public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService, // NOSONAR
+    public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService,
+            // NOSONAR
             final IResourceService pResourceService,
             final FacettedPagedResourcesAssembler<AbstractEntity> pAbstractEntityResourcesAssembler,
             final FacettedPagedResourcesAssembler<DataObject> pDataobjectResourcesAssembler,
@@ -204,7 +205,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -280,7 +281,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -326,7 +327,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATASET, PATH + DATASETS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -378,7 +379,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -420,7 +421,7 @@ public class CatalogController {
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -494,7 +495,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DOCUMENT, PATH + DOCUMENTS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
