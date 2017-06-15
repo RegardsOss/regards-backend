@@ -38,10 +38,10 @@ public class FacetConverter implements IFacetConverter {
             .put(AttributeType.LONG_ARRAY, FacetType.NUMERIC)
             .put(AttributeType.DATE_ISO8601, FacetType.DATE)
             .put(AttributeType.DATE_ARRAY, FacetType.DATE)
-            .put(AttributeType.INTEGER_INTERVAL, FacetType.RANGE)
-            .put(AttributeType.DOUBLE_INTERVAL, FacetType.RANGE)
-            .put(AttributeType.LONG_INTERVAL, FacetType.RANGE)
-            .put(AttributeType.DATE_INTERVAL, FacetType.RANGE)
+            .put(AttributeType.INTEGER_INTERVAL, FacetType.NUMERIC)
+            .put(AttributeType.DOUBLE_INTERVAL, FacetType.NUMERIC)
+            .put(AttributeType.LONG_INTERVAL, FacetType.NUMERIC)
+            .put(AttributeType.DATE_INTERVAL, FacetType.NUMERIC)
             .build();
     // @formatter:on
 
