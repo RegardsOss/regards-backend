@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -337,7 +338,7 @@ public class RoleServiceTest {
     public void updateRoleNotExistent() throws EntityException {
         final Role notExistent = new Role();
         notExistent.setName("roleName");
-        Mockito.when(roleRepository.findOneByName(notExistent.getName())).thenReturn(Optional.empty());
+        Mockito.when(roleRepository.findByName(notExistent.getName())).thenReturn(Optional.empty());
 
         roleService.updateRole(notExistent.getName(), notExistent);
     }
@@ -381,9 +382,10 @@ public class RoleServiceTest {
         // Mock
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
+        Mockito.when(roleRepository.findByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         // Change something on the role
-        rolePublic.setNative(false);
+        rolePublic.setAuthorizedAddresses(Lists.newArrayList("0.0.0.0", "127.0.0.1"));
 
         // Do the update
         roleService.updateRole(NAME, rolePublic);
