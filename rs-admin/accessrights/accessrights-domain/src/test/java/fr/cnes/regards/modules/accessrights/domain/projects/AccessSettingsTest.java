@@ -52,7 +52,7 @@ public class AccessSettingsTest {
     public void testAccessSettings() {
         final AccessSettings accessTest = new AccessSettings();
         Assert.assertEquals(null, accessTest.getId());
-        Assert.assertEquals("auto-accept", accessTest.getMode());
+        Assert.assertEquals("manual", accessTest.getMode());
     }
 
     /**
