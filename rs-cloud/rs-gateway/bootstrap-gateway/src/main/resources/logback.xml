@@ -4,12 +4,10 @@
 <configuration>
 
 	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
-
+	
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
-			by default -->
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
 
@@ -26,22 +24,12 @@
 		<suffixPattern>${SYSLOG_SECURITY_PATTERN}</suffixPattern>
 		<port>514</port>
 	</appender>
-
-	<!-- Log the microservice start --> 
-	<logger name="fr.cnes.regards.cloud.gateway" level="INFO">
-		<appender-ref ref="SYSLOG-SECU" />
-	</logger>
-
-	<!-- Log the user request authentication --> 
-	<logger name="fr.cnes.regards.framework.authentication" level="INFO">
-		<appender-ref ref="SYSLOG-SECU" />
-	</logger>
 	
 	<logger name="fr.cnes.regards.framework.security" level="INFO">
 		<appender-ref ref="SYSLOG-SECU" />
 	</logger>
- 	
- 	<root level="info">
+	
+	<root level="info">
 		<appender-ref ref="STDOUT" />
 		<appender-ref ref="SYSLOG" />
 		<appender-ref ref="SYSLOG-SECU" />
