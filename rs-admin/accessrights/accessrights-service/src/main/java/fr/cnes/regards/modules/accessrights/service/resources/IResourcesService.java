@@ -105,8 +105,8 @@ public interface IResourcesService {
     /**
      * remove a resource access from a role and its descendants
      *
-     * @param pRoleId
-     *            role identifier
+     * @param pRoleName
+     *            role name
      * @param pResourcesAccessId
      *            resource identifier
      * @throws ModuleException

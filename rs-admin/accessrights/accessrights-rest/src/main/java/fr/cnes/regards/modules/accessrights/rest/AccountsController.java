@@ -31,10 +31,10 @@ import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountU
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
+import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.service.account.passwordreset.OnPasswordResetEvent;
+import fr.cnes.regards.modules.accessrights.service.account.workflow.state.IAccountTransitions;
 
 /**
  * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance

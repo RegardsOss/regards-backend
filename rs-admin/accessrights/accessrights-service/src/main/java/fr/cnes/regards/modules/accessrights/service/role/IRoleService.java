@@ -60,6 +60,7 @@ public interface IRoleService {
      *            The {@link Role} <code>name</code>
      * @param pUpdatedRole
      *            The new {@link Role}
+     * @return the updated {@link Role}
      * @throws EntityException
      *             <br>
      *             {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br>
@@ -72,9 +73,9 @@ public interface IRoleService {
      *
      * Create a new {@link Role} using native parent permissions as own permissions.
      *
-     * @param pNewRole
+     * @param role
      *            new {@link @Role} to create
-     * @return {@link Role}'s created
+     * @return {@link Role} created
      * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
@@ -213,8 +214,8 @@ public interface IRoleService {
     /**
      * Remove given resources accesses from the given role and its descendancy
      *
-     * @param pRole
-     * @param pResourcesAccess
+     * @param pRoleName the role name
+     * @param pResourcesAccess the resources accesses to remove on the role
      * @throws EntityOperationForbiddenException
      *             thrown if pRole is PROJECT_ADMIN
      */

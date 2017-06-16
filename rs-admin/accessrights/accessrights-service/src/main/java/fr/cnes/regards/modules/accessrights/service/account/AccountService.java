@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.encryption.EncryptionUtils;
+import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 
 /**
  * {@link IAccountService} implementation.
