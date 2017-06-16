@@ -190,6 +190,7 @@ public class PluginParameter implements IIdentifiable<Long> {
             return false;
         }
         PluginParameter other = (PluginParameter) obj;
+
         if (name == null) {
             if (other.name != null) {
                 return false;
