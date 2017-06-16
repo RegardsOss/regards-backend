@@ -28,11 +28,6 @@ public enum AuthenticationStatus {
     ACCOUNT_PENDING,
 
     /**
-     * Account not confirmed by user.
-     */
-    ACCOUNT_ACCEPTED,
-
-    /**
      * Account inactive
      */
     ACCOUNT_INACTIVE,
@@ -48,9 +43,19 @@ public enum AuthenticationStatus {
     USER_UNKNOWN,
 
     /**
+     * Waiting for the account to be active
+     */
+    USER_WAITING_ACCOUNT_ACTIVE,
+
+    /**
      * User access to project is not validated yet
      */
     USER_WAITING_ACCESS,
+
+    /**
+     * Waiting for the user to click on the link in the verification email
+     */
+    USER_WAITING_EMAIL_VERIFICATION,
 
     /**
      * User access denied.
