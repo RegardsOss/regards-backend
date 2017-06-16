@@ -83,6 +83,17 @@
 		</profile>
 		<profile>
 			<id>delivery</id>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<filters>
+					<filter>src/main/filters/delivery.properties</filter>
+				</filters>
+			</build>
 		</profile>
 	</profiles>
 	<build>
@@ -94,7 +105,7 @@
 					<forceTags>true</forceTags>
 					<imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
 					<baseImage>${docker.registry.host}/rs-alpine-oraclejdk8</baseImage>
-					<entryPoint>["/bin/bash", "-c", "chmod +x prestart.sh &amp;&amp; /prestart.sh &amp;&amp; java -Djava.security.egd=file:/dev/./urandom -jar /${project.build.finalName}.${project.packaging}"]</entryPoint>
+					<entryPoint>["/bin/bash", "-c", "chmod +x prestart.sh &amp;&amp; /prestart.sh &amp;&amp; java -Xmx128m -Djava.security.egd=file:/dev/./urandom -jar /${project.build.finalName}.${project.packaging}"]</entryPoint>
 					<!-- We rewrite the entrypoint because rs-admin doesn't have to wait to itself -->
 					<resources>
 						<resource>

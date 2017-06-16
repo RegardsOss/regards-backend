@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.authentication.plugins;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.directory.api.ldap.model.entry.Attribute;
@@ -70,7 +71,7 @@ public class LdapAuthenticationPluginTest {
             // instantiate plugin
             plugin = PluginUtils
                     .getPlugin(parameters, LdapAuthenticationPlugin.class,
-                               Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"));
+                               Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();

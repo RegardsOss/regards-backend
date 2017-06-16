@@ -59,9 +59,8 @@ public class BorrowRoleService implements IBorrowRoleService {
     }
 
     private Set<String> getBorrowableRoleNames() {
-        FeignSecurityManager.asSystem();
+        //DO NOT USE FEIGN SECURITY MANAGER HERE: we need to know the user that send the request
         ResponseEntity<List<Resource<Role>>> response = rolesClient.getBorrowableRoles();
-        FeignSecurityManager.reset();
         final HttpStatus responseStatus = response.getStatusCode();
         if (!HttpUtils.isSuccess(responseStatus)) {
             // if it gets here it's mainly because of 404 so it means entity not found
