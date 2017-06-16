@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -134,8 +135,8 @@ public class ProjectUserService implements IProjectUserService {
             throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
         }
         // Filter out hidden meta data
-        try (final Stream<MetaData> stream = user.getMetaData().stream()) {
-            user.setMetaData(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
+        try (final Stream<MetaData> stream = user.getMetadata().stream()) {
+            user.setMetadata(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
         }
         return user;
     }
@@ -155,7 +156,7 @@ public class ProjectUserService implements IProjectUserService {
             user = projectUserRepository.findOneByEmail(pUserEmail)
                     .orElseThrow(() -> new EntityNotFoundException(pUserEmail, ProjectUser.class));
             // Filter out hidden meta data
-            try (final Stream<MetaData> stream = user.getMetaData().stream()) {
+            try (final Stream<MetaData> stream = user.getMetadata().stream()) {
                 stream.filter(keepVisibleMetaData);
             }
         }
@@ -232,7 +233,7 @@ public class ProjectUserService implements IProjectUserService {
                 }
 
         // Set user new metadata
-        user.setMetaData(pUpdatedProjectUser.getMetaData());
+        user.setMetadata(pUpdatedProjectUser.getMetadata());
         // Set user new permissions
         user.setPermissions(pUpdatedProjectUser.getPermissions());
         // Save new user informations
@@ -286,7 +287,7 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public List<MetaData> retrieveUserMetaData(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
-        return user.getMetaData();
+        return user.getMetadata();
     }
 
     /*
@@ -300,9 +301,9 @@ public class ProjectUserService implements IProjectUserService {
     public List<MetaData> updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
             throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
-        user.setMetaData(pUpdatedUserMetaData);
+        user.setMetadata(pUpdatedUserMetaData);
         final ProjectUser savedUser = save(user);
-        return savedUser.getMetaData();
+        return savedUser.getMetadata();
     }
 
     /*
@@ -314,7 +315,7 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public void removeUserMetaData(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = retrieveUser(pUserId);
-        user.setMetaData(new ArrayList<>());
+        user.setMetadata(new ArrayList<>());
         save(user);
     }
 
@@ -382,8 +383,8 @@ public class ProjectUserService implements IProjectUserService {
             final ProjectUser newProjectUser = new ProjectUser();
             newProjectUser.setEmail(pDto.getEmail());
             newProjectUser.setRole(role);
-            if (pDto.getMetaData() != null) {
-                newProjectUser.setMetaData(pDto.getMetaData());
+            if (pDto.getMetadata() != null) {
+                newProjectUser.setMetadata(pDto.getMetadata());
             }
             newProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
             return save(newProjectUser);
@@ -431,6 +432,11 @@ public class ProjectUserService implements IProjectUserService {
             anyone.setLicenseAccepted(false);
         }
         projectUserRepository.save(everyone);
+    }
+
+    @Override
+    public Collection<ProjectUser> retrieveUserByRole(Role role) {
+        return projectUserRepository.findByRoleName(role.getName());
     }
 
 }

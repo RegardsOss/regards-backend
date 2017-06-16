@@ -91,6 +91,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
             case ACTIVE:
             case LOCKED:
             case ACCEPTED:
+            case PENDING:
             case INACTIVE:
                 doDelete(pAccount);
                 break;

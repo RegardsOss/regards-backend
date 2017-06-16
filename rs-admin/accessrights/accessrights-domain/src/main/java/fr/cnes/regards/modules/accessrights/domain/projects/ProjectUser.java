@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
         uniqueConstraints = @UniqueConstraint(name = "uk_project_user_email", columnNames = { "email" }))
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "seq_project_user")
-@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metaData"))
+@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metadata"))
 public class ProjectUser implements IIdentifiable<Long> {
 
     /**
@@ -99,7 +99,7 @@ public class ProjectUser implements IIdentifiable<Long> {
     @OneToMany
     @Cascade(value = { CascadeType.ALL })
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_metadata"))
-    private List<MetaData> metaData;
+    private List<MetaData> metadata;
 
     /**
      * The user's role.
@@ -130,7 +130,7 @@ public class ProjectUser implements IIdentifiable<Long> {
     public ProjectUser() {
         super();
         permissions = new ArrayList<>();
-        metaData = new ArrayList<>();
+        metadata = new ArrayList<>();
         status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
@@ -151,7 +151,7 @@ public class ProjectUser implements IIdentifiable<Long> {
         email = pEmail;
         role = pRole;
         permissions = pPermissions;
-        metaData = pMetaData;
+        metadata = pMetaData;
         status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
@@ -232,22 +232,22 @@ public class ProjectUser implements IIdentifiable<Long> {
     }
 
     /**
-     * Get <code>metaData</code>
+     * Get <code>metadata</code>
      *
      * @return The {@link List} of {@link MetaData}
      */
-    public List<MetaData> getMetaData() {
-        return metaData;
+    public List<MetaData> getMetadata() {
+        return metadata;
     }
 
     /**
-     * Set <code>metaData</code>
+     * Set <code>metadata</code>
      *
      * @param pMetaData
      *            {@link List} of {@link MetaData}
      */
-    public void setMetaData(final List<MetaData> pMetaData) {
-        metaData = pMetaData;
+    public void setMetadata(final List<MetaData> pMetaData) {
+        metadata = pMetaData;
     }
 
     /**

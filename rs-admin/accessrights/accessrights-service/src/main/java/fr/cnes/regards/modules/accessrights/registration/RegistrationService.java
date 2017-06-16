@@ -171,7 +171,7 @@ public class RegistrationService implements IRegistrationService {
         final Role role = roleService.getDefaultRole();
 
         // Create a new project user
-        final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetaData());
+        final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
 
         // Check the status
         Assert.isTrue(UserStatus.WAITING_ACCOUNT_ACTIVE.equals(projectUser.getStatus()),
