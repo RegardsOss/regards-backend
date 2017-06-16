@@ -34,7 +34,7 @@ public class AccessRequestDto {
     /**
      * The list of meta data
      */
-    private List<MetaData> metaData;
+    private List<MetaData> metadata;
 
     /**
      * The password
@@ -68,7 +68,7 @@ public class AccessRequestDto {
         email = pEmail;
         firstName = pFirstName;
         lastName = pLastName;
-        metaData = pMetaData;
+        metadata = pMetaData;
         password = pPassword;
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
@@ -129,18 +129,18 @@ public class AccessRequestDto {
     }
 
     /**
-     * @return the metaData
+     * @return the metadata
      */
-    public List<MetaData> getMetaData() {
-        return metaData;
+    public List<MetaData> getMetadata() {
+        return metadata;
     }
 
     /**
      * @param pMetaData
-     *            the metaData to set
+     *            the metadata to set
      */
-    public void setMetaData(final List<MetaData> pMetaData) {
-        metaData = pMetaData;
+    public void setMetadata(final List<MetaData> pMetaData) {
+        metadata = pMetaData;
     }
 
     /**

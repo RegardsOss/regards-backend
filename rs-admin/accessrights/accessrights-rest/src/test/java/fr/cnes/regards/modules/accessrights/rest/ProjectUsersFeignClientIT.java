@@ -19,9 +19,14 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
  * Test project endpoint client
@@ -53,8 +58,15 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Autowired
     private FeignSecurityManager feignSecurityManager;
 
+    @Autowired
+    private IProjectUserService projectUserService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Before
     public void init() {
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectUsersClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();
@@ -120,6 +132,24 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     public void removeProjectUserFromFeignClient() {
         final ResponseEntity<Void> response = client.removeProjectUser(new Long(150));
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     *
+     * Check that the accounts Feign Client can retrieve all accounts.
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    public void isAdminProjectUserFromFeignClient() throws EntityAlreadyExistsException {
+        final AccessRequestDto accessRequest = new AccessRequestDto("regards-admin@c-s.fr", "pFirstName", "pLastName",
+                                                                    DefaultRole.ADMIN.toString(), null, "pPassword",
+                                                                    "pOriginUrl", "pRequestLink");
+
+        projectUserService.createProjectUser(accessRequest);
+        final ResponseEntity<Boolean> response = client.isAdmin("regards-admin@c-s.fr");
+        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertTrue(response.getBody());
     }
 
     @Override

@@ -108,6 +108,7 @@ public class AuthoritiesTestConfiguration {
         pProjectConnRepo.deleteAll();
         pProjectRepo.deleteAll();
         Project project = new Project(0L, "desc", "icon", true, PROJECT_NAME);
+        project.setLabel(project.getName());
         project = pProjectRepo.save(project);
 
         final ProjectConnection conn = new ProjectConnection(0L, project, microserviceName, "user", "password",

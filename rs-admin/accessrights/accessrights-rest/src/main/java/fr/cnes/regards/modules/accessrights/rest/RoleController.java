@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +30,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
@@ -70,6 +73,9 @@ public class RoleController implements IResourceController<Role> {
      */
     @Autowired
     private IRoleService roleService;
+
+    @Autowired
+    private IProjectUserService projectUserService;
 
     /**
      * Resource service to manage visibles hateoas links
@@ -200,13 +206,27 @@ public class RoleController implements IResourceController<Role> {
                 resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
                                         MethodParamFactory.build(String.class, pElement.getName()),
                                         MethodParamFactory.build(Role.class));
-                resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
-                                        MethodParamFactory.build(String.class, pElement.getName()));
+                if (isDeletable(pElement)) {
+                    resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
+                                            MethodParamFactory.build(String.class, pElement.getName()));
+                }
+            }
+            if (!(pElement.getName().equals(DefaultRole.PROJECT_ADMIN) || pElement.getName()
+                    .equals(DefaultRole.INSTANCE_ADMIN))) {
+                //we add the link to manage a role resources accesses except for PROEJCT_ADMIN and INSTANCE_ADMIN
+                resourceService
+                        .addLink(resource, RoleResourceController.class, "getRoleResources", "manage-resource-access",
+                                 MethodParamFactory.build(String.class, pElement.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");
         }
         return resource;
+    }
+
+    private boolean isDeletable(Role role) {
+        Collection<ProjectUser> users = projectUserService.retrieveUserByRole(role);
+        return users.isEmpty();
     }
 
 }

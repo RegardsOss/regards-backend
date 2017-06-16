@@ -181,7 +181,7 @@ public class RegistrationServiceTest {
         projectUser.setEmail(EMAIL);
         projectUser.setPermissions(PERMISSIONS);
         projectUser.setRole(ROLE);
-        projectUser.setMetaData(META_DATA);
+        projectUser.setMetadata(META_DATA);
         projectUser.setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
 
         // Prepare account settings

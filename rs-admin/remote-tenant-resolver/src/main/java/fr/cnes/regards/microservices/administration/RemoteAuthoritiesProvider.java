@@ -3,9 +3,7 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -71,9 +69,9 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
      *
      * Constructor
      *
-     * @param pRoleClient
+     * @param pRolesClient
      *            Feign client to query administration service for roles
-     * @param pResourcesClient
+     * @param pResourcesclient
      *            Feign client to query administration service for resources
      * @param runtimeTenantResolver
      *            runtime tenant resolver
@@ -99,8 +97,8 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
 
         // Register endpoints to administration service and retrieve configured ones
         FeignSecurityManager.asSystem();
-        final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
-                                                                                            localEndpoints);
+        final ResponseEntity<Void> response = resourcesClient
+                .registerMicroserviceEndpoints(microserviceName, localEndpoints);
         if (response.getStatusCode().equals(HttpStatus.OK)) {
 
             // get a map that for each ResourcesAccess ra links the roles containing ra
@@ -144,6 +142,21 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
         return roleAuths;
     }
 
+    @Override
+    public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
+        runtimeTenantResolver.forceTenant(tenant);
+        //lets get the role from distant admin
+        FeignSecurityManager.asSystem();
+        ResponseEntity<Resource<Role>> roleResponse = roleClient.retrieveRole(roleName);
+        if (roleResponse.getStatusCode().equals(HttpStatus.OK)) {
+            final Resource<Role> body = roleResponse.getBody();
+            final Role role = HateoasUtils.unwrap(body);
+            return role.getPermissions().stream().filter(resource->resource.getMicroservice().equals(microserviceName)).map(resource->buildResourceMapping(resource, Collections.singleton(role))).collect(Collectors.toSet());
+        }
+        LOGGER.warn("Role {} seems to have been deleted. We are skipping the resource update", roleName);
+        return Sets.newHashSet();
+    }
+
     /**
      *
      * Create a {@link RoleAuthority} from a {@link Role}
@@ -163,8 +176,8 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
         final ResourceMapping mapping = new ResourceMapping(
                 ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
                 pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
-        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList()));
+        mapping.setAutorizedRoles(
+                pRoles.stream().map(role -> new RoleAuthority(role.getName())).collect(Collectors.toList()));
         return mapping;
     }
 

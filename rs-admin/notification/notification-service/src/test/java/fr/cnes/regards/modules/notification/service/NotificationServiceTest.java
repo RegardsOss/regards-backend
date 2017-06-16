@@ -168,7 +168,7 @@ public class NotificationServiceTest {
         projectUser0.setEmail(RECIPIENT_0);
         projectUser0.setLastConnection(OffsetDateTime.now().minusDays(2));
         projectUser0.setLastUpdate(OffsetDateTime.now().minusHours(1));
-        projectUser0.setMetaData(new ArrayList<>());
+        projectUser0.setMetadata(new ArrayList<>());
         projectUser0.setPermissions(new ArrayList<>());
         projectUser0.setStatus(UserStatus.ACCESS_GRANTED);
         projectUser0.setRole(role0);
@@ -177,7 +177,7 @@ public class NotificationServiceTest {
         projectUser1.setEmail(RECIPIENT_1);
         projectUser1.setLastConnection(OffsetDateTime.now().minusDays(2));
         projectUser1.setLastUpdate(OffsetDateTime.now().minusHours(1));
-        projectUser1.setMetaData(new ArrayList<>());
+        projectUser1.setMetadata(new ArrayList<>());
         projectUser1.setPermissions(new ArrayList<>());
         projectUser1.setStatus(UserStatus.ACCESS_GRANTED);
         projectUser1.setRole(role0);
@@ -186,7 +186,7 @@ public class NotificationServiceTest {
         projectUser2.setEmail(RECIPIENT_2);
         projectUser2.setLastConnection(OffsetDateTime.now().minusDays(2));
         projectUser2.setLastUpdate(OffsetDateTime.now().minusHours(1));
-        projectUser2.setMetaData(new ArrayList<>());
+        projectUser2.setMetadata(new ArrayList<>());
         projectUser2.setPermissions(new ArrayList<>());
         projectUser2.setStatus(UserStatus.ACCESS_GRANTED);
         projectUser2.setRole(role1);

@@ -67,7 +67,7 @@ public class ProjectUserTest {
         final ProjectUser testUser = new ProjectUser();
         Assert.assertEquals(null, testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
-        Assert.assertEquals(new ArrayList<>(), testUser.getMetaData());
+        Assert.assertEquals(new ArrayList<>(), testUser.getMetadata());
         Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
         Assert.assertEquals(null, testUser.getLastConnection());
         Assert.assertEquals(null, testUser.getLastUpdate());
@@ -87,7 +87,7 @@ public class ProjectUserTest {
         Assert.assertEquals(null, testUser.getLastUpdate());
         Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
         Assert.assertEquals(email, testUser.getEmail());
-        Assert.assertEquals(metaData, testUser.getMetaData());
+        Assert.assertEquals(metaData, testUser.getMetadata());
         Assert.assertEquals(role, testUser.getRole());
         Assert.assertEquals(permissions, testUser.getPermissions());
     }
@@ -171,22 +171,22 @@ public class ProjectUserTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#getMetaData()}.
+     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#getMetadata()}.
      */
     @Test
     public void testGetMetaData() {
-        Assert.assertEquals(metaData, projectUser.getMetaData());
+        Assert.assertEquals(metaData, projectUser.getMetadata());
     }
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setMetaData(java.util.List)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setMetadata(java.util.List)}.
      */
     @Test
     public void testSetMetaData() {
         final List<MetaData> newMetaData = new ArrayList<MetaData>();
-        projectUser.setMetaData(newMetaData);
-        Assert.assertEquals(newMetaData, projectUser.getMetaData());
+        projectUser.setMetadata(newMetaData);
+        Assert.assertEquals(newMetaData, projectUser.getMetadata());
     }
 
     /**

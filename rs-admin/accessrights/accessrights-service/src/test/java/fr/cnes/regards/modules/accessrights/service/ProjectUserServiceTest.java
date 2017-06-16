@@ -131,7 +131,7 @@ public class ProjectUserServiceTest {
         projectUser.setLastConnection(LAST_CONNECTION);
         projectUser.setLastUpdate(LAST_UPDATE);
         projectUser.setStatus(STATUS);
-        projectUser.setMetaData(META_DATA);
+        projectUser.setMetadata(META_DATA);
         projectUser.setPermissions(PERMISSIONS);
         projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller",
                 RequestMethod.GET, DefaultRole.ADMIN));
@@ -290,13 +290,13 @@ public class ProjectUserServiceTest {
         // Define user as in db
         final MetaData metaData0 = new MetaData();
         metaData0.setVisibility(UserVisibility.HIDDEN);
-        projectUser.getMetaData().add(metaData0);
+        projectUser.getMetadata().add(metaData0);
         final MetaData metaData1 = new MetaData();
         metaData1.setVisibility(UserVisibility.READABLE);
-        projectUser.getMetaData().add(metaData1);
+        projectUser.getMetadata().add(metaData1);
         final MetaData metaData2 = new MetaData();
         metaData2.setVisibility(UserVisibility.WRITEABLE);
-        projectUser.getMetaData().add(metaData2);
+        projectUser.getMetadata().add(metaData2);
 
         // Define user as expected
         final ProjectUser expected = new ProjectUser();
@@ -310,7 +310,7 @@ public class ProjectUserServiceTest {
         expected.setStatus(STATUS);
         expected.setPermissions(PERMISSIONS);
         expected.setRole(ROLE);
-        expected.setMetaData(visibleMetaData);
+        expected.setMetadata(visibleMetaData);
 
         // Mock the repository returned value
         Mockito.when(projectUserRepository.findOne(ID)).thenReturn(projectUser);
@@ -556,7 +556,7 @@ public class ProjectUserServiceTest {
         expected.setLastConnection(LAST_CONNECTION);
         expected.setLastUpdate(LAST_UPDATE);
         expected.setStatus(STATUS);
-        expected.setMetaData(META_DATA);
+        expected.setMetadata(META_DATA);
         expected.setRole(ROLE);
         expected.setPermissions(new ArrayList<>());
         expected.getPermissions().add(updatedPermission);
