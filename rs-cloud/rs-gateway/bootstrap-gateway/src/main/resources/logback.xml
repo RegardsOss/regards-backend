@@ -40,14 +40,11 @@
 	<logger name="fr.cnes.regards.framework.security" level="INFO">
 		<appender-ref ref="SYSLOG-SECU" />
 	</logger>
-	
-<!-- 
-	<logger name="fr.cnes.regards.framework.security.filter" level="DEBUG" />
-	<logger name="fr.cnes.regards.cloud.gateway.filters" level="DEBUG" />
- -->
  	
- 	<logger name="org.springframework.web.filter" level="DEBUG" />
  	<root level="info">
 		<appender-ref ref="STDOUT" />
+		<appender-ref ref="SYSLOG" />
+		<appender-ref ref="SYSLOG-SECU" />
 	</root>
+	
 </configuration>
