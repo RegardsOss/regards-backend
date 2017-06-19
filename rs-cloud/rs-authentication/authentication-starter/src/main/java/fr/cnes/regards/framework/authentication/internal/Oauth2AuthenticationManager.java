@@ -319,9 +319,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             status = AuthenticationStatus.ACCOUNT_UNKNOWN;
         } else {
             switch (accountClientResponse.getBody().getContent().getStatus()) {
-                case ACCEPTED:
-                    status = AuthenticationStatus.ACCOUNT_ACCEPTED;
-                    break;
                 case ACTIVE:
                     status = AuthenticationStatus.ACCESS_GRANTED;
                     break;
@@ -353,6 +350,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 switch (projectUserClientResponse.getBody().getContent().getStatus()) {
                     case WAITING_ACCESS:
                         status = AuthenticationStatus.USER_WAITING_ACCESS;
+                        break;
+                    case WAITING_EMAIL_VERIFICATION:
+                        status = AuthenticationStatus.USER_WAITING_EMAIL_VERIFICATION;
                         break;
                     case ACCESS_DENIED:
                         status = AuthenticationStatus.USER_ACCESS_DENIED;
@@ -430,21 +430,19 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             userDetails.setName(pUserName);
             userDetails.setRole(DefaultRole.INSTANCE_ADMIN.toString());
             userDetails.setTenant(pScope);
-        } else
-            if (!runTimeTenantResolver.isInstance()) {
-                // Retrieve account
-                try {
-                    userDetails = retrieveUserDetails(pUserName, pScope);
-                } catch (final EntityNotFoundException e) {
-                    LOG.debug(e.getMessage(), e);
-                    throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
-                }
-            } else {
-                // Unauthorized access to instance tenant for authenticated user.
-                throw new AuthenticationException(
-                        "Access denied to REGARDS instance administration for user " + pUserName,
-                        AuthenticationStatus.INSTANCE_ACCESS_DENIED);
+        } else if (!runTimeTenantResolver.isInstance()) {
+            // Retrieve account
+            try {
+                userDetails = retrieveUserDetails(pUserName, pScope);
+            } catch (final EntityNotFoundException e) {
+                LOG.debug(e.getMessage(), e);
+                throw new BadCredentialsException(String.format("User %s does not exists ", pUserName));
             }
+        } else {
+            // Unauthorized access to instance tenant for authenticated user.
+            throw new AuthenticationException("Access denied to REGARDS instance administration for user " + pUserName,
+                    AuthenticationStatus.INSTANCE_ACCESS_DENIED);
+        }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
         return new UsernamePasswordAuthenticationToken(userDetails, pUserPassword, grantedAuths);
     }
