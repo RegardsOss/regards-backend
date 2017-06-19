@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +43,6 @@ import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPas
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for accounts.
@@ -166,10 +167,12 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         setAuthorities(apiAccountId, RequestMethod.DELETE, DEFAULT_ROLE);
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
                 + RegistrationController.ACCEPT_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
-        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT,
-                       RequestMethod.PUT, DEFAULT_ROLE);
-        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT,
-                       RequestMethod.PUT, DEFAULT_ROLE);
+        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.REFUSE_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT, RequestMethod.PUT,
+                       DEFAULT_ROLE);
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, RequestMethod.PUT,
+                       DEFAULT_ROLE);
     }
 
     @Test
@@ -383,14 +386,14 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(true)));
-        performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD),
-                           expectations, errorMessage);
+        performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,
+                           new AccountsController.Password(PASSWORD), expectations, errorMessage);
         expectations.clear();
         //test invalid password
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(false)));
-        performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD, new AccountsController.Password(PASSWORD+ "ZE"),
-                           expectations, errorMessage);
+        performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,
+                           new AccountsController.Password(PASSWORD + "ZE"), expectations, errorMessage);
     }
 
     @Test
@@ -426,7 +429,7 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         // Must have account with status allowing deletion and have a no linked project user
         final String email = "randomEmailMatchingNoProjectUser@test.com";
         account.setEmail(email);
-        account.setStatus(AccountStatus.PENDING);
+        account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -458,6 +461,19 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("accept")));
+        performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
+    }
+
+    @Test
+    @Purpose("Check we add 'refuse' HATEOAS link if the account is in state PENDING")
+    public void checkHateoasLinks_shouldAddRefuseLink() {
+        // Prepare the account
+        account.setStatus(AccountStatus.PENDING);
+        accountRepository.save(account);
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("refuse")));
         performDefaultGet(apiAccountId, expectations, errorMessage, account.getId());
     }
 
@@ -521,8 +537,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null,
-                          expectations, "Should fail because the account is not in ACTIVE status", account.getEmail());
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null, expectations,
+                          "Should fail because the account is not in ACTIVE status", account.getEmail());
     }
 
     @Test
@@ -534,8 +550,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null,
-                          expectations, "Should activate the account", account.getEmail());
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null, expectations,
+                          "Should activate the account", account.getEmail());
     }
 
     @Test

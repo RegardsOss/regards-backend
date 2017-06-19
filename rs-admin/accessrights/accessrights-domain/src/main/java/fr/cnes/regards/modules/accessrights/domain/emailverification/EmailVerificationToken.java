@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  */
 @Entity
 @Table(name = "t_email_verification_token",
-        uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_account_id",
+        uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_project_user_id",
                 columnNames = { "project_user_id" }))
 public class EmailVerificationToken {
 

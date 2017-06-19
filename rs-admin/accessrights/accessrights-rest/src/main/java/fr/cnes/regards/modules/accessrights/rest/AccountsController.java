@@ -457,13 +457,11 @@ public class AccountsController implements IResourceController<Account> {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccount", "accept",
                                         MethodParamFactory.build(String.class, pElement.getEmail()));
             }
-
             // Refuse link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(pElement.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "refuseAccount", "refuse",
                                         MethodParamFactory.build(String.class, pElement.getEmail()));
             }
-
             // Inactive link, only if the account is in ACTIVE state
             if (AccountStatus.ACTIVE.equals(pElement.getStatus())) {
                 resourceService.addLink(resource, this.getClass(), "inactiveAccount", "inactive",
