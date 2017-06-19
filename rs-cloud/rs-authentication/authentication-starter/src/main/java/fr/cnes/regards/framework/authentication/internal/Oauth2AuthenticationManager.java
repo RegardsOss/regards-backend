@@ -348,9 +348,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 status = AuthenticationStatus.USER_UNKNOWN;
             } else {
                 switch (projectUserClientResponse.getBody().getContent().getStatus()) {
-                    case WAITING_ACCOUNT_ACTIVE:
-                        status = AuthenticationStatus.USER_WAITING_ACCOUNT_ACTIVE;
-                        break;
                     case WAITING_ACCESS:
                         status = AuthenticationStatus.USER_WAITING_ACCESS;
                         break;
