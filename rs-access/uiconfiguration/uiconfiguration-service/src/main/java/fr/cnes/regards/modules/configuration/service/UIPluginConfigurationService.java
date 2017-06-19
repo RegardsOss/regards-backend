@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -47,19 +48,29 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     private IUIPluginConfigurationRepository repository;
 
     @Override
-    public Page<UIPluginConfiguration> retrievePluginConfigurations(final Boolean pIsActive,
-            final Boolean pIsLinkedToAllEntities, final Pageable pPageable) {
-        if ((pIsActive != null) && (pIsLinkedToAllEntities != null)) {
-            return repository.findByActiveAndLinkedToAllEntities(pIsActive, pIsLinkedToAllEntities, pPageable);
-        } else
-            if (pIsActive != null) {
-                return repository.findByActive(pIsActive, pPageable);
-            } else
-                if (pIsLinkedToAllEntities != null) {
-                    return repository.findByLinkedToAllEntities(pIsLinkedToAllEntities, pPageable);
+    public Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pPluginType,
+            final Boolean pIsActive, final Boolean pIsLinkedToAllEntities, final Pageable pPageable) {
+        if ((pPluginType == null) && (pIsActive == null) && (pIsLinkedToAllEntities == null)) {
+            return repository.findAll(pPageable);
+        } else {
+            if (pPluginType != null) {
+                if ((pIsActive != null) && (pIsLinkedToAllEntities != null)) {
+                    return repository.findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(pPluginType, pIsActive,
+                                                                                                pIsLinkedToAllEntities,
+                                                                                                pPageable);
+                } else if (pIsActive != null) {
+                    return repository.findByPluginDefinitionTypeAndActive(pPluginType, pIsActive, pPageable);
                 } else {
-                    return repository.findAll(pPageable);
+                    return repository.findByPluginDefinitionType(pPluginType, pPageable);
                 }
+            } else if ((pIsActive != null) && (pIsLinkedToAllEntities != null)) {
+                return repository.findByActiveAndLinkedToAllEntities(pIsActive, pIsLinkedToAllEntities, pPageable);
+            } else if (pIsLinkedToAllEntities != null) {
+                return repository.findByLinkedToAllEntities(pIsLinkedToAllEntities, pPageable);
+            } else {
+                return repository.findByActive(pIsActive, pPageable);
+            }
+        }
     }
 
     @Override

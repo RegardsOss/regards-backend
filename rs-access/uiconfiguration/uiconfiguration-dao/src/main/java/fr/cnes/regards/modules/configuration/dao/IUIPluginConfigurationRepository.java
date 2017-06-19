@@ -64,6 +64,20 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
             Pageable pPageable);
 
     /**
+    *
+    * Find all actives {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter with the given type
+    *
+    * @param pPluginType type
+    * @param pIsActive [true|false]
+    * @param pIsLinkedToAllEntities [true|false]
+    * @param pPageable
+    * @return {@link Page} of {@link UIPluginConfiguration}
+    * @since 1.0-SNAPSHOT
+    */
+    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(UIPluginTypesEnum pPluginType,
+            Boolean pIsActive, Boolean pIsLinkedToAllEntities, Pageable pPageable);
+
+    /**
      *
      * Find all actives {@link UIPluginConfiguration} of type SERVICE and associated to all entities througth
      * linkedToAllEntities parameter
@@ -91,5 +105,13 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
      * @since 1.0-SNAPSHOT
      */
     Page<UIPluginConfiguration> findByPluginDefinition(UIPluginDefinition pPlugin, Pageable pPageable);
+
+    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActive(UIPluginTypesEnum pPluginType, Boolean pIsActive,
+            Pageable pPageable);
+
+    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndLinkedToAllEntities(UIPluginTypesEnum pPluginType,
+            Boolean pIsLinkedToAllEntities, Pageable pPageable);
+
+    Page<UIPluginConfiguration> findByPluginDefinitionType(UIPluginTypesEnum pPluginType, Pageable pPageable);
 
 }

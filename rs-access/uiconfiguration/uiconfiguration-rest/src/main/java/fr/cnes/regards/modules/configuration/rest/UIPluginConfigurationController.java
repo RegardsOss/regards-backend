@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.UIPluginConfiguration;
 import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
+import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 import fr.cnes.regards.modules.configuration.service.IUIPluginConfigurationService;
 
 @RestController
@@ -84,10 +85,11 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurations(
             @RequestParam(value = "isActive", required = false) final Boolean pIsActive,
             @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean pIsLinkedToAllEntities,
+            @RequestParam(value = "type", required = false) final UIPluginTypesEnum pPluginType,
             final PagedResourcesAssembler<UIPluginConfiguration> pAssembler, final Pageable pPageable)
             throws EntityInvalidException {
         final Page<UIPluginConfiguration> pluginConfs = service
-                .retrievePluginConfigurations(pIsActive, pIsLinkedToAllEntities, pPageable);
+                .retrievePluginConfigurations(pPluginType, pIsActive, pIsLinkedToAllEntities, pPageable);
         return new ResponseEntity<>(toPagedResources(pluginConfs, pAssembler), HttpStatus.OK);
     }
 

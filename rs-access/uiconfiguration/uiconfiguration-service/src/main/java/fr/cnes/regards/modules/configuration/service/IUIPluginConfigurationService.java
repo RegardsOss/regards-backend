@@ -12,6 +12,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.configuration.domain.UIPluginConfiguration;
 import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
+import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 
 public interface IUIPluginConfigurationService {
 
@@ -26,8 +27,8 @@ public interface IUIPluginConfigurationService {
      * @return Page of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> retrievePluginConfigurations(Boolean pIsActive, Boolean pIsLinkedToAllEntities,
-            Pageable pPageable);
+    Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pPluginType, Boolean pIsActive,
+            Boolean pIsLinkedToAllEntities, Pageable pPageable);
 
     /**
      *

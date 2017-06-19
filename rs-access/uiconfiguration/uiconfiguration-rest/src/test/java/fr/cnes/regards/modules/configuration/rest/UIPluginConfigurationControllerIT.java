@@ -133,6 +133,16 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
                 + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
                           "Error getting all active and linked plugins", builder);
 
+        expectations.clear();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(1)));
+
+        final RequestParamBuilder builder2 = RequestParamBuilder.build().param("type",
+                                                                               UIPluginTypesEnum.SERVICE.toString());
+        performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
+                          "Error getting all active and linked plugins", builder2);
+
     }
 
     /**
