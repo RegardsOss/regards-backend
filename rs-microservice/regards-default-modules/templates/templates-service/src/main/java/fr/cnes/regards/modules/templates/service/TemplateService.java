@@ -101,18 +101,18 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template accountUnlockTemplate;
 
+    @Autowired
+    private Template accountRefusedTemplate;
+
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String noReplyAdress;
 
     /**
-     * Constructor
      *
-     * @param pTemplateRepository
-     *            the template repository
-     * @param pTenantResolver
-     *            the tenant resolver
+     * @param pTemplateRepository template repository
+     * @param pTenantResolver tenant resolver
+     * @param pRuntimeTenantResolver runtime tenant resolver
      * @throws IOException
-     *             when an error occurs while configuring the template loader
      */
     public TemplateService(final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver,
             final IRuntimeTenantResolver pRuntimeTenantResolver) throws IOException {
@@ -146,6 +146,9 @@ public class TemplateService implements ITemplateService {
             }
             if (!templateRepository.findOneByCode(emailAccountValidationTemplate.getCode()).isPresent()) {
                 templateRepository.save(emailAccountValidationTemplate);
+            }
+            if (!templateRepository.findOneByCode(accountRefusedTemplate.getCode()).isPresent()) {
+                templateRepository.save(accountRefusedTemplate);
             }
         }
     }
@@ -256,6 +259,10 @@ public class TemplateService implements ITemplateService {
 
             if (emailAccountValidationTemplate.getCode().equals(pTemplateCode)) {
                 template = emailAccountValidationTemplate;
+            }
+
+            if (accountRefusedTemplate.getCode().equals(pTemplateCode)) {
+                template = accountRefusedTemplate;
             }
 
             if (template == null) {

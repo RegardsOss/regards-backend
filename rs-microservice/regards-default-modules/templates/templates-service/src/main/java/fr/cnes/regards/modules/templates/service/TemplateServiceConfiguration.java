@@ -43,29 +43,39 @@ public class TemplateServiceConfiguration {
     public static final String ACCOUNT_UNLOCK_TEMPLATE = "accountUnlockTemplate";
 
     /**
-     * The email validation template as html
+     * The account refused template code
      */
-    @Value("classpath:email-validation-template.html")
-    private Resource emailValidationTemplate;
+    public static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
 
     /**
-     * The password reset template as html
+     * The verification email template as html
+     */
+    @Value("classpath:email-account-validation-template.html")
+    private Resource emailAccountValidationTemplate;
+
+    /**
+     * The password reset email template as html
      */
     @Value("classpath:password-reset-template.html")
     private Resource passwordResetTemplate;
 
     /**
-     * The password reset template as html
+     * The account unlock email template as html
      */
     @Value("classpath:account-unlock-template.html")
     private Resource accountUnlockTemplate;
 
     /**
-     * The password reset template as html
+     * The account refused email template as html
      */
-    @Value("classpath:email-account-validation-template.html")
-    private Resource emailAccountValidationTemplate;
+    @Value("classpath:account-refused-template.html")
+    private Resource accountRefusedTemplate;
 
+    /**
+     * Declare the template as bean
+     * @return the template
+     * @throws IOException
+     */
     @Bean
     public Template emailAccountValidationTemplate() throws IOException {
         try (InputStream is = emailAccountValidationTemplate.getInputStream()) {
@@ -75,6 +85,11 @@ public class TemplateServiceConfiguration {
         }
     }
 
+    /**
+     * Declare the template as bean
+     * @return the template
+     * @throws IOException
+     */
     @Bean
     public Template passwordResetTemplate() throws IOException {
         try (InputStream is = passwordResetTemplate.getInputStream()) {
@@ -84,12 +99,31 @@ public class TemplateServiceConfiguration {
         }
     }
 
+    /**
+     * Declare the template as bean
+     * @return the template
+     * @throws IOException
+     */
     @Bean
     public Template accountUnlockTemplate() throws IOException {
         try (InputStream is = accountUnlockTemplate.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
             return new Template(ACCOUNT_UNLOCK_TEMPLATE, text, dataStructure, "Account Unlock");
+        }
+    }
+
+    /**
+     * Declare the template as bean
+     * @return the template
+     * @throws IOException
+     */
+    @Bean
+    public Template accountRefusedTemplate() throws IOException {
+        try (InputStream is = accountRefusedTemplate.getInputStream()) {
+            final String text = inputStreamToString(is);
+            final Map<String, String> dataStructure = new HashMap<>();
+            return new Template(ACCOUNT_REFUSED_TEMPLATE, text, dataStructure, "Account refused");
         }
     }
 
