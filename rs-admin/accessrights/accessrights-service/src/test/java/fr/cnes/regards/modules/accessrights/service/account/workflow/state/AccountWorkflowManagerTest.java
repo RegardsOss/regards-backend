@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.workflow;
+package fr.cnes.regards.modules.accessrights.service.account.workflow.state;
 
 import java.util.Arrays;
 import java.util.HashSet;

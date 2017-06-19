@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
+import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
@@ -70,6 +71,19 @@ public class PendingState extends AbstractDeletableState {
         pAccount.setStatus(AccountStatus.ACTIVE);
         eventPublisher.publishEvent(new OnAcceptAccountEvent(pAccount.getEmail()));
         accountRepository.save(pAccount);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#acceptAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
+    @Override
+    public void refuseAccount(final Account pAccount) throws EntityException {
+        eventPublisher.publishEvent(new OnRefuseAccountEvent(pAccount));
+        deleteAccount(pAccount);
     }
 
 }

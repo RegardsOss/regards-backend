@@ -1,0 +1,111 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.accessrights.service.account.workflow.listeners;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+
+/**
+ * Listen to {@link OnRefuseAccountEvent} in order to warn the user its account request was refused.
+ *
+ * @author Xavier-Alexandre Brochard
+ */
+@Component
+public class SendAccountRefusedEmailListener implements ApplicationListener<OnRefuseAccountEvent> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(SendAccountRefusedEmailListener.class);
+
+    /**
+     * The email template for refused account
+     */
+    private static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
+
+    /**
+     * Service handling CRUD operations on email templates
+     */
+    private final ITemplateService templateService;
+
+    /**
+     * Client for sending emails
+     */
+    private final IEmailClient emailClient;
+
+    /**
+     * @param pTemplateService
+     * @param pEmailClient
+     */
+    public SendAccountRefusedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient) {
+        super();
+        templateService = pTemplateService;
+        emailClient = pEmailClient;
+    }
+
+    @Override
+    public void onApplicationEvent(final OnRefuseAccountEvent pEvent) {
+        sendAccountRefusedEmail(pEvent);
+    }
+
+    /**
+     * Send a password reset email based on information stored in the passed event
+     *
+     * @param pEvent
+     *            the init event
+     */
+    private void sendAccountRefusedEmail(final OnRefuseAccountEvent pEvent) {
+        // Retrieve the account
+        final Account account = pEvent.getAccount();
+
+        // Build the list of recipients
+        final String[] recipients = { account.getEmail() };
+
+        // Create a hash map in order to store the data to inject in the mail
+        final Map<String, String> data = new HashMap<>();
+        data.put("name", account.getFirstName());
+
+        SimpleMailMessage email;
+        try {
+            email = templateService.writeToEmail(ACCOUNT_REFUSED_TEMPLATE, data, recipients);
+        } catch (final EntityNotFoundException e) {
+            LOG.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
+                      e);
+            email = writeToEmailDefault(data, recipients);
+        }
+
+        // Send it
+        FeignSecurityManager.asSystem();
+        emailClient.sendEmail(email);
+        FeignSecurityManager.reset();
+    }
+
+    /**
+     * Send super simple mail in case the template service fails
+     * @param data the data
+     * @param recipients the recipients
+     * @return the result email
+     */
+    private SimpleMailMessage writeToEmailDefault(Map<String, String> data, String[] recipients) {
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(recipients);
+        email.setSubject("REGARDS - Access refused");
+        email.setText("Your access request was refused by admin.");
+        return email;
+    }
+
+}

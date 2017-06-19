@@ -36,6 +36,21 @@ public interface IAccountTransitions {
     }
 
     /**
+     * Deletes a PENDING account.
+     *
+     * @param pAccount
+     *            The {@link Account}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
+     *             {@link EntityNotFoundException} Thrown when the email validation template could not be found
+     */
+    default void refuseAccount(final Account pAccount) throws EntityException {
+        throw new EntityTransitionForbiddenException(pAccount.getId().toString(), Account.class,
+                pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
+
+    /**
      * Passes an ACTIVE account to the status LOCKED.
      *
      * @param pAccount

@@ -59,6 +59,11 @@ public class RegistrationController {
     public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/acceptAccount/{account_email}";
 
     /**
+     * Relative path to the endpoint refusing an account
+     */
+    public static final String REFUSE_ACCOUNT_RELATIVE_PATH = "/refuseAccount/{account_email}";
+
+    /**
      * Relative path to the endpoint accepting accesses (project users)
      */
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
@@ -146,6 +151,26 @@ public class RegistrationController {
 
         // Accept it
         accountWorkflowManager.acceptAccount(account);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Refuse the account request
+     *
+     * @param pAccountEmail
+     *            account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     */
+    @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") final String pAccountEmail)
+            throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Accept it
+        accountWorkflowManager.refuseAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
