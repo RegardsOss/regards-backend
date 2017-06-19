@@ -61,6 +61,12 @@ public class ResourcesService implements IResourcesService {
      */
     private final IRoleService roleService;
 
+    /**
+     * Constructor
+     *
+     * @param pResourceAccessRepo
+     * @param pRoleService
+     */
     public ResourcesService(final IResourcesAccessRepository pResourceAccessRepo, final IRoleService pRoleService) {
         super();
         resourceAccessRepo = pResourceAccessRepo;

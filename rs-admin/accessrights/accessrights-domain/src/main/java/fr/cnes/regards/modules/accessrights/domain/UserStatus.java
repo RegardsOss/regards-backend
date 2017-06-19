@@ -16,7 +16,8 @@ public enum UserStatus {
     ACCESS_DENIED,
     ACCESS_GRANTED,
     ACCESS_INACTIVE,
-    WAITING_ACCOUNT_ACTIVE;
+    WAITING_ACCOUNT_ACTIVE,
+    WAITING_EMAIL_VERIFICATION;
 
     @Override
     public String toString() {
