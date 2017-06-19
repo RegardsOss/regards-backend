@@ -14,10 +14,6 @@ public enum AccountStatus {
      */
     INACTIVE,
     /**
-     * Account request is accepted
-     */
-    ACCEPTED,
-    /**
      * Account is active
      */
     ACTIVE,

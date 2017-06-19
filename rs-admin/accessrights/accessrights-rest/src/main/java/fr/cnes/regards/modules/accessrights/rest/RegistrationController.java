@@ -22,18 +22,18 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken;
-import fr.cnes.regards.modules.accessrights.registration.IRegistrationService;
-import fr.cnes.regards.modules.accessrights.registration.IVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.workflow.account.AccountWorkflowManager;
-import fr.cnes.regards.modules.accessrights.workflow.projectuser.AccessQualification;
-import fr.cnes.regards.modules.accessrights.workflow.projectuser.ProjectUserWorkflowManager;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessQualification;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
+import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationService;
 
 /**
  * Endpoints to handle Users registration for a project.
@@ -69,6 +69,11 @@ public class RegistrationController {
     public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
 
     /**
+     * Relative path to the endpoint for verifying the email
+     */
+    private static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
+
+    /**
      * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
@@ -99,10 +104,10 @@ public class RegistrationController {
     private IRegistrationService registrationService;
 
     /**
-     * Service handling CRUD operation on {@link VerificationToken}s. Autowired by Spring. Must no be <code>null</code>.
+     * Service handling CRUD operation on {@link EmailVerificationToken}s. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
-    private IVerificationTokenService verificationTokenService;
+    private IEmailVerificationTokenService emailVerificationTokenService;
 
     /**
      * Request a new access, i.e. a new project user
@@ -153,11 +158,11 @@ public class RegistrationController {
      * @throws EntityException
      *             when no verification token associated to this account could be found
      */
-    @RequestMapping(value = "/validateAccount/{token}", method = RequestMethod.GET)
+    @RequestMapping(value = VERIFY_EMAIL_RELATIVE_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> validateAccount(@PathVariable("token") final String pToken) throws EntityException {
-        final VerificationToken verificationToken = verificationTokenService.findByToken(pToken);
-        accountWorkflowManager.validateAccount(verificationToken);
+    public ResponseEntity<Void> verifyEmail(@PathVariable("token") final String pToken) throws EntityException {
+        final EmailVerificationToken emailVerificationToken = emailVerificationTokenService.findByToken(pToken);
+        projectUserWorkflowManager.verifyEmail(emailVerificationToken);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
