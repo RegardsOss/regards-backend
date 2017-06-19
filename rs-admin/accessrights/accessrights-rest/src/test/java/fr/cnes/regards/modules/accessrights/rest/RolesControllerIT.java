@@ -3,6 +3,9 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +36,6 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for Roles REST Controller.
@@ -205,7 +206,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
         // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
-        performDefaultGet(RoleController.TYPE_MAPPING, expectations, "TODO Error message");
+
+        // Use PROJECT ADMIN
+        String projectAdminJwt = manageSecurity(RoleController.TYPE_MAPPING, RequestMethod.GET, DEFAULT_USER_EMAIL,
+                                                DefaultRole.PROJECT_ADMIN.name());
+        performGet(RoleController.TYPE_MAPPING, projectAdminJwt, expectations, "TODO Error message");
     }
 
     @Test

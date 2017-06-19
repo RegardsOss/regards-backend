@@ -3,13 +3,14 @@
  */
 package fr.cnes.regards.modules.accessrights.service.role;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 
@@ -45,6 +46,7 @@ import fr.cnes.regards.framework.security.event.ResourceAccessEvent;
 import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -218,13 +220,37 @@ public class RoleService implements IRoleService {
         return roleRepository.save(defaultRole);
     }
 
+    /**
+     * @return all roles manageable by current authenticated user
+     */
     @Override
     public Set<Role> retrieveRoles() {
-        // Instance Admin role is only usable by one user: the project admin configured at install, so we have not to send it back to the front
-        try (Stream<Role> stream = StreamSupport.stream(roleRepository.findAllDistinctLazy().spliterator(), true)
-                .filter(r -> !r.getName().equals(DefaultRole.INSTANCE_ADMIN.name()))) {
-            return stream.collect(Collectors.toSet());
+
+        List<Role> manageableRoles = new ArrayList<>();
+        for (Role role : roleRepository.findAllDistinctLazy()) {
+
+            // Instance Admin role is only usable by one user:
+            // the project admin configured at install, so we have not to send it back to the front
+            if (DefaultRole.INSTANCE_ADMIN.name().equals(role.getName())) {
+                continue;
+            }
+
+            try {
+                // Check if current user can manage this role
+                canManageRole(role);
+                // Add manageable role
+                manageableRoles.add(role);
+
+            } catch (EntityOperationForbiddenException e) {
+                LOGGER.debug("Do not send role {} cause authenticated user cannot manage it!", role.getName());
+                LOGGER.trace(e.getMessage(), e);
+            }
         }
+
+        Set<Role> sortedRole = new TreeSet<>(new RoleComparator(this));
+        sortedRole.addAll(manageableRoles);
+        return sortedRole;
+
     }
 
     @Override
@@ -277,17 +303,19 @@ public class RoleService implements IRoleService {
         if (!pRoleName.equals(pUpdatedRole.getName())) {
             throw new EntityInconsistentIdentifierException(pRoleName, pUpdatedRole.getName(), Role.class);
         }
-        Role beforeUpdate = roleRepository.findByName(pRoleName).orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
-        if(beforeUpdate.isNative() && ((beforeUpdate.getParentRole()==null && pUpdatedRole.getParentRole()!=null) || (!Objects
-                .equal(beforeUpdate.getParentRole(), pUpdatedRole.getParentRole())))) {
+        Role beforeUpdate = roleRepository.findByName(pRoleName)
+                .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
+        if (beforeUpdate.isNative()
+                && (((beforeUpdate.getParentRole() == null) && (pUpdatedRole.getParentRole() != null))
+                        || (!Objects.equal(beforeUpdate.getParentRole(), pUpdatedRole.getParentRole())))) {
             throw new EntityOperationForbiddenException(pRoleName, Role.class, "Native role parent cannot be changed");
         }
-        Role updated=pUpdatedRole;
+        Role updated = pUpdatedRole;
         if (!beforeUpdate.isNative() && !beforeUpdate.getParentRole().equals(pUpdatedRole.getParentRole())) {
             //if this is a custom role and and the parent has changed: we set the resources of the custom role to the one of its new parent
             //so lets get its parent with its permissions
-            Role newParent=roleRepository.findOneById(pUpdatedRole.getParentRole().getId());
-            updated=updateRoleResourcesAccess(beforeUpdate.getId(), newParent.getPermissions());
+            Role newParent = roleRepository.findOneById(pUpdatedRole.getParentRole().getId());
+            updated = updateRoleResourcesAccess(beforeUpdate.getId(), newParent.getPermissions());
         }
         return saveAndPublish(updated);
     }
@@ -364,14 +392,106 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Add a set of accesses to a role and its descendants(according to PM003)
-     *
-     * @param pRole role on which the modification has been made
-     * @param pNewOnes accesses to add
-     * @throws EntityOperationForbiddenException if error occurs!
+     * Check authenticated user can manage target role resource accesses.
+     * @param pRole target role to manage
+     * @param silent check conditions silently (no exception thrown)
+     * @throws EntityOperationForbiddenException if operation forbidden
      */
+    private void canManageRole(Role pRole) throws EntityOperationForbiddenException {
+
+        String securityRole = SecurityUtils.getActualRole();
+
+        if (securityRole == null) {
+            LOGGER.debug("No security role set. Internal call granted");
+            return;
+        }
+
+        // System role always granted
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+                || RoleAuthority.isProjectAdminRole(securityRole)) {
+            LOGGER.debug("Priviledged call granted");
+            return;
+        }
+
+        Optional<Role> currentRole = roleRepository.findByName(securityRole);
+
+        // Compare with native role
+        Role refRole = pRole;
+        if (!pRole.isNative()) {
+            refRole = pRole.getParentRole();
+        }
+
+        // Check if target role is hierarchically inferior so current user can alter it
+        if (currentRole.isPresent() && isHierarchicallyInferior(refRole, currentRole.get())) {
+
+            LOGGER.debug("User with role {} can add resource accesses to role {}", currentRole.get().getName(),
+                         pRole.getName());
+
+        } else if (currentRole.isPresent()) {
+            String message = "A user can only add resources on role hierarchically inferior to its own.";
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(message);
+        } else {
+            String message = String.format("Unknown role %s.", securityRole);
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(message);
+        }
+    }
+
+    /**
+     * Check authenticated user can add specified resources.
+     * @param pNewOnes resources to add only if they are a subset of use ones.
+     * @throws EntityOperationForbiddenException
+     */
+    private void canAddResourceAccesses(ResourcesAccess... pNewOnes) throws EntityOperationForbiddenException {
+        String securityRole = SecurityUtils.getActualRole();
+
+        if (securityRole == null) {
+            LOGGER.debug("No security role set. Internal call granted");
+            return;
+        }
+
+        // System role always granted
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+                || RoleAuthority.isProjectAdminRole(securityRole)) {
+            LOGGER.debug("Priviledged call granted");
+            return;
+        }
+
+        Optional<Role> currentRole = roleRepository.findOneByName(securityRole);
+
+        Set<ResourcesAccess> resourcesToAdd = new HashSet<>();
+        for (ResourcesAccess ra : pNewOnes) {
+            resourcesToAdd.add(ra);
+        }
+
+        // Check if current user has itself the resource accesses he wants to add
+        if (currentRole.isPresent() && currentRole.get().getPermissions().containsAll(resourcesToAdd)) {
+            LOGGER.debug("User with role {} can add specified resource accesses", currentRole.get().getName());
+        } else if (currentRole.isPresent()) {
+            String message = "A user can only add resources he has yet. One or more resources doesn't match this requirement.";
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(message);
+        } else {
+            String message = String.format("Unknown role %s.", securityRole);
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(message);
+        }
+    }
+
+    /**
+    * Add a set of accesses to a role and its descendants(according to PM003)
+    *
+    * @param pRole role on which the modification has been made
+    * @param pNewOnes accesses to add
+    * @throws EntityOperationForbiddenException if error occurs!
+    */
     private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
             throws EntityOperationForbiddenException {
+
+        // Check if current user can add resources to specified role
+        canManageRole(pRole);
+        canAddResourceAccesses(pNewOnes);
 
         if (pRole.isNative()) {
             // If native role, propagate added resources to all descendants to maintain consistency
@@ -545,8 +665,10 @@ public class RoleService implements IRoleService {
             throw new EntityNotFoundException(pRoleName, Role.class);
         }
 
-        removeResourcesAccesses(roleOpt.get(), pResourcesAccesses);
+        // Check if current user can remove resources to specified role
+        canManageRole(roleOpt.get());
 
+        removeResourcesAccesses(roleOpt.get(), pResourcesAccesses);
     }
 
     private void removeResourcesAccesses(Role role, ResourcesAccess[] pResourcesAccesses)
@@ -554,7 +676,7 @@ public class RoleService implements IRoleService {
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
             throw new EntityOperationForbiddenException(role.getName(), Role.class,
-                                                        "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
+                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
         // Apply changes and publish changes inside removeAndPropagate or RemoveAndManageParent so we are sure that
@@ -659,9 +781,9 @@ public class RoleService implements IRoleService {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            final String message = String
-                    .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                            role.getName());
+            final String message = String.format(
+                                                 "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                                                 role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }
@@ -695,8 +817,8 @@ public class RoleService implements IRoleService {
         final ProjectUser user = optionnalUser.get();
         // get Original Role of the user
         final Role originalRole = user.getRole();
-        final List<String> roleNamesAllowedToBorrow = Lists
-                .newArrayList(DefaultRole.ADMIN.toString(), DefaultRole.PROJECT_ADMIN.toString());
+        final List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
+                                                                         DefaultRole.PROJECT_ADMIN.toString());
         // It is impossible to borrow a role if your original role is not ADMIN or PROJECT_ADMIN or one of their sons
         if (!roleNamesAllowedToBorrow.contains(originalRole.getName()) && ((originalRole.getParentRole() == null)
                 || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
