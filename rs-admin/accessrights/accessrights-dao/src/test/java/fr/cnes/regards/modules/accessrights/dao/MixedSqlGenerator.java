@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,7 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Marc Sordi
  *
  */
-@Ignore("Used to generate SQL script with HBM2DDL, public schema must exist and be empty!")
+//@Ignore("Used to generate SQL script with HBM2DDL, public schema must exist and be empty!")
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MixedSqlGeneratorConfiguration.class })
 @TestPropertySource(properties = { "regards.jpa.multitenant.outputFile=target/project_script.sql",
