@@ -118,6 +118,18 @@ public class RoleService implements IRoleService {
      */
     private final IPublisher publisher;
 
+    /**
+     * Constructor
+     *
+     * @param pMicroserviceName
+     * @param pRoleRepository
+     * @param pProjectUserRepository
+     * @param pTenantResolver
+     * @param pRuntimeTenantResolver
+     * @param pInstanceSubscriber
+     * @param instancePublisher
+     * @param pPublisher
+     */
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
@@ -134,6 +146,9 @@ public class RoleService implements IRoleService {
         publisher = pPublisher;
     }
 
+    /**
+     * Post contruct
+     */
     @PostConstruct
     public void init() {
         // Ensure the existence of default roles.

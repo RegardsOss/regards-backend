@@ -14,14 +14,24 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.Validity;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -31,10 +41,10 @@ import fr.cnes.regards.modules.accessrights.domain.accountunlock.RequestAccountU
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions;
+import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.service.account.passwordreset.OnPasswordResetEvent;
+import fr.cnes.regards.modules.accessrights.service.account.workflow.state.IAccountTransitions;
 
 /**
  * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance
@@ -434,15 +444,22 @@ public class AccountsController implements IResourceController<Account> {
             resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, pElement.getId()),
                                     MethodParamFactory.build(Account.class));
+
             // Delete link only if the account is not admin and the account is deletable (not linked to exisisting
             // users)
-            if (!pElement.getEmail().equals(rootAdminUserLogin) && accountWorkflowManager.canDelete(pElement)) {
+            if (!AccountStatus.PENDING.equals(pElement.getStatus()) && !pElement.getEmail().equals(rootAdminUserLogin)
+                    && accountWorkflowManager.canDelete(pElement)) {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, pElement.getId()));
             }
             // Accept link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(pElement.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccount", "accept",
+                                        MethodParamFactory.build(String.class, pElement.getEmail()));
+            }
+            // Refuse link, only if the account is in PENDING state
+            if (AccountStatus.PENDING.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, RegistrationController.class, "refuseAccount", "refuse",
                                         MethodParamFactory.build(String.class, pElement.getEmail()));
             }
             // Inactive link, only if the account is in ACTIVE state
@@ -479,15 +496,14 @@ public class AccountsController implements IResourceController<Account> {
         }
     }
 
-        @SuppressWarnings("unused")
-
+    @SuppressWarnings("unused")
 
     private static class PasswordRules {
 
         private String rules;
 
         public PasswordRules(String passwordRules) {
-            rules=passwordRules;
+            rules = passwordRules;
         }
 
         public String getRules() {

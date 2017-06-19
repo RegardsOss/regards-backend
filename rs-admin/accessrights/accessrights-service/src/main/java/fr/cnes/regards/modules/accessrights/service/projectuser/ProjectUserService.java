@@ -83,14 +83,12 @@ public class ProjectUserService implements IProjectUserService {
     private final String instanceAdminUserEmail;
 
     /**
-     * Creates a new instance of the service with passed services/repos
+     * Constructor
      *
      * @param pProjectUserRepository
-     *            The project user repo
      * @param pRoleService
-     *            The role service
+     * @param pAccountService
      * @param pInstanceAdminUserEmail
-     *            The instance admin user email
      */
     public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
             final IAccountService pAccountService,
@@ -219,18 +217,16 @@ public class ProjectUserService implements IProjectUserService {
         // Set user role
         if (pUpdatedProjectUser.getRole() == null) {
             user.setRole(null);
-        } else
-            if (pUpdatedProjectUser.getRole().getId() != null) {
-                user.setRole(pUpdatedProjectUser.getRole());
-            } else
-                if (pUpdatedProjectUser.getRole().getName() != null) {
-                    final Role newRole = roleService.retrieveRole(pUpdatedProjectUser.getRole().getName());
-                    if (newRole != null) {
-                        user.setRole(newRole);
-                    } else {
-                        throw new EntityNotFoundException(pUpdatedProjectUser.getRole().getName(), Role.class);
-                    }
-                }
+        } else if (pUpdatedProjectUser.getRole().getId() != null) {
+            user.setRole(pUpdatedProjectUser.getRole());
+        } else if (pUpdatedProjectUser.getRole().getName() != null) {
+            final Role newRole = roleService.retrieveRole(pUpdatedProjectUser.getRole().getName());
+            if (newRole != null) {
+                user.setRole(newRole);
+            } else {
+                throw new EntityNotFoundException(pUpdatedProjectUser.getRole().getName(), Role.class);
+            }
+        }
 
         // Set user new metadata
         user.setMetadata(pUpdatedProjectUser.getMetadata());
