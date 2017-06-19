@@ -175,6 +175,9 @@ public class RoleServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
+
+        SecurityUtils.mockActualRole(null);
+
         final Set<Role> expected = new HashSet<>();
         expected.add(rolePublic);
 
@@ -481,7 +484,7 @@ public class RoleServiceTest {
         // Mock
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                                                                         RequestMethod.PATCH, DefaultRole.ADMIN);
+                RequestMethod.PATCH, DefaultRole.ADMIN);
         resourcesAccesses.add(addedResourcesAccess);
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
@@ -513,7 +516,6 @@ public class RoleServiceTest {
         // because we consider that ADMIN is the role of the caller, we have to be able to return it
         Mockito.when(roleRepository.findByName(DefaultRole.ADMIN.name())).thenReturn(Optional.ofNullable(roleAdmin));
 
-
         // Perform the update
         roleService.updateRoleResourcesAccess(PUBLIC_ID, resourcesAccesses);
 
@@ -544,7 +546,7 @@ public class RoleServiceTest {
 
         final Set<ResourcesAccess> passedRAs = new HashSet<>();
         passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
-                                          DefaultRole.ADMIN));
+                DefaultRole.ADMIN));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
@@ -574,7 +576,6 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         // because we consider that ADMIN is the role of the caller, we have to be able to return it
         Mockito.when(roleRepository.findByName(DefaultRole.ADMIN.name())).thenReturn(Optional.ofNullable(roleAdmin));
-
 
         // Ensure new permission's attributes are different from the previous
 
