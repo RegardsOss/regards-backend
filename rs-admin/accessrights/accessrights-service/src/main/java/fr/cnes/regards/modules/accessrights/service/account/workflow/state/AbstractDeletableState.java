@@ -6,9 +6,9 @@ package fr.cnes.regards.modules.accessrights.service.account.workflow.state;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
@@ -77,7 +77,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     }
 
     @Override
-    public void deleteAccount(final Account pAccount) throws ModuleException {
+    public void deleteAccount(final Account pAccount) throws EntityException {
         switch (pAccount.getStatus()) {
             case ACTIVE:
             case LOCKED:
