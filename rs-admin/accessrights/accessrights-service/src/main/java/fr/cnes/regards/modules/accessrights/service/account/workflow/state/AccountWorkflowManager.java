@@ -54,6 +54,14 @@ public class AccountWorkflowManager implements IAccountTransitions {
         accountStateProvider.getState(pAccount).acceptAccount(pAccount);
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.service.account.workflow.state.IAccountTransitions#refuseAccount(fr.cnes.regards.modules.accessrights.domain.instance.Account)
+     */
+    @Override
+    public void refuseAccount(Account pAccount) throws EntityException {
+        accountStateProvider.getState(pAccount).refuseAccount(pAccount);
+    }
+
     /*
      * (non-Javadoc)
      *

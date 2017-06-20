@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -99,7 +100,6 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      */
     @Override
     public boolean canDelete(final Account pAccount) {
-
         try {
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -135,6 +135,24 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         passwordResetTokenService.deletePasswordResetTokenForAccount(pAccount);
         LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
         accountRepository.delete(pAccount.getId());
+    }
+
+    /**
+     * Delete ALL project users associated to given account
+     * @param pAccount given account
+     * @throws EntityNotFoundException
+     */
+    protected void deleteLinkedProjectUsers(final Account pAccount) throws EntityNotFoundException {
+        try {
+            for (String tenant : tenantResolver.getAllActiveTenants()) {
+                runtimeTenantResolver.forceTenant(tenant);
+                if (projectUserService.existUser(pAccount.getEmail())) {
+                    projectUserService.deleteByEmail(pAccount.getEmail());
+                }
+            }
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     /**

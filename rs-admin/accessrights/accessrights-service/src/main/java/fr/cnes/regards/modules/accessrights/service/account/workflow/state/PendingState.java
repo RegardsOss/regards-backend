@@ -83,6 +83,7 @@ public class PendingState extends AbstractDeletableState {
     @Override
     public void refuseAccount(final Account pAccount) throws EntityException {
         eventPublisher.publishEvent(new OnRefuseAccountEvent(pAccount));
+        deleteLinkedProjectUsers(pAccount);
         deleteAccount(pAccount);
     }
 

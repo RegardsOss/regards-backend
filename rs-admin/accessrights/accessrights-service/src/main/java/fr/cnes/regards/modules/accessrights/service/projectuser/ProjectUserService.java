@@ -435,4 +435,13 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.findByRoleName(role.getName());
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#delete(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
+     */
+    @Override
+    public void deleteByEmail(String pEmail) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(pEmail);
+        projectUserRepository.delete(projectUser);
+    }
+
 }

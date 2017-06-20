@@ -235,4 +235,11 @@ public interface IProjectUserService {
     void resetLicence();
 
     Collection<ProjectUser> retrieveUserByRole(Role role);
+
+    /**
+     * Deletes the project user of given email
+     * @param pEmail the email of the user to delete
+     * @throws EntityNotFoundException if no project user with given email can be found
+     */
+    void deleteByEmail(String pEmail) throws EntityNotFoundException;
 }
