@@ -49,6 +49,12 @@ public class ProjectUserStateProvider {
     private AccessInactiveState accessInactiveState;
 
     /**
+     * Waiting email verification state
+     */
+    @Autowired
+    private WaitingEmailVerification waitingEmailVerification;
+
+    /**
      * Creates the right account state based on the passed status
      *
      * @param pStatus
@@ -58,6 +64,9 @@ public class ProjectUserStateProvider {
     public IProjectUserTransitions createState(final UserStatus pStatus) {
         final IProjectUserTransitions state;
         switch (pStatus) {
+            case WAITING_EMAIL_VERIFICATION:
+                state = waitingEmailVerification;
+                break;
             case WAITING_ACCESS:
                 state = waitingAccessState;
                 break;

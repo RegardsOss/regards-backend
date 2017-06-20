@@ -48,7 +48,6 @@ public class WaitingEmailVerification extends AbstractDeletableState {
 
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         getProjectUserRepository().save(projectUser);
-
     }
 
 }
