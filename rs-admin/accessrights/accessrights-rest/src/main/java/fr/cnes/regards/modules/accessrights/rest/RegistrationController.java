@@ -233,7 +233,11 @@ public class RegistrationController {
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
-        projectUserWorkflowManager.denyAccess(projectUser);
+        if (UserStatus.WAITING_ACCESS.equals(projectUser.getStatus())) {
+            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.DENIED);
+        } else {
+            projectUserWorkflowManager.denyAccess(projectUser);
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
