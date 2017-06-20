@@ -14,6 +14,7 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status INACTIVE.
@@ -25,19 +26,19 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
 public class InactiveState extends AbstractDeletableState {
 
     /**
-     * Constructor
-     *
      * @param pProjectUserService
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
+     * @param pEmailVerificationTokenService
      */
     public InactiveState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService) {
+            IPasswordResetService pPasswordResetTokenService,
+            IEmailVerificationTokenService pEmailVerificationTokenService) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pEmailVerificationTokenService);
     }
 
     @Override

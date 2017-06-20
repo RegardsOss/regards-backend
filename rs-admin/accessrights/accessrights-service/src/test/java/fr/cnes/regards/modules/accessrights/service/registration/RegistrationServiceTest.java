@@ -39,8 +39,6 @@ import fr.cnes.regards.modules.accessrights.service.account.workflow.state.Pendi
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationService;
-import fr.cnes.regards.modules.accessrights.service.registration.RegistrationService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -145,7 +143,8 @@ public class RegistrationServiceTest {
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new PendingState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetTokenService, accountRepository, eventPublisher));
+                        runtimeTenantResolver, passwordResetTokenService, tokenService, accountRepository,
+                        eventPublisher));
 
         // Create the tested service
         registrationService = new RegistrationService(accountRepository, projectUserRepository, roleService,

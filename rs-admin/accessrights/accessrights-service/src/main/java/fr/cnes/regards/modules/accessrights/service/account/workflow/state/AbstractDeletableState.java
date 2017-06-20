@@ -17,6 +17,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
  * Abstract state implementation to implement the delete action on an account.<br>
@@ -58,23 +59,29 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private final IPasswordResetService passwordResetTokenService;
 
     /**
-     * Constructor
-     *
+     * Service to manage email verification tokens for project users.
+     */
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
+    /**
      * @param pProjectUserService
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
+     * @param pEmailVerificationTokenService
      */
     public AbstractDeletableState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService) {
+            IPasswordResetService pPasswordResetTokenService,
+            IEmailVerificationTokenService pEmailVerificationTokenService) {
         super();
         projectUserService = pProjectUserService;
         accountRepository = pAccountRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
         passwordResetTokenService = pPasswordResetTokenService;
+        emailVerificationTokenService = pEmailVerificationTokenService;
     }
 
     @Override
@@ -143,10 +150,13 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      * @throws EntityNotFoundException
      */
     protected void deleteLinkedProjectUsers(final Account pAccount) throws EntityNotFoundException {
+        String email = pAccount.getEmail();
         try {
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
-                if (projectUserService.existUser(pAccount.getEmail())) {
+                if (projectUserService.existUser(email)) {
+                    ProjectUser projectUser = projectUserService.retrieveOneByEmail(email);
+                    emailVerificationTokenService.deleteTokenForProjectUser(projectUser);
                     projectUserService.deleteByEmail(pAccount.getEmail());
                 }
             }

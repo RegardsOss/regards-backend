@@ -161,7 +161,7 @@ public class ProjectUserWorkflowManagerTest {
     public void grantAccess() throws EntityTransitionForbiddenException {
         // Mock repository's content by making sure the request exists
         Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new AccessDeniedState(projectUserRepository));
+                .thenReturn(new AccessDeniedState(projectUserRepository, tokenService));
 
         // Call the tested method
         projectUserWorkflowManager.grantAccess(projectUser);
@@ -186,7 +186,7 @@ public class ProjectUserWorkflowManagerTest {
     public void denyAccess() throws EntityTransitionForbiddenException {
         // Mock repository's content by making sure the request exists
         Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new AccessGrantedState(projectUserRepository));
+                .thenReturn(new AccessGrantedState(projectUserRepository, tokenService));
 
         // Call the tested method
         projectUserWorkflowManager.denyAccess(projectUser);

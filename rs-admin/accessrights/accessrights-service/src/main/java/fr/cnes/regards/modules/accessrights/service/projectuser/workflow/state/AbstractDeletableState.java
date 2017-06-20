@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
  * Abstract state implementation to implement the delete action on a project user.<br>
@@ -22,14 +23,19 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
     private final IProjectUserRepository projectUserRepository;
 
     /**
-     * Constructor
-     *
-     * @param pProjectUserRepository
-     *            the project user repository
+     * Service to manage email verification tokens for project users.
      */
-    public AbstractDeletableState(final IProjectUserRepository pProjectUserRepository) {
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
+    /**
+     * @param pProjectUserRepository
+     * @param pEmailVerificationTokenService
+     */
+    public AbstractDeletableState(IProjectUserRepository pProjectUserRepository,
+            IEmailVerificationTokenService pEmailVerificationTokenService) {
         super();
         projectUserRepository = pProjectUserRepository;
+        emailVerificationTokenService = pEmailVerificationTokenService;
     }
 
     @Override
@@ -55,6 +61,7 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      *            the project user
      */
     protected void doDelete(final ProjectUser pProjectUser) {
+        emailVerificationTokenService.deleteTokenForProjectUser(pProjectUser);
         projectUserRepository.delete(pProjectUser.getId());
     }
 
@@ -63,6 +70,13 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      */
     protected IProjectUserRepository getProjectUserRepository() {
         return projectUserRepository;
+    }
+
+    /**
+     * @return the emailVerificationTokenService
+     */
+    public IEmailVerificationTokenService getEmailVerificationTokenService() {
+        return emailVerificationTokenService;
     }
 
 }

@@ -93,7 +93,7 @@ public interface IProjectUserTransitions {
     void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
-     * Passes a WAITING_ACCESS/ACCESS_GRANTED/ACCESS_INACTIVE/ACCESS_DENIED project user to the status NO_ACCESS and
+     * Passes a WAITING_ACCOUNT_ACTIVE/WAITING_ACCESS/ACCESS_GRANTED/ACCESS_INACTIVE/ACCESS_DENIED project user to the status NO_ACCESS and
      * deletes it.
      *
      * @param pProjectUser

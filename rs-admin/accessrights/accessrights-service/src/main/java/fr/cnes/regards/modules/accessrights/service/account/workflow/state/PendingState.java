@@ -17,6 +17,7 @@ import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPassw
 import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status PENDING.
@@ -39,22 +40,22 @@ public class PendingState extends AbstractDeletableState {
     private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * Constructor
-     *
      * @param pProjectUserService
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
+     * @param pEmailVerificationTokenService
      * @param pAccountRepository2
      * @param pEventPublisher
      */
     public PendingState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService, IAccountRepository pAccountRepository2,
+            IPasswordResetService pPasswordResetTokenService,
+            IEmailVerificationTokenService pEmailVerificationTokenService, IAccountRepository pAccountRepository2,
             ApplicationEventPublisher pEventPublisher) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pEmailVerificationTokenService);
         accountRepository = pAccountRepository2;
         eventPublisher = pEventPublisher;
     }
@@ -69,8 +70,8 @@ public class PendingState extends AbstractDeletableState {
     @Override
     public void acceptAccount(final Account pAccount) throws EntityException {
         pAccount.setStatus(AccountStatus.ACTIVE);
-        eventPublisher.publishEvent(new OnAcceptAccountEvent(pAccount.getEmail()));
         accountRepository.save(pAccount);
+        eventPublisher.publishEvent(new OnAcceptAccountEvent(pAccount.getEmail()));
     }
 
     /*
@@ -82,9 +83,9 @@ public class PendingState extends AbstractDeletableState {
      */
     @Override
     public void refuseAccount(final Account pAccount) throws EntityException {
-        eventPublisher.publishEvent(new OnRefuseAccountEvent(pAccount));
         deleteLinkedProjectUsers(pAccount);
         deleteAccount(pAccount);
+        eventPublisher.publishEvent(new OnRefuseAccountEvent(pAccount));
     }
 
 }

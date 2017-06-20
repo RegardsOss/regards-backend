@@ -21,7 +21,7 @@ import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerifi
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.EmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
@@ -42,11 +42,6 @@ public class WaitingAccessState extends AbstractDeletableState {
     private static final Logger LOGGER = LoggerFactory.getLogger(WaitingAccessState.class);
 
     /**
-     * Service handling {@link EmailVerificationToken}s. Autowired by Spring.
-     */
-    private final EmailVerificationTokenService tokenService;
-
-    /**
      * Service handling CRUD operations on {@link Account}s. Autowired by Spring.
      */
     private final IAccountService accountService;
@@ -62,19 +57,16 @@ public class WaitingAccessState extends AbstractDeletableState {
     private final IEmailClient emailClient;
 
     /**
-     * Constructor
-     *
      * @param pProjectUserRepository
-     * @param pTokenService
+     * @param pEmailVerificationTokenService
      * @param pAccountService
      * @param pTemplateService
      * @param pEmailClient
      */
     public WaitingAccessState(IProjectUserRepository pProjectUserRepository,
-            EmailVerificationTokenService pTokenService, IAccountService pAccountService,
+            IEmailVerificationTokenService pEmailVerificationTokenService, IAccountService pAccountService,
             TemplateService pTemplateService, IEmailClient pEmailClient) {
-        super(pProjectUserRepository);
-        tokenService = pTokenService;
+        super(pProjectUserRepository, pEmailVerificationTokenService);
         accountService = pAccountService;
         templateService = pTemplateService;
         emailClient = pEmailClient;
@@ -121,7 +113,7 @@ public class WaitingAccessState extends AbstractDeletableState {
         String email = pProjectUser.getEmail();
 
         // Retrieve the token
-        EmailVerificationToken token = tokenService.findByProjectUser(pProjectUser);
+        EmailVerificationToken token = getEmailVerificationTokenService().findByProjectUser(pProjectUser);
 
         // Retrieve the account
         Account account = accountService.retrieveAccountByEmail(email);

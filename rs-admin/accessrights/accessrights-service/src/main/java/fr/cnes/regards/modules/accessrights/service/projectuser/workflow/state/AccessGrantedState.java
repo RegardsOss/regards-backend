@@ -9,6 +9,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link ProjectUser} in status
@@ -21,13 +22,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 public class AccessGrantedState extends AbstractDeletableState {
 
     /**
-     * Creates a new PENDING state
-     *
      * @param pProjectUserRepository
-     *            the project user repository
+     * @param pEmailVerificationTokenService
      */
-    public AccessGrantedState(final IProjectUserRepository pProjectUserRepository) {
-        super(pProjectUserRepository);
+    public AccessGrantedState(IProjectUserRepository pProjectUserRepository,
+            IEmailVerificationTokenService pEmailVerificationTokenService) {
+        super(pProjectUserRepository, pEmailVerificationTokenService);
     }
 
     /*

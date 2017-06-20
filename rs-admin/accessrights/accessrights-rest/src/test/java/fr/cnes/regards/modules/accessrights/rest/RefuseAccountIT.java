@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -15,21 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationService;
 
 /**
  * Specific integration test for 'accesses/refuseAccount' endpoint
  *
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
  */
 public class RefuseAccountIT extends AbstractRegardsIT {
 
@@ -58,41 +54,22 @@ public class RefuseAccountIT extends AbstractRegardsIT {
      */
     private static final String PASSWORD = "password";
 
-    /**
-     * A project user.<br>
-     * We ensure before each test to have only this exactly project user in db for convenience.
-     */
-    private ProjectUser projectUser;
-
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
-
-    @Autowired
-    private IAccountRepository accountRepository;
-
-    private Role publicRole;
-
-    private Account account;
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IRegistrationService registrationService;
+
     /**
      * Do some setup before each test
+     *
+     * @throws EntityException
      */
     @Before
-    public void setUp() {
+    public void setUp() throws EntityException {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-        account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
-    }
-
-    @After
-    public void tearDown() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-        projectUserRepository.delete(projectUser);
-        accountRepository.delete(account);
+        registrationService.requestAccess(new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, "REGISTERED_USER",
+                new ArrayList<>(), PASSWORD, "originUrl", "requestLink"));
     }
 
     /**

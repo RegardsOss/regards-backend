@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
@@ -71,24 +72,24 @@ public class LockedState extends AbstractDeletableState {
     private final IEmailClient emailClient;
 
     /**
-     * Constructor
-     *
      * @param pProjectUserService
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
+     * @param pEmailVerificationTokenService
      * @param pAccountService
      * @param pTokenService
      * @param pTemplateService
      * @param pEmailClient
      */
-    public LockedState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository, // NOSONAR
+    public LockedState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService, IAccountService pAccountService,
+            IPasswordResetService pPasswordResetTokenService,
+            IEmailVerificationTokenService pEmailVerificationTokenService, IAccountService pAccountService,
             IAccountUnlockTokenService pTokenService, ITemplateService pTemplateService, IEmailClient pEmailClient) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService);
+              pPasswordResetTokenService, pEmailVerificationTokenService);
         accountService = pAccountService;
         tokenService = pTokenService;
         templateService = pTemplateService;
