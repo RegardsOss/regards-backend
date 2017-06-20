@@ -186,4 +186,11 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         return tenantResolver;
     }
 
+    /**
+     * @return the runtimeTenantResolver
+     */
+    public IRuntimeTenantResolver getRuntimeTenantResolver() {
+        return runtimeTenantResolver;
+    }
+
 }

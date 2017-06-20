@@ -69,9 +69,19 @@ public class PendingState extends AbstractDeletableState {
      */
     @Override
     public void acceptAccount(final Account pAccount) throws EntityException {
+        String email = pAccount.getEmail();
         pAccount.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(pAccount);
-        eventPublisher.publishEvent(new OnAcceptAccountEvent(pAccount.getEmail()));
+        try {
+            for (String tenant : getTenantResolver().getAllActiveTenants()) {
+                getRuntimeTenantResolver().forceTenant(tenant);
+                if (getProjectUserService().existUser(email)) {
+                    eventPublisher.publishEvent(new OnAcceptAccountEvent(email));
+                }
+            }
+        } finally {
+            getRuntimeTenantResolver().clearTenant();
+        }
     }
 
     /*
