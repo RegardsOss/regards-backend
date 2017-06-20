@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.accessrights.service.account.workflow.listeners;
+package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +14,9 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
@@ -25,15 +26,16 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class SendAccountRefusedEmailListener implements ApplicationListener<OnRefuseAccountEvent> {
+public class SendProjectUserDeniedEmailListener implements ApplicationListener<OnDenyEvent> {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(SendAccountRefusedEmailListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SendProjectUserDeniedEmailListener.class);
 
     /**
-     * The email template for refused account
+     * The email template for refused account.
+     * Note that we re-use the same template as when we deny at account level because we are lazy
      */
     private static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
 
@@ -48,18 +50,21 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
     private final IEmailClient emailClient;
 
     /**
+     * Account service
+     */
+    private final IAccountService accountService;
+
+    /**
      * @param pTemplateService
      * @param pEmailClient
+     * @param pAccountService
      */
-    public SendAccountRefusedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient) {
+    public SendProjectUserDeniedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
+            IAccountService pAccountService) {
         super();
         templateService = pTemplateService;
         emailClient = pEmailClient;
-    }
-
-    @Override
-    public void onApplicationEvent(final OnRefuseAccountEvent pEvent) {
-        sendAccountRefusedEmail(pEvent);
+        accountService = pAccountService;
     }
 
     /**
@@ -68,23 +73,29 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
      * @param pEvent
      *            the init event
      */
-    private void sendAccountRefusedEmail(final OnRefuseAccountEvent pEvent) {
-        // Retrieve the account
-        final Account account = pEvent.getAccount();
+    @Override
+    public void onApplicationEvent(final OnDenyEvent pEvent) {
+        // Retrieve the user
+        ProjectUser projectUser = pEvent.getProjectUser();
 
         // Build the list of recipients
-        final String[] recipients = { account.getEmail() };
+        String[] recipients = { projectUser.getEmail() };
 
         // Create a hash map in order to store the data to inject in the mail
-        final Map<String, String> data = new HashMap<>();
-        data.put("name", account.getFirstName());
+        Map<String, String> data = new HashMap<>();
+        try {
+            data.put("name", accountService.retrieveAccountByEmail(projectUser.getEmail()).getFirstName());
+        } catch (EntityNotFoundException e) {
+            LOGGER.error("Could not find the associated Account for templating the email content.", e);
+            data.put("name", "");
+        }
 
         SimpleMailMessage email;
         try {
             email = templateService.writeToEmail(ACCOUNT_REFUSED_TEMPLATE, data, recipients);
         } catch (final EntityNotFoundException e) {
-            LOG.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
-                      e);
+            LOGGER.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
+                         e);
             email = writeToEmailDefault(data, recipients);
         }
 

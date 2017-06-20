@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
@@ -25,21 +26,15 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.account.AccountService;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.EmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessDeniedState;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessGrantedState;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessQualification;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserStateProvider;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.WaitingAccessState;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.templates.service.TemplateService;
 
 /**
  * Test class for {@link ProjectUserWorkflowManager}.
- *
- * @author Xavier-Alexandre Brochard
- */
-/**
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -91,16 +86,13 @@ public class ProjectUserWorkflowManagerTest {
     private WaitingAccessState waitingAccessState;
 
     /**
-     * The mocked email client
-     */
-    private IEmailClient emailClient;
-
-    /**
      * Mocked account service
      */
     private IAccountService accountService;
 
     private EmailVerificationTokenService tokenService;
+
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * Do some setup before each test
@@ -109,13 +101,10 @@ public class ProjectUserWorkflowManagerTest {
     public void setUp() {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         projectUserStateProvider = Mockito.mock(ProjectUserStateProvider.class);
-
         tokenService = Mockito.mock(EmailVerificationTokenService.class);
         accountService = Mockito.mock(AccountService.class);
-        TemplateService templateService = Mockito.mock(TemplateService.class);
-        emailClient = Mockito.mock(IEmailClient.class);
-        waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, accountService,
-                templateService, emailClient);
+        eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
+        waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, eventPublisher);
 
         // Create the tested service
         projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider);
@@ -151,14 +140,12 @@ public class ProjectUserWorkflowManagerTest {
 
     /**
      * Check that the system allows to grant access to a previously access denied project user.
-     *
-     * @throws EntityTransitionForbiddenException
-     *             when the project user is not in status ACCESS_DENIED
+     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
     @Purpose("Check that the system allows to validate a registration request.")
-    public void grantAccess() throws EntityTransitionForbiddenException {
+    public void grantAccess() throws EntityException {
         // Mock repository's content by making sure the request exists
         Mockito.when(projectUserStateProvider.createState(projectUser))
                 .thenReturn(new AccessDeniedState(projectUserRepository, tokenService));
@@ -205,8 +192,8 @@ public class ProjectUserWorkflowManagerTest {
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("TODO")
-    public void qualifyAccess() throws EntityException {
+    @Purpose("Check that we send the verification email when granting access")
+    public void grantAccess_shouldSendEmailIfProjectUserIsWaitingAccess() throws EntityException {
         Account account = new Account(EMAIL, "First-Name", "Lastname", "password");
         EmailVerificationToken token = new EmailVerificationToken(projectUser, "originUrl", "requestLink");
         // Mock repository's content by making sure the request exists
@@ -215,14 +202,14 @@ public class ProjectUserWorkflowManagerTest {
         Mockito.when(accountService.retrieveAccountByEmail(EMAIL)).thenReturn(account);
 
         // Call the tested method
-        projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
+        projectUserWorkflowManager.grantAccess(projectUser);
 
         // Check that the AccountService#createAccount method was called to create an account containing values from the
         // DTO and with status PENDING. We therefore exclude id, lastConnection and lastUpdate which we do not care
         // about.
         projectUser.setStatus(UserStatus.ACCESS_DENIED);
         Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
-        Mockito.verify(emailClient).sendEmail(Mockito.any());
+        Mockito.verify(eventPublisher).publishEvent(Mockito.any(OnGrantAccessEvent.class));
     }
 
 }

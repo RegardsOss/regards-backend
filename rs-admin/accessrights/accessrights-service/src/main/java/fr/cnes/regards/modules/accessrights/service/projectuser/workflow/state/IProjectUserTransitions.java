@@ -27,21 +27,6 @@ public interface IProjectUserTransitions {
     void makeWaitForQualification(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
 
     /**
-     * Passes the project user from status WAITING_ACCESS to ACCESS_GRANTED or ACCESS_DENIED according to the project
-     * user's acceptance policy.
-     *
-     * @param pProjectUser
-     *            the project user
-     * @param pQualification
-     *            what decision is taken on this project user
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} when the project user is not in status WAITING_ACCESS<br>
-     *             {@link EntityNotFoundException} Thrown when no access settings could be found<br>
-     */
-    void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification) throws EntityException;
-
-    /**
      * After the user has clicked on the link in the email he received, pass his project user from status WAITING_EMAIL_VERIFICATION to ACCESS_GRANTED.
      *
      * @param pEmailVerificationToken
@@ -90,7 +75,7 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status ACCESS_DENIED
      */
-    void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException;
+    void grantAccess(final ProjectUser pProjectUser) throws EntityException;
 
     /**
      * Passes a WAITING_ACCOUNT_ACTIVE/WAITING_ACCESS/ACCESS_GRANTED/ACCESS_INACTIVE/ACCESS_DENIED project user to the status NO_ACCESS and

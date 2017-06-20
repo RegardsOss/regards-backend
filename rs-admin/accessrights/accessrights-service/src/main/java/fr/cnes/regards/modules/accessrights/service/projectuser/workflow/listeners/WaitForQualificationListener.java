@@ -18,7 +18,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessQualification;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.registration.RegistrationRuntimeException;
 
@@ -93,7 +92,7 @@ public class WaitForQualificationListener implements ApplicationListener<OnAccep
         // Auto-accept if configured so
         final AccessSettings settings = accessSettingsService.retrieve();
         if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
+            projectUserWorkflowManager.grantAccess(projectUser);
         }
 
         // Save

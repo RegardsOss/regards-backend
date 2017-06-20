@@ -44,19 +44,6 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
         projectUserStateProvider.createState(pProjectUser).makeWaitForQualification(pProjectUser);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions#qualifyAccess(fr.cnes.regards.
-     * modules.accessrights.domain.projects.ProjectUser)
-     */
-    @Override
-    public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
-            throws EntityException {
-        projectUserStateProvider.createState(pProjectUser).qualifyAccess(pProjectUser, pQualification);
-    }
-
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.accessrights.workflow.projectuser.IProjectUserTransitions#verifiyEmail(fr.cnes.regards.modules.accessrights.domain.registration.VerificationToken)
      */
@@ -109,7 +96,7 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void grantAccess(final ProjectUser pProjectUser) throws EntityException {
         projectUserStateProvider.createState(pProjectUser).grantAccess(pProjectUser);
     }
 

@@ -3,28 +3,17 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriUtils;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.templates.service.TemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link ProjectUser} in status
@@ -37,128 +26,47 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 public class WaitingAccessState extends AbstractDeletableState {
 
     /**
-     * Logger
+     * Use this to publish Spring application events
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(WaitingAccessState.class);
-
-    /**
-     * Service handling CRUD operations on {@link Account}s. Autowired by Spring.
-     */
-    private final IAccountService accountService;
-
-    /**
-     * Service handling email templates. Autowired by Spring.
-     */
-    private final TemplateService templateService;
-
-    /**
-     * Email Client. Autowired by Spring.
-     */
-    private final IEmailClient emailClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
-     * @param pAccountService
-     * @param pTemplateService
-     * @param pEmailClient
+     * @param pEventPublisher
      */
     public WaitingAccessState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, IAccountService pAccountService,
-            TemplateService pTemplateService, IEmailClient pEmailClient) {
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher) {
         super(pProjectUserRepository, pEmailVerificationTokenService);
-        accountService = pAccountService;
-        templateService = pTemplateService;
-        emailClient = pEmailClient;
+        eventPublisher = pEventPublisher;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions#qualifyAccess(fr.cnes.regards.
-     * modules.accessrights.domain.projects.ProjectUser)
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AbstractDeletableState#removeAccess(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void qualifyAccess(final ProjectUser pProjectUser, final AccessQualification pQualification)
-            throws EntityNotFoundException {
-
-        switch (pQualification) {
-            case GRANTED:
-                pProjectUser.setStatus(UserStatus.WAITING_EMAIL_VERIFICATION);
-                getProjectUserRepository().save(pProjectUser);
-                sendVerificationEmail(pProjectUser);
-                break;
-            case REJECTED:
-                doDelete(pProjectUser);
-                break;
-            case DENIED:
-            default:
-                pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
-                getProjectUserRepository().save(pProjectUser);
-                break;
-        }
+    public void removeAccess(ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+        doDelete(pProjectUser);
     }
 
-    /**
-     * Send the email for email verification.
-     *
-     * @param pProjectUser
-     *            the project user
-     * @throws EntityNotFoundException
-     *             when no verification token linked to the account could be found
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AbstractProjectUserState#denyAccess(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
-    public void sendVerificationEmail(final ProjectUser pProjectUser) throws EntityNotFoundException {
-        // Retrieve the email
-        String email = pProjectUser.getEmail();
+    @Override
+    public void denyAccess(ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+        pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
+        getProjectUserRepository().save(pProjectUser);
+        eventPublisher.publishEvent(new OnDenyEvent(pProjectUser));
+    }
 
-        // Retrieve the token
-        EmailVerificationToken token = getEmailVerificationTokenService().findByProjectUser(pProjectUser);
-
-        // Retrieve the account
-        Account account = accountService.retrieveAccountByEmail(email);
-
-        // Build the list of recipients
-        String[] recipients = { email };
-
-        // Create a hash map in order to store the data to inject in the mail
-        Map<String, String> data = new HashMap<>();
-        data.put("name", account.getFirstName());
-
-        String linkUrlTemplate;
-        if ((token != null) && token.getRequestLink().contains("?")) {
-            linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
-        } else {
-            linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
-        }
-        String confirmationUrl;
-        try {
-            confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(),
-                                            UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
-                                            token.getToken(), email);
-            data.put("confirmationUrl", confirmationUrl);
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error("This system does not support UTF-8", e);
-            throw new RuntimeException(e);//NOSONAR: this should only be a development error, if it happens the system has to explode
-        }
-
-        SimpleMailMessage simpleMailMessage;
-        try {
-            simpleMailMessage = templateService.writeToEmail(
-                                                             TemplateServiceConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
-                                                             data, recipients);
-        } catch (final EntityNotFoundException e) {
-            LOGGER.warn("Could not find the template for registration confirmation. Falling back to default template.",
-                        e);
-            simpleMailMessage = new SimpleMailMessage();
-            simpleMailMessage.setTo(recipients);
-            simpleMailMessage.setSubject("REGARDS - Registration Confirmation");
-            simpleMailMessage
-                    .setText("Please click on the following link to confirm your registration: " + confirmationUrl);
-        }
-
-        // Send it
-        emailClient.sendEmail(simpleMailMessage);
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AbstractProjectUserState#grantAccess(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
+     */
+    @Override
+    public void grantAccess(ProjectUser pProjectUser) throws EntityException {
+        pProjectUser.setStatus(UserStatus.WAITING_EMAIL_VERIFICATION);
+        getProjectUserRepository().save(pProjectUser);
+        eventPublisher.publishEvent(new OnGrantAccessEvent(pProjectUser));
     }
 
 }

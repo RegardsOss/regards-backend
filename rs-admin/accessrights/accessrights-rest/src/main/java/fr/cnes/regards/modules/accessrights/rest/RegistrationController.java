@@ -21,7 +21,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -31,7 +30,6 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessQualification;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationService;
 
@@ -207,12 +205,7 @@ public class RegistrationController {
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
-        if (UserStatus.WAITING_ACCESS.equals(projectUser.getStatus())) {
-            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.GRANTED);
-        } else {
-            projectUserWorkflowManager.grantAccess(projectUser);
-        }
-
+        projectUserWorkflowManager.grantAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -233,11 +226,7 @@ public class RegistrationController {
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
-        if (UserStatus.WAITING_ACCESS.equals(projectUser.getStatus())) {
-            projectUserWorkflowManager.qualifyAccess(projectUser, AccessQualification.DENIED);
-        } else {
-            projectUserWorkflowManager.denyAccess(projectUser);
-        }
+        projectUserWorkflowManager.denyAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
