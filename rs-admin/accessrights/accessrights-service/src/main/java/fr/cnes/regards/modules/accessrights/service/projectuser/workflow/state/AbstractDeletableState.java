@@ -43,6 +43,7 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
         switch (pProjectUser.getStatus()) {
             case WAITING_ACCOUNT_ACTIVE:
             case WAITING_ACCESS:
+            case WAITING_EMAIL_VERIFICATION:
             case ACCESS_DENIED:
             case ACCESS_GRANTED:
             case ACCESS_INACTIVE:
