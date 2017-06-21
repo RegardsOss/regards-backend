@@ -4,9 +4,11 @@
 package fr.cnes.regards.modules.accessrights.service.registration;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -17,7 +19,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
@@ -25,6 +26,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
@@ -75,29 +77,31 @@ public class RegistrationService implements IRegistrationService {
     private final AccountWorkflowManager accountWorkflowManager;
 
     /**
-     * @param pAccountRepository CRUD repository handling {@link Account}s. Autowired by Spring. Must no be null.
-     * @param pProjectUserRepository CRUD repository handling {@link ProjectUser}s. Autowired by Spring. Must not be null.
-     * @param pRoleService CRUD repository handling {@link Role}s. Autowired by Spring. Must not be null.
-     * @param pTokenService  CRUD service handling {@link EmailVerificationToken}s. Autowired by Spring. Must not be null.
-     * @param pAccountSettingsService CRUD repository handling {@link AccountSettingst}s. Autowired by Spring. Must not be null.
-     * @param pAccountWorkflowManagerAccount workflow manager. Autowired by Spring. Must not be null.
+     * Use this to publish Spring application events
+     */
+    private final ApplicationEventPublisher eventPublisher;
+
+    /**
+     * @param pAccountRepository
+     * @param pProjectUserRepository
+     * @param pRoleService
+     * @param pTokenService
+     * @param pAccountSettingsService
+     * @param pAccountWorkflowManager
+     * @param pEventPublisher
      */
     public RegistrationService(IAccountRepository pAccountRepository, IProjectUserRepository pProjectUserRepository,
             IRoleService pRoleService, IEmailVerificationTokenService pTokenService,
-            IAccountSettingsService pAccountSettingsService, AccountWorkflowManager pAccountWorkflowManager) {
+            IAccountSettingsService pAccountSettingsService, AccountWorkflowManager pAccountWorkflowManager,
+            ApplicationEventPublisher pEventPublisher) {
         super();
-        Assert.notNull(pAccountRepository);
-        Assert.notNull(pProjectUserRepository);
-        Assert.notNull(pRoleService);
-        Assert.notNull(pTokenService);
-        Assert.notNull(pAccountSettingsService);
-        Assert.notNull(pAccountWorkflowManager);
         accountRepository = pAccountRepository;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
         accountSettingsService = pAccountSettingsService;
         accountWorkflowManager = pAccountWorkflowManager;
+        eventPublisher = pEventPublisher;
     }
 
     /*
@@ -156,7 +160,8 @@ public class RegistrationService implements IRegistrationService {
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
         // Check that an associated account exists
-        if (!accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
+        Optional<Account> optionalAccount = accountRepository.findOneByEmail(pDto.getEmail());
+        if (!optionalAccount.isPresent()) {
             throw new EntityNotFoundException(pDto.getEmail(), Account.class);
         }
 
@@ -171,15 +176,16 @@ public class RegistrationService implements IRegistrationService {
         // Create a new project user
         final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
 
-        // Check the status
-        Assert.isTrue(UserStatus.WAITING_ACCOUNT_ACTIVE.equals(projectUser.getStatus()),
-                      "Trying to create a ProjectUser with other status than WAITING_ACCOUNT_ACTIVE.");
-
         // Create
         projectUserRepository.save(projectUser);
 
         // Init the email verification token
         tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
+
+        // Check the status
+        if (AccountStatus.ACTIVE.equals(optionalAccount.get().getStatus())) {
+            eventPublisher.publishEvent(new OnAcceptAccountEvent(pDto.getEmail()));
+        }
     }
 
 }
