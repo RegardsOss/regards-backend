@@ -80,27 +80,30 @@ public interface IResourcesService {
 
     /**
      *
-     * Retrieve all resources for the given microservice and the given controller name
+     * Retrieve all resources for the given microservice and the given controller name that can be managed by the specified role.
+     * A role cannot managed a resource he cannot access.
      *
      * @param pMicroserviceName
      *            microservice name
      * @param pControllerName
      *            controller name
-     * @return @return List of {@link ResourcesAccess}
+     * @param roleName the role name
+     * @return List of {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
-    List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(String pMicroserviceName, String pControllerName);
+    List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(String pMicroserviceName, String pControllerName,
+            String roleName);
 
     /**
      *
-     * Retreive microservice controllers names.
+     * Retreive microservice controllers names hat can be managed by the specified role.
      *
-     * @param pMicroserviceName
-     *            microservice name
+     * @param pMicroserviceName microservice name
+     * @param roleName the role name
      * @return Array of String (controllers names)
      * @since 1.0-SNAPSHOT
      */
-    List<String> retrieveMicroserviceControllers(String pMicroserviceName);
+    List<String> retrieveMicroserviceControllers(String pMicroserviceName, String roleName);
 
     /**
      * remove a resource access from a role and its descendants

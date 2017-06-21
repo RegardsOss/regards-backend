@@ -67,7 +67,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
 
     /**
      *
-     * Retrieve all resource for a given microservice and a given controller
+     * Retrieve all resources for a given microservice and a given controller
      *
      * @param pMicroservice
      *            microservice name
@@ -81,6 +81,18 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
             String pMicroservice, String pControllerSimpleName, DefaultRole pExcludedDefaultRole);
 
     /**
+     * Retrieve all resources for a given microservice, a given controller that can be managed by a specified role
+     * @param pMicroservice microservice name
+     * @param pControllerSimpleName controller name
+     * @param pExcludedDefaultRole excluded default role
+     * @param roleName role name
+     * @return {@link List} of {@link ResourcesAccess} that can be managed by specified role
+     */
+    @Query(value = "select * from {h-schema}t_resources_access res, {h-schema}ta_resource_role resrole, {h-schema}t_role role  where microservice = ?1 and controller_name = ?2 and defaultrole <> 'INSTANCE_ADMIN' and res.id = resrole.resource_id and resrole.role_id = role.id and role.name = ?3 order by res.resource",
+            nativeQuery = true)
+    List<ResourcesAccess> findManageableResources(String pMicroservice, String pControllerSimpleName, String roleName);
+
+    /**
      * Retrieve the list of controller names for a given microservice name
      *
      * @param pMicroservice
@@ -90,4 +102,13 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
     @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1 and defaultRole <> 'INSTANCE_ADMIN'")
     List<String> findAllControllersByMicroservice(String pMicroservice);
 
+    /**
+     * Retrieve all controllers for a given microservice that can be managed by a specified role
+     * @param pMicroservice microservice name
+     * @param roleName role name
+     * @return
+     */
+    @Query(value = "select distinct controller_name from {h-schema}t_resources_access res, {h-schema}ta_resource_role resrole, {h-schema}t_role role  where microservice = ?1 and defaultrole <> 'INSTANCE_ADMIN' and res.id = resrole.resource_id and resrole.role_id = role.id and role.name = ?2 order by controller_name",
+            nativeQuery = true)
+    List<String> findManageableControllers(String pMicroservice, String roleName);
 }

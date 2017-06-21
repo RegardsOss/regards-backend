@@ -120,30 +120,27 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performDefaultGet(MicroserviceResourceController.TYPE_MAPPING
-                + MicroserviceResourceController.CONTROLLER_MAPPING, expectations,
-                          "Error retrieving endpoints for microservice and controller", DEFAULT_MICROSERVICE,
-                          DEFAULT_CONTROLLER);
+        performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
+                   instanceToken, expectations, "Error retrieving endpoints for microservice and controller",
+                   DEFAULT_MICROSERVICE, DEFAULT_CONTROLLER);
 
         // Check that no endpoint is returned for an unknown controller name
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
-        performDefaultGet(MicroserviceResourceController.TYPE_MAPPING
-                + MicroserviceResourceController.CONTROLLER_MAPPING, expectations,
-                          "Error retrieving endpoints for microservice and controller", DEFAULT_MICROSERVICE,
-                          "unknown-controller");
+        performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
+                   instanceToken, expectations, "Error retrieving endpoints for microservice and controller",
+                   DEFAULT_MICROSERVICE, "unknown-controller");
 
         // Check that no endpoint is returned for an unknown microservice name
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
-        performDefaultGet(MicroserviceResourceController.TYPE_MAPPING
-                + MicroserviceResourceController.CONTROLLER_MAPPING, expectations,
-                          "Error retrieving endpoints for microservice and controller", "unkonwon-microservice",
-                          DEFAULT_CONTROLLER);
+        performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
+                   instanceToken, expectations, "Error retrieving endpoints for microservice and controller",
+                   "unkonwon-microservice", DEFAULT_CONTROLLER);
     }
 
     /**
@@ -162,18 +159,18 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performDefaultGet(MicroserviceResourceController.TYPE_MAPPING
-                + MicroserviceResourceController.CONTROLLERS_MAPPING, expectations,
-                          "Error retrieving endpoints controllers names for microservice", DEFAULT_MICROSERVICE);
+        performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLERS_MAPPING,
+                   instanceToken, expectations, "Error retrieving endpoints controllers names for microservice",
+                   DEFAULT_MICROSERVICE);
 
         // Check that no controllers are returned for an unknown controller name
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
-        performDefaultGet(MicroserviceResourceController.TYPE_MAPPING
-                + MicroserviceResourceController.CONTROLLERS_MAPPING, expectations,
-                          "Error retrieving endpoints controllers names for microservice", "unkonwon-microservice");
+        performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLERS_MAPPING,
+                   instanceToken, expectations, "Error retrieving endpoints controllers names for microservice",
+                   "unkonwon-microservice");
     }
 
     @Override

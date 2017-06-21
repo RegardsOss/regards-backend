@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 
@@ -81,7 +82,8 @@ public class MicroserviceResourceController implements IResourceController<Resou
      *             if error occurs
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
             @PathVariable("microservicename") final String pMicroserviceName, final Pageable pPageable,
             final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws ModuleException {
@@ -117,10 +119,12 @@ public class MicroserviceResourceController implements IResourceController<Resou
      * @return list of all controllers associated to the specified microservice
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLERS_MAPPING)
-    @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<String>> retrieveMicroserviceControllers(
             @PathVariable("microservicename") final String pMicroserviceName) {
-        final List<String> controllers = resourceService.retrieveMicroserviceControllers(pMicroserviceName);
+        final List<String> controllers = resourceService.retrieveMicroserviceControllers(pMicroserviceName,
+                                                                                         SecurityUtils.getActualRole());
         controllers.sort(null);
         return new ResponseEntity<>(controllers, HttpStatus.OK);
     }
@@ -135,12 +139,14 @@ public class MicroserviceResourceController implements IResourceController<Resou
      * @return List of accessible resources for the specified microservice and controller
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
-    @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @PathVariable("controllername") final String pControllerName) {
         final List<ResourcesAccess> resources = resourceService
-                .retrieveMicroserviceControllerEndpoints(pMicroserviceName, pControllerName);
+                .retrieveMicroserviceControllerEndpoints(pMicroserviceName, pControllerName,
+                                                         SecurityUtils.getActualRole());
         return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
     }
 

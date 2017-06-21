@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -39,7 +40,13 @@ public class ResourcesAccessDaoTest {
 
     private static final String MS_NAME = "rs-test";
 
+    private static final String CONTROLLER_NAME1 = "controller1";
+
+    private static final String CONTROLLER_NAME2 = "controller2";
+
     private static final String USER_URL = "/user";
+
+    private static final String USER_URL2 = "/user2";
 
     private static final String PUBLIC_URL = "/public";
 
@@ -78,18 +85,22 @@ public class ResourcesAccessDaoTest {
     public void init() {
 
         /*
-         * Create 3 ResourcesAcces
+         * Create 4 ResourcesAcces
          */
-        ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL, "controller",
+        ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL, CONTROLLER_NAME1,
                 RequestMethod.GET, DefaultRole.PUBLIC);
 
-        ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, "controller",
+        ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, CONTROLLER_NAME1,
                 RequestMethod.GET, DefaultRole.REGISTERED_USER);
 
-        ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, "controller",
+        ResourcesAccess userResource2 = new ResourcesAccess("Public resource", MS_NAME, USER_URL2, CONTROLLER_NAME2,
+                RequestMethod.GET, DefaultRole.PUBLIC);
+
+        ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, CONTROLLER_NAME1,
                 RequestMethod.GET, DefaultRole.PROJECT_ADMIN);
 
         publicResource = resourceAccessRepository.save(publicResource);
+        userResource2 = resourceAccessRepository.save(userResource2);
         userResource = resourceAccessRepository.save(userResource);
         adminResource = resourceAccessRepository.save(adminResource);
         /*
@@ -104,6 +115,7 @@ public class ResourcesAccessDaoTest {
         userRole.setNative(true);
 
         userRole.addPermission(publicResource);
+        userRole.addPermission(userResource2);
         userRole.addPermission(userResource);
         userRole = roleRepository.save(userRole);
 
@@ -111,6 +123,7 @@ public class ResourcesAccessDaoTest {
         adminRole.setNative(true);
 
         adminRole.addPermission(publicResource);
+        adminRole.addPermission(userResource2);
         adminRole.addPermission(userResource);
         adminRole.addPermission(adminResource);
         adminRole = roleRepository.save(adminRole);
@@ -123,6 +136,41 @@ public class ResourcesAccessDaoTest {
         Assert.assertEquals(1, roles.size());
         Assert.assertNotNull(((Role) roles.toArray()[0]).getPermissions());
         Assert.assertTrue(((Role) roles.toArray()[0]).getPermissions().size() > 0);
+    }
+
+    @Test
+    public void findManageableResources() {
+        List<ResourcesAccess> manageableResources = resourceAccessRepository
+                .findManageableResources(MS_NAME, CONTROLLER_NAME1, DefaultRole.PUBLIC.name());
+        Assert.assertNotNull(manageableResources);
+        Assert.assertEquals(1, manageableResources.size());
+        Assert.assertEquals(MS_NAME, manageableResources.get(0).getMicroservice());
+
+        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME, CONTROLLER_NAME1,
+                                                                               DefaultRole.REGISTERED_USER.name());
+        Assert.assertNotNull(manageableResources);
+        Assert.assertEquals(2, manageableResources.size());
+
+        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME, CONTROLLER_NAME1,
+                                                                               DefaultRole.ADMIN.name());
+        Assert.assertNotNull(manageableResources);
+        Assert.assertEquals(3, manageableResources.size());
+
+        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME, CONTROLLER_NAME1, "UNKNOWN");
+        Assert.assertNotNull(manageableResources);
+        Assert.assertEquals(0, manageableResources.size());
+    }
+
+    @Test
+    public void findManageableControllers() {
+        List<String> manageableControllers = resourceAccessRepository
+                .findManageableControllers(MS_NAME, DefaultRole.ADMIN.name());
+        Assert.assertNotNull(manageableControllers);
+        Assert.assertEquals(2, manageableControllers.size());
+
+        manageableControllers = resourceAccessRepository.findManageableControllers(MS_NAME, DefaultRole.PUBLIC.name());
+        Assert.assertNotNull(manageableControllers);
+        Assert.assertEquals(1, manageableControllers.size());
     }
 
 }
