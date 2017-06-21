@@ -148,7 +148,7 @@ public class RegistrationServiceTest {
 
         // Create the tested service
         registrationService = new RegistrationService(accountRepository, projectUserRepository, roleService,
-                tokenService, accountSettingsService, accountWorkflowManager);
+                tokenService, accountSettingsService, accountWorkflowManager, eventPublisher);
 
         // Prepare the access request
         dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,

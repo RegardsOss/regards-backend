@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.P
 import fr.cnes.regards.modules.accessrights.service.registration.RegistrationRuntimeException;
 
 /**
- * Listen to {@link OnAcceptAccountEvent} in order to pass a {@link ProjectUser} from WAITING_ACCOUNT_ACTIVATION to WAITING_ACCESS.
+ * Listen to {@link OnAcceptAccountEvent} in order to pass a {@link ProjectUser} from WAITING_ACCOUNT_ACTIVE to WAITING_ACCESS.
  *
  * @author Xavier-Alexandre Brochard
  */
