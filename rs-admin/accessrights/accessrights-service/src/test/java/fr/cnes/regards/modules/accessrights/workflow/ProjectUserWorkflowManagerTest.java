@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.EmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessDeniedState;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessGrantedState;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserStateProvider;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.WaitingAccessState;
@@ -105,7 +104,8 @@ public class ProjectUserWorkflowManagerTest {
         tokenService = Mockito.mock(EmailVerificationTokenService.class);
         accountService = Mockito.mock(AccountService.class);
         eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class));
+        waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, eventPublisher,
+                Mockito.mock(IPublisher.class));
 
         // Create the tested service
         projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider);
@@ -148,8 +148,8 @@ public class ProjectUserWorkflowManagerTest {
     @Purpose("Check that the system allows to validate a registration request.")
     public void grantAccess() throws EntityException {
         // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new AccessDeniedState(projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class)));
+        Mockito.when(projectUserStateProvider.createState(projectUser)).thenReturn(new AccessDeniedState(
+                projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class)));
 
         // Call the tested method
         projectUserWorkflowManager.grantAccess(projectUser);
@@ -173,8 +173,8 @@ public class ProjectUserWorkflowManagerTest {
     @Purpose("Check that the system allows to deny a registration request.")
     public void denyAccess() throws EntityTransitionForbiddenException {
         // Mock repository's content by making sure the request exists
-        Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new AccessGrantedState(projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class)));
+        Mockito.when(projectUserStateProvider.createState(projectUser)).thenReturn(new WaitingAccessState(
+                projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class)));
 
         // Call the tested method
         projectUserWorkflowManager.denyAccess(projectUser);

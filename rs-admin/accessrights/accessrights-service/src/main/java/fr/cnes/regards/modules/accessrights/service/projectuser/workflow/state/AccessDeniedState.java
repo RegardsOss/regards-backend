@@ -32,9 +32,11 @@ public class AccessDeniedState extends AbstractDeletableState {
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
      * @param pEventPublisher
+     * @param publisher
      */
     public AccessDeniedState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher, IPublisher publisher) {
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher,
+            IPublisher publisher) {
         super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
         eventPublisher = pEventPublisher;
     }
@@ -48,7 +50,7 @@ public class AccessDeniedState extends AbstractDeletableState {
      */
     @Override
     public void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        pProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
+        pProjectUser.setStatus(UserStatus.WAITING_EMAIL_VERIFICATION);
         getProjectUserRepository().save(pProjectUser);
         eventPublisher.publishEvent(new OnGrantAccessEvent(pProjectUser));
     }

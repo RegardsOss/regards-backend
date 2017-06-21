@@ -130,17 +130,13 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Before
     public void setUp() {
-
         apiAccesses = RegistrationController.REQUEST_MAPPING_ROOT;
         apiAccessId = apiAccesses + "/{access_id}";
         apiAccessAccept = apiAccessId + "/accept";
         apiAccessDeny = apiAccessId + "/deny";
         apiAccessSettings = apiAccesses + "/settings";
-
         apiAccessesPending = ProjectUsersController.TYPE_MAPPING + "/pendingaccesses";
-
         errorMessage = "Cannot reach model attributes";
-
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
     }
 
@@ -207,17 +203,17 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Check that the system allows to deny access to an already access granted project user.
+     * Check that the system allows to refuse an access request.
      */
     @MultitenantTransactional
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_520")
-    @Purpose("Check that the system allows to deny access to an already access granted project user.")
+    @Purpose("Check that the system allows to refuse an access request.")
     public void denyAccessRequest() {
         // Prepare the test conditions
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
-        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+        projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
@@ -307,6 +303,52 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultPut(apiAccessSettings, settings, expectations, "TODO Error message");
+    }
+
+    /**
+     * Check that the system allows to activate an inactive project user.
+     */
+    @MultitenantTransactional
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_520")
+    @Purpose("Check that the system allows to activate an inactive project user.")
+    public void activeAccess() {
+        // Prepare the test conditions
+        projectUser = projectUserRepository
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+        projectUser.setStatus(UserStatus.ACCESS_INACTIVE);
+        projectUserRepository.save(projectUser);
+
+        // Endpoint
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultPut(endpoint, null, expectations, errorMessage, projectUser.getId());
+    }
+
+    /**
+     * Check that the system allows to deactivate an active project user.
+     */
+    @MultitenantTransactional
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_520")
+    @Purpose("Check that the system allows to deactivate an active project user.")
+    public void inactiveAccess() {
+        // Prepare the test conditions
+        projectUser = projectUserRepository
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+        projectUserRepository.save(projectUser);
+
+        // Endpoint
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
+
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultPut(endpoint, null, expectations, errorMessage, projectUser.getId());
     }
 
     @Override
