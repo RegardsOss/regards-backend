@@ -4,9 +4,6 @@
 
 	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
 
-	<springProperty scope="context" name="springAppName"
-		source="spring.application.name" />
-
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>DEBUG</level>

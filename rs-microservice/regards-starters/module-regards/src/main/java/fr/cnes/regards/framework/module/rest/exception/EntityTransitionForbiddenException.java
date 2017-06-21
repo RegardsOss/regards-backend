@@ -37,7 +37,7 @@ public class EntityTransitionForbiddenException extends EntityOperationForbidden
     public <T> EntityTransitionForbiddenException(final String pEntityIdentifier, final Class<?> pEntityClass,
             final String pState, final String pTransition) {
         super(pEntityIdentifier, pEntityClass, "The transition " + pTransition
-                + " called on this state-managed entity is illegal for its current the state " + pState);
+                + " called on this state-managed entity is illegal for its current state " + pState);
     }
 
 }
