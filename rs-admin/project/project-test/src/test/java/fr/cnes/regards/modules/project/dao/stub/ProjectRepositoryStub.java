@@ -36,7 +36,7 @@ public class ProjectRepositoryStub extends JpaRepositoryStub<Project> implements
     }
 
     @Override
-    public Project findOneByName(final String pName) {
+    public Project findOneByNameIgnoreCase(final String pName) {
         Project result = null;
         final Optional<Project> project = this.entities.stream().filter(e -> e.getName().equals(pName)).findFirst();
         if (project.isPresent()) {

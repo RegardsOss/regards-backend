@@ -82,7 +82,7 @@ public class AcceptAccountIT extends AbstractRegardsIT {
      */
     @Before
     public void setUp() {
-        //        publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
+        //        publicRole = roleRepository.findOneByNameIgnoreCase(DefaultRole.PUBLIC.toString()).get();
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));

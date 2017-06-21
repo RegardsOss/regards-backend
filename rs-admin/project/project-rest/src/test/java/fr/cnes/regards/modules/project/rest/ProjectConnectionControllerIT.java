@@ -91,7 +91,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr",
                                                       DefaultRole.INSTANCE_ADMIN.name());
 
-        Project project = projectRepo.findOneByName(PROJECT_TEST);
+        Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
         project.setLabel("project");
         project=projectRepo.save(project);
         connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName", "newPassword", "newDriver",
@@ -142,7 +142,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to create a project connection and Hateoas returned links")
     @Test
     public void createProjectConnectionTest() {
-        final Project project = projectRepo.findOneByName(PROJECT_TEST);
+        final Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
         final ProjectConnection connection = new ProjectConnection(project, "microservice-test-2", "newUserName",
                 "newPassword", "newDriver", "newUrl");
         final List<ResultMatcher> expectations = new ArrayList<>(1);
