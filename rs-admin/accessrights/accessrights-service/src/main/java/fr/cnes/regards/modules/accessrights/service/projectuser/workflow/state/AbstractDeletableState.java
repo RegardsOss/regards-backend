@@ -25,16 +25,20 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      */
     private final IProjectUserRepository projectUserRepository;
 
-    private final IPublisher publisher;
-
     /**
      * Service to manage email verification tokens for project users.
      */
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     /**
+     * AMQP event publisher
+     */
+    private final IPublisher publisher;
+
+    /**
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
+     * @param publisher
      */
     public AbstractDeletableState(IProjectUserRepository pProjectUserRepository,
             IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {
@@ -57,8 +61,7 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
                 break;
             default:
                 throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                                                             pProjectUser.getStatus().toString(),
-                                                             Thread.currentThread().getStackTrace()[1].getMethodName());
+                        pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 
@@ -71,12 +74,12 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
     protected void doDelete(final ProjectUser projectUser) {
         emailVerificationTokenService.deleteTokenForProjectUser(projectUser);
         projectUserRepository.delete(projectUser.getId());
-            publisher.publish(new ProjectUserEvent(projectUser.getEmail(), ProjectUserAction.DELETION));
-        }
+        publisher.publish(new ProjectUserEvent(projectUser.getEmail(), ProjectUserAction.DELETION));
+    }
 
-        /**
-         * @return the projectUserRepository
-         */
+    /**
+     * @return the projectUserRepository
+     */
 
     protected IProjectUserRepository getProjectUserRepository() {
         return projectUserRepository;

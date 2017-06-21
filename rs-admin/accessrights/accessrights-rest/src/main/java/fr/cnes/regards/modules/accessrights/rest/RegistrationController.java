@@ -77,6 +77,16 @@ public class RegistrationController {
     private static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
 
     /**
+     * Relative path to the endpoint activating accesses (project users)
+     */
+    public static final String ACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/active";
+
+    /**
+     * Relative path to the endpoint deactivating accesses (project users)
+     */
+    public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
+
+    /**
      * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
@@ -227,6 +237,46 @@ public class RegistrationController {
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
         projectUserWorkflowManager.denyAccess(projectUser);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Activates an inactive user
+     *
+     * @param pAccessId
+     *            the project user id
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *             {@link EntityNotFoundException} if project user is in illegal status for activation<br>
+     */
+    @ResponseBody
+    @RequestMapping(value = ACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Activates an inactive user", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> activeAccess(@PathVariable("access_id") final Long pAccessId) throws EntityException {
+        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+        projectUserWorkflowManager.activeAccess(projectUser);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Deactivates an active user
+     *
+     * @param pAccessId
+     *            the project user id
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *             {@link EntityNotFoundException} if project user is in illegal status for deactivation<br>
+     */
+    @ResponseBody
+    @RequestMapping(value = INACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Deactivates an active user", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") final Long pAccessId) throws EntityException {
+        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+        projectUserWorkflowManager.inactiveAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
