@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
@@ -10,6 +11,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link ProjectUser} in status
@@ -22,12 +24,19 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.emailverificatio
 public class AccessGrantedState extends AbstractDeletableState {
 
     /**
+     * Use this to publish Spring application events
+     */
+    private final ApplicationEventPublisher eventPublisher;
+
+    /**
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
+     * @param pEventPublisher
      */
     public AccessGrantedState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService) {
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher) {
         super(pProjectUserRepository, pEmailVerificationTokenService);
+        eventPublisher = pEventPublisher;
     }
 
     /*
@@ -53,6 +62,7 @@ public class AccessGrantedState extends AbstractDeletableState {
     public void denyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
         getProjectUserRepository().save(pProjectUser);
+        eventPublisher.publishEvent(new OnDenyEvent(pProjectUser));
     }
 
 }
