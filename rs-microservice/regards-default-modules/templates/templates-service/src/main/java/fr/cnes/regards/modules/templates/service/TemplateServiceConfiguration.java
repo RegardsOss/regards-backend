@@ -48,6 +48,16 @@ public class TemplateServiceConfiguration {
     public static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
 
     /**
+     * The project user activated template code
+     */
+    public static final String PROJECT_USER_ACTIVATED_TEMPLATE = "projectUserActivatedTemplate";
+
+    /**
+     * The project user inactivated template code
+     */
+    public static final String PROJECT_USER_INACTIVATED_TEMPLATE = "projectUserInactivatedTemplate";
+
+    /**
      * The verification email template as html
      */
     @Value("classpath:email-account-validation-template.html")
@@ -70,6 +80,18 @@ public class TemplateServiceConfiguration {
      */
     @Value("classpath:account-refused-template.html")
     private Resource accountRefusedTemplate;
+
+    /**
+     * The project user activated email template as html
+     */
+    @Value("classpath:project-user-activated-template.html")
+    private Resource projectUserActivatedTemplate;
+
+    /**
+     * The project user inactivated email template as html
+     */
+    @Value("classpath:project-user-inactivated-template.html")
+    private Resource projectUserInactivatedTemplate;
 
     /**
      * Declare the template as bean
@@ -124,6 +146,34 @@ public class TemplateServiceConfiguration {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
             return new Template(ACCOUNT_REFUSED_TEMPLATE, text, dataStructure, "Account refused");
+        }
+    }
+
+    /**
+     * Declare the template as bean
+     * @return the template
+     * @throws IOException
+     */
+    @Bean
+    public Template projectUserActivatedTemplate() throws IOException {
+        try (InputStream is = projectUserActivatedTemplate.getInputStream()) {
+            final String text = inputStreamToString(is);
+            final Map<String, String> dataStructure = new HashMap<>();
+            return new Template(PROJECT_USER_ACTIVATED_TEMPLATE, text, dataStructure, "Access re-activated");
+        }
+    }
+
+    /**
+     * Declare the template as bean
+     * @return the template
+     * @throws IOException
+     */
+    @Bean
+    public Template projectUserInactivatedTemplate() throws IOException {
+        try (InputStream is = projectUserInactivatedTemplate.getInputStream()) {
+            final String text = inputStreamToString(is);
+            final Map<String, String> dataStructure = new HashMap<>();
+            return new Template(PROJECT_USER_INACTIVATED_TEMPLATE, text, dataStructure, "Access deactivated");
         }
     }
 

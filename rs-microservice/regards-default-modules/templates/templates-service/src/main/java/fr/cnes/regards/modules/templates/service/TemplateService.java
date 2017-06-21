@@ -106,6 +106,12 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template accountRefusedTemplate;
 
+    @Autowired
+    private Template projectUserActivatedTemplate;
+
+    @Autowired
+    private Template projectUserInactivatedTemplate;
+
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String noReplyAdress;
 
@@ -151,6 +157,12 @@ public class TemplateService implements ITemplateService {
             }
             if (!templateRepository.findOneByCode(accountRefusedTemplate.getCode()).isPresent()) {
                 templateRepository.save(accountRefusedTemplate);
+            }
+            if (!templateRepository.findOneByCode(projectUserActivatedTemplate.getCode()).isPresent()) {
+                templateRepository.save(projectUserActivatedTemplate);
+            }
+            if (!templateRepository.findOneByCode(projectUserInactivatedTemplate.getCode()).isPresent()) {
+                templateRepository.save(projectUserInactivatedTemplate);
             }
         }
     }
@@ -257,10 +269,6 @@ public class TemplateService implements ITemplateService {
 
             if (passwordResetTemplate.getCode().equals(pTemplateCode)) {
                 template = passwordResetTemplate;
-            }
-
-            if (emailAccountValidationTemplate.getCode().equals(pTemplateCode)) {
-                template = emailAccountValidationTemplate;
             }
 
             if (accountRefusedTemplate.getCode().equals(pTemplateCode)) {
