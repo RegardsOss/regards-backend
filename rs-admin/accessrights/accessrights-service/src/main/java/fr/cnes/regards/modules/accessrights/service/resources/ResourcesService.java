@@ -177,16 +177,26 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(final String pMicroserviceName,
-            final String pControllerName) {
-        return resourceAccessRepo
-                .findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(pMicroserviceName,
-                                                                                           pControllerName,
-                                                                                           DefaultRole.INSTANCE_ADMIN);
+            final String pControllerName, String roleName) {
+        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName)
+                || RoleAuthority.isSysRole(roleName)) {
+            // No restriction for virtual role
+            return resourceAccessRepo
+                    .findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(pMicroserviceName,
+                                                                                               pControllerName,
+                                                                                               DefaultRole.INSTANCE_ADMIN);
+        }
+        return resourceAccessRepo.findManageableResources(pMicroserviceName, pControllerName, roleName);
     }
 
     @Override
-    public List<String> retrieveMicroserviceControllers(final String pMicroserviceName) {
-        return resourceAccessRepo.findAllControllersByMicroservice(pMicroserviceName);
+    public List<String> retrieveMicroserviceControllers(final String pMicroserviceName, String roleName) {
+        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName)
+                || RoleAuthority.isSysRole(roleName)) {
+            // No restriction for virtual role
+            return resourceAccessRepo.findAllControllersByMicroservice(pMicroserviceName);
+        }
+        return resourceAccessRepo.findManageableControllers(pMicroserviceName, roleName);
     }
 
     @Override
