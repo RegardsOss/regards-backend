@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
@@ -19,6 +20,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @since 1.1-SNAPSHOT
  */
 @Service
+@MultitenantTransactional
 @Primary
 public class ProjectUserWorkflowManager implements IProjectUserTransitions {
 

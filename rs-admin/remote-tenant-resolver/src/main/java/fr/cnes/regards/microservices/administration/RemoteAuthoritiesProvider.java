@@ -147,11 +147,14 @@ public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker im
         runtimeTenantResolver.forceTenant(tenant);
         //lets get the role from distant admin
         FeignSecurityManager.asSystem();
-        ResponseEntity<Resource<Role>> roleResponse = roleClient.retrieveRole(roleName);
-        if (roleResponse.getStatusCode().equals(HttpStatus.OK)) {
-            final Resource<Role> body = roleResponse.getBody();
-            final Role role = HateoasUtils.unwrap(body);
-            return role.getPermissions().stream().filter(resource->resource.getMicroservice().equals(microserviceName)).map(resource->buildResourceMapping(resource, Collections.singleton(role))).collect(Collectors.toSet());
+        ResponseEntity<List<Resource<ResourcesAccess>>> resourcesResponse = roleResourceClient
+                .getRoleResources(roleName);
+        if (resourcesResponse.getStatusCode().equals(HttpStatus.OK)) {
+            final List<Resource<ResourcesAccess>> body = resourcesResponse.getBody();
+            final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
+            return resources.stream().filter(resource -> resource.getMicroservice().equals(microserviceName))
+                    .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
+                    .collect(Collectors.toSet());
         }
         LOGGER.warn("Role {} seems to have been deleted. We are skipping the resource update", roleName);
         return Sets.newHashSet();

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -36,8 +38,8 @@ public class WaitingAccessState extends AbstractDeletableState {
      * @param pEventPublisher
      */
     public WaitingAccessState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher) {
-        super(pProjectUserRepository, pEmailVerificationTokenService);
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher, IPublisher publisher) {
+        super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
         eventPublisher = pEventPublisher;
     }
 

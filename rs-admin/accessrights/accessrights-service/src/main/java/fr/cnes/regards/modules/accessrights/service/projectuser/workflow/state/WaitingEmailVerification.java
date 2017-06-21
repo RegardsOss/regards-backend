@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -30,8 +31,8 @@ public class WaitingEmailVerification extends AbstractDeletableState {
      * @param pEmailVerificationTokenService
      */
     public WaitingEmailVerification(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService) {
-        super(pProjectUserRepository, pEmailVerificationTokenService);
+            IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {
+        super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
     }
 
     /* (non-Javadoc)

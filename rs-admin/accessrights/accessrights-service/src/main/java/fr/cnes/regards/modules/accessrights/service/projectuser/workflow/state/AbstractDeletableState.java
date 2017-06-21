@@ -3,9 +3,12 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
@@ -22,6 +25,8 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      */
     private final IProjectUserRepository projectUserRepository;
 
+    private final IPublisher publisher;
+
     /**
      * Service to manage email verification tokens for project users.
      */
@@ -32,10 +37,11 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      * @param pEmailVerificationTokenService
      */
     public AbstractDeletableState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService) {
+            IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {
         super();
         projectUserRepository = pProjectUserRepository;
         emailVerificationTokenService = pEmailVerificationTokenService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -51,24 +57,27 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
                 break;
             default:
                 throw new EntityTransitionForbiddenException(pProjectUser.getId().toString(), ProjectUser.class,
-                        pProjectUser.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
+                                                             pProjectUser.getStatus().toString(),
+                                                             Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 
     /**
      * Delete a project user
      *
-     * @param pProjectUser
+     * @param projectUser
      *            the project user
      */
-    protected void doDelete(final ProjectUser pProjectUser) {
-        emailVerificationTokenService.deleteTokenForProjectUser(pProjectUser);
-        projectUserRepository.delete(pProjectUser.getId());
-    }
+    protected void doDelete(final ProjectUser projectUser) {
+        emailVerificationTokenService.deleteTokenForProjectUser(projectUser);
+        projectUserRepository.delete(projectUser.getId());
+            publisher.publish(new ProjectUserEvent(projectUser.getEmail(), ProjectUserAction.DELETION));
+        }
 
-    /**
-     * @return the projectUserRepository
-     */
+        /**
+         * @return the projectUserRepository
+         */
+
     protected IProjectUserRepository getProjectUserRepository() {
         return projectUserRepository;
     }

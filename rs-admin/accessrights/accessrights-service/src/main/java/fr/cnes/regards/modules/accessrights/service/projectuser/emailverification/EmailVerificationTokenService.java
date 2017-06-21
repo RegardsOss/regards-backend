@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
@@ -19,6 +20,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@MultitenantTransactional
 public class EmailVerificationTokenService implements IEmailVerificationTokenService {
 
     /**
