@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -18,6 +19,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@MultitenantTransactional
 public class AccessSettingsService implements IAccessSettingsService {
 
     /**

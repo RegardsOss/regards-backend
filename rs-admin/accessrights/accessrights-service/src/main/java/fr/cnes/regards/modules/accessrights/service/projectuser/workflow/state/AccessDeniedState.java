@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -33,8 +34,8 @@ public class AccessDeniedState extends AbstractDeletableState {
      * @param pEventPublisher
      */
     public AccessDeniedState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher) {
-        super(pProjectUserRepository, pEmailVerificationTokenService);
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher, IPublisher publisher) {
+        super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
         eventPublisher = pEventPublisher;
     }
 

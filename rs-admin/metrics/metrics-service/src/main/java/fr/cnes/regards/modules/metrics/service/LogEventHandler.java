@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.logbackappender.RegardsAmqpAppender;
 import fr.cnes.regards.framework.logbackappender.domain.ILogEventHandler;
 import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
@@ -24,6 +25,7 @@ import fr.cnes.regards.modules.metrics.domain.LogEventJpa;
  *
  */
 @Service
+@MultitenantTransactional
 public class LogEventHandler implements ILogEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogEvent.class);

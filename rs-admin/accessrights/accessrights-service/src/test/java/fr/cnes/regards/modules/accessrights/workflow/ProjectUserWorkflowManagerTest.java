@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -104,7 +105,7 @@ public class ProjectUserWorkflowManagerTest {
         tokenService = Mockito.mock(EmailVerificationTokenService.class);
         accountService = Mockito.mock(AccountService.class);
         eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, eventPublisher);
+        waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class));
 
         // Create the tested service
         projectUserWorkflowManager = new ProjectUserWorkflowManager(projectUserStateProvider);
@@ -148,7 +149,7 @@ public class ProjectUserWorkflowManagerTest {
     public void grantAccess() throws EntityException {
         // Mock repository's content by making sure the request exists
         Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new AccessDeniedState(projectUserRepository, tokenService, eventPublisher));
+                .thenReturn(new AccessDeniedState(projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class)));
 
         // Call the tested method
         projectUserWorkflowManager.grantAccess(projectUser);
@@ -173,7 +174,7 @@ public class ProjectUserWorkflowManagerTest {
     public void denyAccess() throws EntityTransitionForbiddenException {
         // Mock repository's content by making sure the request exists
         Mockito.when(projectUserStateProvider.createState(projectUser))
-                .thenReturn(new AccessGrantedState(projectUserRepository, tokenService, eventPublisher));
+                .thenReturn(new AccessGrantedState(projectUserRepository, tokenService, eventPublisher, Mockito.mock(IPublisher.class)));
 
         // Call the tested method
         projectUserWorkflowManager.denyAccess(projectUser);

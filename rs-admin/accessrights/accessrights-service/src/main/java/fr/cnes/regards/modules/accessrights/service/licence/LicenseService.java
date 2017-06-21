@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
@@ -29,6 +30,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  */
 @Service
+@MultitenantTransactional
 @EnableFeignClients(clients = IProjectsClient.class)
 public class LicenseService {
 

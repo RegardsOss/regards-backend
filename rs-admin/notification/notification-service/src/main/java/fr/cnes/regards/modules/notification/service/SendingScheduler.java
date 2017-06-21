@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
@@ -26,6 +27,7 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
  */
 @Service
 @EnableScheduling
+@MultitenantTransactional
 public class SendingScheduler {
 
     /**

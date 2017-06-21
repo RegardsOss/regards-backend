@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -25,8 +26,8 @@ public class AccessInactiveState extends AbstractDeletableState {
      * @param pEmailVerificationTokenService
      */
     public AccessInactiveState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService) {
-        super(pProjectUserRepository, pEmailVerificationTokenService);
+            IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {
+        super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
     }
 
     /*

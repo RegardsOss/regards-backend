@@ -31,6 +31,7 @@ import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
@@ -125,14 +126,18 @@ public class Role implements IIdentifiable<Long> {
         permissions = new HashSet<>();
     }
 
+    public Role(String name) {
+        this();
+        this.name=name;
+    }
+
     /**
      * Constructor
      * @param pName the name
      * @param pParentRole the parent
      */
     public Role(final String pName, final Role pParentRole) {
-        this();
-        name = pName;
+        this(pName);
         parentRole = pParentRole;
     }
 
