@@ -67,10 +67,6 @@
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-monitoring-regards-starter</artifactId>
-		</dependency>
 	</dependencies>
 
 	<profiles>
