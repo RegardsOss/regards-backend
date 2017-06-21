@@ -334,11 +334,21 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(String.class, pElement.getStatus().toString()),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
-            // Accept and Deny links, only if the project user is in WAITING_ACCESS state
+            // Specific links to add in WAITING_ACCESS state
             if (UserStatus.WAITING_ACCESS.equals(pElement.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
                                         MethodParamFactory.build(Long.class, pElement.getId()));
                 resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", "deny",
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+            }
+            // Specific links to add in ACCESS_GRANTED state
+            if (UserStatus.ACCESS_GRANTED.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", "deny",
+                                        MethodParamFactory.build(Long.class, pElement.getId()));
+            }
+            // Specific links to add in ACCESS_DENIED state
+            if (UserStatus.ACCESS_DENIED.equals(pElement.getStatus())) {
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
                                         MethodParamFactory.build(Long.class, pElement.getId()));
             }
         }
