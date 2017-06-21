@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.reflect.TypeToken;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@MultitenantTransactional
 public class CatalogSearchService implements ICatalogSearchService {
 
     /**

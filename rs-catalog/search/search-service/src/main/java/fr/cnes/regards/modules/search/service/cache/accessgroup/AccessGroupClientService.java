@@ -3,23 +3,25 @@
  */
 package fr.cnes.regards.modules.search.service.cache.accessgroup;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupEvent;
+import javax.annotation.PostConstruct;
+import java.util.Collection;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.List;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.dataaccess.client.IUserClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupEvent;
 
 /**
  * In this implementation, we choose to simply evict the cache for a tenant in response to "create", "delete" and "update" events.<br>
@@ -29,6 +31,7 @@ import java.util.List;
  * @author oroussel
  */
 @Service
+@MultitenantTransactional
 public class AccessGroupClientService implements IAccessGroupClientService, IHandler<AccessGroupEvent> {
 
     /**
