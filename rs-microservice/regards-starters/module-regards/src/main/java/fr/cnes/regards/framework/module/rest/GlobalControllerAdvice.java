@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.module.rest.exception.InvalidConnectionException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 
 /**
@@ -208,7 +209,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Exception handler returning the code 4000 when an error occurs while processing an OpenSearch request.<br>
+     * Exception handler returning the code 400 when an error occurs while processing an OpenSearch request.<br>
      *
      * @param pException {@link SearchException}
      * @return {@link ResponseEntity}
@@ -220,6 +221,22 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
             message += ". Cause: " + pException.getCause().getMessage();
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message));
+    }
+
+    // FIXME move this exception and advice on catalog
+    /**
+     * Exception handler returning the code 413 when a search is cancelled due to too many results.
+     *
+     * @param pException {@link TooManyResultsException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(TooManyResultsException.class)
+    public ResponseEntity<ServerErrorResponse> tooManyResultsException(final TooManyResultsException pException) {
+        String message = pException.getMessage();
+        if (pException.getCause() != null) {
+            message += ". Cause: " + pException.getCause().getMessage();
+        }
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(new ServerErrorResponse(message));
     }
 
     /**
