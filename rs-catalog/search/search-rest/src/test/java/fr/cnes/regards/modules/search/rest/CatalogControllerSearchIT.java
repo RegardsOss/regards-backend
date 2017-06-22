@@ -92,7 +92,7 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         // Admin request = no group filtering
         Mockito.when(projectUserClient.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(true));
 
-        // Clean index
+        // Manage index
         if (esRepository.indexExists(DEFAULT_TENANT)) {
             esRepository.deleteIndex(DEFAULT_TENANT);
         }
@@ -185,6 +185,7 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         // builder.param("q", "(" + attModel.buildJsonPath(StaticProperties.PROPERTIES) + ":[* TO 10])");
         // builder.param("facets", attModel.buildJsonPath(StaticProperties.PROPERTIES));
         builder.param("facets", "creationDate");
+        builder.param("facets", attModel.buildJsonPath(StaticProperties.PROPERTIES));
         performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
     }
 

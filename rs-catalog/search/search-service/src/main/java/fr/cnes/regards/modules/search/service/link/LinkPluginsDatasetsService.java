@@ -8,10 +8,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
  * @author Sylvain Vissiere-Guerinet
  */
 @Service
+@MultitenantTransactional
 public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
     /**
