@@ -98,11 +98,15 @@ public class AccessRightFilter implements IAccessRightFilter {
                 List<ICriterion> searchCriterion = new ArrayList<>();
 
                 // Add security filter
-                accessGroups.forEach(accessGroup -> searchCriterion.add(GROUP_TO_CRITERION.apply(accessGroup)));
+                List<ICriterion> groupCriterions = new ArrayList<>();
+                accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
+                searchCriterion.add(ICriterion.or(groupCriterions));
+
                 // Add user criterion
                 if (userCriterion != null) {
                     searchCriterion.add(userCriterion);
                 }
+
                 // Build the final "and" criterion
                 return ICriterion.and(searchCriterion);
             }

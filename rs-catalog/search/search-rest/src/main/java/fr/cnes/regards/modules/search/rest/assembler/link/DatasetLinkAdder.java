@@ -53,7 +53,7 @@ public class DatasetLinkAdder implements ILinksAdder {
         q.put("q", "tags:" + ipId.toString());
         resourceService.addLinkWithParams(pResource, CatalogController.class, "searchDataobjects", LinkRels.NEXT,
                                           MethodParamFactory.build(Map.class, q),
-                                          MethodParamFactory.build(String[].class), //
+                                          MethodParamFactory.build(String[].class),
                                           MethodParamFactory.build(Pageable.class));
 
         return pResource;

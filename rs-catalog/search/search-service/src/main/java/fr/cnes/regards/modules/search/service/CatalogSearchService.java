@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.search.service;
 
 import java.util.ArrayList;
@@ -7,6 +10,7 @@ import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +66,12 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IFacetConverter facetConverter;
 
     /**
+     * Limit total hits for joined search
+     */
+    @Value("${regards.catalog.search.threshold:10000}")
+    private Long threshold;
+
+    /**
      * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
      * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
@@ -109,7 +119,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             if (searchKey instanceof SimpleSearchKey) {
                 return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
-                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
+                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion, threshold);
             }
 
         } catch (OpenSearchParseException e) {

@@ -7,6 +7,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.Before;
@@ -64,6 +66,8 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogControllerSearchIT.class);
 
+    private static final String OPENSEARCH_COLON = ":";
+
     /**
      * The mock attribute model client
      */
@@ -80,7 +84,7 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
     private IEsRepository esRepository;
 
     @Autowired
-    private MultitenantFlattenedAttributeAdapterFactory factory;
+    private MultitenantFlattenedAttributeAdapterFactory multitenantFlattenedFactory;
 
     @Before
     public void setUp() throws Exception {
@@ -88,11 +92,11 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         // Admin request = no group filtering
         Mockito.when(projectUserClient.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(true));
 
-        // Manage index
-        esRepository.deleteIndex(DEFAULT_TENANT);
-        if (!esRepository.indexExists(DEFAULT_TENANT)) {
-            esRepository.createIndex(DEFAULT_TENANT);
+        // Clean index
+        if (esRepository.indexExists(DEFAULT_TENANT)) {
+            esRepository.deleteIndex(DEFAULT_TENANT);
         }
+        esRepository.createIndex(DEFAULT_TENANT);
     }
 
     @Test
@@ -161,12 +165,12 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
                 .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(attModels)));
 
         // Register attributes in serialization factory
-        factory.registerSubtype(DEFAULT_TENANT, IntegerAttribute.class, attModel.getName());
+        multitenantFlattenedFactory.registerSubtype(DEFAULT_TENANT, IntegerAttribute.class, attModel.getName());
 
         // DATA
         List<DataObject> dos = new ArrayList<>();
         OffsetDateTime creationDate = OffsetDateTime.now();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10000; i++) {
             DataObject dataObject = new DataObject(null, DEFAULT_TENANT, "do" + i);
             Set<AbstractAttribute<?>> ppties = new HashSet<>();
             ppties.add(AttributeBuilder.buildInteger(attModel.getName(), i));
@@ -181,6 +185,97 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         // builder.param("q", "(" + attModel.buildJsonPath(StaticProperties.PROPERTIES) + ":[* TO 10])");
         // builder.param("facets", attModel.buildJsonPath(StaticProperties.PROPERTIES));
         builder.param("facets", "creationDate");
+        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
+    }
+
+    @Test
+    public void searchWildcardTags() {
+
+        // DATA
+        List<DataObject> data = new ArrayList<>();
+        data.add(new DataObject(null, DEFAULT_TENANT, "wildcardtag"));
+
+        doSearchDataObjects(null, data, null, "tags:\"URN*\"");
+    }
+
+    @SuppressWarnings("unused")
+    private final void searchDataObjects(List<AttributeModel> dynAttModels, List<DataObject> data,
+            List<AttributeModel> facets, Map<AttributeModel, String> queries) {
+
+        // Manage Q
+        if (queries != null) {
+            // Final OpenSearch query
+            StringBuffer aggregateQuery = new StringBuffer();
+
+            for (Entry<AttributeModel, String> query : queries.entrySet()) {
+                AttributeModel queryable = query.getKey();
+                String openSearchQuery = query.getValue();
+
+                if (aggregateQuery.length() > 0) {
+                    aggregateQuery.append(" AND ");
+                }
+
+                if (queryable.isDynamic()) {
+                    aggregateQuery.append(queryable.buildJsonPath(StaticProperties.PROPERTIES));
+                } else {
+                    aggregateQuery.append(queryable.getName());
+                }
+                aggregateQuery.append(OPENSEARCH_COLON);
+                aggregateQuery.append(openSearchQuery);
+            }
+            doSearchDataObjects(dynAttModels, data, facets, aggregateQuery.toString());
+        } else {
+            doSearchDataObjects(dynAttModels, data, facets, null);
+        }
+    }
+
+    /**
+     *
+     * Utility method to build and launch query
+     *
+     * {@link https://lucene.apache.org/core/6_6_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description}
+     * {@link https://lucene.apache.org/core/6_6_0/queryparser/index.html}
+     *
+     * @param dynAttModels
+     * @param facets
+     * @param data
+     * @param openSearchQuery
+     */
+    private final void doSearchDataObjects(List<AttributeModel> dynAttModels, List<DataObject> data,
+            List<AttributeModel> facets, String openSearchQuery) {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+
+        // Mock dynamic attributes retrieval
+        Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
+                .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(dynAttModels)));
+
+        // Manage JSON (de)serialization registering all attributes in factory
+        multitenantFlattenedFactory.registerAttributes(DEFAULT_TENANT, dynAttModels);
+
+        // Index DATA
+        esRepository.saveBulk(DEFAULT_TENANT, data); // Auto-refresh
+
+        // Build REQUEST
+        RequestParamBuilder builder = RequestParamBuilder.build();
+
+        // Manage FACETS
+        if (facets != null) {
+            for (AttributeModel facetable : facets) {
+                if (facetable.isDynamic()) {
+                    builder.param("facets", facetable.buildJsonPath(StaticProperties.PROPERTIES));
+                } else {
+                    builder.param("facets", facetable.getName());
+                }
+            }
+        }
+
+        // Manage Q
+        if (openSearchQuery != null) {
+            builder.param("q", openSearchQuery);
+        }
+
+        // Launch request
         performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
     }
 

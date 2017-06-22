@@ -90,6 +90,8 @@ public class CatalogController {
 
     public static final String DESCRIPTOR = "/descriptor.xml";
 
+    public static final String ENTITY_GET_MAPPING = "/entities/{urn}";
+
     /**
      * The main path
      */
@@ -205,7 +207,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
@@ -281,7 +283,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
@@ -327,7 +329,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATASET, PATH + DATASETS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
@@ -379,7 +381,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
@@ -421,7 +423,7 @@ public class CatalogController {
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
@@ -448,7 +450,7 @@ public class CatalogController {
      * @throws SearchException if error occurs.
      */
     @SuppressWarnings("unchecked")
-    @RequestMapping(path = "/entities/{urn}", method = RequestMethod.GET)
+    @RequestMapping(path = ENTITY_GET_MAPPING, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the entity of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
             @Valid @PathVariable("urn") final UniformResourceName pUrn) throws SearchException {
@@ -495,7 +497,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DOCUMENT, PATH + DOCUMENTS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**

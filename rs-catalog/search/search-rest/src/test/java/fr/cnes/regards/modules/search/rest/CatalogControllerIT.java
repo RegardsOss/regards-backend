@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -146,6 +147,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         // Set groups
         COLLECTION.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
         DATAOBJECT.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
+        DATAOBJECT.setTags(Sets.newHashSet(DATASET.getIpId().toString()));
         DATASET.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
         DATASET_1.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
         DOCUMENT.setGroups(CatalogControllerTestUtils.ACCESS_GROUP_NAMES_AS_SET);
@@ -313,6 +315,20 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
+     * Cette fonction permet de récupérer un jeu de données
+     */
+    @Test
+    public final void testGetEntity() {
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydataset")));
+        performDefaultGet(CatalogController.ENTITY_GET_MAPPING, expectations, "Error retrieving a dataset",
+                          DATASET.getIpId());
+    }
+
+    /**
      * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
      */
     @Test
@@ -427,9 +443,12 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     public final void testSearchDataobjectsReturnDatasets() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        final RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
-        performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
-                          builder);
+        final RequestParamBuilder builder = RequestParamBuilder.build()
+                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT);
+        String projectAdminJwt = manageSecurity(CatalogController.DATAOBJECTS_DATASETS_SEARCH, RequestMethod.GET,
+                                                DEFAULT_USER_EMAIL, DefaultRole.PROJECT_ADMIN.name());
+        performGet(CatalogController.DATAOBJECTS_DATASETS_SEARCH, projectAdminJwt, expectations,
+                   "Error searching datasets via dataobjects", builder);
     }
 
     @Test
