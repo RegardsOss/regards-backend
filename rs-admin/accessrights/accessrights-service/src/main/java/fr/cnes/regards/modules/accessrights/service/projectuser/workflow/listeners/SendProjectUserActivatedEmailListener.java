@@ -16,18 +16,19 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnActiveEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
- * Listen to {@link OnDenyEvent} in order to warn the user its account request was refused.
+ * Listen to {@link OnDenyEvent} in order to warn the user its account request was re-activated.
  *
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class SendProjectUserActivatedEmailListener implements ApplicationListener<OnDenyEvent> {
+public class SendProjectUserActivatedEmailListener implements ApplicationListener<OnActiveEvent> {
 
     /**
      * Class logger
@@ -74,7 +75,7 @@ public class SendProjectUserActivatedEmailListener implements ApplicationListene
      *            the init event
      */
     @Override
-    public void onApplicationEvent(final OnDenyEvent pEvent) {
+    public void onApplicationEvent(final OnActiveEvent pEvent) {
         // Retrieve the user
         ProjectUser projectUser = pEvent.getProjectUser();
 

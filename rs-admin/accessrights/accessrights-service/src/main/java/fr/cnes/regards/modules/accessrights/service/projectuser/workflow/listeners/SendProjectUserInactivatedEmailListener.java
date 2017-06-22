@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnInactiveEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
@@ -27,7 +28,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class SendProjectUserInactivatedEmailListener implements ApplicationListener<OnDenyEvent> {
+public class SendProjectUserInactivatedEmailListener implements ApplicationListener<OnInactiveEvent> {
 
     /**
      * Class logger
@@ -74,7 +75,7 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
      *            the init event
      */
     @Override
-    public void onApplicationEvent(final OnDenyEvent pEvent) {
+    public void onApplicationEvent(final OnInactiveEvent pEvent) {
         // Retrieve the user
         ProjectUser projectUser = pEvent.getProjectUser();
 
