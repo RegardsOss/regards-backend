@@ -343,8 +343,6 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             }
             // Specific links to add in ACCESS_GRANTED state
             if (UserStatus.ACCESS_GRANTED.equals(pElement.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", "deny",
-                                        MethodParamFactory.build(Long.class, pElement.getId()));
                 resourceService.addLink(resource, RegistrationController.class, "inactiveAccess", "inactive",
                                         MethodParamFactory.build(Long.class, pElement.getId()));
             }
