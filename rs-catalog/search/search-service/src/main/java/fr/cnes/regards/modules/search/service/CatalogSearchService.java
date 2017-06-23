@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -45,6 +46,11 @@ public class CatalogSearchService implements ICatalogSearchService {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
+
+    /**
+     * Query parameter to limit join search
+     */
+    public static final String THRESHOLD_QUERY_PARAMETER = "threshold";
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -120,7 +126,11 @@ public class CatalogSearchService implements ICatalogSearchService {
             if (searchKey instanceof SimpleSearchKey) {
                 return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
-                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion, threshold);
+                // Threshold can be passed in query parameter
+                String thresholdParameter = allParams.get(THRESHOLD_QUERY_PARAMETER);
+                Long requestThreshold = thresholdParameter != null ? Long.valueOf(thresholdParameter) : threshold;
+                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
+                                            requestThreshold);
             }
 
         } catch (OpenSearchParseException e) {

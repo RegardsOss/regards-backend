@@ -248,8 +248,10 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
 
         // Mock dynamic attributes retrieval
-        Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
-                .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(dynAttModels)));
+        if (dynAttModels != null) {
+            Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
+                    .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(dynAttModels)));
+        }
 
         // Manage JSON (de)serialization registering all attributes in factory
         multitenantFlattenedFactory.registerAttributes(DEFAULT_TENANT, dynAttModels);
