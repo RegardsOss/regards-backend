@@ -3,21 +3,16 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -30,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
@@ -195,28 +191,28 @@ public class RoleController implements IResourceController<Role> {
     }
 
     @Override
-    public Resource<Role> toResource(final Role pElement, final Object... pExtras) {
+    public Resource<Role> toResource(final Role role, final Object... pExtras) {
         Resource<Role> resource = null;
-        if ((pElement != null) && (pElement.getId() != null)) {
-            resource = resourceService.toResource(pElement);
+        if ((role != null) && (role.getId() != null)) {
+            resource = resourceService.toResource(role);
             resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
-                                    MethodParamFactory.build(String.class, pElement.getName()));
+                                    MethodParamFactory.build(String.class, role.getName()));
             // Disable eddition and deletion of native roles.
-            if (!pElement.isNative()) {
+            if (!role.isNative()) {
                 resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
-                                        MethodParamFactory.build(String.class, pElement.getName()),
+                                        MethodParamFactory.build(String.class, role.getName()),
                                         MethodParamFactory.build(Role.class));
-                if (isDeletable(pElement)) {
+                if (isDeletable(role)) {
                     resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
-                                            MethodParamFactory.build(String.class, pElement.getName()));
+                                            MethodParamFactory.build(String.class, role.getName()));
                 }
             }
-            if (!(pElement.getName().equals(DefaultRole.PROJECT_ADMIN) || pElement.getName()
-                    .equals(DefaultRole.INSTANCE_ADMIN))) {
-                //we add the link to manage a role resources accesses except for PROEJCT_ADMIN and INSTANCE_ADMIN
+            if (!(RoleAuthority.isProjectAdminRole(role.getName()) || RoleAuthority.isInstanceAdminRole(role.getName()))) {
+
+                //we add the link to manage a role resources accesses except for PROJECT_ADMIN and INSTANCE_ADMIN
                 resourceService
                         .addLink(resource, RoleResourceController.class, "getRoleResources", "manage-resource-access",
-                                 MethodParamFactory.build(String.class, pElement.getName()));
+                                 MethodParamFactory.build(String.class, role.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");

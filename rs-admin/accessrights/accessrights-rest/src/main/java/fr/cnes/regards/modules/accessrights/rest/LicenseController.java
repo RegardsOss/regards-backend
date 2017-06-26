@@ -19,6 +19,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
@@ -40,6 +41,9 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     @Autowired
     private LicenseService licenseService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Resource service to manage visibles hateoas links
@@ -71,9 +75,12 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     @ResourceAccess(
             description = "Allow admins to invalidate the license of the project for all the users of the project",
             role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<LicenseDTO>> resetLicense(@PathVariable("projectName") String pProjectName)
+    public ResponseEntity<Resource<LicenseDTO>> resetLicense(@PathVariable("projectName") String projectName)
             throws EntityException {
+        //this endpoint is called from the instance administration interface so we have to force a tenant for this execution
+        runtimeTenantResolver.forceTenant(projectName);
         licenseService.resetLicence();
+        runtimeTenantResolver.clearTenant();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
