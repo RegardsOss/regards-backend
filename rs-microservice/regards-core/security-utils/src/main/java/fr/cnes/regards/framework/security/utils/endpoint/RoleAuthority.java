@@ -162,6 +162,10 @@ public class RoleAuthority implements GrantedAuthority {
         return autority;
     }
 
+    public String getRoleName() {
+        return getRoleName(autority);
+    }
+
     public List<String> getAuthorizedIpAdresses() {
         return authorizedIpAdresses;
     }

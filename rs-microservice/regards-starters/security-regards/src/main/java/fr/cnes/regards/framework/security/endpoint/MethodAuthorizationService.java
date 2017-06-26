@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -82,7 +81,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     /**
      * Roles allowed ip addresses cache
      */
-    private final Map<String, List<RoleAuthority>> grantedRolesIpAddressesByTenant = new HashMap<>();
+    private final Map<String, List<RoleAuthority>> rolesByTenant = new HashMap<>();
 
     /**
      * Spring application context
@@ -97,10 +96,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
         try {
             // Init all authorities
             for (String tenant : getTenantResolver().getAllActiveTenants()) {
-                // Register microservice resources for all configured tenant
-                registerMethodResourcesAccessByTenant(tenant);
-                // Collect role authorities
-                collectRolesByTenant(tenant);
+                manageTenant(tenant);
             }
         } catch (SecurityException e) {
             LOGGER.error("Cannot initialize role authorities, no access set", e);
@@ -108,43 +104,15 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
-     *
-     * Register all the current microservice endpoints to the administration service.
-     *
-     * @param pTenant
-     *            tenant
-     * @throws SecurityException
-     *             if error occurs
-     * @since 1.0-SNAPSHOT
+     * Manage tenant initialization
+     * @param tenant tenant to initialize
+     * @throws SecurityException if error occurs!
      */
-    public void registerMethodResourcesAccessByTenant(String pTenant) throws SecurityException {
-        final List<ResourceMapping> resources = getAuthoritiesProvider().registerEndpoints(microserviceName, pTenant,
-                                                                                           getResources());
-        if (grantedAuthoritiesByTenant.get(pTenant) != null) {
-            grantedAuthoritiesByTenant.get(pTenant).clear();
-        }
-        for (final ResourceMapping resource : resources) {
-            setAuthorities(pTenant, resource);
-        }
-    }
-
-    /**
-     *
-     * Retrieve all Role authorities of the given tenant from the administration service
-     *
-     * @param pTenant
-     *            tenant
-     * @throws SecurityException
-     *             if error occurs
-     * @since 1.0-SNAPSHOT
-     */
-    public void collectRolesByTenant(String pTenant) throws SecurityException {
-        final List<RoleAuthority> roleAuthorities = getAuthoritiesProvider().getRoleAuthorities(microserviceName,
-                                                                                                pTenant);
-        if (grantedRolesIpAddressesByTenant.get(pTenant) != null) {
-            grantedRolesIpAddressesByTenant.get(pTenant).clear();
-        }
-        grantedRolesIpAddressesByTenant.put(pTenant, roleAuthorities);
+    public void manageTenant(String tenant) throws SecurityException {
+        // Register microservice resources for current tenant
+        getAuthoritiesProvider().registerEndpoints(microserviceName, tenant, getResources());
+        // Collect available roles and authorities for current tenant
+        collectRolesAndAuthorities(tenant);
     }
 
     /**
@@ -217,39 +185,100 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
+    *
+    * Retrieve all Role authorities of the given tenant from the administration service
+    *
+    * @param tenant
+    *            tenant
+    * @throws SecurityException
+    *             if error occurs
+    * @since 1.0-SNAPSHOT
+    */
+    public void collectRolesAndAuthorities(String tenant) throws SecurityException {
+
+        // Register authorized roles by tenant (so you can manage IP filtering)
+        List<RoleAuthority> roles = getAuthoritiesProvider().getRoleAuthorities(microserviceName, tenant);
+        rolesByTenant.put(tenant, roles);
+
+        // Manage tenant authorities
+        buildAuthorities(tenant, roles);
+    }
+
+    /**
+     * Build authorities cache for current tenant based on available roles
+     * @param tenant the tenant
+     * @param roles related roles
+     */
+    private void buildAuthorities(String tenant, List<RoleAuthority> roles) {
+        // Remove authorities cache for current tenant
+        if (grantedAuthoritiesByTenant.get(tenant) != null) {
+            // Clear existing authorities then rebuild cache
+            grantedAuthoritiesByTenant.get(tenant).clear();
+        }
+
+        for (RoleAuthority authority : roles) {
+            Set<ResourceMapping> configuredResources = getAuthoritiesProvider()
+                    .getResourceMappings(microserviceName, tenant, authority.getRoleName());
+            configuredResources.forEach(resource -> setAuthorities(tenant, resource));
+        }
+    }
+
+    /**
      *
      * Add resources authorization
      *
-     * @param pTenant
+     * @param tenant
      *            tenant name
-     * @param pResourceMapping
+     * @param resourceMapping
      *            resource to add
      * @since 1.0-SNAPSHOT
      */
-    public void setAuthorities(final String pTenant, final ResourceMapping pResourceMapping) {
-        Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(pTenant);
+    private void setAuthorities(String tenant, ResourceMapping resourceMapping) {
+
+        // Get resource authority cache
+        Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(tenant);
         if (grantedAuthoritiesByResource == null) {
             grantedAuthoritiesByResource = new HashMap<>();
-            grantedAuthoritiesByTenant.put(pTenant, grantedAuthoritiesByResource);
+            grantedAuthoritiesByTenant.put(tenant, grantedAuthoritiesByResource);
         }
-        if ((pResourceMapping != null) && (pResourceMapping.getAutorizedRoles() != null)) {
-            final String resourceId = pResourceMapping.getResourceMappingId();
-            final ArrayList<GrantedAuthority> newAuthorities;
+
+        if ((resourceMapping != null) && (resourceMapping.getAutorizedRoles() != null)) {
+            String resourceId = resourceMapping.getResourceMappingId();
+            ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource.containsKey(resourceId)) {
                 // we already have some authorities(roles) in the system, so lets get them and add the new ones
                 final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(
                         grantedAuthoritiesByResource.get(resourceId));
-                for (final GrantedAuthority granted : pResourceMapping.getAutorizedRoles()) {
+                for (final GrantedAuthority granted : resourceMapping.getAutorizedRoles()) {
                     grantedAuthorities.add(granted);
                 }
                 newAuthorities = new ArrayList<>(grantedAuthorities);
             } else {
                 // we do not have any authorities(roles) for this resource, so lets just take the new ones
                 newAuthorities = new ArrayList<>();
-                newAuthorities.addAll(pResourceMapping.getAutorizedRoles());
+                newAuthorities.addAll(resourceMapping.getAutorizedRoles());
             }
             grantedAuthoritiesByResource.put(resourceId, newAuthorities);
         }
+    }
+
+    private void unsetAuthorities(String tenant, String roleName) {
+        RoleAuthority authority = new RoleAuthority(roleName);
+
+        // Get resource authority cache
+        Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(tenant);
+        if (grantedAuthoritiesByResource != null) {
+            for (ArrayList<GrantedAuthority> resAuthorities : grantedAuthoritiesByResource.values()) {
+                resAuthorities.remove(authority);
+            }
+        }
+    }
+
+    public void updateAuthoritiesFor(String tenant, String roleName) {
+        unsetAuthorities(tenant, roleName);
+        Set<ResourceMapping> newMappings = getAuthoritiesProvider().getResourceMappings(microserviceName, tenant,
+                                                                                        roleName);
+        newMappings.forEach(mapping -> setAuthorities(tenant, mapping));
     }
 
     /**
@@ -374,7 +403,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
      * @since 1.0-SNAPSHOT
      */
     public Optional<RoleAuthority> getRoleAuthority(final String pRoleAuthorityName, final String pTenant) {
-        final List<RoleAuthority> roles = grantedRolesIpAddressesByTenant.get(pTenant);
+        final List<RoleAuthority> roles = rolesByTenant.get(pTenant);
         if (roles != null) {
             for (final RoleAuthority role : roles) {
                 if (role.getAuthority().equals(pRoleAuthorityName)) {
@@ -392,7 +421,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
      * ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext pApplicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext pApplicationContext) {
         this.applicationContext = pApplicationContext;
     }
 
@@ -415,11 +444,5 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             pluginResourceManager = applicationContext.getBean(IPluginResourceManager.class);
         }
         return pluginResourceManager;
-    }
-
-    public void updateAuthoritiesFor(String tenant, String roleName) {
-        Set<ResourceMapping> newMappings = getAuthoritiesProvider().getResourceMappings(microserviceName, tenant,
-                                                                                        roleName);
-        newMappings.forEach(mapping -> setAuthorities(tenant, mapping));
     }
 }
