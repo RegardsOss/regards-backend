@@ -79,7 +79,7 @@ public class ProjectService implements IProjectService {
 
         // Create project from properties files it does not exists yet
         for (final TenantConnection tenant : defaultProperties.getTenants()) {
-            if (projectRepository.findOneByName(tenant.getTenant()) == null) {
+            if (projectRepository.findOneByNameIgnoreCase(tenant.getTenant()) == null) {
                 LOG.info(String.format("Creating new project %s from static properties configuration",
                                        tenant.getTenant()));
                 Project project=new Project("", "", true, tenant.getTenant());
@@ -92,7 +92,7 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project retrieveProject(final String pProjectName) throws ModuleException {
-        final Project project = projectRepository.findOneByName(pProjectName);
+        final Project project = projectRepository.findOneByNameIgnoreCase(pProjectName);
         if (project == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
         }
@@ -112,7 +112,7 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project updateProject(final String pProjectName, final Project pProject) throws ModuleException {
-        final Project theProject = projectRepository.findOneByName(pProjectName);
+        final Project theProject = projectRepository.findOneByNameIgnoreCase(pProjectName);
         if (theProject == null) {
             throw new EntityNotFoundException(pProjectName, Project.class);
         }
@@ -142,9 +142,9 @@ public class ProjectService implements IProjectService {
 
     @Override
     public Project createProject(final Project pNewProject) throws ModuleException {
-        final Project theProject = projectRepository.findOneByName(pNewProject.getName());
+        final Project theProject = projectRepository.findOneByNameIgnoreCase(pNewProject.getName());
         if (theProject != null) {
-            throw new EntityAlreadyExistsException(pNewProject.getName());
+            throw new EntityAlreadyExistsException("A Project with name "+pNewProject.getName()+" already exists");
         }
 
         Project project = projectRepository.save(pNewProject);

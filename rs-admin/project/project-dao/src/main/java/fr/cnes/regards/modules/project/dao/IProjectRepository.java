@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 @InstanceEntity
 public interface IProjectRepository extends JpaRepository<Project, Long> {
 
-    Project findOneByName(String pName);
+    Project findOneByNameIgnoreCase(String pName);
 
     Page<Project> findByIsPublicTrue(Pageable pPageable);
 }

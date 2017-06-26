@@ -12,14 +12,13 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnInactiveEvent;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link ProjectUser} in status
  * ACCESS_GRANTED.
  *
  * @author Xavier-Alexandre Brochard
- * @since 1.1-SNAPSHOT
  */
 @Component
 public class AccessGrantedState extends AbstractDeletableState {
@@ -33,9 +32,11 @@ public class AccessGrantedState extends AbstractDeletableState {
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
      * @param pEventPublisher
+     * @param publisher
      */
     public AccessGrantedState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher, IPublisher publisher) {
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher,
+            IPublisher publisher) {
         super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
         eventPublisher = pEventPublisher;
     }
@@ -51,19 +52,7 @@ public class AccessGrantedState extends AbstractDeletableState {
     public void inactiveAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
         pProjectUser.setStatus(UserStatus.ACCESS_INACTIVE);
         getProjectUserRepository().save(pProjectUser);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions#denyAccess(fr.cnes.regards.
-     * modules.accessrights.domain.projects.ProjectUser)
-     */
-    @Override
-    public void denyAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
-        pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
-        getProjectUserRepository().save(pProjectUser);
-        eventPublisher.publishEvent(new OnDenyEvent(pProjectUser));
+        eventPublisher.publishEvent(new OnInactiveEvent(pProjectUser));
     }
 
 }

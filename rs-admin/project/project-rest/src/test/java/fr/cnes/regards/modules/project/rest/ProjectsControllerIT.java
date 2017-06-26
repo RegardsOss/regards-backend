@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
@@ -164,6 +165,26 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
                     expectations, "Error there must be project results");
     }
 
+    @Test
+    public void createTwoProjectWithDifferentCase() {
+
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isCreated());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        Project project=new Project("description", "icon", true, "create-project");
+        project.setLabel("create-project");
+        performPost("/projects", instanceAdmintoken, project,
+                    expectations, "Error there must be project results");
+
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isConflict());
+        project=new Project("description", "icon", true, "creAte-project");
+        project.setLabel("create-project");
+        performPost("/projects", instanceAdmintoken, project,
+                    expectations, "Error there must be project results");
+
+    }
+
     /**
      *
      * Check REST Access for project update and Hateoas returned links
@@ -175,7 +196,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access for project update and Hateoas returned links")
     @Test
     public void updateProjectTest() {
-        final Project project = projectRepo.findOneByName("test1");
+        final Project project = projectRepo.findOneByNameIgnoreCase("test1");
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());

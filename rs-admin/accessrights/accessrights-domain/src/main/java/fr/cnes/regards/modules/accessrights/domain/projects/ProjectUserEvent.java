@@ -14,6 +14,8 @@ public class ProjectUserEvent implements ISubscribable {
 
     private ProjectUserAction action;
 
+    public ProjectUserEvent() {}
+
     public ProjectUserEvent(String email, ProjectUserAction action) {
         this.email = email;
         this.action = action;
