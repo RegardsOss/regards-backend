@@ -821,12 +821,12 @@ public class RoleService implements IRoleService {
     @Override
     public Set<Role> retrieveBorrowableRoles() {
 
-        final Set<Role> brrowablesRoles = new HashSet<>();
+        final Set<Role> borrowablesRoles = new TreeSet<>(new RoleComparator(this));
 
         final String email = SecurityUtils.getActualUser();
         final Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
         if (!optionnalUser.isPresent()) {
-            return brrowablesRoles;
+            return borrowablesRoles;
         }
 
         final ProjectUser user = optionnalUser.get();
@@ -842,17 +842,17 @@ public class RoleService implements IRoleService {
         // get ascendants of the original Role
         if (originalRole.getParentRole() != null) {
             // only adds the ascendants of my role's parent as my role's brotherhood is not part of my role's ascendants
-            brrowablesRoles.addAll(getAscendants(roleRepository.findOneById(originalRole.getParentRole().getId())));
+            borrowablesRoles.addAll(getAscendants(roleRepository.findOneById(originalRole.getParentRole().getId())));
         } else {
             // handle ProjectAdmin by considering that ADMIN is its parent(projectAdmin is not considered admin's
             // son so no resources accesses are added or removed from him but has to be considered for role borrowing)
             if (originalRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
-                brrowablesRoles.addAll(getAscendants(originalRole));
+                borrowablesRoles.addAll(getAscendants(originalRole));
             } // INSTANCE_ADMIN and PUBLIC do not have ascendants
         }
         // add my original role because i can always borrow my own role
-        brrowablesRoles.add(originalRole);
-        return brrowablesRoles;
+        borrowablesRoles.add(originalRole);
+        return borrowablesRoles;
     }
 
     /**
