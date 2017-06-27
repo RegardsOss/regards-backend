@@ -7,6 +7,7 @@ package fr.cnes.regards.framework.security.endpoint;
  * LICENSE_PLACEHOLDER
  */
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -48,11 +48,16 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     @Value("${regards.security.roles:#{null}}")
     private String[] roles;
 
+    /**
+     * List of computed default resources
+     */
+    private List<ResourceMapping> resources = new ArrayList<>();
+
     @Override
     public List<ResourceMapping> registerEndpoints(String microserviceName, String tenant,
             final List<ResourceMapping> pLocalEndpoints) {
-        LOG.warn("No Authority provider defined. Default one used."
-                + " The local endpoints are not register to administration service. Only the default configuration is available");
+        LOG.warn("No authority provider defined. Default one is used."
+                + " The local endpoints are not registered to administration service. Only the default configuration is available");
         if (authorities != null) {
             LOG.debug("Initializing granted authorities from property file");
             for (final String auth : authorities) {
@@ -70,12 +75,13 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
                 endpoint.addAuthorizedRole(new RoleAuthority(endpoint.getResourceAccess().role().name()));
             }
         });
+        resources = pLocalEndpoints;
         return pLocalEndpoints;
     }
 
     @Override
     public List<RoleAuthority> getRoleAuthorities(String microserviceName, String tenant) {
-        LOG.warn("No Authority provider defined. Only default roles are initialied.");
+        LOG.warn("No Authority provider defined. Only default roles are initialized.");
         final List<RoleAuthority> defaultRoleAuthorities = new ArrayList<>();
         for (final DefaultRole role : DefaultRole.values()) {
             defaultRoleAuthorities.add(new RoleAuthority(role.name()));
@@ -90,10 +96,9 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
 
     @Override
     public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
-        // for now this method is only used for updates, as we are in the default authority provider that means there is
-        // no updates possible, so nothing to do
-        LOG.warn("NO Authority provided defined. We cannot update resource accesses");
-        return Sets.newHashSet();
+        LOG.warn("No authority provider defined. Default one is used."
+                + " The local endpoints are not registered to administration service. Only the default configuration is available");
+        return new HashSet<>(resources);
     }
 
     /**
