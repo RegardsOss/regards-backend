@@ -64,11 +64,6 @@ public class RoleFactory {
     private boolean isNative;
 
     /**
-     * When create a native role, should we automaticly create in cascade the role parent ?
-     */
-    private boolean autoCreateParents = true;
-
-    /**
      * Private constructor for static class
      */
     public RoleFactory() {
@@ -80,6 +75,11 @@ public class RoleFactory {
         isDefault = forDefaultValues.isDefault();
         isNative = forDefaultValues.isNative();
     }
+
+    /**
+     * When create a native role, should we automaticly create in cascade the role parent ?
+     */
+    private boolean autoCreateParents = true;
 
     /**
      * Create a new role with values set in the factory

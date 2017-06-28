@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Crawls through a role's {@link Role#getParentRole()} streak and builds the list of all visited roles like so,
- * establishing the given role's lineage.
+ * establishing the given role's lineage. This lineage only contains native role.
  *
  * @author xbrochard
  * @author Sébastien Binda

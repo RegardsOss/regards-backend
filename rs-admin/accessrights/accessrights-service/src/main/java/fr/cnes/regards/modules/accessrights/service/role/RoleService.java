@@ -620,14 +620,44 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Return true if pRole is an ancestor of pOther through the {@link Role#getParentRole()} chain.
+     * Determines if first role is inferior to second role.
+     * @param first role that should be inferior to second
+     * @param second role that should not be inferior to first
+     * @return FALSE if: <br/><ul><li>second is null</li><li>first is project admin</li><li>first equals second</li><li>first has less privilege than second</li></ul>
      */
     @Override
-    public boolean isHierarchicallyInferior(final Role pRole, final Role pOther) {
+    public boolean isHierarchicallyInferior(final Role first, final Role second) {
+        //we consider that null is hierarchically inferior to anyone
+        if(first==null) {
+            return true;
+        }
+        if(second==null) {
+            return false;
+        }
+        // we treat project admin by hand as it doesn't really have a hierarchy
+        if(RoleAuthority.isProjectAdminRole(first.getName())) {
+            return false;
+        }
+        if(RoleAuthority.isProjectAdminRole(second.getName())) {
+            return true;
+        }
+        //case of myself: we are not strictly inferior to ourselves
+        if(Objects.equal(second, first)) {
+            return false;
+        }
+        //now lets treat common cases
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
-        final List<Role> ancestors = roleLineageAssembler.of(pOther).get();
+        final List<Role> ancestors = roleLineageAssembler.of(second).get();
         try (Stream<Role> stream = ancestors.stream()) {
-            return stream.anyMatch(r -> r.getName().equals(pRole.getName()));
+            if(first.isNative()) {
+                //if the role is native, then it is into the lineage so we can look for it
+                String roleName=first.getName();
+                return stream.anyMatch(r -> r.getName().equals(roleName));
+            } else {
+                // if the role is not a native one, then we need to look for its parent(which is native).
+                String parent=first.getParentRole().getName();
+                return stream.anyMatch(r -> r.getName().equals(parent));
+            }
         }
     }
 

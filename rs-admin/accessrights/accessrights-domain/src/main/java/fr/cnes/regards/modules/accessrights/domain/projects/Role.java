@@ -39,6 +39,17 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidP
 /**
  * Models a user's role.
  *
+ * Role hierarchy is as follow:
+ * <ol>
+ *     <li>PUBLIC</li>
+ *     <li>Custom roles having PUBLIC as parent</li>
+ *     <li>REGISTERED USER</li>
+ *     <li>Custom roles having REGISTERED USER as parent</li>
+ *     <li>ADMIN</li>
+ *     <li>Custom roles having ADMIN as parent</li>
+ *     <li>PROJECT ADMIN</li>
+ * </ol>
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */

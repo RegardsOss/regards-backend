@@ -3,11 +3,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
@@ -23,15 +19,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -48,6 +39,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.role.RoleComparator;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
@@ -135,8 +127,8 @@ public class RoleServiceTest {
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         roleService = new RoleService("rs-test", roleRepository, projectUserRepository, tenantResolver,
-                runtimeTenantResolver, Mockito.mock(IInstanceSubscriber.class), Mockito.mock(IInstancePublisher.class),
-                Mockito.mock(IPublisher.class));
+                                      runtimeTenantResolver, Mockito.mock(IInstanceSubscriber.class),
+                                      Mockito.mock(IInstancePublisher.class), Mockito.mock(IPublisher.class));
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -203,7 +195,7 @@ public class RoleServiceTest {
         SecurityContextHolder.getContext().setAuthentication(token);
         // mock project user
         final ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(),
-                new ArrayList<>());
+                                                        new ArrayList<>());
         Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
         Set<Role> result = roleService.retrieveBorrowableRoles();
@@ -484,7 +476,7 @@ public class RoleServiceTest {
         // Mock
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                RequestMethod.PATCH, DefaultRole.ADMIN);
+                                                                         RequestMethod.PATCH, DefaultRole.ADMIN);
         resourcesAccesses.add(addedResourcesAccess);
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
@@ -507,8 +499,8 @@ public class RoleServiceTest {
             final Set<Role> sonsOfAdmin = new HashSet<>();
             return sonsOfAdmin;
         });
-        rolePublic.addPermission(new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET,
-                DefaultRole.ADMIN));
+        rolePublic.addPermission(
+                new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET, DefaultRole.ADMIN));
         Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
@@ -541,12 +533,12 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityException {
         final Set<ResourcesAccess> initRAs = new HashSet<>();
-        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                DefaultRole.ADMIN));
+        initRAs.add(
+                new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE, DefaultRole.ADMIN));
 
         final Set<ResourcesAccess> passedRAs = new HashSet<>();
         passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
-                DefaultRole.ADMIN));
+                                          DefaultRole.ADMIN));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         SecurityUtils.mockActualRole(DefaultRole.ADMIN.toString());
@@ -604,7 +596,7 @@ public class RoleServiceTest {
         // Prepare the role by adding some resources accesses
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                DefaultRole.ADMIN));
+                                                  DefaultRole.ADMIN));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock
@@ -694,30 +686,120 @@ public class RoleServiceTest {
     @Purpose("Check that the system is able to hierarchically compare two roles.")
     public void isHierarchicallyInferior() {
         // Init default roles
-        final RoleFactory factory = new RoleFactory();
-        final Role roleAdminParent = factory.createAdmin();
-        final Role roleRegisteredUserParent = roleAdminParent.getParentRole();
-        final Role rolePublicParent = roleRegisteredUserParent.getParentRole();
+        RoleFactory factory = new RoleFactory();
+        Role admin = factory.createAdmin();
+        Role projectAdmin = factory.createProjectAdmin();
+        Role publicR = factory.createPublic();
+        Role registeredUser = factory.createRegisteredUser();
 
-        Assert.assertNotNull(roleAdminParent);
-        Assert.assertNotNull(roleRegisteredUserParent);
-        Assert.assertNotNull(rolePublicParent);
+        // lets check that public is inferior to everyone
+        Assert.assertFalse(roleService.isHierarchicallyInferior(publicR, publicR));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(publicR, registeredUser));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(publicR, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(publicR, projectAdmin));
 
-        Assert.assertTrue(roleService.isHierarchicallyInferior(roleRegisteredUserParent, roleAdminParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(roleAdminParent, roleRegisteredUserParent));
+        //lets check that registeredUser is only inferior to public
+        Assert.assertFalse(roleService.isHierarchicallyInferior(registeredUser, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(registeredUser, registeredUser));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUser, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUser, projectAdmin));
 
-        Assert.assertTrue(roleService.isHierarchicallyInferior(rolePublicParent, roleRegisteredUserParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(roleRegisteredUserParent, rolePublicParent));
+        // check admin
+        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, registeredUser));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(admin, projectAdmin));
 
-        Assert.assertTrue(roleService.isHierarchicallyInferior(rolePublicParent, roleAdminParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(roleAdminParent, rolePublicParent));
+        //check project admin
+        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, registeredUser));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, admin));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, projectAdmin));
 
-        // final Role admin = roleService.retrieveRole(2L);
-        final Role customRoleFromAdmin = new Role("custom role", roleAdminParent);
+        // lets check with a custom role
+        Role adminSon = new Role("Admin son", admin);
+        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, registeredUser));
+        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(adminSon, projectAdmin));
+        //a native role is inferior to one of its children
+        Assert.assertTrue(roleService.isHierarchicallyInferior(admin, adminSon));
 
-        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, rolePublicParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleRegisteredUserParent));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(customRoleFromAdmin, roleAdminParent));
+        //native role are not inferior to themselves, lets check for customs
+        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, adminSon));
+
+        //lets check two custom role on different hierarchical level
+        Role registeredUserSon = new Role("Registered User Son", registeredUser);
+        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, registeredUserSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUserSon, adminSon));
+
+        //what happens if a custom role and a native one has the same parent:
+        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, registeredUserSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUserSon, admin));
+
+        //lets check two custom role on same hierarchical level
+        Role adminSon2 = new Role("Admin Son 2", admin);
+        Assert.assertTrue(roleService.isHierarchicallyInferior(adminSon, adminSon2));
+        Assert.assertTrue(roleService.isHierarchicallyInferior(adminSon2, adminSon));
+
+    }
+
+    @Test
+    public void testRoleComparator() {
+        // Init default roles
+        RoleFactory factory = new RoleFactory();
+        Role admin = factory.createAdmin();
+        Role projectAdmin = factory.createProjectAdmin();
+        Role publicR = factory.createPublic();
+        Role registeredUser = factory.createRegisteredUser();
+        RoleComparator roleComparator = new RoleComparator(roleService);
+
+        Assert.assertEquals(0, roleComparator.compare(publicR, publicR));
+        Assert.assertEquals(-1, roleComparator.compare(publicR, registeredUser));
+        Assert.assertEquals(-1, roleComparator.compare(publicR, admin));
+        Assert.assertEquals(-1, roleComparator.compare(publicR, projectAdmin));
+
+        Assert.assertEquals(1, roleComparator.compare(registeredUser, publicR));
+        Assert.assertEquals(0, roleComparator.compare(registeredUser, registeredUser));
+        Assert.assertEquals(-1, roleComparator.compare(registeredUser, admin));
+        Assert.assertEquals(-1, roleComparator.compare(registeredUser, projectAdmin));
+
+        Assert.assertEquals(1, roleComparator.compare(admin, publicR));
+        Assert.assertEquals(1, roleComparator.compare(admin, registeredUser));
+        Assert.assertEquals(0, roleComparator.compare(admin, admin));
+        Assert.assertEquals(-1, roleComparator.compare(admin, projectAdmin));
+
+        Assert.assertEquals(1, roleComparator.compare(projectAdmin, publicR));
+        Assert.assertEquals(1, roleComparator.compare(projectAdmin, registeredUser));
+        Assert.assertEquals(1, roleComparator.compare(projectAdmin, admin));
+        Assert.assertEquals(0, roleComparator.compare(projectAdmin, projectAdmin));
+
+        // lets check with a custom role
+        Role adminSon = new Role("Admin Son", admin);
+
+        Assert.assertEquals(1, roleComparator.compare(adminSon, publicR));
+        Assert.assertEquals(1, roleComparator.compare(adminSon, registeredUser));
+        Assert.assertEquals(1, roleComparator.compare(adminSon, admin));
+        Assert.assertEquals(-1, roleComparator.compare(adminSon, projectAdmin));
+        //a native role is inferior to one of its children
+        Assert.assertEquals(-1, roleComparator.compare(admin, adminSon));
+
+        //lets check two custom role on different hierarchical level
+        Role registeredUserSon = new Role("Registered User Son", registeredUser);
+
+        Assert.assertEquals(1,roleComparator.compare(adminSon, registeredUserSon));
+        Assert.assertEquals(-1,roleComparator.compare(registeredUserSon, adminSon));
+
+        //what happens if a custom role and a native one has the same parent:
+        Assert.assertEquals(1,roleComparator.compare(admin, registeredUserSon));
+        Assert.assertEquals(-1,roleComparator.compare(registeredUserSon, admin));
+
+        //lets check two custom role on same hierarchical level
+        Role adminSon2 = new Role("Admin Son 2", admin);
+
+        //admin son is considered
+        Assert.assertEquals(-1,roleComparator.compare(adminSon, adminSon2));
+        Assert.assertEquals(1,roleComparator.compare(adminSon2, adminSon));
     }
 
     /**
