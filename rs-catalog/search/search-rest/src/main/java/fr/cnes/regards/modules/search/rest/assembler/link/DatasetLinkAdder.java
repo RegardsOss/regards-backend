@@ -31,6 +31,11 @@ public class DatasetLinkAdder implements ILinksAdder {
     private final IResourceService resourceService;
 
     /**
+     * HATEOAS link to reach dataobjects
+     */
+    public static final String LINK_TO_DATAOBJECTS = "dataobjects";
+
+    /**
      * Constructor
      * @param pResourceService handles method authorizations before actually adding a link
      */
@@ -51,7 +56,7 @@ public class DatasetLinkAdder implements ILinksAdder {
 
         Map<String, String> q = new HashMap<>();
         q.put("q", "tags:" + ipId.toString());
-        resourceService.addLinkWithParams(pResource, CatalogController.class, "searchDataobjects", "dataobjects",
+        resourceService.addLinkWithParams(pResource, CatalogController.class, "searchDataobjects", LINK_TO_DATAOBJECTS,
                                           MethodParamFactory.build(Map.class, q),
                                           MethodParamFactory.build(String[].class),
                                           MethodParamFactory.build(Pageable.class));

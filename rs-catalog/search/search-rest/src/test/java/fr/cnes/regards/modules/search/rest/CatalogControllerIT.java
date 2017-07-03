@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.entities.domain.attribute.builder.AttributeBuilde
 import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.search.rest.assembler.link.DatasetLinkAdder;
 
 /**
  * Integration test for {@link CatalogController}
@@ -561,8 +562,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
-                                                        Matchers.either(Matchers.is("next")).or(Matchers.is("self"))));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
+                          Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS)).or(Matchers.is("self"))));
         expectations.add(MockMvcResultMatchers
                 .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
                           Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))

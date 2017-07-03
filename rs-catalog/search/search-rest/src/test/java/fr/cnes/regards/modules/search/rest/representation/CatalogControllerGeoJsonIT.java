@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.search.rest.CatalogController;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
+import fr.cnes.regards.modules.search.rest.assembler.link.DatasetLinkAdder;
 
 /**
  * Integration test for {@link CatalogController} with Representation plugin
@@ -51,7 +52,7 @@ import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
  */
 @TestPropertySource(locations = { "classpath:dao.properties", "classpath:test-representation.properties" })
 @MultitenantTransactional
-public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT{
+public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
@@ -412,8 +413,9 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT{
         expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
-                                                        Matchers.either(Matchers.is("next")).or(Matchers.is("self"))));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
+                          Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS)).or(Matchers.is("self"))));
         expectations.add(MockMvcResultMatchers
                 .jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
                           Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
