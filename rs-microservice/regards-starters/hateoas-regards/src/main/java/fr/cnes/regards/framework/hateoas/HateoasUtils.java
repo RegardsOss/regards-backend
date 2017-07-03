@@ -65,6 +65,23 @@ public final class HateoasUtils {
     }
 
     /**
+     * Wraps a collection of objects in a collection of {@link Resource}s.
+     *
+     * @param pToWrap
+     *            The resource to wrap
+     * @param <T>
+     *            The resource type
+     * @return The wrap resource
+     */
+    public static <T> Collection<Resource<T>> wrapCollection(final Collection<T> pToWrap) {
+        final Collection<Resource<T>> asResources = new ArrayList<>();
+        for (final T item : pToWrap) {
+            asResources.add(new Resource<>(item));
+        }
+        return asResources;
+    }
+
+    /**
      * Unwraps a {@link Resource}.
      *
      * @param pWrapped
