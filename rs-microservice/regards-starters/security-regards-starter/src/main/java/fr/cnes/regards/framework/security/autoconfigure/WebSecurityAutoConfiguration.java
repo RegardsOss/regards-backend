@@ -78,8 +78,6 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(final HttpSecurity pHttp) throws Exception {
 
-        pHttp.headers().frameOptions().sameOrigin();
-        
         // Disable CSRF
         // Force authentication for all requests
         pHttp.csrf().disable().authorizeRequests().anyRequest().authenticated();
