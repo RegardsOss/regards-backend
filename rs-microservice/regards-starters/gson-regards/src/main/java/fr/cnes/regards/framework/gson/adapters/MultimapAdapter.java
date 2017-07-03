@@ -20,14 +20,14 @@ import com.google.gson.JsonSerializer;
  * Multimap Gson adapter
  * @author oroussel
  */
-public class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, JsonSerializer<Multimap<String, ?>> {
+public class MultimapAdapter<K> implements JsonDeserializer<Multimap<K, ?>>, JsonSerializer<Multimap<K, ?>> {
 
     @Override
-    public Multimap<String, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
+    public Multimap<K, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
             throws JsonParseException {
-        final HashMultimap<String, Object> result = HashMultimap.create();
-        final Map<String, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
-        for (final Map.Entry<String, ?> e : map.entrySet()) {
+        final HashMultimap<K, Object> result = HashMultimap.create();
+        final Map<K, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
+        for (final Map.Entry<K, ?> e : map.entrySet()) {
             final Collection<?> value = (Collection<?>) e.getValue();
             result.putAll(e.getKey(), value);
         }
@@ -35,7 +35,7 @@ public class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, J
     }
 
     @Override
-    public JsonElement serialize(Multimap<String, ?> src, Type type, JsonSerializationContext context) {
+    public JsonElement serialize(Multimap<K, ?> src, Type type, JsonSerializationContext context) {
         final Map<?, ?> map = src.asMap();
         return context.serialize(map);
     }
@@ -44,7 +44,7 @@ public class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, J
         final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
         assert typeArguments.length == 2;
         @SuppressWarnings("unchecked")
-        final TypeToken<Map<String, Collection<V>>> mapTypeToken = new TypeToken<Map<String, Collection<V>>>() {
+        final TypeToken<Map<K, Collection<V>>> mapTypeToken = new TypeToken<Map<K, Collection<V>>>() {
 
         }.where(new TypeParameter<V>() {
 
