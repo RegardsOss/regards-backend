@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -26,7 +24,7 @@ public interface ILayoutService {
      *
      * Retrieve an application layout configuration by is applicationId
      *
-     * @param applicationId
+     * @param pApplicationId
      * @return Layout
      * @since 1.0-SNAPSHOT
      */

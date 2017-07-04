@@ -10,13 +10,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
@@ -35,7 +42,8 @@ import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
  */
 @Service(value = "moduleService")
 @RegardsTransactional
-public class ModuleService extends AbstractUiConfigurationService implements IModuleService {
+public class ModuleService extends AbstractUiConfigurationService
+        implements IModuleService, ApplicationListener<ApplicationReadyEvent> {
 
     /**
      * Class logger
@@ -62,6 +70,27 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
 
     @Autowired
     private IModuleRepository repository;
+
+    /**
+     * Perform initialization only when the whole application is ready
+     */
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+        // Initialize subscriber for new tenant connection and initialize database if not already done
+        getInstanceSubscriber().subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
+    }
+
+    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
+
+        @Override
+        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
+            if (getMicroserviceName().equals(pWrapper.getContent().getMicroserviceName())) {
+                getRuntimeTenantResolver().forceTenant(pWrapper.getContent().getTenant());
+                initProjectUI(pWrapper.getContent().getTenant());
+            }
+        }
+
+    }
 
     @Override
     public Module retrieveModule(final Long pModuleId) throws EntityNotFoundException {
@@ -99,7 +128,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
-    public Module updateModule(final Module pModule) throws EntityNotFoundException, EntityInvalidException {
+    public Module updateModule(final Module pModule) throws EntityException {
         // Check layut json format
         final Gson gson = new Gson();
         try {

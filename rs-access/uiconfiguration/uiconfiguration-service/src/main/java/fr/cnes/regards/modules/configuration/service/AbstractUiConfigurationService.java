@@ -15,9 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.configuration.domain.Layout;
@@ -66,8 +63,6 @@ public abstract class AbstractUiConfigurationService {
     public void init() {
         if (isMultitenentMicroservice) {
             // Multitenant version of the microservice.
-            // Initialize subscriber for new tenant connection and initialize database if not already done
-            instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 initProjectUI(tenant);
@@ -76,18 +71,6 @@ public abstract class AbstractUiConfigurationService {
             // Initialize database if not already done
             initInstanceUI();
         }
-    }
-
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
-                runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
-                initProjectUI(pWrapper.getContent().getTenant());
-            }
-        }
-
     }
 
     /**
@@ -110,5 +93,26 @@ public abstract class AbstractUiConfigurationService {
     protected abstract void initProjectUI(String pTenant);
 
     protected abstract void initInstanceUI();
+
+    /**
+     * @return the instanceSubscriber
+     */
+    public IInstanceSubscriber getInstanceSubscriber() {
+        return instanceSubscriber;
+    }
+
+    /**
+     * @return the runtimeTenantResolver
+     */
+    public IRuntimeTenantResolver getRuntimeTenantResolver() {
+        return runtimeTenantResolver;
+    }
+
+    /**
+     * @return the microserviceName
+     */
+    public String getMicroserviceName() {
+        return microserviceName;
+    }
 
 }
