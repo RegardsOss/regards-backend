@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Theme;
@@ -37,6 +38,7 @@ public interface IThemeService {
      *
      * Retrieve all themes
      *
+     * @param pPageable
      * @return Paged list of {@link Theme}
      * @since 1.0-SNAPSHOT
      */
@@ -62,7 +64,7 @@ public interface IThemeService {
      * @return updated {@link Theme}
      * @since 1.0-SNAPSHOT
      */
-    Theme updateTheme(Theme pTheme) throws EntityNotFoundException, EntityInvalidException;
+    Theme updateTheme(Theme pTheme) throws EntityException;
 
     /**
      *

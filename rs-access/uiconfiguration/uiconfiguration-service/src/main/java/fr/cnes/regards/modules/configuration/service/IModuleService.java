@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Module;
@@ -38,6 +39,7 @@ public interface IModuleService {
      * Retrieve all modules for the given application Id
      *
      * @param pApplicationId
+     * @param pPageable
      * @return Paged list of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -48,6 +50,7 @@ public interface IModuleService {
      * Retrieve all active modules for the given application Id
      *
      * @param pApplicationId
+     * @param pPageable
      * @return Paged list of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -73,7 +76,7 @@ public interface IModuleService {
      * @return updated {@link Module}
      * @since 1.0-SNAPSHOT
      */
-    Module updateModule(Module pModule) throws EntityNotFoundException, EntityInvalidException;
+    Module updateModule(Module pModule) throws EntityException;
 
     /**
      *
