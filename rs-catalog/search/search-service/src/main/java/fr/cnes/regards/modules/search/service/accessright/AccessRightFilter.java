@@ -89,7 +89,7 @@ public class AccessRightFilter implements IAccessRightFilter {
                 // Throw an error if no access group
                 if ((accessGroups == null) || accessGroups.isEmpty()) {
                     String errorMessage = String.format(
-                                                        "Cannot set access right filter cause user %s does not have any access group",
+                                                        "Cannot set access right filter because user %s does not have any access group",
                                                         userEmail);
                     LOGGER.error(errorMessage);
                     throw new AccessRightFilterException(errorMessage);

@@ -27,15 +27,13 @@ import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.OpenSearchServiceThreadSafe;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.opensearch.service.parser.CircleParser;
-import fr.cnes.regards.modules.opensearch.service.parser.GeometryParser;
-import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
 import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
@@ -53,9 +51,9 @@ public class AccessRightFilterTest {
     private AccessRightFilter accessRightFilter;
 
     /**
-     * The OpenSearch service building {@link ICriterion} from a request string.  Easier to build criterion then doing it manually.
+     * The OpenSearch service building {@link ICriterion} from a request string. Easier to build criterion than doing it manually.
      */
-    private OpenSearchService openSearchService;
+    private IOpenSearchService openSearchService;
 
     /**
      * Criterion visitor responsible for finding a "groups" criterion
@@ -89,7 +87,7 @@ public class AccessRightFilterTest {
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
         IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 
-        openSearchService = new OpenSearchService(new QueryParser(finder), new GeometryParser(), new CircleParser());
+        openSearchService = new OpenSearchServiceThreadSafe(finder);
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 
