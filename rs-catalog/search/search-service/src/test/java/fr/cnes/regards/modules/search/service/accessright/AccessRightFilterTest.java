@@ -33,9 +33,6 @@ import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.Attribute
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.opensearch.service.parser.CircleParser;
-import fr.cnes.regards.modules.opensearch.service.parser.GeometryParser;
-import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
 import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
@@ -89,7 +86,7 @@ public class AccessRightFilterTest {
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
         IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 
-        openSearchService = new OpenSearchService(new QueryParser(finder), new GeometryParser(), new CircleParser());
+        openSearchService = new OpenSearchService(finder);
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 
