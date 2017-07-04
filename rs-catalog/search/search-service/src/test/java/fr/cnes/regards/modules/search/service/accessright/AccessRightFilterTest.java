@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
-import fr.cnes.regards.modules.opensearch.service.OpenSearchServiceThreadSafe;
+import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
@@ -87,7 +87,7 @@ public class AccessRightFilterTest {
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
         IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
 
-        openSearchService = new OpenSearchServiceThreadSafe(finder);
+        openSearchService = new OpenSearchService(finder);
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 
