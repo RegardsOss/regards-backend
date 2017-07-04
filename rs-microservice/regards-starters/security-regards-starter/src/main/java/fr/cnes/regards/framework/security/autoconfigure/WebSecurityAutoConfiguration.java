@@ -25,12 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.filter.CorsFilter;
-import fr.cnes.regards.framework.security.filter.IpFilter;
-import fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter;
-import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
-import fr.cnes.regards.framework.security.filter.PublicAuthenticationFilter;
-import fr.cnes.regards.framework.security.filter.RequestLogFilter;
+import fr.cnes.regards.framework.security.filter.*;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
@@ -78,7 +73,10 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(final HttpSecurity pHttp) throws Exception {
 
+        //lets disable frame options by default and then add our writer that will set DENY by default and let any other
+        // value if the devs choose one
         pHttp.headers().frameOptions().disable();
+        pHttp.headers().addHeaderWriter(new XFrameOptionsHeaderWriterDefault());
 
         // Disable CSRF
         // Force authentication for all requests
