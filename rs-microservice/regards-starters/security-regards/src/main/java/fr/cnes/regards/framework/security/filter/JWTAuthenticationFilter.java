@@ -87,6 +87,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 runtimeTenantResolver.clearTenant();
 
                 MDC.put("tenant", runtimeTenantResolver.getTenant());
+                MDC.put("username", authentication.getName());
 
                 LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 
