@@ -79,12 +79,18 @@ public class ResourcesService implements IResourcesService {
         Page<ResourcesAccess> results;
         final String roleName = SecurityUtils.getActualRole();
         // If role is System role or InstanceAdminRole retrieve all resources
-        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName)
-                || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
+        if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
             if (pMicroserviceName == null) {
                 results = resourceAccessRepo.findAll(pPageable);
             } else {
                 results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
+            }
+        } else if (RoleAuthority.isProjectAdminRole(roleName)) {
+            if (pMicroserviceName == null) {
+                results = resourceAccessRepo.findByDefaultRoleNot(DefaultRole.INSTANCE_ADMIN, pPageable);
+            } else {
+                results = resourceAccessRepo.findByMicroserviceAndDefaultRoleNot(pMicroserviceName,
+                                                                                 DefaultRole.INSTANCE_ADMIN, pPageable);
             }
         } else {
             // FIXME retrieve resource by page from repository

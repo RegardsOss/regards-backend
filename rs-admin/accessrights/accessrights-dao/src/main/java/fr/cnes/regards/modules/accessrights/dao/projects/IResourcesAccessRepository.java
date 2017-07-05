@@ -53,17 +53,41 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
     List<ResourcesAccess> findByMicroservice(String pMicroservice);
 
     /**
+    *
+    * Retrieve all resource for a given microservice
+    *
+    * @param pMicroservice
+    *            Microservice name who own the resource
+    * @param pPageable
+    *            the pagination information
+    * @return {@link Page} of {@link ResourcesAccess}
+    * @since 1.0-SNAPSHOT
+    */
+    Page<ResourcesAccess> findByMicroservice(String pMicroservice, Pageable pPageable);
+
+    /**
      *
      * Retrieve all resource for a given microservice
      *
      * @param pMicroservice
      *            Microservice name who own the resource
+     * @param pExcludedDefaultRole role to exclude
      * @param pPageable
      *            the pagination information
      * @return {@link Page} of {@link ResourcesAccess}
      * @since 1.0-SNAPSHOT
      */
-    Page<ResourcesAccess> findByMicroservice(String pMicroservice, Pageable pPageable);
+    Page<ResourcesAccess> findByMicroserviceAndDefaultRoleNot(String pMicroservice, DefaultRole pExcludedDefaultRole,
+            Pageable pPageable);
+
+    /**
+     * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
+     *
+     * @param pExcludedDefaultRole role to exclude
+     * @param pageable
+     * @return a page of entities
+     */
+    Page<ResourcesAccess> findByDefaultRoleNot(DefaultRole pExcludedDefaultRole, Pageable pageable);
 
     /**
      *

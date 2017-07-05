@@ -71,6 +71,11 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     private String publicToken;
 
     /**
+     * Security token for PROJECT_ADMIN
+     */
+    private String projectAdminToken;
+
+    /**
      * Security token for INSTANCE_ADMIN
      */
     private String instanceAdminToken;
@@ -89,6 +94,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         final JWTService service = new JWTService();
         service.setSecret("123456789");
         publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.toString());
+        projectAdminToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
+                                                  DefaultRole.PROJECT_ADMIN.toString());
         instanceAdminToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL,
                                                    DefaultRole.INSTANCE_ADMIN.toString());
     }
@@ -107,6 +114,22 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
         performGet(ResourceController.TYPE_MAPPING, publicToken, expectations, "Error retrieving endpoints");
+    }
+
+    /**
+    *
+    * Check that the microservice allow to retrieve all resource endpoints configurations as PROJECT_ADMIN
+    *
+    * @since 1.0-SNAPSHOT
+    */
+    @Test
+    @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
+    public void getAllResourceAccessesAsProjectAdminTest() {
+        final List<ResultMatcher> expectations = new ArrayList<>(3);
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
+        performGet(ResourceController.TYPE_MAPPING, projectAdminToken, expectations, "Error retrieving endpoints");
     }
 
     /**
