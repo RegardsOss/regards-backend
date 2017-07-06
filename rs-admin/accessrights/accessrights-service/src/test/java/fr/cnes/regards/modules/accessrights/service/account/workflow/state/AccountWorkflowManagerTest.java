@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
@@ -108,6 +109,8 @@ public class AccountWorkflowManagerTest {
 
     private IEmailVerificationTokenService emailVerificationTokenService;
 
+    private IAccountUnlockTokenService accountUnlockTokenService;
+
     /**
      * Do some setup before each test
      */
@@ -122,6 +125,7 @@ public class AccountWorkflowManagerTest {
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         passwordResetService = Mockito.mock(IPasswordResetService.class);
         emailVerificationTokenService = Mockito.mock(IEmailVerificationTokenService.class);
+        accountUnlockTokenService = Mockito.mock(IAccountUnlockTokenService.class);
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
@@ -153,7 +157,8 @@ public class AccountWorkflowManagerTest {
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -178,13 +183,16 @@ public class AccountWorkflowManagerTest {
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);
 
         // Verify the repository was correctly called
         Mockito.verify(accountRepository).delete(ID);
+        Mockito.verify(passwordResetService).deletePasswordResetTokenForAccount(account);
+        Mockito.verify(accountUnlockTokenService).deleteAllByAccount(account);
     }
 
     /**
@@ -203,7 +211,8 @@ public class AccountWorkflowManagerTest {
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(true);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);
@@ -228,7 +237,8 @@ public class AccountWorkflowManagerTest {
         Mockito.when(projectUserService.existUser(EMAIL)).thenReturn(false);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);

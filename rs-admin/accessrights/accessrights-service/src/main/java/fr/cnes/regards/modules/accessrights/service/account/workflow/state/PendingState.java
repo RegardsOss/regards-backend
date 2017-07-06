@@ -13,6 +13,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent;
@@ -30,11 +31,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.emailverificatio
 public class PendingState extends AbstractDeletableState {
 
     /**
-     * Account Repository. Autowired by Spring.
-     */
-    private final IAccountRepository accountRepository;
-
-    /**
      * Use this to publish Spring application events
      */
     private final ApplicationEventPublisher eventPublisher;
@@ -46,17 +42,16 @@ public class PendingState extends AbstractDeletableState {
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
      * @param pEmailVerificationTokenService
-     * @param pAccountRepository2
+     * @param pAccountUnlockTokenService
      * @param pEventPublisher
      */
     public PendingState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService, IAccountRepository pAccountRepository2,
-            ApplicationEventPublisher pEventPublisher) {
+            IEmailVerificationTokenService pEmailVerificationTokenService,
+            IAccountUnlockTokenService pAccountUnlockTokenService, ApplicationEventPublisher pEventPublisher) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pEmailVerificationTokenService);
-        accountRepository = pAccountRepository2;
+              pPasswordResetTokenService, pEmailVerificationTokenService, pAccountUnlockTokenService);
         eventPublisher = pEventPublisher;
     }
 
@@ -71,7 +66,7 @@ public class PendingState extends AbstractDeletableState {
     public void acceptAccount(final Account pAccount) throws EntityException {
         String email = pAccount.getEmail();
         pAccount.setStatus(AccountStatus.ACTIVE);
-        accountRepository.save(pAccount);
+        getAccountRepository().save(pAccount);
         try {
             for (String tenant : getTenantResolver().getAllActiveTenants()) {
                 getRuntimeTenantResolver().forceTenant(tenant);

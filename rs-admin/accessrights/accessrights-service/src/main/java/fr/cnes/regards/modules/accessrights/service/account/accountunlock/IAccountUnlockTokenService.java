@@ -34,4 +34,14 @@ public interface IAccountUnlockTokenService {
      */
     String create(Account pAccount);
 
+    /**
+     * Delete all {@link AccountUnlockToken}s for the passed {@link Account}
+     *
+     * @param pAccount
+     *            the account
+     * @param pToken
+     *            the token
+     */
+    void deleteAllByAccount(Account pAccount);
+
 }

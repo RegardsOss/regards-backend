@@ -57,11 +57,6 @@ public class LockedState extends AbstractDeletableState {
     private final IAccountService accountService;
 
     /**
-     * CRUD service handling {@link PasswordResetToken}s. Autowired by Spring.
-     */
-    private final IAccountUnlockTokenService tokenService;
-
-    /**
      * Template Service. Autowired by Spring.
      */
     private final ITemplateService templateService;
@@ -78,20 +73,20 @@ public class LockedState extends AbstractDeletableState {
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
      * @param pEmailVerificationTokenService
+     * @param pAccountUnlockTokenService
      * @param pAccountService
-     * @param pTokenService
      * @param pTemplateService
      * @param pEmailClient
      */
     public LockedState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService, IAccountService pAccountService,
-            IAccountUnlockTokenService pTokenService, ITemplateService pTemplateService, IEmailClient pEmailClient) {
+            IEmailVerificationTokenService pEmailVerificationTokenService,
+            IAccountUnlockTokenService pAccountUnlockTokenService, IAccountService pAccountService,
+            ITemplateService pTemplateService, IEmailClient pEmailClient) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pEmailVerificationTokenService);
+              pPasswordResetTokenService, pEmailVerificationTokenService, pAccountUnlockTokenService);
         accountService = pAccountService;
-        tokenService = pTokenService;
         templateService = pTemplateService;
         emailClient = pEmailClient;
     }
@@ -107,7 +102,7 @@ public class LockedState extends AbstractDeletableState {
     public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
             throws EntityOperationForbiddenException {
         // Create the token
-        final String token = tokenService.create(pAccount);
+        final String token = getAccountUnlockTokenService().create(pAccount);
 
         // Build the list of recipients
         final String[] recipients = { pAccount.getEmail() };
@@ -157,6 +152,7 @@ public class LockedState extends AbstractDeletableState {
         validateToken(pAccount.getEmail(), pToken);
         pAccount.setStatus(AccountStatus.ACTIVE);
         accountService.updateAccount(pAccount.getId(), pAccount);
+        getAccountUnlockTokenService().deleteAllByAccount(pAccount);
     }
 
     /**
@@ -174,7 +170,7 @@ public class LockedState extends AbstractDeletableState {
      */
     private void validateToken(final String pAccountEmail, final String pToken) throws EntityException {
         // Retrieve the token object
-        final AccountUnlockToken token = tokenService.findByToken(pToken);
+        final AccountUnlockToken token = getAccountUnlockTokenService().findByToken(pToken);
 
         // Check same account
         if (!token.getAccount().getEmail().equals(pAccountEmail)) {

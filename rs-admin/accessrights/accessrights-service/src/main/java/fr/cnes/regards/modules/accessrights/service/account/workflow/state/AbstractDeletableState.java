@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
@@ -64,17 +65,24 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     /**
+     * Service to manage unlock tokens for accounts.
+     */
+    private final IAccountUnlockTokenService accountUnlockTokenService;
+
+    /**
      * @param pProjectUserService
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
      * @param pEmailVerificationTokenService
+     * @param pAccountUnlockTokenService
      */
     public AbstractDeletableState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService) {
+            IEmailVerificationTokenService pEmailVerificationTokenService,
+            IAccountUnlockTokenService pAccountUnlockTokenService) {
         super();
         projectUserService = pProjectUserService;
         accountRepository = pAccountRepository;
@@ -82,6 +90,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         runtimeTenantResolver = pRuntimeTenantResolver;
         passwordResetTokenService = pPasswordResetTokenService;
         emailVerificationTokenService = pEmailVerificationTokenService;
+        accountUnlockTokenService = pAccountUnlockTokenService;
     }
 
     @Override
@@ -138,8 +147,10 @@ abstract class AbstractDeletableState implements IAccountTransitions {
             throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
         }
 
-        LOGGER.info("Deleting tokens associated to account {} from instance.", pAccount.getEmail());
+        LOGGER.info("Deleting password reset tokens associated to account {} from instance.", pAccount.getEmail());
         passwordResetTokenService.deletePasswordResetTokenForAccount(pAccount);
+        LOGGER.info("Deleting unlock tokens associated to account {} from instance.", pAccount.getEmail());
+        accountUnlockTokenService.deleteAllByAccount(pAccount);
         LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
         accountRepository.delete(pAccount.getId());
     }
@@ -191,6 +202,13 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      */
     public IRuntimeTenantResolver getRuntimeTenantResolver() {
         return runtimeTenantResolver;
+    }
+
+    /**
+     * @return the accountUnlockTokenService
+     */
+    public IAccountUnlockTokenService getAccountUnlockTokenService() {
+        return accountUnlockTokenService;
     }
 
 }
