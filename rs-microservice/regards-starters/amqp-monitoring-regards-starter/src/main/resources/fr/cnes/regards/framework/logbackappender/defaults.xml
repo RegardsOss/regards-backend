@@ -9,12 +9,12 @@
                     source="spring.application.name"/>
 
     <property name="CONSOLE_LOG_PATTERN"
-              value="[${springAppName}] %date [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${springAppName}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
 
     <property name="SYSLOG_PATTERN"
-              value="[${springAppName}] %date [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${springAppName}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
 
     <property name="SYSLOG_SECURITY_PATTERN"
-              value="[${springAppName}] %date [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${springAppName}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
 
 </included>
