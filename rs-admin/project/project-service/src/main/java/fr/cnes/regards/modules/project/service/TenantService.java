@@ -58,7 +58,7 @@ public class TenantService implements ITenantService {
         Assert.notNull(pMicroserviceName);
         Set<String> tenants = new HashSet<>();
         // Retrieve all projects
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findByIsDeletedFalse();
         for (Project project : projects) {
             ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
                                                                                                    pMicroserviceName);
