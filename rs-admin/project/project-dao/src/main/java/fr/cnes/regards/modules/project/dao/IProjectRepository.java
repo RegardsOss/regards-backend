@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.project.dao;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +27,13 @@ public interface IProjectRepository extends JpaRepository<Project, Long> {
     Project findOneByNameIgnoreCase(String pName);
 
     Page<Project> findByIsPublicTrue(Pageable pPageable);
+
+    /**
+     *
+     * Retrieve all active project (not deleted)
+     *
+     * @return active {@link Project}s
+     * @since 1.0-SNAPSHOT
+     */
+    List<Project> findByIsDeletedFalse();
 }

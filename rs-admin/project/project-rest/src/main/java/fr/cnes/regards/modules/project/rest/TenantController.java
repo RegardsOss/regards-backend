@@ -24,8 +24,18 @@ import fr.cnes.regards.modules.project.service.ITenantService;
  *
  */
 @RestController
-@RequestMapping("/tenants")
+@RequestMapping(TenantController.BASE_PATH)
 public class TenantController {
+
+    /**
+     * Main path of this controller endpoints
+     */
+    public static final String BASE_PATH = "/tenants";
+
+    /**
+     * Additional path for microservice
+     */
+    public static final String MICROSERVICE_PATH = "/{pMicroserviceName}";
 
     /**
      * Administration project service
@@ -40,7 +50,7 @@ public class TenantController {
     }
 
     @ResourceAccess(description = "List all fully configured tenants", role = DefaultRole.INSTANCE_ADMIN)
-    @RequestMapping(method = RequestMethod.GET, value = "/{pMicroserviceName}")
+    @RequestMapping(method = RequestMethod.GET, value = MICROSERVICE_PATH)
     public ResponseEntity<Set<String>> getAllActiveTenants(
             @PathVariable("pMicroserviceName") String pMicroserviceName) {
         return ResponseEntity.ok(tenantService.getAllActiveTenants(pMicroserviceName));
