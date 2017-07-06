@@ -35,4 +35,14 @@ public interface IAccountUnlockTokenRepository extends JpaRepository<AccountUnlo
     @Modifying
     @Query("delete from AccountUnlockToken t where t.expiryDate <= ?1")
     void deleteAllExpiredSince(LocalDateTime pNow);
+
+    /**
+     * Delete all {@link AccountUnlockToken}s for the passed {@link Account}
+     *
+     * @param pAccount
+     *            the account
+     * @param pToken
+     *            the token
+     */
+    void deleteAllByAccount(Account pAccount);
 }

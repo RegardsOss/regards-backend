@@ -173,7 +173,8 @@ public class LockedStateTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Trigger exception
@@ -198,8 +199,8 @@ public class LockedStateTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService, accountService,
-                        accountUnlockTokenService, templateService, emailClient));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService, accountService, templateService, emailClient));
         Mockito.when(accountUnlockTokenService.findByToken(wrongToken)).thenThrow(new EntityNotFoundException(ID));
 
         // Trigger exception
@@ -220,8 +221,8 @@ public class LockedStateTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService, accountService,
-                        accountUnlockTokenService, templateService, emailClient));
+                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
+                        accountUnlockTokenService, accountService, templateService, emailClient));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Prepare the case

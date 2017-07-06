@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountStateProvider;
 import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
@@ -138,12 +139,13 @@ public class RegistrationServiceTest {
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         IPasswordResetService passwordResetTokenService = Mockito.mock(IPasswordResetService.class);
         ApplicationEventPublisher eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
+        IAccountUnlockTokenService accountUnlockTokenService = Mockito.mock(IAccountUnlockTokenService.class);
 
         // Mock
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new PendingState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetTokenService, tokenService, accountRepository,
+                        runtimeTenantResolver, passwordResetTokenService, tokenService, accountUnlockTokenService,
                         eventPublisher));
 
         // Create the tested service

@@ -78,4 +78,12 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
         return token.getToken();
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService#deleteAllByAccount(fr.cnes.regards.modules.accessrights.domain.instance.Account)
+     */
+    @Override
+    public void deleteAllByAccount(Account pAccount) {
+        tokenRepository.deleteAllByAccount(pAccount);
+    }
+
 }
