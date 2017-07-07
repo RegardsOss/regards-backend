@@ -127,7 +127,10 @@ public class CatalogSearchService implements ICatalogSearchService {
                 return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
                 // Threshold can be passed in query parameter
-                String thresholdParameter = allParams.get(THRESHOLD_QUERY_PARAMETER);
+                String thresholdParameter = null;
+                if (allParams != null) {
+                    thresholdParameter = allParams.get(THRESHOLD_QUERY_PARAMETER);
+                }
                 Long requestThreshold = thresholdParameter != null ? Long.valueOf(thresholdParameter) : threshold;
                 return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
                                             requestThreshold);
