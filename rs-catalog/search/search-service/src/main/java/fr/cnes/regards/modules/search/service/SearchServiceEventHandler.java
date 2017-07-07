@@ -13,6 +13,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupAssociationEvent;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupDissociationEvent;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupPublicEvent;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
 
 /**
@@ -39,6 +40,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         subscriber.subscribeTo(AccessGroupAssociationEvent.class, new AccessGroupAssociationEventHandler());
         subscriber.subscribeTo(AccessGroupDissociationEvent.class, new AccessGroupDissociationEventHandler());
+        subscriber.subscribeTo(AccessGroupPublicEvent.class, new AccessGroupPublicEventHandler());
     }
 
     /**
@@ -78,4 +80,24 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
             }
         }
     }
+
+    /**
+     * Handle {@link AccessGroupPublicEvent} event to clean all cache entries
+     *
+     * @author Marc Sordi
+     *
+     */
+    private class AccessGroupPublicEventHandler implements IHandler<AccessGroupPublicEvent> {
+
+        @Override
+        public void handle(TenantWrapper<AccessGroupPublicEvent> wrapper) {
+            try {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                accessGroupClientService.cleanAllAccessGroups();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
 }

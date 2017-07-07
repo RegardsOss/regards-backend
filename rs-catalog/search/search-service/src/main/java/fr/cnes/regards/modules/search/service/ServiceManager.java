@@ -18,6 +18,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.search.domain.ServiceScope;
@@ -110,7 +112,7 @@ public class ServiceManager implements IServiceManager {
 
     @Override
     public ResponseEntity<?> apply(final String pDatasetId, final String pServiceName,
-            final Map<String, String> pDynamicParameters) throws ModuleException {
+            final Map<String, String> dynamicParameters) throws ModuleException {
         final PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
@@ -122,8 +124,13 @@ public class ServiceManager implements IServiceManager {
             throw new EntityInvalidException(
                     pServiceName + " is not a service applyable to the dataset with id " + pDatasetId);
         }
-        pDynamicParameters.forEach(conf::setParameterDynamicValue);
-        final IService toExecute = (IService) pluginService.getPlugin(conf);
+
+        // Build dynamic parameters
+        PluginParametersFactory factory = PluginParametersFactory.build();
+        dynamicParameters.forEach(factory::addParameterDynamic);
+
+        IService toExecute = (IService) pluginService
+                .getPlugin(conf, factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
         return toExecute.apply();
     }
 

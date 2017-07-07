@@ -77,6 +77,14 @@ public class AccessGroupClientService implements IAccessGroupClientService {
 
     @Override
     public void cleanAccessGroups(String userEmail, String tenant) {
-        LOGGER.debug("Rejecting group cache for tenant {}", tenant);
+        LOGGER.debug("Rejecting group cache for user {} and tenant {}", userEmail, tenant);
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService#cleanAll()
+     */
+    @Override
+    public void cleanAllAccessGroups() {
+        LOGGER.debug("Rejecting group cache for all tenants");
     }
 }

@@ -34,4 +34,12 @@ public interface IAccessGroupClientService { //NOSONAR
      */
     @CacheEvict(value = "accessgroups")
     void cleanAccessGroups(String userEmail, String tenant);
+
+    /**
+     * Clean all cache for all tenants!
+     * Note : it's a limitation of cacheable. We cannot clean only one tenant
+     */
+    @CacheEvict(value = "accessgroups", allEntries = true)
+    void cleanAllAccessGroups();
+
 }
