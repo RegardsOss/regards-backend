@@ -5,7 +5,6 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -314,18 +313,18 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getPlugin(final PluginConfiguration pPluginConfiguration) throws ModuleException {
-        return getPlugin(pPluginConfiguration.getId(), pPluginConfiguration.getParameters()
-                .toArray(new PluginParameter[pPluginConfiguration.getParameters().size()]));
+    public <T> T getPlugin(final PluginConfiguration pPluginConfiguration,
+            final PluginParameter... dynamicPluginParameters) throws ModuleException {
+        return getPlugin(pPluginConfiguration.getId(), dynamicPluginParameters);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... pluginParameters)
+    public <T> T getPlugin(final Long pPluginConfigurationId, final PluginParameter... dynamicPluginParameters)
             throws ModuleException {
 
-        if (!isPluginCached(pPluginConfigurationId)) {
-            return instanciatePluginAndCache(pPluginConfigurationId, pluginParameters);
+        if (!isPluginCached(pPluginConfigurationId) || (dynamicPluginParameters.length > 0)) {
+            return instanciatePluginAndCache(pPluginConfigurationId, dynamicPluginParameters);
         }
         return (T) getCachedPlugin(pPluginConfigurationId);
     }
@@ -333,16 +332,23 @@ public class PluginService implements IPluginService {
     /**
      * Instanciate a plugin and cache it <b>if it doesn't have dynamic parameters</b>
      * @param pPluginConfigurationId plugin configuration identifier
-     * @param pluginParameters plugin parameters (including potential dynamic ones)
+     * @param dynamicPluginParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
      * @throws ModuleException if error occurs!
      */
     private <T> T instanciatePluginAndCache(final Long pPluginConfigurationId,
-            final PluginParameter... pluginParameters) throws ModuleException {
+            final PluginParameter... dynamicPluginParameters) throws ModuleException {
 
-        // Compute dynamic parameters
-        PluginParameter[] dynamicPlgParams = Arrays.stream(pluginParameters).filter(PluginParameter::isDynamic)
-                .toArray(PluginParameter[]::new);
+        // Check if all parameters are really dynamic
+        for (PluginParameter dynamicParameter : dynamicPluginParameters) {
+            if (!dynamicParameter.isDynamic()) {
+                String errorMessage = String.format(
+                                                    "The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
+                                                    dynamicParameter.getName());
+                LOGGER.error(errorMessage);
+                throw new UnexpectedDynamicParameter(errorMessage);
+            }
+        }
 
         // Get last saved plugin configuration
         final PluginConfiguration pluginConf = getPluginConfiguration(pPluginConfigurationId);
@@ -368,10 +374,10 @@ public class PluginService implements IPluginService {
         }
 
         T resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackage(), getPluginCache(),
-                                               dynamicPlgParams);
+                                               dynamicPluginParameters);
 
         // Put in the map, only if there is no dynamic parameters
-        if (dynamicPlgParams.length == 0) {
+        if (dynamicPluginParameters.length == 0) {
             addPluginToCache(pPluginConfigurationId, resultPlugin);
         }
 

@@ -18,6 +18,7 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -28,24 +29,24 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtility {
 
-    /**
-     *
-     */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
-    /**
-     *
-     */
     private IPluginService pluginServiceMocked;
+
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * This method is run before all tests
      */
     @Before
     public void init() {
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
+
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
+                runtimeTenantResolver);
     }
 
     /**

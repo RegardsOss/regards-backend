@@ -51,21 +51,27 @@ public interface IPluginService {
      *
      * @param <T> a plugin instance
      * @param pPluginConfigurationId the id of a {@link PluginConfiguration}.
-     * @param pPluginParameters list of {@link PluginParameter}
+     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters) throws ModuleException;
+    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... dynamicPluginParameters)
+            throws ModuleException;
 
     /**
-     * Get a plugin instance for a {@link PluginConfiguration}
+     * Get a plugin instance for a {@link PluginConfiguration} and dynamic plugin parameters<br/>
+     *
+     * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, PluginParameter...)}
+     * so plugin configuration is reloaded from database before instanciation.
      *
      * @param <T> a plugin instance
      * @param pPluginConfiguration a {@link PluginConfiguration}.
+     *  @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    <T> T getPlugin(PluginConfiguration pPluginConfiguration) throws ModuleException;
+    <T> T getPlugin(PluginConfiguration pPluginConfiguration, final PluginParameter... dynamicPluginParameters)
+            throws ModuleException;
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
