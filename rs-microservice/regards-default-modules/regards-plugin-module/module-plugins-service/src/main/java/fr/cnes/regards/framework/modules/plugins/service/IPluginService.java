@@ -5,6 +5,7 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -193,9 +194,34 @@ public interface IPluginService {
     PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel) throws EntityNotFoundException;
 
     /**
-     * Remove plugin instance cache with specified configuration identifier
-     * @param pConfId plugin configuration identifier
+     * Add plugin instance to cache (resolving tenant internally)
+     * @param confId configuration identifier
+     * @param plugin plugin instance corresponding to the configuration
      */
-    void cleanPluginCache(Long pConfId);
+    void addPluginToCache(Long confId, Object plugin);
 
+    /**
+     * Check if plugin is cached (resolving tenant internally)
+     * @param confId configuration identifier
+     * @return
+     */
+    boolean isPluginCached(Long confId);
+
+    /**
+     * Remove plugin instance cache with specified configuration identifier (resolving tenant internally)
+     * @param confId configuration identifier
+     */
+    void cleanPluginCache(Long confId);
+
+    /**
+     * @return tenant plugin cache
+     */
+    ConcurrentMap<Long, Object> getPluginCache();
+
+    /**
+     *
+     * @param confId configuration identifier
+     * @return tenant plugin instance
+     */
+    Object getCachedPlugin(Long confId);
 }
