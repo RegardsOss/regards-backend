@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import org.apache.log4j.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,6 +56,8 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @Override
     public void forceTenant(final String pTenant) {
+        // when we force the tenant for the application, we set it for logging too
+        MDC.put("tenant", pTenant);
         tenantHolder.set(pTenant);
     }
 
@@ -62,6 +65,13 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     public void clearTenant() {
         LOGGER.debug("Clearing tenant");
         tenantHolder.remove();
+        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        // when we clear the tenant, system will act by getting it from the security context holder, so we do the same for logging
+        if(authentication!=null) {
+            MDC.put("tenant", authentication.getTenant());
+        } else {
+            MDC.put("tenant", null);
+        }
     }
 
     @Override

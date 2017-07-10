@@ -82,15 +82,16 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         // Force authentication for all requests
         pHttp.csrf().disable().authorizeRequests().anyRequest().authenticated();
 
-        pHttp.addFilterBefore(new RequestLogFilter(), UsernamePasswordAuthenticationFilter.class);
 
         // Add public filter
         // TODO set in gateway
-        pHttp.addFilterAfter(new PublicAuthenticationFilter(jwtService), RequestLogFilter.class);
+        pHttp.addFilterBefore(new PublicAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 
         // Add JWT Authentication filter
         pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
                              PublicAuthenticationFilter.class);
+        pHttp.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
+        pHttp.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
 
         // Add Ip filter after Authentication filter
         pHttp.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);
@@ -104,7 +105,6 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         }
         pHttp.addFilterAfter(new CorsFilter(authorizedIp), IpFilter.class);
 
-        pHttp.addFilterAfter(new MDCInsertingServletFilter(), RequestLogFilter.class);
 
         // Add custom configurations if any
         if (customConfigurers != null) {

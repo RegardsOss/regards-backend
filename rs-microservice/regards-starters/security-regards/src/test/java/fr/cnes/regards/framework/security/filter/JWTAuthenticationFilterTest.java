@@ -3,11 +3,10 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import java.io.IOException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,9 +23,11 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.web.servlet.DispatcherServlet;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -73,7 +74,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
@@ -98,7 +99,9 @@ public class JWTAuthenticationFilterTest {
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with no Jwt access token for public access (scope as query parameter)")
     @Test
-    public void jwtFilterPublicAccess() {
+    public void jwtFilterPublicAccess() throws JwtException {
+        // the public filter should generate this token:
+        JWTAuthentication token=jwtService.parseToken(new JWTAuthentication(jwtService.generateToken("project-test", "public@regards.com", DefaultRole.PUBLIC.name())));
 
         final MockHttpServletRequest mockedRequest = new MockHttpServletRequest();
         mockedRequest.addParameter(HttpConstants.SCOPE, "project-test");
@@ -107,8 +110,9 @@ public class JWTAuthenticationFilterTest {
 
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
+        Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -137,7 +141,10 @@ public class JWTAuthenticationFilterTest {
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with no Jwt access token for public access (scope in header)")
     @Test
-    public void jwtFilterPublicAccessWithHeader() {
+    public void jwtFilterPublicAccessWithHeader() throws JwtException {
+
+        // the public filter should generate this token:
+        JWTAuthentication token=jwtService.parseToken(new JWTAuthentication(jwtService.generateToken("project-test", "public@regards.com", DefaultRole.PUBLIC.name())));
 
         final MockHttpServletRequest mockedRequest = new MockHttpServletRequest();
         mockedRequest.addHeader(HttpConstants.SCOPE, "project-test");
@@ -146,8 +153,9 @@ public class JWTAuthenticationFilterTest {
 
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
+        Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -174,7 +182,7 @@ public class JWTAuthenticationFilterTest {
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
-    @Purpose("Check security filter with invlid request authorization header")
+    @Purpose("Check security filter with invalid request authorization header")
     @Test
     public void jwtFilterAccessDeniedTest() {
 
@@ -187,7 +195,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         // Header whithout Bearer: prefix.
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(token.getJwt());
@@ -215,21 +223,22 @@ public class JWTAuthenticationFilterTest {
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with valid Jwt access token")
     @Test
-    public void jwtFilterAccessGrantedTest() {
+    public void jwtFilterAccessGrantedTest() throws JwtException {
 
-        final JWTAuthentication token = new JWTAuthentication(
+        JWTAuthentication token = new JWTAuthentication(
                 jwtService.generateToken("PROJECT", "test@test.test", "USER"));
+        token=jwtService.parseToken(token);
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-
+        Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION))
-                .thenReturn(String.format("%s: %s", HttpConstants.BEARER, token.getJwt()));
+                .thenReturn(String.format("%s %s", HttpConstants.BEARER, token.getJwt()));
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
