@@ -93,7 +93,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
         public void handle(TenantWrapper<AccessGroupPublicEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                accessGroupClientService.cleanAllAccessGroups();
+                accessGroupClientService.cleanPublicAccessGroups(wrapper.getTenant());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

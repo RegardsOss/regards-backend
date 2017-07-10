@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
@@ -84,7 +85,8 @@ public class AccessRightFilterTest {
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
-        IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient, subscriber);
+        IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient,
+                Mockito.mock(IAccessGroupClient.class));
 
         openSearchService = new OpenSearchService(finder);
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);

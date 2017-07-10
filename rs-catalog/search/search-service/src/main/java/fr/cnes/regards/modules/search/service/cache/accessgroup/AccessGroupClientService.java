@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 
@@ -40,13 +40,13 @@ public class AccessGroupClientService implements IAccessGroupClientService {
     private final IUserClient userClient;
 
     /**
-     * Creates a new instance of the service with passed services/repos
-     *
-     * @param pUserClient Feign client returning all access groups for a user
-     * @param pSubscriber the AMQP events subscriber
+     * Allows to retrieve all public groups
      */
-    public AccessGroupClientService(IUserClient pUserClient, ISubscriber pSubscriber) {
-        userClient = pUserClient;
+    private final IAccessGroupClient groupClient;
+
+    public AccessGroupClientService(IUserClient userClient, IAccessGroupClient groupClient) {
+        this.userClient = userClient;
+        this.groupClient = groupClient;
     }
 
     @Override
@@ -61,18 +61,17 @@ public class AccessGroupClientService implements IAccessGroupClientService {
      * @return the list of user's access groups
      */
     private List<AccessGroup> doGetAccessGroups(String pUserEmail) {
-        // Enable system call as follow (thread safe action)
-        FeignSecurityManager.asSystem();
+        try {
+            // Enable system call as follow (thread safe action)
+            FeignSecurityManager.asSystem();
 
-        // Perform client call
-        Collection<Resource<AccessGroup>> content = userClient.retrieveAccessGroupsOfUser(pUserEmail, 0, 0).getBody()
-                .getContent();
-        List<AccessGroup> result = HateoasUtils.unwrapCollection(content);
-
-        // Disable system call if necessary after client request(s)
-        FeignSecurityManager.reset();
-
-        return result;
+            // Perform client call
+            Collection<Resource<AccessGroup>> content = userClient.retrieveAccessGroupsOfUser(pUserEmail, 0, 0)
+                    .getBody().getContent();
+            return HateoasUtils.unwrapCollection(content);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     @Override
@@ -80,11 +79,22 @@ public class AccessGroupClientService implements IAccessGroupClientService {
         LOGGER.debug("Rejecting group cache for user {} and tenant {}", userEmail, tenant);
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService#cleanAll()
-     */
     @Override
-    public void cleanAllAccessGroups() {
-        LOGGER.debug("Rejecting group cache for all tenants");
+    public List<AccessGroup> getPublicAccessGroups(String tenant) {
+        try {
+            FeignSecurityManager.asSystem();
+
+            Collection<Resource<AccessGroup>> content = groupClient.retrieveAccessGroupsList(true, 0, 0).getBody()
+                    .getContent();
+            return HateoasUtils.unwrapCollection(content);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
+
+    @Override
+    public void cleanPublicAccessGroups(String tenant) {
+        LOGGER.debug("Rejecting public group cache for tenant {}", tenant);
+    }
+
 }

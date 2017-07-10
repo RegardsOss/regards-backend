@@ -4,7 +4,9 @@
 package fr.cnes.regards.modules.search.service.accessright;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -84,10 +86,16 @@ public class AccessRightFilter implements IAccessRightFilter {
         try {
             FeignSecurityManager.asSystem();
             if (!projectUserClient.isAdmin(userEmail).getBody()) {
-                List<AccessGroup> accessGroups = cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant());
+
+                // Retrieve public groups
+                Set<AccessGroup> accessGroups = new HashSet<>(
+                        cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+
+                // Add explicitly associated group
+                accessGroups.addAll(cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant()));
 
                 // Throw an error if no access group
-                if ((accessGroups == null) || accessGroups.isEmpty()) {
+                if (accessGroups.isEmpty()) {
                     String errorMessage = String.format(
                                                         "Cannot set access right filter cause user %s does not have any access group",
                                                         userEmail);
