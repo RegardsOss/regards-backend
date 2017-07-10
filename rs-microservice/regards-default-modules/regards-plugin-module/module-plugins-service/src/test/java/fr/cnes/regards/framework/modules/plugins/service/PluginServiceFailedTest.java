@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
@@ -31,24 +32,24 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 public class PluginServiceFailedTest extends PluginServiceUtility {
 
-    /**
-     *
-     */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
-    /**
-     *
-     */
     private IPluginService pluginServiceMocked;
+
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * This method is run before all tests
      */
     @Before
     public void init() {
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
+
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
+                runtimeTenantResolver);
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
     }
 
