@@ -143,4 +143,22 @@ public class JWTAuthentication implements Authentication {
     public void setUser(UserDetails pUser) {
         user = pUser;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        JWTAuthentication that = (JWTAuthentication) o;
+
+        return jwt != null ? jwt.equals(that.jwt) : that.jwt == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return jwt != null ? jwt.hashCode() : 0;
+    }
 }
