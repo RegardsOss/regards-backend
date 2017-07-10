@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
@@ -38,34 +39,30 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 public class PluginServiceTest extends PluginServiceUtility {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginServiceTest.class);
 
     private final String pluginsPackage = "fr.cnes.regards.plugins.utils";
 
-    /**
-     *
-     */
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
-    /**
-     *
-     */
     private IPluginService pluginServiceMocked;
 
     private IPublisher publisherMocked;
+
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * This method is run before all tests
      */
     @Before
     public void init() {
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
+
         publisherMocked = Mockito.mock(IPublisher.class);
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver);
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins");
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.modules.plugins");

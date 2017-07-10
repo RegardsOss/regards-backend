@@ -5,6 +5,7 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -50,21 +51,27 @@ public interface IPluginService {
      *
      * @param <T> a plugin instance
      * @param pPluginConfigurationId the id of a {@link PluginConfiguration}.
-     * @param pPluginParameters list of {@link PluginParameter}
+     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... pPluginParameters) throws ModuleException;
+    <T> T getPlugin(Long pPluginConfigurationId, final PluginParameter... dynamicPluginParameters)
+            throws ModuleException;
 
     /**
-     * Get a plugin instance for a {@link PluginConfiguration}
+     * Get a plugin instance for a {@link PluginConfiguration} and dynamic plugin parameters<br/>
+     *
+     * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, PluginParameter...)}
+     * so plugin configuration is reloaded from database before instanciation.
      *
      * @param <T> a plugin instance
      * @param pPluginConfiguration a {@link PluginConfiguration}.
+     *  @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    <T> T getPlugin(PluginConfiguration pPluginConfiguration) throws ModuleException;
+    <T> T getPlugin(PluginConfiguration pPluginConfiguration, final PluginParameter... dynamicPluginParameters)
+            throws ModuleException;
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -193,9 +200,34 @@ public interface IPluginService {
     PluginConfiguration getPluginConfigurationByLabel(String pConfigurationLabel) throws EntityNotFoundException;
 
     /**
-     * Remove plugin instance cache with specified configuration identifier
-     * @param pConfId plugin configuration identifier
+     * Add plugin instance to cache (resolving tenant internally)
+     * @param confId configuration identifier
+     * @param plugin plugin instance corresponding to the configuration
      */
-    void cleanPluginCache(Long pConfId);
+    void addPluginToCache(Long confId, Object plugin);
 
+    /**
+     * Check if plugin is cached (resolving tenant internally)
+     * @param confId configuration identifier
+     * @return
+     */
+    boolean isPluginCached(Long confId);
+
+    /**
+     * Remove plugin instance cache with specified configuration identifier (resolving tenant internally)
+     * @param confId configuration identifier
+     */
+    void cleanPluginCache(Long confId);
+
+    /**
+     * @return tenant plugin cache
+     */
+    ConcurrentMap<Long, Object> getPluginCache();
+
+    /**
+     *
+     * @param confId configuration identifier
+     * @return tenant plugin instance
+     */
+    Object getCachedPlugin(Long confId);
 }
