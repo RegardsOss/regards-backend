@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,8 +89,8 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send the list of all aips")
     public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) LocalDateTime pFrom,
-            @RequestParam(name = "to", required = false) LocalDateTime pTo, final Pageable pPageable,
+            @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
+            @RequestParam(name = "to", required = false) OffsetDateTime pTo, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) {
         Page<AIP> aips = aipService.retrieveAIPs(pState, pFrom, pTo, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);

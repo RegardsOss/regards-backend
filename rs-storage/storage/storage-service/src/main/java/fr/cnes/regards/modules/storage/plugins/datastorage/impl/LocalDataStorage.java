@@ -17,8 +17,8 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.Dir
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Plugin(author = "Sylvain VISSIERE-GUERINET", description = "Plugin handling the storage on local",
-        id = "LocalDataStorage", version = "1.0")
+@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local",
+        id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IDataStorage {
 
     // FIXME: comment ça se passe dans les plugin un @Value ou c'est un paramètre dynamique?

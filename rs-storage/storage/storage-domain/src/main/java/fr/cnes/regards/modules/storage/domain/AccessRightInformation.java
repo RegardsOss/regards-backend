@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.domain;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Random;
 
 import javax.validation.constraints.NotNull;
@@ -20,7 +21,7 @@ public class AccessRightInformation implements Serializable {
     @NotNull
     private String dataRights;
 
-    private LocalDateTime publicReleaseDate;
+    private OffsetDateTime publicReleaseDate;
 
     public AccessRightInformation(String pPublisherDID, String pPublisherID, String pDataRights) {
         super();
@@ -59,11 +60,11 @@ public class AccessRightInformation implements Serializable {
         dataRights = pDataRights;
     }
 
-    public LocalDateTime getPublicReleaseDate() {
+    public OffsetDateTime getPublicReleaseDate() {
         return publicReleaseDate;
     }
 
-    public void setPublicReleaseDate(LocalDateTime pPublicReleaseDate) {
+    public void setPublicReleaseDate(OffsetDateTime pPublicReleaseDate) {
         publicReleaseDate = pPublicReleaseDate;
     }
 

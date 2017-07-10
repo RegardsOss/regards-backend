@@ -6,7 +6,8 @@ package fr.cnes.regards.modules.storage.domain;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -76,7 +77,7 @@ public class AIP implements Serializable {
     /**
      * Submission Date into REGARDS
      */
-    private LocalDateTime submissionDate;
+    private OffsetDateTime submissionDate;
 
     /**
      * Type of this AIP
@@ -116,7 +117,7 @@ public class AIP implements Serializable {
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
         state = AIPState.VALID;
-        submissionDate = LocalDateTime.now();
+        submissionDate = OffsetDateTime.now();
         lastEvent = new Event("toc");
         checksum = "checksum";
         return this;
@@ -268,21 +269,21 @@ public class AIP implements Serializable {
 
     }
 
-    public LocalDateTime getSubmissionDate() {
+    public OffsetDateTime getSubmissionDate() {
         return submissionDate;
     }
 
-    public void setSubmissionDate(LocalDateTime pSubmissionDate) {
+    public void setSubmissionDate(OffsetDateTime pSubmissionDate) {
         submissionDate = pSubmissionDate;
     }
 
     public AIP(AIP src) {
         informationObjects = Lists.newArrayList(src.informationObjects);
         ipId = String.valueOf(src.ipId);
-        lastEvent = new Event(String.valueOf(src.lastEvent.getComment()), LocalDateTime.from(src.lastEvent.getDate()));
+        lastEvent = new Event(String.valueOf(src.lastEvent.getComment()), OffsetDateTime.from(src.lastEvent.getDate()));
         sipId = String.valueOf(src.sipId);
         state = src.state;
-        submissionDate = LocalDateTime.from(src.submissionDate);
+        submissionDate = OffsetDateTime.from(src.submissionDate);
         tags = Lists.newArrayList(src.tags);
         type = src.type;
         checksum = String.valueOf(src.checksum);

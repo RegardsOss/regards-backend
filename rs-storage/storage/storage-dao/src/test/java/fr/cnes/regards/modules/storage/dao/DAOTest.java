@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.storage.dao;
 
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.Assert;
@@ -66,8 +66,8 @@ public class DAOTest extends AbstractDaoTransactionalTest {
     public void init() throws NoSuchAlgorithmException, MalformedURLException {
         aip1 = new AIP(AipType.COLLECTION).generateRandomAIP();
         aip1.setState(AIPState.VALID);
-        aip1.setSubmissionDate(LocalDateTime.now().minusMinutes(10));
-        aip1.getLastEvent().setDate(LocalDateTime.now().minusMinutes(10));
+        aip1.setSubmissionDate(OffsetDateTime.now().minusMinutes(10));
+        aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
         aip12 = new AIP(aip1);
         aip1 = repository.save(aip1);
         UniformResourceName version2 = UniformResourceName.fromString(aip12.getIpId());
@@ -76,23 +76,23 @@ public class DAOTest extends AbstractDaoTransactionalTest {
         aip12 = repository.save(aip12);
         aip2 = new AIP(AipType.COLLECTION).generateRandomAIP();
         aip2.setState(AIPState.PENDING);
-        aip2.setSubmissionDate(LocalDateTime.now().minusMinutes(20));
-        aip2.getLastEvent().setDate(LocalDateTime.now().minusMinutes(20));
+        aip2.setSubmissionDate(OffsetDateTime.now().minusMinutes(20));
+        aip2.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(20));
         aip2 = repository.save(aip2);
         aip3 = new AIP(AipType.COLLECTION).generateRandomAIP();
         aip3.setState(AIPState.DELETED);
-        aip3.setSubmissionDate(LocalDateTime.now().minusMinutes(30));
-        aip3.getLastEvent().setDate(LocalDateTime.now().minusMinutes(30));
+        aip3.setSubmissionDate(OffsetDateTime.now().minusMinutes(30));
+        aip3.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(30));
         aip3 = repository.save(aip3);
         aip4 = new AIP(AipType.COLLECTION).generateRandomAIP();
         aip4.setState(AIPState.STORAGE_ERROR);
-        aip4.setSubmissionDate(LocalDateTime.now().minusMinutes(40));
-        aip4.getLastEvent().setDate(LocalDateTime.now().minusMinutes(40));
+        aip4.setSubmissionDate(OffsetDateTime.now().minusMinutes(40));
+        aip4.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(40));
         aip4 = repository.save(aip4);
         aip5 = new AIP(AipType.COLLECTION).generateRandomAIP();
         aip5.setState(AIPState.STORED);
-        aip5.setSubmissionDate(LocalDateTime.now().minusMinutes(50));
-        aip5.getLastEvent().setDate(LocalDateTime.now().minusMinutes(50));
+        aip5.setSubmissionDate(OffsetDateTime.now().minusMinutes(50));
+        aip5.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(50));
         aip5 = repository.save(aip5);
     }
 

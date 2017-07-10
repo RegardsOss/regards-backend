@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -15,17 +16,17 @@ public class Event {
 
     private String comment;
 
-    private LocalDateTime eventDate;
+    private OffsetDateTime eventDate;
 
     private Event() {
     }
 
     public Event(String pComment) {
         comment = pComment;
-        eventDate = LocalDateTime.now();
+        eventDate = OffsetDateTime.now();
     }
 
-    public Event(String pComment, LocalDateTime pDate) {
+    public Event(String pComment, OffsetDateTime pDate) {
         comment = pComment;
         eventDate = pDate;
     }
@@ -41,11 +42,11 @@ public class Event {
     }
 
     @Column
-    public LocalDateTime getDate() {
+    public OffsetDateTime getDate() {
         return eventDate;
     }
 
-    public void setDate(LocalDateTime pDate) {
+    public void setDate(OffsetDateTime pDate) {
         eventDate = pDate;
     }
 

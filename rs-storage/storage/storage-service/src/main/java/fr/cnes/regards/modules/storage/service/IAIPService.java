@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public interface IAIPService {
      *            pageable object
      * @return filtered page of AIP
      */
-    Page<AIP> retrieveAIPs(AIPState pState, LocalDateTime pFrom, LocalDateTime pTo, Pageable pPageable);
+    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable);
 
     /**
      * @param pAIP

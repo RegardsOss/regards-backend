@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,10 +76,10 @@ public class AIPService implements IAIPService {
     }
 
     /**
-     * two {@link LocalDateTime} are here considered equals to the second
+     * two {@link OffsetDateTime} are here considered equals to the second
      */
     @Override
-    public Page<AIP> retrieveAIPs(AIPState pState, LocalDateTime pFrom, LocalDateTime pTo, Pageable pPageable) { // NOSONAR
+    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable) { // NOSONAR
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {

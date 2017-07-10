@@ -8,7 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime ;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -138,14 +138,14 @@ public class IOTest {
         // timeAxis
         Map<String, Object> timeAxis = new LinkedTreeMap<>();
         Map<String, Object> coverageTA = new LinkedTreeMap<>();
-        List<List<LocalDateTime>> value = new ArrayList<>();
-        List<LocalDateTime> value1 = new ArrayList<>();
-        value1.add(LocalDateTime.parse("2014-01-01T10:23:00"));
-        value1.add(LocalDateTime.parse("2014-01-01T10:25:00"));
+        List<List<OffsetDateTime >> value = new ArrayList<>();
+        List<OffsetDateTime > value1 = new ArrayList<>();
+        value1.add(OffsetDateTime .parse("2014-01-01T10:23:00Z"));
+        value1.add(OffsetDateTime .parse("2014-01-01T10:25:00Z"));
         value.add(value1);
-        List<LocalDateTime> value2 = new ArrayList<>();
-        value2.add(LocalDateTime.parse("2014-01-01T11:23:00"));
-        value2.add(LocalDateTime.parse("2014-01-01T11:25:00"));
+        List<OffsetDateTime > value2 = new ArrayList<>();
+        value2.add(OffsetDateTime .parse("2014-01-01T11:23:00Z"));
+        value2.add(OffsetDateTime .parse("2014-01-01T11:25:00Z"));
         value.add(value2);
         coverageTA.put("value", value);
         Map<String, Object> trs = new LinkedTreeMap<>();
@@ -205,16 +205,16 @@ public class IOTest {
         pi1.setAdditional(additionnal);
         pi1.setFacility("HST");
         List<Event> history = new ArrayList<>();
-        history.add(new Event("acquisitionoftheobservation", LocalDateTime.parse("2014-01-01T23:10:05")));
-        history.add(new Event("astrometrycalibration", LocalDateTime.parse("2014-01-02T23:10:05")));
+        history.add(new Event("acquisitionoftheobservation", OffsetDateTime.parse("2014-01-01T23:10:05Z")));
+        history.add(new Event("astrometrycalibration", OffsetDateTime.parse("2014-01-02T23:10:05Z")));
         history.add(new Event("receivedinformationfromtheproducertothearchive",
-                LocalDateTime.parse("2014-02-01T23:10:05")));
-        history.add(new Event("AIPiscreated", LocalDateTime.parse("2014-02-01T23:30:05")));
-        history.add(new Event("AIPisstored", LocalDateTime.parse("2014-02-02T23:10:05")));
-        history.add(new Event("AIPisarchived", LocalDateTime.parse("2014-02-03T23:10:05")));
-        history.add(new Event("HSTMissionislinkedtoAIP", LocalDateTime.parse("2014-02-08T23:10:05")));
-        history.add(new Event("HSTProposalislinkedtoAIP", LocalDateTime.parse("2014-02-08T23:10:05")));
-        history.add(new Event("Informationaddedaboutfilter", LocalDateTime.parse("2014-02-18T23:10:05")));
+                OffsetDateTime.parse("2014-02-01T23:10:05Z")));
+        history.add(new Event("AIPiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z")));
+        history.add(new Event("AIPisstored", OffsetDateTime.parse("2014-02-02T23:10:05Z")));
+        history.add(new Event("AIPisarchived", OffsetDateTime.parse("2014-02-03T23:10:05Z")));
+        history.add(new Event("HSTMissionislinkedtoAIP", OffsetDateTime.parse("2014-02-08T23:10:05Z")));
+        history.add(new Event("HSTProposalislinkedtoAIP", OffsetDateTime.parse("2014-02-08T23:10:05Z")));
+        history.add(new Event("Informationaddedaboutfilter", OffsetDateTime.parse("2014-02-18T23:10:05Z")));
         pi1.setHistory(history);
         pdi1.setProvenanceInformation(pi1);
         // END OF ProvenanceInformation 1
@@ -228,7 +228,7 @@ public class IOTest {
         // accessRightInformation 1
         AccessRightInformation ari1 = new AccessRightInformation();
         ari1.setDataRights("secure");
-        ari1.setPublicReleaseDate(LocalDateTime.parse("2017-01-01T01:00:00"));
+        ari1.setPublicReleaseDate(OffsetDateTime.parse("2017-01-01T01:00:00Z"));
         ari1.setPublisherDID("<regards_id>");
         ari1.setPublisherID("<sip_id>");
         pdi1.setAccesRightInformation(ari1);
@@ -261,8 +261,8 @@ public class IOTest {
         ProvenanceInformation pi2 = new ProvenanceInformation();
         pi2.setFacility("CNESarchive");
         List<Event> history2 = new ArrayList<>();
-        history2.add(new Event("thequicklookiscreated", LocalDateTime.parse("2014-02-01T23:30:05")));
-        history2.add(new Event("thequicklookisstored", LocalDateTime.parse("2014-01-02T23:10:05")));
+        history2.add(new Event("thequicklookiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z")));
+        history2.add(new Event("thequicklookisstored", OffsetDateTime.parse("2014-01-02T23:10:05Z")));
         pi2.setHistory(history2);
         pdi2.setProvenanceInformation(pi2);
         // END OF ProvenanceInformation 2
@@ -275,7 +275,7 @@ public class IOTest {
         // accessRightInformation 2
         AccessRightInformation ari2 = new AccessRightInformation();
         ari2.setDataRights("public");
-        ari2.setPublicReleaseDate(LocalDateTime.parse("2014-01-02T23:10:05"));
+        ari2.setPublicReleaseDate(OffsetDateTime.parse("2014-01-02T23:10:05Z"));
         ari2.setPublisherDID("<regards_id>");
         ari2.setPublisherID("<regards_id>");
         pdi2.setAccesRightInformation(ari2);
