@@ -148,11 +148,12 @@ public class LockedState extends AbstractDeletableState {
      * modules.accessrights.domain.instance.Account, java.lang.String)
      */
     @Override
-    public void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
-        validateToken(pAccount.getEmail(), pToken);
-        pAccount.setStatus(AccountStatus.ACTIVE);
-        accountService.updateAccount(pAccount.getId(), pAccount);
-        getAccountUnlockTokenService().deleteAllByAccount(pAccount);
+    public void performUnlockAccount(final Account account, final String pToken) throws EntityException {
+        validateToken(account.getEmail(), pToken);
+        account.setStatus(AccountStatus.ACTIVE);
+        accountService.updateAccount(account.getId(), account);
+        accountService.resetAuthenticationFailedCounter(account.getId());
+        getAccountUnlockTokenService().deleteAllByAccount(account);
     }
 
     /**
