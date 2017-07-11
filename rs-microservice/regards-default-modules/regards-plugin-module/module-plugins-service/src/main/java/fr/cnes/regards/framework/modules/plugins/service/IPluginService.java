@@ -45,6 +45,9 @@ public interface IPluginService {
      */
     List<PluginMetaData> getPluginsByType(Class<?> pInterfacePluginType);
 
+    boolean canInstantiate(Long pluginConfigurationId)
+            throws ModuleException;
+
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
