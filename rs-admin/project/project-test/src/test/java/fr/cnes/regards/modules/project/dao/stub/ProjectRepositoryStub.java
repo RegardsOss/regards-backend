@@ -52,4 +52,9 @@ public class ProjectRepositoryStub extends JpaRepositoryStub<Project> implements
                 .addAll(this.entities.stream().filter(project -> project.isPublic()).collect(Collectors.toList()));
         return new PageImpl<>(publicProjects);
     }
+
+    @Override
+    public List<Project> findByIsDeletedFalse() {
+        return entities.stream().filter(e->!e.isDeleted()).collect(Collectors.toList());
+    }
 }

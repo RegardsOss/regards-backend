@@ -94,17 +94,17 @@ public class AccountService implements IAccountService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-    * Constructor
-    * @param pAccountRepository account repository
-    * @param passwordRegex password regex
-    * @param passwordRules password rules
-    * @param accountPasswordValidityDuration account password validity duration
-    * @param accountValidityDuration account validity duration
-    * @param rootAdminUserLogin root admin user login
-    * @param rootAdminUserPassword root admin user password
-    * @param thresholdFailedAuthentication threshold faild autentication
-    * @param pRuntimeTenantResolver runtime tenant resolver
-    */
+     * Constructor
+     * @param pAccountRepository account repository
+     * @param passwordRegex password regex
+     * @param passwordRules password rules
+     * @param accountPasswordValidityDuration account password validity duration
+     * @param accountValidityDuration account validity duration
+     * @param rootAdminUserLogin root admin user login
+     * @param rootAdminUserPassword root admin user password
+     * @param thresholdFailedAuthentication threshold faild autentication
+     * @param pRuntimeTenantResolver runtime tenant resolver
+     */
     public AccountService(final IAccountRepository pAccountRepository, //NOSONAR
             @Value("${regards.accounts.password.regex}") final String passwordRegex,
             @Value("${regards.accounts.password.rules}") final String passwordRules,
@@ -133,7 +133,7 @@ public class AccountService implements IAccountService {
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
             final Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                    rootAdminUserPassword);
+                                                rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             account.setExternal(false);
@@ -231,7 +231,7 @@ public class AccountService implements IAccountService {
      * java.lang.String)
      */
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) {
+    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
 
         final Optional<Account> toValidate = accountRepository.findOneByEmail(pEmail);
 
@@ -239,23 +239,27 @@ public class AccountService implements IAccountService {
             return false;
         }
 
+        Account accountToValidate = toValidate.get();
+
         // Check password validity and account active status.
-        final boolean activeAccount = toValidate.get().getStatus().equals(AccountStatus.ACTIVE);
-        final boolean validPassword = toValidate.get().getPassword().equals(EncryptionUtils.encryptPassword(pPassword));
+        final boolean activeAccount = accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
+        final boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(pPassword));
 
         // If password is invalid
         if (!validPassword && !runtimeTenantResolver.isInstance()) {
             // Increment password error counter and update account
-            toValidate.get().setAuthenticationFailedCounter(toValidate.get().getAuthenticationFailedCounter() + 1);
+            accountToValidate.setAuthenticationFailedCounter(accountToValidate.getAuthenticationFailedCounter() + 1);
             // If max error reached, lock account
-            if (toValidate.get().getAuthenticationFailedCounter() > thresholdFailedAuthentication) {
-                toValidate.get().setStatus(AccountStatus.LOCKED);
+            if (accountToValidate.getAuthenticationFailedCounter() > thresholdFailedAuthentication) {
+                accountToValidate.setStatus(AccountStatus.LOCKED);
                 try {
-                    updateAccount(toValidate.get().getId(), toValidate.get());
+                    updateAccount(accountToValidate.getId(), accountToValidate);
                 } catch (final EntityException e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
+        } else {
+            resetAuthenticationFailedCounter(accountToValidate.getId());
         }
         return activeAccount && validPassword;
     }
@@ -293,9 +297,25 @@ public class AccountService implements IAccountService {
     public void changePassword(final Long pId, final String pEncryptPassword) throws EntityNotFoundException {
         final Account toChange = retrieveAccount(pId);
         toChange.setPassword(pEncryptPassword);
-        toChange.setAuthenticationFailedCounter(0L);
+        resetAuthenticationFailedCounter(toChange);
         toChange.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(toChange);
+    }
+
+    @Override
+    public void resetAuthenticationFailedCounter(Long id) throws EntityNotFoundException {
+        Account account = retrieveAccount(id);
+        resetAuthenticationFailedCounter(account);
+        accountRepository.save(account);
+    }
+
+    /**
+     * Reset the authentication failed counter of an Account without explicitly saving changes into db.
+     *
+     * @param account Account which authentication failed counter is to reset
+     */
+    private void resetAuthenticationFailedCounter(Account account) {
+        account.setAuthenticationFailedCounter(0L);
     }
 
     @Scheduled(cron = "${regards.accounts.validity.check.cron}")
@@ -312,10 +332,9 @@ public class AccountService implements IAccountService {
         if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
             final LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
-            toCheck.stream()
-                    .filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null)
-                            && a.getPasswordUpdateDate().isBefore(minValidityDate))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).forEach(accountRepository::save);
+            toCheck.stream().filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null) && a
+                    .getPasswordUpdateDate().isBefore(minValidityDate)).peek(a -> a.setStatus(AccountStatus.INACTIVE))
+                    .forEach(accountRepository::save);
         }
     }
 

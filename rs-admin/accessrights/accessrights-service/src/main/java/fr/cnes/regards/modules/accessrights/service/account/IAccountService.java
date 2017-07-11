@@ -119,7 +119,7 @@ public interface IAccountService {
      * @return <code>true</code> if the password is valid, else <code>false</code>
      * @throws EntityException
      */
-    boolean validatePassword(String pEmail, String pPassword);
+    boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException;
 
     /**
      * Validate the password according to the regex provided by file. Mainly used by create and update methods so an
@@ -159,5 +159,12 @@ public interface IAccountService {
      * @throws EntityNotFoundException if no account of passed id could be found
      */
     void changePassword(Long pId, String pEncryptPassword) throws EntityNotFoundException;
+
+    /**
+     * Allows to reset an account Authentication Failed Counter
+     * @param id
+     * @throws EntityNotFoundException
+     */
+    void resetAuthenticationFailedCounter(Long id) throws EntityNotFoundException;
 
 }
