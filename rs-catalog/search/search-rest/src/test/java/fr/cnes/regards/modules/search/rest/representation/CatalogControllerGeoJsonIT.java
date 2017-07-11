@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -70,6 +71,9 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IUserClient userClient;
+
+    @Autowired
+    private IAccessGroupClient groupClient;
 
     /**
      * ElasticSearch repository
@@ -116,9 +120,13 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Before
     public void setUp() throws Exception {
+
         // Mock clients
         Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
                 .thenReturn(CatalogControllerTestUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
+
+        Mockito.when(groupClient.retrieveAccessGroupsList(Mockito.eq(true), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(CatalogControllerTestUtils.PUBLIC_USER_CLIENT_RESPONSE);
 
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(CatalogControllerTestUtils.USER_CLIENT_RESPONSE);

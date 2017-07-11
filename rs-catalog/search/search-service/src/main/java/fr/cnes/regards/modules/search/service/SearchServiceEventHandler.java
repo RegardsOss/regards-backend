@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupAssociationEvent;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupDissociationEvent;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupPublicEvent;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 
 /**
  * @author Marc Sordi
@@ -23,15 +23,15 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClie
 @Component
 public class SearchServiceEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
-    private final IAccessGroupClientService accessGroupClientService;
+    private final IAccessGroupCache accessGroupCache;
 
     private final ISubscriber subscriber;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public SearchServiceEventHandler(IAccessGroupClientService accessGroupClientService, ISubscriber subscriber,
+    public SearchServiceEventHandler(IAccessGroupCache accessGroupClientService, ISubscriber subscriber,
             IRuntimeTenantResolver runtimeTenantResolver) {
-        this.accessGroupClientService = accessGroupClientService;
+        this.accessGroupCache = accessGroupClientService;
         this.subscriber = subscriber;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
@@ -55,7 +55,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
         public void handle(TenantWrapper<AccessGroupAssociationEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                accessGroupClientService.cleanAccessGroups(wrapper.getContent().getUserEmail(), wrapper.getTenant());
+                accessGroupCache.cleanAccessGroups(wrapper.getContent().getUserEmail(), wrapper.getTenant());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -74,7 +74,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
         public void handle(TenantWrapper<AccessGroupDissociationEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                accessGroupClientService.cleanAccessGroups(wrapper.getContent().getUserEmail(), wrapper.getTenant());
+                accessGroupCache.cleanAccessGroups(wrapper.getContent().getUserEmail(), wrapper.getTenant());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -93,7 +93,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
         public void handle(TenantWrapper<AccessGroupPublicEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                accessGroupClientService.cleanPublicAccessGroups(wrapper.getTenant());
+                accessGroupCache.cleanPublicAccessGroups(wrapper.getTenant());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

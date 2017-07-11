@@ -203,7 +203,8 @@ public class SampleDataUtils {
     /**
      * A query with a term "groups"
      */
-    public static final String QUERY_WITH_GROUPS = INTEGER_FIELD + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
+    public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES)
+            + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
 
     /**
      * A dummy assembler for collections

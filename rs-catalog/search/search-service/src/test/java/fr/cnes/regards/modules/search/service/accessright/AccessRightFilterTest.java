@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttribut
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.domain.Terms;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupClientService;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupCache;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**
@@ -85,8 +85,7 @@ public class AccessRightFilterTest {
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
-        IAccessGroupClientService accessGroupCache = new AccessGroupClientService(userClient,
-                Mockito.mock(IAccessGroupClient.class));
+        IAccessGroupCache accessGroupCache = new AccessGroupCache(userClient, Mockito.mock(IAccessGroupClient.class));
 
         openSearchService = new OpenSearchService(finder);
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);

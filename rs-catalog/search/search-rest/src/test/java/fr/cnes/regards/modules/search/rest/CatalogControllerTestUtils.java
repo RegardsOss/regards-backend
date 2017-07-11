@@ -149,6 +149,9 @@ public class CatalogControllerTestUtils {
     public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
+    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity
+            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
+
     public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 

@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
  *
  * @author Xavier-Alexandre Brochard
  */
-public interface IAccessGroupClientService { //NOSONAR
+public interface IAccessGroupCache { //NOSONAR
 
     /**
      * The call will first check the cache "accessgroups" before actually invoking the method and then caching the
@@ -36,17 +36,17 @@ public interface IAccessGroupClientService { //NOSONAR
     void cleanAccessGroups(String userEmail, String tenant);
 
     /**
-     *
-     * @param tenant tenant
-     * @return list of public groups
-     */
+    *
+    * @param tenant tenant
+    * @return list of public groups
+    */
     @Cacheable(value = "publicgroups")
     List<AccessGroup> getPublicAccessGroups(String tenant);
 
     /**
-     * Clean cache for specified tenant
-     * @param tenant tenant
-     */
+    * Clean cache for specified tenant
+    * @param tenant tenant
+    */
     @CacheEvict(value = "publicgroups")
     void cleanPublicAccessGroups(String tenant);
 }

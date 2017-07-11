@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.search.domain.Terms;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupClientService;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 
 /**
  * Implementation of {@link IAccessRightFilter}.
@@ -46,7 +46,7 @@ public class AccessRightFilter implements IAccessRightFilter {
     /**
      * Provides access groups for a user with cache facilities. Autowired by Spring.
      */
-    private final IAccessGroupClientService cache;
+    private final IAccessGroupCache cache;
 
     /**
      * Get current tenant at runtime. Autworied by Spring.
@@ -55,18 +55,12 @@ public class AccessRightFilter implements IAccessRightFilter {
 
     private final IProjectUsersClient projectUserClient;
 
-    /**
-    * Constructor
-    * @param pCache the cache providing access groups
-    * @param pRuntimeTenantResolver get current tenant at runtime
-    * @param pProjectUserClient Feign client for project users
-    */
-    public AccessRightFilter(IAccessGroupClientService pCache, IRuntimeTenantResolver pRuntimeTenantResolver,
+    public AccessRightFilter(IAccessGroupCache pCache, IRuntimeTenantResolver pRuntimeTenantResolver,
             IProjectUsersClient pProjectUserClient) {
         super();
-        cache = pCache;
-        runtimeTenantResolver = pRuntimeTenantResolver;
-        projectUserClient = pProjectUserClient;
+        this.cache = pCache;
+        this.runtimeTenantResolver = pRuntimeTenantResolver;
+        this.projectUserClient = pProjectUserClient;
     }
 
     /*

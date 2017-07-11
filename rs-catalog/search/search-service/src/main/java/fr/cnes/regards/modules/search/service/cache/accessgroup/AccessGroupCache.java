@@ -3,12 +3,15 @@
  */
 package fr.cnes.regards.modules.search.service.cache.accessgroup;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -27,12 +30,12 @@ import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
  */
 @Service
 @MultitenantTransactional
-public class AccessGroupClientService implements IAccessGroupClientService {
+public class AccessGroupCache implements IAccessGroupCache {
 
     /**
      * Logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupClientService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupCache.class);
 
     /**
      * Feign client returning all access groups for a user. Autowired by Spring.
@@ -44,7 +47,7 @@ public class AccessGroupClientService implements IAccessGroupClientService {
      */
     private final IAccessGroupClient groupClient;
 
-    public AccessGroupClientService(IUserClient userClient, IAccessGroupClient groupClient) {
+    public AccessGroupCache(IUserClient userClient, IAccessGroupClient groupClient) {
         this.userClient = userClient;
         this.groupClient = groupClient;
     }
@@ -84,9 +87,12 @@ public class AccessGroupClientService implements IAccessGroupClientService {
         try {
             FeignSecurityManager.asSystem();
 
-            Collection<Resource<AccessGroup>> content = groupClient.retrieveAccessGroupsList(true, 0, 0).getBody()
-                    .getContent();
-            return HateoasUtils.unwrapCollection(content);
+            ResponseEntity<PagedResources<Resource<AccessGroup>>> resources = groupClient
+                    .retrieveAccessGroupsList(true, 0, 0);
+            if (resources == null) {
+                return new ArrayList<>();
+            }
+            return HateoasUtils.unwrapCollection(resources.getBody().getContent());
         } finally {
             FeignSecurityManager.reset();
         }

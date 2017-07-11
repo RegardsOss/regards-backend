@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -45,6 +46,11 @@ public class CatalogITConfiguration {
     @Bean
     public IUserClient userClient() {
         return Mockito.mock(IUserClient.class);
+    }
+
+    @Bean
+    public IAccessGroupClient groupClient() {
+        return Mockito.mock(IAccessGroupClient.class);
     }
 
     @Bean
