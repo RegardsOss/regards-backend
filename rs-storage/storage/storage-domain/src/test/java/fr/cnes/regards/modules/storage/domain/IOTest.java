@@ -5,10 +5,11 @@ package fr.cnes.regards.modules.storage.domain;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.OffsetDateTime ;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -138,14 +139,14 @@ public class IOTest {
         // timeAxis
         Map<String, Object> timeAxis = new LinkedTreeMap<>();
         Map<String, Object> coverageTA = new LinkedTreeMap<>();
-        List<List<OffsetDateTime >> value = new ArrayList<>();
-        List<OffsetDateTime > value1 = new ArrayList<>();
-        value1.add(OffsetDateTime .parse("2014-01-01T10:23:00Z"));
-        value1.add(OffsetDateTime .parse("2014-01-01T10:25:00Z"));
+        List<List<OffsetDateTime>> value = new ArrayList<>();
+        List<OffsetDateTime> value1 = new ArrayList<>();
+        value1.add(OffsetDateTime.parse("2014-01-01T10:23:00Z"));
+        value1.add(OffsetDateTime.parse("2014-01-01T10:25:00Z"));
         value.add(value1);
-        List<OffsetDateTime > value2 = new ArrayList<>();
-        value2.add(OffsetDateTime .parse("2014-01-01T11:23:00Z"));
-        value2.add(OffsetDateTime .parse("2014-01-01T11:25:00Z"));
+        List<OffsetDateTime> value2 = new ArrayList<>();
+        value2.add(OffsetDateTime.parse("2014-01-01T11:23:00Z"));
+        value2.add(OffsetDateTime.parse("2014-01-01T11:25:00Z"));
         value.add(value2);
         coverageTA.put("value", value);
         Map<String, Object> trs = new LinkedTreeMap<>();

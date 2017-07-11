@@ -43,6 +43,7 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards</artifactId>
 		</dependency>
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>gson-regards-starter</artifactId>
