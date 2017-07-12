@@ -54,8 +54,9 @@ public class RegardsInternalAuthenticationPluginTest {
         final List<PluginParameter> parameters = new ArrayList<>();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class, Arrays.asList(
-                    "fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
+            plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class,
+                                           Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"),
+                                           new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException e) {
             Assert.fail();
@@ -73,6 +74,7 @@ public class RegardsInternalAuthenticationPluginTest {
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
+    @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Purpose("Check a valid authentication throught the Regards internal authentication system")
     @Test
     public void testValidAuthentication() throws EntityNotFoundException {
@@ -111,6 +113,7 @@ public class RegardsInternalAuthenticationPluginTest {
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
+    @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Test
     public void testErrorAuthentication() throws EntityNotFoundException {
 
@@ -146,6 +149,7 @@ public class RegardsInternalAuthenticationPluginTest {
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
+    @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Test
     public void testRequestErrorAuthentication() throws EntityNotFoundException {
 
@@ -182,6 +186,7 @@ public class RegardsInternalAuthenticationPluginTest {
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
+    @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Test
     public void testRequestErrorAuthenticationException() throws EntityNotFoundException {
 
