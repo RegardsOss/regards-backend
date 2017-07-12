@@ -21,24 +21,36 @@ pipeline {
 
     stages {
         stage('Clean & Prepare') {
-            sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent'
+            steps {
+                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent'
+            }
         }
         stage('Compile') {
-            sh 'mvn -U -P delivery compile'
+            steps {
+                sh 'mvn -U -P delivery compile'
+            }
         }
         stage('Unit Testing') {
-            sh 'mvn -U -P delivery test -Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec'
+            steps {
+                sh 'mvn -U -P delivery test -Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec'
+            }
         }
         stage('Integration Testing') {
-            sh 'mvn -U -P delivery verify -Dspring.profiles.active=rabbit -Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec'
+            steps {
+                sh 'mvn -U -P delivery verify -Dspring.profiles.active=rabbit -Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec'
+            }
         }
         stage('Deploy') {
-            sh 'mvn -U -P delivery deploy'
+            steps {
+                sh 'mvn -U -P delivery deploy'
+            }
         }
         stage('sonar') {
-            sh 'mvn -U -P delivery sonar:sonar '
+            steps {
+                sh 'mvn -U -P delivery sonar:sonar '
+            }
         }
-    }
+
 //    -U
 //    -P delivery
 //    clean
@@ -49,4 +61,5 @@ pipeline {
 //    -Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec
 //    -Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec
 
+    }
 }
