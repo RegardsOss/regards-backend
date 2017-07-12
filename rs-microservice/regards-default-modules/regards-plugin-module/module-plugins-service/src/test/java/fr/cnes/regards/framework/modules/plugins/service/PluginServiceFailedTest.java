@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -193,7 +194,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
         Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
@@ -239,7 +240,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test(expected = ModuleException.class)
+    @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_CMP_PLG_100")
     @Purpose("Unable to load a plugin with a no active configuration")
     public void getPluginNotActiveConfiguration() throws ModuleException {
@@ -248,7 +249,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         aPluginConfiguration.setIsActive(Boolean.FALSE);
         aPluginConfiguration.setId(AN_ID);
 
-        Mockito.when(pluginConfRepositoryMocked.findOne(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId())).thenReturn(aPluginConfiguration);
 
         pluginServiceMocked.getPlugin(AN_ID);
 

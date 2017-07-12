@@ -45,6 +45,9 @@ public interface IPluginService {
      */
     List<PluginMetaData> getPluginsByType(Class<?> pInterfacePluginType);
 
+    boolean canInstantiate(Long pluginConfigurationId)
+            throws ModuleException;
+
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
@@ -64,12 +67,15 @@ public interface IPluginService {
      * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, PluginParameter...)}
      * so plugin configuration is reloaded from database before instanciation.
      *
+     * Use {@link IPluginService#getPlugin(Long, PluginParameter...)} instead.
+     *
      * @param <T> a plugin instance
      * @param pPluginConfiguration a {@link PluginConfiguration}.
-     *  @param dynamicPluginParameters list of dynamic {@link PluginParameter}
+     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
+    @Deprecated
     <T> T getPlugin(PluginConfiguration pPluginConfiguration, final PluginParameter... dynamicPluginParameters)
             throws ModuleException;
 

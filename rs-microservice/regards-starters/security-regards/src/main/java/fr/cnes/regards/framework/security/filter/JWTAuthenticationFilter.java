@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -62,7 +63,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
                 CorsFilter.allowCorsRequest(pRequest, pResponse, pFilterChain);
             } else {
-                final String message = "[REGARDS JWT FILTER] Missing authentication token";
+                final String message = "[REGARDS JWT FILTER] Missing authentication token on {}@{} from {}";
                 LOGGER.error(message);
                 pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             }
@@ -70,7 +71,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
-                final String message = "[REGARDS JWT FILTER] Invalid authentication token";
+                final String message = "[REGARDS JWT FILTER] Invalid authentication token on {}@{} from {}";
                 LOGGER.error(message);
                 pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
@@ -84,6 +85,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 // Clear forced tenant if any
                 runtimeTenantResolver.clearTenant();
+
+                MDC.put("tenant", runtimeTenantResolver.getTenant());
+                MDC.put("username", authentication.getName());
 
                 LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 

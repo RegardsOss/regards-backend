@@ -26,6 +26,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
@@ -93,6 +95,8 @@ public class LogbackAppenderTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_ARC_100")
+    @Purpose("Send log as event for monitoring purpose")
     public void getOneLogInfo() throws InterruptedException {
         final String message = "Hello info message : " + defaultTenant;
         LOGGER.info(message);
@@ -116,6 +120,8 @@ public class LogbackAppenderTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_ARC_100")
+    @Purpose("Send log as event for monitoring purpose")
     public void getManyLogInfo() throws InterruptedException {
         LOGGER.info("Hello info message : {}", defaultTenant);
         LOGGER.info("Hello another info message : {}", defaultTenant);
@@ -157,6 +163,8 @@ public class LogbackAppenderTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_ARC_100")
+    @Purpose("Send log as event for monitoring purpose")
     public void getNoLogInfo() throws InterruptedException {
         LOGGER.debug("Hello");
 
@@ -169,6 +177,8 @@ public class LogbackAppenderTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_ARC_100")
+    @Purpose("Send log as event for monitoring purpose")
     public void getMonitoringLogEventMultiTenants() throws InterruptedException {
         final String msg2Send = "Hello I'am an event";
         LOGGER.info(msg2Send);
@@ -203,6 +213,8 @@ public class LogbackAppenderTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_CMP_ARC_100")
+    @Purpose("Send log as event for monitoring purpose")
     public void getMonitoringLogEvents() throws InterruptedException {
         final int n = 100;
         final String msg2Send = "Hello I'am an event";
