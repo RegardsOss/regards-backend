@@ -22,9 +22,9 @@ pipeline {
     stages {
         stage('Clean & Prepare') {
             steps {
-                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent' +
-                        'deploy sonar:sonar -Dspring.profiles.active=rabbit'+
-                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec' +
+                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
+                        'deploy sonar:sonar -Dspring.profiles.active=rabbit '+
+                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
                         '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec'
             }
         }
