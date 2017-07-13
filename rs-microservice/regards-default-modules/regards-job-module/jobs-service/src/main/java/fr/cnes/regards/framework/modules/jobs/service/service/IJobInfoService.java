@@ -15,6 +15,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 public interface IJobInfoService {
 
     /**
+     * Find Job info with highest priority
+     */
+    JobInfo findHighestPriorityPendingJob();
+
+
+    /**
      * Store the JobInfo into the database, and publish it on the broker message
      *
      *
@@ -22,7 +28,7 @@ public interface IJobInfoService {
      *            Store the new jobInfo in the database
      * @return the status of the new jobInfo
      */
-    JobInfo createJobInfo(JobInfo pJobInfo);
+    JobInfo createJob(JobInfo pJobInfo);
 
     /**
      * @return returns all jobs

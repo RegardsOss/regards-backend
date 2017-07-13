@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.service.manager.IJobHandler;
 
 /**
@@ -38,12 +38,12 @@ public class StoppingJobSubscriber implements IHandler<StoppingJobEvent> {
     @Override
     public void handle(final TenantWrapper<StoppingJobEvent> pStoppingJobEventWrapped) {
         final Long jobInfoId = pStoppingJobEventWrapped.getContent().getJobInfoId();
-        final StatusInfo jobInfoAborted = jobHandler.abort(jobInfoId);
-        if (jobInfoAborted.getJobStatus().equals(JobStatus.ABORTED)) {
+        final JobStatusInfo jobInfoAborted = jobHandler.abort(jobInfoId);
+        if (jobInfoAborted.getStatus().equals(JobStatus.ABORTED)) {
             LOG.info(String.format("Job [%d] correctly stopped", jobInfoId));
         } else {
             LOG.warn(String.format("Job [%d] state [%s] was not stopped correctly", jobInfoId,
-                                   jobInfoAborted.getJobStatus().toString()));
+                                   jobInfoAborted.getStatus().toString()));
         }
     }
 

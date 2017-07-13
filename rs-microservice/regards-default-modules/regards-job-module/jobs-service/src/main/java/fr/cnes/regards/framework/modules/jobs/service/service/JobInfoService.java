@@ -65,13 +65,23 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
+    public JobInfo findHighestPriorityPendingJob() {
+        return null;
+    }
+
+    @Override
+    public JobInfo createJob(JobInfo pJobInfo) {
+        return null;
+    }
+
+//    @Override
     public JobInfo createJobInfo(final JobInfo pJobInfo) {
         final JobInfo jobInfo = jobInfoRepository.save(pJobInfo);
         if (jobInfo != null) {
             try {
-                newJobPublisher.sendJob(jobInfo.getId());
+//                newJobPublisher.sendJob(jobInfo.getId());
             } catch (final RabbitMQVhostException e) {
-                jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
+                jobInfo.getStatus().setStatus(JobStatus.FAILED);
                 jobInfoRepository.save(jobInfo);
                 LOG.error("Failed to submit the new jobInfo to rabbit", e);
             }

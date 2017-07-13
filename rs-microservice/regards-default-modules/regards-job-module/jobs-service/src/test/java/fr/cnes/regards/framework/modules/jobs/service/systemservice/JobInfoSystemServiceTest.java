@@ -11,8 +11,7 @@ import org.mockito.Mockito;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
-import fr.cnes.regards.framework.modules.jobs.service.systemservice.JobInfoSystemService;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 
 /**
  *
@@ -47,7 +46,7 @@ public class JobInfoSystemServiceTest {
     public void testUpdateToDone() {
         final String pTenantId = "project1";
         final JobInfo jobInfo = new JobInfo();
-        jobInfo.setStatus(new StatusInfo());
+        jobInfo.setStatus(new JobStatusInfo());
         final long jobInfoId = 1L;
         Mockito.when(jobInfoRepository.findOne(jobInfoId)).thenReturn(jobInfo);
 

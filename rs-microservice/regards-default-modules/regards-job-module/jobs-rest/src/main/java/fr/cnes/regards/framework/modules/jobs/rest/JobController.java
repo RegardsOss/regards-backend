@@ -4,6 +4,7 @@
 package fr.cnes.regards.framework.modules.jobs.rest;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.Output;
+import fr.cnes.regards.framework.modules.jobs.domain.JobResult;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.service.JobInfoService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -135,12 +136,12 @@ public class JobController implements IResourceController<JobInfo> {
      */
     @ResourceAccess(description = "Retrieve the job's results", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/{jobId}/results", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Resource<Output>>> getJobResults(@PathVariable("jobId") final Long pJobInfoId)
+    public ResponseEntity<List<Resource<JobResult>>> getJobResults(@PathVariable("jobId") final Long pJobInfoId)
             throws EntityNotFoundException {
         final JobInfo jobInfo = jobInfoService.retrieveJobInfoById(pJobInfoId);
-        List<Resource<Output>> resources = null;
-        if (jobInfo.getResult() != null) {
-            resources = jobInfo.getResult().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
+        List<Resource<JobResult>> resources = null;
+        if (jobInfo.getResults() != null) {
+            resources = jobInfo.getResults().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
         }
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -151,12 +152,12 @@ public class JobController implements IResourceController<JobInfo> {
         if ((pElement != null) && (pElement.getId() != null)) {
             resource = resourceService.toResource(pElement);
             resourceService.addLink(resource, this.getClass(), "retrieveJobInfo", LinkRels.SELF,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(UUID.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveJobs", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "stopJob", "stop",
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(UUID.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "getJobResults", "results",
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(UUID.class, pElement.getId()));
         }
         return resource;
     }

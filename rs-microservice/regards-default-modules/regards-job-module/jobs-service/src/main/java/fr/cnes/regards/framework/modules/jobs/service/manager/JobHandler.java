@@ -3,14 +3,13 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service.manager;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.IEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.systemservice.IJobInfoSystemService;
@@ -115,8 +114,8 @@ public class JobHandler implements IJobHandler {
     }
 
     @Override
-    public StatusInfo abort(final Long pJobInfoId) {
-        StatusInfo resultingStatus = null;
+    public JobStatusInfo abort(final Long pJobInfoId) {
+        JobStatusInfo resultingStatus = null;
         final CoupleThreadTenantName tupleThreadTenant = threads.get(pJobInfoId);
         if (tupleThreadTenant != null) {
             final String tenantName = tupleThreadTenant.getTenantName();
@@ -131,9 +130,9 @@ public class JobHandler implements IJobHandler {
                     // Waiting the end of the process
                     thread.join();
                     // Set the job state to Aborted
-                    jobInfo.getStatus().setJobStatus(JobStatus.ABORTED);
+                    jobInfo.getStatus().setStatus(JobStatus.ABORTED);
                 } catch (final InterruptedException e) {
-                    jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
+                    jobInfo.getStatus().setStatus(JobStatus.FAILED);
                     LOG.error(String.format("Failed to interumpt the thread for jobInfo %s", jobInfo.toString()), e);
                     Thread.currentThread().interrupt();
                 }
@@ -146,18 +145,16 @@ public class JobHandler implements IJobHandler {
     }
 
     @Override
-    public StatusInfo execute(final String pTenant, final Long pJobInfoId) {
+    public JobStatusInfo execute(final String pTenant, final Long pJobInfoId) {
         final JobInfo jobInfo = jobInfoSystemService.findJobInfo(pTenant, pJobInfoId);
-        StatusInfo resultingStatus = null;
+        JobStatusInfo resultingStatus = null;
         if (jobInfo != null) {
             boolean hasFailed = true;
             IJob newJob = null;
             try {
                 newJob = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
                 // Add the queue event to the thread to let it send IEvent the current JobHandler
-                newJob.setQueueEvent(jobMonitor.getQueueEvent());
-                newJob.setJobInfoId(pJobInfoId);
-                newJob.setTenantName(pTenant);
+//                newJob.setId(pJobInfoId);
                 newJob.setParameters(jobInfo.getParameters());
                 newJob.setWorkspace(jobInfo.getWorkspace());
                 hasFailed = false;
@@ -171,14 +168,14 @@ public class JobHandler implements IJobHandler {
             } catch (final ClassNotFoundException e) {
                 LOG.error(String.format("Class not found %s", jobInfo.getClassName()), e);
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
-                LOG.error(String.format("Could not initialized job parameters id job=<%d>: %s", jobInfo.getId(),
+                LOG.error(String.format("Could not initialized job parameters id job=<%s>: %s", jobInfo.getId(),
                                         jobInfo.getParameters().toString()),
                           e);
             } finally {
                 if (hasFailed) {
-                    jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
+                    jobInfo.getStatus().setStatus(JobStatus.FAILED);
                 } else {
-                    jobInfo.getStatus().setJobStatus(JobStatus.RUNNING);
+                    jobInfo.getStatus().setStatus(JobStatus.RUNNING);
                 }
                 jobInfoSystemService.updateJobInfo(pTenant, jobInfo);
             }
@@ -272,9 +269,9 @@ public class JobHandler implements IJobHandler {
             final JobInfo jobInfo = jobInfoSystemService.findJobInfo(tenantName, jobInfoId);
             if (jobInfo != null) {
                 if (doneCorrectly) {
-                    jobInfo.getStatus().setJobStatus(JobStatus.ABORTED);
+                    jobInfo.getStatus().setStatus(JobStatus.ABORTED);
                 } else {
-                    jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
+                    jobInfo.getStatus().setStatus(JobStatus.FAILED);
                 }
             } else {
                 LOG.error(String.format("Unknow jobInfoId [%d] while shutting down threads", jobInfoId));

@@ -3,68 +3,45 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.Entity;
+import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import java.time.OffsetDateTime;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
+import org.hibernate.annotations.Type;
+
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * Store job status
- *
  * @author Léo Mieulet
  * @author Christophe Mertz
  */
-@Entity
-@Table(name = "t_job_status_info")
-@SequenceGenerator(name = "statusInfoSequence", initialValue = 1, sequenceName = "seq_job_status_info")
-public class StatusInfo implements IIdentifiable<Long> {
+@Embeddable
+public class JobStatusInfo {
 
     /**
-     * Job StatusInfo id
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "statusInfoSequence")
-    @Column(name = "id")
-    private Long id;
-
-    /**
-     * the job status
+     * Job status
      */
     @Column(name = "status", length = 16)
     @Enumerated(value = EnumType.STRING)
     private JobStatus status;
 
     /**
-     * Job StatusInfo description
+     * Date of current status update
      */
-    @Column(name = "description")
-    private String description;
+    @Column(name = "statusDate")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime statusDate;
 
     /**
-     * Job StatusInfo estimated date to job completion
+     * Estimated date to job completion
      */
     @Column(name = "estimatedCompletion")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime estimatedCompletion;
-
-    /**
-     * Job StatusInfo specify the date when the job should be expired
-     */
-    @Column(name = "expirationDate")
-    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime expirationDate;
 
     /**
      * the job advancement
@@ -75,7 +52,6 @@ public class StatusInfo implements IIdentifiable<Long> {
     /**
      * the job creation date
      */
-    @PastOrNow
     @Column(name = "startDate")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime startDate;
@@ -87,12 +63,14 @@ public class StatusInfo implements IIdentifiable<Long> {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
 
-    public String getDescription() {
-        return description;
-    }
+    /**
+     * In case of error, contains the stack trace
+     */
+    @Column(name = "stacktrace")
+    @Type(type = "text")
+    private String stackTrace;
 
-    public void setDescription(final String pDescription) {
-        description = pDescription;
+    public JobStatusInfo() {
     }
 
     public OffsetDateTime getEstimatedCompletion() {
@@ -101,14 +79,6 @@ public class StatusInfo implements IIdentifiable<Long> {
 
     public void setEstimatedCompletion(final OffsetDateTime pEstimatedCompletion) {
         estimatedCompletion = pEstimatedCompletion;
-    }
-
-    public OffsetDateTime getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(final OffsetDateTime pExpirationDate) {
-        expirationDate = pExpirationDate;
     }
 
     public int getPercentCompleted() {
@@ -127,12 +97,13 @@ public class StatusInfo implements IIdentifiable<Long> {
         startDate = pStartDate;
     }
 
-    public JobStatus getJobStatus() {
+    public JobStatus getStatus() {
         return status;
     }
 
-    public void setJobStatus(final JobStatus pStatus) {
+    public void setStatus(final JobStatus pStatus) {
         status = pStatus;
+        statusDate = OffsetDateTime.now();
     }
 
     public OffsetDateTime getStopDate() {
@@ -143,8 +114,15 @@ public class StatusInfo implements IIdentifiable<Long> {
         stopDate = pStopDate;
     }
 
-    @Override
-    public Long getId() {
-        return id;
+    public OffsetDateTime getStatusDate() {
+        return statusDate;
+    }
+
+    public String getStackTrace() {
+        return stackTrace;
+    }
+
+    public void setStackTrace(String stackTrace) {
+        this.stackTrace = stackTrace;
     }
 }

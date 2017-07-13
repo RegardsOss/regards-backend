@@ -14,8 +14,6 @@ import org.springframework.context.annotation.PropertySource;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.service.communication.INewJobPublisher;
 import fr.cnes.regards.framework.modules.jobs.service.communication.NewJobPublisher;
-import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.jobs.service.stub.JobInfoServiceStub;
 import fr.cnes.regards.framework.modules.jobs.service.stub.JobInfoSystemServiceStub;
 import fr.cnes.regards.framework.modules.jobs.service.systemservice.IJobInfoSystemService;
 
@@ -34,11 +32,11 @@ public class JobHandlerTestConfiguration {
         return new JobInfoSystemServiceStub();
     }
 
-    @Bean
-    @Primary
-    public IJobInfoService getJobInfoService() {
-        return new JobInfoServiceStub();
-    }
+//    @Bean
+//    @Primary
+//    public IJobInfoService getJobInfoService() {
+//        return new JobInfoServiceStub();
+//    }
 
     @Autowired
     public IPublisher publisher;

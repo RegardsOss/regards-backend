@@ -4,16 +4,15 @@
 package fr.cnes.regards.framework.modules.jobs.service.manager;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.EventType;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameters;
-import fr.cnes.regards.framework.modules.jobs.domain.Output;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobResult;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 
@@ -30,7 +29,7 @@ public class AJob extends AbstractJob {
             if (!Thread.currentThread().isInterrupted()) {
                 LOG.info("AJob: Waiting..");
                 try {
-                    sendEvent(EventType.JOB_PERCENT_COMPLETED, i * 10);
+//                    sendEvent(EventType.JOB_PERCENT_COMPLETED, i * 10);
                     Thread.sleep(800);
                 } catch (final InterruptedException e) {
                     LOG.warn("Thread interrupted, closing", e);
@@ -41,11 +40,7 @@ public class AJob extends AbstractJob {
                 return;
             }
         }
-        try {
-            sendEvent(EventType.SUCCEEDED);
-        } catch (final InterruptedException e) {
-            LOG.error("Failed to send success to parent thread", e);
-        }
+        //            sendEvent(EventType.SUCCEEDED);
     }
 
     @Override
@@ -55,13 +50,13 @@ public class AJob extends AbstractJob {
     }
 
     @Override
-    public List<Output> getResults() {
+    public Set<JobResult> getResults() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public StatusInfo getStatus() {
+    public JobStatusInfo getStatus() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -85,7 +80,7 @@ public class AJob extends AbstractJob {
     }
 
     @Override
-    public void setParameters(JobParameters pParameters)
+    public void setParameters(Set<JobParameter> pParameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         parameters = pParameters;
 

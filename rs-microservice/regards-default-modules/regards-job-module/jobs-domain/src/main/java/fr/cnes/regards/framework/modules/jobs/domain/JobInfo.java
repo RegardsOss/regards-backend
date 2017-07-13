@@ -3,36 +3,43 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import java.nio.file.Path;
-import java.util.List;
-
-import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.modules.jobs.domain.converters.JobOuputConverter;
-import fr.cnes.regards.framework.modules.jobs.domain.converters.PathConverter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 
 /**
  * Store Job Information
- *
  * @author Léo Mieulet
  * @author Christophe Mertz
  */
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_job_info")
-@SequenceGenerator(name = "jobInfoSequence", initialValue = 1, sequenceName = "seq_job_info")
-public class JobInfo implements IIdentifiable<Long> {
+@SequenceGenerator(name = "jobInfoSequence", sequenceName = "seq_job_info")
+public class JobInfo {
 
     /**
      * JobInfo id
@@ -40,7 +47,7 @@ public class JobInfo implements IIdentifiable<Long> {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "jobInfoSequence")
-    private Long id;
+    private UUID id;
 
     /**
      * Job priority
@@ -51,25 +58,42 @@ public class JobInfo implements IIdentifiable<Long> {
     /**
      * Job workspace
      */
-    @Column(name = "workspace", columnDefinition = "LONGVARCHAR")
-    @Convert(converter = PathConverter.class)
-    private Path workspace;
+    @Column
+    @Type(type = "text")
+    private String workspace;
 
     /**
-     * Job result (nullable)
+     * Job description
      */
-    @Column(name = "result", columnDefinition = "LONGVARCHAR")
-    @Convert(converter = JobOuputConverter.class)
-    private List<Output> result;
+    @Column(name = "description")
+    @Type(type = "text")
+    private String description;
+
+    /**
+     * Date when the job should be expired
+     */
+    @Column(name = "expirationDate")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime expirationDate;
+
+    /**
+     * Job results (nullable)
+     */
+    @ElementCollection
+    @CollectionTable(name = "t_job_result", joinColumns = @JoinColumn(name = "job_id"),
+            foreignKey = @ForeignKey(name = "fk_job_result"))
+    private Set<JobResult> results = new HashSet<>();
 
     /**
      * Job parameters
      */
-    @Column(name = "parameters", columnDefinition = "LONGVARCHAR")
-    private JobParameters parameters;
+    @ElementCollection
+    @CollectionTable(name = "t_job_parameters", joinColumns = @JoinColumn(name = "job_id"),
+            foreignKey = @ForeignKey(name = "fk_job_param"))
+    private Set<JobParameter> parameters = new HashSet<>();
 
     /**
-     * Job owner
+     * Job owner (its email)
      */
     @Column(name = "owner")
     private String owner;
@@ -83,15 +107,8 @@ public class JobInfo implements IIdentifiable<Long> {
     /**
      * Field characteristics of this job. Saved on cascade
      */
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "status_info", foreignKey = @ForeignKey(name = "FK_JOB_STATUS_INFO"))
-    private StatusInfo status;
-
-    /**
-     * When true, the job is done, results deleted, job metadata archived
-     */
-    @Column(name = "archived")
-    private Boolean archived;
+    @Embedded
+    private JobStatusInfo status = new JobStatusInfo();
 
     /**
      * Default constructor
@@ -100,96 +117,83 @@ public class JobInfo implements IIdentifiable<Long> {
         super();
     }
 
-    /**
-     *
-     * @param pJobConfiguration
-     *            the {@link JobConfiguration} to used
-     */
-    public JobInfo(final JobConfiguration pJobConfiguration) {
-        this();
-        className = pJobConfiguration.getClassName();
-        parameters = pJobConfiguration.getParameters();
-        owner = pJobConfiguration.getOwner();
-        status = pJobConfiguration.getStatusInfo();
-        workspace = pJobConfiguration.getWorkspace();
-        priority = pJobConfiguration.getPriority();
-        archived = Boolean.FALSE;
+    public JobInfo(Integer priority, String workspace, Set<JobParameter> parameters, String owner, String className,
+            JobStatusInfo status) {
+        this.priority = priority;
+        this.workspace = workspace;
+        this.parameters = parameters;
+        this.owner = owner;
+        this.className = className;
+        this.status = status;
     }
 
-    /**
-     * @param pId
-     *            the id to set
-     */
-    public void setId(final Long pId) {
+    public void updateStatus(JobStatus status) {
+        this.status.setStatus(status);
+        switch (status) {
+            case PENDING:
+                this.status.setPercentCompleted(0);
+                break;
+            case RUNNING:
+                this.status.setStartDate(OffsetDateTime.now());
+                break;
+            case FAILED:
+            case ABORTED:
+            case SUCCEEDED:
+                this.status.setStopDate(OffsetDateTime.now());
+                break;
+            default:
+        }
+    }
+
+    public void setId(UUID pId) {
         id = pId;
     }
 
-    /**
-     *
-     * @return job id
-     */
-    @Override
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    /**
-     * @param pPriority
-     *            the priority to set
-     */
-    public void setPriority(final int pPriority) {
+    public void setPriority(int pPriority) {
         priority = Integer.valueOf(pPriority);
     }
 
-    /**
-     * @param pParameters
-     *            the parameters to set
-     */
-    public void setParameters(final JobParameters pParameters) {
-        parameters = pParameters;
+    public void setParameters(Set<JobParameter> parameters) {
+        this.parameters = parameters;
     }
 
-    /**
-     * @param pOwner
-     *            the owner to set
-     */
-    public void setOwner(final String pOwner) {
+    public void setOwner(String pOwner) {
         owner = pOwner;
     }
 
-    /**
-     * @return the result
-     */
-    public List<Output> getResult() {
-        return result;
+    public Set<JobResult> getResults() {
+        return results;
     }
 
-    /**
-     * @param pResult
-     *            the result to set
-     */
-    public void setResult(final List<Output> pResult) {
-        result = pResult;
+    public void setResults(Set<JobResult> pResult) {
+        results = pResult;
     }
 
-    /**
-     * @return the parameters
-     */
-    public JobParameters getParameters() {
+    public Set<JobParameter> getParameters() {
         return parameters;
+    }
+
+    public OffsetDateTime getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(OffsetDateTime expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
     /**
      * A specific parameter
-     *
      * @return the workspace, where files are located
      */
     public Path getWorkspace() {
-        return workspace;
+        return (workspace == null) ? null : Paths.get(workspace);
     }
 
     /**
-     *
      * @return the owner
      */
     public String getOwner() {
@@ -204,31 +208,37 @@ public class JobInfo implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pClassName
-     *            the className to set
+     * @param pClassName the className to set
      */
-    public void setClassName(final String pClassName) {
+    public void setClassName(String pClassName) {
         className = pClassName;
     }
 
     /**
-     * @param pStatus
-     *            the status to set
+     * @param pStatus the status to set
      */
-    public void setStatus(final StatusInfo pStatus) {
+    public void setStatus(JobStatusInfo pStatus) {
         status = pStatus;
     }
 
-    public final Integer getPriority() {
+    public Integer getPriority() {
         return this.priority;
     }
 
-    public void setWorkspace(final Path pWorkspace) {
-        workspace = pWorkspace;
+    public void setWorkspace(Path workspace) {
+        this.workspace = (workspace == null) ? null : workspace.toString();
     }
 
-    public StatusInfo getStatus() {
+    public JobStatusInfo getStatus() {
         return status;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
@@ -240,18 +250,24 @@ public class JobInfo implements IIdentifiable<Long> {
     }
 
     /**
-     * @return job is archived
+     * A job has no business key
      */
-    public Boolean isArchived() {
-        return archived;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        JobInfo jobInfo = (JobInfo) o;
+
+        return id != null ? id.equals(jobInfo.id) : jobInfo.id == null;
     }
 
-    /**
-     * @param pArchived
-     *            set if job archived
-     */
-    public void setArchived(final boolean pArchived) {
-        archived = Boolean.valueOf(pArchived);
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
-
 }

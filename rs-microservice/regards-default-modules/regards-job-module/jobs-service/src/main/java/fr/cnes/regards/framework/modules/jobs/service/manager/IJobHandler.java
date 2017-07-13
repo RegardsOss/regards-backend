@@ -6,7 +6,7 @@ package fr.cnes.regards.framework.modules.jobs.service.manager;
 import java.util.Map;
 
 import fr.cnes.regards.framework.modules.jobs.domain.IEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 
 /**
  * Provide a job pool
@@ -34,7 +34,7 @@ public interface IJobHandler {
      *            abort the corresponding pJobInfo id
      * @return the updated status of that job
      */
-    StatusInfo abort(final Long pJobInfoId);
+    JobStatusInfo abort(final Long pJobInfoId);
 
     /**
      * Retrieve the jobInfo, then execute that job.
@@ -45,7 +45,7 @@ public interface IJobHandler {
      *            the jobInfo id we are running
      * @return the updated status of the jobInfo status
      */
-    StatusInfo execute(String pTenantName, Long pJobInfoId);
+    JobStatusInfo execute(String pTenantName, Long pJobInfoId);
 
     /**
      * Receive event from jobs (throw JobMonitor)

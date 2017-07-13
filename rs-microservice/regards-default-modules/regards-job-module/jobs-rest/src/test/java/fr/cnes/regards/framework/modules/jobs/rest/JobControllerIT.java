@@ -3,11 +3,9 @@
  */
 package fr.cnes.regards.framework.modules.jobs.rest;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -27,6 +25,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -84,12 +84,10 @@ public class JobControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString(String.format("%s", aJob.getPriority()))));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".className",
                                                         Matchers.hasToString(aJob.getClassName())));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".archived",
-                                                        Matchers.hasToString(aJob.isArchived().toString())));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.status",
-                                                        Matchers.hasToString(aJob.getStatus().getJobStatus().name())));
+                                                        Matchers.hasToString(aJob.getStatus().getStatus().name())));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.description",
-                                                        Matchers.hasToString(aJob.getStatus().getDescription())));
+                                                        Matchers.hasToString(aJob.getDescription())));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
 
         performGet(JobController.JOBS + "/{jobId}", token, expectations,
@@ -101,7 +99,7 @@ public class JobControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResult().size())));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResults().size())));
         performGet(JobController.JOBS + "/{jobId}/results", token, expectations,
                    String.format("unable to get job's result <%s>", aJob.getId()), aJob.getId());
     }
@@ -118,7 +116,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void deleteAJob() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        final Long jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
+        final UUID jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
 

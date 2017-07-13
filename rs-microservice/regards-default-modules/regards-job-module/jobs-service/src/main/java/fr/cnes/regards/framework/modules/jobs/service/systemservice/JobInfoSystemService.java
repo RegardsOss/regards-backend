@@ -44,7 +44,7 @@ public class JobInfoSystemService implements IJobInfoSystemService {
     public JobInfo updateJobInfoToDone(final Long pJobInfoId, final JobStatus pJobStatus, final String pTenantName) {
         final JobInfo jobInfo = findJobInfo(pTenantName, pJobInfoId);
         if (jobInfo != null) {
-            jobInfo.getStatus().setJobStatus(pJobStatus);
+            jobInfo.getStatus().setStatus(pJobStatus);
             jobInfo.getStatus().setStopDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
             updateJobInfo(pTenantName, jobInfo);
         } else {

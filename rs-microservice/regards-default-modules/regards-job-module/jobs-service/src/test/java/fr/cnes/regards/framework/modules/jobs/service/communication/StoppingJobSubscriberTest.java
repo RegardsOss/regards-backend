@@ -9,9 +9,7 @@ import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.StatusInfo;
-import fr.cnes.regards.framework.modules.jobs.service.communication.StoppingJobEvent;
-import fr.cnes.regards.framework.modules.jobs.service.communication.StoppingJobSubscriber;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.service.manager.IJobHandler;
 
 /**
@@ -40,8 +38,8 @@ public class StoppingJobSubscriberTest {
 
     @Test
     public void testGetJob() {
-        final StatusInfo statusInfo = new StatusInfo();
-        statusInfo.setJobStatus(JobStatus.RUNNING);
+        final JobStatusInfo statusInfo = new JobStatusInfo();
+        statusInfo.setStatus(JobStatus.RUNNING);
         Mockito.when(jobHandlerMock.abort(jobInfoIdExpected)).thenReturn(statusInfo);
         final TenantWrapper<StoppingJobEvent> value = new TenantWrapper<>(stoppingJobEvent, projectName);
         newJobPuller.handle(value);

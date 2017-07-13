@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.modules.jobs.client.JobInfoClient;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.Output;
+import fr.cnes.regards.framework.modules.jobs.domain.JobResult;
 
 /**
  * Hystrix fallback for Feign {@link JobInfoClient}. This default implementation is executed when the circuit is open or
@@ -48,7 +48,7 @@ public class JobInfoFallback implements JobInfoClient {
     }
 
     @Override
-    public ResponseEntity<List<Resource<Output>>> getJobResults(final Long pJobInfoId) {
+    public ResponseEntity<List<Resource<JobResult>>> getJobResults(final Long pJobInfoId) {
         // TODO Auto-generated method stub
         return null;
     }

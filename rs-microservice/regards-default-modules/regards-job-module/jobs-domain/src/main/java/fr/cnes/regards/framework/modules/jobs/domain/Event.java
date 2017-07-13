@@ -4,10 +4,9 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 /**
- * 
  * @author Léo Mieulet
- *
  */
+@Deprecated
 public class Event implements IEvent {
 
     /**
@@ -31,14 +30,10 @@ public class Event implements IEvent {
     private final String tenantName;
 
     /**
-     * @param pEventType
-     *            the event type
-     * @param pData
-     *            to store some data
-     * @param pJobInfoId
-     *            the jobInfo id
-     * @param pTenantName
-     *            the tenant name
+     * @param pEventType the event type
+     * @param pData to store some data
+     * @param pJobInfoId the jobInfo id
+     * @param pTenantName the tenant name
      */
     public Event(final EventType pEventType, final Object pData, final Long pJobInfoId, final String pTenantName) {
         super();

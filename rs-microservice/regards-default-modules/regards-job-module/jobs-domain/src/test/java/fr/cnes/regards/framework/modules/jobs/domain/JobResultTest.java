@@ -9,21 +9,19 @@ import java.net.URISyntaxException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.modules.jobs.domain.Output;
-
 /**
  *
  */
-public class OutputTest {
+public class JobResultTest {
 
     @Test
     public void testDomain() throws URISyntaxException {
-        final Output output = new Output();
+        final JobResult jobResult = new JobResult();
         final URI uri = new URI("some/string");
-        output.setData(uri);
+        jobResult.setUri(uri);
         final String mimeType = "data/pdf";
-        output.setMimeType(mimeType);
-        Assertions.assertThat(output.getData()).isEqualTo(uri);
-        Assertions.assertThat(output.getMimeType()).isEqualTo(mimeType);
+        jobResult.setMimeType(mimeType);
+        Assertions.assertThat(jobResult.getUri()).isEqualTo(uri);
+        Assertions.assertThat(jobResult.getMimeType()).isEqualTo(mimeType);
     }
 }

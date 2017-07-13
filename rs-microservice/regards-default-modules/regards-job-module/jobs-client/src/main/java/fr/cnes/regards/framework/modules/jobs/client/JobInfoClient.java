@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import feign.Headers;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.Output;
+import fr.cnes.regards.framework.modules.jobs.domain.JobResult;
 
 /**
  * Feign client exposing the jobs module endpoints to other microservices plugged through Eureka.
@@ -69,6 +69,6 @@ public interface JobInfoClient {
      * @return the list of result for that JobInfo
      */
     @RequestMapping(value = "/{jobId}/results", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<Resource<Output>>> getJobResults(@PathVariable("jobId") final Long pJobInfoId);
+    ResponseEntity<List<Resource<JobResult>>> getJobResults(@PathVariable("jobId") final Long pJobInfoId);
 
 }

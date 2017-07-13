@@ -4,7 +4,8 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
-import java.util.concurrent.BlockingQueue;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Léo Mieulet
@@ -12,14 +13,9 @@ import java.util.concurrent.BlockingQueue;
 public abstract class AbstractJob implements IJob {
 
     /**
-     * Share a queue between the job and the JobHandler
-     */
-    private BlockingQueue<IEvent> queueEvent;
-
-    /**
      * JobInfo id
      */
-    private Long jobInfoId;
+    private UUID id;
 
     /**
      * Store the tenantName
@@ -29,63 +25,23 @@ public abstract class AbstractJob implements IJob {
     /**
      * Job parameters
      */
-    protected JobParameters parameters;
+    protected Set<JobParameter> parameters;
 
     private Path workspace;
 
-    @Override
-    public void setQueueEvent(final BlockingQueue<IEvent> pQueueEvent) {
-        queueEvent = pQueueEvent;
-    }
-
-    /**
-     * Send an event to the JobHandler
-     *
-     * @param pEventType
-     *            the event type
-     * @param pValue
-     *            data related to the event
-     * @throws InterruptedException
-     *             If interrupted while waiting
-     */
-    protected void sendEvent(final EventType pEventType, final Object pValue) throws InterruptedException {
-        queueEvent.put(new Event(pEventType, pValue, jobInfoId, tenantName));
-    }
-
-    /**
-     * @param pEventType
-     *            the event type
-     * @throws InterruptedException
-     *             If interrupted while waiting
-     */
-    protected void sendEvent(final EventType pEventType) throws InterruptedException {
-        queueEvent.put(new Event(pEventType, null, jobInfoId, tenantName));
-    }
-
     /**
      * When the JobHandler creates this job, it saves the jobId
-     *
-     * @param pJobInfoId
      */
     @Override
-    public void setJobInfoId(final Long pJobInfoId) {
-        jobInfoId = pJobInfoId;
+    public void setId(final UUID pJobInfoId) {
+        id = pJobInfoId;
     }
 
     /**
      * @return the parameters
      */
-    public JobParameters getParameters() {
+    public Set<JobParameter> getParameters() {
         return parameters;
-    }
-
-    /**
-     * @param pTenantName
-     *            the tenantName to set
-     */
-    @Override
-    public void setTenantName(final String pTenantName) {
-        tenantName = pTenantName;
     }
 
     @Override
