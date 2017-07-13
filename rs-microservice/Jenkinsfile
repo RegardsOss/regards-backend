@@ -20,9 +20,9 @@ pipeline {
     }
 
     //define which branches should be deployed to archiva and analysed by sonar
-    environment {
-        MAIN_BRANCHES = ["master", "develop", "1.0-RELEASE"]
-    }
+//    environment {
+//        MAIN_BRANCHES = ["master", "develop", "1.0-RELEASE"]
+//    }
 
     stages {
         stage('Deploy & Analyze') {
