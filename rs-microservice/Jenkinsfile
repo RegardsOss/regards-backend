@@ -12,6 +12,8 @@
  * @author Sylvain VISSIERE-GUERINET
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
+def mainBranches = ["master", "develop", "1.0-RELEASE"]
+
 pipeline {
     agent any
     tools {
@@ -20,23 +22,30 @@ pipeline {
     }
 
     //define which branches should be deployed to archiva and analysed by sonar
-    def mainBranches=["master", "develop", "1.0-RELEASE"]
 
     stages {
-        stage('Clean & Prepare') {
+        stage('Deploy & Analyze') {
+            when {
+                expression { mainBranches.contains(env.BRANCH_NAME) }
+            }
             steps {
-                if(mainBranches.contains(env.BRANCH_NAME)) {
-                    sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
-                            'deploy sonar:sonar -Dspring.profiles.active=rabbit ' +
-                            '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
-                            '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
-                            '-Dsonar.branch=' + env.BRANCH_NAME
-                    // TODO build and push docker image
-                } else {
-                    sh 'mvn -U -P delivery clean verify sonar:sonar -Dspring.profiles.active=rabbit '
-                }
+                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
+                        'deploy sonar:sonar -Dspring.profiles.active=rabbit ' +
+                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
+                        '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
+                        '-Dsonar.branch=' + env.BRANCH_NAME
+                // TODO build and push docker image
             }
         }
+        stage('Verify') {
+            when {
+                expression { !mainBranches.contains(env.BRANCH_NAME) }
+            }
+            steps {
+                sh 'mvn -U -P delivery clean verify sonar:sonar -Dspring.profiles.active=rabbit '
+            }
+        }
+    }
 //        stage('Compile') {
 //            steps {
 //                sh 'mvn -U -P delivery compile'
@@ -63,5 +72,4 @@ pipeline {
 //            }
 //        }
 
-    }
 }
