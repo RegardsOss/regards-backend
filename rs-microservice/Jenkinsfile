@@ -27,7 +27,9 @@ pipeline {
     stages {
         stage('Deploy & Analyze') {
             when {
-                expression { env.MAIN_BRANCHES.contains(env.BRANCH_NAME) }
+                anyOf {
+                    branch 'master'; branch 'develop'; branch '1.0-RELEASE'
+                }
             }
             steps {
                 sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
@@ -40,7 +42,11 @@ pipeline {
         }
         stage('Verify') {
             when {
-                expression { !MAIN_BRANCHES.contains(env.BRANCH_NAME) }
+                not {
+                    anyOf {
+                        branch 'master'; branch 'develop'; branch '1.0-RELEASE'
+                    }
+                }
             }
             steps {
                 sh 'mvn -U -P delivery clean verify sonar:sonar -Dspring.profiles.active=rabbit '
