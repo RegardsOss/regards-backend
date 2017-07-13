@@ -26,7 +26,7 @@ pipeline {
                         'verify sonar:sonar -Dspring.profiles.active=rabbit '+
                         '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
                         '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
-                        '-Dsonar.branch=${env.BRANCH_NAME}'
+                        '-Dsonar.branch='+${env.BRANCH_NAME}
             }
         }
 //        stage('Compile') {
