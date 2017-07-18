@@ -34,6 +34,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -129,19 +133,32 @@ public class TemplateService implements ITemplateService {
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String noReplyAdress;
 
+    private final String microserviceName;
+
+    /**
+     * AMQP instance message subscriber
+     */
+    private final IInstanceSubscriber instanceSubscriber;
+
     /**
      *
-     * @param pTemplateRepository template repository
-     * @param pTenantResolver tenant resolver
-     * @param pRuntimeTenantResolver runtime tenant resolver
+     * @param pTemplateRepository
+     * @param pTenantResolver
+     * @param pRuntimeTenantResolver
+     * @param pMicroserviceName
+     * @param pInstanceSubscriber
      * @throws IOException
      */
     public TemplateService(final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver,
-            final IRuntimeTenantResolver pRuntimeTenantResolver) throws IOException {
+            final IRuntimeTenantResolver pRuntimeTenantResolver,
+            @Value("${spring.application.name}") final String pMicroserviceName,
+            final IInstanceSubscriber pInstanceSubscriber) throws IOException {
         super();
         templateRepository = pTemplateRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
+        microserviceName = pMicroserviceName;
+        instanceSubscriber = pInstanceSubscriber;
         configureTemplateLoader();
     }
 
@@ -150,33 +167,62 @@ public class TemplateService implements ITemplateService {
      */
     @PostConstruct
     public void init() {
-        initDefaultTemplates();
+        for (final String tenant : tenantResolver.getAllActiveTenants()) {
+            // Set working tenant
+            runtimeTenantResolver.forceTenant(tenant);
+            // Init default templates for this tenant
+            initDefaultTemplates();
+        }
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
     }
 
     /**
      * Populate the templates with default
      */
     private void initDefaultTemplates() {
+        if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
+            templateRepository.save(passwordResetTemplate);
+        }
+        if (!templateRepository.findOneByCode(accountUnlockTemplate.getCode()).isPresent()) {
+            templateRepository.save(accountUnlockTemplate);
+        }
+        if (!templateRepository.findOneByCode(emailAccountValidationTemplate.getCode()).isPresent()) {
+            templateRepository.save(emailAccountValidationTemplate);
+        }
+        if (!templateRepository.findOneByCode(accountRefusedTemplate.getCode()).isPresent()) {
+            templateRepository.save(accountRefusedTemplate);
+        }
+        if (!templateRepository.findOneByCode(projectUserActivatedTemplate.getCode()).isPresent()) {
+            templateRepository.save(projectUserActivatedTemplate);
+        }
+        if (!templateRepository.findOneByCode(projectUserInactivatedTemplate.getCode()).isPresent()) {
+            templateRepository.save(projectUserInactivatedTemplate);
+        }
+    }
 
-        for (final String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
-                templateRepository.save(passwordResetTemplate);
-            }
-            if (!templateRepository.findOneByCode(accountUnlockTemplate.getCode()).isPresent()) {
-                templateRepository.save(accountUnlockTemplate);
-            }
-            if (!templateRepository.findOneByCode(emailAccountValidationTemplate.getCode()).isPresent()) {
-                templateRepository.save(emailAccountValidationTemplate);
-            }
-            if (!templateRepository.findOneByCode(accountRefusedTemplate.getCode()).isPresent()) {
-                templateRepository.save(accountRefusedTemplate);
-            }
-            if (!templateRepository.findOneByCode(projectUserActivatedTemplate.getCode()).isPresent()) {
-                templateRepository.save(projectUserActivatedTemplate);
-            }
-            if (!templateRepository.findOneByCode(projectUserInactivatedTemplate.getCode()).isPresent()) {
-                templateRepository.save(projectUserInactivatedTemplate);
+    /**
+     * Handle a new tenant connection to initialize default roles
+     *
+     * @author Marc Sordi
+     *
+     */
+    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
+
+        /**
+         * Initialize default roles in the new project connection
+         *
+         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
+         * @since 1.0-SNAPSHOT
+         */
+        @Override
+        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
+            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
+                // Retrieve tenant
+                String tenant = pWrapper.getContent().getTenant();
+                // Set working tenant
+                runtimeTenantResolver.forceTenant(tenant);
+                // Init default templates for this tenant
+                initDefaultTemplates();
             }
         }
     }

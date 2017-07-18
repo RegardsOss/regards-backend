@@ -32,6 +32,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.mail.SimpleMailMessage;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.InstanceSubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -133,7 +135,11 @@ public class TemplateServiceTest {
         templateRepository = Mockito.mock(ITemplateRepository.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver);
+        String microserviceName = "rs-admin";
+        IInstanceSubscriber instanceSubscriber = Mockito.mock(InstanceSubscriber.class);
+
+        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver,
+                microserviceName, instanceSubscriber);
     }
 
     /**
