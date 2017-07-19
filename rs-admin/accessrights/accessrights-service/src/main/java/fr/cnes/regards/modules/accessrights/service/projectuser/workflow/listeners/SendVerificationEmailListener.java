@@ -170,7 +170,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         email.setSubject("REGARDS - Registration Confirmation");
         email.setText("Please click on the following link to confirm your registration: "
                 + data.get("confirmationUrl"));
-        email.setText("Your access request was refused by admin.");
         return email;
     }
 
