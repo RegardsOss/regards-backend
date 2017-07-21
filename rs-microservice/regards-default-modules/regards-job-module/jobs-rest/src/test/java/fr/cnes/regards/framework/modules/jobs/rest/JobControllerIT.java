@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 @ContextConfiguration(classes = { JobControllerTestConfiguration.class })
+@Ignore
 public class JobControllerIT extends AbstractRegardsIT {
 
     /**
