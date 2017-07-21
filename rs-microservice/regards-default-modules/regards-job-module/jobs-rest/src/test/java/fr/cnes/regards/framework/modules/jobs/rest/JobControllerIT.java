@@ -65,7 +65,7 @@ public class JobControllerIT extends AbstractRegardsIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
-                                                        Matchers.hasSize(jobInfoService.retrieveJobInfoList().size())));
+                                                        Matchers.hasSize(jobInfoService.retrieveJobs().size())));
         expectations.add(MockMvcResultMatchers.jsonPath("$.*.links", Matchers.notNullValue()));
         performGet(JobController.JOBS, token, expectations, "unable to load all jobs");
     }
@@ -73,7 +73,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void getOneJob() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
+        final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".id",
@@ -97,7 +97,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void getJobResults() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        final JobInfo aJob = jobInfoService.retrieveJobInfoList().get(0);
+        final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResults().size())));
         performGet(JobController.JOBS + "/{jobId}/results", token, expectations,
@@ -116,7 +116,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void deleteAJob() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        final UUID jobId = jobInfoService.retrieveJobInfoList().get(0).getId();
+        final UUID jobId = jobInfoService.retrieveJobs().get(0).getId();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
 

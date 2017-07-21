@@ -11,22 +11,21 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import javax.persistence.Transient;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 
@@ -38,7 +37,6 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_job_info")
-@SequenceGenerator(name = "jobInfoSequence", sequenceName = "seq_job_info")
 public class JobInfo {
 
     /**
@@ -46,7 +44,8 @@ public class JobInfo {
      */
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "jobInfoSequence")
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
     private UUID id;
 
     /**
@@ -54,13 +53,6 @@ public class JobInfo {
      */
     @Column(name = "priority")
     private Integer priority;
-
-    /**
-     * Job workspace
-     */
-    @Column
-    @Type(type = "text")
-    private String workspace;
 
     /**
      * Job description
@@ -110,6 +102,12 @@ public class JobInfo {
     @Embedded
     private JobStatusInfo status = new JobStatusInfo();
 
+    @Transient
+    private String tenant;
+
+    @Transient
+    private IJob job;
+
     /**
      * Default constructor
      */
@@ -117,10 +115,9 @@ public class JobInfo {
         super();
     }
 
-    public JobInfo(Integer priority, String workspace, Set<JobParameter> parameters, String owner, String className,
+    public JobInfo(Integer priority, Set<JobParameter> parameters, String owner, String className,
             JobStatusInfo status) {
         this.priority = priority;
-        this.workspace = workspace;
         this.parameters = parameters;
         this.owner = owner;
         this.className = className;
@@ -138,8 +135,11 @@ public class JobInfo {
                 break;
             case FAILED:
             case ABORTED:
+                this.status.setStopDate(OffsetDateTime.now());
+                break;
             case SUCCEEDED:
                 this.status.setStopDate(OffsetDateTime.now());
+                this.status.setPercentCompleted(100);
                 break;
             default:
         }
@@ -159,6 +159,10 @@ public class JobInfo {
 
     public void setParameters(Set<JobParameter> parameters) {
         this.parameters = parameters;
+    }
+
+    public void setParameters(JobParameter... params) {
+        setParameters(Sets.newHashSet(params));
     }
 
     public void setOwner(String pOwner) {
@@ -183,14 +187,6 @@ public class JobInfo {
 
     public void setExpirationDate(OffsetDateTime expirationDate) {
         this.expirationDate = expirationDate;
-    }
-
-    /**
-     * A specific parameter
-     * @return the workspace, where files are located
-     */
-    public Path getWorkspace() {
-        return (workspace == null) ? null : Paths.get(workspace);
     }
 
     /**
@@ -221,12 +217,12 @@ public class JobInfo {
         status = pStatus;
     }
 
-    public Integer getPriority() {
-        return this.priority;
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
-    public void setWorkspace(Path workspace) {
-        this.workspace = (workspace == null) ? null : workspace.toString();
+    public Integer getPriority() {
+        return this.priority;
     }
 
     public JobStatusInfo getStatus() {
@@ -241,16 +237,25 @@ public class JobInfo {
         this.description = description;
     }
 
-    /**
-     * Is the job need a workspace ?
-     * @return true/false
-     */
-    public boolean needWorkspace() {
-        return workspace != null;
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
+
+    public IJob getJob() {
+        return job;
+    }
+
+    public void setJob(IJob job) {
+        this.job = job;
     }
 
     /**
-     * A job has no business key
+     * A JobInfo has no business key but is immediately created or retrieved from Database before be used so we can
+     * freely use its id
      */
     @Override
     public boolean equals(Object o) {

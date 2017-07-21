@@ -18,15 +18,13 @@ public abstract class AbstractJob implements IJob {
     private UUID id;
 
     /**
-     * Store the tenantName
-     */
-    private String tenantName;
-
-    /**
      * Job parameters
      */
     protected Set<JobParameter> parameters;
 
+    /**
+     * The workspace can be null, it should be cleaned after termination of a job
+     */
     private Path workspace;
 
     /**
@@ -49,6 +47,7 @@ public abstract class AbstractJob implements IJob {
         workspace = pWorkspace;
     }
 
+    @Override
     public Path getWorkspace() {
         return workspace;
     }

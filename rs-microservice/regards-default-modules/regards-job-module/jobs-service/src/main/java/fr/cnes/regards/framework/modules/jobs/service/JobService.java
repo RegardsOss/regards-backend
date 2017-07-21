@@ -1,26 +1,33 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
 import javax.annotation.PostConstruct;
-
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Files;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
@@ -31,6 +38,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  * IJObService implementation
  * @author oroussel
  */
+@Service
 public class JobService implements IJobService {
     public static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
@@ -52,13 +60,24 @@ public class JobService implements IJobService {
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
+    @Autowired
+    private ISubscriber subscriber;
+
     private ThreadPoolExecutor threadPool;
 
-    private Map<UUID, Future<?>> jobsMap = new HashMap<>();
+    /**
+     * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
+     */
+    private BiMap<JobInfo, RunnableFuture<Void>> jobsMap = HashBiMap.create();
 
     @PostConstruct
     private void init() {
-        threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize);
+        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver);
+    }
+
+    @EventListener
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
     }
 
     @Override
@@ -82,7 +101,14 @@ public class JobService implements IJobService {
                 if (jobInfo != null) {
                     jobInfo.updateStatus(JobStatus.QUEUED);
                     jobInfoService.save(jobInfo);
+                    jobInfo.setTenant(tenant);
                     this.execute(jobInfo);
+                } else { // No job to execute, take a rest
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // Ok, i have no problem with that
+                    }
                 }
             }
         }
@@ -96,30 +122,58 @@ public class JobService implements IJobService {
 
     public void execute(JobInfo jobInfo) {
         // First, instantiate job
-        JobStatus jobStatus;
         try {
             IJob job = (IJob)Class.forName(jobInfo.getClassName()).newInstance();
             job.setId(jobInfo.getId());
             job.setParameters(jobInfo.getParameters());
-            job.setWorkspace(jobInfo.getWorkspace());
-            // Run job
-            jobsMap.put(jobInfo.getId(), threadPool.submit(job));
-            jobStatus = JobStatus.RUNNING;
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            if (job.needWorkspace()) {
+                job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
+            }
+            jobInfo.setJob(job);
+            // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)
+            jobsMap.put(jobInfo, (RunnableFuture<Void>) threadPool.submit(job));
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             LOGGER.error("Unable to instantiate job", e);
-            jobStatus = JobStatus.FAILED;
+            jobInfo.updateStatus(JobStatus.FAILED);
             printStackTrace(jobInfo.getStatus(), e);
         } catch (JobParameterMissingException e) {
             LOGGER.error("Missing parameter", e);
-            jobStatus = JobStatus.FAILED;
+            jobInfo.updateStatus(JobStatus.FAILED);
             printStackTrace(jobInfo.getStatus(), e);
         } catch (JobParameterInvalidException e) {
             LOGGER.error("Invalid parameter", e);
-            jobStatus = JobStatus.FAILED;
+            jobInfo.updateStatus(JobStatus.FAILED);
             printStackTrace(jobInfo.getStatus(), e);
         }
-        jobInfo.updateStatus(jobStatus);
     }
 
+    /**
+     * Ask for job abortion if current thread pool is responsible of job execution
+     * @param jobId job id
+     */
+    private void abort(UUID jobId) {
+        JobInfo jobInfo = jobInfoService.retrieveJob(jobId);
+        // Check job is currently running
+        if (jobInfo.getStatus().getStatus() == JobStatus.RUNNING) {
+            // Check if current microservice is running this job
+            if (jobsMap.containsKey(jobInfo)) {
+                RunnableFuture<Void> task = jobsMap.get(jobInfo);
+                task.cancel(true);
+            }
+        }
+    }
 
+    /**
+     * Handler for StopEventJob
+     */
+    private class StopJobHandler implements IHandler<StopJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<StopJobEvent> wrapper) {
+            if (wrapper.getContent() != null) {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                JobService.this.abort(wrapper.getContent().getJobId());
+            }
+        }
+    }
 }

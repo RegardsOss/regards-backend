@@ -40,7 +40,6 @@ public class JobInfoTest {
         jobInfo.setPriority(priority);
         jobInfo.setResults(result);
         jobInfo.setStatus(status);
-        jobInfo.setWorkspace(workspace);
 
         Assertions.assertThat(jobInfo.getClassName()).isEqualTo(pClassName);
         Assertions.assertThat(jobInfo.getId()).isEqualTo(id);
@@ -49,11 +48,6 @@ public class JobInfoTest {
         Assertions.assertThat(jobInfo.getResults()).isEqualTo(result);
         Assertions.assertThat(jobInfo.getPriority()).isEqualTo(priority);
         Assertions.assertThat(jobInfo.getStatus()).isEqualTo(status);
-        Assertions.assertThat(jobInfo.getWorkspace()).isEqualTo(workspace);
-
-        Assertions.assertThat(jobInfo.needWorkspace()).isEqualTo(true);
-        jobInfo.setWorkspace(null);
-        Assertions.assertThat(jobInfo.needWorkspace()).isEqualTo(false);
 
         final OffsetDateTime now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
 

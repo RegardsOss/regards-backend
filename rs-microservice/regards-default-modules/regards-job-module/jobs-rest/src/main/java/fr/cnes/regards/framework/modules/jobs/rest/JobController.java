@@ -25,10 +25,9 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobResult;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.jobs.service.service.JobInfoService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
@@ -48,9 +47,10 @@ public class JobController implements IResourceController<JobInfo> {
     public static final String JOBS = "/jobs";
 
     /**
-     * Business service for {@link JobInfo}.
+     * Job info service
      */
-    private final IJobInfoService jobInfoService;
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     /**
      * Resource service to manage visibles hateoas links
@@ -59,86 +59,71 @@ public class JobController implements IResourceController<JobInfo> {
     private IResourceService resourceService;
 
     /**
-     * Constructor to specify a particular {@link IJobInfoService}.
-     *
-     * @param pJobInfoService
-     *            The {@link JobInfoService} used
+     * Constructor
      */
-    public JobController(final IJobInfoService pJobInfoService) {
+    public JobController() {
         super();
-        jobInfoService = pJobInfoService;
     }
 
     /**
      * Define the endpoint to retrieve the list of JobInfo
-     *
      * @return A {@link List} of jobInfo as {@link JobInfo} wrapped in an {@link HttpEntity}
      */
     @ResourceAccess(description = "Retrieve all the jobs", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Resource<JobInfo>>> retrieveJobs() {
-        return ResponseEntity.ok(toResources(jobInfoService.retrieveJobInfoList()));
+        return ResponseEntity.ok(toResources(jobInfoService.retrieveJobs()));
     }
 
     /**
      * Define the endpoint to retrieve the list of JobInfo depending of their state
-     *
-     * @param pState
-     *            filter by that state
+     * @param state filter by that state
      * @return job list
      */
     @ResourceAccess(description = "Retrieve all the jobs with a specific state", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/state/{state}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(@PathVariable("state") final JobStatus pState) {
-        return ResponseEntity.ok(toResources(jobInfoService.retrieveJobInfoListByState(pState)));
+    public ResponseEntity<List<Resource<JobInfo>>> retrieveJobsByState(@PathVariable("state") final JobStatus state) {
+        return ResponseEntity.ok(toResources(jobInfoService.retrieveJobs(state)));
     }
 
     /**
      * Define the endpoint to retrieve a JobInfo
-     *
-     * @param pJobInfoId
-     *            The {@link JobInfo} id
+     * @param jobInfoId The {@link JobInfo} id
      * @return the corresponding jobInfo
-     * @throws EntityNotFoundException
-     *             The job does not exist
+     * @throws EntityNotFoundException The job does not exist
      */
     @ResourceAccess(description = "Retrieve a job", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/{jobId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<JobInfo>> retrieveJobInfo(@PathVariable("jobId") final Long pJobInfoId)
+    public ResponseEntity<Resource<JobInfo>> retrieveJobInfo(@PathVariable("jobId") final UUID jobInfoId)
             throws EntityNotFoundException {
-        return ResponseEntity.ok(toResource(jobInfoService.retrieveJobInfoById(pJobInfoId)));
+        return ResponseEntity.ok(toResource(jobInfoService.retrieveJob(jobInfoId)));
     }
 
     /**
      * Define the endpoint to stop a job
-     *
-     * @param pJobInfoId
-     *            The {@link JobInfo} id
+     * @param jobInfoId The {@link JobInfo} id
      * @return jobInfo
-     * @throws EntityNotFoundException
-     *             The job does not exist
+     * @throws EntityNotFoundException The job does not exist
      */
     @ResourceAccess(description = "Stop a job", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/{jobId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<JobInfo>> stopJob(@PathVariable("jobId") final Long pJobInfoId)
+    public ResponseEntity<Void> stopJob(@PathVariable("jobId") final UUID jobInfoId)
             throws EntityNotFoundException {
-        return ResponseEntity.ok(toResource(jobInfoService.stopJob(pJobInfoId)));
+        jobInfoService.stopJob(jobInfoId);
+        return ResponseEntity.ok(null);
     }
 
     /**
      * Define the endpoint to retrieve job results
-     *
-     * @param pJobInfoId
-     *            The {@link JobInfo} id
+     * @param jobInfoId The {@link JobInfo} id
      * @return the list of result for that JobInfo
-     * @throws EntityNotFoundException
-     *             The job does not exist
+     * @throws EntityNotFoundException The job does not exist
      */
     @ResourceAccess(description = "Retrieve the job's results", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/{jobId}/results", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Resource<JobResult>>> getJobResults(@PathVariable("jobId") final Long pJobInfoId)
+    public ResponseEntity<List<Resource<JobResult>>> getJobResults(@PathVariable("jobId") final UUID jobInfoId)
             throws EntityNotFoundException {
-        final JobInfo jobInfo = jobInfoService.retrieveJobInfoById(pJobInfoId);
+        final JobInfo jobInfo = jobInfoService.retrieveJob(jobInfoId);
         List<Resource<JobResult>> resources = null;
         if (jobInfo.getResults() != null) {
             resources = jobInfo.getResults().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
@@ -147,17 +132,17 @@ public class JobController implements IResourceController<JobInfo> {
     }
 
     @Override
-    public Resource<JobInfo> toResource(JobInfo pElement, Object... pExtras) {
+    public Resource<JobInfo> toResource(JobInfo jobInfo, Object... extras) {
         Resource<JobInfo> resource = null;
-        if ((pElement != null) && (pElement.getId() != null)) {
-            resource = resourceService.toResource(pElement);
+        if ((jobInfo != null) && (jobInfo.getId() != null)) {
+            resource = resourceService.toResource(jobInfo);
             resourceService.addLink(resource, this.getClass(), "retrieveJobInfo", LinkRels.SELF,
-                                    MethodParamFactory.build(UUID.class, pElement.getId()));
+                                    MethodParamFactory.build(UUID.class, jobInfo.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveJobs", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "stopJob", "stop",
-                                    MethodParamFactory.build(UUID.class, pElement.getId()));
+                                    MethodParamFactory.build(UUID.class, jobInfo.getId()));
             resourceService.addLink(resource, this.getClass(), "getJobResults", "results",
-                                    MethodParamFactory.build(UUID.class, pElement.getId()));
+                                    MethodParamFactory.build(UUID.class, jobInfo.getId()));
         }
         return resource;
     }
