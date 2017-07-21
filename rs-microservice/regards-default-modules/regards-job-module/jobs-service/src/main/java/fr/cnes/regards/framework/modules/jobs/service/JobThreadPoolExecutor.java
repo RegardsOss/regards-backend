@@ -14,7 +14,6 @@ import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.BiMap;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
@@ -41,7 +40,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
     public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
             BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,
-            Publisher publisher) {
+            IPublisher publisher) {
         super(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         this.jobInfoService = jobInfoService;
         this.jobsMap = jobsMap;

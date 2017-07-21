@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -63,6 +64,9 @@ public class JobService implements IJobService {
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private IPublisher publisher;
+
     private ThreadPoolExecutor threadPool;
 
     /**
@@ -72,7 +76,7 @@ public class JobService implements IJobService {
 
     @PostConstruct
     private void init() {
-        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver);
+        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
     }
 
     @EventListener
