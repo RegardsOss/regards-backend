@@ -23,6 +23,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  * @author Léo Mieulet
  *
  */
+@Deprecated
 public interface IEvent {
 
     public Object getData();

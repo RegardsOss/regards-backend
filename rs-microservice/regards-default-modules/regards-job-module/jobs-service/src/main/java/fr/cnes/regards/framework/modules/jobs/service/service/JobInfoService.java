@@ -18,28 +18,28 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service.service;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import com.google.common.collect.ImmutableList;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.communication.INewJobPublisher;
-import fr.cnes.regards.framework.modules.jobs.service.communication.IStoppingJobPublisher;
+import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 
 /**
- * @author Léo Mieulet
+ * @author oroussel
  */
 @Service
+@RegardsTransactional
 public class JobInfoService implements IJobInfoService {
 
     /**
@@ -47,92 +47,56 @@ public class JobInfoService implements IJobInfoService {
      */
     private static final Logger LOG = LoggerFactory.getLogger(JobInfoService.class);
 
+    @Autowired
+    private IPublisher publisher;
+
     /**
      * {@link JobInfo} JPA Repository
      */
-    private final IJobInfoRepository jobInfoRepository;
-
-    /**
-     * Allows to publish a new job event
-     */
-    private final INewJobPublisher newJobPublisher;
-
-    /**
-     * Allows to publish a stopping job event
-     */
-    private final IStoppingJobPublisher stoppingJobPublisher;
-
-    /**
-     *
-     * @param pJobInfoRepository
-     *            JobInfo Repository
-     * @param pNewJobPublisher
-     *            NewJob Publisher
-     * @param pStoppingJobPublisher
-     *            StoppingJob Publisher
-     */
-    public JobInfoService(final IJobInfoRepository pJobInfoRepository, final INewJobPublisher pNewJobPublisher,
-            final IStoppingJobPublisher pStoppingJobPublisher) {
-        super();
-        jobInfoRepository = pJobInfoRepository;
-        newJobPublisher = pNewJobPublisher;
-        stoppingJobPublisher = pStoppingJobPublisher;
-    }
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
 
     @Override
-    public JobInfo createJobInfo(final JobInfo pJobInfo) {
-        final JobInfo jobInfo = jobInfoRepository.save(pJobInfo);
-        if (jobInfo != null) {
-            try {
-                newJobPublisher.sendJob(jobInfo.getId());
-            } catch (final RabbitMQVhostException e) {
-                jobInfo.getStatus().setJobStatus(JobStatus.FAILED);
-                jobInfoRepository.save(jobInfo);
-                LOG.error("Failed to submit the new jobInfo to rabbit", e);
-            }
+    public JobInfo findHighestPriorityPendingJob() {
+        JobInfo found = jobInfoRepository.findHighestPriorityPending();
+        if (found != null) {
+            Hibernate.initialize(found.getParameters());
+            Hibernate.initialize(found.getResults());
         }
-        return jobInfo;
+        return found;
     }
 
     @Override
-    public JobInfo stopJob(final Long pJobInfoId) throws EntityNotFoundException {
-        if (!jobInfoRepository.exists(pJobInfoId)) {
-            throw new EntityNotFoundException(pJobInfoId, JobInfo.class);
+    public List<JobInfo> retrieveJobs() {
+        return ImmutableList.copyOf(jobInfoRepository.findAll());
+    }
+
+    @Override
+    public List<JobInfo> retrieveJobs(JobStatus state) {
+        return jobInfoRepository.findAllByStatusStatus(state);
+    }
+
+    @Override
+    public JobInfo retrieveJob(UUID id) {
+        return jobInfoRepository.findById(id);
+    }
+
+    @Override
+    public JobInfo create(JobInfo jobInfo) {
+        jobInfo.updateStatus(JobStatus.PENDING);
+        return jobInfoRepository.save(jobInfo);
+    }
+
+    @Override
+    public JobInfo save(final JobInfo jobInfo) {
+        if (jobInfo.getId() == null) {
+            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
         }
-        final JobInfo jobInfo = jobInfoRepository.findOne(pJobInfoId);
-        if (jobInfo != null) {
-            try {
-                stoppingJobPublisher.send(pJobInfoId);
-            } catch (final RabbitMQVhostException e) {
-                LOG.error(String.format("Failed to stop the job <%d>, Rabbit MQ error : %s.", jobInfo.getId(),
-                                        e.getMessage()),
-                          e);
-            }
-        }
-        return jobInfo;
+        return jobInfoRepository.save(jobInfo);
     }
 
     @Override
-    public List<JobInfo> retrieveJobInfoList() {
-        Iterable<JobInfo> jobInfos = jobInfoRepository.findAll();
-        return (jobInfos != null) ? Lists.newArrayList(jobInfos) : Collections.emptyList();
+    public void stopJob(UUID id) {
+        publisher.publish(new StopJobEvent(id));
     }
-
-    @Override
-    public List<JobInfo> retrieveJobInfoListByState(final JobStatus pState) {
-        return jobInfoRepository.findAllByStatusStatus(pState);
-    }
-
-    @Override
-    public JobInfo retrieveJobInfoById(final Long pJobInfoId) throws EntityNotFoundException {
-        final Optional<JobInfo> jobInfo = Optional.ofNullable(jobInfoRepository.findOne(pJobInfoId));
-        return jobInfo.orElseThrow(() -> new EntityNotFoundException(pJobInfoId.toString(), JobInfo.class));
-    }
-
-    @Override
-    public JobInfo save(final JobInfo pJobInfo) {
-        return jobInfoRepository.save(pJobInfo);
-
-    }
-
 }
