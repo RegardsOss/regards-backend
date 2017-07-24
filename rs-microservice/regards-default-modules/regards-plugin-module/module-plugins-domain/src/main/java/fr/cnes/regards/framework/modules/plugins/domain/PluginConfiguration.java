@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -135,6 +136,12 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
     private List<PluginParameter> parameters;
+
+    /**
+     * Icon of the plugin. It must be an URL to a svg file.
+     */
+    @Column(name = "icon_url")
+    private URL iconUrl;
 
     /**
      * Default constructor
@@ -381,6 +388,20 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     public void setId(Long pId) {
         id = pId;
+    }
+
+    /**
+     * @return the iconUrl
+     */
+    public URL getIconUrl() {
+        return iconUrl;
+    }
+
+    /**
+     * @param pIconUrl the iconUrl to set
+     */
+    public void setIconUrl(URL pIconUrl) {
+        iconUrl = pIconUrl;
     }
 
     @Override
