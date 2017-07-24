@@ -19,11 +19,6 @@ pipeline {
         jdk 'jdk8'
     }
 
-    //define which branches should be deployed to archiva and analysed by sonar
-//    environment {
-//        MAIN_BRANCHES = ["master", "develop", "1.0-RELEASE"]
-//    }
-
     stages {
         stage('Deploy & Analyze') {
             when {
@@ -53,30 +48,4 @@ pipeline {
             }
         }
     }
-//        stage('Compile') {
-//            steps {
-//                sh 'mvn -U -P delivery compile'
-//            }
-//        }
-//        stage('Unit Testing') {
-//            steps {
-//                sh 'mvn -U -P delivery test -Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec'
-//            }
-//        }
-//        stage('Integration Testing') {
-//            steps {
-//                sh 'mvn -U -P delivery verify -Dspring.profiles.active=rabbit -Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec'
-//            }
-//        }
-//        stage('Deploy') {
-//            steps {
-//                sh 'mvn -U -P delivery deploy'
-//            }
-//        }
-//        stage('sonar') {
-//            steps {
-//                sh 'mvn -U -P delivery sonar:sonar '
-//            }
-//        }
-
 }
