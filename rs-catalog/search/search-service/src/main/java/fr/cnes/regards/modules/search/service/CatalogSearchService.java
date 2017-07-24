@@ -88,12 +88,6 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IFacetConverter facetConverter;
 
     /**
-     * Limit total hits for joined search
-     */
-    @Value("${regards.catalog.search.threshold:10000}")
-    private Long threshold;
-
-    /**
      * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
      * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
@@ -141,14 +135,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             if (searchKey instanceof SimpleSearchKey) {
                 return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
-                // Threshold can be passed in query parameter
-                String thresholdParameter = null;
-                if (allParams != null) {
-                    thresholdParameter = allParams.get(THRESHOLD_QUERY_PARAMETER);
-                }
-                Long requestThreshold = thresholdParameter != null ? Long.valueOf(thresholdParameter) : threshold;
-                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
-                                            requestThreshold);
+                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
             }
 
         } catch (OpenSearchParseException e) {
