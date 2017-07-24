@@ -11,12 +11,14 @@ import fr.cnes.regards.modules.storage.domain.FileType;
 import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 
 /**
+ * Those plugins are meant to decide which plugin IDataStorage should be use for a given aip and file.
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @PluginInterface(description = "Interface for all AllocationStrategy plugin")
 public interface IAllocationStrategy {
 
-    IDataStorage getStorages(AipType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
+    IDataStorage getStorage(AipType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
 
 }

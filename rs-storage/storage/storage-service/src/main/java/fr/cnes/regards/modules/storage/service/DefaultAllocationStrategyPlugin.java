@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageTyp
 public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
     @Override
-    public IDataStorage getStorages(final AipType pAipType, final FileType pFileType,
+    public IDataStorage getStorage(final AipType pAipType, final FileType pFileType,
             @Size(min = 1, max = 2) final List<IDataStorage> pStoragesAvailable) {
         if (pStoragesAvailable.size() == 1) {
             return pStoragesAvailable.get(0);
