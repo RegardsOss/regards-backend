@@ -32,7 +32,7 @@ public class DataStorageManager {
         IDataStorage dataStorage;
         // get All data storage impl
         // get Storage target for the description file from AllocationStrategy
-        // execute the storage of descriptor
+        // execute the storage of metadata
         // schedule the upload of files referenced by the AIP
     }
 
