@@ -18,7 +18,14 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.netflix.feign.AnnotatedParameterProcessor;
+import org.springframework.cloud.netflix.feign.annotation.PathVariableParameterProcessor;
+import org.springframework.cloud.netflix.feign.annotation.RequestHeaderParameterProcessor;
+import org.springframework.cloud.netflix.feign.annotation.RequestParamParameterProcessor;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
@@ -112,7 +119,23 @@ public class FeignClientConfiguration {
      */
     @Bean
     public Contract feignContract() {
-        return new SpringMvcContract();
+        return new SpringMvcContract(getCustomAnnotatedArgumentsProcessors());
+    }
+
+    /**
+     * Customize the default AnnotatedArgumentsProcessors in order to use
+     * our {@link CustomRequestParamParameterProcessor} instead of the {@link RequestParamParameterProcessor}
+     * @return the list of processors
+     */
+    private List<AnnotatedParameterProcessor> getCustomAnnotatedArgumentsProcessors() {
+
+        List<AnnotatedParameterProcessor> annotatedArgumentResolvers = new ArrayList<>();
+
+        annotatedArgumentResolvers.add(new PathVariableParameterProcessor());
+        annotatedArgumentResolvers.add(new CustomRequestParamParameterProcessor());
+        annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
+
+        return annotatedArgumentResolvers;
     }
 
     /**
