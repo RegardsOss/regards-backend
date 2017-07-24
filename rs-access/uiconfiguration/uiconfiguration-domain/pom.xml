@@ -42,5 +42,10 @@
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.search</groupId>
+			<artifactId>search-domain</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -18,16 +18,28 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
+import java.net.URL;
+import java.util.Set;
+
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+import fr.cnes.regards.modules.models.domain.EntityType;
+import fr.cnes.regards.modules.search.domain.ServiceScope;
 
 /**
  *
@@ -72,6 +84,34 @@ public class UIPluginDefinition {
     @Column(nullable = false)
     private String sourcePath;
 
+    /**
+     * Icon of the plugin. It must be an URL to a svg file.
+     */
+    @Column(name = "icon_url")
+    private URL iconUrl;
+
+    /**
+     * Application modes
+     */
+    @NotEmpty
+    @Column(name = "application_mode", nullable = false)
+    @ElementCollection
+    @CollectionTable(name = "t_ui_plugin_application_mode", joinColumns = @JoinColumn(name = "ui_plugin_id"),
+            foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<ServiceScope> applicationModes;
+
+    /**
+     * Entity Types to which this plugin is applicable
+     */
+    @NotEmpty
+    @Column(name = "entity_type", nullable = false)
+    @ElementCollection
+    @CollectionTable(name = "t_ui_plugin_entity_type", joinColumns = @JoinColumn(name = "ui_plugin_id"),
+            foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<EntityType> entityTypes;
+
     public Long getId() {
         return id;
     }
@@ -104,6 +144,48 @@ public class UIPluginDefinition {
         sourcePath = pSourcePath;
     }
 
+    /**
+     * @return the iconUrl
+     */
+    public URL getIconUrl() {
+        return iconUrl;
+    }
+
+    /**
+     * @param pIconUrl the iconUrl to set
+     */
+    public void setIconUrl(URL pIconUrl) {
+        iconUrl = pIconUrl;
+    }
+
+    /**
+     * @return the applicationModes
+     */
+    public Set<ServiceScope> getApplicationModes() {
+        return applicationModes;
+    }
+
+    /**
+     * @param pApplicationModes the applicationModes to set
+     */
+    public void setApplicationModes(Set<ServiceScope> pApplicationModes) {
+        applicationModes = pApplicationModes;
+    }
+
+    /**
+     * @return the entityTypes
+     */
+    public Set<EntityType> getEntityTypes() {
+        return entityTypes;
+    }
+
+    /**
+     * @param pEntityTypes the entityTypes to set
+     */
+    public void setEntityTypes(Set<EntityType> pEntityTypes) {
+        entityTypes = pEntityTypes;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -128,10 +210,9 @@ public class UIPluginDefinition {
             if (other.id != null) {
                 return false;
             }
-        } else
-            if (!id.equals(other.id)) {
-                return false;
-            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
         return true;
     }
 
