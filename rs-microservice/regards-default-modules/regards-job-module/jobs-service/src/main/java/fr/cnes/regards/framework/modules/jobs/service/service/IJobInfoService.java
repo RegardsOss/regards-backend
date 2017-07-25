@@ -34,9 +34,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 public interface IJobInfoService {
 
     /**
-     * Find Job info with highest priority
+     * Find Job info with highest priority and update status to RUNNING
      */
-    JobInfo findHighestPriorityPendingJob();
+    JobInfo findHighestPriorityPendingJobAndSetAsQueued();
 
     /**
      * Create a JObInfo setting its state to PENDING and do all stuffs to be correct

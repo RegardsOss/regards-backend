@@ -92,7 +92,7 @@ public class JobService implements IJobService {
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 // Wait for availability of pool if it is overbooked
-                while (threadPool.getPoolSize() == threadPool.getMaximumPoolSize()) {
+                while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -101,10 +101,8 @@ public class JobService implements IJobService {
                     }
                 }
                 // Find highest priority job to execute
-                JobInfo jobInfo = jobInfoService.findHighestPriorityPendingJob();
+                JobInfo jobInfo = jobInfoService.findHighestPriorityPendingJobAndSetAsQueued();
                 if (jobInfo != null) {
-                    jobInfo.updateStatus(JobStatus.QUEUED);
-                    jobInfoService.save(jobInfo);
                     jobInfo.setTenant(tenant);
                     this.execute(jobInfo);
                 } else { // No job to execute, take a rest

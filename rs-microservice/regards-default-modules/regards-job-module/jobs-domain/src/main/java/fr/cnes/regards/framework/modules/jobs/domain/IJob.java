@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
  * @author Léo Mieulet
  */
 public interface IJob extends Runnable {
+
     /**
      * URI pointed by JobResult MUST NOT be into workspace (else they will be erased after job execution)
      * @return The Job's results
@@ -71,5 +72,7 @@ public interface IJob extends Runnable {
      * Set the parameters and should check if all needed parameters are specified
      * @param pParameters set job parameters
      */
-    void setParameters(Set<JobParameter> pParameters) throws JobParameterMissingException, JobParameterInvalidException;
+    default void setParameters(Set<JobParameter> pParameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+    }
 }

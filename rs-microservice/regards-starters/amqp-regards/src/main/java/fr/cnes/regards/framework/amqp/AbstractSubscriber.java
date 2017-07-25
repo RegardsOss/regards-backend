@@ -111,9 +111,12 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 Class<?> handlerClass = handleEvent.getKey();
                 // Retrieve listeners for current handler
                 Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClass);
-                // Stop listeners
-                for (SimpleMessageListenerContainer container : tenantContainers.values()) {
-                    container.stop();
+                // In case unsubscribeFrom has been called too late
+                if (tenantContainers != null) {
+                    // Stop listeners
+                    for (SimpleMessageListenerContainer container : tenantContainers.values()) {
+                        container.stop();
+                    }
                 }
             }
         }

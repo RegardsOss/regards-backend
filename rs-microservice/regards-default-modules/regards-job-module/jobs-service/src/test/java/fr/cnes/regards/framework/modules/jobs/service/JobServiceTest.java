@@ -1,21 +1,37 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
+import fr.cnes.regards.framework.modules.jobs.fr.cnes.framework.modules.jobs.domain.FailedAfter1sJob;
 import fr.cnes.regards.framework.modules.jobs.fr.cnes.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
@@ -47,34 +63,180 @@ public class JobServiceTest {
     @Autowired
     private RegardsAmqpAdmin amqpAdmin;
 
+    @Autowired
+    private ISubscriber subscriber;
+
+    private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
+
+    @Value("${regards.jobs.pool.size:10}")
+    private int poolSize;
+
+    private RunningJobHandler runningHandler = new RunningJobHandler();
+
+    private SucceededJobHandler succeededHandler = new SucceededJobHandler();
+
+    private AbortedJobHandler abortedHandler = new AbortedJobHandler();
+
+    private FailedJobHandler failedHandler = new FailedJobHandler();
+
+    private boolean subscriptionsDone = false;
+
     @Before
     public void setUp() throws Exception {
         tenantResolver.forceTenant(TENANT);
 
         rabbitVhostAdmin.bind(tenantResolver.getTenant());
 
-        amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
-                .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
+        try {
+            amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
+                    .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
+            amqpAdmin.purgeQueue(RunningJobEvent.class, runningHandler.getClass(), false);
+            amqpAdmin.purgeQueue(SucceededJobEvent.class, succeededHandler.getClass(), false);
+            amqpAdmin.purgeQueue(AbortedJobEvent.class, abortedHandler.getClass(), false);
+            amqpAdmin.purgeQueue(FailedJobEvent.class, failedHandler.getClass(), false);
+        } catch (Exception e) {
+            // In case queues don't exist
+        }
         rabbitVhostAdmin.unbind();
 
+        if (!subscriptionsDone) {
+            subscriber.subscribeTo(RunningJobEvent.class, runningHandler);
+            subscriber.subscribeTo(SucceededJobEvent.class, succeededHandler);
+            subscriber.subscribeTo(AbortedJobEvent.class, abortedHandler);
+            subscriber.subscribeTo(FailedJobEvent.class, failedHandler);
+        }
+    }
+
+    @After
+    public void tearDown() {
+        tenantResolver.forceTenant(TENANT);
         jobInfoRepos.deleteAll();
     }
 
-    @Test
-    public void test() throws InterruptedException {
-        // TODO Ajouter des handler pour gérer le cycle de vie du JOB
+    private class RunningJobHandler implements IHandler<RunningJobEvent> {
 
+        @Override
+        public void handle(TenantWrapper<RunningJobEvent> wrapper) {
+            runnings.add(wrapper.getContent().getJobId());
+            LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+        }
+    }
+
+    private class SucceededJobHandler implements IHandler<SucceededJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<SucceededJobEvent> wrapper) {
+            succeededs.add(wrapper.getContent().getJobId());
+            LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+        }
+    }
+
+    private class AbortedJobHandler implements IHandler<AbortedJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<AbortedJobEvent> wrapper) {
+            aborteds.add(wrapper.getContent().getJobId());
+            LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+        }
+    }
+
+    private class FailedJobHandler implements IHandler<FailedJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<FailedJobEvent> wrapper) {
+            faileds.add(wrapper.getContent().getJobId());
+            LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+        }
+    }
+
+    @Test
+    public void testSucceeded() throws InterruptedException {
         JobInfo waitJobInfo = new JobInfo();
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setDescription("Job that wait");
+        waitJobInfo.setDescription("Job that wait 500ms");
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "500"),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "1"));
+        waitJobInfo = jobInfoService.create(waitJobInfo);
+
+        // Wait for job to terminate
+        while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < 1) {
+            Thread.sleep(1_000);
+        }
+        Assert.assertTrue(runnings.contains(waitJobInfo.getId()));
+        Assert.assertTrue(succeededs.contains(waitJobInfo.getId()));
+    }
+
+    @Test
+    public void testAborted() throws InterruptedException {
+        JobInfo waitJobInfo = new JobInfo();
+        waitJobInfo.setPriority(10);
+        waitJobInfo.setClassName(WaiterJob.class.getName());
+        waitJobInfo.setDescription("Job that wait 3 x 1s");
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "10"));
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
         waitJobInfo = jobInfoService.create(waitJobInfo);
 
         Thread.sleep(1_000);
+        LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
         jobInfoService.stopJob(waitJobInfo.getId());
-
-        Thread.sleep(20_000);
+        Thread.sleep(1_500);
+        Assert.assertTrue(runnings.contains(waitJobInfo.getId()));
+        Assert.assertFalse(succeededs.contains(waitJobInfo.getId()));
+        Assert.assertTrue(aborteds.contains(waitJobInfo.getId()));
     }
+
+    @Test
+    public void testFailed() throws InterruptedException {
+        JobInfo failedJobInfo = new JobInfo();
+        failedJobInfo.setPriority(10);
+        failedJobInfo.setClassName(FailedAfter1sJob.class.getName());
+        failedJobInfo.setDescription("Job that failed after 1s");
+        failedJobInfo = jobInfoService.create(failedJobInfo);
+
+        LOGGER.info("Failed job : {}", failedJobInfo.getId());
+
+        // Wait for job to terminate
+        while (jobInfoRepos.findAllByStatusStatus(JobStatus.FAILED).size() < 1) {
+            Thread.sleep(1_000);
+        }
+        Assert.assertTrue(runnings.contains(failedJobInfo.getId()));
+        Assert.assertFalse(succeededs.contains(failedJobInfo.getId()));
+        Assert.assertTrue(faileds.contains(failedJobInfo.getId()));
+    }
+
+    @Test
+    public void testPool() throws InterruptedException {
+        // Create 6 waitJob
+        JobInfo[] jobInfos = new JobInfo[6];
+        for (int i = 0; i < jobInfos.length; i++) {
+            jobInfos[i] = new JobInfo();
+            jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
+            jobInfos[i].setClassName(WaiterJob.class.getName());
+            jobInfos[i].setDescription(String.format("Job %d that wait 2 x 1s", i));
+            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
+                                      new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "2"));
+        }
+        for (int i = 0; i < jobInfos.length; i++) {
+            jobInfos[i] = jobInfoService.create(jobInfos[i]);
+        }
+        try {
+            // Wait to be sure jobs are treated by pool
+            Thread.sleep(7_000);
+            // Only poolSide jobs should be runnings
+            Assert.assertEquals(jobInfos.length, jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size());
+        } finally {
+            // Wait for all jobs to terminate
+            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < jobInfos.length) {
+                Thread.sleep(1_000);
+            }
+        }
+    }
+
 }
