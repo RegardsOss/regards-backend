@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.jobs.fr.cnes.framework.modules.jobs.domain;
+package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.util.Set;
 

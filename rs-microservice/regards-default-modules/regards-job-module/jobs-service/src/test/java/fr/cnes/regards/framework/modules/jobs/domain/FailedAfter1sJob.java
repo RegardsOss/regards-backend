@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.jobs.fr.cnes.framework.modules.jobs.domain;
+package fr.cnes.regards.framework.modules.jobs.domain;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;

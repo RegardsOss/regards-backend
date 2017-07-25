@@ -48,11 +48,6 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         this.publisher = publisher;
     }
 
-    /**
-     *
-     * @param t
-     * @param r
-     */
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
         JobInfo jobInfo = jobsMap.inverse().get(r);

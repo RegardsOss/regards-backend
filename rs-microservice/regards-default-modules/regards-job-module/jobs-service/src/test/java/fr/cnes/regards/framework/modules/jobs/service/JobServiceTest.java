@@ -31,8 +31,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
-import fr.cnes.regards.framework.modules.jobs.fr.cnes.framework.modules.jobs.domain.FailedAfter1sJob;
-import fr.cnes.regards.framework.modules.jobs.fr.cnes.framework.modules.jobs.domain.WaiterJob;
+import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
+import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
+import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -239,4 +240,18 @@ public class JobServiceTest {
         }
     }
 
+    @Test
+    public void testSpringJob()throws InterruptedException {
+        JobInfo springJobInfo = new JobInfo();
+        springJobInfo.setPriority(100);
+        springJobInfo.setClassName(SpringJob.class.getName());
+        springJobInfo.setDescription("Job with spring beans");
+
+        jobInfoService.create(springJobInfo);
+
+        // Wait for job to terminate
+        while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < 1) {
+            Thread.sleep(1_000);
+        }
+    }
 }

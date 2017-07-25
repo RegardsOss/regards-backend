@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -66,6 +67,9 @@ public class JobService implements IJobService {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
 
     private ThreadPoolExecutor threadPool;
 
@@ -126,6 +130,7 @@ public class JobService implements IJobService {
         // First, instantiate job
         try {
             IJob job = (IJob)Class.forName(jobInfo.getClassName()).newInstance();
+            beanFactory.autowireBean(job);
             job.setId(jobInfo.getId());
             job.setParameters(jobInfo.getParameters());
             if (job.needWorkspace()) {
