@@ -1,0 +1,34 @@
+version: '2'
+services:
+  rs_rabbitmq:
+    image: rabbitmq:3.6.5-management
+
+  rs_postgres:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_PASSWORD=azertyuiop123456789
+      - POSTGRES_USER=azertyuiop123456789
+    volumes:
+      - ./postgres/init.d:/docker-entrypoint-initdb.d
+
+  rs_elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
+    environment:
+      - cluster.name=regards
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2500m -Xmx2500m"
+      - xpack.security.enabled=false
+
+  rs_build_deploy:
+    image: 172.26.47.52:5000/rs-maven
+    environment:
+      - BRANCH_NAME
+      - WORKSPACE
+      - MODE=Deploy
+
+  rs_build_verify:
+    image: 172.26.47.52:5000/rs-maven
+    environment:
+      - BRANCH_NAME
+      - WORKSPACE
+      - MODE=Verify

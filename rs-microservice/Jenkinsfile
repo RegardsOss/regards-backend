@@ -20,32 +20,43 @@ pipeline {
     }
 
     stages {
+        stage('Init COTS') {
+            steps {
+                sh 'docker-compose up -d rs_rabbitmq rs_postgres rs_elasticsearch'
+            }
+        }
         stage('Deploy & Analyze') {
             when {
                 anyOf {
-                    branch 'master'; branch 'develop'; branch '1.0-RELEASE'
+                    branch 'master'; branch 'develop'; branch 'develop_V1.1.0'
                 }
             }
             steps {
-                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
-                        'deploy sonar:sonar -Dspring.profiles.active=rabbit ' +
-                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
-                        '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
-                        '-Dsonar.branch=${env.BRANCH_NAME}'
-                // TODO build and push docker image
+                // pour l'image docker et récupérer le répo local d'artefact
+                // find regards -exec echo `pwd`/{} \; |grep -v pom | grep -v .git | xargs cp -R --target-directory=./testCP/
+//                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
+//                        'deploy sonar:sonar -Dspring.profiles.active=rabbit ' +
+//                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
+//                        '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
+//                        '-Dsonar.branch=${env.BRANCH_NAME}'
+                sh 'docker-compose up rs_build_deploy'
             }
         }
         stage('Verify') {
             when {
                 not {
                     anyOf {
-                        branch 'master'; branch 'develop'; branch '1.0-RELEASE'
+                        branch 'master'; branch 'develop'; branch 'develop_V1.1.0'
                     }
                 }
             }
             steps {
-                sh 'mvn -U -P delivery clean verify sonar:sonar -Dspring.profiles.active=rabbit '
+                sh 'docker-compose up rs_build_verify'
+//                sh 'mvn -U -P delivery clean verify sonar:sonar -Dspring.profiles.active=rabbit -Dsonar.branch=${env.BRANCH_NAME}'
             }
+        }
+        stage('Clean docker') {
+            sh 'docker-compose down'
         }
     }
 }
