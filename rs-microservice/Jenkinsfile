@@ -57,7 +57,7 @@ pipeline {
         }
         stage('Clean docker') {
             steps {
-                sh 'docker-compose down'
+                sh 'docker-compose stop'
             }
         }
     }
