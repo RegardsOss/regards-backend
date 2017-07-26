@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -49,4 +52,8 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     @EntityGraph(attributePaths = { "parameters", "results" })
     JobInfo findById(UUID id);
+
+    @Modifying
+    @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3")
+    void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id);
 }

@@ -70,4 +70,9 @@ public interface IJobInfoService {
      * @param id job id
      */
     void stopJob(UUID id);
+
+    /**
+     * Update jobInfos completion ie percentCompleted and estimatedCompletion date
+     */
+    void updateJobInfosCompletion(Iterable<JobInfo> jobInfos);
 }

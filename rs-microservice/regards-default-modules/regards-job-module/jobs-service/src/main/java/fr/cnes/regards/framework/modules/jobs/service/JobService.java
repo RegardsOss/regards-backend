@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -17,10 +20,14 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -42,6 +49,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  */
 @Service
 public class JobService implements IJobService {
+
     public static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
     @Autowired
@@ -76,7 +84,7 @@ public class JobService implements IJobService {
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
      */
-    private BiMap<JobInfo, RunnableFuture<Void>> jobsMap = HashBiMap.create();
+    private BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
 
     @PostConstruct
     private void init() {
@@ -100,8 +108,9 @@ public class JobService implements IJobService {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
-                                             + "for your soul", e);
+                        LOGGER.error(
+                                "Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
+                                        + "for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -120,6 +129,31 @@ public class JobService implements IJobService {
         }
     }
 
+    /**
+     * Periodicaly update all percent completed and estimated completion date of running jobs
+     */
+    @Scheduled(fixedDelayString = "${regards.jobs.completion.update.rate.ms:1000}")
+    @Override
+    public void updateCurrentJobsCompletions() {
+        // Retrieve all jobInfos of which completion has changed
+        Set<JobInfo> toUpdateJobInfos = Sets.filter(jobsMap.keySet(), j -> j.getStatus().hasCompletionChanged());
+        if (!toUpdateJobInfos.isEmpty()) {
+            // Create a multimap { tenant, (jobInfos) }
+            HashMultimap<String, JobInfo> tenantJobInfoMultimap = HashMultimap.create();
+            for (JobInfo jobInfo : toUpdateJobInfos) {
+                tenantJobInfoMultimap.put(jobInfo.getTenant(), jobInfo);
+            }
+            // For each tenant -> (jobInfo) update them
+            for (Map.Entry<String, Collection<JobInfo>> entry : tenantJobInfoMultimap.asMap().entrySet()) {
+                runtimeTenantResolver.forceTenant(entry.getKey());
+                // Direct Update concerned properties into Database whithout changing anything else
+                jobInfoService.updateJobInfosCompletion(entry.getValue());
+            }
+            // Clear completion status
+            toUpdateJobInfos.forEach(j -> j.getStatus().clearCompletionChanged());
+        }
+    }
+
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
@@ -129,7 +163,7 @@ public class JobService implements IJobService {
     public void execute(JobInfo jobInfo) {
         // First, instantiate job
         try {
-            IJob job = (IJob)Class.forName(jobInfo.getClassName()).newInstance();
+            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setId(jobInfo.getId());
             job.setParameters(jobInfo.getParameters());
@@ -170,17 +204,17 @@ public class JobService implements IJobService {
         }
     }
 
-    /**
-     * Handler for StopEventJob
-     */
-    private class StopJobHandler implements IHandler<StopJobEvent> {
+/**
+ * Handler for StopEventJob
+ */
+private class StopJobHandler implements IHandler<StopJobEvent> {
 
-        @Override
-        public void handle(TenantWrapper<StopJobEvent> wrapper) {
-            if (wrapper.getContent() != null) {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                JobService.this.abort(wrapper.getContent().getJobId());
-            }
+    @Override
+    public void handle(TenantWrapper<StopJobEvent> wrapper) {
+        if (wrapper.getContent() != null) {
+            runtimeTenantResolver.forceTenant(wrapper.getTenant());
+            JobService.this.abort(wrapper.getContent().getJobId());
         }
     }
+}
 }

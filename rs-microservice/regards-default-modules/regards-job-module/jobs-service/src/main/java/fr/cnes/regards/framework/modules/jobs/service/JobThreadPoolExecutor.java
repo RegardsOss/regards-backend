@@ -51,9 +51,10 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
         JobInfo jobInfo = jobsMap.inverse().get(r);
+        // In case jobsMap is not yet available (this means afterExecute has been called very very early)
+        // because of jobsMap.put(jobInfo, threadPool.submit(...))
         while (jobInfo == null) {
             jobInfo = jobsMap.inverse().get(r);
-            System.out.println("TROP RAPIDE !");
         }
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
         jobInfo.updateStatus(JobStatus.RUNNING);
@@ -100,5 +101,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         if (jobInfo.getJob().needWorkspace()) {
             FileSystemUtils.deleteRecursively(jobInfo.getJob().getWorkspace().toFile());
         }
+        // Clean jobsMap
+        jobsMap.remove(jobInfo);
     }
 }

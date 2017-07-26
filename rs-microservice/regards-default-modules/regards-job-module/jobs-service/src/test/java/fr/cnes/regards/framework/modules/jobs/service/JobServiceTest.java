@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
+ * Test of Jobs executions (status, pool, spring autowiring, ...)
  * @author oroussel
  */
 @RunWith(SpringRunner.class)

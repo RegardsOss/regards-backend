@@ -75,4 +75,18 @@ public interface IJob extends Runnable {
     default void setParameters(Set<JobParameter> pParameters)
             throws JobParameterMissingException, JobParameterInvalidException {
     }
+
+    /**
+     * To manage completion estimated date and percentComplete property, a job should provide the number of times it
+     * will call {@link #advanceCompletion()} during its execution.
+     * @return 100 by default
+     */
+    default int getCompletionCount() {
+        return 100;
+    }
+
+    /**
+     * Advance completion count. This method should not be called more than {@link #getCompletionCount()} times
+     */
+    void advanceCompletion();
 }
