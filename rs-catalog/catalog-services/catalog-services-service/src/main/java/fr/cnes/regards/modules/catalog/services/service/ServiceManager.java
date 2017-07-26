@@ -30,6 +30,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -42,6 +44,7 @@ import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
@@ -65,20 +68,34 @@ public class ServiceManager implements IServiceManager {
     private final ILinkPluginsDatasetsService linkPluginsDatasetsService;
 
     /**
-     * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}
+     * Finds the application mode of the given plugin configuration
      */
-    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> {
+    private static final Function<PluginConfiguration, CatalogServicePlugin> GET_CATALOG_SERVICE_PLUGIN_ANNOTATION = pPluginConfiguration -> {
         try {
-            CatalogServicePlugin annotation = AnnotationUtils
-                    .findAnnotation(Class.forName(configuration.getPluginClassName()), CatalogServicePlugin.class);
-            ServiceScope[] applicationModes = annotation.applicationModes();
-            return Arrays.asList(applicationModes).contains(pServiceScope);
-        } catch (NullPointerException | ClassNotFoundException e) {
+            return AnnotationUtils.findAnnotation(Class.forName(pPluginConfiguration.getPluginClassName()),
+                                                  CatalogServicePlugin.class);
+        } catch (ClassNotFoundException e) {
             // No exception should occurs there. If any occurs it should set the application into maintenance mode so we
             // can safely rethrow as a runtime
             throw new PluginUtilsRuntimeException("Could not instanciate plugin", e);
         }
     };
+
+    /**
+     * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}
+     */
+    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> Arrays
+            .asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
+            .contains(pServiceScope);
+
+    /**
+     * For a {@link PluginConfiguration}, return its corresponding DTO, in which we have added fields <code>applicationModes</code>
+     * and <code>entityTypes</code>
+     */
+    private static final Function<PluginConfiguration, PluginConfigurationDto> PLUGIN_CONFIGURATION_TO_DTO = pPluginConfiguration -> new PluginConfigurationDto(
+            pPluginConfiguration,
+            Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration).applicationModes()),
+            Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration).entityTypes()));
 
     /**
      * Constructor
@@ -142,6 +159,19 @@ public class ServiceManager implements IServiceManager {
         IService toExecute = (IService) pluginService
                 .getPlugin(conf, factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
         return toExecute.apply();
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.catalog.services.service.IServiceManager#retrieveServicesWithMeta(java.lang.String)
+     */
+    @Override
+    public Set<PluginConfigurationDto> retrieveServicesWithMeta(String pDatasetId) throws EntityNotFoundException {
+        final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
+        final Set<PluginConfiguration> servicesConf = datasetPlugins.getServices();
+
+        try (Stream<PluginConfiguration> stream = servicesConf.stream()) {
+            return stream.map(PLUGIN_CONFIGURATION_TO_DTO).collect(Collectors.toSet());
+        }
     }
 
 }

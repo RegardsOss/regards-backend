@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -36,7 +37,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 public interface IServiceManager {
 
     /**
-     * retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset for a
+     * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset for a
      * given scope
      *
      * @param pServiceScope
@@ -51,6 +52,19 @@ public interface IServiceManager {
      */
     Set<PluginConfiguration> retrieveServices(String pDatasetId, ServiceScope pServiceScope)
             throws EntityNotFoundException;
+
+    /**
+     * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset, and adds applicationModes
+     * & entityTypes info via a DTO
+     *
+     * @param pDatasetId
+     *            id of dataset
+     * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
+     *         scope
+     * @throws EntityNotFoundException
+     *             thrown is the pDatasetId does not represent any Dataset.
+     */
+    Set<PluginConfigurationDto> retrieveServicesWithMeta(String pDatasetId) throws EntityNotFoundException;
 
     /**
      * Apply the service

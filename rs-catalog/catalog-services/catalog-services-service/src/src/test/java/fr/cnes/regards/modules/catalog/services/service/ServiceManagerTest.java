@@ -27,13 +27,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
+import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
@@ -139,6 +143,33 @@ public class ServiceManagerTest {
 
         // Check
         Assert.assertThat(retrieveServices, Matchers.is(Matchers.emptyCollectionOf(PluginConfiguration.class)));
+    }
+
+    /**
+     * Test method for
+     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
+     *
+     * @throws EntityNotFoundException
+     */
+    @Test
+    public final void testRetrieveServicesWithMeta() throws EntityNotFoundException {
+        // Prepare test
+        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test", PLUGIN_CONFIGURATIONS);
+        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
+
+        // Call tested method
+        final Set<PluginConfigurationDto> pluginConfigurationDtos = serviceManager.retrieveServicesWithMeta("test");
+
+        // Define expected
+        Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY);
+        Set<EntityType> expectedEntityTypes = Sets.newHashSet(EntityType.DATA);
+
+        // Check
+        Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(1));
+        Assert.assertThat(pluginConfigurationDtos, Matchers
+                .hasItem(Matchers.hasProperty("applicationModes", Matchers.equalTo(expectedApplicationModes))));
+        Assert.assertThat(pluginConfigurationDtos,
+                          Matchers.hasItem(Matchers.hasProperty("entityTypes", Matchers.equalTo(expectedEntityTypes))));
     }
 
 }
