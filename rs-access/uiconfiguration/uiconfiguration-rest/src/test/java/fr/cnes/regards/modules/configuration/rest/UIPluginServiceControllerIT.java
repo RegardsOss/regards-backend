@@ -33,10 +33,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.configuration.dao.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.configuration.dao.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.configuration.dao.IUIPluginDefinitionRepository;
@@ -44,6 +47,7 @@ import fr.cnes.regards.modules.configuration.domain.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.configuration.domain.UIPluginConfiguration;
 import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
 import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
+import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  *
@@ -83,6 +87,10 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
         plugin.setName("PluginTest");
         plugin.setType(pType);
         plugin.setSourcePath("plugins/test/bundle.js");
+        if (UIPluginTypesEnum.SERVICE.equals(pType)) {
+            plugin.setApplicationModes(Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY));
+            plugin.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));
+        }
         return plugin;
     }
 

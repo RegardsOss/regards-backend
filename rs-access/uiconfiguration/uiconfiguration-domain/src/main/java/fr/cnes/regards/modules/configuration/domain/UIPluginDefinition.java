@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.configuration.domain;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -36,10 +37,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.configuration.domain.validation.NotEmptyFieldsIfService;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.search.domain.ServiceScope;
 
 /**
  *
@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.search.domain.ServiceScope;
  */
 @Entity
 @Table(name = "t_ui_plugin")
+@NotEmptyFieldsIfService
 public class UIPluginDefinition {
 
     /**
@@ -93,24 +94,24 @@ public class UIPluginDefinition {
     /**
      * Application modes
      */
-    @NotEmpty
+    @NotNull
     @Column(name = "application_mode", nullable = false)
     @ElementCollection
     @CollectionTable(name = "t_ui_plugin_application_mode", joinColumns = @JoinColumn(name = "ui_plugin_id"),
             foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
-    private Set<ServiceScope> applicationModes;
+    private Set<ServiceScope> applicationModes = new HashSet<>();
 
     /**
      * Entity Types to which this plugin is applicable
      */
-    @NotEmpty
+    @NotNull
     @Column(name = "entity_type", nullable = false)
     @ElementCollection
     @CollectionTable(name = "t_ui_plugin_entity_type", joinColumns = @JoinColumn(name = "ui_plugin_id"),
             foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
-    private Set<EntityType> entityTypes;
+    private Set<EntityType> entityTypes = new HashSet<>();
 
     public Long getId() {
         return id;

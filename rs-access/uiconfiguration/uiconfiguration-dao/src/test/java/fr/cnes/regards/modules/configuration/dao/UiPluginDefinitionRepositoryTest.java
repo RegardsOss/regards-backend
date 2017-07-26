@@ -27,10 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
 import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.search.domain.ServiceScope;
 
 /**
  * Unit test for {@link IUIPluginDefinitionRepository}
