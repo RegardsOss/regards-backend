@@ -32,3 +32,5 @@ services:
       - BRANCH_NAME
       - WORKSPACE
       - MODE=Verify
+    volume:
+      - .:/app_to_build
