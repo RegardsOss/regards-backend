@@ -26,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  * SampleServicePlugin
@@ -35,6 +37,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 @Plugin(description = "Sample plugin test", id = "aSampleServicePlugin", version = "0.0.1",
         author = "REGARDS Dream Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
+@CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.QUERY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin implements ISampleServicePlugin {
 
     /**
@@ -62,7 +65,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         if (isActive) {
             str.append(pMessage + " --> the suffix is '" + suffix + "'");
         } else {
@@ -97,20 +100,4 @@ public class SampleServicePlugin implements ISampleServicePlugin {
         int n = add(10, 20);
         return ResponseEntity.ok(echo("res=" + n));
     }
-
-    @Override
-    public boolean isApplyableOnOneData() {
-        return true;
-    }
-
-    @Override
-    public boolean isApplyableOnManyData() {
-        return false;
-    }
-
-    @Override
-    public boolean isApplyableOnQuery() {
-        return true;
-    }
-
 }

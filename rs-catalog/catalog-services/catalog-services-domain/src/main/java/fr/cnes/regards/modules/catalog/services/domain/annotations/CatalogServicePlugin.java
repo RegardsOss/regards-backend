@@ -24,6 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.models.domain.EntityType;
+
 /**
  * Indicates that an annotated class is a "CatalogServicePlugin", that it is to say a Plugin from rs-catalog which is applied to entities.
  *
@@ -36,14 +39,14 @@ import java.lang.annotation.Target;
 @Documented
 public @interface CatalogServicePlugin {
 
-    //    /**
-    //     * The possible application modes of the annotated type.
-    //     */
-    //    ServiceScope[] applicationModes();
-    //
-    //    /**
-    //     * The entity types to which the annotated type is meant to be applied.
-    //     */
-    //    EntityType[] entityTypes();
+    /**
+     * The possible application modes of the annotated type.
+     */
+    ServiceScope[] applicationModes();
+
+    /**
+     * The entity types to which the annotated type is meant to be applied.
+     */
+    EntityType[] entityTypes();
 
 }

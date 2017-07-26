@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -25,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
@@ -64,22 +67,13 @@ public class ServiceManager implements IServiceManager {
     /**
      * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}
      */
-    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> { //NOSONAR
+    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> {
         try {
-            switch (pServiceScope) {
-                case QUERY:
-                    return ((IService) Class.forName(configuration.getPluginClassName()).newInstance())
-                            .isApplyableOnQuery();
-                case ONE:
-                    return ((IService) Class.forName(configuration.getPluginClassName()).newInstance())
-                            .isApplyableOnOneData();
-                case MANY:
-                    return ((IService) Class.forName(configuration.getPluginClassName()).newInstance())
-                            .isApplyableOnManyData();
-                default:
-                    throw new IllegalArgumentException(pServiceScope + " is not a valid value for the Service scope");
-            }
-        } catch (NullPointerException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            CatalogServicePlugin annotation = AnnotationUtils
+                    .findAnnotation(Class.forName(configuration.getPluginClassName()), CatalogServicePlugin.class);
+            ServiceScope[] applicationModes = annotation.applicationModes();
+            return Arrays.asList(applicationModes).contains(pServiceScope);
+        } catch (NullPointerException | ClassNotFoundException e) {
             // No exception should occurs there. If any occurs it should set the application into maintenance mode so we
             // can safely rethrow as a runtime
             throw new PluginUtilsRuntimeException("Could not instanciate plugin", e);
@@ -112,6 +106,7 @@ public class ServiceManager implements IServiceManager {
      *         scope
      * @throws EntityNotFoundException
      *             thrown is the pDatasetId does not represent any Dataset.
+     * @throws ClassNotFoundException
      */
     @Override
     public Set<PluginConfiguration> retrieveServices(final String pDatasetId, final ServiceScope pServiceScope)
