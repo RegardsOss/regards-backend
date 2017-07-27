@@ -36,10 +36,6 @@
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>access-services-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-			<artifactId>uiconfiguration-service</artifactId>
-		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
