@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -33,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -53,50 +51,32 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 @RequestMapping(CatalogServicesController.PATH_SERVICES)
 public class CatalogServicesController {
 
-    public static final String PATH_SERVICES = "/services/{dataset_id}";
+    public static final String PATH_SERVICES = "/services";
 
-    public static final String PATH_META = "/meta";
-
-    public static final String PATH_SERVICE_NAME = "/{service_name}";
+    public static final String PATH_SERVICE_NAME = "/{dataset_id}/{service_name}";
 
     @Autowired
     private IServiceManager serviceManager;
 
     /**
-     * Retrieve all services configured for a dataset and a given scope
+     * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset.
+     * The results are augmented with their <code>applicationModes</code> & <code>entityTypes</code> info via a DTO.
+     * <p>If <code>pDatasetId</code> is <code>null</code>, en empty list will be returned
+     * <p>If <code>pServiceScope</code> is <code>null</code>, all services on given dataset will be returned, regardless their scope.
      *
      * @param pDatasetId
-     *            the id of the {@link Dataset}
+     *            the id of the {@link Dataset}. Can be <code>null</code>.
      * @param pServiceScope
-     *            the {@link ServiceScope}
-     * @return the list of services configured for the given dataset and the given scope
-     * @throws EntityNotFoundException
+     *            the applicable mode. Can be <code>null</code>.
+     * @return the list of services
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "endpoint allowing to retrieve all services configured for a dataset and a given scope")
-    public ResponseEntity<Set<PluginConfiguration>> retrieveServices(
-            @PathVariable("dataset_id") final String pDatasetId,
-            @RequestParam("service_scope") final ServiceScope pServiceScope) throws EntityNotFoundException {
-        final Set<PluginConfiguration> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
-        return new ResponseEntity<>(services, HttpStatus.OK);
-    }
-
-    /**
-     * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset, add applicationModes
-     * & entityTypes info via a DTO
-     *
-     * @param pDatasetId
-     *            the id of the {@link Dataset}
-     * @return the list of services
-     * @throws EntityNotFoundException
-     */
-    @RequestMapping(method = RequestMethod.GET, path = PATH_META)
     @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information")
-    public ResponseEntity<Collection<Resource<PluginConfigurationDto>>> retrieveServicesWithMeta(
-            @PathVariable("dataset_id") final String pDatasetId) throws EntityNotFoundException {
-        final Set<PluginConfigurationDto> services = serviceManager.retrieveServicesWithMeta(pDatasetId);
-        return new ResponseEntity<>(HateoasUtils.wrapCollection(services), HttpStatus.OK);
+    public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
+            @RequestParam(value = "dataset_id", required = false) final String pDatasetId,
+            @RequestParam(value = "service_scope", required = false) final ServiceScope pServiceScope) {
+        final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
+        return new ResponseEntity<>(HateoasUtils.wrapList(services), HttpStatus.OK);
     }
 
     /**

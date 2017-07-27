@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.hamcrest.Matchers;
@@ -129,36 +130,16 @@ public class ServiceManagerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
-     *
-     * @throws EntityNotFoundException
      */
     @Test
-    public final void testRetrieveServices() throws EntityNotFoundException {
+    public final void testRetrieveServices() {
         // Prepare test
         final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test", PLUGIN_CONFIGURATIONS);
         Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Call tested method
-        final Set<PluginConfiguration> retrieveServices = serviceManager.retrieveServices("test", ServiceScope.MANY);
-
-        // Check
-        Assert.assertThat(retrieveServices, Matchers.is(Matchers.emptyCollectionOf(PluginConfiguration.class)));
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
-     *
-     * @throws EntityNotFoundException
-     */
-    @Test
-    public final void testRetrieveServicesWithMeta() throws EntityNotFoundException {
-        // Prepare test
-        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test", PLUGIN_CONFIGURATIONS);
-        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
-
-        // Call tested method
-        final Set<PluginConfigurationDto> pluginConfigurationDtos = serviceManager.retrieveServicesWithMeta("test");
+        final List<PluginConfigurationDto> pluginConfigurationDtos = serviceManager.retrieveServices("test",
+                                                                                                     ServiceScope.ONE);
 
         // Define expected
         Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY);

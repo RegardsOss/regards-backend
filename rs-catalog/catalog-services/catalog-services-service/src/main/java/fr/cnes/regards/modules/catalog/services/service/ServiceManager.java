@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.service;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -34,7 +35,6 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -82,11 +82,12 @@ public class ServiceManager implements IServiceManager {
     };
 
     /**
-     * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}
+     * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
+     * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> Arrays
-            .asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
-            .contains(pServiceScope);
+    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
+            || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
+                    .contains(pServiceScope);
 
     /**
      * For a {@link PluginConfiguration}, return its corresponding DTO, in which we have added fields <code>applicationModes</code>
@@ -111,30 +112,15 @@ public class ServiceManager implements IServiceManager {
         linkPluginsDatasetsService = pLinkPluginsDatasetsService;
     }
 
-    /**
-     * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset for a
-     * given scope
-     *
-     * @param pServiceScope
-     *            scope we are interrested in
-     * @param pDatasetId
-     *            id of dataset
-     * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
-     *         scope
-     * @throws EntityNotFoundException
-     *             thrown is the pDatasetId does not represent any Dataset.
-     * @throws ClassNotFoundException
-     */
     @Override
-    public Set<PluginConfiguration> retrieveServices(final String pDatasetId, final ServiceScope pServiceScope)
-            throws EntityNotFoundException {
+    public List<PluginConfigurationDto> retrieveServices(String pDatasetId, final ServiceScope pServiceScope) {
         final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
-        final Set<PluginConfiguration> servicesConf = datasetPlugins.getServices();
+        final Set<PluginConfiguration> services = datasetPlugins.getServices();
 
-        try (Stream<PluginConfiguration> stream = servicesConf.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(pServiceScope)).collect(Collectors.toSet());
+        try (Stream<PluginConfiguration> stream = services.stream()) {
+            return stream.filter(IS_APPLICABLE_ON.apply(pServiceScope)).map(PLUGIN_CONFIGURATION_TO_DTO)
+                    .collect(Collectors.toList());
         }
-
     }
 
     @Override
@@ -149,7 +135,7 @@ public class ServiceManager implements IServiceManager {
         // is it a service applyable to this dataset?
         if (!linkPluginsDatasetsService.retrieveLink(pDatasetId).getServices().contains(conf)) {
             throw new EntityInvalidException(
-                    pServiceName + " is not a service applyable to the dataset with id " + pDatasetId);
+                    pServiceName + " is not a service applicable to the dataset with id " + pDatasetId);
         }
 
         // Build dynamic parameters
@@ -159,19 +145,6 @@ public class ServiceManager implements IServiceManager {
         IService toExecute = (IService) pluginService
                 .getPlugin(conf, factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
         return toExecute.apply();
-    }
-
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.catalog.services.service.IServiceManager#retrieveServicesWithMeta(java.lang.String)
-     */
-    @Override
-    public Set<PluginConfigurationDto> retrieveServicesWithMeta(String pDatasetId) throws EntityNotFoundException {
-        final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
-        final Set<PluginConfiguration> servicesConf = datasetPlugins.getServices();
-
-        try (Stream<PluginConfiguration> stream = servicesConf.stream()) {
-            return stream.map(PLUGIN_CONFIGURATION_TO_DTO).collect(Collectors.toSet());
-        }
     }
 
 }

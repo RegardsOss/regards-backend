@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.client;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 
 /**
@@ -85,7 +86,8 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Requirement("REGARDS_DSL_ACC_ARC_130")
     @Purpose("Check that we can retrieve IHM Service augmented with their meta information")
     public void retrieveServicesWithMeta() {
-        ResponseEntity<Collection<Resource<PluginConfigurationDto>>> result = client.retrieveServicesWithMeta("zob");
+        ResponseEntity<List<Resource<PluginConfigurationDto>>> result = client.retrieveServices("zob",
+                                                                                                ServiceScope.MANY);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.NOT_FOUND));
     }
 

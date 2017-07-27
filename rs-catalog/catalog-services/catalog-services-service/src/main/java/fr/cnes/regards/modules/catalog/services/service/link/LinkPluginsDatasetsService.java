@@ -23,16 +23,15 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.catalog.services.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
@@ -63,11 +62,9 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
     /**
      * Constructor
-     *
+     * @param pRunTimeTenantResolver
+     * @param pSubscriber
      * @param pLinkRepo
-     *            the repository handling {@link LinkPluginsDatasets}
-     * @param pDatasetClient
-     *            Feign client providing {@link Dataset}s
      */
     public LinkPluginsDatasetsService(final IRuntimeTenantResolver pRunTimeTenantResolver,
             final ISubscriber pSubscriber, final ILinkPluginsDatasetsRepository pLinkRepo) {
@@ -108,14 +105,8 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         }
     }
 
-    /**
-     * @param pDatasetId
-     * @return
-     * @throws EntityNotFoundException
-     */
     @Override
-    public LinkPluginsDatasets retrieveLink(final String pDatasetId) throws EntityNotFoundException {
-
+    public LinkPluginsDatasets retrieveLink(final String pDatasetId) {
         final LinkPluginsDatasets linkPluginsDatasets = linkRepo.findOneByDatasetId(pDatasetId);
         if (linkPluginsDatasets == null) {
             return linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
@@ -123,17 +114,9 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         return linkPluginsDatasets;
     }
 
-    /**
-     * @param pDatasetId
-     * @param pUpdatedLink
-     * @return
-     * @throws EntityNotFoundException
-     * @throws EntityInvalidException
-     */
     @Override
     public LinkPluginsDatasets updateLink(final String pDatasetId, final LinkPluginsDatasets pUpdatedLink)
-            throws EntityNotFoundException, EntityInvalidException {
-
+            throws EntityInvalidException {
         if (!pDatasetId.equals(pUpdatedLink.getDatasetId())) {
             throw new EntityInvalidException(String.format("Invalid datasetId %s ", pDatasetId));
         }

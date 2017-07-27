@@ -18,8 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.service.link;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 
 /**
@@ -35,10 +34,8 @@ public interface ILinkPluginsDatasetsService {
      * @param pDatasetId
      *            the given dataset id
      * @return the {@link LinkPluginsDatasets}
-     * @throws EntityNotFoundException
-     *             if the given dataset does not exist
      */
-    LinkPluginsDatasets retrieveLink(String pDatasetId) throws EntityNotFoundException;
+    LinkPluginsDatasets retrieveLink(String pDatasetId);
 
     /**
      * Update a {@link LinkPluginsDatasets}
@@ -48,10 +45,9 @@ public interface ILinkPluginsDatasetsService {
      * @param pUpdatedLink
      *            the {@link LinkPluginsDatasets} to update
      * @return the updated {@link LinkPluginsDatasets}
-     * @throws EntityNotFoundException
-     *             if the given dataset does not exist
-     * @throws EntityException
+     * @throws EntityInvalidException
+     *             if the given updated link is not on given dataset
      */
-    LinkPluginsDatasets updateLink(String pDatasetId, LinkPluginsDatasets pUpdatedLink) throws EntityException;
+    LinkPluginsDatasets updateLink(String pDatasetId, LinkPluginsDatasets pUpdatedLink) throws EntityInvalidException;
 
 }

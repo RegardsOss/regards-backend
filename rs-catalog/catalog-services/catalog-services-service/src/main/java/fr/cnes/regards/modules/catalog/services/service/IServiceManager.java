@@ -18,53 +18,36 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * Defines operations on rs-catalog's plugins.
  *
+ * @author Sylvain Vissiere-Guerinet
+ * @author Xavier-Alexandre Brochard
  */
 public interface IServiceManager {
-
-    /**
-     * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset for a
-     * given scope
-     *
-     * @param pServiceScope
-     *            scope we are interrested in
-     * @param pDatasetId
-     *            id of dataset
-     *
-     * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
-     *         scope
-     * @throws EntityNotFoundException
-     *             thrown is the pDatasetId does not represent any Dataset.
-     */
-    Set<PluginConfiguration> retrieveServices(String pDatasetId, ServiceScope pServiceScope)
-            throws EntityNotFoundException;
 
     /**
      * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset, and adds applicationModes
      * & entityTypes info via a DTO
      *
      * @param pDatasetId
-     *            id of dataset
+     *            Id of dataset. Can be <code>null</code>.
+     * @param pServiceScope
+     *            scope we are interrested in. Can be <code>null</code>.
      * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
-     *         scope
-     * @throws EntityNotFoundException
-     *             thrown is the pDatasetId does not represent any Dataset.
+     *         scope. Returns an empty list if <code>pDatasetId</code> is <code>null</code>
      */
-    Set<PluginConfigurationDto> retrieveServicesWithMeta(String pDatasetId) throws EntityNotFoundException;
+    List<PluginConfigurationDto> retrieveServices(String pDatasetId, ServiceScope pServiceScope);
 
     /**
      * Apply the service

@@ -45,11 +45,13 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.SampleServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
@@ -122,8 +124,10 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + "?service_scope=QUERY", expectations,
-                          "there should not be any error", DATA_SET_NAME);
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+                .param("service_scope", ServiceScope.QUERY.toString());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
+                          builder);
     }
 
     @Test
@@ -131,8 +135,10 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + "?service_scope=MANY", expectations,
-                          "there should not be any error", DATA_SET_NAME);
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+                .param("service_scope", ServiceScope.MANY.toString());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
+                          builder);
     }
 
     @Test
@@ -140,8 +146,31 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + "?service_scope=ONE", expectations,
-                          "there should not be any error", DATA_SET_NAME);
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+                .param("service_scope", ServiceScope.ONE.toString());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
+                          builder);
+    }
+
+    @Test
+    public void retrieveServices_shouldHaveMeta() {
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId", Matchers.is("tata")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes",
+                                                        Matchers.containsInAnyOrder("QUERY", "ONE")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes",
+                                                        Matchers.contains("DATA")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
+                                                        Matchers.is("aSampleServicePlugin")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
+                                                        Matchers.containsInAnyOrder("QUERY", "ONE")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
+                                                        Matchers.contains("DATASET")));
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+                .param("service_scope", ServiceScope.ONE.toString());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations,
+                          "There should be plugin configurations augmented with meta data", builder);
     }
 
     @Test
@@ -155,8 +184,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
+                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
     }
 
     @Test
@@ -168,8 +197,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         sj.add("para=HelloWorld");
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
+                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
     }
 
     @Test
@@ -179,8 +208,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         sj.add(SampleServicePlugin.SUFFIXE + "=b");
 
         expectations.add(MockMvcResultMatchers.status().isNoContent());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
+                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME,
+                          samplePlgConf.getLabel());
     }
 
     @Test
@@ -191,8 +221,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         sj.add(SampleServicePlugin.SUFFIXE + "=h");
 
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
+        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
+                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME,
+                          samplePlgConf.getLabel());
     }
 
     @Test
@@ -203,33 +234,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         sj.add(SampleServicePlugin.SUFFIXE + "=z");
 
         expectations.add(MockMvcResultMatchers.status().isInternalServerError());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME + sj.toString(),
-                          expectations, "there should not be any error", DATA_SET_NAME, samplePlgConf.getLabel());
-    }
-
-    @Test
-    public void retrieveServicesWithMeta() {
-        final StringJoiner sj = new StringJoiner("&", "?", "");
-        sj.add(SampleServicePlugin.ACTIVE + "=true");
-        sj.add(SampleServicePlugin.COEFF + "=0");
-        sj.add(SampleServicePlugin.SUFFIXE + "=z");
-
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
-                                                        Matchers.is("aSampleServicePlugin")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes",
-                                                        Matchers.containsInAnyOrder("QUERY", "ONE")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes",
-                                                        Matchers.contains("DATASET")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId", Matchers.is("tata")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
-                                                        Matchers.containsInAnyOrder("QUERY", "ONE")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
-                                                        Matchers.contains("DATA")));
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_META + sj.toString(), expectations,
-                          "There should be plugin configurations augmented with meta data", DATA_SET_NAME,
+        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
+                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME,
                           samplePlgConf.getLabel());
     }
-
 }
