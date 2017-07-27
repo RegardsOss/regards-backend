@@ -112,6 +112,7 @@ public class JobServiceTest {
             subscriber.subscribeTo(SucceededJobEvent.class, succeededHandler);
             subscriber.subscribeTo(AbortedJobEvent.class, abortedHandler);
             subscriber.subscribeTo(FailedJobEvent.class, failedHandler);
+            subscriptionsDone = true;
         }
     }
 
@@ -176,6 +177,22 @@ public class JobServiceTest {
     }
 
     @Test
+    public void testAbortion() throws InterruptedException {
+        JobInfo waitJobInfo = new JobInfo();
+        waitJobInfo.setPriority(10);
+        waitJobInfo.setClassName(WaiterJob.class.getName());
+        waitJobInfo.setDescription("Job that wait 3 x 1s");
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo = jobInfoService.create(waitJobInfo);
+        jobInfoService.stopJob(waitJobInfo.getId());
+        LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
+        Thread.sleep(1_500);
+        Assert.assertFalse(succeededs.contains(waitJobInfo.getId()));
+        Assert.assertTrue(aborteds.contains(waitJobInfo.getId()));
+    }
+
+    @Test
     public void testAborted() throws InterruptedException {
         JobInfo waitJobInfo = new JobInfo();
         waitJobInfo.setPriority(10);
@@ -185,7 +202,7 @@ public class JobServiceTest {
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
         waitJobInfo = jobInfoService.create(waitJobInfo);
 
-        Thread.sleep(1_000);
+        Thread.sleep(2_000);
         LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
         jobInfoService.stopJob(waitJobInfo.getId());
         Thread.sleep(1_500);

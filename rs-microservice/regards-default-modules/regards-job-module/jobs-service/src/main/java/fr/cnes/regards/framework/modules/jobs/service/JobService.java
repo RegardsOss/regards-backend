@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -36,6 +38,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -85,6 +88,11 @@ public class JobService implements IJobService {
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
      */
     private BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
+
+    /**
+     * A set containing ids of Jobs asked to be stopped whereas they haven't still be launched
+     */
+    private Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
 
     @PostConstruct
     private void init() {
@@ -161,8 +169,16 @@ public class JobService implements IJobService {
     }
 
     public void execute(JobInfo jobInfo) {
-        // First, instantiate job
         try {
+            // Case job aborted before its execution
+            if (abortedBeforeStartedJobs.contains(jobInfo.getId())) {
+                runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                jobInfo.updateStatus(JobStatus.ABORTED);
+                jobInfoService.save(jobInfo);
+                publisher.publish(new AbortedJobEvent(jobInfo.getId()));
+                return;
+            }
+            // First, instantiate job
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setId(jobInfo.getId());
@@ -195,12 +211,22 @@ public class JobService implements IJobService {
     private void abort(UUID jobId) {
         JobInfo jobInfo = jobInfoService.retrieveJob(jobId);
         // Check job is currently running
-        if (jobInfo.getStatus().getStatus() == JobStatus.RUNNING) {
-            // Check if current microservice is running this job
-            if (jobsMap.containsKey(jobInfo)) {
-                RunnableFuture<Void> task = jobsMap.get(jobInfo);
-                task.cancel(true);
-            }
+        JobStatus status = jobInfo.getStatus().getStatus();
+        switch (status) {
+            case RUNNING:
+                // Check if current microservice is running this job
+                if (jobsMap.containsKey(jobInfo)) {
+                    RunnableFuture<Void> task = jobsMap.get(jobInfo);
+                    task.cancel(true);
+                }
+                break;
+            case PENDING:
+            case QUEUED:
+                // Job not yet running
+                abortedBeforeStartedJobs.add(jobInfo.getId());
+                break;
+            default:
+                break;
         }
     }
 
