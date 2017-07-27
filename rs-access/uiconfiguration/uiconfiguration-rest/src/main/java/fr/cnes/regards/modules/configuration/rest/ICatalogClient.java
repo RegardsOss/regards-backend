@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 
 /**
  * Feign client for calling rs-catalog's {@link CatalogController#searchDataobjects}
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-catalog")

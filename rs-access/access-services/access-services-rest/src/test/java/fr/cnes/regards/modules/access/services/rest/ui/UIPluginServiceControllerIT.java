@@ -37,6 +37,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
@@ -46,7 +47,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
-import fr.cnes.regards.modules.access.services.rest.ui.UIPluginServiceController;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.models.domain.EntityType;
 
@@ -108,7 +108,6 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
 
     @Before
     public void init() {
-
         // Create plugin definitions
         plugin = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.CRITERIA));
         final UIPluginDefinition plugin2 = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.SERVICE));
@@ -151,42 +150,73 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
         linkRepo.save(link3);
     }
 
+    /**
+     * One active plugin associated to second dataset
+     * One service plugin associated to all dataset
+     */
+    @Test
     @Requirement("REGARDS_DSL_ACC_ADM_1530")
     @Purpose("Check retrieve dataset associated UIPluginServices")
-    @Test
-    public void retrieveDatasetLinkedPlugins() {
+    public void retrieveDatasetLinkedPlugins_1() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
 
-        // One active plugin associated to second dataset
-        // One service plugin associated to all dataset
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(2)));
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "firstOne");
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", "firstOne");
+                          "Error getting dataset linked UIPluginConfiguration", builder);
+    }
 
-        // Two active plugin associated to second dataset
-        // One service plugin associated to all dataset
-        expectations.clear();
+    /**
+     * Two active plugin associated to second dataset
+     * One service plugin associated to all dataset
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ACC_ADM_1530")
+    @Purpose("Check retrieve dataset associated UIPluginServices")
+    public void retrieveDatasetLinkedPlugins_2() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(3)));
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "second");
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", "second");
+                          "Error getting dataset linked UIPluginConfiguration", builder);
 
-        // Only Twho active plugin associated to third dataset
-        // One service plugin associated to all dataset
-        expectations.clear();
+    }
+
+    /**
+     * Only Two active plugin associated to third dataset
+     * One service plugin associated to all dataset
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ACC_ADM_1530")
+    @Purpose("Check retrieve dataset associated UIPluginServices")
+    public void retrieveDatasetLinkedPlugins_3() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(3)));
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "third");
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", "third");
+                          "Error getting dataset linked UIPluginConfiguration", builder);
 
-        // One service plugin associated to all dataset
-        expectations.clear();
+    }
+
+    /**
+     * One service plugin associated to all dataset
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ACC_ADM_1530")
+    @Purpose("Check retrieve dataset associated UIPluginServices")
+    public void retrieveDatasetLinkedPlugins_4() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(1)));
+        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "unknown");
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", "unknown");
-
+                          "Error getting dataset linked UIPluginConfiguration", builder);
     }
 
     @Override

@@ -20,6 +20,10 @@ package fr.cnes.regards.modules.access.services.service.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,6 +43,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
 /**
  *
@@ -52,6 +57,13 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 @Service(value = "pluginConfigurationService")
 @RegardsTransactional
 public class UIPluginConfigurationService implements IUIPluginConfigurationService {
+
+    /**
+     * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
+     * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
+     */
+    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration -> (pApplicationMode == null)
+            || pConfiguration.getPluginDefinition().getApplicationModes().contains(pApplicationMode);
 
     @Autowired
     private IUIPluginDefinitionRepository pluginRepository;
@@ -167,7 +179,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     }
 
     @Override
-    public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId) {
+    public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId,
+            ServiceScope pApplicationMode) {
         final List<UIPluginConfiguration> activePluginsConfigurations = new ArrayList<>();
         final LinkUIPluginsDatasets link = linkedUiPluginRespository.findOneByDatasetId(pDatasetId);
         if (link != null) {
@@ -188,7 +201,10 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
                 }
             });
         }
-        return activePluginsConfigurations;
+
+        try (Stream<UIPluginConfiguration> stream = activePluginsConfigurations.stream()) {
+            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationMode)).collect(Collectors.toList());
+        }
     }
 
 }

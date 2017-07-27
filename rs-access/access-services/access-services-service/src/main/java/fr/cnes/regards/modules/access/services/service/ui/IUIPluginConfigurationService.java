@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
 public interface IUIPluginConfigurationService {
 
@@ -116,14 +117,13 @@ public interface IUIPluginConfigurationService {
     void deletePluginconfiguration(UIPluginConfiguration pPluginConfiguration) throws EntityException;
 
     /**
+     * Return all {@link UIPluginConfiguration} for plugins type service and associated to the given dataset id if any given.
      *
-     * Return all {@link UIPluginConfiguration} for plugins type service and asscociated to the given dataset id.
-     *
-     * @param pDatasetId
-     * @param pServiceScope
+     * @param pDatasetId Can be <code>null</code>.
+     * @param pApplicationMode Can be <code>null</code>.
      * @return list of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    List<UIPluginConfiguration> retrieveActivePluginServices(String pDatasetId);
+    List<UIPluginConfiguration> retrieveActivePluginServices(String pDatasetId, ServiceScope pApplicationMode);
 
 }
