@@ -100,7 +100,7 @@ public class RabbitVirtualHostAdminIT {
 
             final List<String> secondRetrieve = rabbitVirtualHostAdmin.retrieveVhostList();
             // Assert.assertEquals(firstRetrieve.size(), secondRetrieve.size() - 1);
-            Assert.assertTrue(secondRetrieve.stream()
+            Assert.assertFalse(secondRetrieve.stream()
                     .filter(v -> v.equals(RabbitVirtualHostAdmin.getVhostName(TEST_VHOST))).findAny().isPresent());
         } catch (RabbitMQVhostException e) {
             Assert.fail();

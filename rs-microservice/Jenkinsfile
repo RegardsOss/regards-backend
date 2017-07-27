@@ -39,6 +39,7 @@ pipeline {
 //                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
 //                        '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
 //                        '-Dsonar.branch=${env.BRANCH_NAME}'
+                //TODO: add spotify docker plugin into the run.sh file
                 sh 'docker-compose up rs_build_deploy'
             }
         }
@@ -52,7 +53,6 @@ pipeline {
             }
             steps {
                 sh 'docker-compose up rs_build_verify'
-//                sh 'mvn -U -P delivery clean verify sonar:sonar -Dspring.profiles.active=rabbit -Dsonar.branch=${env.BRANCH_NAME}'
             }
         }
         stage('Clean docker') {
