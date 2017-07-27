@@ -14,19 +14,22 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>catalog-services-domain</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>regards-core-jpa-data</artifactId>
+		</dependency>
+				<dependency>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>module-plugins-service</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>catalog-services-domain</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

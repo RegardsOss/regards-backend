@@ -55,7 +55,7 @@ public class AccessServicesITConfiguration {
         PluginConfigurationDto dto1 = new PluginConfigurationDto(new PluginConfiguration(),
                 Sets.newHashSet(ServiceScope.MANY), Sets.newHashSet(EntityType.DATASET));
 
-        Mockito.when(client.retrieveServices("zob", ServiceScope.MANY))
+        Mockito.when(client.retrieveServices("datasetFromConfigClass", ServiceScope.MANY))
                 .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dto0, dto1)), HttpStatus.OK));
 

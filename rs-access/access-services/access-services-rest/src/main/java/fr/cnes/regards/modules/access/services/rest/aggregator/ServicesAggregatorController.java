@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.access.services.rest.aggregator;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,13 +51,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 @RequestMapping(ServicesAggregatorController.ROOT_PATH)
 public class ServicesAggregatorController {
 
-    public static final String ROOT_PATH = "/services";
-
-    /**
-     * This function builds a predicate on a {@link PluginServiceDto} which yields true if it has some application modes in the given set
-     */
-    private static final Function<ServiceScope, Predicate<PluginServiceDto>> IS_APPLICABLE_TO = pApplicationMode -> pPluginServiceDto -> pPluginServiceDto
-            .getApplicationModes().contains(pApplicationMode));
+    public static final String ROOT_PATH = "/services/aggregated";
 
     /**
      * The client providing catalog services
@@ -83,7 +75,7 @@ public class ServicesAggregatorController {
      * @return the list of services configured for the given dataset and the given scope
      * @throws EntityNotFoundException
      */
-    @RequestMapping(method = RequestMethod.GET, path = "/aggregated")
+    @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset")
     public ResponseEntity<List<PluginServiceDto>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetId,
@@ -92,9 +84,8 @@ public class ServicesAggregatorController {
         ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
                 .retrieveServices(pDatasetId, pApplicationMode);
         // Retrive ui services
-        List<UIPluginConfiguration> uiServices = uiPluginConfigurationService.retrieveActivePluginServices(pDatasetId, pApplicationMode);
-        // Pre-compute the application modes filter
-        Predicate<PluginServiceDto> isApplicableToGivenModes = IS_APPLICABLE_TO.apply(pApplicationMode);
+        List<UIPluginConfiguration> uiServices = uiPluginConfigurationService
+                .retrieveActivePluginServices(pDatasetId, pApplicationMode);
 
         try (Stream<PluginConfigurationDto> streamCatalogServices = HateoasUtils
                 .unwrapCollection(catalogServices.getBody()).stream();
@@ -104,7 +95,7 @@ public class ServicesAggregatorController {
                     .map(PluginServiceDto::fromPluginConfiguration);
             // Map ui service to dto
             Stream<PluginServiceDto> streamUiServicesDto = streamUiServices
-                    .map(PluginServiceDto::fromUIPluginConfiguration)
+                    .map(PluginServiceDto::fromUIPluginConfiguration);
             // Merge streams
             List<PluginServiceDto> results = Stream.concat(streamCatalogServicesDto, streamUiServicesDto)
                     .collect(Collectors.toList());
