@@ -27,6 +27,10 @@ services:
       - MODE=Deploy
     volumes:
       - .:/app_to_build
+    links:
+      - rs_rabbitmq
+      - rs_postgres
+      - rs_elasticsearch
 
   rs_build_verify:
     image: 172.26.47.52:5000/rs-maven
@@ -36,3 +40,7 @@ services:
       - MODE=Verify
     volumes:
       - .:/app_to_build
+    links:
+      - rs_rabbitmq
+      - rs_postgres
+      - rs_elasticsearch
