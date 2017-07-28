@@ -87,6 +87,14 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
+        
+        List<String> values = new ArrayList<String>(); 
+        values.add("test1"); 
+        values.add("test2"); 
+        TestPojo pojoParam = new TestPojo(); 
+        pojoParam.setValue("salut"); 
+        pojoParam.setValues(values); 
+        JSONObject object = new JSONObject(pojoParam); 
 
         /*
          * Set all parameters
@@ -94,10 +102,13 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
+                .addParameter(SamplePlugin.POJO, object.toString())
+                .addParameter(SamplePlugin.SUFFIXE, "chris_test_1") 
+                .getParameters(); 
+        
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), 
+                                             new HashMap<>()); 
 
         Assert.assertNotNull(samplePlugin);
 
@@ -109,6 +120,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                         .parseInt(PluginUtilsTest.CINQ)),
                 samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE), Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
+        Assert.assertEquals(samplePlugin.getPojo().getValue(), "salut"); 
+        Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size()); 
         LOGGER.debug(ENDING + toString());
     }
 
