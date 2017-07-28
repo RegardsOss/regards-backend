@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -126,7 +127,7 @@ public final class PluginUtils {
      * identifier and value the required {@link PluginMetaData}.
      * <b>Note: </b> This method is used by PluginService which is used in multi-thread environment (see IngesterService
      * and CrawlerService) so ConcurrentHashMap is used instead of HashMap
-
+    
      * @param pPrefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return all class annotated {@link Plugin}
      */
@@ -178,7 +179,8 @@ public final class PluginUtils {
         }
 
         // Try to detect parameters if any
-        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pPluginClass, pPrefixes));
+        pluginMetaData
+                .setParameters(PluginParameterUtils.getParameters(pPluginClass, pPrefixes, true, new ArrayList<>()));
 
         return pluginMetaData;
     }
@@ -196,8 +198,7 @@ public final class PluginUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata,
-            List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap,
-            PluginParameter... pPluginParameters) {
+            List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap, PluginParameter... pPluginParameters) {
         T returnPlugin = null;
 
         try {
@@ -205,8 +206,8 @@ public final class PluginUtils {
             returnPlugin = (T) Class.forName(pPluginMetadata.getPluginClassName()).newInstance();
 
             // Post process parameters
-            PluginParameterUtils
-                    .postProcess(returnPlugin, pPluginConf, pPrefixs, instantiatedPluginMap, pPluginParameters);
+            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPrefixs, instantiatedPluginMap,
+                                             pPluginParameters);
 
             //
             if (pluginUtilsBean != null) {
@@ -226,8 +227,8 @@ public final class PluginUtils {
     }
 
     public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata,
-            IPluginUtilsBean pPluginUtilsBean, List<String> pPrefixs,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... pPluginParameters) {
+            IPluginUtilsBean pPluginUtilsBean, List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap,
+            PluginParameter... pPluginParameters) {
         setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPrefixs, instantiatedPluginMap, pPluginParameters);
     }
@@ -252,8 +253,8 @@ public final class PluginUtils {
             returnPlugin = (T) Class.forName(pPluginClassName).newInstance();
 
             // Post process parameters
-            PluginParameterUtils
-                    .postProcess(returnPlugin, pPluginConf, pPrefixs, instantiatedPluginMap, pPluginParameters);
+            PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPrefixs, instantiatedPluginMap,
+                                             pPluginParameters);
 
             if (pluginUtilsBean != null) {
                 pluginUtilsBean.processAutowiredBean(returnPlugin);
@@ -262,7 +263,8 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
+                | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pPluginClassName), e);
         }
 
@@ -282,11 +284,11 @@ public final class PluginUtils {
      * @return a {@link Plugin} instance @ if a problem occurs
      */
     public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType,
-            IPluginUtilsBean pPluginUtilsBean, List<String> pPrefixs,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... pPluginParameters) {
+            IPluginUtilsBean pPluginUtilsBean, List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap,
+            PluginParameter... pPluginParameters) {
         setPluginUtilsBean(pPluginUtilsBean);
-        return PluginUtils
-                .getPlugin(pParameters, pReturnInterfaceType, pPrefixs, instantiatedPluginMap, pPluginParameters);
+        return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPrefixs, instantiatedPluginMap,
+                                     pPluginParameters);
     }
 
     /**
@@ -300,14 +302,13 @@ public final class PluginUtils {
      * @return a {@link Plugin} instance
      */
     public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType,
-            List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap,
-            PluginParameter... pPluginParameters) {
+            List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap, PluginParameter... pPluginParameters) {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pReturnInterfaceType, pPrefixs);
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", pParameters);
-        return PluginUtils
-                .getPlugin(pluginConfiguration, pluginMetadata, pPrefixs, instantiatedPluginMap, pPluginParameters);
+        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, pPrefixs, instantiatedPluginMap,
+                                     pPluginParameters);
     }
 
     /**
@@ -326,7 +327,8 @@ public final class PluginUtils {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               pPluginInstance.getClass()), e);
+                                               pPluginInstance.getClass()),
+                                 e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -349,7 +351,8 @@ public final class PluginUtils {
                     method.invoke(pPluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               pPluginInstance.getClass()), e);
+                                               pPluginInstance.getClass()),
+                                 e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }

@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * ISamplePlugin
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -43,20 +43,25 @@ public interface ISamplePlugin {
      * constant coeff
      */
     public static final String COEFF = "coeff";
-    
+
+    /**
+     * constant pojo parameter
+     */
+    public static final String POJO = "pojo";
+
     /**
      * method echo
-     * 
+     *
      * @param pMessage
      *            message to display
-     * 
+     *
      * @return the message
      */
     String echo(String pMessage);
 
     /**
      * method add
-     * 
+     *
      * @param pFirst
      *            first element
      * @param pSecond
