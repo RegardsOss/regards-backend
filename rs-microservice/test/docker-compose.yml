@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=azertyuiop123456789
       - POSTGRES_USER=azertyuiop123456789
     volumes:
-      - ./postgres/init.d:/docker-entrypoint-initdb.d
+      - ./postgres:/docker-entrypoint-initdb.d
 
   rs_elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
@@ -26,7 +26,7 @@ services:
       - WORKSPACE
       - MODE=Deploy
     volumes:
-      - .:/app_to_build
+      - ../.:/app_to_build
     links:
       - rs_rabbitmq
       - rs_postgres
@@ -39,7 +39,7 @@ services:
       - WORKSPACE
       - MODE=Verify
     volumes:
-      - .:/app_to_build
+      - ../.:/app_to_build
     links:
       - rs_rabbitmq
       - rs_postgres
