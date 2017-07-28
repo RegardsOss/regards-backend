@@ -18,6 +18,15 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms2500m -Xmx2500m"
       - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
 
   rs_build_deploy:
     image: 172.26.47.52:5000/rs-maven
