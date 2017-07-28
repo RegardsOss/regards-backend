@@ -1,7 +1,10 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,17 +26,17 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
+import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
-import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
-import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -255,6 +258,17 @@ public class JobServiceTest {
             while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < jobInfos.length) {
                 Thread.sleep(1_000);
             }
+        }
+        // Retrieve all jobs
+        List<JobInfo> results =  new ArrayList<>(jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED));
+        // sort by stopDate
+        results.sort(Comparator.comparing(j -> j.getStatus().getStopDate()));
+        int lastPriority = -1;
+        for (JobInfo job : results) {
+            if (lastPriority != -1) {
+                Assert.assertTrue(job.getPriority() <= lastPriority);
+            }
+            lastPriority = job.getPriority();
         }
     }
 
