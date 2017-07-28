@@ -74,11 +74,6 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.templates</groupId>
-				<artifactId>templates-signature</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.templates</groupId>
 				<artifactId>templates-test</artifactId>
 				<version>${project.version}</version>
 				<type>test-jar</type>

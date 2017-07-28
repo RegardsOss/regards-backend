@@ -27,27 +27,7 @@
 		</encoder>
 	</appender>
 
-	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
-		<syslogHost>localhost</syslogHost>
-		<facility>LOCAL0</facility>
-		<suffixPattern>${SYSLOG_PATTERN}</suffixPattern>
-		<port>514</port>
-	</appender>
-
-	<appender name="regardsAmqpAppender"
-		class="ch.qos.logback.ext.spring.DelegatingLogbackAppender">
-		<filter
-			class="fr.cnes.regards.framework.logbackappender.RegardsAmqpAppenderFilter">
-			<level>INFO</level>
-		</filter>
-	</appender>
-
-	<logger name="fr.cnes.regards" level="INFO" additivity="true">
-		<appender-ref ref="regardsAmqpAppender" />
-	</logger>
-
 	<root level="info">
-		<appender-ref ref="SYSLOG" />
 		<appender-ref ref="STDOUT" />
 	</root>
 

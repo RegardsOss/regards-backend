@@ -23,12 +23,11 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>helloworld-microservice</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
+		<artifactId>regards-aggregator-parent</artifactId>
 		<version>2.0.0-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
