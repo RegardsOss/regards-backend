@@ -247,6 +247,7 @@ public class RegardsAmqpAdmin {
      */
     public <E extends ISubscribable, H extends IHandler<E>> void purgeQueue(Class<E> pEventType, Class<H> pHandlerType,
             boolean noWait) {
+
         rabbitAdmin
                 .purgeQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
                             noWait);

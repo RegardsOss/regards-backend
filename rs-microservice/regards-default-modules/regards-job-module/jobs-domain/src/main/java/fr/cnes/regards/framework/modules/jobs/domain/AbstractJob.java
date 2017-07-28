@@ -19,13 +19,17 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.UUID;
 
 /**
+ * Abstract job, all jobs must inherit this class
+ * @author oroussel
  * @author Léo Mieulet
  */
-public abstract class AbstractJob implements IJob {
+public abstract class AbstractJob extends Observable implements IJob {
 
     /**
      * JobInfo id
@@ -43,6 +47,11 @@ public abstract class AbstractJob implements IJob {
     private Path workspace;
 
     /**
+     * Current completion count
+     */
+    private int completion = 0;
+
+    /**
      * When the JobHandler creates this job, it saves the jobId
      */
     @Override
@@ -57,6 +66,13 @@ public abstract class AbstractJob implements IJob {
         return parameters;
     }
 
+    /**
+     * Add an observer
+     */
+    public void addObserver(Observer observer) {
+        super.addObserver(observer);
+    }
+
     @Override
     public void setWorkspace(Path pWorkspace) {
         workspace = pWorkspace;
@@ -65,5 +81,12 @@ public abstract class AbstractJob implements IJob {
     @Override
     public Path getWorkspace() {
         return workspace;
+    }
+
+    @Override
+    public void advanceCompletion() {
+        this.completion++;
+        super.setChanged();
+        super.notifyObservers((this.completion * 100) / getCompletionCount());
     }
 }

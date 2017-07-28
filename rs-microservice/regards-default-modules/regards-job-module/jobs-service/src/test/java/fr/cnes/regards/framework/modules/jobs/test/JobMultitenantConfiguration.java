@@ -13,10 +13,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jobs.service" })
 @EnableAutoConfiguration
-@PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
+@PropertySource(value = { "classpath:test-multitenant.properties", "classpath:test-multitenant_${user.name}.properties" },
         ignoreResourceNotFound = true)
 @EnableAsync
 @EnableScheduling
-public class JobConfiguration {
+public class JobMultitenantConfiguration {
 
 }

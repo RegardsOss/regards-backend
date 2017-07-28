@@ -23,7 +23,13 @@ import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Transient;
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hibernate.annotations.Type;
 
@@ -35,7 +41,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  * @author Christophe Mertz
  */
 @Embeddable
-public class JobStatusInfo {
+public class JobStatusInfo implements Observer {
 
     /**
      * Job status
@@ -84,6 +90,9 @@ public class JobStatusInfo {
     @Column(name = "stacktrace")
     @Type(type = "text")
     private String stackTrace;
+
+    @Transient
+    private AtomicBoolean completionChanged = new AtomicBoolean(false);
 
     public JobStatusInfo() {
     }
@@ -139,5 +148,26 @@ public class JobStatusInfo {
 
     public void setStackTrace(String stackTrace) {
         this.stackTrace = stackTrace;
+    }
+
+    public boolean hasCompletionChanged() {
+        return completionChanged.get();
+    }
+
+    public void clearCompletionChanged() {
+        completionChanged.set(false);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (arg instanceof Integer) {
+            OffsetDateTime now = OffsetDateTime.now();
+            percentCompleted = (Integer) arg;
+            Duration fromStart = Duration.between(startDate, now);
+            //            fromStart.toMillis()
+            estimatedCompletion = startDate.plus((fromStart.toMillis() * 100l) / percentCompleted,
+                                                 ChronoUnit.MILLIS);
+            completionChanged.set(true);
+        }
     }
 }

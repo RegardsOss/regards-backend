@@ -18,4 +18,8 @@ public interface IJobService {
      */
     void manage();
 
+    /**
+     * Scheduled method to update all current running jobs completions values into database
+     */
+    void updateCurrentJobsCompletions();
 }

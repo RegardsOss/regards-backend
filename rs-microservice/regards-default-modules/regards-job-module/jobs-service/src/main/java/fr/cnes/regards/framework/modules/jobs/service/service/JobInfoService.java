@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 
 /**
@@ -57,11 +58,13 @@ public class JobInfoService implements IJobInfoService {
     private IJobInfoRepository jobInfoRepository;
 
     @Override
-    public JobInfo findHighestPriorityPendingJob() {
+    public JobInfo findHighestPriorityPendingJobAndSetAsQueued() {
         JobInfo found = jobInfoRepository.findHighestPriorityPending();
         if (found != null) {
             Hibernate.initialize(found.getParameters());
             Hibernate.initialize(found.getResults());
+            found.updateStatus(JobStatus.QUEUED);
+            jobInfoRepository.save(found);
         }
         return found;
     }
@@ -98,5 +101,14 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public void stopJob(UUID id) {
         publisher.publish(new StopJobEvent(id));
+    }
+
+    @Override
+    public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
+        for (JobInfo jobInfo : jobInfos) {
+            JobStatusInfo status = jobInfo.getStatus();
+            jobInfoRepository
+                    .updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(), jobInfo.getId());
+        }
     }
 }

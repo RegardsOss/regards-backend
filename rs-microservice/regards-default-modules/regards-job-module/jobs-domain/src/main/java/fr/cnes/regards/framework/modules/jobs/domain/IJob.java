@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
  * @author Léo Mieulet
  */
 public interface IJob extends Runnable {
+
     /**
      * URI pointed by JobResult MUST NOT be into workspace (else they will be erased after job execution)
      * @return The Job's results
@@ -71,5 +72,21 @@ public interface IJob extends Runnable {
      * Set the parameters and should check if all needed parameters are specified
      * @param pParameters set job parameters
      */
-    void setParameters(Set<JobParameter> pParameters) throws JobParameterMissingException, JobParameterInvalidException;
+    default void setParameters(Set<JobParameter> pParameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+    }
+
+    /**
+     * To manage completion estimated date and percentComplete property, a job should provide the number of times it
+     * will call {@link #advanceCompletion()} during its execution.
+     * @return 100 by default
+     */
+    default int getCompletionCount() {
+        return 100;
+    }
+
+    /**
+     * Advance completion count. This method should not be called more than {@link #getCompletionCount()} times
+     */
+    void advanceCompletion();
 }

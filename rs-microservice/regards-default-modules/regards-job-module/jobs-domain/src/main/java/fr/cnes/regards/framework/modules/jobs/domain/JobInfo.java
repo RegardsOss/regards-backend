@@ -266,6 +266,9 @@ public class JobInfo {
 
     public void setJob(IJob job) {
         this.job = job;
+        if (this.job instanceof AbstractJob) {
+            ((AbstractJob) this.job).addObserver(this.status);
+        }
     }
 
     /**
