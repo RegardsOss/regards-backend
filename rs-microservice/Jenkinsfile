@@ -22,6 +22,7 @@ pipeline {
     stages {
         stage('Init COTS') {
             steps {
+                sh 'cd test'
                 sh 'docker-compose up -d rs_rabbitmq rs_postgres rs_elasticsearch'
             }
         }
@@ -40,6 +41,7 @@ pipeline {
 //                        '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
 //                        '-Dsonar.branch=${env.BRANCH_NAME}'
                 //TODO: add spotify docker plugin into the run.sh file
+                sh 'cd test'
                 sh 'docker-compose up rs_build_deploy'
             }
         }
@@ -52,11 +54,13 @@ pipeline {
                 }
             }
             steps {
+                sh 'cd test'
                 sh 'docker-compose up rs_build_verify'
             }
         }
         stage('Clean docker') {
             steps {
+                sh 'cd test'
                 sh 'docker-compose stop'
             }
         }
