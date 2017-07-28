@@ -24,9 +24,12 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  * @author Léo Mieulet
  */
 public enum JobStatus {
-
     /**
-     * Job waiting to get some resources allocated
+     * Job created
+     */
+    PENDING,
+    /**
+     * Job waiting to be taken into account by job service pool
      */
     QUEUED,
     /**

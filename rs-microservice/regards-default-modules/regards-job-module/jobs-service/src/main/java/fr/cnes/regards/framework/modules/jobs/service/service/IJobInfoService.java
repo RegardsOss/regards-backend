@@ -19,60 +19,55 @@
 package fr.cnes.regards.framework.modules.jobs.service.service;
 
 import java.util.List;
+import java.util.UUID;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 
 /**
+ * JobInfo service interface.
+ * A Job is instanciate from a JobInfo (that can be viewed as a job description and job state) so sometimes we can speak
+ * of jobs instead of jobs infos
+ * @author oroussel
  * @author Léo Mieulet
  */
 public interface IJobInfoService {
 
     /**
-     * Store the JobInfo into the database, and publish it on the broker message
-     *
-     *
-     * @param pJobInfo
-     *            Store the new jobInfo in the database
-     * @return the status of the new jobInfo
+     * Find Job info with highest priority
      */
-    JobInfo createJobInfo(JobInfo pJobInfo);
+    JobInfo findHighestPriorityPendingJob();
 
     /**
-     * @return returns all jobs
+     * Create a JObInfo setting its state to PENDING and do all stuffs to be correct
      */
-    List<JobInfo> retrieveJobInfoList();
+    JobInfo create(JobInfo jobInfo);
 
     /**
-     * @param pState
-     *            the state filter
-     * @return the list of jobs matching that the provided state
-     */
-    List<JobInfo> retrieveJobInfoListByState(JobStatus pState);
-
-    /**
-     * @param pJobInfoId
-     *            the jobInfo id
-     * @return the corresponding jobInfo
-     * @throws EntityNotFoundException
-     *             The job does not exist
-     */
-    JobInfo retrieveJobInfoById(Long pJobInfoId) throws EntityNotFoundException;
-
-    /**
-     * @param pJobInfo
-     *            the jobInfo to save
+     * @param jobInfo the jobInfo to save
      * @return the updated jobInfo
      */
-    JobInfo save(JobInfo pJobInfo);
+    JobInfo save(JobInfo jobInfo);
 
     /**
-     * @param pJobInfoId
-     *            the jobInfo id
-     * @return the updated jobInfo
-     * @throws EntityNotFoundException
-     *             The job does not exist
+     * @return all jobs
      */
-    JobInfo stopJob(Long pJobInfoId) throws EntityNotFoundException;
+    List<JobInfo> retrieveJobs();
+
+    /**
+     * Retrieve all jobs with given state
+     */
+    List<JobInfo> retrieveJobs(JobStatus state);
+
+    /**
+     * Retrieve specified JObInfo
+     * @param id JobInfo id
+     */
+    JobInfo retrieveJob(UUID id);
+
+    /**
+     * Ask for a job to be stopped (asynchronous method)
+     * @param id job id
+     */
+    void stopJob(UUID id);
 }

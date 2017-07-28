@@ -23,6 +23,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  * 
  * @author Léo Mieulet
  */
+@Deprecated
 public enum EventType {
     /**
      * Used to update the job progress
