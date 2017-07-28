@@ -35,5 +35,6 @@
 
   <modules>
     <module>bootstrap-dataprovider</module>
+    <module>acquisition</module>
   </modules>
 </project>
