@@ -14,7 +14,7 @@
  */
 pipeline {
     agent any
-    
+
     stages {
         stage('Deploy & Analyze') {
             when {
@@ -23,9 +23,8 @@ pipeline {
                 }
             }
             steps {
-                // pour l'image docker et récupérer le répo local d'artefact
-                // find regards -exec echo `pwd`/{} \; |grep -v pom | grep -v .git | xargs cp -R --target-directory=./testCP/
-                //TODO: add spotify docker plugin into the run.sh file
+                // pour récupérer le répo local d'artefact
+                // TODO: find ~jenkins/workspace/maven-repository -exec echo `pwd`/{} \; | grep -v "fr/cnes/regards" | xargs cp -R --target-directory=./test/maven-repository
                 // use --exit-code-from SERVICE SERVICE to bind docker-compose return code to the one of SERVICE
                 // and only launch SERVICE and its dependencies if needed
                 // ${OLDPWD##*/} is the name of docker-compose.yml parent dir, -p allows us to specify container name prefix
