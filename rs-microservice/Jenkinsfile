@@ -34,13 +34,10 @@ pipeline {
             steps {
                 // pour l'image docker et récupérer le répo local d'artefact
                 // find regards -exec echo `pwd`/{} \; |grep -v pom | grep -v .git | xargs cp -R --target-directory=./testCP/
-//                sh 'mvn -U -P delivery clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent ' +
-//                        'deploy sonar:sonar -Dspring.profiles.active=rabbit ' +
-//                        '-Dsonar.jacoco.reportPath=${WORKSPACE}/jacoco-ut.exec ' +
-//                        '-Dsonar.jacoco.itReportPath=${WORKSPACE}/jacoco-it.exec ' +
-//                        '-Dsonar.branch=${env.BRANCH_NAME}'
                 //TODO: add spotify docker plugin into the run.sh file
-                sh 'cd test && docker-compose up rs_build_deploy'
+                // use --exit-code-from SERVICE SERVICE to bind docker-compose return code to the one of SERVICE
+                // and only launch SERVICE and its dependencies if needed
+                sh 'cd test && docker-compose up --exit-code-from rs_build_deploy rs_build_deploy'
             }
         }
         stage('Verify') {
@@ -52,7 +49,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'cd test && docker-compose up rs_build_verify'
+                sh 'cd test && docker-compose up --exit-code-from rs_build_verify rs_build_verify'
             }
         }
         stage('Clean docker') {
