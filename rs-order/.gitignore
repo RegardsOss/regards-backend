@@ -1,4 +1,41 @@
+######################
+# Node
+######################
+node_modules/
 
-\.idea/
+######################
+# Eclipse
+######################
+.project
+.metadata
+.classpath
+.settings/
+.pmd
+.factorypath
+.springBeans
+bin/
 
+######################
+# Intellij
+######################
+.idea/**
 *.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+
+######################
+# Maven
+######################
+target/
+
+######################
+# Windows
+######################
+# Windows image file caches
+Thumbs.db
+
+######################
+# Logs
+######################
