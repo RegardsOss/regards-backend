@@ -20,11 +20,11 @@ pipeline {
     }
 
     stages {
-        stage('Init COTS') {
-            steps {
-                sh 'cd test && docker-compose up -d rs_rabbitmq rs_postgres rs_elasticsearch'
-            }
-        }
+//        stage('Init COTS') {
+//            steps {
+//                sh 'cd test && docker-compose up -d rs_rabbitmq rs_postgres rs_elasticsearch'
+//            }
+//        }
         stage('Deploy & Analyze') {
             when {
                 anyOf {
@@ -54,7 +54,7 @@ pipeline {
         }
         stage('Clean docker') {
             steps {
-                sh 'cd test && docker-compose stop'
+                sh 'cd test && docker-compose down'
             }
         }
     }
