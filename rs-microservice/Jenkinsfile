@@ -13,18 +13,8 @@
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
 pipeline {
-    agent any
-    tools {
-        maven 'Maven 3.3.9'
-        jdk 'jdk8'
-    }
 
     stages {
-//        stage('Init COTS') {
-//            steps {
-//                sh 'cd test && docker-compose up -d rs_rabbitmq rs_postgres rs_elasticsearch'
-//            }
-//        }
         stage('Deploy & Analyze') {
             when {
                 anyOf {
@@ -37,7 +27,8 @@ pipeline {
                 //TODO: add spotify docker plugin into the run.sh file
                 // use --exit-code-from SERVICE SERVICE to bind docker-compose return code to the one of SERVICE
                 // and only launch SERVICE and its dependencies if needed
-                sh 'cd test && docker-compose up --exit-code-from rs_build_deploy rs_build_deploy'
+                // ${OLDPWD##*/} is the name of docker-compose.yml parent dir, -p allows us to specify container name prefix
+                sh 'cd test && docker-compose -p ${OLDPWD##*/} up --exit-code-from rs_build_deploy rs_build_deploy'
             }
         }
         stage('Verify') {
@@ -49,10 +40,10 @@ pipeline {
                 }
             }
             steps {
-                sh 'cd test && docker-compose up --exit-code-from rs_build_verify rs_build_verify'
+                sh 'cd test && docker-compose -p ${OLDPWD##*/} up --exit-code-from rs_build_verify rs_build_verify'
             }
         }
-        stage('Clean docker') {
+        stage('Clean') {
             steps {
                 sh 'cd test && docker-compose down'
             }
