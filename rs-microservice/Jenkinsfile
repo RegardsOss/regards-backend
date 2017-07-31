@@ -13,7 +13,8 @@
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
 pipeline {
-
+    agent any
+    
     stages {
         stage('Deploy & Analyze') {
             when {
