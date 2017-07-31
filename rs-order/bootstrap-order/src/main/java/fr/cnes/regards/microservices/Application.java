@@ -9,10 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
- * 
  * Start microservice order
- * @author TODO
- *
+ * @author oroussel
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "order", version = "1.0-SNAPSHOT")
@@ -20,12 +18,10 @@ public class Application {
 
     /**
      * Microservice bootstrap method
-     *
-     * @param pArgs
-     *            microservice bootstrap arguments
+     * @param args microservice bootstrap arguments
      */
-    public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs); // NOSONAR
+    public static void main(final String[] args) {
+        SpringApplication.run(Application.class, args); // NOSONAR
     }
 
 }
