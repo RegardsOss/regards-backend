@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
-import fr.cnes.regards.framework.modules.jobs.service.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.test.JobMultitenantConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
