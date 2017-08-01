@@ -41,6 +41,7 @@ services:
       - WORKSPACE
       - MODE=Deploy
     volumes:
+      - /opt/maven-multibranch-repository:/localRepository
       - ../.:/app_to_build
     depends_on:
       - rs_rabbitmq
@@ -56,6 +57,7 @@ services:
       - WORKSPACE
       - MODE=Verify
     volumes:
+      - /opt/maven-multibranch-repository:/localRepository
       - ../.:/app_to_build
     depends_on:
       - rs_rabbitmq
