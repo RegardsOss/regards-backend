@@ -48,7 +48,7 @@ pipeline {
     post {
         always {
             echo 'lets clean up the mess!'
-            sh 'cd test && docker-compose down'
+            sh 'cd test && docker-compose -p ${OLDPWD##*/} down'
         }
     }
 }
