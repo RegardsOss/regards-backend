@@ -44,10 +44,11 @@ pipeline {
                 sh 'cd test && docker-compose -p ${OLDPWD##*/} up --exit-code-from rs_build_verify rs_build_verify'
             }
         }
-        stage('Clean') {
-            steps {
-                sh 'cd test && docker-compose down'
-            }
+    }
+    post {
+        always {
+            echo 'lets clean up the mess!'
+            sh 'cd test && docker-compose -p ${OLDPWD##*/} down'
         }
     }
 }
