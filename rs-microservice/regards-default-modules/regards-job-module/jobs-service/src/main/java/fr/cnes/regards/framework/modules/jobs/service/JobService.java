@@ -209,23 +209,25 @@ public class JobService implements IJobService {
      */
     private void abort(UUID jobId) {
         JobInfo jobInfo = jobInfoService.retrieveJob(jobId);
-        // Check job is currently running
-        JobStatus status = jobInfo.getStatus().getStatus();
-        switch (status) {
-            case RUNNING:
-                // Check if current microservice is running this job
-                if (jobsMap.containsKey(jobInfo)) {
-                    RunnableFuture<Void> task = jobsMap.get(jobInfo);
-                    task.cancel(true);
-                }
-                break;
-            case PENDING:
-            case QUEUED:
-                // Job not yet running
-                abortedBeforeStartedJobs.add(jobInfo.getId());
-                break;
-            default:
-                break;
+        if (jobInfo != null) {
+            // Check job is currently running
+            JobStatus status = jobInfo.getStatus().getStatus();
+            switch (status) {
+                case RUNNING:
+                    // Check if current microservice is running this job
+                    if (jobsMap.containsKey(jobInfo)) {
+                        RunnableFuture<Void> task = jobsMap.get(jobInfo);
+                        task.cancel(true);
+                    }
+                    break;
+                case PENDING:
+                case QUEUED:
+                    // Job not yet running
+                    abortedBeforeStartedJobs.add(jobInfo.getId());
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
