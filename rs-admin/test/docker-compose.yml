@@ -13,7 +13,7 @@ services:
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
     networks:
-          - regards_IT_network
+      - regards_IT_network
 
   rs_build_deploy:
     image: 172.26.47.52:5000/rs-maven
@@ -29,9 +29,8 @@ services:
     depends_on:
       - rs_rabbitmq
       - rs_postgres
-      - rs_elasticsearch
     networks:
-          - regards_IT_network
+      - regards_IT_network
 
   rs_build_verify:
     image: 172.26.47.52:5000/rs-maven
@@ -45,9 +44,8 @@ services:
     depends_on:
       - rs_rabbitmq
       - rs_postgres
-      - rs_elasticsearch
     networks:
-          - regards_IT_network
+      - regards_IT_network
 
 networks:
   regards_IT_network:
