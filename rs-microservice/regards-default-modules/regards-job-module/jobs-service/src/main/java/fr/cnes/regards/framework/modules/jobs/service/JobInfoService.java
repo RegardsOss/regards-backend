@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
  * @author oroussel
  */
 @Service
-@RegardsTransactional
+@MultitenantTransactional
 public class JobInfoService implements IJobInfoService {
 
     /**
