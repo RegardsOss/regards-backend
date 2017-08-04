@@ -22,45 +22,40 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-	<artifactId>jobs-dao</artifactId>
+	<artifactId>jobs-service</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework.modules</groupId>
-		<artifactId>module-jobs</artifactId>
+		<artifactId>jobs</artifactId>
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>multitenant-regards-starter</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-			<artifactId>jobs-domain</artifactId>
+			<artifactId>jobs-dao</artifactId>
 		</dependency>
-		<!-- REGARDS starter -->
+		<!-- REGARDS starters -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<artifactId>amqp-regards-starter</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>gson-regards</artifactId>
-		</dependency>
-		<!-- Tests -->
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
+
 
 </project>
