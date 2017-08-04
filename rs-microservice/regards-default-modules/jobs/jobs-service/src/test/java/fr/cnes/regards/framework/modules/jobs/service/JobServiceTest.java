@@ -20,11 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -91,8 +93,13 @@ public class JobServiceTest {
 
     private boolean subscriptionsDone = false;
 
+    @Autowired
+    private Gson gson;
+
     @Before
     public void setUp() throws Exception {
+        GsonUtil.setGson(gson);
+
         tenantResolver.forceTenant(TENANT);
 
         rabbitVhostAdmin.bind(tenantResolver.getTenant());

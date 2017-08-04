@@ -29,7 +29,7 @@ import java.util.UUID;
  * @author oroussel
  * @author Léo Mieulet
  */
-public abstract class AbstractJob extends Observable implements IJob {
+public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * JobInfo id

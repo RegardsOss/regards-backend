@@ -50,10 +50,11 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
         return findFirstByStatusStatusOrderByPriorityDesc(JobStatus.PENDING);
     }
 
-    @EntityGraph(attributePaths = { "parameters", "results" })
+    @EntityGraph(attributePaths = { "parameters" })
     JobInfo findById(UUID id);
 
     @Modifying
-    @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3")
+    @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3 "
+            + "and j.status.status = 'RUNNING'")
     void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id);
 }

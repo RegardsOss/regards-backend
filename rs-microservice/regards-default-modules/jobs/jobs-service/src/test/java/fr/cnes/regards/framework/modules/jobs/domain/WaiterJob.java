@@ -2,9 +2,6 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.util.Set;
 
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 
@@ -12,7 +9,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
  * A class that wait
  * @author oroussel
  */
-public class WaiterJob extends AbstractJob implements IJob {
+public class WaiterJob extends AbstractJob<Void> {
     public static final String WAIT_PERIOD_COUNT = "waitPeriodCount";
 
     public static final String WAIT_PERIOD = "waitPeriod";

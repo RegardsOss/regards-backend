@@ -41,7 +41,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -111,15 +110,15 @@ public class JobControllerIT extends AbstractRegardsIT {
                    String.format("unable to load the job <%s>", aJob.getId()), aJob.getId());
     }
 
-    @Test
-    public void getJobResults() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResults().size())));
-        performGet(JobController.JOBS + "/{jobId}/results", token, expectations,
-                   String.format("unable to get job's result <%s>", aJob.getId()), aJob.getId());
-    }
+//    @Test
+//    public void getJobResults() {
+//        final List<ResultMatcher> expectations = new ArrayList<>();
+//        final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
+//        expectations.add(status().isOk());
+//        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResults().size())));
+//        performGet(JobController.JOBS + "/{jobId}/results", token, expectations,
+//                   String.format("unable to get job's result <%s>", aJob.getId()), aJob.getId());
+//    }
 
     @Test
     public void getJobsState() {

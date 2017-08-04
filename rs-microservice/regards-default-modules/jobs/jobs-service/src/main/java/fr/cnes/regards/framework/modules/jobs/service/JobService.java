@@ -108,6 +108,7 @@ public class JobService implements IJobService {
     public void manage() {
         // To avoid starvation, loop on each tenant before executing jobs
         while (true) {
+            boolean noJobAtAll = true;
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 // Wait for availability of pool if it is overbooked
@@ -123,14 +124,17 @@ public class JobService implements IJobService {
                 // Find highest priority job to execute
                 JobInfo jobInfo = jobInfoService.findHighestPriorityPendingJobAndSetAsQueued();
                 if (jobInfo != null) {
+                    noJobAtAll = false;
                     jobInfo.setTenant(tenant);
                     this.execute(jobInfo);
-                } else { // No job to execute, take a rest
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        // Ok, i have no problem with that
-                    }
+                }
+            }
+            if (noJobAtAll) {
+                // No job to execute on any tenants, take a rest
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    // Ok, i have no problem with that
                 }
             }
         }

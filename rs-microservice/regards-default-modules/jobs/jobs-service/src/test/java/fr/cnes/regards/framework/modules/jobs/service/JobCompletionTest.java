@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.LongJob;
@@ -38,8 +40,12 @@ public class JobCompletionTest {
     @Autowired
     private IJobInfoService jobInfoService;
 
+    @Autowired
+    private Gson gson;
+
     @Before
     public void setUp() throws Exception {
+        GsonUtil.setGson(gson);
         tenantResolver.forceTenant(TENANT);
     }
 

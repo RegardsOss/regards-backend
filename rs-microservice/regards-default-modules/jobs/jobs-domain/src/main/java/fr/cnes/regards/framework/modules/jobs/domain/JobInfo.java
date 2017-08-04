@@ -42,6 +42,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 
 /**
@@ -84,12 +85,11 @@ public class JobInfo {
     private OffsetDateTime expirationDate;
 
     /**
-     * Job results (nullable)
+     * Job result (nullable)
      */
-    @ElementCollection
-    @CollectionTable(name = "t_job_result", joinColumns = @JoinColumn(name = "job_id"),
-            foreignKey = @ForeignKey(name = "fk_job_result"))
-    private Set<JobResult> results = new HashSet<>();
+    @Column
+    @Type(type = "text")
+    private String result;
 
     /**
      * Job parameters
@@ -184,12 +184,20 @@ public class JobInfo {
         owner = pOwner;
     }
 
-    public Set<JobResult> getResults() {
-        return results;
+    public String getResult() {
+        return result;
     }
 
-    public void setResults(Set<JobResult> pResult) {
-        results = pResult;
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public <T> T getResultObject(java.lang.reflect.Type type) {
+        return (this.result == null) ? null : GsonUtil.fromString(result, type);
+    }
+
+    public <T> void setResultObject(T object) {
+        this.result = (object == null) ? null : GsonUtil.toString(object);
     }
 
     public Set<JobParameter> getParameters() {

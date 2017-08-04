@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.jobs.rest;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -140,9 +139,9 @@ public class JobController implements IResourceController<JobInfo> {
             throws EntityNotFoundException {
         final JobInfo jobInfo = jobInfoService.retrieveJob(jobInfoId);
         List<Resource<JobResult>> resources = null;
-        if (jobInfo.getResults() != null) {
-            resources = jobInfo.getResults().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
-        }
+//        if (jobInfo.getResults() != null) {
+//            resources = jobInfo.getResults().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
+//        }
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 

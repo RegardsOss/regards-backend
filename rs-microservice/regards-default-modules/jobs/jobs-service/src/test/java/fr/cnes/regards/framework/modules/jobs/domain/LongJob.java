@@ -4,7 +4,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  * 10 s job
  * @author oroussel
  */
-public class LongJob extends AbstractJob implements IJob {
+public class LongJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
