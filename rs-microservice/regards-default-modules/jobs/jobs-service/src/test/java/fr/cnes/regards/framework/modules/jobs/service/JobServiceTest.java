@@ -173,8 +173,8 @@ public class JobServiceTest {
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setDescription("Job that wait 500ms");
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "500"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "1"));
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo = jobInfoService.create(waitJobInfo);
 
         // Wait for job to terminate
@@ -191,8 +191,8 @@ public class JobServiceTest {
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setDescription("Job that wait 3 x 1s");
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
         waitJobInfo = jobInfoService.create(waitJobInfo);
         jobInfoService.stopJob(waitJobInfo.getId());
         LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
@@ -207,8 +207,8 @@ public class JobServiceTest {
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setDescription("Job that wait 3 x 1s");
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
         waitJobInfo = jobInfoService.create(waitJobInfo);
 
         Thread.sleep(2_000);
@@ -248,8 +248,8 @@ public class JobServiceTest {
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
             jobInfos[i].setDescription(String.format("Job %d that wait 2 x 1s", i));
-            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                      new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "2"));
+            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                      new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         for (int i = 0; i < jobInfos.length; i++) {
             jobInfos[i] = jobInfoService.create(jobInfos[i]);

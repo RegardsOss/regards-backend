@@ -28,14 +28,14 @@ public class WaiterJob extends AbstractJob<Void> {
             switch (param.getName()) {
                 case WAIT_PERIOD:
                     try {
-                        this.waitPeriod = new Long(param.getValue());
+                        this.waitPeriod = param.getValue();
                     } catch (NumberFormatException nfe) {
                         throw new JobParameterInvalidException(WAIT_PERIOD, nfe);
                     }
                     break;
                 case WAIT_PERIOD_COUNT:
                     try {
-                        this.waitPeriodCount = new Integer(param.getValue());
+                        this.waitPeriodCount = param.getValue();
                     } catch (NumberFormatException nfe) {
                         throw new JobParameterInvalidException(WAIT_PERIOD_COUNT, nfe);
                     }
