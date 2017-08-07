@@ -37,19 +37,15 @@ import java.util.UUID;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 
 /**
  * Store Job Information
- * @author Léo Mieulet
- * @author Christophe Mertz
+ * @author oroussel
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_job_info")
 public class JobInfo {
@@ -67,7 +63,7 @@ public class JobInfo {
      * Job priority
      */
     @Column(name = "priority")
-    private Integer priority;
+    private Integer priority = 0;
 
     /**
      * Job description
@@ -84,12 +80,17 @@ public class JobInfo {
     private OffsetDateTime expirationDate;
 
     /**
-     * Job results (nullable)
+     * Job result (nullable)
      */
-    @ElementCollection
-    @CollectionTable(name = "t_job_result", joinColumns = @JoinColumn(name = "job_id"),
-            foreignKey = @ForeignKey(name = "fk_job_result"))
-    private Set<JobResult> results = new HashSet<>();
+    @Column
+    @Type(type = "text")
+    private String result;
+
+    /**
+     * Job result class name
+     */
+    @Column(name = "result_class_name", length = 255)
+    private String resultClassName;
 
     /**
      * Job parameters
@@ -108,7 +109,7 @@ public class JobInfo {
     /**
      * Job class to execute
      */
-    @Column(name = "className")
+    @Column(name = "class_name", length = 255)
     private String className;
 
     /**
@@ -184,12 +185,19 @@ public class JobInfo {
         owner = pOwner;
     }
 
-    public Set<JobResult> getResults() {
-        return results;
+    public <T> T getResult() {
+        try {
+            return (this.resultClassName == null) ? null : GsonUtil.fromString(result, Class.forName(resultClassName));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e); // NOSONAR
+        }
     }
 
-    public void setResults(Set<JobResult> pResult) {
-        results = pResult;
+    public void setResult(Object result) {
+        if (result != null) {
+            this.resultClassName = result.getClass().getName();
+        }
+        this.result = GsonUtil.toString(result);
     }
 
     public Set<JobParameter> getParameters() {

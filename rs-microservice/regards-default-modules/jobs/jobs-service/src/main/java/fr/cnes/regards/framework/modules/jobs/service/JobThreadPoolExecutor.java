@@ -92,7 +92,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         // If no error
         if (t == null) {
             jobInfo.updateStatus(JobStatus.SUCCEEDED);
-            jobInfo.getStatus().setPercentCompleted(100);
+            jobInfo.setResult(jobInfo.getJob().getResult());
             jobInfoService.save(jobInfo);
             publisher.publish(new SucceededJobEvent(jobInfo.getId()));
         }

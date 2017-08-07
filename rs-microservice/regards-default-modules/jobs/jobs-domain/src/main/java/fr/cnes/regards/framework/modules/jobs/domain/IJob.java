@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,23 +27,16 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 
 /**
  * Interface for all regards jobs
+ * @param <R> result type
  * @author Léo Mieulet
  */
-public interface IJob extends Runnable {
+public interface IJob<R> extends Runnable {
 
     /**
-     * URI pointed by JobResult MUST NOT be into workspace (else they will be erased after job execution)
-     * @return The Job's results
+     * @return The Job result
      */
-    default Set<JobResult> getResults() {
-        return Collections.emptySet();
-    }
-
-    /**
-     * @return Does the job has a result ?
-     */
-    default boolean hasResults() {
-        return ((getResults() != null) && !getResults().isEmpty());
+    default R getResult() {
+        return null;
     }
 
     /**

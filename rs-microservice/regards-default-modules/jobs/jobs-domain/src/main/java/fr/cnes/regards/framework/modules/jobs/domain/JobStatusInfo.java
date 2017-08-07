@@ -164,7 +164,6 @@ public class JobStatusInfo implements Observer {
             OffsetDateTime now = OffsetDateTime.now();
             percentCompleted = (Integer) arg;
             Duration fromStart = Duration.between(startDate, now);
-            //            fromStart.toMillis()
             estimatedCompletion = startDate.plus((fromStart.toMillis() * 100l) / percentCompleted,
                                                  ChronoUnit.MILLIS);
             completionChanged.set(true);
