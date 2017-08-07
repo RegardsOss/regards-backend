@@ -26,9 +26,9 @@ public class JobParameter {
     public JobParameter() {
     }
 
-    public JobParameter(String name, String value) {
+    public <T> JobParameter(String name, T value) {
         this.name = name;
-        this.value = value;
+        this.setValue(value);
     }
 
     public String getName() {
@@ -47,7 +47,7 @@ public class JobParameter {
         }
     }
 
-    public void setValue(String value) {
+    public <T> void setValue(T value) {
         if (value != null) {
             this.className = value.getClass().getName();
         }
