@@ -26,6 +26,7 @@ import java.util.UUID;
 
 /**
  * Abstract job, all jobs must inherit this class
+ * @param <R> result type
  * @author oroussel
  * @author Léo Mieulet
  */
@@ -40,6 +41,8 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * Job parameters
      */
     protected Set<JobParameter> parameters;
+
+    protected R result;
 
     /**
      * The workspace can be null, it should be cleaned after termination of a job
@@ -64,6 +67,15 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      */
     public Set<JobParameter> getParameters() {
         return parameters;
+    }
+
+    protected void setResult(R result) {
+        this.result = result;
+    }
+
+    @Override
+    public R getResult() {
+        return result;
     }
 
     /**

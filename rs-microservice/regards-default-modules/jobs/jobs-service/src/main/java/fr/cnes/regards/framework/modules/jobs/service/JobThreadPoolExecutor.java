@@ -92,7 +92,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         // If no error
         if (t == null) {
             jobInfo.updateStatus(JobStatus.SUCCEEDED);
-            jobInfo.setResultObject(jobInfo.getJob().getResult());
+            jobInfo.setResult(jobInfo.getJob().getResult());
             jobInfoService.save(jobInfo);
             publisher.publish(new SucceededJobEvent(jobInfo.getId()));
         }

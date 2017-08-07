@@ -5,6 +5,8 @@ import javax.persistence.Embeddable;
 
 import org.hibernate.annotations.Type;
 
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+
 /**
  * Job parameter ie a name/value pair
  * @author oroussel
@@ -17,6 +19,9 @@ public class JobParameter {
 
     @Type(type = "text")
     private String value;
+
+    @Column(name = "class_name", length = 255)
+    private String className;
 
     public JobParameter() {
     }
@@ -34,12 +39,20 @@ public class JobParameter {
         this.name = name;
     }
 
-    public String getValue() {
-        return value;
+    public <T> T getValue() {
+        try {
+            return (className == null) ? null : GsonUtil.fromString(value, Class.forName(className));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e); // NOSONAR
+        }
     }
 
     public void setValue(String value) {
-        this.value = value;
+        if (value != null) {
+            this.className = value.getClass().getName();
+        }
+        this.value = GsonUtil.toString(value);
+
     }
 
     @Override
