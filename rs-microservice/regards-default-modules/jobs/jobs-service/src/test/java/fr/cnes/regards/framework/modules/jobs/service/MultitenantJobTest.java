@@ -186,8 +186,8 @@ public class MultitenantJobTest {
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setDescription("Job that wait 500ms");
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "500"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "1"));
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo1 = jobInfoService.create(waitJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
@@ -195,8 +195,8 @@ public class MultitenantJobTest {
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setDescription("Job that wait 500ms");
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "500"),
-                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "1"));
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo2 = jobInfoService.create(waitJobInfo2);
 
         int cpt = 0;
@@ -228,16 +228,16 @@ public class MultitenantJobTest {
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setDescription("Job that wait 3 x 1s");
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo();
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setDescription("Job that wait 3 x 1s");
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT1);
         waitJobInfo1 = jobInfoService.create(waitJobInfo1);
@@ -263,16 +263,16 @@ public class MultitenantJobTest {
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setDescription("Job that wait 3 x 1s");
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo();
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setDescription("Job that wait 3 x 1s");
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "3"));
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         waitJobInfo2 = jobInfoService.create(waitJobInfo2);
         tenantResolver.forceTenant(TENANT1);
@@ -343,8 +343,8 @@ public class MultitenantJobTest {
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
             jobInfos[i].setDescription(String.format("Job %d that wait 2 x 1s", i));
-            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, "1000"),
-                                      new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, "2"));
+            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+                                      new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         tenantResolver.forceTenant(TENANT1);
         for (int i = 0; i < jobInfos.length / 2; i++) {
