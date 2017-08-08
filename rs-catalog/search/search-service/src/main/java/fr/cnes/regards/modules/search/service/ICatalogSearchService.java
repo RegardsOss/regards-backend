@@ -23,20 +23,22 @@ import java.util.Map;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
+import fr.cnes.regards.modules.indexer.domain.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 
 /**
  * Performs an OpenSearch request with the passed string query.
- *
  * @author Xavier-Alexandre Brochard
  */
 public interface ICatalogSearchService { // NOSONAR
 
     /**
      * Perform an OpenSearch request on a type.
-     *
      * @param allParams all query parameters
      * @param searchKey the search key containing the search type and the result type
      * @param facets the facets applicable
@@ -46,4 +48,7 @@ public interface ICatalogSearchService { // NOSONAR
      */
     <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> searchKey,
             String[] facets, final Pageable pPageable) throws SearchException;
+
+    DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
+            String datasetIpId, String[] fileTypes) throws SearchException;
 }

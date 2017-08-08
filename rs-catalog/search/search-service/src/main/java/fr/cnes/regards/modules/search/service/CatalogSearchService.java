@@ -19,22 +19,35 @@
 package fr.cnes.regards.modules.search.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
+import fr.cnes.regards.modules.indexer.domain.DocFilesSubSummary;
+import fr.cnes.regards.modules.indexer.domain.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -43,6 +56,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
@@ -50,7 +64,6 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
  * Implementation of {@link ICatalogSearchService}
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -116,26 +129,37 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
             }
 
+            // Apply security filter
+            criterion = accessRightFilter.addAccessRights(criterion);
+
             // Build search facets from query facets
             Map<String, FacetType> searchFacets = facetConverter.convert(facets);
             // Optimisation: when searching for datasets via another searchType (ie searchKey is a
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
-                    && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(),
-                                                    Searches.fromClass(searchKey.getResultClass()));
+            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey) && (
+                    TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
+                searchKey = Searches
+                        .onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
             }
-
-            // Apply security filter
-            criterion = accessRightFilter.addAccessRights(criterion);
 
             // Perform search
             if (searchKey instanceof SimpleSearchKey) {
                 return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
-                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
+                // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
+                // getting datasets on which user has no right
+                final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
+                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class) && (accessGroups
+                        != null)) { // accessGroups null means superuser
+                    Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
+                            .isEmpty();
+                    return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
+                                                (Predicate<R>) datasetGroupAccessFilter);
+                } else {
+                    return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
+                }
             }
 
         } catch (OpenSearchParseException e) {
@@ -152,4 +176,67 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
+    @Override
+    public DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
+            String datasetIpId, String[] fileTypes) throws SearchException {
+        try {
+            // Build criterion from query
+            ICriterion criterion = openSearchService.parse(allParams);
+
+            if (LOGGER.isDebugEnabled() && (allParams != null)) {
+                for (Entry<String, String> osEntry : allParams.entrySet()) {
+                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
+                }
+            }
+
+            // Apply security filter (ie user groups)
+            criterion = accessRightFilter.addAccessRights(criterion);
+
+            // Perform compute
+            DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", fileTypes);
+
+            // It is necessary to filter sub summaries first to keep only datasets and seconds to keep only datasets
+            // on which user has right
+            final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
+
+            // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege)
+            Page<Dataset> page = searchService
+                    .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET), Integer.MAX_VALUE,
+                            ICriterion.in("metadata.dataObjectsGroups",
+                                          accessGroups.toArray(new String[accessGroups.size()])));
+            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
+                    .map(UniformResourceName::toString).collect(Collectors.toSet());
+            // If summary is restricted to a specified datasetIpId, it must be taken into account
+            if (datasetIpId != null) {
+                if (datasetIpids.contains(datasetIpId)) {
+                    datasetIpids = Collections.singleton(datasetIpId);
+                } else { // no dataset => summary contains normaly only 0 values as total
+                    // we just need to clear map of sub summaries
+                    summary.getSubSummariesMap().clear();
+                }
+            }
+
+            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet().iterator(); i
+                    .hasNext(); ) {
+                Entry<String, DocFilesSubSummary> entry = i.next();
+                // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
+                // retrieved for current user
+                if (!datasetIpids.contains(entry.getKey())) {
+                    i.remove();
+                }
+            }
+            return summary;
+        } catch (OpenSearchParseException e) {
+            String message = "No query parameter";
+            if (allParams != null) {
+                StringJoiner sj = new StringJoiner("&");
+                allParams.forEach((key, value) -> sj.add(key + "=" + value));
+                message = sj.toString();
+            }
+            throw new SearchException(message, e);
+        } catch (AccessRightFilterException e) {
+            LOGGER.debug("Falling back to empty summary", e);
+            return new DocFilesSummary();
+        }
+    }
 }
