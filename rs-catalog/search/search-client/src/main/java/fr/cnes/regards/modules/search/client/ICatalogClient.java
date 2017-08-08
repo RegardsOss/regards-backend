@@ -34,5 +34,5 @@ public interface ICatalogClient {
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "datasetIpId", required = false) final String datasetIpId,
-            @RequestParam(value = "fileTypes") final String[] fileTypes) throws SearchException
+            @RequestParam(value = "fileTypes") final String[] fileTypes) throws SearchException;
 }
