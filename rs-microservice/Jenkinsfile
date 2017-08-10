@@ -16,4 +16,5 @@
  */
 @Library('regards/standardPipeline') _
 standardPipeline {
+    branch = "toto"
 }
