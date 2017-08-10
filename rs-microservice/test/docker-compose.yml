@@ -34,32 +34,16 @@ services:
     networks:
           - regards_IT_network
 
-  rs_build_deploy:
+  rs_build:
     image: 172.26.47.52:5000/rs-maven
     environment:
       - BRANCH_NAME
       - WORKSPACE
-      - MODE=Deploy
+      - MODE
     volumes:
       - /opt/maven-multibranch-repository:/localRepository
-      - /usr/bin/docker:/bin/docker #only link host docker on rs_build_deploy because he is the only one that needs it
+      - /usr/bin/docker:/bin/docker # link docker - only useful for deploy MODE
       - /var/run/docker.sock:/var/run/docker.sock
-      - ../.:/app_to_build
-    depends_on:
-      - rs_rabbitmq
-      - rs_postgres
-      - rs_elasticsearch
-    networks:
-          - regards_IT_network
-
-  rs_build_verify:
-    image: 172.26.47.52:5000/rs-maven
-    environment:
-      - BRANCH_NAME
-      - WORKSPACE
-      - MODE=Verify
-    volumes:
-      - /opt/maven-multibranch-repository:/localRepository
       - ../.:/app_to_build
     depends_on:
       - rs_rabbitmq
