@@ -40,6 +40,7 @@ services:
       - BRANCH_NAME
       - WORKSPACE
       - MODE=Deploy
+      - MODETEST
     volumes:
       - /opt/maven-multibranch-repository:/localRepository
       - /usr/bin/docker:/bin/docker #only link host docker on rs_build_deploy because he is the only one that needs it
@@ -58,6 +59,7 @@ services:
       - BRANCH_NAME
       - WORKSPACE
       - MODE=Verify
+      - MODETEST
     volumes:
       - /opt/maven-multibranch-repository:/localRepository
       - ../.:/app_to_build
