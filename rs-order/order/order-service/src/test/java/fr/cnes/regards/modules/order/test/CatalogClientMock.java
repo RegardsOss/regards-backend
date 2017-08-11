@@ -14,14 +14,14 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ObjectArrays;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.OAISIdentifier;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.DataType;
 import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.urn.OAISIdentifier;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
-import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 
 /**
@@ -87,9 +87,8 @@ public class CatalogClientMock implements ICatalogClient {
                     } else if ((fileTypes.length == 1) && (fileTypes[0] == DataType.RAWDATA.toString())) {
                         // Second call when computeDatasetSummary is asked for updating dataset only with RAW_DATA
                         summary = createSummaryForDs1Raw();
-                    } else if ((fileTypes.length == 3) && (fileTypes[0] != DataType.RAWDATA.toString())
-                            && (fileTypes[1] != DataType.RAWDATA.toString())
-                            && (fileTypes[2] != DataType.RAWDATA.toString())) {
+                    } else if ((fileTypes.length == 3) && (fileTypes[0] != DataType.RAWDATA.toString()) && (fileTypes[1]
+                            != DataType.RAWDATA.toString()) && (fileTypes[2] != DataType.RAWDATA.toString())) {
                         // Third call when changing file types to QUICKLOOK
                         summary = createSummaryForDs1QuicklooksFiles();
                     } else {
@@ -105,12 +104,12 @@ public class CatalogClientMock implements ICatalogClient {
                 // When adding a selection on DS2 and DS3 (All files)
                 if ((datasetIpId == null) && (fileTypes.length == 4)) {
                     summary = createSummaryForDs2Ds3AllFilesFirstCall();
-                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 1)
-                        && (fileTypes[0] == DataType.RAWDATA.toString())) {
+                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
+                        == DataType.RAWDATA.toString())) {
                     // same selection adding process, recomputing DS2 selection with default type (ie RAWADATA)
                     summary = createSummaryForDs2Raw();
-                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 1)
-                        && (fileTypes[0] == DataType.RAWDATA.toString())) {
+                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
+                        == DataType.RAWDATA.toString())) {
                     // same selection adding process, recomputing DS3 selection with default type (ie RAWADATA)
                     summary = createSummaryForDs3Raw();
                 } else {
@@ -122,17 +121,16 @@ public class CatalogClientMock implements ICatalogClient {
                 // Adding a selection on everything
                 if ((datasetIpId == null) && (fileTypes.length == 4)) {
                     summary = createSummaryForAllDsAllFilesFirstCall();
-                } else if ((datasetIpId.equals(DS1_IP_ID.toString())) && (fileTypes.length == 3)
-                        && (fileTypes[0] != DataType.RAWDATA.toString())
-                        && (fileTypes[1] != DataType.RAWDATA.toString())
-                        && (fileTypes[2] != DataType.RAWDATA.toString())) {
+                } else if ((datasetIpId.equals(DS1_IP_ID.toString())) && (fileTypes.length == 3) && (fileTypes[0]
+                        != DataType.RAWDATA.toString()) && (fileTypes[1] != DataType.RAWDATA.toString()) && (
+                        fileTypes[2] != DataType.RAWDATA.toString())) {
                     summary = createSummaryForDs1QuicklooksFiles();
-                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 1)
-                        && (fileTypes[0] == DataType.RAWDATA.toString())) {
+                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
+                        == DataType.RAWDATA.toString())) {
                     // same selection adding process, recomputing DS2 selection with default type (ie RAWADATA)
                     summary = createSummaryForDs2Raw();
-                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 1)
-                        && (fileTypes[0] == DataType.RAWDATA.toString())) {
+                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
+                        == DataType.RAWDATA.toString())) {
                     // same selection adding process, recomputing DS3 selection with default type (ie RAWADATA)
                     summary = createSummaryForDs3Raw();
                 } else {
@@ -238,7 +236,6 @@ public class CatalogClientMock implements ICatalogClient {
         summary.getSubSummariesMap().put(DS2_IP_ID.toString(), ds2Summary);
         return summary;
     }
-
 
     /**
      * 1 doc for DS3
