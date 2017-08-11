@@ -24,12 +24,11 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 
 /**
  * Performs an OpenSearch request with the passed string query.

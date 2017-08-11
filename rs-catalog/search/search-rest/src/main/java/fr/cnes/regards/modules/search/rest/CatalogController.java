@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sun.org.apache.bcel.internal.generic.GETFIELD;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
@@ -52,9 +51,9 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.models.domain.EntityType;
@@ -77,7 +76,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  * <li>Receives an OpenSearch format request, for example
  * <code>q=(tags=urn://laCollection)&type=collection&modele=ModelDeCollection</code>.
  * <li>Applies project filters by interpreting the OpenSearch query string and transforming them in ElasticSearch
- * criterion request. This is done with a plugin of type {@link IFilter}.
+ * criterion request. This is done with a plugin of type IFilter.
  * <li>Adds user group and data access filters. This is done with {@link IAccessRightFilter} service.
  * <li>Performs the ElasticSearch request on the project index. This is done with {@link fr.cnes.regards.modules.indexer.service.IIndexerService}.
  * <li>Applies {@link IRepresentation} type plugins to the response.
@@ -210,7 +209,8 @@ public class CatalogController {
     }
 
     @RequestMapping(path = SEARCH + DESCRIPTOR, method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
-    @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on every type of entities",
+    @ResourceAccess(
+            description = "endpoint allowing to get the OpenSearch descriptor for searches on every type of entities",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
@@ -365,14 +365,12 @@ public class CatalogController {
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject without facets",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
-            @RequestParam final Map<String, String> allParams, final Pageable pPageable)
-            throws SearchException {
+            @RequestParam final Map<String, String> allParams, final Pageable pPageable) throws SearchException {
         final SimpleSearchKey<DataObject> searchKey = Searches
                 .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
         final Page<DataObject> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(dataobjectResourcesAssembler.toResource(result), HttpStatus.OK);
     }
-
 
     @RequestMapping(path = DATAOBJECTS_SEARCH + DESCRIPTOR, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
@@ -394,10 +392,9 @@ public class CatalogController {
      * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
-                    + "but will return the associated datasets.",
-            role = DefaultRole.PUBLIC)
+    @ResourceAccess(description =
+            "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
+                    + "but will return the associated datasets.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets, final Pageable pPageable,
@@ -413,8 +410,7 @@ public class CatalogController {
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned "
-                    + "are datasets",
-            role = DefaultRole.PUBLIC)
+                    + "are datasets", role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
@@ -503,7 +499,8 @@ public class CatalogController {
             @RequestParam(value = "fileTypes") final String[] fileTypes) throws SearchException {
         final SimpleSearchKey<DataObject> searchKey = Searches
                 .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
-        DocFilesSummary summary = catalogSearchService.computeDatasetsSummary(allParams, searchKey, datasetIpId, fileTypes);
+        DocFilesSummary summary = catalogSearchService
+                .computeDatasetsSummary(allParams, searchKey, datasetIpId, fileTypes);
         return new ResponseEntity<>(summary, HttpStatus.OK);
     }
 
