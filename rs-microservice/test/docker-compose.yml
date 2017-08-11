@@ -13,26 +13,7 @@ services:
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
     networks:
-          - regards_IT_network
-
-  rs_elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
-    environment:
-      - cluster.name=regards
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms2500m -Xmx2500m"
-      - xpack.security.enabled=false
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-    networks:
-          - regards_IT_network
+      - regards_IT_network
 
   rs_build:
     image: 172.26.47.52:5000/rs-maven
@@ -45,12 +26,11 @@ services:
       - /usr/bin/docker:/bin/docker # link docker - only useful for deploy MODE
       - /var/run/docker.sock:/var/run/docker.sock
       - ../.:/app_to_build
-    depends_on:
+    links:
       - rs_rabbitmq
       - rs_postgres
-      - rs_elasticsearch
     networks:
-          - regards_IT_network
+      - regards_IT_network
 
 networks:
   regards_IT_network:
