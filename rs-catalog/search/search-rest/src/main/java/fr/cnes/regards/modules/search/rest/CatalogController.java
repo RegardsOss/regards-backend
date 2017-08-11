@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
-
-import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,11 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -44,18 +39,14 @@ import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.Document;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.*;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.opensearch.service.description.OpenSearchDescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
@@ -222,7 +213,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -286,8 +277,8 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
             final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
-        final SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                              EntityType.COLLECTION);
+        final SimpleSearchKey<Collection> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.COLLECTION);
         final FacetPage<Collection> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
@@ -298,7 +289,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -332,8 +323,8 @@ public class CatalogController {
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable) throws SearchException {
-        final SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                           EntityType.DATASET);
+        final SimpleSearchKey<Dataset> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATASET);
         final FacetPage<Dataset> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(pagedDatasetResourcesAssembler.toResource(result), HttpStatus.OK);
     }
@@ -344,7 +335,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATASET, PATH + DATASETS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -384,8 +375,8 @@ public class CatalogController {
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets, final Pageable pPageable)
             throws SearchException {
-        final SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                              EntityType.DATA);
+        final SimpleSearchKey<DataObject> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
         final FacetPage<DataObject> result = catalogSearchService.search(allParams, searchKey, pFacets, pPageable);
         return new ResponseEntity<>(dataobjectResourcesAssembler.toResource(result), HttpStatus.OK);
     }
@@ -396,7 +387,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -438,7 +429,7 @@ public class CatalogController {
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -499,8 +490,8 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
             final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
-        final SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                            EntityType.DOCUMENT);
+        final SimpleSearchKey<Document> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DOCUMENT);
         final FacetPage<Document> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
@@ -512,7 +503,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DOCUMENT, PATH + DOCUMENTS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**

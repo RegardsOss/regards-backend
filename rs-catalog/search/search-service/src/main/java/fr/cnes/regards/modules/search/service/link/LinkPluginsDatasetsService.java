@@ -30,10 +30,10 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 
