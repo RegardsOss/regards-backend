@@ -6,8 +6,6 @@
 	<artifactId>bootstrap-order</artifactId>
 	<version>2.0.0-SNAPSHOT</version>
 
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
@@ -18,6 +16,8 @@
 	<properties>
 		<fr.cnes.regards.docker.image.name>rs-order</fr.cnes.regards.docker.image.name>
 	</properties>
+
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
 	<dependencies>
 		<!-- Core dependencies -->
@@ -31,7 +31,7 @@
 			<artifactId>amqp-monitoring-regards-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.order</groupId>
 			<artifactId>order-rest</artifactId>
 		</dependency>
 	</dependencies>

@@ -2,7 +2,7 @@
 <!-- LICENSE_PLACEHOLDER --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules</groupId>
+	<groupId>fr.cnes.regards.modules.order</groupId>
 	<artifactId>order-domain</artifactId>
 	<packaging>jar</packaging>
 
@@ -16,6 +16,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>regards-core-jpa-data</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>regards-core-jpa-common</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>

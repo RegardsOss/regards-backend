@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.rest;
+package fr.cnes.regards.modules.order.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -33,8 +33,8 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.domain.Greeting;
-import fr.cnes.regards.modules.service.GreetingsService;
+import fr.cnes.regards.modules.order.domain.Greeting;
+import fr.cnes.regards.modules.order.service.GreetingsService;
 
 /**
  * REST module controller
