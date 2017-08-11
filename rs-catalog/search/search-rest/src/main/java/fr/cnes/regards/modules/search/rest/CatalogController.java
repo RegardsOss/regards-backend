@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.entities.domain.*;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.description.OpenSearchDescriptionBuilder;
@@ -66,12 +67,11 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  * <li>Receives an OpenSearch format request, for example
  * <code>q=(tags=urn://laCollection)&type=collection&modele=ModelDeCollection</code>.
  * <li>Applies project filters by interpreting the OpenSearch query string and transforming them in ElasticSearch
- * criterion request. This is done with a plugin of type {@link IFilter}.
+ * criterion request. This is done with a plugin of type IFilter.
  * <li>Adds user group and data access filters. This is done with {@link IAccessRightFilter} service.
- * <li>Performs the ElasticSearch request on the project index. This is done with {@link IIndexService}.
+ * <li>Performs the ElasticSearch request on the project index. This is done with {@link fr.cnes.regards.modules.indexer.service.IIndexerService}.
  * <li>Applies {@link IRepresentation} type plugins to the response.
  * <ol>
- *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -85,6 +85,10 @@ public class CatalogController {
     public static final String DOCUMENTS_SEARCH = "/documents/search";
 
     public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
+
+    public static final String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
+
+    public static final String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects/searchwithoutfacets";
 
     public static final String DATASETS_SEARCH = "/datasets/search";
 
@@ -146,22 +150,14 @@ public class CatalogController {
     private final OpenSearchDescriptionBuilder osDescriptorBuilder;
 
     /**
-     * @param pCatalogSearchService
-     *            Service performing the search from the query string. Autowired by Spring.
-     * @param pSearchService
-     *            Service perfoming the ElasticSearch search directly. Autowired by Spring.
-     * @param pResourceService
-     *            The resource service. Autowired by Spring.
-     * @param pAbstractEntityResourcesAssembler
-     *            The resource assembler to use for abstract entities in order to add facets. Autowired by Spring.
-     * @param pDataobjectResourcesAssembler
-     *            The resource assembler to use for dataobject in order to add facets. Autowired by Spring.
-     * @param pDatasetResourcesAssembler
-     *            The resource assembler to use for paged datasets. Autowired by Spring.
-     * @param pPagedDatasetResourcesAssembler
-     *            The resource assembler to use for datasets. Autowired by Spring.
-     * @param pRuntimeTenantResolver
-     *            Get current tenant at runtime and allows tenant forcing. Autowired.
+     * @param pCatalogSearchService Service performing the search from the query string. Autowired by Spring.
+     * @param pSearchService Service perfoming the ElasticSearch search directly. Autowired by Spring.
+     * @param pResourceService The resource service. Autowired by Spring.
+     * @param pAbstractEntityResourcesAssembler The resource assembler to use for abstract entities in order to add facets. Autowired by Spring.
+     * @param pDataobjectResourcesAssembler The resource assembler to use for dataobject in order to add facets. Autowired by Spring.
+     * @param pDatasetResourcesAssembler The resource assembler to use for paged datasets. Autowired by Spring.
+     * @param pPagedDatasetResourcesAssembler The resource assembler to use for datasets. Autowired by Spring.
+     * @param pRuntimeTenantResolver Get current tenant at runtime and allows tenant forcing. Autowired.
      */
     public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService,
             // NOSONAR
@@ -187,18 +183,14 @@ public class CatalogController {
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
      * collection, dataset, dataobject and document.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pPageable
-     *            the page
+     * @param allParams all query parameters
+     * @param pPageable the page
      * @return the page of entities matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.",
+    @ResourceAccess(description = "Perform an OpenSearch request on all indexed data, regardless of the type. The "
+            + "returned objects can be any mix of collection, dataset, dataobject and document.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable) throws SearchException {
@@ -219,16 +211,11 @@ public class CatalogController {
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
      * collection, dataset, dataobject and document. Allows usage of facets.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pFacets
-     *            the facets to apply
-     * @param pPageable
-     *            the page
+     * @param allParams all query parameters
+     * @param pFacets the facets to apply
+     * @param pPageable the page
      * @return the page of entities matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = SEARCH_WITH_FACETS, method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
@@ -244,11 +231,8 @@ public class CatalogController {
 
     /**
      * Return the collection of passed URN_COLLECTION.
-     *
-     * @param pUrn
-     *            the Uniform Resource Name of the collection
+     * @param pUrn the Uniform Resource Name of the collection
      * @return the collection
-     * @throws SearchException
      */
     @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
@@ -261,16 +245,11 @@ public class CatalogController {
 
     /**
      * Perform an OpenSearch request on collections.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pPageable
-     *            the page
-     * @param pAssembler
-     *            injected by Spring
+     * @param allParams all query parameters
+     * @param pPageable the page
+     * @param pAssembler injected by Spring
      * @return the page of collections matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on collection.", role = DefaultRole.PUBLIC)
@@ -294,11 +273,8 @@ public class CatalogController {
 
     /**
      * Return the dataset of passed URN_COLLECTION.
-     *
-     * @param pUrn
-     *            the Uniform Resource Name of the dataset
+     * @param pUrn the Uniform Resource Name of the dataset
      * @return the dataset
-     * @throws SearchException
      */
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
@@ -310,14 +286,10 @@ public class CatalogController {
 
     /**
      * Perform an OpenSearch request on datasets.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pPageable
-     *            the page
+     * @param allParams all query parameters
+     * @param pPageable the page
      * @return the page of datasets matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
@@ -340,11 +312,8 @@ public class CatalogController {
 
     /**
      * Return the dataobject of passed URN_COLLECTION.
-     *
-     * @param pUrn
-     *            the Uniform Resource Name of the dataobject
+     * @param pUrn the Uniform Resource Name of the dataobject
      * @return the dataobject
-     * @throws SearchException
      */
     @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
@@ -357,16 +326,11 @@ public class CatalogController {
 
     /**
      * Perform an OpenSearch request on dataobjects. Only return required facets.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pFacets
-     *            the facets to apply
-     * @param pPageable
-     *            the page
+     * @param allParams all query parameters
+     * @param pFacets the facets to apply
+     * @param pPageable the page
      * @return the page of dataobjects matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.",
@@ -378,6 +342,24 @@ public class CatalogController {
         final SimpleSearchKey<DataObject> searchKey = Searches
                 .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
         final FacetPage<DataObject> result = catalogSearchService.search(allParams, searchKey, pFacets, pPageable);
+        return new ResponseEntity<>(dataobjectResourcesAssembler.toResource(result), HttpStatus.OK);
+    }
+
+    /**
+     * Perform an OpenSearch request on dataobjects without facets.
+     * @param allParams all query parameters
+     * @param pPageable the page
+     * @return the page of dataobjects matching the query
+     * @throws SearchException when an error occurs while parsing the query
+     */
+    @RequestMapping(path = DATAOBJECTS_SEARCH_WITHOUT_FACETS, method = RequestMethod.GET)
+    @ResourceAccess(description = "Perform an OpenSearch request on dataobject without facets",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
+            @RequestParam final Map<String, String> allParams, final Pageable pPageable) throws SearchException {
+        final SimpleSearchKey<DataObject> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
+        final Page<DataObject> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(dataobjectResourcesAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -393,23 +375,17 @@ public class CatalogController {
     /**
      * Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the
      * associated datasets.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pFacets
-     *            the facets to apply
-     * @param pPageable
-     *            the page
-     * @param pAssembler
-     *            injected by Spring
+     * @param allParams all query parameters
+     * @param pFacets the facets to apply
+     * @param pPageable the page
+     * @param pAssembler injected by Spring
      * @return the page of datasets matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the associated datasets.",
-            role = DefaultRole.PUBLIC)
+    @ResourceAccess(description =
+            "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
+                    + "but will return the associated datasets.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets, final Pageable pPageable,
@@ -424,8 +400,8 @@ public class CatalogController {
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH + DESCRIPTOR, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(
-            description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned are datasets",
-            role = DefaultRole.PUBLIC)
+            description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned "
+                    + "are datasets", role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
@@ -434,11 +410,8 @@ public class CatalogController {
 
     /**
      * Return the document of passed URN_COLLECTION.
-     *
-     * @param pUrn
-     *            the Uniform Resource Name of the document
+     * @param pUrn the Uniform Resource Name of the document
      * @return the document
-     * @throws SearchException
      */
     @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the document of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
@@ -474,16 +447,11 @@ public class CatalogController {
 
     /**
      * Perform an OpenSearch request on documents.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pPageable
-     *            the page
-     * @param pAssembler
-     *            injected by Spring
+     * @param allParams all query parameters
+     * @param pPageable the page
+     * @param pAssembler injected by Spring
      * @return the page of documents matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on document.", role = DefaultRole.PUBLIC)
@@ -507,12 +475,30 @@ public class CatalogController {
     }
 
     /**
+     * Compute a DocFileSummary for current user, for specified opensearch request, for asked file types (see DataType)
+     * and eventualy restricted by a given datasetIpId
+     * @param allParams request params containing "q" query param (opensearch request)
+     * @param datasetIpId restrict summary to this datasetIpIp (can be null)
+     * @param fileTypes asked files types {@link fr.cnes.regards.modules.entities.domain.DataType}
+     * @return the computed summary
+     * @throws SearchException is opensearch request is mouldy
+     */
+    @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
+    @ResourceAccess(description = "compute dataset(s) summary", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam final Map<String, String> allParams,
+            @RequestParam(value = "datasetIpId", required = false) final String datasetIpId,
+            @RequestParam(value = "fileTypes") final String[] fileTypes) throws SearchException {
+        final SimpleSearchKey<DataObject> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
+        DocFilesSummary summary = catalogSearchService
+                .computeDatasetsSummary(allParams, searchKey, datasetIpId, fileTypes);
+        return new ResponseEntity<>(summary, HttpStatus.OK);
+    }
+
+    /**
      * Convert a list of elements to a list of {@link Resource}
-     *
-     * @param pElements
-     *            list of elements to convert
-     * @param pAssembler
-     *            page resources assembler
+     * @param pElements list of elements to convert
+     * @param pAssembler page resources assembler
      * @return a list of {@link Resource}
      */
     private <T> PagedResources<Resource<T>> toPagedResources(final Page<T> pElements,

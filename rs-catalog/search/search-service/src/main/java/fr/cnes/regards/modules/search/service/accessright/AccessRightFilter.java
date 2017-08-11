@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +107,8 @@ public class AccessRightFilter implements IAccessRightFilter {
                 // Throw an error if no access group
                 if (accessGroups.isEmpty()) {
                     String errorMessage = String.format(
-                                                        "Cannot set access right filter cause user %s does not have any access group",
+                                                        "Cannot set access right filter because user %s does not have "
+                                                                + "any access group",
                                                         userEmail);
                     LOGGER.error(errorMessage);
                     throw new AccessRightFilterException(errorMessage);
@@ -133,4 +135,38 @@ public class AccessRightFilter implements IAccessRightFilter {
         }
     }
 
+    @Override
+    public Set<String> getUserAccessGroups() throws AccessRightFilterException {
+        // Retrieve current user from security context
+        String userEmail = SecurityUtils.getActualUser();
+        Assert.notNull(userEmail, "No user found!");
+
+        try {
+            FeignSecurityManager.asSystem();
+            if (!projectUserClient.isAdmin(userEmail).getBody()) {
+
+                // Retrieve public groups
+                Set<AccessGroup> accessGroups = new HashSet<>(
+                        cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+
+                // Add explicitly associated group
+                accessGroups.addAll(cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant()));
+
+                // Throw an error if no access group
+                if (accessGroups.isEmpty()) {
+                    String errorMessage = String.format(
+                            "Cannot set access right filter because user %s does not have "
+                                    + "any access group",
+                            userEmail);
+                    LOGGER.error(errorMessage);
+                    throw new AccessRightFilterException(errorMessage);
+                }
+
+                return accessGroups.stream().map(AccessGroup::getName).collect(Collectors.toSet());
+            }
+            return null;
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
 }
