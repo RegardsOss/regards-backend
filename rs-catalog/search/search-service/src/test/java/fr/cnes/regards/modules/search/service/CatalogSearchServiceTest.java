@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
@@ -43,7 +44,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
@@ -113,7 +113,7 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter);
+                                                        facetConverter);
     }
 
     /**
