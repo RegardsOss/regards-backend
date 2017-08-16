@@ -5,12 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -25,11 +20,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -38,7 +29,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -178,7 +170,7 @@ public class JobService implements IJobService {
                 runtimeTenantResolver.forceTenant(jobInfo.getTenant());
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
-                publisher.publish(new AbortedJobEvent(jobInfo.getId()));
+                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
                 return;
             }
             // First, instantiate job
@@ -235,17 +227,17 @@ public class JobService implements IJobService {
         }
     }
 
-/**
- * Handler for StopEventJob
- */
-private class StopJobHandler implements IHandler<StopJobEvent> {
+    /**
+     * Handler for StopEventJob
+     */
+    private class StopJobHandler implements IHandler<StopJobEvent> {
 
-    @Override
-    public void handle(TenantWrapper<StopJobEvent> wrapper) {
-        if (wrapper.getContent() != null) {
-            runtimeTenantResolver.forceTenant(wrapper.getTenant());
-            JobService.this.abort(wrapper.getContent().getJobId());
+        @Override
+        public void handle(TenantWrapper<StopJobEvent> wrapper) {
+            if (wrapper.getContent() != null) {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                JobService.this.abort(wrapper.getContent().getJobId());
+            }
         }
     }
-}
 }

@@ -25,17 +25,10 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
-import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
-import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.*;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
 import fr.cnes.regards.framework.modules.jobs.test.JobMultitenantConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -45,6 +38,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JobMultitenantConfiguration.class })
 public class MultitenantJobTest {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(MultitenantJobTest.class);
 
     public static final String TENANT1 = "JOBS1";
@@ -80,13 +74,7 @@ public class MultitenantJobTest {
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
-    private MultitenantJobTest.RunningJobHandler runningHandler = new MultitenantJobTest.RunningJobHandler();
-
-    private MultitenantJobTest.SucceededJobHandler succeededHandler = new MultitenantJobTest.SucceededJobHandler();
-
-    private MultitenantJobTest.AbortedJobHandler abortedHandler = new MultitenantJobTest.AbortedJobHandler();
-
-    private MultitenantJobTest.FailedJobHandler failedHandler = new MultitenantJobTest.FailedJobHandler();
+    private MultitenantJobTest.JobHandler jobHandler = new MultitenantJobTest.JobHandler();
 
     private boolean subscriptionsDone = false;
 
@@ -103,10 +91,7 @@ public class MultitenantJobTest {
         try {
             amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
                     .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
-            amqpAdmin.purgeQueue(RunningJobEvent.class, runningHandler.getClass(), false);
-            amqpAdmin.purgeQueue(SucceededJobEvent.class, succeededHandler.getClass(), false);
-            amqpAdmin.purgeQueue(AbortedJobEvent.class, abortedHandler.getClass(), false);
-            amqpAdmin.purgeQueue(FailedJobEvent.class, failedHandler.getClass(), false);
+            amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
         } catch (Exception e) {
             // In case queues don't exist
         }
@@ -119,20 +104,14 @@ public class MultitenantJobTest {
         try {
             amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
                     .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
-            amqpAdmin.purgeQueue(RunningJobEvent.class, runningHandler.getClass(), false);
-            amqpAdmin.purgeQueue(SucceededJobEvent.class, succeededHandler.getClass(), false);
-            amqpAdmin.purgeQueue(AbortedJobEvent.class, abortedHandler.getClass(), false);
-            amqpAdmin.purgeQueue(FailedJobEvent.class, failedHandler.getClass(), false);
+            amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
         } catch (Exception e) {
             // In case queues don't exist
         }
         rabbitVhostAdmin.unbind();
 
         if (!subscriptionsDone) {
-            subscriber.subscribeTo(RunningJobEvent.class, runningHandler);
-            subscriber.subscribeTo(SucceededJobEvent.class, succeededHandler);
-            subscriber.subscribeTo(AbortedJobEvent.class, abortedHandler);
-            subscriber.subscribeTo(FailedJobEvent.class, failedHandler);
+            subscriber.subscribeTo(JobEvent.class, jobHandler);
             subscriptionsDone = true;
         }
     }
@@ -143,39 +122,35 @@ public class MultitenantJobTest {
         jobInfoRepos.deleteAll();
     }
 
-    private class RunningJobHandler implements IHandler<RunningJobEvent> {
+    private class JobHandler implements IHandler<JobEvent> {
 
         @Override
-        public void handle(TenantWrapper<RunningJobEvent> wrapper) {
-            runnings.add(wrapper.getContent().getJobId());
-            LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
-        }
-    }
+        public void handle(TenantWrapper<JobEvent> wrapper) {
+            JobEvent event = wrapper.getContent();
+            JobEventType type = event.getJobEventType();
+            switch (type) {
+                case RUNNING:
+                    runnings.add(wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+                    break;
+                case SUCCEEDED:
 
-    private class SucceededJobHandler implements IHandler<SucceededJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<SucceededJobEvent> wrapper) {
-            succeededs.add(wrapper.getContent().getJobId());
-            LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
-        }
-    }
-
-    private class AbortedJobHandler implements IHandler<AbortedJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<AbortedJobEvent> wrapper) {
-            aborteds.add(wrapper.getContent().getJobId());
-            LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
-        }
-    }
-
-    private class FailedJobHandler implements IHandler<FailedJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<FailedJobEvent> wrapper) {
-            faileds.add(wrapper.getContent().getJobId());
-            LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    succeededs.add(wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+                    break;
+                case ABORTED:
+                    aborteds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+                    break;
+                case FAILED:
+                    faileds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
+                                    .getSimpleName());
+            }
         }
     }
 
@@ -187,7 +162,7 @@ public class MultitenantJobTest {
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setDescription("Job that wait 500ms");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
+                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo1 = jobInfoService.create(waitJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
@@ -229,7 +204,7 @@ public class MultitenantJobTest {
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setDescription("Job that wait 3 x 1s");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
+                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo();
@@ -264,7 +239,7 @@ public class MultitenantJobTest {
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setDescription("Job that wait 3 x 1s");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
+                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo();
@@ -272,7 +247,7 @@ public class MultitenantJobTest {
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setDescription("Job that wait 3 x 1s");
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
+                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         waitJobInfo2 = jobInfoService.create(waitJobInfo2);
         tenantResolver.forceTenant(TENANT1);
@@ -309,7 +284,6 @@ public class MultitenantJobTest {
         failedJobInfo2.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo2.setDescription("Job that failed after 1s");
         failedJobInfo2 = jobInfoService.create(failedJobInfo2);
-
 
         LOGGER.info("Failed job : {}", failedJobInfo1.getId());
         LOGGER.info("Failed job : {}", failedJobInfo2.getId());
@@ -376,7 +350,7 @@ public class MultitenantJobTest {
     }
 
     @Test
-    public void testSpringJob()throws InterruptedException {
+    public void testSpringJob() throws InterruptedException {
         JobInfo springJobInfo = new JobInfo();
         springJobInfo.setPriority(100);
         springJobInfo.setClassName(SpringJob.class.getName());

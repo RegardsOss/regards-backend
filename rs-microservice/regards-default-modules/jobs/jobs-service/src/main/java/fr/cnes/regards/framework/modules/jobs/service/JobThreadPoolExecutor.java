@@ -16,10 +16,7 @@ import com.google.common.collect.BiMap;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.*;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -58,7 +55,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
         jobInfo.updateStatus(JobStatus.RUNNING);
         jobInfoService.save(jobInfo);
-        publisher.publish(new RunningJobEvent(jobInfo.getId()));
+        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING));
         super.beforeExecute(t, r);
     }
 
@@ -76,7 +73,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                 t = ce;
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
-                publisher.publish(new AbortedJobEvent(jobInfo.getId()));
+                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
             } catch (ExecutionException ee) {
                 t = ee.getCause();
                 jobInfo.updateStatus(JobStatus.FAILED);
@@ -84,7 +81,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                 t.printStackTrace(new PrintWriter(sw));
                 jobInfo.getStatus().setStackTrace(sw.toString());
                 jobInfoService.save(jobInfo);
-                publisher.publish(new FailedJobEvent(jobInfo.getId()));
+                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt(); // ignore/reset
             }
@@ -94,7 +91,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             jobInfo.updateStatus(JobStatus.SUCCEEDED);
             jobInfo.setResult(jobInfo.getJob().getResult());
             jobInfoService.save(jobInfo);
-            publisher.publish(new SucceededJobEvent(jobInfo.getId()));
+            publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED));
         }
         // Delete complete workspace dir if job has one
         if (jobInfo.getJob().needWorkspace()) {
