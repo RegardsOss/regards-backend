@@ -49,7 +49,7 @@ public class ServicePluginParameters {
     /**
      * Opensearch query to retrieve entities to apply plugin service on (case of MANY catalog service plugin type)
      */
-    private String openSearchQuery;
+    private String q;
 
     /**
      * Plugin dynamic parameters
@@ -66,7 +66,7 @@ public class ServicePluginParameters {
         entityId = pEntityId;
         entitiesId = pEntitiesId;
         entityType = pEntityType;
-        openSearchQuery = pOpenSearchQuery;
+        q = pOpenSearchQuery;
         dynamicParameters = pDynamicParameters;
     }
 
@@ -83,7 +83,7 @@ public class ServicePluginParameters {
     }
 
     public String getOpenSearchQuery() {
-        return openSearchQuery;
+        return q;
     }
 
     public Map<String, String> getDynamicParameters() {
