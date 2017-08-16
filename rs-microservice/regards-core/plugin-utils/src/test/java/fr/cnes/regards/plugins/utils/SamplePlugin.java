@@ -57,6 +57,12 @@ public class SamplePlugin implements ISamplePlugin {
     @PluginParameter(description = "boolean parameter", name = ACTIVE)
     private Boolean isActive;
 
+    /**
+     * A {@link TestPojo} parameter
+     */
+    @PluginParameter(description = "Pojo parameter", name = POJO)
+    private TestPojo pojo;
+
     @Override
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
@@ -83,6 +89,10 @@ public class SamplePlugin implements ISamplePlugin {
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
                 + "|coeff:" + coef);
+    }
+
+    public TestPojo getPojo() {
+        return pojo;
     }
 
 }

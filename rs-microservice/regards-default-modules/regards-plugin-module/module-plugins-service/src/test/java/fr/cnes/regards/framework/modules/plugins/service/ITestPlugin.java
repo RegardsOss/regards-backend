@@ -16,58 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.plugins.utils;
+package fr.cnes.regards.framework.modules.plugins.service;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
- * ISamplePlugin
+ * Example class for plugins instanciation test
  *
- * @author Christophe Mertz
+ * @author sbinda
  *
  */
 @PluginInterface(description = "hello sample plugin interface")
-public interface ISamplePlugin {
+public interface ITestPlugin {
 
-    /**
-     * constant suffix
-     */
-    public static final String SUFFIXE = "suffix";
-
-    /**
-     * constant is active
-     */
-    public static final String ACTIVE = "isActive";
-
-    /**
-     * constant coeff
-     */
-    public static final String COEFF = "coeff";
-
-    /**
-     * constant pojo parameter
-     */
-    public static final String POJO = "pojo";
-
-    /**
-     * method echo
-     *
-     * @param pMessage
-     *            message to display
-     *
-     * @return the message
-     */
-    String echo(String pMessage);
-
-    /**
-     * method add
-     *
-     * @param pFirst
-     *            first element
-     * @param pSecond
-     *            second item
-     * @return the result
-     */
-    int add(int pFirst, int pSecond);
+    public TestPojo getPojoParam();
 
 }
