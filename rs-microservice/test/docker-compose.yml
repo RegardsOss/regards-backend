@@ -20,6 +20,7 @@ services:
     environment:
       - BRANCH_NAME
       - WORKSPACE
+      - CI_DIR
       - MODE
     volumes:
       - /opt/maven-multibranch-repository:/localRepository
