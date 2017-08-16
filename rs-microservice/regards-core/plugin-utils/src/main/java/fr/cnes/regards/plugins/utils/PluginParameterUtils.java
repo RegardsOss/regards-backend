@@ -23,8 +23,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -56,10 +60,12 @@ public final class PluginParameterUtils {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
 
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
     /**
      * Gson object used to deserialize configuration parameters
      */
-    private static final Gson gson = new GsonBuilder().create();
+    private static final Gson gson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT).create();
 
     /**
      * Default constructor
@@ -112,7 +118,12 @@ public final class PluginParameterUtils {
         /**
          * A primitive of {@link Boolean}
          */
-        BOOLEAN(Boolean.class);
+        BOOLEAN(Boolean.class),
+
+        /**
+         * A primitive of {@link Date}
+         */
+        DATE(Date.class);
 
         /**
          * Type
@@ -509,15 +520,18 @@ public final class PluginParameterUtils {
 
         try {
             Object effectiveVal;
-            if (pTypeWrapper.get().getType().equals(String.class)) {
+            if (pTypeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
                 effectiveVal = paramValue;
+            } else if (pTypeWrapper.get().getType().equals(PrimitiveObject.DATE.getType())) {
+                DateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
+                effectiveVal = dateFormat.parse(paramValue);
             } else {
                 final Method method = pTypeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
                 effectiveVal = method.invoke(null, paramValue);
             }
             pField.set(pPluginInstance, effectiveVal);
         } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException
-                | InvocationTargetException e) {
+                | InvocationTargetException | ParseException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(
                     String.format("Exception while processing param <%s> in plugin class <%s> with value <%s>.",

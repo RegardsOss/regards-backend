@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.plugins.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,15 +96,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         List<String> values = new ArrayList<String>();
         values.add("test1");
         values.add("test2");
+        Date currentDate = new Date();
         TestPojo pojoParam = new TestPojo();
         pojoParam.setValue(stringPojoParamValue);
         pojoParam.setValues(values);
         JSONObject object = new JSONObject(pojoParam);
+        SimpleDateFormat format = new SimpleDateFormat(PluginParameterUtils.DATE_TIME_FORMAT);
+        object.put("date", format.format(currentDate));
 
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.POJO, object.toString()).addParameter(SamplePlugin.SUFFIXE, "chris_test_1")
@@ -124,6 +129,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         Assert.assertEquals(samplePlugin.getPojo().getValue(), stringPojoParamValue);
         Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
+        Assert.assertEquals(samplePlugin.getPojo().getDate(), currentDate);
         LOGGER.debug(ENDING + toString());
     }
 
