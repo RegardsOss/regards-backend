@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
+import java.net.URL;
 import java.util.List;
+import java.util.Set;
 
 import org.assertj.core.util.Lists;
 import org.mockito.Mockito;
@@ -32,18 +34,33 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
+import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
- * Module-wide configuration for integration tests.
+ * Module-wide configuration for tests.
  *
  * @author Xavier-Alexandre Brochard
  */
 @Configuration
 public class AccessServicesITConfiguration {
+
+    private static final Long ID = 0L;
+
+    private static final String LABEL = "the label";
+
+    private static URL ICON_URL;
+
+    private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.MANY);
+
+    private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
@@ -62,4 +79,37 @@ public class AccessServicesITConfiguration {
         return client;
     }
 
+    @Bean
+    public PluginConfigurationDto dummyPluginConfigurationDto() {
+        final PluginParameter parameter = new PluginParameter("para", "never used");
+        parameter.setIsDynamic(true);
+        final PluginMetaData metaData = new PluginMetaData();
+        metaData.setPluginId("tata");
+        metaData.setAuthor("toto");
+        metaData.setDescription("titi");
+        metaData.setVersion("tutu");
+        metaData.getInterfaceNames().add(IService.class.getName());
+        metaData.setPluginClassName(TestService.class.getName());
+
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
+        pluginConfiguration.setParameters(Lists.newArrayList(parameter));
+
+        return new PluginConfigurationDto(pluginConfiguration, Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY),
+                Sets.newHashSet(EntityType.DATA));
+    }
+
+    @Bean
+    public UIPluginConfiguration dummyUiPluginConfiguration() {
+        UIPluginConfiguration pluginConfiguration = new UIPluginConfiguration();
+        UIPluginDefinition pluginDefinition = new UIPluginDefinition();
+        pluginConfiguration.setId(ID);
+        pluginConfiguration.setLabel(LABEL);
+        pluginConfiguration.setPluginDefinition(pluginDefinition);
+
+        pluginDefinition.setIconUrl(ICON_URL);
+        pluginDefinition.setApplicationModes(APPLICATION_MODES);
+        pluginDefinition.setEntityTypes(ENTITY_TYPES);
+
+        return pluginConfiguration;
+    }
 }

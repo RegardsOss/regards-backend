@@ -56,14 +56,23 @@ public class ServicesAggregatorController {
     /**
      * The client providing catalog services
      */
-    @Autowired
-    private ICatalogServicesClient catalogServicesClient;
+    private final ICatalogServicesClient catalogServicesClient;
 
     /**
      * The service provinding ui services
      */
-    @Autowired
-    private IUIPluginConfigurationService uiPluginConfigurationService;
+    private final IUIPluginConfigurationService uiPluginConfigurationService;
+
+    /**
+     * @param pCatalogServicesClient
+     * @param pUiPluginConfigurationService
+     */
+    public ServicesAggregatorController(@Autowired ICatalogServicesClient pCatalogServicesClient,
+            @Autowired IUIPluginConfigurationService pUiPluginConfigurationService) {
+        super();
+        catalogServicesClient = pCatalogServicesClient;
+        uiPluginConfigurationService = pUiPluginConfigurationService;
+    }
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
