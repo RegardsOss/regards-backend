@@ -1,12 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -28,17 +22,10 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
-import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
-import fr.cnes.regards.framework.modules.jobs.domain.event.AbortedJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.FailedJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.RunningJobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.*;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.SucceededJobEvent;
 import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -83,13 +70,7 @@ public class JobServiceTest {
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
-    private RunningJobHandler runningHandler = new RunningJobHandler();
-
-    private SucceededJobHandler succeededHandler = new SucceededJobHandler();
-
-    private AbortedJobHandler abortedHandler = new AbortedJobHandler();
-
-    private FailedJobHandler failedHandler = new FailedJobHandler();
+    private JobHandler jobHandler = new JobHandler();
 
     private boolean subscriptionsDone = false;
 
@@ -107,20 +88,14 @@ public class JobServiceTest {
         try {
             amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
                     .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
-            amqpAdmin.purgeQueue(RunningJobEvent.class, runningHandler.getClass(), false);
-            amqpAdmin.purgeQueue(SucceededJobEvent.class, succeededHandler.getClass(), false);
-            amqpAdmin.purgeQueue(AbortedJobEvent.class, abortedHandler.getClass(), false);
-            amqpAdmin.purgeQueue(FailedJobEvent.class, failedHandler.getClass(), false);
+            amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
         } catch (Exception e) {
             // In case queues don't exist
         }
         rabbitVhostAdmin.unbind();
 
         if (!subscriptionsDone) {
-            subscriber.subscribeTo(RunningJobEvent.class, runningHandler);
-            subscriber.subscribeTo(SucceededJobEvent.class, succeededHandler);
-            subscriber.subscribeTo(AbortedJobEvent.class, abortedHandler);
-            subscriber.subscribeTo(FailedJobEvent.class, failedHandler);
+            subscriber.subscribeTo(JobEvent.class, jobHandler);
             subscriptionsDone = true;
         }
     }
@@ -131,39 +106,35 @@ public class JobServiceTest {
         jobInfoRepos.deleteAll();
     }
 
-    private class RunningJobHandler implements IHandler<RunningJobEvent> {
+    private class JobHandler implements IHandler<JobEvent> {
 
         @Override
-        public void handle(TenantWrapper<RunningJobEvent> wrapper) {
-            runnings.add(wrapper.getContent().getJobId());
-            LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
-        }
-    }
+        public void handle(TenantWrapper<JobEvent> wrapper) {
+            JobEvent event = wrapper.getContent();
+            JobEventType type = event.getJobEventType();
+            switch (type) {
+                case RUNNING:
+                    runnings.add(wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+                    break;
+                case SUCCEEDED:
 
-    private class SucceededJobHandler implements IHandler<SucceededJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<SucceededJobEvent> wrapper) {
-            succeededs.add(wrapper.getContent().getJobId());
-            LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
-        }
-    }
-
-    private class AbortedJobHandler implements IHandler<AbortedJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<AbortedJobEvent> wrapper) {
-            aborteds.add(wrapper.getContent().getJobId());
-            LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
-        }
-    }
-
-    private class FailedJobHandler implements IHandler<FailedJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<FailedJobEvent> wrapper) {
-            faileds.add(wrapper.getContent().getJobId());
-            LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    succeededs.add(wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+                    break;
+                case ABORTED:
+                    aborteds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+                    break;
+                case FAILED:
+                    faileds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
+                                    .getSimpleName());
+            }
         }
     }
 
@@ -266,7 +237,7 @@ public class JobServiceTest {
             }
         }
         // Retrieve all jobs
-        List<JobInfo> results =  new ArrayList<>(jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED));
+        List<JobInfo> results = new ArrayList<>(jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED));
         // sort by stopDate
         results.sort(Comparator.comparing(j -> j.getStatus().getStopDate()));
         int lastPriority = -1;
@@ -279,7 +250,7 @@ public class JobServiceTest {
     }
 
     @Test
-    public void testSpringJob()throws InterruptedException {
+    public void testSpringJob() throws InterruptedException {
         JobInfo springJobInfo = new JobInfo();
         springJobInfo.setPriority(100);
         springJobInfo.setClassName(SpringJob.class.getName());
