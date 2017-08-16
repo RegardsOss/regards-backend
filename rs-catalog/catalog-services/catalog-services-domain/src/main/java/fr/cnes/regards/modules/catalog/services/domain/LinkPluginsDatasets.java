@@ -18,16 +18,28 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.catalog.services.domain.validation.PluginServices;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.PluginServices;
 
 /**
  * Class mapping Plugins of type IFilter, IConverter, IService to a Dataset
@@ -37,8 +49,8 @@ import fr.cnes.regards.modules.catalog.services.domain.validation.PluginServices
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_link_service_dataset",
-        uniqueConstraints = @UniqueConstraint(columnNames = { "dataset_id" }, name = "uk_link_service_dataset_dataset_id"))
+@Table(name = "t_link_service_dataset", uniqueConstraints = @UniqueConstraint(columnNames = { "dataset_id" },
+        name = "uk_link_service_dataset_dataset_id"))
 public class LinkPluginsDatasets {
 
     /**
@@ -57,8 +69,11 @@ public class LinkPluginsDatasets {
      * Ids of plugin configuration of type IService
      */
     @ManyToMany
-    @JoinTable(name = "ta_link_service_dataset_plugins", joinColumns = @JoinColumn(name = "dataset_id", foreignKey = @ForeignKey(name = "fk_link_service_dataset_plugin")),
-            inverseJoinColumns = @JoinColumn(name = "service_configuration_id", foreignKey = @ForeignKey(name = "fk_plugin_link_service_dataset")))
+    @JoinTable(name = "ta_link_service_dataset_plugins",
+            joinColumns = @JoinColumn(name = "dataset_id",
+                    foreignKey = @ForeignKey(name = "fk_link_service_dataset_plugin")),
+            inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
+                    foreignKey = @ForeignKey(name = "fk_plugin_link_service_dataset")))
     private Set<PluginConfiguration> services;
 
     /**
@@ -121,10 +136,9 @@ public class LinkPluginsDatasets {
             if (other.datasetId != null) {
                 return false;
             }
-        } else
-            if (!datasetId.equals(other.datasetId)) {
-                return false;
-            }
+        } else if (!datasetId.equals(other.datasetId)) {
+            return false;
+        }
         return true;
     }
 

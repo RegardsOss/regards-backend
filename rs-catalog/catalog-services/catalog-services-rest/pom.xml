@@ -32,6 +32,10 @@
 			<artifactId>catalog-services-service</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>catalog-services-plugin</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>

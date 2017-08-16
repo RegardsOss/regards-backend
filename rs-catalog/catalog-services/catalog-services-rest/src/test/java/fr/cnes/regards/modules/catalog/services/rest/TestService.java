@@ -20,15 +20,18 @@ package fr.cnes.regards.modules.catalog.services.rest;
 
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.assertj.core.util.Sets;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.catalog.services.domain.IService;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.models.domain.Model;
@@ -47,7 +50,7 @@ public class TestService implements IService {
     private String para;
 
     @Override
-    public ResponseEntity<?> apply() {
+    public ResponseEntity<?> apply(ServicePluginParameters pParameters, HttpServletResponse pResponse) {
         if (!para.equals(EXPECTED_VALUE)) {
             return new ResponseEntity<Set<DataObject>>(Sets.newHashSet(), HttpStatus.OK);
         }

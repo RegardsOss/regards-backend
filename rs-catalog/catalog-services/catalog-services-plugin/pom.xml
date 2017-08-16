@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules</groupId>
-	<artifactId>catalog-services-domain</artifactId>
+	<artifactId>catalog-services-plugin</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -16,26 +16,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>module-plugins-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.models</groupId>
-			<artifactId>models-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-    		<artifactId>javax.servlet-api</artifactId>
-    	</dependency>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>catalog-services-domain</artifactId>
+		</dependency>	
 	</dependencies>
 </project>

@@ -20,12 +20,13 @@ package fr.cnes.regards.modules.catalog.services.service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.ResponseEntity;
@@ -40,11 +41,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
@@ -124,27 +126,29 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public ResponseEntity<?> apply(final String pDatasetId, final String pServiceName,
-            final Map<String, String> dynamicParameters) throws ModuleException {
-        final PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(pServiceName);
+    public ResponseEntity<?> apply(final Long pPluginConfigurationId,
+            final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
+            throws ModuleException {
+        final PluginConfiguration conf = pluginService.getPluginConfiguration(pPluginConfigurationId);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
             throw new EntityInvalidException(
-                    pServiceName + " is not a label of a " + IService.class.getName() + " plugin configuration");
+                    pPluginConfigurationId + " is not a " + IService.class.getName() + " plugin configuration");
         }
         // is it a service applyable to this dataset?
-        if (!linkPluginsDatasetsService.retrieveLink(pDatasetId).getServices().contains(conf)) {
-            throw new EntityInvalidException(
-                    pServiceName + " is not a service applicable to the dataset with id " + pDatasetId);
-        }
+        // TODO : Check if the current service is applicable for the given entities (throught the dataset associated)
 
         // Build dynamic parameters
         PluginParametersFactory factory = PluginParametersFactory.build();
-        dynamicParameters.forEach(factory::addParameterDynamic);
+        if (pServicePluginParameters.getDynamicParameters() != null) {
+            pServicePluginParameters.getDynamicParameters().forEach(factory::addParameterDynamic);
+        }
 
         IService toExecute = (IService) pluginService
-                .getPlugin(conf, factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
-        return toExecute.apply();
+                .getPlugin(pPluginConfigurationId,
+                           factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+        return toExecute.apply(pServicePluginParameters, response);
+
     }
 
 }

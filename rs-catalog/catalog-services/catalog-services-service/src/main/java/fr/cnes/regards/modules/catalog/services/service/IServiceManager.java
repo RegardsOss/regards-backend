@@ -19,14 +19,16 @@
 package fr.cnes.regards.modules.catalog.services.service;
 
 import java.util.List;
-import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.catalog.services.domain.IService;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 
 /**
  * Defines operations on rs-catalog's plugins.
@@ -52,13 +54,12 @@ public interface IServiceManager {
     /**
      * Apply the service
      *
-     * @param pDatasetId
-     * @param pServiceName
-     * @param pDynamicParameters
+     * @param pPluginConfigurationId Plugin configuration to run
+     * @param pServicePluginParameters Plugin parameters
      * @return the result of the service call wrapped in a resonse entity
      * @throws ModuleException
      */
-    ResponseEntity<?> apply(String pDatasetId, String pServiceName, Map<String, String> pDynamicParameters)
-            throws ModuleException;
+    ResponseEntity<?> apply(final Long pPluginConfigurationId, final ServicePluginParameters pServicePluginParameters,
+            HttpServletResponse response) throws ModuleException;
 
 }

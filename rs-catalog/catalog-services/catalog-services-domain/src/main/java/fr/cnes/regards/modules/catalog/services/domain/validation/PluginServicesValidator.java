@@ -22,17 +22,19 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.catalog.services.domain.IService;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.PluginServices;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 
 /**
  * Validator enforcing {@link PluginServices} constraints
  *
  * @author Sylvain Vissiere-Guerinet
  */
-public class PluginServicesValidator implements ConstraintValidator<PluginServices, PluginConfiguration> {
+public class PluginServicesValidator implements ConstraintValidator<CatalogServicePlugin, PluginConfiguration> {
 
     @Override
-    public void initialize(PluginServices pConstraintAnnotation) {
+    public void initialize(CatalogServicePlugin pConstraintAnnotation) {
         // nothing to do
     }
 

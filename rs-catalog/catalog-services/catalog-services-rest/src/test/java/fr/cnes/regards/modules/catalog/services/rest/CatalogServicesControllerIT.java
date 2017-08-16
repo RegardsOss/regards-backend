@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.catalog.services.rest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.StringJoiner;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -48,10 +49,11 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.catalog.services.domain.IService;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
-import fr.cnes.regards.modules.catalog.services.domain.SampleServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
@@ -101,13 +103,11 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         pluginService.addPluginPackage(IService.class.getPackage().getName());
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
         pluginService.addPluginPackage(SampleServicePlugin.class.getPackage().getName());
-        pluginService.savePluginConfiguration(conf);
+        conf = pluginService.savePluginConfiguration(conf);
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameterDynamic(SampleServicePlugin.ACTIVE, "false")
-                .addParameterDynamic(SampleServicePlugin.COEFF, "0")
-                .addParameterDynamic(SampleServicePlugin.SUFFIXE, "Hello Toulouse",
-                                     Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h"))
+                .addParameterDynamic(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
+                                     SampleServicePlugin.RESPONSE_TYPE_JSON)
                 .getParameters();
         samplePlgConf = new PluginConfiguration(
                 PluginUtils.createPluginMetaData(SampleServicePlugin.class,
@@ -178,64 +178,97 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Requirement("REGARDS_DSL_DAM_ARC_010")
     @Purpose("System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
     public void testApplyService() {
-        final StringJoiner sj = new StringJoiner("&", "?", "");
-        sj.add("q=truc");
-        sj.add("para=" + TestService.EXPECTED_VALUE);
+
+        HashMap<String, String> dynamicParameters = new HashMap<>();
+        dynamicParameters.put("q", "truc");
+        dynamicParameters.put("para", TestService.EXPECTED_VALUE);
+
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
+
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
-                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
+        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
+                           parameters, expectations, "there should not be any error", conf.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_CMP_PLG_310")
     @Purpose("System allows to set a dynamic plugin parameter in the HTPP request")
     public void testApplyServiceSetSpecificParamValue() {
-        final StringJoiner sj = new StringJoiner("&", "?", "");
-        sj.add("q=truc");
-        sj.add("para=HelloWorld");
+        HashMap<String, String> dynamicParameters = new HashMap<>();
+        dynamicParameters.put("q", "truc");
+        dynamicParameters.put("para", "HelloWorld");
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
-                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME, conf.getLabel());
+
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
+
+        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
+                           parameters, expectations, "there should not be any error", conf.getId());
     }
 
     @Test
-    public void testSampleServiceNotActive() {
-        final StringJoiner sj = new StringJoiner("&", "?", "");
-        sj.add(SampleServicePlugin.COEFF + "=-1");
-        sj.add(SampleServicePlugin.SUFFIXE + "=b");
+    public void testSampleServiceWithJsonResponse() {
 
-        expectations.add(MockMvcResultMatchers.status().isNoContent());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
-                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME,
-                          samplePlgConf.getLabel());
-    }
+        HashMap<String, String> dynamicParameters = new HashMap<>();
+        dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON);
 
-    @Test
-    public void testSampleServiceActive() {
-        final StringJoiner sj = new StringJoiner("&", "?", "");
-        sj.add(SampleServicePlugin.ACTIVE + "=true");
-        sj.add(SampleServicePlugin.COEFF + "=100");
-        sj.add(SampleServicePlugin.SUFFIXE + "=h");
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
-                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME,
-                          samplePlgConf.getLabel());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.value").value("ENTITY_ID"));
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
+                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
     }
 
     @Test
-    public void testSampleServiceBadDynamicParameterValue() {
-        final StringJoiner sj = new StringJoiner("&", "?", "");
-        sj.add(SampleServicePlugin.ACTIVE + "=true");
-        sj.add(SampleServicePlugin.COEFF + "=0");
-        sj.add(SampleServicePlugin.SUFFIXE + "=z");
+    public void testSampleServiceWithXmlResponse() {
 
-        expectations.add(MockMvcResultMatchers.status().isInternalServerError());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME
-                + sj.toString(), expectations, "there should not be any error", DATA_SET_NAME,
-                          samplePlgConf.getLabel());
+        HashMap<String, String> dynamicParameters = new HashMap<>();
+        dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_XML);
+
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
+
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
+                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
     }
+
+    @Test
+    public void testSampleServiceWithImageResponse() {
+
+        HashMap<String, String> dynamicParameters = new HashMap<>();
+        dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_IMG);
+
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
+
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
+        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
+                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
+    }
+
+    @Test
+    public void testSampleServiceWithUnkownResponse() {
+
+        HashMap<String, String> dynamicParameters = new HashMap<>();
+        dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_OTHER);
+
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
+
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
+                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
+    }
+
 }

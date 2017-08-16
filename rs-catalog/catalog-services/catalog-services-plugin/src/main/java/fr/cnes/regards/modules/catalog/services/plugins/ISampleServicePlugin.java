@@ -16,53 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.catalog.services.domain;
+package fr.cnes.regards.modules.catalog.services.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.ISingleEntityServicePlugin;
 
 /**
  * ISampleServicePlugin
- * 
+ *
  * @author Christophe Mertz
  *
  */
 @PluginInterface(description = "hello sample plugin interface")
-public interface ISampleServicePlugin extends IService {
+public interface ISampleServicePlugin extends IEntitiesServicePlugin, ISingleEntityServicePlugin {
 
-    /**
-     * constant suffix
-     */
-    public static final String SUFFIXE = "suffix";
+    public static final String RESPONSE_TYPE_PARAMETER = "responseType";
 
-    /**
-     * constant is active
-     */
-    public static final String ACTIVE = "isActive";
+    public static final String RESPONSE_TYPE_JSON = "json";
 
-    /**
-     * constant coeff
-     */
-    public static final String COEFF = "coeff";
+    public static final String RESPONSE_TYPE_XML = "xml";
 
-    /**
-     * method echo
-     * 
-     * @param pMessage
-     *            message to display
-     * 
-     * @return the message
-     */
-    String echo(String pMessage);
+    public static final String RESPONSE_TYPE_IMG = "image";
 
-    /**
-     * method add
-     * 
-     * @param pFirst
-     *            first element
-     * @param pSecond
-     *            second item
-     * @return the result
-     */
-    int add(int pFirst, int pSecond);
-
+    public static final String RESPONSE_TYPE_OTHER = "other";
 }
