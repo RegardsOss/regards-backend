@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceType;
@@ -51,10 +52,11 @@ public class PluginServiceDtoTest {
      */
     @Test
     public final void testFromPluginConfiguration() {
-        PluginConfiguration pluginConfiguration = new PluginConfiguration();
+        PluginMetaData pluginMetaData = new PluginMetaData();
+        pluginMetaData.setPluginClassName("fr.cnes.regards.modules.access.services.domain.TestService");
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetaData, LABEL);
         List<PluginParameter> pluginParameters = new ArrayList<>();
         pluginConfiguration.setId(ID);
-        pluginConfiguration.setLabel(LABEL);
         pluginConfiguration.setIconUrl(ICON_URL);
         pluginConfiguration.setParameters(pluginParameters);
 

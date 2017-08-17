@@ -110,7 +110,6 @@ public class ServicesAggregatorController {
                     .collect(Collectors.toList());
             return new ResponseEntity<>(results, HttpStatus.OK);
         }
-
     }
 
 }

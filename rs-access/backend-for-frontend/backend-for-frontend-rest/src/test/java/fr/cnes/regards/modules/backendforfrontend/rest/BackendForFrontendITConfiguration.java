@@ -16,11 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.configuration.rest;
+package fr.cnes.regards.modules.backendforfrontend.rest;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
+import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchAllClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -28,11 +32,21 @@ import org.springframework.context.annotation.Configuration;
  * @author Xavier-Alexandre Brochard
  */
 @Configuration
-public class UiConfigurationITConfiguration {
+public class BackendForFrontendITConfiguration {
 
     @Bean
     public ICatalogClient catalogClient() {
         return Mockito.mock(ICatalogClient.class);
+    }
+
+    @Bean
+    public IServiceAggregatorClient serviceAggregatorClient() {
+        return Mockito.mock(IServiceAggregatorClient.class);
+    }
+
+    @Bean
+    public ISearchAllClient searchAllClient() {
+        return Mockito.mock(ISearchAllClient.class);
     }
 
 }

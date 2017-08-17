@@ -16,13 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.access.services.rest;
-
-import java.util.Set;
+package fr.cnes.regards.modules.access.services.domain;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.assertj.core.util.Sets;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -32,32 +29,24 @@ import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.models.domain.Model;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * A simple service
+ *
+ * @author Xavier-Alexandre Brochard
  */
 @Plugin(id = "tata", description = "plugin for test", author = "REGARDS Team", contact = "regards@c-s.fr",
         licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
-@CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.QUERY }, entityTypes = { EntityType.DATA })
+@CatalogServicePlugin(applicationModes = { ServiceScope.MANY }, entityTypes = { EntityType.COLLECTION })
 public class TestService implements IService {
-
-    public static final String EXPECTED_VALUE = "skydiving";
 
     @PluginParameter(name = "para")
     private String para;
 
     @Override
     public ResponseEntity<?> apply(ServicePluginParameters pParameters, HttpServletResponse pResponse) {
-        if (!para.equals(EXPECTED_VALUE)) {
-            return new ResponseEntity<Set<DataObject>>(Sets.newHashSet(), HttpStatus.OK);
-        }
-        Model model = Model.build("pName", "pDescription", EntityType.DATA);
-        DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
-        DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
-        return new ResponseEntity<Set<DataObject>>(Sets.newLinkedHashSet(do1, do2), HttpStatus.OK);
+        return new ResponseEntity<Object>(null, HttpStatus.OK);
     }
 
 }
