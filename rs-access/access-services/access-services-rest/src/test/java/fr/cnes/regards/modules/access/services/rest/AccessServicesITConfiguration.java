@@ -35,13 +35,12 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
@@ -75,21 +74,11 @@ public class AccessServicesITConfiguration {
 
     @Bean
     public PluginConfigurationDto dummyPluginConfigurationDto() {
-        final PluginParameter parameter = new PluginParameter("para", "never used");
-        parameter.setIsDynamic(true);
         final PluginMetaData metaData = new PluginMetaData();
-        metaData.setPluginId("tata");
-        metaData.setAuthor("toto");
-        metaData.setDescription("titi");
-        metaData.setVersion("tutu");
-        metaData.getInterfaceNames().add(IService.class.getName());
-        metaData.setPluginClassName(TestService.class.getName());
-
+        metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
-        pluginConfiguration.setParameters(Lists.newArrayList(parameter));
 
-        return new PluginConfigurationDto(pluginConfiguration, Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY),
-                Sets.newHashSet(EntityType.DATA));
+        return new PluginConfigurationDto(pluginConfiguration, APPLICATION_MODES, ENTITY_TYPES);
     }
 
     @Bean

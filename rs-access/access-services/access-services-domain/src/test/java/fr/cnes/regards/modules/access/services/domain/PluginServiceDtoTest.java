@@ -38,9 +38,9 @@ public class PluginServiceDtoTest {
 
     private static URL ICON_URL;
 
-    private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.MANY);
+    private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY);
 
-    private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
+    private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.DATASET);
 
     @Before
     public void setUp() throws MalformedURLException {
@@ -53,15 +53,14 @@ public class PluginServiceDtoTest {
     @Test
     public final void testFromPluginConfiguration() {
         PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName("fr.cnes.regards.modules.access.services.domain.TestService");
+        pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin");
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetaData, LABEL);
         List<PluginParameter> pluginParameters = new ArrayList<>();
         pluginConfiguration.setId(ID);
         pluginConfiguration.setIconUrl(ICON_URL);
         pluginConfiguration.setParameters(pluginParameters);
 
-        pluginParameters.add(new PluginParameter("applicationMode", "MANY"));
-        pluginParameters.add(new PluginParameter("entityTypes", "COLLECTION"));
+        pluginParameters.add(new PluginParameter("color", "blue"));
 
         PluginServiceDto dto = PluginServiceDto.fromPluginConfiguration(pluginConfiguration);
 
