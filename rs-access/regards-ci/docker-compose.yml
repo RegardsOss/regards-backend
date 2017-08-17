@@ -30,7 +30,6 @@ services:
     links:
       - rs_rabbitmq
       - rs_postgres
-      - rs_elasticsearch
     networks:
       - regards_IT_network
 
