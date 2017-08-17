@@ -64,7 +64,7 @@ public class ServiceManagerTest {
     private static final Set<PluginConfiguration> PLUGIN_CONFIGURATIONS = new HashSet<>();
     static {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.service.TestService");
+        pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin");
         PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaData, "First configuration"));
     };
 
@@ -134,16 +134,17 @@ public class ServiceManagerTest {
     @Test
     public final void testRetrieveServices() {
         // Prepare test
-        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test", PLUGIN_CONFIGURATIONS);
+        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("aSampleServicePlugin",
+                PLUGIN_CONFIGURATIONS);
         Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Call tested method
-        final List<PluginConfigurationDto> pluginConfigurationDtos = serviceManager.retrieveServices("test",
-                                                                                                     ServiceScope.ONE);
+        final List<PluginConfigurationDto> pluginConfigurationDtos = serviceManager
+                .retrieveServices("aSampleServicePlugin", ServiceScope.ONE);
 
         // Define expected
         Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY);
-        Set<EntityType> expectedEntityTypes = Sets.newHashSet(EntityType.DATA);
+        Set<EntityType> expectedEntityTypes = Sets.newHashSet(EntityType.DATASET);
 
         // Check
         Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(1));
