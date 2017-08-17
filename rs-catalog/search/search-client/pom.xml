@@ -25,10 +25,6 @@
 	<dependencies>
 		<!-- Module domain -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules.search</groupId>
-			<artifactId>search-rest</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>
@@ -41,6 +37,11 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.search</groupId>
+			<artifactId>search-rest</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
