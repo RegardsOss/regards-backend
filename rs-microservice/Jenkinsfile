@@ -15,5 +15,14 @@
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
 @Library('regards/standardPipeline') _
-standardPipeline {
-}
+
+properties([
+  pipelineTriggers([
+    upstream(
+      threshold: hudson.model.Result.SUCCESS,
+      upstreamProjects: 'rs-regards-multi-branch/master'
+    )
+  ])
+])
+
+standardPipeline {}
