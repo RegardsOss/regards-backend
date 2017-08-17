@@ -54,6 +54,31 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(SampleServicePlugin.class);
 
     /**
+     * Name of the response type parameter
+     */
+    public static final String RESPONSE_TYPE_PARAMETER = "responseType";
+
+    /**
+     * Available value for the responseType parameter
+     */
+    public static final String RESPONSE_TYPE_JSON = "json";
+
+    /**
+     * Available value for the responseType parameter
+     */
+    public static final String RESPONSE_TYPE_XML = "xml";
+
+    /**
+     * Available value for the responseType parameter
+     */
+    public static final String RESPONSE_TYPE_IMG = "image";
+
+    /**
+     * Available value for the responseType parameter
+     */
+    public static final String RESPONSE_TYPE_OTHER = "other";
+
+    /**
      * A {@link String} parameter
      */
     @PluginParameter(description = "Response type", name = RESPONSE_TYPE_PARAMETER, defaultValue = RESPONSE_TYPE_JSON,

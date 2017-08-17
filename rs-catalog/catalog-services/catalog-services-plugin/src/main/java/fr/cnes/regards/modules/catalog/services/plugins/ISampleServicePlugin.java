@@ -28,16 +28,8 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.ISingleEntityServ
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "hello sample plugin interface")
+@PluginInterface(
+        description = "Sample Catalog Service Plugin. Used to test any possible service return values (json, xml, image, octet-stream")
 public interface ISampleServicePlugin extends IEntitiesServicePlugin, ISingleEntityServicePlugin {
 
-    public static final String RESPONSE_TYPE_PARAMETER = "responseType";
-
-    public static final String RESPONSE_TYPE_JSON = "json";
-
-    public static final String RESPONSE_TYPE_XML = "xml";
-
-    public static final String RESPONSE_TYPE_IMG = "image";
-
-    public static final String RESPONSE_TYPE_OTHER = "other";
 }
