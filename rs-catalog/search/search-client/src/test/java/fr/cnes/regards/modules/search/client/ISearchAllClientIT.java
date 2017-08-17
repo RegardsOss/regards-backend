@@ -16,9 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.catalog.services.client;
-
-import java.util.List;
+package fr.cnes.regards.modules.search.client;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,38 +25,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Maps;
+import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 
 /**
- * Integration Test for {@link ICatalogServicesClient}
- *
- * <p>
- * @DirtiesContext is mandatory, we have issue with context cleaning because of MockMvc
+ * Integration tests for {@link ISearchAllClient}.
  *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ICatalogServicesIT extends AbstractRegardsWebIT {
+public class ISearchAllClientIT extends AbstractRegardsWebIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ICatalogServicesIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ISearchAllClientIT.class);
 
     @Value("${server.address}")
     private String serverAddress;
@@ -66,7 +60,10 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     /**
      * Client to test
      */
-    private ICatalogServicesClient client;
+    private ISearchAllClient client;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Feign security manager
@@ -76,19 +73,19 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
-        client = FeignClientBuilder.build(new TokenClientProvider<>(ICatalogServicesClient.class,
+        client = FeignClientBuilder.build(new TokenClientProvider<>(ISearchAllClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         FeignSecurityManager.asSystem();
     }
 
+    /**
+     * Check that the Feign Client responds with a 200
+     */
     @Test
-    @Requirement("REGARDS_DSL_ACC_ARC_130")
-    @Purpose("Check that we can retrieve IHM Service augmented with their meta information")
-    public void retrieveServicesWithMeta() {
-        ResponseEntity<List<Resource<PluginConfigurationDto>>> result = client.retrieveServices("whatever",
-                                                                                                ServiceScope.MANY);
-        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.NOT_FOUND));
+    public void searchAll() {
+        ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap());
+        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 
     @Override

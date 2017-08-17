@@ -24,8 +24,7 @@
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>catalog-services-domain</artifactId>
 		</dependency>
-
-
+		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
