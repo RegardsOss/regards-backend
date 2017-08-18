@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +35,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
+import fr.cnes.regards.modules.access.services.rest.assembler.PluginServiceDtoResourcesAssembler;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -64,14 +64,22 @@ public class ServicesAggregatorController {
     private final IUIPluginConfigurationService uiPluginConfigurationService;
 
     /**
+     * The resource assembler for {@link PluginServiceDto}s
+     */
+    private final PluginServiceDtoResourcesAssembler assembler;
+
+    /**
      * @param pCatalogServicesClient
      * @param pUiPluginConfigurationService
+     * @param pAssembler
      */
-    public ServicesAggregatorController(@Autowired ICatalogServicesClient pCatalogServicesClient,
-            @Autowired IUIPluginConfigurationService pUiPluginConfigurationService) {
+    public ServicesAggregatorController(ICatalogServicesClient pCatalogServicesClient,
+            IUIPluginConfigurationService pUiPluginConfigurationService,
+            PluginServiceDtoResourcesAssembler pAssembler) {
         super();
         catalogServicesClient = pCatalogServicesClient;
         uiPluginConfigurationService = pUiPluginConfigurationService;
+        assembler = pAssembler;
     }
 
     /**
@@ -86,7 +94,7 @@ public class ServicesAggregatorController {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset")
-    public ResponseEntity<List<PluginServiceDto>> retrieveServices(
+    public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode) {
         // Retrieve catalog services
@@ -108,7 +116,8 @@ public class ServicesAggregatorController {
             // Merge streams
             List<PluginServiceDto> results = Stream.concat(streamCatalogServicesDto, streamUiServicesDto)
                     .collect(Collectors.toList());
-            return new ResponseEntity<>(results, HttpStatus.OK);
+
+            return new ResponseEntity<>(assembler.toResources(results), HttpStatus.OK);
         }
     }
 

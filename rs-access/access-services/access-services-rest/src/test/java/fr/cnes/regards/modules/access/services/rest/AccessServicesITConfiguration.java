@@ -77,8 +77,7 @@ public class AccessServicesITConfiguration {
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
-
-        return new PluginConfigurationDto(pluginConfiguration, APPLICATION_MODES, ENTITY_TYPES);
+        return new PluginConfigurationDto(pluginConfiguration);
     }
 
     @Bean

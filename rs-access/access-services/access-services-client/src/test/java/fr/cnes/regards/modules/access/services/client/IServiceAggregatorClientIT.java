@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -85,8 +86,8 @@ public class IServiceAggregatorClientIT extends AbstractRegardsWebIT {
      * Check that the attribute model Feign Client can return the list of attribute models.
      */
     @Test
-    public void getAttributesTest() {
-        ResponseEntity<List<PluginServiceDto>> result = client.retrieveServices("coucou", ServiceScope.MANY);
+    public void retrieveServices_shouldReturnServices() {
+        ResponseEntity<List<Resource<PluginServiceDto>>> result = client.retrieveServices("coucou", ServiceScope.MANY);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 

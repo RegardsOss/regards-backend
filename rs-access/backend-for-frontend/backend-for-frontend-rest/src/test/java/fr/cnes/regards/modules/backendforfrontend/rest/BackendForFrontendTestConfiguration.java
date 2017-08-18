@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
@@ -31,8 +33,9 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Profile("test")
 @Configuration
-public class BackendForFrontendITConfiguration {
+public class BackendForFrontendTestConfiguration {
 
     @Bean
     public ICatalogClient catalogClient() {
@@ -40,13 +43,15 @@ public class BackendForFrontendITConfiguration {
     }
 
     @Bean
-    public IServiceAggregatorClient serviceAggregatorClient() {
-        return Mockito.mock(IServiceAggregatorClient.class);
+    @Primary
+    public ISearchAllClient searchAllClient() {
+        return Mockito.mock(ISearchAllClient.class);
     }
 
     @Bean
-    public ISearchAllClient searchAllClient() {
-        return Mockito.mock(ISearchAllClient.class);
+    @Primary
+    public IServiceAggregatorClient serviceAggregatorClient() {
+        return Mockito.mock(IServiceAggregatorClient.class);
     }
 
 }

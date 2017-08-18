@@ -25,7 +25,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -58,6 +61,11 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
         documentation = "http://test")
 @RequestMapping(path = SearchController.ROOT_PATH)
 public class SearchController {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(SearchController.class);
 
     /**
      * Function converting a {@link JsonArray} into a parallel {@link Stream}
@@ -119,20 +127,18 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchAllClient.searchAll(allParams);
-        JsonArray asJsonArray = entities.getBody().get("content").getAsJsonArray();
-
-        injectApplicableServices(asJsonArray);
-
+        injectApplicableServices(entities);
         return entities;
     }
 
     /**
      * Inject applicable Ui Services and Catalog Services into given entities
      *
-     * @param pEntities The list of entities, represented as a {@link JsonArray}
+     * @param pEntities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
      */
-    private void injectApplicableServices(JsonArray pEntities) {
-        try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(pEntities)) {
+    private void injectApplicableServices(ResponseEntity<JsonObject> pEntities) {
+        try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM
+                .apply(pEntities.getBody().get("content").getAsJsonArray())) {
             // @formatter:off
             elements
                 .map(JsonElement::getAsJsonObject)
@@ -151,14 +157,16 @@ public class SearchController {
      */
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
         // @formatter:off
-        List<PluginServiceDto> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray())
-                .map(JsonElement::getAsString)
-                .map(UniformResourceName::fromString)
-                .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
-                .map(UniformResourceName::toString)
-                .distinct()
-                .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null).getBody())
-                .flatMap(List::stream).collect(Collectors.toList());
+        List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray())
+            .map(JsonElement::getAsString)
+            .map(UniformResourceName::fromString)
+            .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
+            .map(UniformResourceName::toString)
+            .distinct()
+            .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
+            .map(ResponseEntity::getBody)
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
         // @formatter:on
 
         return gson.toJsonTree(applicableServices);

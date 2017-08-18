@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.access.services.client;
 import java.util.List;
 
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +42,7 @@ public interface IServiceAggregatorClient {
      */
     @Cacheable(value = "servicesAggregated")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<PluginServiceDto>> retrieveServices(
+    public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode);
 }

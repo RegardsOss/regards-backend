@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.aggregator;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.assertj.core.util.Lists;
@@ -19,6 +20,7 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.rest.AccessServicesITConfiguration;
+import fr.cnes.regards.modules.access.services.rest.assembler.PluginServiceDtoResourcesAssembler;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -50,6 +52,7 @@ public class ServicesAggregatorControllerTest {
      * @throws java.lang.Exception
      */
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         // Mock Catalog Services
         catalogServicesClient = Mockito.mock(ICatalogServicesClient.class);
@@ -64,8 +67,13 @@ public class ServicesAggregatorControllerTest {
         Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyString(), Mockito.any()))
                 .thenReturn(Lists.newArrayList(uiPluginConfiguration));
 
+        // Mock the resource assembler
+        PluginServiceDtoResourcesAssembler assembler = Mockito.mock(PluginServiceDtoResourcesAssembler.class);
+        Mockito.when(assembler.toResources(Mockito.anyCollection()))
+                .thenAnswer(pInvocation -> HateoasUtils.wrapCollection(pInvocation.getArgumentAt(0, Collection.class)));
+
         // Construct controller with mocked deps
-        controller = new ServicesAggregatorController(catalogServicesClient, uiPluginConfigurationService);
+        controller = new ServicesAggregatorController(catalogServicesClient, uiPluginConfigurationService, assembler);
     }
 
     /**
@@ -73,7 +81,8 @@ public class ServicesAggregatorControllerTest {
      */
     @Test
     public final void testRetrieveServices() {
-        ResponseEntity<List<PluginServiceDto>> result = controller.retrieveServices("coucou", ServiceScope.MANY);
+        ResponseEntity<List<Resource<PluginServiceDto>>> result = controller.retrieveServices("coucou",
+                                                                                              ServiceScope.MANY);
         Assert.assertNotNull(result);
         Assert.assertThat(result.getBody(), Matchers.hasSize(2));
     }
