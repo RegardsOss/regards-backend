@@ -29,8 +29,12 @@
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-    		<artifactId>javax.servlet-api</artifactId>
-    	</dependency>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.utils</groupId>
+			<artifactId>plugin-utils</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

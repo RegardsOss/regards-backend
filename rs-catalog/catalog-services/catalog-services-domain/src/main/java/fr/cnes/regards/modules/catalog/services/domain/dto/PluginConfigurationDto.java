@@ -4,9 +4,14 @@
 package fr.cnes.regards.modules.catalog.services.domain.dto;
 
 import java.util.Set;
+import java.util.function.Function;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.annotations.GetCatalogServicePluginAnnotation;
 import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
@@ -21,16 +26,21 @@ public class PluginConfigurationDto extends PluginConfiguration {
     private final Set<EntityType> entityTypes;
 
     /**
-     * Constructor
-     * @param pPluginConfiguration
-     * @param pApplicationModes
-     * @param pEntityTypes
+     * Finds the application mode of the given plugin configuration
      */
-    public PluginConfigurationDto(PluginConfiguration pPluginConfiguration, Set<ServiceScope> pApplicationModes,
-            Set<EntityType> pEntityTypes) {
+    private static final Function<PluginConfiguration, CatalogServicePlugin> GET_CATALOG_SERVICE_PLUGIN_ANNOTATION = new GetCatalogServicePluginAnnotation();
+
+    /**
+     * For a {@link PluginConfiguration}, return its corresponding DTO, in which we have added fields <code>applicationModes</code>
+     * and <code>entityTypes</code>
+     *
+     * @param pPluginConfiguration
+     */
+    public PluginConfigurationDto(PluginConfiguration pPluginConfiguration) {
         super(pPluginConfiguration);
-        applicationModes = pApplicationModes;
-        entityTypes = pEntityTypes;
+        applicationModes = Sets
+                .newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration).applicationModes());
+        entityTypes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration).entityTypes());
     }
 
     /**
