@@ -21,10 +21,15 @@ package fr.cnes.regards.modules.configuration.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IUIPluginDefinitionRepository;
@@ -32,10 +37,32 @@ import fr.cnes.regards.modules.configuration.domain.UIPluginDefinition;
 import fr.cnes.regards.modules.configuration.domain.UIPluginTypesEnum;
 
 @Service(value = "pluginService")
-public class UIPluginDefinitionService extends AbstractUiConfigurationService implements IUIPluginDefinitionService {
+public class UIPluginDefinitionService extends AbstractUiConfigurationService
+        implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private IUIPluginDefinitionRepository repository;
+
+    /**
+     * Perform initialization only when the whole application is ready
+     */
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+        // Initialize subscriber for new tenant connection and initialize database if not already done
+        getInstanceSubscriber().subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
+    }
+
+    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
+
+        @Override
+        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
+            if (getMicroserviceName().equals(pWrapper.getContent().getMicroserviceName())) {
+                getRuntimeTenantResolver().forceTenant(pWrapper.getContent().getTenant());
+                initProjectUI(pWrapper.getContent().getTenant());
+            }
+        }
+
+    }
 
     @Override
     public UIPluginDefinition retrievePlugin(final Long pPluginId) throws EntityNotFoundException {
