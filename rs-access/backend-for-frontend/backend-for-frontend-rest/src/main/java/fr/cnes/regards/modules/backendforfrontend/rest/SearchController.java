@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +46,8 @@ import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
+import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
@@ -63,24 +61,19 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
 public class SearchController {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(SearchController.class);
-
-    /**
      * Function converting a {@link JsonArray} into a parallel {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
             .stream(pJsonArray.spliterator(), true);
 
     @Autowired
-    private ICatalogClient catalogClient;
-
-    @Autowired
     private IServiceAggregatorClient serviceAggregatorClient;
 
     @Autowired
     private ISearchAllClient searchAllClient;
+
+    @Autowired
+    private ISearchAllWithFacetsClient searchAllWithFacetsClient;
 
     @Autowired
     private Gson gson;
@@ -92,20 +85,7 @@ public class SearchController {
 
     public static final String SEARCH = "/search";
 
-    @RequestMapping(path = "/search/datazobjects", method = RequestMethod.GET)
-    @ResourceAccess(description = "Search datazobjects", role = DefaultRole.PUBLIC)
-    public ResponseEntity<JsonObject> searchDataobjects(
-            @RequestParam(required = false) final Map<String, String> allParams) throws SearchException {
-        ResponseEntity<JsonObject> dataobjects = catalogClient.searchDataobjects(allParams);
-
-        // Add a propery in json for each element
-        JsonArray elements = dataobjects.getBody().get("content").getAsJsonArray();
-        for (JsonElement jsonElement : elements) {
-            jsonElement.getAsJsonObject().get("content").getAsJsonObject().addProperty("proxyAddedProperty", "hey");
-        }
-
-        return dataobjects;
-    }
+    public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
 
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
@@ -127,6 +107,30 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchAllClient.searchAll(allParams);
+        injectApplicableServices(entities);
+        return entities;
+    }
+
+    /**
+     * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
+     * collection, dataset, dataobject and document. Allows usage of facets.
+     *
+     * @param allParams
+     *            all query parameters
+     * @param pFacets
+     *            the facets to apply
+     * @param pPageable
+     *            the page
+     * @return the page of entities matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = SEARCH_WITH_FACETS, method = RequestMethod.GET)
+    @ResourceAccess(role = DefaultRole.PUBLIC,
+            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
+    public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
+        ResponseEntity<JsonObject> entities = searchAllWithFacetsClient.searchAll(allParams, pFacets);
         injectApplicableServices(entities);
         return entities;
     }

@@ -25,8 +25,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
+import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -38,20 +38,31 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
 public class BackendForFrontendTestConfiguration {
 
     @Bean
-    public ICatalogClient catalogClient() {
-        return Mockito.mock(ICatalogClient.class);
+    @Primary
+    public ISearchAllClient searchAllClient() {
+        ISearchAllClient mock = Mockito.mock(ISearchAllClient.class);
+        Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
+        return mock;
     }
 
     @Bean
     @Primary
-    public ISearchAllClient searchAllClient() {
-        return Mockito.mock(ISearchAllClient.class);
+    public ISearchAllWithFacetsClient searchAllWithFacetsClient() {
+        ISearchAllWithFacetsClient mock = Mockito.mock(ISearchAllWithFacetsClient.class);
+        Mockito.when(mock.searchAll(Mockito.any(), Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
+        return mock;
     }
 
     @Bean
     @Primary
     public IServiceAggregatorClient serviceAggregatorClient() {
-        return Mockito.mock(IServiceAggregatorClient.class);
+        IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
+        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_0.getIpId().toString(), null))
+                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
+        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_1.getIpId().toString(), null))
+                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
+        return mock;
     }
 
 }

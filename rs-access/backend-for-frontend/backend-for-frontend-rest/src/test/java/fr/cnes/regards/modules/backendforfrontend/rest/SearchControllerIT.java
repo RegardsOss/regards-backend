@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
+import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 
 /**
  * Integration Test for {@link SearchController}
@@ -59,24 +59,15 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
     private ISearchAllClient searchAllClient;
 
     @Autowired
+    private ISearchAllWithFacetsClient searchAllWithFacetsClient;
+
+    @Autowired
     private IServiceAggregatorClient serviceAggregatorClient;
 
     @Test
-    @Requirement("TODO")
-    @Purpose("TODO")
+    @Requirement("REGARDS_DSL_ACC_USE_700")
+    @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchAll() {
-        // Mock the ISearchAllClient
-        Mockito.when(searchAllClient.searchAll(Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-
-        // Mock the IServiceAggregatorClient specifically for each dataset in order to check if they are properly injected
-        Mockito.when(serviceAggregatorClient
-                .retrieveServices(BackendForFrontendTestUtils.DATASET_0.getIpId().toString(), null))
-                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
-        Mockito.when(serviceAggregatorClient
-                .retrieveServices(BackendForFrontendTestUtils.DATASET_1.getIpId().toString(), null))
-                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
-
         // Define expectations
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
@@ -95,6 +86,31 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", "some:opensearchrequest");
         performDefaultGet(SearchController.ROOT_PATH + SearchController.SEARCH, expectations,
+                          "Error searching all entities", builder);
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ACC_USE_700")
+    @Purpose("Check the system can inject applicable services to the result of a search")
+    public void searchAllWithFacets() {
+        // Define expectations
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
+                                                        Matchers.hasSize(2)));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf0")));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
+                                                    Matchers.equalTo("uiPluginConfiguration2")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[1].content.services",
+                                                        Matchers.hasSize(1)));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf1")));
+
+        // Call
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "some:opensearchrequest");
+        performDefaultGet(SearchController.ROOT_PATH + SearchController.SEARCH_WITH_FACETS, expectations,
                           "Error searching all entities", builder);
     }
 
