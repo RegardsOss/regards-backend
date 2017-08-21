@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.access.services.service.link;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -32,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
+import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
@@ -41,6 +44,7 @@ import fr.cnes.regards.modules.entities.urn.UniformResourceName;
  * Service handling properly how the mapping of plugin configurations to datasets is done.
  *
  * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  */
 @Service
 @RegardsTransactional
@@ -56,8 +60,14 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     private ISubscriber subscriber;
 
     @Autowired
+    private IPublisher publisher;
+
+    @Autowired
     private ILinkUIPluginsDatasetsRepository linkRepo;
 
+    /**
+     * Post-construct initialization
+     */
     @PostConstruct
     public void init() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -73,7 +83,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
                 for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
                     final LinkUIPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
                     if (link != null) {
-                        linkRepo.delete(link);
+                        deleteLink(link);
                     }
                 }
             }
@@ -90,7 +100,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
         if (linkRepo.findOneByDatasetId(pDatasetId) != null) {
             return linkRepo.findOneByDatasetId(pDatasetId);
         }
-        return linkRepo.save(new LinkUIPluginsDatasets(pDatasetId, new ArrayList<>()));
+        return createLink(pDatasetId);
     }
 
     /**
@@ -111,10 +121,45 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
         final LinkUIPluginsDatasets existingOne = linkRepo.findOneByDatasetId(pDatasetId);
         if (existingOne != null) {
             existingOne.setServices(pUpdatedLink.getServices());
-            return linkRepo.save(existingOne);
+            LinkUIPluginsDatasets saved = linkRepo.save(existingOne);
+            publisher.publish(new LinkUiPluginsDatasetsEvent(saved));
+            return saved;
         } else {
-            return linkRepo.save(pUpdatedLink);
+            return createLink(pUpdatedLink);
         }
+    }
+
+    /**
+     * Delete a link
+     * @param pLinkUIPluginsDatasets the link to delete
+     */
+    private void deleteLink(LinkUIPluginsDatasets pLinkUIPluginsDatasets) { // NOSONAR
+        linkRepo.delete(pLinkUIPluginsDatasets);
+        publisher.publish(new LinkUiPluginsDatasetsEvent(pLinkUIPluginsDatasets));
+    }
+
+    /**
+     * Save a new link in db
+     *
+     * @param pDatasetId
+     * @return the created link
+     */
+    private LinkUIPluginsDatasets createLink(String pDatasetId) {
+        LinkUIPluginsDatasets newLink = linkRepo.save(new LinkUIPluginsDatasets(pDatasetId, new ArrayList<>()));
+        publisher.publish(new LinkUiPluginsDatasetsEvent(newLink));
+        return newLink;
+    }
+
+    /**
+     * Save a new link in db
+     *
+     * @param pLinkUIPluginsDatasets
+     * @return the created link
+     */
+    private LinkUIPluginsDatasets createLink(LinkUIPluginsDatasets pLinkUIPluginsDatasets) {
+        LinkUIPluginsDatasets newLink = linkRepo.save(pLinkUIPluginsDatasets);
+        publisher.publish(new LinkUiPluginsDatasetsEvent(newLink));
+        return newLink;
     }
 
 }

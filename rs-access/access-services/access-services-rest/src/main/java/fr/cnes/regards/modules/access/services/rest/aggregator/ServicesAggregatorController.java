@@ -85,8 +85,8 @@ public class ServicesAggregatorController {
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      *
-     * @param pDatasetId
-     *            the id of the {@link Dataset}
+     * @param pDatasetIpId
+     *            the ip id of the {@link Dataset}
      * @param pApplicationModes
      *            the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
@@ -95,14 +95,14 @@ public class ServicesAggregatorController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset")
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpId", required = false) final String pDatasetId,
+            @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode) {
         // Retrieve catalog services
         ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
-                .retrieveServices(pDatasetId, pApplicationMode);
+                .retrieveServices(pDatasetIpId, pApplicationMode);
         // Retrive ui services
         List<UIPluginConfiguration> uiServices = uiPluginConfigurationService
-                .retrieveActivePluginServices(pDatasetId, pApplicationMode);
+                .retrieveActivePluginServices(pDatasetIpId, pApplicationMode);
 
         try (Stream<PluginConfigurationDto> streamCatalogServices = HateoasUtils
                 .unwrapCollection(catalogServices.getBody()).stream();

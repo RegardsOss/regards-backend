@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
+import fr.cnes.regards.modules.access.services.rest.aggregator.ServicesAggregatorController;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Feign client for calling ServicesAggregatorController methods
+ * Feign client for calling {@link ServicesAggregatorController} methods
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -33,7 +34,7 @@ public interface IServiceAggregatorClient {
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      *
-     * @param pDatasetId
+     * @param pDatasetIpId
      *            the id of the {@link Dataset}
      * @param pApplicationModes
      *            the set of {@link ServiceScope}
@@ -43,6 +44,6 @@ public interface IServiceAggregatorClient {
     @Cacheable(value = "servicesAggregated")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpId", required = false) final String pDatasetId,
+            @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode);
 }
