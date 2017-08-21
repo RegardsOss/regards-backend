@@ -51,6 +51,14 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-instance-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>access-services-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>backend-for-frontend-rest</artifactId>
+		</dependency>
 	</dependencies>
 
 	<profiles>
