@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.search.rest.CatalogController;
 
 /**
- * Feign client for calling rs-catalog's {@link CatalogController#searchAll}.
+ * Feign client for calling rs-catalog's {@link CatalogController#searchDataobjects}.
  * <p>
  * We can't gather all Feign clients of the module in a single one because of of the type-level {@link RequestMapping} annotation
  * which should be empty (or ""). This is not supported by Feign.
@@ -25,12 +25,12 @@ import fr.cnes.regards.modules.search.rest.CatalogController;
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = CatalogController.SEARCH_WITH_FACETS, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+@RequestMapping(value = CatalogController.DATAOBJECTS_SEARCH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @FunctionalInterface
-public interface ISearchAllWithFacetsClient {
+public interface ISearchDataobjectsClient {
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) final String[] pFacets);
+    public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) String[] pFacets);
 }

@@ -17,7 +17,10 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.search.rest.CatalogController;
 
 /**
- * Feign client for calling rs-catalog's {@link CatalogController#searchDatasets}
+ * Feign client for calling rs-catalog's {@link CatalogController#searchDatasets}.
+ * <p>
+ * We can't gather all Feign clients of the module in a single one because of of the type-level {@link RequestMapping} annotation
+ * which should be empty (or ""). This is not supported by Feign.
  *
  * @author Xavier-Alexandre Brochard
  */
