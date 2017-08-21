@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.search.rest.CatalogController;
 
 /**
  * Feign client for calling rs-catalog's {@link CatalogController#searchAll}
@@ -21,7 +22,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = "/dataobjects/search", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+@RequestMapping(value = CatalogController.SEARCH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @FunctionalInterface
 public interface ISearchAllClient {

@@ -43,18 +43,18 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 
 /**
- * Integration tests for {@link ISearchAllClient}.
+ * Integration tests for {@link ISearchAllWithFacetsClient}.
  *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchAllClientIT extends AbstractRegardsWebIT {
+public class ISearchAllWithFacetsClientIT extends AbstractRegardsWebIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ISearchAllClientIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ISearchAllWithFacetsClientIT.class);
 
     @Value("${server.address}")
     private String serverAddress;
@@ -62,7 +62,7 @@ public class ISearchAllClientIT extends AbstractRegardsWebIT {
     /**
      * Client to test
      */
-    private ISearchAllClient client;
+    private ISearchAllWithFacetsClient client;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -81,7 +81,7 @@ public class ISearchAllClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void setUp() {
-        client = FeignClientBuilder.build(new TokenClientProvider<>(ISearchAllClient.class,
+        client = FeignClientBuilder.build(new TokenClientProvider<>(ISearchAllWithFacetsClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
 
@@ -104,7 +104,7 @@ public class ISearchAllClientIT extends AbstractRegardsWebIT {
      */
     @Test
     public void searchAll() {
-        ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap());
+        ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap(), new String[] {});
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 

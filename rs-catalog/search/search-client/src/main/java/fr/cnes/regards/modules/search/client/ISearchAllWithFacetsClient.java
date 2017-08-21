@@ -14,20 +14,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.search.rest.CatalogController;
 
 /**
- * Feign client for calling rs-catalog's {@link CatalogController#searchDataobjects}
+ * Feign client for calling rs-catalog's {@link CatalogController#searchAll}
  *
  * @author Xavier-Alexandre Brochard
- * @deprecated This was for testing purpose only
  */
-@Deprecated
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = "/dataobjects/search", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+@RequestMapping(value = CatalogController.SEARCH_WITH_FACETS, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public interface ICatalogClient {
+@FunctionalInterface
+public interface ISearchAllWithFacetsClient {
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<JsonObject> searchDataobjects(
-            @RequestParam(required = false) final Map<String, String> allParams);
+    public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) final String[] pFacets);
 }
