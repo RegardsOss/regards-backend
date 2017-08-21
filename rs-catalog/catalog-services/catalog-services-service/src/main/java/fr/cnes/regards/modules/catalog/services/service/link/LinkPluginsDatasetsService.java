@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -32,6 +33,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.catalog.services.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
+import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
@@ -40,6 +42,7 @@ import fr.cnes.regards.modules.entities.urn.UniformResourceName;
  * Service handling properly how the mapping of plugin configurations to datasets is done.
  *
  * @author Sylvain Vissiere-Guerinet
+ * @author Xavier-Alexandre Brochard
  */
 @Service
 @MultitenantTransactional
@@ -56,24 +59,33 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
     private final ISubscriber subscriber;
 
     /**
+     * AMQ Publisher
+     */
+    private final IPublisher publisher;
+
+    /**
      * JPA Respository to access {@link LinkPluginsDatasets} entities
      */
     private final ILinkPluginsDatasetsRepository linkRepo;
 
     /**
-     * Constructor
-     * @param pRunTimeTenantResolver
+     * @param pRuntimeTenantResolver
      * @param pSubscriber
+     * @param pPublisher
      * @param pLinkRepo
      */
-    public LinkPluginsDatasetsService(final IRuntimeTenantResolver pRunTimeTenantResolver,
-            final ISubscriber pSubscriber, final ILinkPluginsDatasetsRepository pLinkRepo) {
+    public LinkPluginsDatasetsService(IRuntimeTenantResolver pRuntimeTenantResolver, ISubscriber pSubscriber,
+            IPublisher pPublisher, ILinkPluginsDatasetsRepository pLinkRepo) {
         super();
-        runtimeTenantResolver = pRunTimeTenantResolver;
+        runtimeTenantResolver = pRuntimeTenantResolver;
         subscriber = pSubscriber;
+        publisher = pPublisher;
         linkRepo = pLinkRepo;
     }
 
+    /**
+     * Post-construct initialization
+     */
     @PostConstruct
     public void init() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -98,18 +110,19 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
                 for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
                     final LinkPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
                     if (link != null) {
-                        linkRepo.delete(link);
+                        deleteLink(link);
                     }
                 }
             }
         }
+
     }
 
     @Override
     public LinkPluginsDatasets retrieveLink(final String pDatasetId) {
         final LinkPluginsDatasets linkPluginsDatasets = linkRepo.findOneByDatasetId(pDatasetId);
         if (linkPluginsDatasets == null) {
-            return linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
+            return createLink(pDatasetId);
         }
         return linkPluginsDatasets;
     }
@@ -125,10 +138,46 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         final LinkPluginsDatasets existingOne = linkRepo.findOneByDatasetId(pDatasetId);
         if (existingOne != null) {
             existingOne.setServices(pUpdatedLink.getServices());
-            return linkRepo.save(existingOne);
+            LinkPluginsDatasets saved = linkRepo.save(existingOne);
+            publisher.publish(new LinkPluginsDatasetsEvent(saved));
+            return saved;
         } else {
-            return linkRepo.save(pUpdatedLink);
+            return createLink(pUpdatedLink);
         }
+    }
+
+    /**
+     * Create a new link in db with given values
+     *
+     * @param pLink the values for the new link
+     * @return the created link
+     */
+    private LinkPluginsDatasets createLink(final LinkPluginsDatasets pLink) {
+        LinkPluginsDatasets newLink = linkRepo.save(pLink);
+        publisher.publish(new LinkPluginsDatasetsEvent(newLink));
+        return newLink;
+    }
+
+    /**
+     * Create a new link in db with given data id
+     *
+     * @param pDatasetId the value of the dataset id to init the link with
+     * @return the created link
+     */
+    private LinkPluginsDatasets createLink(final String pDatasetId) {
+        LinkPluginsDatasets newLink = linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
+        publisher.publish(new LinkPluginsDatasetsEvent(newLink));
+        return newLink;
+    }
+
+    /**
+     * Dete the given link
+     *
+     * @param pLink the link to delete
+     */
+    private void deleteLink(final LinkPluginsDatasets pLink) { // NOSONAR
+        publisher.publish(new LinkPluginsDatasetsEvent(pLink));
+        linkRepo.delete(pLink);
     }
 
 }
