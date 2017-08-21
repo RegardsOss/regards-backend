@@ -129,7 +129,7 @@ public class SearchController {
      */
     @RequestMapping(path = SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.",
+            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams)
             throws SearchException {
@@ -152,7 +152,7 @@ public class SearchController {
      */
     @RequestMapping(path = SEARCH_WITH_FACETS, method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
-            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
+            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document. Injects applicable UI Services and Catalog Services.")
     public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchAllWithFacetsClient.searchAll(allParams, pFacets);
@@ -172,7 +172,9 @@ public class SearchController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on collection.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(
+            description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchCollectionsClient.searchCollections(allParams);
@@ -192,7 +194,9 @@ public class SearchController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(
+            description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchDatasetsClient.searchDatasets(allParams);
@@ -214,7 +218,8 @@ public class SearchController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.",
+    @ResourceAccess(
+            description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
@@ -239,7 +244,7 @@ public class SearchController {
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the associated datasets.",
+            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
@@ -261,7 +266,9 @@ public class SearchController {
      *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on document.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(
+            description = "Perform an OpenSearch request on documents. Injects applicable UI Services and Catalog Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchDocumentsClient.searchDocuments(allParams);
