@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
+import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
 
 /**
  * Declare static variables for tests.
@@ -98,6 +99,15 @@ public class BackendForFrontendTestUtils {
     }
 
     /**
+     * A dummy document tagging DATASET_0 and DATASET_1
+     */
+    public static final DataObject DOCUMENT;
+    static {
+        DOCUMENT = new DataObject(null, DEFAULT_TENANT, "document");
+        DOCUMENT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), DATASET_1.getIpId().toString()));
+    }
+
+    /**
      * The result a call to {@link ISearchAllClient#searchAll(java.util.Map)}
      */
     public static final ResponseEntity<JsonObject> SEARCH_ALL_RESULT;
@@ -141,6 +151,17 @@ public class BackendForFrontendTestUtils {
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATAOBJECTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
+    }
+
+    /**
+     * The result a call to {@link ISearchDocumentsClient#searchDocuments(java.util.Map)}
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_DOCUMENTS_RESULT;
+    static {
+        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DOCUMENT);
+        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
+        SEARCH_DOCUMENTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     /**

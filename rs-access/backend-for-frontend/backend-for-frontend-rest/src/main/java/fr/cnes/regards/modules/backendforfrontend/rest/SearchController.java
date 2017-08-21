@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
+import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
@@ -86,6 +87,9 @@ public class SearchController {
 
     @Autowired
     private ISearchDataobjectsClient searchDataobjectsClient;
+
+    @Autowired
+    private ISearchDocumentsClient searchDocumentsClient;
 
     @Autowired
     private Gson gson;
@@ -209,6 +213,26 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets);
+        injectApplicableServices(entities);
+        return entities;
+    }
+
+    /**
+     * Perform an OpenSearch request on documents.
+     * <p>
+     * Also injects the applicable Ui Services and Catalog Services.
+     *
+     * @param allParams
+     *            all query parameters
+     * @return the search result with services injected
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
+    @ResourceAccess(description = "Perform an OpenSearch request on document.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams)
+            throws SearchException {
+        ResponseEntity<JsonObject> entities = searchDocumentsClient.searchDocuments(allParams);
         injectApplicableServices(entities);
         return entities;
     }
