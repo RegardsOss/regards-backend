@@ -30,26 +30,26 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 
 /**
- * Integration tests for {@link ISearchAllWithFacetsClient}.
+ * Integration Test for {@link ISearchCollectionsClient}.
  *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchAllWithFacetsClientIT extends AbstractSearchClientIT<ISearchAllWithFacetsClient> {
+public class ISearchCollectionsClientIT extends AbstractSearchClientIT<ISearchCollectionsClient> {
 
     /**
      * Check that the Feign Client responds with a 200
      */
     @Test
-    public void searchAllWithFacets() {
-        ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap(), new String[] {});
+    public void searchCollections() {
+        ResponseEntity<JsonObject> result = client.searchCollections(Maps.newHashMap());
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 
     @Override
-    protected Class<ISearchAllWithFacetsClient> getClazz() {
-        return ISearchAllWithFacetsClient.class;
+    protected Class<ISearchCollectionsClient> getClazz() {
+        return ISearchCollectionsClient.class;
     }
 
 }

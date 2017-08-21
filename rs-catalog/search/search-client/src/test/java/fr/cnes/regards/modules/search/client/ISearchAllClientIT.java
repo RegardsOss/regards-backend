@@ -18,14 +18,8 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -35,13 +29,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-
 /**
  * Integration tests for {@link ISearchAllClient}.
  *
@@ -49,68 +36,20 @@ import fr.cnes.regards.modules.indexer.dao.IEsRepository;
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchAllClientIT extends AbstractRegardsWebIT {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ISearchAllClientIT.class);
-
-    @Value("${server.address}")
-    private String serverAddress;
-
-    /**
-     * Client to test
-     */
-    private ISearchAllClient client;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * Feign security manager
-     */
-    @Autowired
-    private FeignSecurityManager feignSecurityManager;
-
-    /**
-     * ElasticSearch repository
-     */
-    @Autowired
-    private IEsRepository esRepository;
-
-    @Before
-    public void setUp() {
-        client = FeignClientBuilder.build(new TokenClientProvider<>(ISearchAllClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-
-        // Init required index in the ElasticSearch repository
-        if (esRepository.indexExists(DEFAULT_TENANT)) {
-            esRepository.deleteIndex(DEFAULT_TENANT);
-        }
-        esRepository.createIndex(DEFAULT_TENANT);
-
-        FeignSecurityManager.asSystem();
-    }
-
-    @After
-    public void tearDown() {
-        esRepository.deleteIndex(DEFAULT_TENANT);
-    }
+public class ISearchAllClientIT extends AbstractSearchClientIT<ISearchAllClient> {
 
     /**
      * Check that the Feign Client responds with a 200
      */
     @Test
-    public void searchAll() {
+    public void search() {
         ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap());
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 
     @Override
-    protected Logger getLogger() {
-        return LOG;
+    protected Class<ISearchAllClient> getClazz() {
+        return ISearchAllClient.class;
     }
 
 }
