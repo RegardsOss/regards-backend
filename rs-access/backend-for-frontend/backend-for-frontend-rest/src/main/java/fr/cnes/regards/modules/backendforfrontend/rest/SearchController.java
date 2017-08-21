@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
+import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
@@ -76,6 +77,9 @@ public class SearchController {
     private ISearchAllWithFacetsClient searchAllWithFacetsClient;
 
     @Autowired
+    private ISearchCollectionsClient searchCollectionsClient;
+
+    @Autowired
     private Gson gson;
 
     /**
@@ -86,6 +90,8 @@ public class SearchController {
     public static final String SEARCH = "/search";
 
     public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
+
+    public static final String COLLECTIONS_SEARCH = "/collections/search";
 
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
@@ -131,6 +137,28 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchAllWithFacetsClient.searchAll(allParams, pFacets);
+        injectApplicableServices(entities);
+        return entities;
+    }
+
+    /**
+     * Perform an OpenSearch request on collections.
+     *
+     * @param allParams
+     *            all query parameters
+     * @param pPageable
+     *            the page
+     * @param pAssembler
+     *            injected by Spring
+     * @return the page of collections matching the query
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
+    @ResourceAccess(description = "Perform an OpenSearch request on collection.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams)
+            throws SearchException {
+        ResponseEntity<JsonObject> entities = searchCollectionsClient.searchCollections(allParams);
         injectApplicableServices(entities);
         return entities;
     }

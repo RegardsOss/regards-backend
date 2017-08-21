@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Profile;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
+import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -36,6 +37,17 @@ import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 @Profile("test")
 @Configuration
 public class BackendForFrontendTestConfiguration {
+
+    @Bean
+    @Primary
+    public IServiceAggregatorClient serviceAggregatorClient() {
+        IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
+        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_0.getIpId().toString(), null))
+                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
+        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_1.getIpId().toString(), null))
+                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
+        return mock;
+    }
 
     @Bean
     @Primary
@@ -56,12 +68,10 @@ public class BackendForFrontendTestConfiguration {
 
     @Bean
     @Primary
-    public IServiceAggregatorClient serviceAggregatorClient() {
-        IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
-        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_0.getIpId().toString(), null))
-                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
-        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_1.getIpId().toString(), null))
-                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
+    public ISearchCollectionsClient searchCollectionsClient() {
+        ISearchCollectionsClient mock = Mockito.mock(ISearchCollectionsClient.class);
+        Mockito.when(mock.searchCollections(Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
         return mock;
     }
 

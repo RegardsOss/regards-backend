@@ -27,7 +27,6 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -37,9 +36,6 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
-import fr.cnes.regards.modules.search.client.ISearchAllClient;
-import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 
 /**
  * Integration Test for {@link SearchController}
@@ -54,15 +50,6 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(SearchControllerIT.class);
-
-    @Autowired
-    private ISearchAllClient searchAllClient;
-
-    @Autowired
-    private ISearchAllWithFacetsClient searchAllWithFacetsClient;
-
-    @Autowired
-    private IServiceAggregatorClient serviceAggregatorClient;
 
     @Test
     @Requirement("REGARDS_DSL_ACC_USE_700")
@@ -84,7 +71,8 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
                 .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf1")));
 
         // Call
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "some:opensearchrequest");
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q",
+                                                                        BackendForFrontendTestUtils.OPENSEARCH_QUERY);
         performDefaultGet(SearchController.ROOT_PATH + SearchController.SEARCH, expectations,
                           "Error searching all entities", builder);
     }
@@ -109,9 +97,31 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
                 .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf1")));
 
         // Call
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "some:opensearchrequest");
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q",
+                                                                        BackendForFrontendTestUtils.OPENSEARCH_QUERY);
         performDefaultGet(SearchController.ROOT_PATH + SearchController.SEARCH_WITH_FACETS, expectations,
-                          "Error searching all entities", builder);
+                          "Error searching all entities with facets", builder);
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ACC_USE_700")
+    @Purpose("Check the system can inject applicable services to the result of a search")
+    public void searchCollections() {
+        // Define expectations
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
+                                                        Matchers.hasSize(1)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
+                                                        Matchers.hasSize(1)));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf1")));
+
+        // Call
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q",
+                                                                        BackendForFrontendTestUtils.OPENSEARCH_QUERY);
+        performDefaultGet(SearchController.ROOT_PATH + SearchController.COLLECTIONS_SEARCH, expectations,
+                          "Error searching collections", builder);
     }
 
     @Override

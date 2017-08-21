@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
+import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 
 /**
  * Declare static variables for tests.
@@ -59,6 +60,8 @@ public class BackendForFrontendTestUtils {
      * Default tenant configured in application properties
      */
     public static final String DEFAULT_TENANT = "PROJECT";
+
+    public static final String OPENSEARCH_QUERY = "some:opensearchrequest";
 
     /**
      * A dummy dataset
@@ -98,6 +101,17 @@ public class BackendForFrontendTestUtils {
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_ALL_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
+    }
+
+    /**
+     * The result a call to {@link ISearchCollectionsClient#searchCollections(java.util.Map)}
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_COLLECTIONS_RESULT;
+    static {
+        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.COLLECTION);
+        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
+        SEARCH_COLLECTIONS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     /**
