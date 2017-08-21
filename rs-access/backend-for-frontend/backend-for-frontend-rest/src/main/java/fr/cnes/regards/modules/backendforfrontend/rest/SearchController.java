@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
+import fr.cnes.regards.modules.search.client.ISearchDataobjectsReturnDatasetsClient;
 import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
 import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
 
@@ -89,6 +90,9 @@ public class SearchController {
     private ISearchDataobjectsClient searchDataobjectsClient;
 
     @Autowired
+    private ISearchDataobjectsReturnDatasetsClient searchDataobjectsReturnDatasetsClient;
+
+    @Autowired
     private ISearchDocumentsClient searchDocumentsClient;
 
     @Autowired
@@ -98,6 +102,8 @@ public class SearchController {
      * The main path
      */
     static final String ROOT_PATH = "";
+
+    public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
 
     public static final String DOCUMENTS_SEARCH = "/documents/search";
 
@@ -213,6 +219,32 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets);
+        injectApplicableServices(entities);
+        return entities;
+    }
+
+    /**
+     * Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the
+     * associated datasets.
+     * <p>
+     * Also injects the applicable Ui Services and Catalog Services.
+     *
+     * @param allParams
+     *            all query parameters
+     * @param pFacets
+     *            the facets to apply
+     * @return the search result with services injected
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
+    @ResourceAccess(
+            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the associated datasets.",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
+        ResponseEntity<JsonObject> entities = searchDataobjectsReturnDatasetsClient
+                .searchDataobjectsReturnDatasets(allParams, pFacets);
         injectApplicableServices(entities);
         return entities;
     }

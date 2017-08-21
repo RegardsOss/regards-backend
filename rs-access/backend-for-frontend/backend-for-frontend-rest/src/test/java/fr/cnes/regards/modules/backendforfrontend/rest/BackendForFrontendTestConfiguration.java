@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
 import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
+import fr.cnes.regards.modules.search.client.ISearchDataobjectsReturnDatasetsClient;
 import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
 import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
 
@@ -92,6 +93,15 @@ public class BackendForFrontendTestConfiguration {
         ISearchDataobjectsClient mock = Mockito.mock(ISearchDataobjectsClient.class);
         Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
+        return mock;
+    }
+
+    @Bean
+    @Primary
+    public ISearchDataobjectsReturnDatasetsClient searchDataobjectsReturnDatasetsClient() {
+        ISearchDataobjectsReturnDatasetsClient mock = Mockito.mock(ISearchDataobjectsReturnDatasetsClient.class);
+        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         return mock;
     }
 
