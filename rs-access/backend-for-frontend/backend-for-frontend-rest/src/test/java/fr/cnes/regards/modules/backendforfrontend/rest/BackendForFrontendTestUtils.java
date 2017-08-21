@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
+import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
 
 /**
@@ -129,6 +130,17 @@ public class BackendForFrontendTestUtils {
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATASETS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
+    }
+
+    /**
+     * The result a call to {@link ISearchDataobjectsClient#searchDataobjects(java.util.Map, String[])}
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_DATAOBJECTS_RESULT;
+    static {
+        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT);
+        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
+        SEARCH_DATAOBJECTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     /**

@@ -146,6 +146,28 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
                           "Error searching datasets", builder);
     }
 
+    @Test
+    @Requirement("REGARDS_DSL_ACC_USE_700")
+    @Purpose("Check the system can inject applicable services to the result of a search")
+    public void searchDataobjects() {
+        // Define expectations
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
+                                                        Matchers.hasSize(2)));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf0")));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
+                                                    Matchers.equalTo("uiPluginConfiguration2")));
+
+        // Call
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q",
+                                                                        BackendForFrontendTestUtils.OPENSEARCH_QUERY);
+        performDefaultGet(SearchController.ROOT_PATH + SearchController.DATAOBJECTS_SEARCH, expectations,
+                          "Error searching datasets", builder);
+    }
+
     @Override
     protected Logger getLogger() {
         return LOG;
