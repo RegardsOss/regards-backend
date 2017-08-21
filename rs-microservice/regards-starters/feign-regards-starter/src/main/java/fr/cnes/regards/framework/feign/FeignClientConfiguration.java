@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.feign;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -112,7 +111,7 @@ public class FeignClientConfiguration {
      */
     @Bean
     public Contract feignContract() {
-        return new SpringMvcContract();
+        return new FeignContractSupplier().get();
     }
 
     /**

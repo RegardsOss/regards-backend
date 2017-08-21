@@ -40,7 +40,12 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.filter.*;
+import fr.cnes.regards.framework.security.filter.CorsFilter;
+import fr.cnes.regards.framework.security.filter.IpFilter;
+import fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter;
+import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
+import fr.cnes.regards.framework.security.filter.PublicAuthenticationFilter;
+import fr.cnes.regards.framework.security.filter.RequestLogFilter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
@@ -82,7 +87,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     /**
      * List of authorized ip for CORS request. If empty all origins are allowed. Split character ','
      */
-    @Value("${regards.cors.requests.authorized.clients.addresses:null}")
+    @Value("${regards.cors.requests.authorized.clients.addresses:#{null}}")
     private String corsRequestAuthorizedClientAddresses;
 
     @Override
@@ -96,7 +101,6 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         // Disable CSRF
         // Force authentication for all requests
         pHttp.csrf().disable().authorizeRequests().anyRequest().authenticated();
-
 
         // Add public filter
         // TODO set in gateway
@@ -113,13 +117,14 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add CORS filter
         final List<String> authorizedIp = new ArrayList<>();
-        for (final String ip : corsRequestAuthorizedClientAddresses.split(",")) {
-            if (ip.length() > 0) {
-                authorizedIp.add(ip);
+        if (corsRequestAuthorizedClientAddresses != null) {
+            for (final String ip : corsRequestAuthorizedClientAddresses.split(",")) {
+                if (ip.length() > 0) {
+                    authorizedIp.add(ip);
+                }
             }
         }
         pHttp.addFilterAfter(new CorsFilter(authorizedIp), IpFilter.class);
-
 
         // Add custom configurations if any
         if (customConfigurers != null) {

@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -137,6 +138,12 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     private List<PluginParameter> parameters;
 
     /**
+     * Icon of the plugin. It must be an URL to a svg file.
+     */
+    @Column(name = "icon_url")
+    private URL iconUrl;
+
+    /**
      * Default constructor
      */
     public PluginConfiguration() {
@@ -145,6 +152,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         priorityOrder = 0;
         version = "0.0";
         interfaceNames = Sets.newHashSet();
+        parameters = Lists.newArrayList();
     }
 
     /**
@@ -154,7 +162,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param pLabel the label
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel) {
-        this(pPluginMetaData, pLabel, null, 0);
+        this(pPluginMetaData, pLabel, Lists.newArrayList(), 0);
     }
 
     /**
@@ -198,7 +206,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param pOrder the order
      */
     public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
-        this(pPluginMetaData, pLabel, null, pOrder);
+        this(pPluginMetaData, pLabel, Lists.newArrayList(), pOrder);
     }
 
     public PluginConfiguration(PluginConfiguration other) {
@@ -381,6 +389,20 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     public void setId(Long pId) {
         id = pId;
+    }
+
+    /**
+     * @return the iconUrl
+     */
+    public URL getIconUrl() {
+        return iconUrl;
+    }
+
+    /**
+     * @param pIconUrl the iconUrl to set
+     */
+    public void setIconUrl(URL pIconUrl) {
+        iconUrl = pIconUrl;
     }
 
     @Override
