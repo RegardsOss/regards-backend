@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { DefaultTestConfiguration.class })
+@ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, MockAmqpConfiguration.class })
 public abstract class AbstractDaoTest {
 
     /**
