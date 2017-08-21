@@ -1,32 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES This file is 
-	part of REGARDS. REGARDS is free software: you can redistribute it and/or 
-	modify it under the terms of the GNU General Public License as published 
-	by the Free Software Foundation, either version 3 of the License, or (at 
-	your option) any later version. REGARDS is distributed in the hope that it 
-	will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-	of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
-	Public License for more details. You should have received a copy of the GNU 
-	General Public License along with REGARDS. If not, see <http://www.gnu.org/licenses/>. -->
+<!-- LICENSE_PLACEHOLDER -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.search</groupId>
-	<artifactId>search-client</artifactId>
+	<groupId>fr.cnes.regards.modules</groupId>
+	<artifactId>catalog-services-client</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>search</artifactId>
+		<artifactId>catalog-services</artifactId>
 		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
-		<!-- Module domain -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
+		<!-- Module domain -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>catalog-services-domain</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>
@@ -40,9 +36,10 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.search</groupId>
-			<artifactId>search-rest</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-regards-starter</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 </project>
