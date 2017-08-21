@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
+import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
@@ -80,6 +81,9 @@ public class SearchController {
     private ISearchCollectionsClient searchCollectionsClient;
 
     @Autowired
+    private ISearchDatasetsClient searchDatasetsClient;
+
+    @Autowired
     private Gson gson;
 
     /**
@@ -87,22 +91,25 @@ public class SearchController {
      */
     static final String ROOT_PATH = "";
 
-    public static final String SEARCH = "/search";
+    public static final String DOCUMENTS_SEARCH = "/documents/search";
+
+    public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
+
+    public static final String DATASETS_SEARCH = "/datasets/search";
+
+    public static final String COLLECTIONS_SEARCH = "/collections/search";
 
     public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
 
-    public static final String COLLECTIONS_SEARCH = "/collections/search";
+    public static final String SEARCH = "/search";
 
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
      * collection, dataset, dataobject and document.
-     *
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
      *
-     * @param allParams
-     *            all query parameters
-     * @return the page of entities matching the query
+     * @return the search result with services injected
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
@@ -120,14 +127,12 @@ public class SearchController {
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
      * collection, dataset, dataobject and document. Allows usage of facets.
+     * <p>
+     * Also injects the applicable Ui Services and Catalog Services.
      *
      * @param allParams
      *            all query parameters
-     * @param pFacets
-     *            the facets to apply
-     * @param pPageable
-     *            the page
-     * @return the page of entities matching the query
+     * @return the search result with services injected
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
@@ -143,14 +148,12 @@ public class SearchController {
 
     /**
      * Perform an OpenSearch request on collections.
+     * <p>
+     * Also injects the applicable Ui Services and Catalog Services.
      *
      * @param allParams
      *            all query parameters
-     * @param pPageable
-     *            the page
-     * @param pAssembler
-     *            injected by Spring
-     * @return the page of collections matching the query
+     * @return the search result with services injected
      * @throws SearchException
      *             when an error occurs while parsing the query
      */
@@ -159,6 +162,26 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchCollectionsClient.searchCollections(allParams);
+        injectApplicableServices(entities);
+        return entities;
+    }
+
+    /**
+     * Perform an OpenSearch request on datasets.
+     * <p>
+     * Also injects the applicable Ui Services and Catalog Services.
+     *
+     * @param allParams
+     *            all query parameters
+     * @return the search result with services injected
+     * @throws SearchException
+     *             when an error occurs while parsing the query
+     */
+    @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
+    @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams)
+            throws SearchException {
+        ResponseEntity<JsonObject> entities = searchDatasetsClient.searchDatasets(allParams);
         injectApplicableServices(entities);
         return entities;
     }

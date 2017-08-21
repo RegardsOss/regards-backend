@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
+import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -72,6 +73,14 @@ public class BackendForFrontendTestConfiguration {
         ISearchCollectionsClient mock = Mockito.mock(ISearchCollectionsClient.class);
         Mockito.when(mock.searchCollections(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
+        return mock;
+    }
+
+    @Bean
+    @Primary
+    public ISearchDatasetsClient searchDatasetsClient() {
+        ISearchDatasetsClient mock = Mockito.mock(ISearchDatasetsClient.class);
+        Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         return mock;
     }
 

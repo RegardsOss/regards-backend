@@ -112,8 +112,6 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
                                                         Matchers.hasSize(1)));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                        Matchers.hasSize(1)));
         expectations.add(MockMvcResultMatchers
                 .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf1")));
 
@@ -122,6 +120,30 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
         performDefaultGet(SearchController.ROOT_PATH + SearchController.COLLECTIONS_SEARCH, expectations,
                           "Error searching collections", builder);
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ACC_USE_700")
+    @Purpose("Check the system can inject applicable services to the result of a search")
+    public void searchDatasets() {
+        // Define expectations
+        final List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
+                                                        Matchers.hasSize(0)));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[1].content.services",
+                                                        Matchers.hasSize(2)));
+        expectations.add(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf0")));
+        expectations
+                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[1].content.services[1].content.label",
+                                                    Matchers.equalTo("uiPluginConfiguration2")));
+
+        // Call
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q",
+                                                                        BackendForFrontendTestUtils.OPENSEARCH_QUERY);
+        performDefaultGet(SearchController.ROOT_PATH + SearchController.DATASETS_SEARCH, expectations,
+                          "Error searching datasets", builder);
     }
 
     @Override

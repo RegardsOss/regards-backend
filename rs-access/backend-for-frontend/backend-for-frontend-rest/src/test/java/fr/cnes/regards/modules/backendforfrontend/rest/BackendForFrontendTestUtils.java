@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.client.ISearchAllClient;
 import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
+import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
 
 /**
  * Declare static variables for tests.
@@ -71,7 +72,11 @@ public class BackendForFrontendTestUtils {
     /**
      * A dummy dataset
      */
-    public static final Dataset DATASET_1 = new Dataset(null, DEFAULT_TENANT, "dataset1");
+    public static final Dataset DATASET_1;
+    static {
+        DATASET_1 = new Dataset(null, DEFAULT_TENANT, "dataset1");
+        DATASET_1.setTags(Sets.newHashSet(DATASET_0.getIpId().toString()));
+    }
 
     /**
      * A dummy dataobject tagging DATASET_0
@@ -112,6 +117,18 @@ public class BackendForFrontendTestUtils {
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_COLLECTIONS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
+    }
+
+    /**
+     * The result a call to {@link ISearchDatasetsClient#searchDatasets(java.util.Map)}
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_DATASETS_RESULT;
+    static {
+        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATASET_0,
+                                                           BackendForFrontendTestUtils.DATASET_1);
+        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
+        SEARCH_DATASETS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     /**
