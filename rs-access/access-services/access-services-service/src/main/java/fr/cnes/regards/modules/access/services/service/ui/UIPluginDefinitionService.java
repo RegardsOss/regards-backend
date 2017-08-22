@@ -24,10 +24,16 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -37,7 +43,8 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 
 @Service(value = "pluginService")
-public class UIPluginDefinitionService implements IUIPluginDefinitionService {
+public class UIPluginDefinitionService
+        implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private IUIPluginDefinitionRepository repository;
@@ -52,10 +59,34 @@ public class UIPluginDefinitionService implements IUIPluginDefinitionService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
+     * AMQP Message subscriber
+     */
+    @Autowired
+    private IInstanceSubscriber instanceSubscriber;
+
+    /**
      * Tenant resolver to access all configured tenant
      */
     @Autowired
     private ITenantResolver tenantResolver;
+
+    /**
+     * Perform initialization only when the whole application is ready
+     */
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+        // Initialize subscriber for new tenant connection and initialize database if not already done
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
+    }
+
+    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
+
+        @Override
+        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
+            runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
+            initDefault();
+        }
+    }
 
     /**
      * Init
@@ -66,12 +97,12 @@ public class UIPluginDefinitionService implements IUIPluginDefinitionService {
             // Multitenant version of the microservice.
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
-                initDefault(tenant);
+                initDefault();
             }
         }
     }
 
-    protected void initDefault(final String pTenant) {
+    protected void initDefault() {
         // Create default plugins if no plugin defined
         final List<UIPluginDefinition> plugins = repository.findAll();
         if (plugins.isEmpty()) {
