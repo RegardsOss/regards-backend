@@ -16,12 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
-import fr.cnes.regards.modules.access.services.rest.aggregator.ServicesAggregatorController;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Feign client for calling {@link ServicesAggregatorController} methods
+ * Feign client for calling ServicesAggregatorController methods
  *
  * @author Xavier-Alexandre Brochard
  */
