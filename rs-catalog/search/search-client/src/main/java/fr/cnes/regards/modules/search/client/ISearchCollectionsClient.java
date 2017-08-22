@@ -14,10 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.search.rest.CatalogController;
 
 /**
- * Feign client for calling rs-catalog's {@link CatalogController#searchCollections}.
+ * Feign client for calling rs-catalog's CatalogController#searchCollections.
  * <p>
  * We can't gather all Feign clients of the module in a single one because of of the type-level {@link RequestMapping} annotation
  * which should be empty (or ""). This is not supported by Feign.
