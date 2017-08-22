@@ -17,7 +17,6 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * Feign client for calling ServicesAggregatorController methods
@@ -34,7 +33,7 @@ public interface IServiceAggregatorClient {
      * Returns all services applied to all datasets plus those of the given dataset
      *
      * @param pDatasetIpId
-     *            the id of the {@link Dataset}
+     *            the id of the Dataset
      * @param pApplicationModes
      *            the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
