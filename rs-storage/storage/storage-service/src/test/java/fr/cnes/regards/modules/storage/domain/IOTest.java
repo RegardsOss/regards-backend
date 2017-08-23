@@ -21,22 +21,27 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.MockingResourceServiceConfiguration;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { IOTestConfiguration.class })
-public class IOTest {
+@ContextConfiguration(classes = { IOTestConfiguration.class, MockingResourceServiceConfiguration.class })
+@TestPropertySource(locations = {"classpath:application-default.properties"})
+public class IOTest extends AbstractRegardsServiceIT {
+
+    private static Logger LOG = LoggerFactory.getLogger(IOTest.class);
 
     @Autowired
     private Gson gson;
@@ -65,7 +70,7 @@ public class IOTest {
         // DataObject 1
         DataObject do1 = new DataObject();
         do1.setType(FileType.valueOf("RAWDATA"));
-        do1.setUrl(new URL("file:///tmp/example.fits"));
+        do1.setUrl(new URL("file:/tmp/example.fits"));
         contentInfo1.setDataObject(do1);
         // RepresentationInformation 1
         RepresentationInformation ri1 = new RepresentationInformation();
@@ -248,7 +253,7 @@ public class IOTest {
         // DataObject 2
         DataObject do2 = new DataObject();
         do2.setType(FileType.valueOf("QUICKLOOK"));
-        do2.setUrl(new URL("file:///tmp/example.png"));
+        do2.setUrl(new URL("file:/tmp/example.png"));
         contentInfo2.setDataObject(do2);
         // RepresentationInformation 2
         RepresentationInformation ri2 = new RepresentationInformation();
@@ -303,7 +308,6 @@ public class IOTest {
         JsonObject aipTree = (JsonObject) gson.toJsonTree(aip);
 
         Assert.assertTrue(aipTree.equals(fakeAipTree));
-
     }
 
     @Test
@@ -318,7 +322,7 @@ public class IOTest {
         fr.close();
         // now, lets put it into a stream to avoid issues from the serialization order of attributes
         String aipJsonString = gson.toJson(aip);
-        FileOutputStream newFile=new FileOutputStream(new File("target/test_aip.json"));
+        FileOutputStream newFile = new FileOutputStream(new File("target/test_aip.json"));
         newFile.write(aipJsonString.getBytes(StandardCharsets.UTF_8));
         newFile.flush();
         newFile.close();
@@ -344,4 +348,8 @@ public class IOTest {
         Assert.assertFalse("Checksum calculated from the file and from the json form differs", differ);
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOG;
+    }
 }

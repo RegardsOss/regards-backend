@@ -70,7 +70,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Before
     public void init() throws NoSuchAlgorithmException, MalformedURLException {
-//        dao=new AIPDao(repo);
+        dao=new AIPDao(repo);
         aip1 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip1.setState(AIPState.VALID);
         setSubmissionDate(aip1, OffsetDateTime.now().minusMinutes(10));

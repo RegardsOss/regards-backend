@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
@@ -122,7 +124,7 @@ public class AIPService implements IAIPService {
     public List<String> retrieveAIPVersionHistory(UniformResourceName pIpId) {
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        List<AIP> versions = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
+        Set<AIP> versions = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
         return versions.stream().map(a -> a.getIpId()).collect(Collectors.toList());
     }
 
