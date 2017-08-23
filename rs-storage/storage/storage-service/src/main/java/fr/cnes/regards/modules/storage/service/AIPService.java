@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -15,12 +16,13 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.storage.dao.IAIPRepository;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
 import fr.cnes.regards.modules.storage.domain.event.AIPValid;
-import fr.cnes.regards.modules.storage.urn.UniformResourceName;
+
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -29,14 +31,14 @@ import fr.cnes.regards.modules.storage.urn.UniformResourceName;
 @Service
 public class AIPService implements IAIPService {
 
-    private final IAIPRepository repo;
+    private final IAIPDao dao;
 
     private final IPublisher publisher;
 
     private final DataStorageManager storageManager;
 
-    public AIPService(IAIPRepository pRepo, IPublisher pPublisher, DataStorageManager pStorageManager) {
-        repo = pRepo;
+    public AIPService(IAIPDao dao, IPublisher pPublisher, DataStorageManager pStorageManager) {
+        this.dao = dao;
         publisher = pPublisher;
         storageManager = pStorageManager;
     }
@@ -54,7 +56,7 @@ public class AIPService implements IAIPService {
         // save into DB as valid
         AIP aip = new AIP(pAIP);
         aip.setState(AIPState.VALID);
-        aip = repo.save(pAIP);
+//        aip = dao.save(pAIP);
 
         // stockage du descriptif sur fichier
         // TODO: job synchrone?
@@ -83,44 +85,46 @@ public class AIPService implements IAIPService {
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {
-                    return repo.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(pState, pFrom.minusNanos(1),
-                                                                                           pTo.plusSeconds(1),
-                                                                                           pPageable);
+                    return dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(pState, pFrom.minusNanos(1),
+                                                                                          pTo.plusSeconds(1),
+                                                                                          pPageable);
                 }
-                return repo.findAllByStateAndSubmissionDateAfter(pState, pFrom.minusNanos(1), pPageable);
+                return dao.findAllByStateAndSubmissionDateAfter(pState, pFrom.minusNanos(1), pPageable);
             }
             if (pTo != null) {
-                return repo.findAllByStateAndLastEventDateBefore(pState, pTo.plusSeconds(1), pPageable);
+                return dao.findAllByStateAndLastEventDateBefore(pState, pTo.plusSeconds(1), pPageable);
             }
-            return repo.findAllByState(pState, pPageable);
+            return dao.findAllByState(pState, pPageable);
         }
         if (pFrom != null) {
             if (pTo != null) {
-                return repo.findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1), pTo.plusSeconds(1),
-                                                                               pPageable);
+                return dao.findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1), pTo.plusSeconds(1),
+                                                                              pPageable);
             }
-            return repo.findAllBySubmissionDateAfter(pFrom.minusNanos(1), pPageable);
+            return dao.findAllBySubmissionDateAfter(pFrom.minusNanos(1), pPageable);
         }
         if (pTo != null) {
-            return repo.findAllByLastEventDateBefore(pTo.plusSeconds(1), pPageable);
+            return dao.findAllByLastEventDateBefore(pTo.plusSeconds(1), pPageable);
         }
-        return repo.findAll(pPageable);
+//        return dao.findAll(pPageable);
+        return null;
     }
 
     @Override
     public List<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
-        AIP aip = repo.findOneByIpIdWithDataObjects(pIpId.toString());
-        if (aip == null) {
-            throw new EntityNotFoundException(pIpId.toString(), AIP.class);
-        }
-        return aip.getDataObjects();
+//        AIP aip = dao.findOneByIpIdWithDataObjects(pIpId.toString());
+//        if (aip == null) {
+//            throw new EntityNotFoundException(pIpId.toString(), AIP.class);
+//        }
+//        return aip.getDataObjects();
+        return null;
     }
 
     @Override
     public List<String> retrieveAIPVersionHistory(UniformResourceName pIpId) {
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        List<AIP> versions = repo.findAllByIpIdStartingWith(ipIdWithoutVersion);
+        Set<AIP> versions = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
         return versions.stream().map(a -> a.getIpId()).collect(Collectors.toList());
     }
 

@@ -15,10 +15,10 @@
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.springframework</groupId>-->
+			<!--<artifactId>spring-context</artifactId>-->
+		<!--</dependency>-->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>regards-core-jpa-data</artifactId>
@@ -43,12 +43,21 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards</artifactId>
 		</dependency>
-		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>gson-regards-starter</artifactId>
-			<scope>test</scope>
+			<artifactId>oais-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>module-plugins-domain</artifactId>
+		</dependency>
+		<!-- Test dependencies -->
+
+		<!--<dependency>-->
+			<!--<groupId>fr.cnes.regards.framework</groupId>-->
+			<!--<artifactId>gson-regards-starter</artifactId>-->
+			<!--<scope>test</scope>-->
+		<!--</dependency>-->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>

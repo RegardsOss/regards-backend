@@ -34,11 +34,11 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
 import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.urn.UniformResourceName;
 
 /**
  * REST controller handling request about {@link AIP}s
@@ -101,6 +101,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "validate and create the specified AIP")
     public HttpEntity<List<Long>> createAIP(@RequestBody @Valid List<AIP> pAIPs)
             throws EntityCorruptByNetworkException, NoSuchAlgorithmException, IOException {
+        //FIXME: should take the stream of the body and not the AIPs, checksum given into the header will be calculated acoording to the bytes sent!
         List<Long> jobIds = new ArrayList<>();
         for (AIP aip : pAIPs) {
             jobIds.add(aipService.create(aip));

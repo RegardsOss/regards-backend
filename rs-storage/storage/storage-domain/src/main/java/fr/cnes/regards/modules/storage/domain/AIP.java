@@ -7,14 +7,14 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import com.google.common.collect.Lists;
-import fr.cnes.regards.modules.storage.urn.OAISIdentifier;
-import fr.cnes.regards.modules.storage.urn.UniformResourceName;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.OAISIdentifier;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  *
@@ -23,7 +23,6 @@ import fr.cnes.regards.modules.storage.urn.UniformResourceName;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-// FIXME: url de stockage en base
 public class AIP implements Serializable {
 
     /**
@@ -38,22 +37,12 @@ public class AIP implements Serializable {
     private String ipId;
 
     /**
-     * Last Event that affected this AIP
-     */
-    private Event lastEvent;
-
-    /**
-     * Submission Date into REGARDS
-     */
-    private OffsetDateTime submissionDate;
-
-    /**
      * Type of this AIP
      */
-    private AipType type;
+    private EntityType type;
 
     /**
-     * List of tag
+     * Tag list
      */
     private List<String> tags;
 
@@ -62,17 +51,24 @@ public class AIP implements Serializable {
      */
     private List<InformationObject> informationObjects;
 
-    /**
-     * State of this AIP
-     */
-    private AIPState state;
+    private List<Event> history;
 
+    /**
+     * Checksum computed during storage process
+     */
+    @GsonIgnore
     private String checksum;
+
+    /**
+     * State determined through different storage steps
+     */
+    @GsonIgnore
+    private AIPState state;
 
     private AIP() {
     }
 
-    public AIP(AipType pType) {
+    public AIP(EntityType pType) {
         type = pType;
         tags = new ArrayList<>();
         informationObjects = new ArrayList<>();
@@ -80,14 +76,12 @@ public class AIP implements Serializable {
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
         sipId = String.valueOf(generateRandomString(new Random(), 40));
-        ipId = new UniformResourceName(OAISIdentifier.AIP, AipType.COLLECTION, "tenant", UUID.randomUUID(), 1)
+        ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant", UUID.randomUUID(), 1)
                 .toString();
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
-        state = AIPState.VALID;
-        submissionDate = OffsetDateTime.now();
-        lastEvent = new Event("toc");
         checksum = "checksum";
+        history=Lists.newArrayList(new Event("addition of this aip into our beautiful system!", OffsetDateTime.now(), EventType.SUBMISSION));
         return this;
     }
 
@@ -129,6 +123,14 @@ public class AIP implements Serializable {
         return tag;
     }
 
+    public AIPState getState() {
+        return state;
+    }
+
+    public void setState(AIPState state) {
+        this.state = state;
+    }
+
     public String getSipId() {
         return sipId;
     }
@@ -145,11 +147,11 @@ public class AIP implements Serializable {
         ipId = pIpId;
     }
 
-    public AipType getType() {
+    public EntityType getType() {
         return type;
     }
 
-    public void setType(AipType pType) {
+    public void setType(EntityType pType) {
         type = pType;
     }
 
@@ -169,14 +171,6 @@ public class AIP implements Serializable {
         informationObjects = pInformationObjects;
     }
 
-    public AIPState getState() {
-        return state;
-    }
-
-    public void setState(AIPState pState) {
-        state = pState;
-    }
-
     public String getChecksum() {
         return checksum;
     }
@@ -185,37 +179,52 @@ public class AIP implements Serializable {
         checksum = pChecksum;
     }
 
-    public Event getLastEvent() {
-        return lastEvent;
+    public List<Event> getHistory() {
+        if(history==null) {
+            history=Lists.newArrayList();
+        }
+        return history;
     }
 
-    public void setLastEvent(Event pLastEvent) {
-        lastEvent = pLastEvent;
-    }
-
-    public OffsetDateTime getSubmissionDate() {
-        return submissionDate;
-    }
-
-    public void setSubmissionDate(OffsetDateTime pSubmissionDate) {
-        submissionDate = pSubmissionDate;
+    public void setHistory(List<Event> history) {
+        this.history = history;
     }
 
     public AIP(AIP src) {
         informationObjects = Lists.newArrayList(src.informationObjects);
         ipId = String.valueOf(src.ipId);
-        lastEvent = new Event(String.valueOf(src.lastEvent.getComment()), OffsetDateTime.from(src.lastEvent.getDate()));
         sipId = String.valueOf(src.sipId);
-        state = src.state;
-        submissionDate = OffsetDateTime.from(src.submissionDate);
         tags = Lists.newArrayList(src.tags);
         type = src.type;
         checksum = String.valueOf(src.checksum);
+        history = Lists.newArrayList(src.history);
+        state = AIPState.valueOf(src.state.toString());
     }
+
 
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof AIP) && ipId.equals(((AIP) pOther).ipId) && checksum.equals(((AIP) pOther).checksum);
     }
 
+    /**
+     * Abstraction on where the last event is and how to get it
+     * @return last event occurred to this aip
+     */
+    public Event getLastEvent() {
+        Set<Optional<Event>> latestEvents = Sets.newHashSet();
+        // first lets get all the latest events, Optional in case there is no event for one of them: highly improbable
+        for (InformationObject io : informationObjects) {
+            latestEvents.add(io.getPdi().getProvenanceInformation().getHistory().stream()
+                                     .sorted(Comparator.comparing(Event::getDate).reversed()).findFirst());
+        }
+        latestEvents.add(getHistory().stream().sorted(Comparator.comparing(Event::getDate).reversed()).findFirst());
+        //then we get the one we want, the latest of the latest
+        return latestEvents.stream().filter(Optional::isPresent).map(Optional::get)
+                .sorted(Comparator.comparing(Event::getDate).reversed()).findFirst().orElse(null);
+    }
+
+    public Event getSubmissionEvent() {
+        return getHistory().stream().filter(e->e.getType().equals(EventType.SUBMISSION)).findFirst().orElse(null);
+    }
 }

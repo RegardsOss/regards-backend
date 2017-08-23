@@ -11,5 +11,6 @@ package fr.cnes.regards.modules.storage.plugins.datastorage.domain;
  */
 public enum DataStorageType {
 
-    NEARLINE, ONLINE;
+    NEARLINE,
+    ONLINE
 }

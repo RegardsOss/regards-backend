@@ -3,37 +3,59 @@
  */
 package fr.cnes.regards.modules.storage.plugins.datastorage.impl;
 
-import java.nio.file.Path;
-import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageType;
-import fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.Directory;
+import fr.cnes.regards.modules.storage.plugins.datastorage.exception.StorageCorruptedException;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local",
-        id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
+        id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IDataStorage {
 
-    // FIXME: comment ça se passe dans les plugin un @Value ou c'est un paramètre dynamique?
-    private Path workspace;
+    private static final Charset STORAGE_ENCODING = StandardCharsets.UTF_8;
 
-    // to be updated by event
-    @Directory
-    private Map<String, Path> projectRootDirectories;
+    private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorage.class);
 
-    public Map<String, Path> getProjectRootDirectories() {
-        return projectRootDirectories;
-    }
+    @Autowired
+    private Gson gson;
 
-    public void addProjectRootDirectories(String pProject, @Directory Path pWorkspaceOfProject) {
-        projectRootDirectories.put(pProject, pWorkspaceOfProject);
+    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
+    private String baseStorageLocationAsString;
+
+    private URL baseStorageLocation;
+
+    @PluginInit
+    public void init() {
+        baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
     }
 
     @Override
@@ -42,33 +64,101 @@ public class LocalDataStorage implements IDataStorage {
     }
 
     @Override
-    public Long storeAIPDescriptor(AIP pAip) {
-        // execute storage of the descriptor
-        // ask for the upload of files
-        storeAIPFiles(pAip);
-        return null;
+    public AIP storeMetadata(AIP aip) throws IOException, StorageCorruptedException {
+        // We store the jsonified version of aip, so lets get the aip as a json string
+        String aipJsonString = gson.toJson(aip);
+
+        // We are storing the aip, it means that only us know under which form it is stored, so we are the only ones that knows the encoding used and on what the checksum should be calculated.
+        try {
+            // We are specifying the storage encoding and not the encoding of the attribute checksum for a simple reason:
+            // the encoding of the file is important while the encoding used for the attribute is not.
+            // Moreover, we better let the jvm handle attribute encoding and convert things as it is used to do.
+            String checksum = getHexChecksum(MessageDigest.getInstance("MD5").digest(aipJsonString.getBytes(STORAGE_ENCODING)));
+
+            aip.setChecksum(checksum);
+            // Lets compute the filename: baseStorageLocation+3 first char of checksum+checksum
+            // This is the IDataStorage implementation for local file system, that means the url should not contain a host part or it is localhost.
+            // So the path to store the file is simply the path part or the URI.
+            // We assume that baseStorageLocation already exists on the file system.
+            // We just need to create if it does not already exist the directory between baseStorageLocation and the file.
+            String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+            Files.createDirectory(Paths.get(storageLocation));
+            String fullPathToFile = storageLocation + "/" + checksum + ".json";
+            BufferedWriter writer = Files
+                    .newBufferedWriter(Paths.get(fullPathToFile), STORAGE_ENCODING, StandardOpenOption.CREATE);
+            writer.write(aipJsonString);
+            writer.flush();
+            writer.close();
+            // Now that it is stored, lets checked that it is correctly stored!
+            try (InputStream is = Files.newInputStream(Paths.get(fullPathToFile));
+                    DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"))) {
+                while (dis.read() != -1) {
+                }
+                String fileChecksum = getHexChecksum(dis.getMessageDigest().digest());
+                if (!fileChecksum.equals(aip.getChecksum())) {
+                    StorageCorruptedException e = new StorageCorruptedException(
+                            "Storage of AIP metadata(" + aip.getIpId() + ") failed at the following location: "
+                                    + fullPathToFile + ". Its checksum once stored do not match with expected");
+                    LOG.error(e.getMessage(), e);
+                    Files.deleteIfExists(Paths.get(fullPathToFile));
+                    throw e;
+                }
+            }
+        } catch (NoSuchAlgorithmException e) {
+            RuntimeException re = new RuntimeException(e);
+            LOG.error(
+                    "This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
+                    re);
+            throw re;
+        }
+        return aip;
+    }
+
+    private String getHexChecksum(byte[] checksumByte) {
+        StringBuffer hexString = new StringBuffer();
+        for (int i = 0; i < checksumByte.length; i++) {
+            String hex = Integer.toHexString(0xff & checksumByte[i]);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     @Override
-    public Long retrieveAIP(AIP pAip) {
+    public UUID retrieveMetadata(AIP aip) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Long deleteAIP(AIP pAip) {
+    public UUID deleteAIP(AIP aip) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public DataStorageInfo getInfo(String pProject) {
+    public DataStorageInfo getInfo(String project) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Long storeAIPFiles(AIP pAip) {
+    public void checkIntegrity(AIP aip) throws NoSuchAlgorithmException, IOException {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        //        md5.digest()
+        try (InputStream fileIs = Files.newInputStream(Paths.get(baseStorageLocationAsString));
+                DigestInputStream fileDis = new DigestInputStream(fileIs, md5);) {
+            while (fileDis.read() != -1) {
+            }
+            byte[] checksum = fileDis.getMessageDigest().digest();
+        }
+        InputStream aipIs = new ByteArrayInputStream(gson.toJson(aip).getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public UUID storeAIPDataFiles(AIP aip) {
         // TODO schedule the upload job
         return null;
     }

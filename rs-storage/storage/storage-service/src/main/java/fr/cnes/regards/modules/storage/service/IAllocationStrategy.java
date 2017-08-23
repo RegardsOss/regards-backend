@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.storage.service;
 import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storage.domain.AipType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.storage.domain.FileType;
 import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 
@@ -19,6 +19,6 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 @PluginInterface(description = "Interface for all AllocationStrategy plugin")
 public interface IAllocationStrategy {
 
-    IDataStorage getStorage(AipType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
+    IDataStorage getStorage(EntityType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
 
 }

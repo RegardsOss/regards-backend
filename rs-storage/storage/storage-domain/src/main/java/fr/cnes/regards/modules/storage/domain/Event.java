@@ -3,36 +3,46 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
 
 @Embeddable
 public class Event {
 
+    @Column
+    @Type(type = "text")
     private String comment;
 
-    private OffsetDateTime eventDate;
+    @Column
+    private OffsetDateTime date;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private EventType type;
 
     private Event() {
     }
 
     public Event(String pComment) {
         comment = pComment;
-        eventDate = OffsetDateTime.now();
+        date = OffsetDateTime.now();
     }
 
-    public Event(String pComment, OffsetDateTime pDate) {
-        comment = pComment;
-        eventDate = pDate;
+    public Event(String comment, OffsetDateTime date) {
+        this(comment,date,null);
     }
 
-    @Column
-    @Type(type = "text")
+    public Event(String comment, OffsetDateTime date, EventType type) {
+        this.comment = comment;
+        this.date = date;
+        this.type=type;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -41,13 +51,19 @@ public class Event {
         comment = pComment;
     }
 
-    @Column
     public OffsetDateTime getDate() {
-        return eventDate;
+        return date;
     }
 
     public void setDate(OffsetDateTime pDate) {
-        eventDate = pDate;
+        date = pDate;
     }
 
+    public EventType getType() {
+        return type;
+    }
+
+    public void setType(EventType type) {
+        this.type = type;
+    }
 }
