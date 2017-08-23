@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.urn;
+package fr.cnes.regards.framework.urn.autoconfiguration;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

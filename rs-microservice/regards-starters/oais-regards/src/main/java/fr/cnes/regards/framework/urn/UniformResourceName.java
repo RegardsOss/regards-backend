@@ -205,6 +205,7 @@ public class UniformResourceName {
      * @param pUrn
      *            String respecting the following regex URN:.+:.+:.+:.+:\\d{1,3}(,\\d+)?(:REV.+)?
      * @return a new instance of {@link UniformResourceName}
+     * @throws IllegalArgumentException if the given string does not respect the urn pattern
      */
     public static UniformResourceName fromString(String pUrn) {
         final Pattern pattern = Pattern.compile(URN_PATTERN);
