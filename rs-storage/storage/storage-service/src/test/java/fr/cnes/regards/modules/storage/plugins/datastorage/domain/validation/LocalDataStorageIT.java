@@ -91,7 +91,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
         aip=storagePlugin.storeMetadata(aip);
         //just to be sure checksum is correct, lets compare the given checksum by our algorithm to one from a 3rd party(md5sum)
-        Assert.assertEquals("b59cbcaaf597c3251d9e5bd6b892264a", aip.getChecksum());
+        Assert.assertEquals("db92b88b61f5e0fb49ee6f76c79a4689", aip.getChecksum());
     }
 
     private AIP getAipFromFile() throws IOException {
