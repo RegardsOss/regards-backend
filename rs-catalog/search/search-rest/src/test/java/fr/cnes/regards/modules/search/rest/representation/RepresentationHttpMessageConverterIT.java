@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -40,15 +41,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsITWithoutMockedCots;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.entities.domain.Collection;
@@ -57,8 +56,9 @@ import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 import fr.cnes.regards.modules.search.rest.plugin.MarkdownRepresentation;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
-@TestPropertySource(locations = { "classpath:dao.properties", "classpath:test-representation.properties" })
-public class RepresentationHttpMessageConverterIT extends AbstractRegardsITWithoutMockedCots {
+@TestPropertySource(locations = { "classpath:test-representation.properties" })
+@ActiveProfiles("testAmqp")
+public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepresentationHttpMessageConverterIT.class);
 
