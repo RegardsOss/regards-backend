@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.test.integration;
+package fr.cnes.regards.framework.jpa.multitenant.test;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * Default JPA multitenant test configuration
  *
+ * @author Marc Sordi
  */
 @Configuration
-@EnableAutoConfiguration
-@PropertySource("classpath:feign.properties")
-@Profile("!testFeign")
-public class DefaultTestFeignConfiguration {
+@EnableAutoConfiguration(exclude = JacksonAutoConfiguration.class)
+@PropertySource("classpath:dao.properties")
+public class DefaultDaoTestConfiguration {
 
 }
