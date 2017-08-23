@@ -11,9 +11,8 @@ import org.hibernate.annotations.TypeDefs;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.Event;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.*;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -23,18 +22,30 @@ import fr.cnes.regards.modules.storage.domain.Event;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPDataBase {
 
-    @Id
-    @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
-    private Long id;
+    /**
+     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
+     */
+    public static final int CHECKSUM_MAX_LENGTH = 128;
 
-    @Column(length = 32)
+    private static final int MAX_URN_SIZE = 128;
+
+    //    @Id
+    //    @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
+    //    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
+    //    private Long id;
+
+    @Column(length = CHECKSUM_MAX_LENGTH)
     private String checksum;
 
-    @Column
+    /**
+     * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
+     * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
+     */
+    @Id
+    @Column(length = MAX_URN_SIZE)
     private String ipId;
 
-    @Column
+    @Column(length = MAX_URN_SIZE)
     private String sipId;
 
     @ElementCollection
@@ -64,10 +75,16 @@ public class AIPDataBase {
     private AIP aip;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "data_storage_plugin_configuration", foreignKey = @ForeignKey(name = "fk_aip_data_storage_plugin_configuration"))
+    @JoinColumn(name = "data_storage_plugin_configuration",
+            foreignKey = @ForeignKey(name = "fk_aip_data_storage_plugin_configuration"))
     private PluginConfiguration dataStorageConf;
 
-    //    private Set<DataObject> dataFiles;
+    /**
+     * It seems that CacadeType.PERSIST is not enough here, so we use MERGE too. Without MERGE, hibernate/spring tries to save DataFileDataBase with null values
+     */
+    @OneToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
+    private Set<DataFileDataBase> dataFiles;
 
     public AIPDataBase() {
     }
@@ -81,17 +98,18 @@ public class AIPDataBase {
         this.lastEvent = aip.getLastEvent();
         this.submissionDate = aip.getSubmissionEvent().getDate();
         this.aip = aip;
-        if(dataStorageConf!=null) {
-            this.dataStorageConf=dataStorageConf;
+        if (dataStorageConf != null) {
+            this.dataStorageConf = dataStorageConf;
         }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+        Set<DataFileDataBase> dataFiles = Sets.newHashSet();
+        for (InformationObject io : aip.getInformationObjects()) {
+            DataObject file = io.getContentInformation().getDataObject();
+            String algorithm = io.getPdi().getFixityInformation().getAlgorithm();
+            String checksum = io.getPdi().getFixityInformation().getChecksum();
+            Double fileSize = io.getPdi().getFixityInformation().getFileSize();
+            dataFiles.add(new DataFileDataBase(file, algorithm, checksum, fileSize));
+        }
+        this.dataFiles = dataFiles;
     }
 
     public String getChecksum() {

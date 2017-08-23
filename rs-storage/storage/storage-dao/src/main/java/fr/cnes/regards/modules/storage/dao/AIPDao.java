@@ -29,35 +29,48 @@ public class AIPDao implements IAIPDao {
     @Override
     public AIP save(AIP toSave, PluginConfiguration dataStorageUsed) {
         AIPDataBase saved = repo.save(new AIPDataBase(toSave, dataStorageUsed));
-        return saved.getAip();
+        return reconstructAip(saved);
+    }
+
+    /**
+     * Allows us to reconstruct the AIP as we are using it into the system.
+     * @param fromDb
+     * @return
+     */
+    private AIP reconstructAip(AIPDataBase fromDb) {
+        AIP aip=fromDb.getAip();
+        // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as checksum and state
+        aip.setChecksum(fromDb.getChecksum());
+        aip.setState(fromDb.getState());
+        return aip;
     }
 
     @Override
     public Page<AIP> findAllByState(AIPState state, Pageable pageable) {
         Page<AIPDataBase> fromDb = repo.findAllByState(state, pageable);
-        return fromDb.map(AIPDataBase::getAip);
+        return fromDb.map(this::reconstructAip);
 
     }
 
     @Override
     public Page<AIP> findAllBySubmissionDateAfter(OffsetDateTime submissionAfter, Pageable pageable) {
-        return repo.findAllBySubmissionDateAfter(submissionAfter, pageable).map(AIPDataBase::getAip);
+        return repo.findAllBySubmissionDateAfter(submissionAfter, pageable).map(this::reconstructAip);
     }
 
     @Override
     public Page<AIP> findAllByLastEventDateBefore(OffsetDateTime lastEventBefore, Pageable pageable) {
-        return repo.findAllByLastEventDateBefore(lastEventBefore, pageable).map(AIPDataBase::getAip);
+        return repo.findAllByLastEventDateBefore(lastEventBefore, pageable).map(this::reconstructAip);
     }
 
     @Override
     public Page<AIP> findAllByStateAndLastEventDateBefore(AIPState state, OffsetDateTime lastEventBefore,
             Pageable pageable) {
-        return repo.findAllByStateAndLastEventDateBefore(state, lastEventBefore, pageable).map(AIPDataBase::getAip);
+        return repo.findAllByStateAndLastEventDateBefore(state, lastEventBefore, pageable).map(this::reconstructAip);
     }
 
     @Override
     public Set<AIP> findAllByIpIdStartingWith(String ipIdWithoutVersion) {
-        return repo.findAllByIpIdStartingWith(ipIdWithoutVersion).stream().map(AIPDataBase::getAip)
+        return repo.findAllByIpIdStartingWith(ipIdWithoutVersion).stream().map(this::reconstructAip)
                 .collect(Collectors.toSet());
     }
 
@@ -65,20 +78,20 @@ public class AIPDao implements IAIPDao {
     public Page<AIP> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState state,
             OffsetDateTime submissionAfter, OffsetDateTime lastEventBefore, Pageable pageable) {
         return repo.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(state, submissionAfter, lastEventBefore,
-                                                                               pageable).map(AIPDataBase::getAip);
+                                                                               pageable).map(this::reconstructAip);
     }
 
     @Override
     public Page<AIP> findAllByStateAndSubmissionDateAfter(AIPState state, OffsetDateTime submissionAfter,
             Pageable pageable) {
-        return repo.findAllByStateAndSubmissionDateAfter(state, submissionAfter, pageable).map(AIPDataBase::getAip);
+        return repo.findAllByStateAndSubmissionDateAfter(state, submissionAfter, pageable).map(this::reconstructAip);
     }
 
     @Override
     public Page<AIP> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime submissionAfter,
             OffsetDateTime lastEventBefore, Pageable pageable) {
         return repo.findAllBySubmissionDateAfterAndLastEventDateBefore(submissionAfter, lastEventBefore, pageable)
-                .map(AIPDataBase::getAip);
+                .map(this::reconstructAip);
     }
 
 }
