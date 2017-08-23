@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.storage.dao;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -15,6 +14,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
@@ -35,7 +35,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     @Autowired
     private IAIPDataBaseRepository repo;
 
-//    @Autowired
+    //    @Autowired
     private IAIPDao dao;
 
     /**
@@ -70,41 +70,42 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Before
     public void init() throws NoSuchAlgorithmException, MalformedURLException {
-        dao=new AIPDao(repo);
+        dao = new AIPDao(repo);
         aip1 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip1.setState(AIPState.VALID);
         setSubmissionDate(aip1, OffsetDateTime.now().minusMinutes(10));
         aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
-        aip1 = dao.save(aip1);
+        aip1 = dao.save(aip1, null);
         aip12 = new AIP(aip1);
         UniformResourceName version2 = UniformResourceName.fromString(aip12.getIpId());
         version2.setVersion(2);
         aip12.setIpId(version2.toString());
-        aip12 = dao.save(aip12);
+        aip12 = dao.save(aip12, null);
         aip2 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip2.setState(AIPState.PENDING);
-        setSubmissionDate(aip2,OffsetDateTime.now().minusMinutes(20));
+        setSubmissionDate(aip2, OffsetDateTime.now().minusMinutes(20));
         aip2.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(20));
-        aip2 = dao.save(aip2);
+        aip2 = dao.save(aip2, null);
         aip3 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip3.setState(AIPState.DELETED);
-        setSubmissionDate(aip3,OffsetDateTime.now().minusMinutes(30));
+        setSubmissionDate(aip3, OffsetDateTime.now().minusMinutes(30));
         aip3.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(30));
-        aip3 = dao.save(aip3);
+        aip3 = dao.save(aip3, null);
         aip4 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip4.setState(AIPState.STORAGE_ERROR);
-        setSubmissionDate(aip4,OffsetDateTime.now().minusMinutes(40));
+        setSubmissionDate(aip4, OffsetDateTime.now().minusMinutes(40));
         aip4.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(40));
-        aip4 = dao.save(aip4);
+        aip4 = dao.save(aip4, null);
         aip5 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip5.setState(AIPState.STORED);
-        setSubmissionDate(aip5,OffsetDateTime.now().minusMinutes(50));
+        setSubmissionDate(aip5, OffsetDateTime.now().minusMinutes(50));
         aip5.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(50));
-        aip5 = dao.save(aip5);
+        aip5 = dao.save(aip5, null);
     }
 
     private void setSubmissionDate(AIP aip1, OffsetDateTime submissionDate) {
-        aip1.getHistory().add(new Event("Submission of this aip into our beautiful system", submissionDate, EventType.SUBMISSION));
+        aip1.getHistory().add(new Event("Submission of this aip into our beautiful system", submissionDate,
+                                        EventType.SUBMISSION));
     }
 
     @Test
@@ -190,40 +191,36 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindByLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByLastEventDateBefore(aip1.getLastEvent().getDate().plusSeconds(1),
-                                                            new PageRequest(0, 10));
+        Page<AIP> result = dao
+                .findAllByLastEventDateBefore(aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
         Assert.assertTrue(result.getContent().contains(aip3));
         Assert.assertTrue(result.getContent().contains(aip4));
         Assert.assertTrue(result.getContent().contains(aip5));
 
-        result = dao.findAllByLastEventDateBefore(aip2.getLastEvent().getDate().plusSeconds(1),
-                                                  new PageRequest(0, 10));
+        result = dao.findAllByLastEventDateBefore(aip2.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
         Assert.assertTrue(result.getContent().contains(aip3));
         Assert.assertTrue(result.getContent().contains(aip4));
         Assert.assertTrue(result.getContent().contains(aip5));
 
-        result = dao.findAllByLastEventDateBefore(aip3.getLastEvent().getDate().plusSeconds(1),
-                                                  new PageRequest(0, 10));
+        result = dao.findAllByLastEventDateBefore(aip3.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertTrue(result.getContent().contains(aip3));
         Assert.assertTrue(result.getContent().contains(aip4));
         Assert.assertTrue(result.getContent().contains(aip5));
 
-        result = dao.findAllByLastEventDateBefore(aip4.getLastEvent().getDate().plusSeconds(1),
-                                                  new PageRequest(0, 10));
+        result = dao.findAllByLastEventDateBefore(aip4.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertTrue(result.getContent().contains(aip4));
         Assert.assertTrue(result.getContent().contains(aip5));
 
-        result = dao.findAllByLastEventDateBefore(aip5.getLastEvent().getDate().plusSeconds(1),
-                                                  new PageRequest(0, 10));
+        result = dao.findAllByLastEventDateBefore(aip5.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
@@ -233,17 +230,16 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByStateAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByStateAndLastEventDateBefore(aip1.getState(),
-                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
-                                                                    new PageRequest(0, 10));
+        Page<AIP> result = dao
+                .findAllByStateAndLastEventDateBefore(aip1.getState(), aip1.getLastEvent().getDate().plusSeconds(1),
+                                                      new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllByStateAndLastEventDateBefore(aip2.getState(),
-                                                          aip1.getLastEvent().getDate().plusSeconds(1),
+        result = dao.findAllByStateAndLastEventDateBefore(aip2.getState(), aip1.getLastEvent().getDate().plusSeconds(1),
                                                           new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
@@ -255,18 +251,20 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllBySubmissionDateAfterAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllBySubmissionDateAfterAndLastEventDateBefore(aip1.getSubmissionEvent().getDate()
-                .minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
+        Page<AIP> result = dao
+                .findAllBySubmissionDateAfterAndLastEventDateBefore(aip1.getSubmissionEvent().getDate().minusNanos(1),
+                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
+                                                                    new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllBySubmissionDateAfterAndLastEventDateBefore(aip2.getSubmissionEvent().getDate().minusNanos(1),
-                                                                        aip1.getLastEvent().getDate()
-                                                                                       .plusSeconds(1),
-                                                                        new PageRequest(0, 10));
+        result = dao
+                .findAllBySubmissionDateAfterAndLastEventDateBefore(aip2.getSubmissionEvent().getDate().minusNanos(1),
+                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
+                                                                    new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
@@ -297,17 +295,24 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByStateAndSubmissionDateAfterAndLastEventDateBefore() {
-        Page<AIP> result = dao
-                .findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip1.getState(), aip1.getSubmissionEvent().getDate()
-                        .minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
+        Page<AIP> result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip1.getState(),
+                                                                                          aip1.getSubmissionEvent()
+                                                                                                  .getDate()
+                                                                                                  .minusNanos(1),
+                                                                                          aip1.getLastEvent().getDate()
+                                                                                                  .plusSeconds(1),
+                                                                                          new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip2.getState(), aip1
-                .getSubmissionEvent().getDate().minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1),
+        result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip2.getState(),
+                                                                                aip1.getSubmissionEvent().getDate()
+                                                                                        .minusNanos(1),
+                                                                                aip1.getLastEvent().getDate()
+                                                                                        .plusSeconds(1),
                                                                                 new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
@@ -317,11 +322,11 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     }
 
     //FIXME: to remove?
-//    @Test
-//    public void testFindOneByIpIdWithDataObjects() {
-//        AIP requested = dao.findOneByIpIdWithDataObjects(aip1.getIpId());
-//        Assert.assertEquals(aip1.getDataObjects().size(), requested.getDataObjects().size());
-//    }
+    //    @Test
+    //    public void testFindOneByIpIdWithDataObjects() {
+    //        AIP requested = dao.findOneByIpIdWithDataObjects(aip1.getIpId());
+    //        Assert.assertEquals(aip1.getDataObjects().size(), requested.getDataObjects().size());
+    //    }
 
     @Test
     public void testFindAllByIpIdStartingWith() {

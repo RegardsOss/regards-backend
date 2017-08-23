@@ -17,28 +17,16 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
 /**
- * FIXME: duplicate from dam? or that's the original and dam should depends on storage? if not duplicate, could create a
- * class that extends both this one and DataEntity in dam
  *
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Entity(name = "t_data_object")
 public class DataObject implements Serializable {
 
-    @Id
-    @SequenceGenerator(name = "DataObjectSequence", initialValue = 1, sequenceName = "seq_data_object")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DataObjectSequence")
-    private Long id;
-
-    @Enumerated(EnumType.STRING)
     private FileType type;
 
-    @Column
     private URL url;
 
-    @Column(length = 64)
-    private transient String checksum;
 
     public DataObject() {
 
@@ -64,14 +52,6 @@ public class DataObject implements Serializable {
         type = FileType.OTHER;
         url = new URL("ftp://bla");
         return this;
-    }
-
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public void setChecksum(String pChecksum) {
-        checksum = pChecksum;
     }
 
     @Override

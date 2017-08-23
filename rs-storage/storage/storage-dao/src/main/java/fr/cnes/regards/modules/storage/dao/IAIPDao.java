@@ -15,10 +15,6 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  */
 public interface IAIPDao {
 
-    default AIP save(AIP toSave) {
-        return save(toSave, null);
-    }
-
     AIP save(AIP toSave, PluginConfiguration dataStorageUsed);
 
     Page<AIP> findAllByState(AIPState state, Pageable pageable);
