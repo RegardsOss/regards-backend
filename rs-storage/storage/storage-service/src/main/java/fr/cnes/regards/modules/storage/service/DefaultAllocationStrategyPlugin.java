@@ -8,7 +8,7 @@ import java.util.List;
 import javax.validation.constraints.Size;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.storage.domain.AipType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.storage.domain.FileType;
 import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageType;
@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageTyp
 public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
     @Override
-    public IDataStorage getStorage(final AipType pAipType, final FileType pFileType,
+    public IDataStorage getStorage(final EntityType pAipType, final FileType pFileType,
             @Size(min = 1, max = 2) final List<IDataStorage> pStoragesAvailable) {
         if (pStoragesAvailable.size() == 1) {
             return pStoragesAvailable.get(0);

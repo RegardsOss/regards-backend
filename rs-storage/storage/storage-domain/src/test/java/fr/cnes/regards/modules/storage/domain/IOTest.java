@@ -3,12 +3,15 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +77,8 @@ public class IOTest {
         ri1.setSyntax(syntax1);
         // Semantic 1
         Semantic sem1 = new Semantic();
-        sem1.setDescription("|Bytes|Format|Units|Label|Explanations|\n|------|-----------|-----|---------|----------------------------------------|\n|1-9|I9|---|Corot|CoRoTnumber|\n|11|I1|h|RAh|Rightascension(J2000)|\n|13-14|I2|min|RAm|Rightascension(J2000)|\n|16-20|F5.2|s|RAs|Rightascension(J2000)|\n|22|A1|---|DE-|Declinationsign(J2000)|\n|23|I1|deg|DEd|Declination(J2000)|\n|25-26|I2|arcmin|DEm|Declination(J2000)|\n|28-32|F5.2|arcsec|DEs|Declination(J2000)|");
+        sem1.setDescription(
+                "|Bytes|Format|Units|Label|Explanations|\n|------|-----------|-----|---------|----------------------------------------|\n|1-9|I9|---|Corot|CoRoTnumber|\n|11|I1|h|RAh|Rightascension(J2000)|\n|13-14|I2|min|RAm|Rightascension(J2000)|\n|16-20|F5.2|s|RAs|Rightascension(J2000)|\n|22|A1|---|DE-|Declinationsign(J2000)|\n|23|I1|deg|DEd|Declination(J2000)|\n|25-26|I2|arcmin|DEm|Declination(J2000)|\n|28-32|F5.2|arcsec|DEs|Declination(J2000)|");
         ri1.setSemantic(sem1);
         contentInfo1.setRepresentationInformation(ri1);
         // END OF contentInformation 1
@@ -209,7 +213,7 @@ public class IOTest {
         history.add(new Event("acquisitionoftheobservation", OffsetDateTime.parse("2014-01-01T23:10:05Z")));
         history.add(new Event("astrometrycalibration", OffsetDateTime.parse("2014-01-02T23:10:05Z")));
         history.add(new Event("receivedinformationfromtheproducertothearchive",
-                OffsetDateTime.parse("2014-02-01T23:10:05Z")));
+                              OffsetDateTime.parse("2014-02-01T23:10:05Z")));
         history.add(new Event("AIPiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z")));
         history.add(new Event("AIPisstored", OffsetDateTime.parse("2014-02-02T23:10:05Z")));
         history.add(new Event("AIPisarchived", OffsetDateTime.parse("2014-02-03T23:10:05Z")));
@@ -300,6 +304,44 @@ public class IOTest {
 
         Assert.assertTrue(aipTree.equals(fakeAipTree));
 
+    }
+
+    @Test
+    public void testChecksum() throws IOException, NoSuchAlgorithmException {
+        // we want to test if calculating the checksum from a file or its json form is the same or not.
+        // first lets get our favorite aip sample
+        FileReader fr = new FileReader("src/test/resources/aip_sample.json");
+        BufferedReader br = new BufferedReader(fr);
+        String fileLine = br.readLine();
+        AIP aip = gson.fromJson(fileLine, AIP.class);
+        br.close();
+        fr.close();
+        // now, lets put it into a stream to avoid issues from the serialization order of attributes
+        String aipJsonString = gson.toJson(aip);
+        FileOutputStream newFile=new FileOutputStream(new File("target/test_aip.json"));
+        newFile.write(aipJsonString.getBytes(StandardCharsets.UTF_8));
+        newFile.flush();
+        newFile.close();
+        InputStream is = Files.newInputStream(Paths.get("target/test_aip.json"));
+        DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
+        while (dis.read() != -1) {
+        }
+        byte[] fileChecksum = dis.getMessageDigest().digest();
+        dis.close();
+        is.close();
+        // now, lets see about checksums
+        byte[] aipAsByte = aipJsonString.getBytes(StandardCharsets.UTF_8);
+        byte[] aipChecksum = MessageDigest.getInstance("MD5").digest(aipAsByte);
+        Assert.assertEquals(aipChecksum.length, fileChecksum.length);
+        boolean differ = false;
+        int i = 0;
+        while (!differ && i < aipChecksum.length) {
+            if (aipChecksum[i] != fileChecksum[i]) {
+                differ = true;
+            }
+            i++;
+        }
+        Assert.assertFalse("Checksum calculated from the file and from the json form differs", differ);
     }
 
 }
