@@ -44,7 +44,8 @@
 		<module>feign-regards-starter</module>
 		<module>security-config</module>
 		<module>oais-starter</module>
-	</modules>
+        <module>oais-regards</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
