@@ -21,6 +21,7 @@ services:
       - BRANCH_NAME
       - WORKSPACE
       - MODE=Deploy
+      - CI_DIR
     volumes:
       - /opt/maven-multibranch-repository:/localRepository
       - /usr/bin/docker:/bin/docker # link docker - only useful for deploy MODE
