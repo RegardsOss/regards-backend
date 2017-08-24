@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  *
  * @author Xavier-Alexandre Brochard
  */
-@RestClient(name = "rs-access")
+@RestClient(name = "rs-access-project")
 @RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @FunctionalInterface
