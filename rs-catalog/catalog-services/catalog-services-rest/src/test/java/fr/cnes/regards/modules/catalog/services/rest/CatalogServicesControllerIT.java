@@ -100,9 +100,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData.setPluginClassName(TestService.class.getName());
         conf = new PluginConfiguration(metaData, "testConf");
         conf.setParameters(Lists.newArrayList(parameter));
-        pluginService.addPluginPackage(IService.class.getPackage().getName());
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
-        pluginService.addPluginPackage(SampleServicePlugin.class.getPackage().getName());
         conf = pluginService.savePluginConfiguration(conf);
 
         List<PluginParameter> parameters = PluginParametersFactory.build()

@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
 import fr.cnes.regards.modules.catalog.services.domain.annotations.GetCatalogServicePluginAnnotation;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 
 /**
@@ -91,6 +92,8 @@ public class ServiceManager implements IServiceManager {
             final ILinkPluginsDatasetsService pLinkPluginsDatasetsService) {
         pluginService = pPluginService;
         linkPluginsDatasetsService = pLinkPluginsDatasetsService;
+        pluginService.addPluginPackage(IService.class.getPackage().getName());
+        pluginService.addPluginPackage(SampleServicePlugin.class.getPackage().getName());
     }
 
     @Override
