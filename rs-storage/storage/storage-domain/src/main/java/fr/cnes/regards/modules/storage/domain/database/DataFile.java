@@ -3,16 +3,20 @@ package fr.cnes.regards.modules.storage.domain.database;
 import javax.persistence.*;
 import java.net.URL;
 
+import org.springframework.util.MimeType;
+
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.DataObject;
 import fr.cnes.regards.modules.storage.domain.FileType;
 
 /**
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
 @Table(name = "t_data_file")
-public class DataFileDataBase {
+public class DataFile {
 
     @Id
     @SequenceGenerator(name = "dataFileSequence", initialValue = 1, sequenceName = "seq_data_file")
@@ -35,19 +39,24 @@ public class DataFileDataBase {
     @Column
     private Double fileSize;
 
+    @Column(nullable = false)
+    @Convert(converter = MimeTypeConverter.class)
+    private MimeType mimeType;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "data_storage_plugin_configuration", foreignKey = @ForeignKey(name = "fk_data_file_data_storage_plugin_configuration"))
     private PluginConfiguration dataStorageUsed;
 
-    public DataFileDataBase() {
+    public DataFile() {
     }
 
-    public DataFileDataBase(DataObject file, String algorithm, String checksum, Double fileSize) {
+    public DataFile(DataObject file, String algorithm, String checksum, Double fileSize, MimeType mimeType) {
         this.algorithm=algorithm;
         this.checksum=checksum;
         this.fileSize=fileSize;
         this.originUrl=file.getUrl();
         this.type=file.getType();
+        this.mimeType=mimeType;
     }
 
     public Long getId() {
