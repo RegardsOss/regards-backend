@@ -38,6 +38,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -288,6 +289,8 @@ public class SearchController {
     private void injectApplicableServices(ResponseEntity<JsonObject> pEntities) {
         try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM
                 .apply(pEntities.getBody().get("content").getAsJsonArray())) {
+            // Enable system call as follow (thread safe action)
+            FeignSecurityManager.asSystem();
             // @formatter:off
             elements
                 .map(JsonElement::getAsJsonObject)
@@ -295,6 +298,9 @@ public class SearchController {
                 .map(JsonElement::getAsJsonObject)
                 .forEach(element -> element.add("services", entityToApplicableServices(element)));
             // @formatter:on
+        } finally {
+            // Disable system call if necessary after client request(s)
+            FeignSecurityManager.reset();
         }
     }
 
