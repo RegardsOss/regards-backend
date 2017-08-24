@@ -16,18 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.dao;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.acquisition.domain.Greeting;
-/**
- * 
- * TODO Description
- * @author TODO
- *
- */
-public interface DaoGreeting extends JpaRepository<Greeting, Long> {
 
+public class Spot4ProductMetadataPlugin extends GenericProductMetadataPlugin {
+
+    private static final String PROJECT_NAME = "SPOT4";
+    
+    protected String getProjectName() {
+        return PROJECT_NAME;
+    }
 
 }

@@ -2,8 +2,7 @@
 <!-- LICENSE_PLACEHOLDER --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.acquisition</groupId>
-	<artifactId>acquisition-domain</artifactId>
+	<artifactId>acquisition-plugins-ssalto</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -13,19 +12,19 @@
 	</parent>
 
 	<dependencies>
+		<!-- Module -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
-		</dependency>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
+			<artifactId>module-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
+			<artifactId>acquisition-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.14</version>
 		</dependency>
 	</dependencies>
 </project>

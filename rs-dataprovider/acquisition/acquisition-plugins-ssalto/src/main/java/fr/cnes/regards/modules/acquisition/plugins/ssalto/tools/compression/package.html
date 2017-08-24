@@ -1,0 +1,18 @@
+<head></head>
+<body>
+
+<p>Ce package contient les opérations permettant la compression de fichiers.</p>
+<p>L'utilisation du design pattern stratégie permet d'offrir des possibilités d'extension. Dans la version
+initiale du SIPAD-NG, la compression ZIP, TAR et GZIP.</p>
+
+<h3>Vue statique</h3>
+
+La classe <code>CompressionFacade</code> est la facade du paquetage,
+elle utilise le pattern <code>Strategie</code> pour masquer l'implementation
+concrete des compressions. Le contexte instancie les classes concretes &agrave; partir 
+de l'enum&eacute;r&eacute; <code>CompressionTypeEnum</code> qui lui est transmis.
+Puis il manipule la compression concr&egrave;te par l'interface <code>ICompression</code>.
+
+<img src="doc-files/sipad.tools.compression-1.gif" alt="vue statique compression" />
+
+</body>
