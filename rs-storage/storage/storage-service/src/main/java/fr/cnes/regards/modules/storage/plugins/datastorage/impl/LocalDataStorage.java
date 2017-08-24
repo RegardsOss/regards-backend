@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugins.datastorage.domain.DataStorageType;
 import fr.cnes.regards.modules.storage.plugins.datastorage.exception.StorageCorruptedException;
+import fr.cnes.regards.modules.storage.service.utils.ChecksumUtils;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -73,7 +74,7 @@ public class LocalDataStorage implements IDataStorage {
             // We are specifying the storage encoding and not the encoding of the attribute checksum for a simple reason:
             // the encoding of the file is important while the encoding used for the attribute is not.
             // Moreover, we better let the jvm handle attribute encoding and convert things as it is used to do.
-            String checksum = getHexChecksum(MessageDigest.getInstance("MD5").digest(aipJsonString.getBytes(STORAGE_ENCODING)));
+            String checksum = ChecksumUtils.getHexChecksum(MessageDigest.getInstance("MD5").digest(aipJsonString.getBytes(STORAGE_ENCODING)));
 
             aip.setChecksum(checksum);
             // Lets compute the filename: baseStorageLocation+3 first char of checksum+checksum
@@ -94,7 +95,7 @@ public class LocalDataStorage implements IDataStorage {
                     DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"))) {
                 while (dis.read() != -1) {
                 }
-                String fileChecksum = getHexChecksum(dis.getMessageDigest().digest());
+                String fileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
                 if (!fileChecksum.equals(aip.getChecksum())) {
                     StorageCorruptedException e = new StorageCorruptedException(
                             "Storage of AIP metadata(" + aip.getIpId() + ") failed at the following location: "
@@ -112,18 +113,6 @@ public class LocalDataStorage implements IDataStorage {
             throw re;
         }
         return aip;
-    }
-
-    private String getHexChecksum(byte[] checksumByte) {
-        StringBuffer hexString = new StringBuffer();
-        for (int i = 0; i < checksumByte.length; i++) {
-            String hex = Integer.toHexString(0xff & checksumByte[i]);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.Set;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
@@ -80,11 +81,11 @@ public class AIPDataBase {
     private PluginConfiguration dataStorageConf;
 
     /**
-     * It seems that CacadeType.PERSIST is not enough here, so we use MERGE too. Without MERGE, hibernate/spring tries to save DataFileDataBase with null values
+     * It seems that CacadeType.PERSIST is not enough here, so we use MERGE too. Without MERGE, hibernate/spring tries to save DataFile with null values
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
-    private Set<DataFileDataBase> dataFiles;
+    private Set<DataFile> dataFiles;
 
     public AIPDataBase() {
     }
@@ -101,13 +102,14 @@ public class AIPDataBase {
         if (dataStorageConf != null) {
             this.dataStorageConf = dataStorageConf;
         }
-        Set<DataFileDataBase> dataFiles = Sets.newHashSet();
+        Set<DataFile> dataFiles = Sets.newHashSet();
         for (InformationObject io : aip.getInformationObjects()) {
             DataObject file = io.getContentInformation().getDataObject();
+            MimeType mimeType = MimeType.valueOf(io.getContentInformation().getRepresentationInformation().getSyntax().getMimeType());
             String algorithm = io.getPdi().getFixityInformation().getAlgorithm();
             String checksum = io.getPdi().getFixityInformation().getChecksum();
             Double fileSize = io.getPdi().getFixityInformation().getFileSize();
-            dataFiles.add(new DataFileDataBase(file, algorithm, checksum, fileSize));
+            dataFiles.add(new DataFile(file, algorithm, checksum, fileSize, mimeType));
         }
         this.dataFiles = dataFiles;
     }
