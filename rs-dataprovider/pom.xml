@@ -31,8 +31,6 @@
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
-	<version>2.0.0-SNAPSHOT</version>
-
   <modules>
     <module>bootstrap-dataprovider</module>
     <module>acquisition</module>
