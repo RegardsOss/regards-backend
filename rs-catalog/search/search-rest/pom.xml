@@ -65,6 +65,18 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.indexer</groupId>
+			<artifactId>indexer-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>catalog-services-domain</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
@@ -75,14 +87,6 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>module-plugins-dao</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.indexer</groupId>
-			<artifactId>indexer-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-client</artifactId>
 		</dependency>
 	</dependencies>
 </project>
