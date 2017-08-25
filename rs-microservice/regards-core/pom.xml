@@ -39,5 +39,6 @@
 		<module>regards-core-jpa-common</module>
 		<module>security-utils</module>
 		<module>regards-core-jpa-data</module>
+		<module>file-utils</module>
 	</modules>
 </project>
