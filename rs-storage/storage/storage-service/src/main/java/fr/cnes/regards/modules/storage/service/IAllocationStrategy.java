@@ -8,7 +8,7 @@ import java.util.List;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.storage.domain.FileType;
-import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
  * Those plugins are meant to decide which plugin IDataStorage should be use for a given aip and file.

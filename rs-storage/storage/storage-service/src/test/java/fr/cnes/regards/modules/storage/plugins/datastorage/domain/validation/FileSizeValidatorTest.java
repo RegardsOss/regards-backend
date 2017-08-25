@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.modules.storage.domain.plugin.validation.FileSizeValidator;
+
 /**
  * @author Sylvain Vissiere-Guerinet
  *

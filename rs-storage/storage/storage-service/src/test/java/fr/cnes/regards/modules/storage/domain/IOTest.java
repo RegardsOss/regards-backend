@@ -3,7 +3,12 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -30,15 +35,15 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
+
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.MockingResourceServiceConfiguration;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @ContextConfiguration(classes = { IOTestConfiguration.class, MockingResourceServiceConfiguration.class })
-@TestPropertySource(locations = {"classpath:application-default.properties"})
+@TestPropertySource(locations = { "classpath:application-default.properties" })
 public class IOTest extends AbstractRegardsServiceIT {
 
     private static Logger LOG = LoggerFactory.getLogger(IOTest.class);
@@ -82,8 +87,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         ri1.setSyntax(syntax1);
         // Semantic 1
         Semantic sem1 = new Semantic();
-        sem1.setDescription(
-                "|Bytes|Format|Units|Label|Explanations|\n|------|-----------|-----|---------|----------------------------------------|\n|1-9|I9|---|Corot|CoRoTnumber|\n|11|I1|h|RAh|Rightascension(J2000)|\n|13-14|I2|min|RAm|Rightascension(J2000)|\n|16-20|F5.2|s|RAs|Rightascension(J2000)|\n|22|A1|---|DE-|Declinationsign(J2000)|\n|23|I1|deg|DEd|Declination(J2000)|\n|25-26|I2|arcmin|DEm|Declination(J2000)|\n|28-32|F5.2|arcsec|DEs|Declination(J2000)|");
+        sem1.setDescription("|Bytes|Format|Units|Label|Explanations|\n|------|-----------|-----|---------|----------------------------------------|\n|1-9|I9|---|Corot|CoRoTnumber|\n|11|I1|h|RAh|Rightascension(J2000)|\n|13-14|I2|min|RAm|Rightascension(J2000)|\n|16-20|F5.2|s|RAs|Rightascension(J2000)|\n|22|A1|---|DE-|Declinationsign(J2000)|\n|23|I1|deg|DEd|Declination(J2000)|\n|25-26|I2|arcmin|DEm|Declination(J2000)|\n|28-32|F5.2|arcsec|DEs|Declination(J2000)|");
         ri1.setSemantic(sem1);
         contentInfo1.setRepresentationInformation(ri1);
         // END OF contentInformation 1
@@ -218,7 +222,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         history.add(new Event("acquisitionoftheobservation", OffsetDateTime.parse("2014-01-01T23:10:05Z")));
         history.add(new Event("astrometrycalibration", OffsetDateTime.parse("2014-01-02T23:10:05Z")));
         history.add(new Event("receivedinformationfromtheproducertothearchive",
-                              OffsetDateTime.parse("2014-02-01T23:10:05Z")));
+                OffsetDateTime.parse("2014-02-01T23:10:05Z")));
         history.add(new Event("AIPiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z")));
         history.add(new Event("AIPisstored", OffsetDateTime.parse("2014-02-02T23:10:05Z")));
         history.add(new Event("AIPisarchived", OffsetDateTime.parse("2014-02-03T23:10:05Z")));
@@ -339,7 +343,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         Assert.assertEquals(aipChecksum.length, fileChecksum.length);
         boolean differ = false;
         int i = 0;
-        while (!differ && i < aipChecksum.length) {
+        while (!differ && (i < aipChecksum.length)) {
             if (aipChecksum[i] != fileChecksum[i]) {
                 differ = true;
             }

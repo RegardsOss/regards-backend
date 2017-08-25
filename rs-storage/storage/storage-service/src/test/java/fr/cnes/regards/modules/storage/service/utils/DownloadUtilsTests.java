@@ -2,7 +2,10 @@ package fr.cnes.regards.modules.storage.service.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
@@ -11,6 +14,9 @@ import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import fr.cnes.regards.modules.storage.plugin.utils.ChecksumUtils;
+import fr.cnes.regards.modules.storage.plugin.utils.DownloadUtils;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -24,7 +30,7 @@ public class DownloadUtilsTests {
      * @throws NoSuchAlgorithmException
      */
     @Test
-    public void testDownloadWithFileProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException{
+    public void testDownloadWithFileProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
         InputStream is = DownloadUtils.download(source);
@@ -52,10 +58,10 @@ public class DownloadUtilsTests {
      * @throws NoSuchAlgorithmException
      */
     @Test
-    public void testDownloadWithFileProtocolWithProxy() throws IOException, NoSuchAlgorithmException{
+    public void testDownloadWithFileProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
-        Proxy proxy=new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
         InputStream is = DownloadUtils.downloadThroughProxy(source, proxy);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
@@ -75,15 +81,14 @@ public class DownloadUtilsTests {
         }
     }
 
-
-
     @Test
     public void testDownloadWithHttpProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://172.26.47.107:9020/conf/staticConfiguration.js");
-        InputStream is =DownloadUtils.download(source);
+        InputStream is = DownloadUtils.download(source);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
-        while(dis.read()!=-1) {}
-        String checksum=ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
+        while (dis.read() != -1) {
+        }
+        String checksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
         dis.close();
         // expected checksum was calculated thanks to md5sum after a wget of the file
         Assert.assertEquals("5cb51272a80331a4560565bbd33a0fe5", checksum);
@@ -92,13 +97,14 @@ public class DownloadUtilsTests {
     @Test
     public void testDownloadWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
-        Authenticator auth=DownloadUtils.getAuthenticator("svissier", "s1Abl99o2!");
+        Authenticator auth = DownloadUtils.getAuthenticator("svissier", "s1Abl99o2!");
         Authenticator.setDefault(auth);
-        Proxy proxy=new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is =DownloadUtils.downloadThroughProxy(source, proxy);
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
+        InputStream is = DownloadUtils.downloadThroughProxy(source, proxy);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
-        while(dis.read()!=-1) {}
-        String checksum=ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
+        while (dis.read() != -1) {
+        }
+        String checksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
         dis.close();
         // expected checksum was calculated thanks to md5sum after a wget of the file
         Assert.assertEquals("464530a4e23f4f831eeabf9678c43bdf", checksum);

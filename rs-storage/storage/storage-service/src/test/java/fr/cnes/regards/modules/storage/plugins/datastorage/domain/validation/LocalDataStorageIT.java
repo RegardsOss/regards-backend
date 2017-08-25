@@ -24,6 +24,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -34,8 +35,9 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.plugins.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugins.datastorage.impl.LocalDataStorage;
+import fr.cnes.regards.modules.storage.domain.MockingResourceServiceConfiguration;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.LocalDataStorage;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
@@ -76,7 +78,8 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation)).getParameters();
+                              gson.toJson(baseStorageLocation))
+                .getParameters();
         //new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
@@ -89,7 +92,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     public void testStore() throws ModuleException, IOException {
         AIP aip = getAipFromFile();
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
-        aip=storagePlugin.storeMetadata(aip);
+        aip = storagePlugin.storeMetadata(aip);
         //just to be sure checksum is correct, lets compare the given checksum by our algorithm to one from a 3rd party(md5sum)
         Assert.assertEquals("db92b88b61f5e0fb49ee6f76c79a4689", aip.getChecksum());
     }
