@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDt
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
@@ -173,8 +174,8 @@ public class BackendForFrontendTestUtils {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "conf0");
-
-        PLUGIN_SERVICE_DTO_A = PluginServiceDto.fromPluginConfiguration(pluginConfiguration);
+        PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
+        PLUGIN_SERVICE_DTO_A = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
     }
 
     /**
@@ -186,8 +187,8 @@ public class BackendForFrontendTestUtils {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "conf1");
-
-        PLUGIN_SERVICE_DTO_B = PluginServiceDto.fromPluginConfiguration(pluginConfiguration);
+        PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
+        PLUGIN_SERVICE_DTO_B = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
     }
 
     /**
