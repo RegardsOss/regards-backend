@@ -290,7 +290,7 @@ public class SearchController {
         try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM
                 .apply(pEntities.getBody().get("content").getAsJsonArray())) {
             // Enable system call as follow (thread safe action)
-            FeignSecurityManager.asSystem();
+            //            FeignSecurityManager.asSystem();
             // @formatter:off
             elements
                 .map(JsonElement::getAsJsonObject)
@@ -300,7 +300,7 @@ public class SearchController {
             // @formatter:on
         } finally {
             // Disable system call if necessary after client request(s)
-            FeignSecurityManager.reset();
+            //            FeignSecurityManager.reset();
         }
     }
 
@@ -318,7 +318,9 @@ public class SearchController {
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
             .map(UniformResourceName::toString)
             .distinct()
+            .peek(unused -> FeignSecurityManager.asSystem())
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
+            .peek(unused -> FeignSecurityManager.reset())
             .map(ResponseEntity::getBody)
             .flatMap(List::stream)
             .collect(Collectors.toList());
