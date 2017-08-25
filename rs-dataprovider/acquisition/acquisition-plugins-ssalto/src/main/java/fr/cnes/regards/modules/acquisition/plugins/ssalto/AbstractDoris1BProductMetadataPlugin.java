@@ -25,7 +25,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ssalto.domain.data.descriptor.DataObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
+
+
 
 public abstract class AbstractDoris1BProductMetadataPlugin extends GenericProductMetadataPlugin implements
         IDoris1BPlugin {

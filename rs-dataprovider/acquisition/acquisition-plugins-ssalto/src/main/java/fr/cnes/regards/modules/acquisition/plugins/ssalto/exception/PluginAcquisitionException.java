@@ -27,26 +27,27 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  */
 public class PluginAcquisitionException extends ModuleException {
 
-    private static final long serialVersionUID = 1L;
 
-    public PluginAcquisitionException(Throwable pException) {
-        super(pException);
+    private static final long serialVersionUID = 7372056662519640802L;
+
+    public PluginAcquisitionException(Throwable exception) {
+        super(exception);
     }
 
-    public PluginAcquisitionException(ModuleException pException) {
-        super(pException);
+    public PluginAcquisitionException(ModuleException exception) {
+        super(exception);
     }
 
-    public PluginAcquisitionException(String pMessage, Throwable pException) {
-        super(pMessage, pException);
+    public PluginAcquisitionException(String message, Throwable exception) {
+        super(message, exception);
     }
 
-    public PluginAcquisitionException(String pMessage, ModuleException pException) {
-        super(pMessage, pException);
+    public PluginAcquisitionException(String message, ModuleException exception) {
+        super(message, exception);
     }
 
-    public PluginAcquisitionException(String pMessage) {
-        super(pMessage);
+    public PluginAcquisitionException(String message) {
+        super(message);
     }
 
 }

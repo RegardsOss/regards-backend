@@ -306,7 +306,7 @@ public class DateFormatter {
     protected static Format getFormat(String formatId) {
         final Format result = formats_.get(formatId);
         if (result == null) {
-            final String msg = String.format("Unknow date formatter {}", formatId);
+            final String msg = String.format("Unknow date formatter '%s'", formatId);
             LOGGER.error(msg);
             // reaching here is a programming error because one should use isKnownFormat(pFormatId)
             // to ensure that the format identifier is known

@@ -220,8 +220,8 @@ public class CompressionFacade {
                 if (LOGGER.isInfoEnabled()) {
                     Long size = new Long(tmpFile.length() / BYTES_IN_KILOBYTE);
                     LOGGER.info(String.format(
-                                              "The size of the file {} is {} ko, it exceeds the maximum size for the compression",
-                                              tmpFile.getAbsoluteFile(), size));
+                                              "The size of the file '%s' is %d ko, it exceeds the maximum size for the compression",
+                                              tmpFile.getAbsoluteFile().getName(), size));
                 }
             }
         }
@@ -237,7 +237,7 @@ public class CompressionFacade {
                     Long sizeData = new Long(sizeTotal);
                     Long sizeMax = new Long(maxArchiveSize_);
                     LOGGER.info(String.format(
-                                              "The total file size to compress {} does not exceed the archive max size {}, then compress in one file",
+                                              "The total file size to compress %d does not exceed the archive max size %d, then compress in one file",
                                               sizeData, sizeMax));
                 }
             }
@@ -246,7 +246,7 @@ public class CompressionFacade {
                 Long sizeData = new Long(sizeTotal);
                 Long sizeMax = new Long(maxArchiveSize_);
                 LOGGER.info(String.format(
-                                          "The size of data is {} ko, it exceeds the maximum size {} ko for the compression, the compression is splitted in a multiple file.",
+                                          "The size of data is %d ko, it exceeds the maximum size %d ko for the compression, the compression is splitted in a multiple file.",
                                           sizeData, sizeMax));
             }
             /*
@@ -352,7 +352,7 @@ public class CompressionFacade {
 
         if (!pInputFile.isFile()) {
             throw new FileAlreadyExistException(
-                    String.format("{} must be a file (not a directory)", pInputFile.getAbsolutePath()));
+                    String.format("'%s' must be a file (not a directory)", pInputFile.getName()));
         }
 
         strategy_.setCompressedFile(pInputFile);
@@ -363,7 +363,7 @@ public class CompressionFacade {
         validateFile(pOutputDirectory);
         if (!pOutputDirectory.isDirectory()) {
             throw new FileAlreadyExistException(
-                    String.format("{} must be a directory (not a file)", pOutputDirectory.getAbsolutePath()));
+                    String.format("'%s' must be a directory (not a file)", pOutputDirectory.getName()));
         }
 
         // initialise concrete compression
@@ -399,7 +399,7 @@ public class CompressionFacade {
         //            strategy_.setCompression(new ZCompression());
         //        }
         else {
-            throw new CompressionException(String.format("The compression mode {} is not defined", pMode));
+            throw new CompressionException(String.format("The compression mode %s is not defined", pMode.toString()));
         }
     }
 
@@ -430,7 +430,7 @@ public class CompressionFacade {
 
                 if (!tmpFile.isFile()) {
                     throw new FileAlreadyExistException(
-                            String.format("{} must be a file (not a directory)", tmpFile.getAbsolutePath()));
+                            String.format("'%s' must be a file (not a directory)", tmpFile.getName()));
                 }
                 retour.add(tmpFile);
             }
@@ -464,11 +464,11 @@ public class CompressionFacade {
 
         if (!pInputDirectory.isDirectory()) {
             throw new FileAlreadyExistException(
-                    String.format("{} must be a directory (not a file)", pInputDirectory.getAbsolutePath()));
+                    String.format("'%s' must be a directory (not a file)", pInputDirectory.getName()));
         }
 
         File[] tabFile = pInputDirectory.listFiles();
-        // If the curent directory is empty, then add the directory to the list of file to compress
+        // If the current directory is empty, then add the directory to the list of file to compress
         if (tabFile.length == 0) {
             retour.add(pInputDirectory);
         } else {
@@ -501,13 +501,12 @@ public class CompressionFacade {
         }
 
         if (!pFile.exists()) {
-            throw new CompressionException(
-                    String.format("The file or directory {} does not exist", pFile.getAbsoluteFile()));
+            throw new CompressionException(String.format("The file or directory '%s' does not exist", pFile.getName()));
         }
 
         if (!pFile.canRead()) {
             throw new CompressionException(
-                    String.format("The file or directory {} is not readable", pFile.getAbsoluteFile()));
+                    String.format("The file or directory '%s' is not readable", pFile.getName()));
         }
     }
 

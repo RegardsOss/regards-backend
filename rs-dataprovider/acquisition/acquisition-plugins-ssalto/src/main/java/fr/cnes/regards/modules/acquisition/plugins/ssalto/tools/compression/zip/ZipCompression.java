@@ -96,7 +96,8 @@ public class ZipCompression extends AbstractRunnableCompression {
         }
 
         if (compressedFile.exists()) {
-            throw new FileAlreadyExistException(String.format("File {0} already exist", compressedFile));
+            throw new FileAlreadyExistException(
+                    String.format("File '%s' already exists", compressedFile.getAbsoluteFile().getName()));
         }
 
         // Calculate full size
@@ -132,8 +133,9 @@ public class ZipCompression extends AbstractRunnableCompression {
                 // List Files in list pFilesList and add them
                 for (File fileNow : listWithoutDouble) {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(String.format("Adding {} file to {} file", pathToRootDir(fileNow, pRootDirectory),
-                                                   compressedFile.getAbsoluteFile()));
+                        LOGGER.debug(String.format("Adding '%s' file to '%s' file",
+                                                   pathToRootDir(fileNow, pRootDirectory),
+                                                   compressedFile.getAbsoluteFile().getName()));
                     }
 
                     ZipArchiveEntry entry;
@@ -180,12 +182,12 @@ public class ZipCompression extends AbstractRunnableCompression {
             }
         } catch (IOException ioE) {
             LOGGER.error(ioE.getMessage());
-            throw new CompressionException(String.format("IO error during {0} compression", CompressionTypeEnum.ZIP),
-                    ioE);
+            throw new CompressionException(
+                    String.format("IO error during %s compression", CompressionTypeEnum.ZIP.toString()), ioE);
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("The file {0} is done", compressedFile.getAbsolutePath()));
+            LOGGER.debug(String.format("The file '%s' is done", compressedFile.getName()));
         }
 
         pCompressManager.setCompressedFile(compressedFile);
@@ -287,7 +289,7 @@ public class ZipCompression extends AbstractRunnableCompression {
 
         // pCompressedFile must have .zip extension
         if (!pCompressedFile.getName().toLowerCase().endsWith(ZIP_EXTENSION)) {
-            throw new CompressionException(String.format("Extension must be {0}", ZIP_EXTENSION));
+            throw new CompressionException(String.format("Extension must be '%s'", ZIP_EXTENSION));
         }
 
         try {
@@ -315,7 +317,7 @@ public class ZipCompression extends AbstractRunnableCompression {
 
                     if (newFile.exists()) {
                         throw new FileAlreadyExistException(
-                                String.format("File {0} already exists", newFile.getName()));
+                                String.format("File '%s' already exists", newFile.getName()));
                     }
 
                     if (newFile.getParentFile() != null && !newFile.getParentFile().exists()) {
@@ -335,8 +337,8 @@ public class ZipCompression extends AbstractRunnableCompression {
 
             zis.close();
         } catch (IOException ioE) {
-            throw new CompressionException(String.format("IO error during {0} uncompression", CompressionTypeEnum.ZIP),
-                    ioE);
+            throw new CompressionException(
+                    String.format("IO error during %s uncompression", CompressionTypeEnum.ZIP.toString()), ioE);
         }
     }
 

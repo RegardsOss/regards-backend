@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -38,13 +39,13 @@ import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
-import ssalto.domain.SsaltoDomainException;
 
 /**
  * plugin specifiques au donnees jason1 Gpsp10Flot les noms des fichiers ont deux formes bien distinctes et ne peuvent
  * pas etre resolues juste par le fichier de configuration. L' attribut traite specifiquement est le TIME_PERIOD
  * 
- * @since 1.3
+ * @author Christophe Mertz
+ * 
  */
 
 public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadataPlugin {
@@ -57,13 +58,10 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
 
     private static final String STOP_DATE = "STOP_DATE";
 
-    protected Pattern patternd_;
+    protected Pattern patternd;
 
-    protected Pattern patternp_;
+    protected Pattern patternp;
 
-    /**
-     * @since 1.3
-     */
     public Jason1Gpsp10FlotProductMetadataPlugin() {
         super();
     }
@@ -72,15 +70,14 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
      * 
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason1ProductMetadataPlugin#init(java.lang.String)
-     * @since 1.3
      */
     @Override
-    public void init(String pDataSetName) throws SsaltoDomainException {
+    public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
-        patternd_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
-        patternp_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
+        patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
+        patternp = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }
 
     /**
@@ -88,7 +85,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * 
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason1ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
      *      java.util.Map)
-     * @since 1.3
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -101,7 +97,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     private void registerTimePeriodAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -133,7 +128,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         long longValue = 0;
@@ -156,7 +150,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         long longValue = 0;
@@ -179,7 +172,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();

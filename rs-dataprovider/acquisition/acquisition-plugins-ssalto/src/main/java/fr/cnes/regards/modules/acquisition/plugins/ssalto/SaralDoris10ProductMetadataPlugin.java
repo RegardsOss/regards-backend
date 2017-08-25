@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -40,16 +41,13 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
-import ssalto.domain.SsaltoDomainException;
-
 
 /**
  * plugin specifiques au donnees saral doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
  * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
  * FILE_CREATION_DATE.
  * 
- * @author CS
- * @since 1.3
+ * @author Christophe Mertz
  */
 
 public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugin {
@@ -66,17 +64,14 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
 
     private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
-    protected Pattern patternd_;
+    protected Pattern patternd;
 
-    protected Pattern patternp_;
+    protected Pattern patternp;
 
-    protected Pattern patternh_;
+    protected Pattern patternh;
 
-    protected Pattern patternl_;
+    protected Pattern patternl;
 
-    /**
-     * @since 1.3
-     */
     public SaralDoris10ProductMetadataPlugin() {
         super();
     }
@@ -85,18 +80,17 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
      * 
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.SaralProductMetadataPlugin#init(java.lang.String)
-     * @since 1.2
      */
     @Override
-    public void init(String pDataSetName) throws SsaltoDomainException {
+    public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
-        patternd_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
-        patternp_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
-        patternh_ = Pattern.compile(prefix + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$");
-        patternl_ = Pattern.compile(prefix
-                + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
+        patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
+        patternp = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
+        patternh = Pattern.compile(prefix + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$");
+        patternl = Pattern
+                .compile(prefix + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }
 
     /**
@@ -105,7 +99,6 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * 
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.SaralProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
      *      java.util.Map)
-     * @since 1.3
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -130,8 +123,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                                                                            getStopDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap_.put(STOP_DATE, stopDateAttribute.getValueList());
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + TIME_PERIOD;
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
@@ -145,42 +137,34 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
-            Matcher matcherH = patternh_.matcher(fileName);
-            Matcher matcherL = patternl_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     String dateStr = matcherD.group(1);
                     Date date = format.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(2);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else if (matcherH.matches()) {
+                    String dateStr = matcherH.group(3);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else if (matcherL.matches()) {
+                    String dateStr = matcherL.group(4);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(2);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else
-                        if (matcherH.matches()) {
-                            String dateStr = matcherH.group(3);
-                            Date date = format.parse(dateStr);
-                            valueList.add(date);
-                        }
-                        else
-                            if (matcherL.matches()) {
-                                String dateStr = matcherL.group(4);
-                                Date date = format.parse(dateStr);
-                                valueList.add(date);
-                            }
-                            else {
-                                String msg = "filename does not match";
-                                LOGGER.error(msg);
-                                throw new PluginAcquisitionException(msg);
-                            }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -193,10 +177,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
-            Matcher matcherH = patternh_.matcher(fileName);
-            Matcher matcherL = patternl_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     @SuppressWarnings("unchecked")
@@ -204,35 +188,27 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                     Date date = startDateValueList.get(i);
                     long newTime = date.getTime() + 86400000;
                     valueList.add(new Date(newTime));
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(3);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else if (matcherH.matches()) {
+                    @SuppressWarnings("unchecked")
+                    List<Date> startDateValueList = (List<Date>) attributeValueMap_.get(START_DATE);
+                    Date date = startDateValueList.get(i);
+                    long newTime = date.getTime() + 86400000;
+                    valueList.add(new Date(newTime));
+                } else if (matcherL.matches()) {
+                    String dateStr = matcherL.group(5);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(3);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else
-                        if (matcherH.matches()) {
-                            @SuppressWarnings("unchecked")
-                            List<Date> startDateValueList = (List<Date>) attributeValueMap_.get(START_DATE);
-                            Date date = startDateValueList.get(i);
-                            long newTime = date.getTime() + 86400000;
-                            valueList.add(new Date(newTime));
-                        }
-                        else
-                            if (matcherL.matches()) {
-                                String dateStr = matcherL.group(5);
-                                Date date = format.parse(dateStr);
-                                valueList.add(date);
-                            }
-                            else {
-                                String msg = "filename does not match";
-                                LOGGER.error(msg);
-                                throw new PluginAcquisitionException(msg);
-                            }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
             i++;
@@ -246,10 +222,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             String fileName = file.getName();
             SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             SimpleDateFormat fileFormat = new SimpleDateFormat("yyyyMMdd HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
-            Matcher matcherH = patternh_.matcher(fileName);
-            Matcher matcherL = patternl_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     // go to search into file using RINExFileHelper
@@ -258,36 +234,28 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                     String dateStr = helper.getValue(2, cdPattern, 1);
                     Date date = fileFormat.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(1);
+                    Date date = fileNameFormat.parse(dateStr);
+                    valueList.add(date);
+                } else if (matcherH.matches()) {
+                    // go to search into file using RINExFileHelper
+                    RinexFileHelper helper = new RinexFileHelper(file);
+                    Pattern cdPattern = CREATION_DATE_PATTERN;
+                    String dateStr = helper.getValue(2, cdPattern, 1);
+                    Date date = fileFormat.parse(dateStr);
+                    valueList.add(date);
+                } else if (matcherL.matches()) {
+                    String dateStr = matcherL.group(3);
+                    Date date = fileNameFormat.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(1);
-                        Date date = fileNameFormat.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else
-                        if (matcherH.matches()) {
-                            // go to search into file using RINExFileHelper
-                            RinexFileHelper helper = new RinexFileHelper(file);
-                            Pattern cdPattern = CREATION_DATE_PATTERN;
-                            String dateStr = helper.getValue(2, cdPattern, 1);
-                            Date date = fileFormat.parse(dateStr);
-                            valueList.add(date);
-                        }
-                        else
-                            if (matcherL.matches()) {
-                                String dateStr = matcherL.group(3);
-                                Date date = fileNameFormat.parse(dateStr);
-                                valueList.add(date);
-                            }
-                            else {
-                                String msg = "filename does not match";
-                                LOGGER.error(msg);
-                                throw new PluginAcquisitionException(msg);
-                            }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -297,15 +265,14 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     private void registerFileCreationDateAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
+
         try {
-            Attribute fileCreationDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME,
-                                                                                   CREATION_DATE,
-                                                                                   getCreationDateValue(pFileMap
-                                                                                           .keySet()));
+            Attribute fileCreationDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
+                                     getCreationDateValue(pFileMap.keySet()));
             registerAttribute(CREATION_DATE, pAttributeMap, fileCreationDateAttribute);
             attributeValueMap_.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
             throw new PluginAcquisitionException(msg, e);
         }

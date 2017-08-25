@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -39,7 +40,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
-import ssalto.domain.SsaltoDomainException;
 
 public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadataPlugin {
 
@@ -56,9 +56,9 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
 
     private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
-    protected Pattern patternd_;
+    protected Pattern patternd;
 
-    protected Pattern patternp_;
+    protected Pattern patternp;
 
     public Cryosat2Doris10ProductMetadataPlugin() {
         super();
@@ -68,13 +68,12 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
      * 
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#init(java.lang.String)
-     * @since 1.3
      */
     @Override
-    public void init(String pDataSetName) throws SsaltoDomainException {
+    public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
-        patternd_ = Pattern.compile(".*[A-Z]([0-9]{8}_[0-9]{6})$");
-        patternp_ = Pattern.compile(".*[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
+        patternd = Pattern.compile(".*[A-Z]([0-9]{8}_[0-9]{6})$");
+        patternp = Pattern.compile(".*[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }
 
     /**
@@ -136,8 +135,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     String dateStr = matcherD.group(1);
@@ -177,8 +176,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     @SuppressWarnings("unchecked")
@@ -221,8 +220,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
             String fileName = file.getName();
             SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             SimpleDateFormat fileFormat = new SimpleDateFormat("yyyyMMdd HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     // go to search into file using RINExFileHelper

@@ -23,31 +23,23 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ssalto.controlers.plugins.decl.IPostAcquisitionPlugin;
-import ssalto.domain.data.SsaltoFile;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.plugins.IPostProcessSIP;
 
 /**
- * Class PostAcquisitionPlugin2Impl
  * 
- * @author CS
- * @since 1.1
+ * @author Christophe Mertz
+ *
  */
-public class PostAcquisitionPlugin2Impl implements IPostAcquisitionPlugin {
+public class PostAcquisitionPlugin2Impl implements IPostProcessSIP {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionPlugin2Impl.class);
 
-    /**
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.IPostAcquisitionPlugin#runPlugin(java.util.List, java.lang.String)
-     * @since 1.1
-     */
     @Override
-    public void runPlugin(List<SsaltoFile> pAcquiredFiles, String pDescriptorFileDir) {
-
-        // Fake method
-        // Just log an info message
+    public void runPlugin(List<AcquisitionFile> acquiredFiles, String sipDirectory) throws ModuleException {
         LOGGER.info("Execution of post acquisition plugin 2 OK");
+
     }
 
 }

@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -45,8 +46,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
  * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
  * FILE_CREATION_DATE.
  *
- * @author CS
- * @since 1.2
+ * @author Christophe Mertz
  */
 
 public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericProductMetadataPlugin {
@@ -63,13 +63,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
 
     private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
-    protected Pattern patternd_;
+    protected Pattern patternd;
 
-    protected Pattern patternp_;
+    protected Pattern patternp;
 
-    /**
-     * @since 1.2
-     */
     public AbstractJasonDoris10ProductMetadataPlugin() {
         super();
     }
@@ -78,15 +75,14 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
      *
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#init(java.lang.String)
-     * @since 1.2
      */
     @Override
-    public void init(String pDataSetName) throws SsaltoDomainException {
+    public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
-        patternd_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
-        patternp_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
+        patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
+        patternp = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }
 
     /**
@@ -94,7 +90,6 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      *
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
      *      java.util.Map)
-     * @since 1.2
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -108,7 +103,6 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     private void registerTimePeriodAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -116,9 +110,9 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
         CompositeAttribute timePeriodAttribute = new CompositeAttribute();
         timePeriodAttribute.setName(TIME_PERIOD);
         try {
-            fr.cnes.regards.modules.acquisition.domain.model.Attribute startDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME,
-                                                                            START_DATE,
-                                                                            getStartDateValue(pFileMap.keySet()));
+            fr.cnes.regards.modules.acquisition.domain.model.Attribute startDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, START_DATE,
+                                     getStartDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(startDateAttribute);
             attributeValueMap_.put(START_DATE, startDateAttribute.getValueList());
 
@@ -126,8 +120,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
                                                                            getStopDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap_.put(STOP_DATE, stopDateAttribute.getValueList());
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + TIME_PERIOD;
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
@@ -141,35 +134,30 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     String dateStr = matcherD.group(1);
                     Date date = format.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(2);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(2);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -181,7 +169,6 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -189,8 +176,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     @SuppressWarnings("unchecked")
@@ -198,21 +185,17 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
                     Date date = startDateValueList.get(i);
                     long newTime = date.getTime() + 86400000;
                     valueList.add(new Date(newTime));
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(3);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(3);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
             i++;
@@ -225,7 +208,6 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -233,8 +215,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
             String fileName = file.getName();
             SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             SimpleDateFormat fileFormat = new SimpleDateFormat("yyyyMMdd HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     // go to search into file using RINExFileHelper
@@ -243,21 +225,17 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
                     String dateStr = helper.getValue(2, cdPattern, 1);
                     Date date = fileFormat.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(1);
+                    Date date = fileNameFormat.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(1);
-                        Date date = fileNameFormat.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -269,20 +247,17 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     private void registerFileCreationDateAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
         try {
-            Attribute fileCreationDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME,
-                                                                                   CREATION_DATE,
-                                                                                   getCreationDateValue(pFileMap
-                                                                                           .keySet()));
+            Attribute fileCreationDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
+                                     getCreationDateValue(pFileMap.keySet()));
             registerAttribute(CREATION_DATE, pAttributeMap, fileCreationDateAttribute);
             attributeValueMap_.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
             throw new PluginAcquisitionException(msg, e);
         }

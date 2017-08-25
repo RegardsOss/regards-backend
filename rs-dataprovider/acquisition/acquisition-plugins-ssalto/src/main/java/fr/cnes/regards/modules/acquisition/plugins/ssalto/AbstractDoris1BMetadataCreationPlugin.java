@@ -23,9 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import sipad.domain.transformer.TransformerTypeEnum;
-import ssalto.domain.SsaltoDomainException;
-import ssalto.domain.data.descriptor.DataStorageObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
 
 public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCreationPlugin implements IDoris1BPlugin {
 
@@ -57,8 +55,7 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
         if ((prefixMap_ != null) && prefixMap_.containsKey(pDataSetId)) {
             String prefix = prefixMap_.get(pDataSetId);
             dataObjectIdentifier = prefix + dataObjectIdentifier;
-        }
-        else {
+        } else {
             throw new ModuleException("Prefix for " + pDataSetId + "does not exist!");
         }
 
@@ -66,16 +63,15 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
         // FILE_SIZE
         if (pSsaltoFile.length() < 1024) {
             dataStorageObject.setFileSize(new Long(1));
-        }
-        else {
+        } else {
             dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
         setOnlinePath(dataStorageObject, pSsaltoFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
-//        // TRANSFORMATION_SO_DO
-//        dataStorageObject.setTransformer((TransformerTypeEnum) null);
+        //        // TRANSFORMATION_SO_DO
+        //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
         return dataStorageObject;
     }
 

@@ -34,7 +34,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.NetCdfFileHelper
  */
 public class CDFGlobalAttributeFinder extends CdfFileFinder {
 
-    public List<Object> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    @Override
+    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
             throws PluginAcquisitionException {
         List<Object> valueList = new ArrayList<>();
         for (File file : buildFileList(pFileMap)) {
@@ -51,4 +52,5 @@ public class CDFGlobalAttributeFinder extends CdfFileFinder {
     public String toString() {
         return super.toString();
     }
+
 }

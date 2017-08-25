@@ -33,7 +33,6 @@ import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
-
 /**
  * 
  * @author Christophe Mertz
@@ -45,26 +44,18 @@ public class NetCdfFileHelper {
 
     private NetcdfFile netCfdFile_;
 
-    /**
-     * 
-     * @since 1.2
-     * 
-     */
     public NetCdfFileHelper(File pNetCdfFile) {
         try {
             netCfdFile_ = NetcdfFile.open(pNetCdfFile.getAbsolutePath());
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             LOGGER.error("trying to open " + pNetCdfFile.getAbsolutePath(), ioe);
         }
-        // TODO Auto-generated constructor stub
     }
 
     public void release() {
         try {
             netCfdFile_.close();
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             LOGGER.error("trying to close " + netCfdFile_.getLocation(), ioe);
         }
     }
@@ -86,7 +77,6 @@ public class NetCdfFileHelper {
      * @param pExceptionList
      *            une liste d'exception sur les noms des variables.
      * @return
-     * @since 1.2
      */
     public List<String> getAllVariableAttributeValue(String pAttributeName, List<String> pExceptionList) {
         if (pExceptionList == null) {
@@ -97,8 +87,7 @@ public class NetCdfFileHelper {
             if (!pExceptionList.contains(element.getShortName())) {
                 Attribute att = element.findAttribute(pAttributeName);
                 resultList.add(att.getStringValue());
-            }
-            else {
+            } else {
                 LOGGER.debug("variable " + element.getShortName() + " skipped because present in exception list");
             }
         }
@@ -113,8 +102,6 @@ public class NetCdfFileHelper {
      * @param pValueType
      *            le type de valeur a recuperer.
      * @return
-     * @since 1.2.1
-     * @FA SIPNG-FA-0399-CN : creation
      */
     public List<Object> getVariableValues(String pVariableName, AttributeTypeEnum pValueType) {
         Variable longitude = netCfdFile_.findVariable(pVariableName);
@@ -125,24 +112,22 @@ public class NetCdfFileHelper {
         }
         try {
             Array longArray = longitude.read();
-            LOGGER.debug(longArray.getElementType());
+            LOGGER.debug(longArray.getElementType().getName());
             IndexIterator iter = longArray.getIndexIterator();
             for (; iter.hasNext();) {
-                if (pValueType.equals(AttributeTypeEnum.TYPE_INTEGER) || pValueType.equals(AttributeTypeEnum.TYPE_REAL)) {
+                if (pValueType.equals(AttributeTypeEnum.TYPE_INTEGER)
+                        || pValueType.equals(AttributeTypeEnum.TYPE_REAL)) {
                     int value = iter.getIntNext();
                     valueList.add(new Double(value * scale));
-                }
-                else {
+                } else {
                     Object value = iter.getObjectNext();
                     valueList.add(value);
                 }
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             LOGGER.error("", e);
         }
         return valueList;
-
     }
 
 }

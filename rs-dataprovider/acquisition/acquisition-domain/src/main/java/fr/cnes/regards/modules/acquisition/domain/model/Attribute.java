@@ -35,55 +35,45 @@ public abstract class Attribute {
 
     /**
      * Liste de valeurs de l'attribut.
-     * 
-     * @since 1.0
      */
-    protected List<Object> valueList_ = null;
+    protected List<Object> valueList = null;
 
     /**
      * Meta attribut definissant l'attribut
-     * 
-     * @since 1.0
      */
-    protected MetaAttribute metaAttribute_ = null;
+    protected MetaAttribute metaAttribute = null;
 
     /**
      * L'instance de l'attribut compose dont fait partie l'attribut, il est null si l'attribut ne fait partie d'aucun
      * attribut compose
-     * 
-     * @since 3.0
      */
-    protected CompositeAttribute compositeAttribute_ = null;
+    protected CompositeAttribute compositeAttribute = null;
 
     /**
      * Constructeur par défaut
-     * 
-     * @since 1.0
      */
     protected Attribute(MetaAttribute pMetaAttribute) {
         super();
-        metaAttribute_ = pMetaAttribute;
-        valueList_ = new ArrayList<>();
+        metaAttribute = pMetaAttribute;
+        valueList = new ArrayList<>();
     }
 
     /**
      * Cette methode existe uniquement pour pouvoir facilement acceder au type de l'attribut.
      * 
      * @return Le type de l'attribut.
-     * @since 1.0
      */
     public AttributeTypeEnum getType() {
-        return metaAttribute_.getValueType();
+        return metaAttribute.getValueType();
     }
 
     /**
      * Retourne la liste de valeurs de l'attribut.
      * 
      * @return Une List
-     * @since 1.0
      */
     public List<Object> getValueList() {
-        return valueList_;
+        return valueList;
     }
 
     /**
@@ -91,28 +81,24 @@ public abstract class Attribute {
      * 
      * @param pValue
      *            La nouvelle valeur de l'attribut.
-     * @since 1.0
-     * @DM SIPNG-DM-012-CN : changement de visibilite
      */
     public void addValue(Object pValue) {
-        valueList_.add(pValue);
+        valueList.add(pValue);
     }
 
     /**
      * @return le méta attribut
-     * @since 5.1
      */
     public MetaAttribute getMetaAttribute() {
-        return metaAttribute_;
+        return metaAttribute;
     }
 
     /**
      * @param positionne
      *            le méta attribut
-     * @since 5.1
      */
     public void setMetaAttribute(MetaAttribute pAttribute) {
-        metaAttribute_ = pAttribute;
+        metaAttribute = pAttribute;
     }
 
     /**
@@ -121,12 +107,11 @@ public abstract class Attribute {
      * 
      * @param pString
      *            Le chemin xml contenant le nom de l'attribut non-standard.
-     * @since 1.0
      */
     public void setMetaAttribute(String pString) {
         // processing path "XXXXX/XXXXX/XXXXX/FINAL" to get only final name "FINAL"
         File file = new File(pString);
-        metaAttribute_.setName(file.getName());
+        metaAttribute.setName(file.getName());
     }
 
     /**
@@ -135,18 +120,17 @@ public abstract class Attribute {
      * 
      * @param pString
      *            Le nom du meta-attribut.
-     * @since 1.0
      */
     public void setMetaAttributeName(String pString) {
-        metaAttribute_.setName(pString);
+        metaAttribute.setName(pString);
     }
 
     public CompositeAttribute getCompositeAttribute() {
-        return this.compositeAttribute_;
+        return this.compositeAttribute;
     }
 
     public void setCompositeAttribute(CompositeAttribute pCompositeAttribute) {
-        this.compositeAttribute_ = pCompositeAttribute;
+        this.compositeAttribute = pCompositeAttribute;
     }
 
     /**
@@ -154,13 +138,12 @@ public abstract class Attribute {
      * Utilise pour les ajout aux hashmaps.
      * 
      * @return une cle
-     * @since 3.0
      */
     public String getAttributeKey() {
-        String key = metaAttribute_.getName();
-        if (compositeAttribute_ != null) {
+        String key = metaAttribute.getName();
+        if (compositeAttribute != null) {
             // this is unique key as meta-attribut names doesn't contain space char
-            key = key + " " + compositeAttribute_.getCompAttId();
+            key = key + " " + compositeAttribute.getCompAttId();
         }
         return key;
     }
@@ -169,18 +152,17 @@ public abstract class Attribute {
      * Ecrit le contenu de l'attribut Réservé au mode debug
      * 
      * @return une representation de l'attribut
-     * @since 1.0
      */
     @Override
     public String toString() {
         StringBuffer localBuffer = new StringBuffer();
         localBuffer.append("Attribute description:");
-        if (metaAttribute_ != null) {
-            localBuffer.append(" label: " + metaAttribute_.getName());
+        if (metaAttribute != null) {
+            localBuffer.append(" label: " + metaAttribute.getName());
         }
         localBuffer.append(" value(s):");
-        if ((valueList_ != null) && !valueList_.isEmpty()) {
-            for (Object o : valueList_) {
+        if ((valueList != null) && !valueList.isEmpty()) {
+            for (Object o : valueList) {
                 localBuffer.append(" " + o);
             }
         }
@@ -195,10 +177,9 @@ public abstract class Attribute {
      * 
      * @param pValueList
      *            the valueList to set
-     * @since 5.2
      */
     @SuppressWarnings("unchecked")
     public void setValueList(List<?> pValueList) {
-        valueList_ = (List<Object>) pValueList;
+        valueList = (List<Object>) pValueList;
     }
 }

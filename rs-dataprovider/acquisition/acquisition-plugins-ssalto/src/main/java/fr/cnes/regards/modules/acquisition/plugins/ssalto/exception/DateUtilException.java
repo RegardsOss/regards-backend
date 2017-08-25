@@ -22,43 +22,20 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 public class DateUtilException extends ModuleException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 216102380086780043L;
 
-    /**
-     * Constructor
-     * 
-     * @param pException
-     *            l'exception à propager
-     */
-    public DateUtilException(Throwable pException) {
-        super(pException);
+    public DateUtilException(Throwable exception) {
+        super(exception);
 
     }
 
-    /**
-     * Constructor
-     * 
-     * @param pMessage
-     *            le message de l'erreur
-     * @param pException
-     *            l'exception
-     */
-    public DateUtilException(String pMessage, Throwable pException) {
-        super(pMessage, pException);
+     public DateUtilException(String message, Throwable exception) {
+        super(message, exception);
 
     }
 
-    /**
-     * Constructor
-     * 
-     * @param pMessage
-     *            le message de l'erreur
-     */
-    public DateUtilException(String pMessage) {
-        super(pMessage);
+    public DateUtilException(String message) {
+        super(message);
 
     }
 

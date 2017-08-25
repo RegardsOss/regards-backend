@@ -19,8 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
 /**
- * classe abstraite des finder de type dataFileFinder qui s'occupent
- * des fichiers au format netCDF.
+ * classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF.
  * 
  * @author Christophe Mertz
  *
@@ -28,7 +27,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 public abstract class CdfFileFinder extends DataFileFinder {
 
     /**
-     * nom de l'attribut ( CDF) a rechercher dans le fichier
+     * nom de l'attribut (CDF) a rechercher dans le fichier
      */
     public String attributeName;
 

@@ -23,17 +23,13 @@ import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 /**
  * Cette classe permet de gerer les attributs de type CLOB, et LONG_STRING
  * 
- * @author CS
- * @version 3.4
- * @since 3.4
+ * @author Christophe Mertz
  */
 
 public class ClobAttribute extends Attribute {
 
     /**
      * Constructeur.
-     * 
-     * @since 3.4
      */
     public ClobAttribute() {
         super(new MetaAttribute(AttributeTypeEnum.TYPE_LONG_STRING));

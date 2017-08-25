@@ -21,11 +21,6 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xml.serialize.OutputFormat;
@@ -33,15 +28,11 @@ import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.MultipleFileNameFinder;
-import sipad.domain.transformer.TransformerTypeEnum;
-import ssalto.controlers.data.descriptor.DescriptorFileControler;
-import ssalto.controlers.plugins.decl.ICreateFileMetadataPlugin;
-import ssalto.domain.SsaltoDomainException;
-import ssalto.domain.data.descriptor.DataStorageObjectDescriptionElement;
-import ssalto.domain.data.descriptor.DescriptorFile;
-import ssalto.domain.data.storage.LocalArchive;
 
 public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
 
@@ -50,45 +41,46 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
 
-    /**
-     * Instancie le filePattern et permet de determiner le repertoire de depot dans l'archive.
-     * 
-     * @see ssalto.domain.plugins.decl.ICreateFileMetadataPlugin#getArchiveDirectory(java.lang.String, java.lang.String)
-     * @since 1.2
-     */
-    @Override
-    public String getArchiveDirectory(String filePath, String pattern) {
-
-        Date day = Calendar.getInstance().getTime();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-        String year = sdf.format(day);
-        sdf = new SimpleDateFormat("MM");
-        String month = sdf.format(day);
-        sdf = new SimpleDateFormat("dd");
-        String cycle = sdf.format(day);
-
-        String result = pattern;
-        result = replacePattern("\\[YYYY\\]", year, result);
-        result = replacePattern("\\[MM\\]", month, result);
-        result = replacePattern("\\[CCC\\]", cycle, result);
-        return result;
-    }
-
-    /**
-     * Permet de traiter les patterns
-     * 
-     * @param pPattern
-     * @param pReplacement
-     * @param pResult
-     * @return
-     * @since 1.2
-     */
-    private String replacePattern(String pPattern, String pReplacement, String pResult) {
-
-        Pattern pattern = Pattern.compile(pPattern);
-        Matcher matcher = pattern.matcher(pResult);
-        return matcher.replaceAll(pReplacement);
-    }
+    // TODO CMZ à confirmer
+    //    /**
+    //     * Instancie le filePattern et permet de determiner le repertoire de depot dans l'archive.
+    //     * 
+    //     * @see ssalto.domain.plugins.decl.ICreateFileMetadataPlugin#getArchiveDirectory(java.lang.String, java.lang.String)
+    //     * @since 1.2
+    //     */
+    //    @Override
+    //    public String getArchiveDirectory(String filePath, String pattern) {
+    //
+    //        Date day = Calendar.getInstance().getTime();
+    //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+    //        String year = sdf.format(day);
+    //        sdf = new SimpleDateFormat("MM");
+    //        String month = sdf.format(day);
+    //        sdf = new SimpleDateFormat("dd");
+    //        String cycle = sdf.format(day);
+    //
+    //        String result = pattern;
+    //        result = replacePattern("\\[YYYY\\]", year, result);
+    //        result = replacePattern("\\[MM\\]", month, result);
+    //        result = replacePattern("\\[CCC\\]", cycle, result);
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Permet de traiter les patterns
+    //     * 
+    //     * @param pPattern
+    //     * @param pReplacement
+    //     * @param pResult
+    //     * @return
+    //     * @since 1.2
+    //     */
+    //    private String replacePattern(String pPattern, String pReplacement, String pResult) {
+    //
+    //        Pattern pattern = Pattern.compile(pPattern);
+    //        Matcher matcher = pattern.matcher(pResult);
+    //        return matcher.replaceAll(pReplacement);
+    //    }
 
     /**
      * Methode definissant un element xml de type DataStorageElement
@@ -97,7 +89,7 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
      * @DM SIPNG-DM-0047-CN : Creation : Ajout de pPRojectName et pDicoName
      */
     protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
-            String pDicoName, String pDataSetId) throws SsaltoDomainException {
+            String pDicoName, String pDataSetId) throws ModuleException {
 
         // Define storage object element
         DataStorageObjectDescriptionElement dataStorageObject = new DataStorageObjectDescriptionElement();
@@ -106,16 +98,20 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
         // FILE_SIZE
         if (pSsaltoFile.length() < 1024) {
             dataStorageObject.setFileSize(new Long(1));
-        }
-        else {
+        } else {
             dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
         }
+
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
-        setOnlinePath(dataStorageObject, pSsaltoFile);
+        // TODO CMZ à confirmer
+        //        setOnlinePath(dataStorageObject, pSsaltoFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
+        
         // TRANSFORMATION_SO_DO
-        dataStorageObject.setTransformer((TransformerTypeEnum) null);
+        // TODO CMZ à confirmer
+        //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
+        
         return dataStorageObject;
     }
 
@@ -130,7 +126,7 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
      */
     @Override
     public String generateXml(File pSsaltoFile, String pProjectName, String pDicoName, String pDataSetId)
-            throws SsaltoDomainException {
+            throws ModuleException {
         String xmlString = null;
 
         // Init descriptor
@@ -148,35 +144,35 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
         // Write descriptor into a string
         try {
             xmlString = writeXmlToString(descriptorFile);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             LOGGER.error("Cannot create xml descriptor string for file " + pSsaltoFile.getAbsolutePath());
-            throw new SsaltoDomainException(e.getMessage());
+            throw new ModuleException(e.getMessage());
         }
 
         return xmlString;
     }
 
-    /**
-     * Calcul le chemin relatif a partir du chemin absolu et de l'archive locale.
-     * 
-     * @param pDataStorageObject
-     * @param pSsaltoFile
-     * @since 1.2
-     * @DM : SIPNG-DM-0060-CN : 2009/06/27 : Pb sur le replace avec les \\
-     */
-    protected void setOnlinePath(DataStorageObjectDescriptionElement pDataStorageObject, File pSsaltoFile) {
-        // path absolu de la locale archive
-        String localArchivePath = LocalArchive.getInstance().getDataFolder();
-        if (!localArchivePath.endsWith(File.separator)) {
-            localArchivePath = localArchivePath.concat(File.separator);
-        }
-        // regExp pour traiter le cas d'un rep contenant \local_archive par ex ( le \l est un caractere reserve )
-        //
-        String regExp = localArchivePath.replaceAll("\\\\", "\\\\\\\\");
-        String relativeOnlinePath = pSsaltoFile.getParent().replaceAll(regExp, "");
-        pDataStorageObject.setOnlinePath(relativeOnlinePath);
-    }
+    // TODO CMZ à confirmer
+    //    /**
+    //     * Calcul le chemin relatif a partir du chemin absolu et de l'archive locale.
+    //     * 
+    //     * @param pDataStorageObject
+    //     * @param pSsaltoFile
+    //     * @since 1.2
+    //     * @DM : SIPNG-DM-0060-CN : 2009/06/27 : Pb sur le replace avec les \\
+    //     */
+    //    protected void setOnlinePath(DataStorageObjectDescriptionElement pDataStorageObject, File pSsaltoFile) {
+    //        // path absolu de la locale archive
+    //        String localArchivePath = LocalArchive.getInstance().getDataFolder();
+    //        if (!localArchivePath.endsWith(File.separator)) {
+    //            localArchivePath = localArchivePath.concat(File.separator);
+    //        }
+    //        // regExp pour traiter le cas d'un rep contenant \local_archive par ex ( le \l est un caractere reserve )
+    //        //
+    //        String regExp = localArchivePath.replaceAll("\\\\", "\\\\\\\\");
+    //        String relativeOnlinePath = pSsaltoFile.getParent().replaceAll(regExp, "");
+    //        pDataStorageObject.setOnlinePath(relativeOnlinePath);
+    //    }
 
     /**
      * Ecriture du descripteur
@@ -205,8 +201,7 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
             out.flush();
             out.close();
             xmlString = out.getBuffer().toString();
-        }
-        else {
+        } else {
             LOGGER.info("***** DO NOT compute FILE xml descriptor");
         }
         return xmlString;

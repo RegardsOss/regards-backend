@@ -86,7 +86,7 @@ public class CompressionUtil {
         CompressionTypeEnum type = null;
         String name = pFile.getName().toLowerCase();
         if (!hasCompressedExtensionFilename(pFile)) {
-            throw new CompressionException(String.format("The compression mode of file {0} is not handled.", name));
+            throw new CompressionException(String.format("The compression mode of file '%s' is not handled.", name));
         }
 
         if (name.endsWith(GZ_EXT)) {
@@ -96,7 +96,7 @@ public class CompressionUtil {
         } else if (name.endsWith(TAR_EXT)) {
             type = CompressionTypeEnum.TAR;
         } else {
-            throw new CompressionException(String.format("The compression mode of file {0} is not handled.", name));
+            throw new CompressionException(String.format("The compression mode of file '%s' is not handled.", name));
         }
         return type;
     }

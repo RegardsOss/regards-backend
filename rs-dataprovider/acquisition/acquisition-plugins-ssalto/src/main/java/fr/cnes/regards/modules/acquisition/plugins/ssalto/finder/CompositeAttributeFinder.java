@@ -33,12 +33,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 
 /**
- * 
- * @author CS
- * @version 1.2
- * @since 1.2
- */
-/**
  * Ce finder permet de construire une classe ssalto.domain.model.CompositeAttribute avec les attributs trouves par les
  * finder qui lui ont ete associes.
  * 
@@ -51,31 +45,30 @@ public class CompositeAttributeFinder extends AttributeFinder {
 
     /**
      * liste de finder associes a l'attribute compose
-     * 
-     * @since 1.2
      */
-    private List<AttributeFinder> finderList_;
+    private List<AttributeFinder> finderList;
 
     /**
      * Nom de l'attribut compose, sera utilise dans le fichier descripteur pour construire la balise d' l'attribut
      * compose
-     * 
-     * @since 1.2
      */
-    private String name_;
+    private String name;
 
     @Override
     public Attribute buildAttribute(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
             throws PluginAcquisitionException {
+        
         LOGGER.debug("START building composite attribute " + getName());
+        
         CompositeAttribute attribute = new CompositeAttribute();
-        attribute.setName(name_);
-        for (AttributeFinder finder : finderList_) {
+        attribute.setName(name);
+        for (AttributeFinder finder : finderList) {
             Attribute attribut = finder.buildAttribute(pFileMap, pAttributeValueMap);
             attribute.addAttribute(attribut);
-
         }
+        
         LOGGER.debug("END building composite attribute " + getName());
+        
         return attribute;
     }
 
@@ -103,8 +96,8 @@ public class CompositeAttributeFinder extends AttributeFinder {
     public String toString() {
         StringBuffer buff = new StringBuffer();
         buff.append(getClass().toString());
-        buff.append(" | name : ").append(name_).append("\n");
-        for (Iterator<AttributeFinder> gIter = finderList_.iterator(); gIter.hasNext();) {
+        buff.append(" | name : ").append(name).append("\n");
+        for (Iterator<AttributeFinder> gIter = finderList.iterator(); gIter.hasNext();) {
             AttributeFinder finder = gIter.next();
             buff.append(finder.toString());
             if (gIter.hasNext()) {
@@ -117,33 +110,33 @@ public class CompositeAttributeFinder extends AttributeFinder {
     // GETTERS AND SETTERS
 
     public void addFileFinder(AttributeFinder pFinder) {
-        if (finderList_ == null) {
-            finderList_ = new ArrayList<>();
+        if (finderList == null) {
+            finderList = new ArrayList<>();
         }
-        finderList_.add(pFinder);
+        finderList.add(pFinder);
     }
 
     public void addFileNameFinder(AttributeFinder pFinder) {
-        if (finderList_ == null) {
-            finderList_ = new ArrayList<>();
+        if (finderList == null) {
+            finderList = new ArrayList<>();
         }
-        finderList_.add(pFinder);
+        finderList.add(pFinder);
     }
 
     @Override
     public void setAttributProperties(PluginConfigurationProperties pConfProperties) {
-        for (AttributeFinder finder : finderList_) {
+        for (AttributeFinder finder : finderList) {
             finder.setAttributProperties(pConfProperties);
         }
     }
 
     @Override
     public void setName(String pName) {
-        name_ = pName;
+        name = pName;
     }
 
     @Override
     public String getName() {
-        return name_;
+        return name;
     }
 }

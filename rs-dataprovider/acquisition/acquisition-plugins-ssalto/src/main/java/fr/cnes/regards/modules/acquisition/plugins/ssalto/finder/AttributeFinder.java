@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-//import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -131,12 +130,13 @@ public abstract class AttributeFinder {
      * @return
      * @throws PluginAcquisitionException
      *             en cas d'erreur lors de la creation de l'attribute
-     * @since 1.2
      */
     @SuppressWarnings("unchecked")
     public Attribute buildAttribute(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
             throws PluginAcquisitionException {
+
         LOGGER.debug("START building attribute " + getName());
+
         Attribute attribute = null;
         try {
             List<Object> valueList = null;
@@ -170,7 +170,9 @@ public abstract class AttributeFinder {
         } finally {
             deleteUnzippedFile();
         }
+
         LOGGER.debug("END building attribute " + getName());
+
         return attribute;
     }
 
@@ -180,8 +182,6 @@ public abstract class AttributeFinder {
      * @param pValueList
      *            la liste de valeurs a traduire
      * @return List la liste de valeur traduite
-     * @since 1.2.1
-     * @FA SIPNG-FA-0399-CN
      */
     protected List<Object> translateValueList(List<? extends Object> pValueList) {
         List<Object> translatedValueList = new ArrayList<>();
@@ -204,7 +204,6 @@ public abstract class AttributeFinder {
      * @param pAttributeValueMap
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     public abstract List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
             throws PluginAcquisitionException;
@@ -213,7 +212,6 @@ public abstract class AttributeFinder {
      * permet de positionner les propriete (filePattern et autre) sur les finder
      * 
      * @param pConfProperties
-     * @since 1.2
      */
     public void setAttributProperties(PluginConfigurationProperties pConfProperties) {
         confProperties = pConfProperties;
@@ -222,8 +220,6 @@ public abstract class AttributeFinder {
     /**
      * permet de traduire la valeur lue du format formatRead dans le format formatInXml_ pour pouvoir inserer la valeur
      * dans la classe Attribute la traduction se fait essentiellement entre les valeur de type DATE
-     * 
-     * @since 1.2
      */
     protected String changeFormat(Object pValue) throws PluginAcquisitionException {
         String returnValue = pValue.toString();
@@ -292,7 +288,6 @@ public abstract class AttributeFinder {
      * 
      * @param pSsaltoFileList
      * @return
-     * @since 1.0
      */
     protected List<File> buildFileList(Map<File, ?> pFileMap) throws PluginAcquisitionException {
         if (pFileMap.isEmpty()) {
@@ -346,7 +341,6 @@ public abstract class AttributeFinder {
      * 
      * @param pFile
      * @return une liste de java.io.File
-     * @since 1.2
      */
     private Collection<File> unzip(File pFile) throws PluginAcquisitionException {
         Collection<File> unzippedFileList = new HashSet<>();
@@ -376,7 +370,6 @@ public abstract class AttributeFinder {
      *            le fichier zip
      * @return le repertoire dans lequel les fichiers sont dezippe
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     private File getTemporaryUnzippedDir(File pFile) throws PluginAcquisitionException {
         File temporaryUnzippedDir = null;
@@ -390,13 +383,13 @@ public abstract class AttributeFinder {
             // cree le repertoire
             temporaryUnzippedDir = new File(pFile.getParentFile(), baseDirName);
             if (!temporaryUnzippedDir.mkdir()) {
-                String message = String.format("Unable to create the directory {}",
+                String message = String.format("Unable to create the directory '%s'",
                                                pFile.getParentFile().getAbsolutePath());
                 LOGGER.error(message);
                 throw new PluginAcquisitionException(message);
             }
         } else {
-            String message = String.format("No access right to  {}", pFile.getParentFile().getAbsolutePath());
+            String message = String.format("No access right to '%s'", pFile.getName());
             LOGGER.error(message);
             throw new PluginAcquisitionException(message);
         }
@@ -407,7 +400,6 @@ public abstract class AttributeFinder {
      * Efface les repertoires ayant servit pour dezipper les fichiers
      * 
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
     private void deleteUnzippedFile() throws PluginAcquisitionException {
         if (unzipBefore.booleanValue()) {
@@ -422,8 +414,6 @@ public abstract class AttributeFinder {
             }
         }
     }
-
-    // GETTERS AND SETTERS
 
     public void setName(String pName) {
         name = pName;

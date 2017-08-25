@@ -22,8 +22,7 @@ package fr.cnes.regards.modules.acquisition.domain.model;
  * 
  * Cette classe modelise le type de critere : date, chaine de caractere, entier ou reel.
  * 
- * @author CS
- * @since 1.0
+ * @author Christophe Mertz
  */
 public enum AttributeTypeEnum {
 
@@ -34,7 +33,7 @@ public enum AttributeTypeEnum {
     /**
      * Type de flux
      */
-    private String typeName_;
+    private String typeName;
 
     /**
      * 
@@ -42,10 +41,9 @@ public enum AttributeTypeEnum {
      * 
      * @param pTypeName
      *            le nom du type
-     * @since 5.2
      */
     private AttributeTypeEnum(String pTypeName) {
-        typeName_ = pTypeName;
+        typeName = pTypeName;
     }
 
     /**
@@ -54,7 +52,6 @@ public enum AttributeTypeEnum {
      * 
      * @param pTypeName
      * @return
-     * @since 5.1
      */
     public static AttributeTypeEnum parse(String pTypeName) {
         AttributeTypeEnum type = TYPE_UNKNOWN;
@@ -69,10 +66,10 @@ public enum AttributeTypeEnum {
 
     @Override
     public String toString() {
-        return typeName_;
+        return typeName;
     }
 
     public String getTypeName() {
-        return typeName_;
+        return typeName;
     }
 }

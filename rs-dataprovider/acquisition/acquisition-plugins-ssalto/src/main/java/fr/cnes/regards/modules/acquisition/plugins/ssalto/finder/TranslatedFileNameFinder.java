@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,12 +69,16 @@ public class TranslatedFileNameFinder extends FileNameFinder {
             String translationDirectory = pluginsRespositoryProperties.getPluginTranslationFilesDir();
             File translationFile = new File(translationDirectory, pTranslationPropertiesFilePath);
             if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
-                translationProperties_.load(translationFile);
+                InputStream inStream = new FileInputStream(translationFile);
+                translationProperties_.load(inStream);
             }
             else {
                 LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
                              + ". Checking in classpath ...");
-                translationProperties_.load("/ssalto/domain/plugins/impl" + pTranslationPropertiesFilePath);
+                // TODO CMZ à confirmer
+                File ff = new File("/ssalto/domain/plugins/impl" + pTranslationPropertiesFilePath);
+                InputStream inStream = new FileInputStream(ff);
+                translationProperties_.load(inStream);
             }
         }
         catch (Exception e) {

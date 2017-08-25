@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.io.File;
 import java.util.Map;
 
-import ssalto.domain.data.descriptor.DataObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 
 public class Jason1Doris1BProductMetadataPlugin extends Jason1ProductMetadataPlugin {
 
@@ -62,7 +62,8 @@ public class Jason1Doris1BProductMetadataPlugin extends Jason1ProductMetadataPlu
      * @since 1.2
      */
     @Override
-    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap, String pDataSetName) {
+    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap,
+            String pDataSetName) {
 
         DataObjectDescriptionElement element = new DataObjectDescriptionElement();
         element.setAscendingNode(pDataSetName);
@@ -75,15 +76,11 @@ public class Jason1Doris1BProductMetadataPlugin extends Jason1ProductMetadataPlu
 
             if (pDataSetName.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS)) {
                 element.addDataStorageObjectIdentifier(PREFIX_MOE_CDDIS + file.getName());
+            } else if (pDataSetName.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM)) {
+                element.addDataStorageObjectIdentifier(PREFIX_MOE_CDDIS_COM + file.getName());
+            } else if (pDataSetName.equals(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM)) {
+                element.addDataStorageObjectIdentifier(PREFIX_POE_CDDIS_COM + file.getName());
             }
-            else
-                if (pDataSetName.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM)) {
-                    element.addDataStorageObjectIdentifier(PREFIX_MOE_CDDIS_COM + file.getName());
-                }
-                else
-                    if (pDataSetName.equals(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM)) {
-                        element.addDataStorageObjectIdentifier(PREFIX_POE_CDDIS_COM + file.getName());
-                    }
 
         }
         element.setFileSize(Long.toString(size / 1024));

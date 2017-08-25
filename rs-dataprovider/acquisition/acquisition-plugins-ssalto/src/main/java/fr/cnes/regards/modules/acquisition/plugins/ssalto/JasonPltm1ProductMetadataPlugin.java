@@ -33,12 +33,12 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import ssalto.domain.SsaltoDomainException;
 
 /**
  *
@@ -46,8 +46,7 @@ import ssalto.domain.SsaltoDomainException;
  *
  * Plugin pour les produits PLTM1 Des missions JASONX
  *
- * @author CS
- * @since 5.5
+ * @author Christophe Mertz
  */
 public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
@@ -61,15 +60,9 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      * "JA1" pour JASON1, "JA2" pour JASON2 ou "JA3" pour JASON3
      *
      * @return
-     * @since TODO
      */
     protected abstract String getProjectPrefix();
 
-    /**
-     *
-     * @since 1.2
-     *
-     */
     public JasonPltm1ProductMetadataPlugin() {
         super();
     }
@@ -79,7 +72,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      *
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.Map,
      *      java.util.Map)
-     * @since 1.2
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -92,13 +84,12 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      * Methode surchargee
      *
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#init(java.lang.String)
-     * @since 1.2
      */
     @Override
-    public void init(String pDataSetName) throws SsaltoDomainException {
+    public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
-        patternd_ = Pattern.compile(getProjectPrefix() + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})__");
-        patternp_ = Pattern.compile(getProjectPrefix()
+        patternd = Pattern.compile(getProjectPrefix() + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})__");
+        patternp = Pattern.compile(getProjectPrefix()
                 + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})");
     }
 
@@ -106,7 +97,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      * Methode surchargee
      *
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getCreationDateValue(java.util.Collection)
-     * @since 1.2
      */
     @Override
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
@@ -114,28 +104,24 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     String dateStr = matcherD.group(1);
                     Date date = fileNameFormat.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(1);
+                    Date date = fileNameFormat.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(1);
-                        Date date = fileNameFormat.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -146,7 +132,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      * Methode surchargee
      *
      * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getStopDateValue(java.util.Collection)
-     * @since 1.2
      */
     @Override
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
@@ -154,28 +139,24 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     String dateStr = matcherD.group(1);
                     Date date = format.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(3);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(3);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -189,9 +170,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 5.3
-     *
-     * @DM SIPNG-DM-0126-CN
      */
     protected List<String> getRadicalValue(Set<File> pSsaltoFileList) throws PluginAcquisitionException {
 
@@ -199,8 +177,8 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
 
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
             String radical = null;
 
             if (matcherP.matches()) {
@@ -222,8 +200,7 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
                 radical += "_" + matcherP.group(2);
                 radical += "_" + matcherP.group(3);
                 valueList.add(radical);
-            }
-            else {
+            } else {
                 if (!matcherD.matches()) {
                     String msg = "filename does not match";
                     LOGGER.error(msg);
@@ -241,8 +218,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 5.3
-     * @DM SIPNG-DM-0126-CN
      */
     private void registerRadicalAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -253,12 +228,10 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
             if ((radicalAttribute.getValueList() != null) && (radicalAttribute.getValueList().size() != 0)) {
                 registerAttribute(RADICAL, pAttributeMap, radicalAttribute);
                 attributeValueMap_.put(RADICAL, radicalAttribute.getValueList());
-            }
-            else {
+            } else {
                 LOGGER.info("Attribute " + RADICAL + " is not defined");
             }
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + RADICAL;
             throw new PluginAcquisitionException(msg, e);
         }

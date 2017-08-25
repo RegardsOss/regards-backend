@@ -44,6 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.repository.PluginsRespositoryProperties;
@@ -87,7 +89,7 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
      */
     @Autowired
     protected PluginConfigurationProperties pluginConfProperties;
-    
+
     @Autowired
     protected PluginsRespositoryProperties pluginsRespositoryProperties;
 
@@ -331,7 +333,8 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
 
     public String generateXml(File pFile, String pProjectName, String pDicoName, String pDataSetId)
             throws ModuleException {
-
+        // TODO CMZ à confirmer
+        return null;
     }
 
     // Getters and Setters

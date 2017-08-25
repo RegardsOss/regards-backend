@@ -18,13 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.plugins;
 
+import java.util.List;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 
 /**
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to process traetement after the SIP generation is done")
+@PluginInterface(description = "Plugin to process treatement after the SIP generation is done")
 public interface IPostProcessSIP {
 
+    public void runPlugin(List<AcquisitionFile> acquiredFiles, String sipDirectory) throws ModuleException;
 }

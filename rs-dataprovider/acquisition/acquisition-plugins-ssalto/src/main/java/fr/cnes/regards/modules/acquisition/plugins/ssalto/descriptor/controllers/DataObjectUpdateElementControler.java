@@ -1,0 +1,90 @@
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers;
+
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.apache.xerces.dom.DocumentImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectUpdateElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement;
+
+/**
+ * Cette classe permet de representer un element DATA_OBJECT_UPDATE qui peut etre cree par les differents process de
+ * SIPAD-SSALTO un dataObjectUpdate se fait sur la liste de identifiants des objets de stockage uniquement
+ * 
+ * @author Christophe Mertz
+ */
+
+public class DataObjectUpdateElementControler extends DataObjectElementControler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataObjectUpdateElementControler.class);
+
+    /**
+     * nom du bloc update
+     */
+    private static final String ENTITY_TYPE_VALUE = "DATA_OBJECT_UPDATE";
+
+    /**
+     * renvoie un bloc de type
+     * 
+     * <pre>
+     * &lt;DATA_OBJECT_UPDATE_SSALTO&gt;
+     *     &lt;DATA_OBJECT_IDENTIFIER&gt;   &lt;/DATA_OBJECT_IDENTIFIER&gt;
+     *     &lt;DATA_STORAGE_OBJECT_IDENTIFIER&gt;   &lt;/DATA_STORAGE_OBJECT_IDENTIFIER&gt;
+     *     &lt;DATA_STORAGE_OBJECT_IDENTIFIER&gt;   &lt;/DATA_STORAGE_OBJECT_IDENTIFIER&gt;
+     *     <b>...</b>
+     * &lt;/DATA_OBJECT_UPDATE_SSALTO&gt;
+     * </pre>
+     * 
+     * @see ssalto.domain.data.descriptor.IDescriptorElement#getElement(DocumentImpl)
+     */
+    @Override
+    public Element getElement(EntityDescriptorElement pEntityDescriptorElement, DocumentImpl pNewDoc) {
+        Element doDescriptorElement = null;
+//        try {
+            DataObjectUpdateElement dataObjectUpdateElement = (DataObjectUpdateElement) pEntityDescriptorElement;
+
+            doDescriptorElement = pNewDoc
+                    .createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
+            // TODO CMZ à confirmer
+//                    .createElement(DescConfiguration.getInstance().getProperties().getDataObjectUpdateNode());
+            doDescriptorElement.setAttribute(ENTITY_TYPE, ENTITY_TYPE_VALUE);
+            buildUpdateElement(dataObjectUpdateElement, doDescriptorElement, pNewDoc);
+//        } catch (DescriptorException e) {
+//            LOGGER.error(e.getMessage());
+//        }
+        return doDescriptorElement;
+    }
+
+    /**
+     * merge la liste des dataStorageIdentifiers_; Methode surchargee
+     */
+    @Override
+    public void merge(EntityDescriptorElement entityDescriptorElement, EntityDescriptorElement descrElement) {
+        DataObjectUpdateElement dataObjectUpdateElement = (DataObjectUpdateElement) entityDescriptorElement;
+        DataObjectUpdateElement descriptorElement = (DataObjectUpdateElement) descrElement;
+        Set<String> dataStorageObjectIdentifiers = new TreeSet<>();
+
+        dataStorageObjectIdentifiers.addAll(descriptorElement.getDataStorageObjectIdentifiers());
+        dataObjectUpdateElement.setDataStorageObjectIdentifiers(dataStorageObjectIdentifiers);
+    }
+
+    /**
+     * construit l'Element contenu dans le bloc update
+     * 
+     * @param doDescriptorElement
+     *            le bloc update auquel attacher les elements
+     * @param newDoc
+     *            le DocumentImpl a utiliser pour creer les elements et les noeuds.
+     */
+    public void buildUpdateElement(DataObjectUpdateElement dataObjectUpdateElement, Element doDescriptorElement,
+            DocumentImpl newDoc) {
+        Element idElement = newDoc.createElement(DATA_OBJECT_IDENTIFIER);
+        idElement.appendChild(newDoc.createTextNode(dataObjectUpdateElement.getDataObjectIdentifier()));
+        doDescriptorElement.appendChild(idElement);
+        buildDataStorageUpdateElement(dataObjectUpdateElement, doDescriptorElement, newDoc);
+    }
+}

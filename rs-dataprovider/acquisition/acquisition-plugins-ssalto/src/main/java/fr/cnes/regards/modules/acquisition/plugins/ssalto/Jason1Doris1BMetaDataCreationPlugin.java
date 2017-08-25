@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
 
-import ssalto.domain.SsaltoDomainException;
-import ssalto.domain.data.descriptor.DataStorageObjectDescriptionElement;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
 
 public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin {
 
@@ -41,13 +41,10 @@ public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin 
      * Methode definissant un element xml de type DataStorageElement Methode surchargee Traite les cas particuliers
      * JASON1_DORIS1B_MOE_CDDIS, JASON1_DORIS1B_MOE_CDDIS_COM, JASON1_DORIS1B_POE_CDDIS_COM data_storage_object_id doit
      * etre prefixe respectivement par MOE_CDDIS_, MOE_CDDIS_COM_ , POE_CDDIS_COM_
-     * 
-     * @since 1.3
-     * @DM SIPNG-DM-0047-CN : Creation : Ajout de pPRojectName et pDicoName
      */
     @Override
     protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
-            String pDicoName, String pDataSetId) throws SsaltoDomainException {
+            String pDicoName, String pDataSetId) throws ModuleException {
 
         // Define storage object element
         DataStorageObjectDescriptionElement dataStorageObject = new DataStorageObjectDescriptionElement();
@@ -57,30 +54,30 @@ public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin 
         // DATA_STORAGE_OBJECT_IDENTIFIER
         if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS)) {
             dataObjectIdentifier = PREFIX_MOE_CDDIS + dataObjectIdentifier;
+        } else if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM)) {
+            dataObjectIdentifier = PREFIX_MOE_CDDIS_COM + dataObjectIdentifier;
+        } else if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM)) {
+            dataObjectIdentifier = PREFIX_POE_CDDIS_COM + dataObjectIdentifier;
         }
-        else
-            if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM)) {
-                dataObjectIdentifier = PREFIX_MOE_CDDIS_COM + dataObjectIdentifier;
-            }
-            else
-                if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM)) {
-                    dataObjectIdentifier = PREFIX_POE_CDDIS_COM + dataObjectIdentifier;
-                }
 
         dataStorageObject.setDataStorageObjectIdentifier(dataObjectIdentifier);
         // FILE_SIZE
         if (pSsaltoFile.length() < 1024) {
             dataStorageObject.setFileSize(new Long(1));
-        }
-        else {
+        } else {
             dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
-        setOnlinePath(dataStorageObject, pSsaltoFile);
+        // TODO CMZ à confirmer
+        //        setOnlinePath(dataStorageObject, pSsaltoFile);
+        
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
+        
         // TRANSFORMATION_SO_DO
-//        dataStorageObject.setTransformer((TransformerTypeEnum) null);
+        // TODO CMZ à confirmer        
+        //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
+        
         return dataStorageObject;
     }
 

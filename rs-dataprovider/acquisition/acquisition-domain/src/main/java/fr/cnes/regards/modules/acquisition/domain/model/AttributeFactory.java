@@ -30,9 +30,8 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 /**
  * Classe pour creer les differents type d'attributs.
  * 
- * @author CS
- * @since 1.0
- * @version $Revision: 1.23 $
+ * @author Christophe Mertz
+ *
  */
 public class AttributeFactory {
 
@@ -51,9 +50,6 @@ public class AttributeFactory {
      * @param pBlockId
      *            l'identifiant du bloc de l'attribut compose de l'entite
      * @return Un objet <code>Attribute</code> de type non standard.
-     * @since 1.0
-     * @DM SIPNG-DM-0013-CN : Gestion des types d'attributs DATE et DATE_TIME
-     * @DM SADIC : Gestion du type d'attribut LONG_STRING
      */
     public static Attribute createAttribute(AttributeTypeEnum pType, String pLabel, String pCompositeAttributeName,
             int pBlockId) {
@@ -129,7 +125,6 @@ public class AttributeFactory {
      * @return Un objet <code>Attribute</code> de type non standard.
      * @throws DomainModelException
      *             Exception survenue pendant le traitement
-     * @since 1.0
      */
     public static Attribute createAttribute(AttributeTypeEnum pType, String pLabel, List<?> pValueList)
             throws DomainModelException {
@@ -158,7 +153,6 @@ public class AttributeFactory {
      * @return Un objet <code>Attribute</code> de type non standard.
      * @throws DomainModelException
      *             Exception survenue pendant le traitement
-     * @since 3.0
      */
     public static Attribute createAttribute(AttributeTypeEnum pType, String pLabel, Object pValue,
             String pCompositeAttributeName, int pBlockId) throws DomainModelException {

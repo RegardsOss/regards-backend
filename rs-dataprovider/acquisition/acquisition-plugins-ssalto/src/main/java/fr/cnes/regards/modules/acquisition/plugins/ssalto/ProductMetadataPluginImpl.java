@@ -29,11 +29,10 @@ import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ssalto.controlers.data.descriptor.DescriptorFileControler;
-import ssalto.controlers.plugins.decl.ICreateProductMetadataPlugin;
-import ssalto.domain.SsaltoDomainException;
-import ssalto.domain.data.descriptor.DataObjectDescriptionElement;
-import ssalto.domain.data.descriptor.DescriptorFile;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 
 /**
  * @author CS
@@ -57,7 +56,7 @@ public class ProductMetadataPluginImpl implements ICreateProductMetadataPlugin {
      */
     @Override
     public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
-            String pDicoName, String pProjectName) throws SsaltoDomainException {
+            String pDicoName, String pProjectName) throws ModuleException {
 
         // return pProductName;
         String xmlString = null;
@@ -98,7 +97,7 @@ public class ProductMetadataPluginImpl implements ICreateProductMetadataPlugin {
             xmlString = writeXmlToString(descriptorFile);
         } catch (IOException e) {
             LOGGER.error("Cannot create xml descriptor string for product " + pProductName);
-            throw new SsaltoDomainException(e.getMessage());
+            throw new ModuleException(e.getMessage());
         }
 
         return xmlString;
