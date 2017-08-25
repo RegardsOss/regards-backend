@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.domain.plugin.exception;
+package fr.cnes.regards.modules.storage.plugin.exception;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 

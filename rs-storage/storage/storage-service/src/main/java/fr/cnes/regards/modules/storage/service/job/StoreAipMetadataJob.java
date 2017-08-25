@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 
 /**
  * This job is executed by JobService while its scheduling is handled by a DataStorage plugin. This means that the job context is prepared by the plugin and not a Service.

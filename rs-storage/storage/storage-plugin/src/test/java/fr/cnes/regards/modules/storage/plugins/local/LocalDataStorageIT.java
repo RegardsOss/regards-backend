@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation;
+package fr.cnes.regards.modules.storage.plugins.local;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,7 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -35,9 +34,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.MockingResourceServiceConfiguration;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**

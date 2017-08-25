@@ -15,8 +15,8 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.storage.plugin.utils.ChecksumUtils;
-import fr.cnes.regards.modules.storage.plugin.utils.DownloadUtils;
+import fr.cnes.regards.framework.file.utils.ChecksumUtils;
+import fr.cnes.regards.framework.file.utils.DownloadUtils;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -97,8 +97,6 @@ public class DownloadUtilsTests {
     @Test
     public void testDownloadWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
-        Authenticator auth = DownloadUtils.getAuthenticator("svissier", "s1Abl99o2!");
-        Authenticator.setDefault(auth);
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
         InputStream is = DownloadUtils.downloadThroughProxy(source, proxy);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));

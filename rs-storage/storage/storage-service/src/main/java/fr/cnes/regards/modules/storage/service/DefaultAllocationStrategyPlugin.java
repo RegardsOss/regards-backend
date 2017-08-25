@@ -10,8 +10,8 @@ import javax.validation.constraints.Size;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.storage.domain.FileType;
-import fr.cnes.regards.modules.storage.domain.plugin.DataStorageType;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.DataStorageType;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 
 /**
  * @author Sylvain Vissiere-Guerinet

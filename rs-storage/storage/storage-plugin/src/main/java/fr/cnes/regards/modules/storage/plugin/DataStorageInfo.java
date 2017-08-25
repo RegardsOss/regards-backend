@@ -1,9 +1,9 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.domain.plugin;
+package fr.cnes.regards.modules.storage.plugin;
 
-import fr.cnes.regards.modules.storage.domain.plugin.validation.FileSize;
+import fr.cnes.regards.modules.storage.plugin.validation.FileSize;
 
 /**
  * @author Sylvain Vissiere-Guerinet

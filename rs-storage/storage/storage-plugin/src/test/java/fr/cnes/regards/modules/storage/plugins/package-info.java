@@ -5,4 +5,4 @@
  * @author Sylvain Vissiere-Guerinet
  *
  */
-package fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation;
+package fr.cnes.regards.modules.storage.plugins;

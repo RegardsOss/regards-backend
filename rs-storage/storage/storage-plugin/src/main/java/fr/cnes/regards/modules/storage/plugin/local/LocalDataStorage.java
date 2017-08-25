@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin;
+package fr.cnes.regards.modules.storage.plugin.local;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -26,17 +26,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.file.utils.ChecksumUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.DataStorageInfo;
-import fr.cnes.regards.modules.storage.domain.plugin.DataStorageType;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.ProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.exception.StorageCorruptedException;
-import fr.cnes.regards.modules.storage.plugin.utils.ChecksumUtils;
+import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
+import fr.cnes.regards.modules.storage.plugin.DataStorageType;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.exception.StorageCorruptedException;
 
 /**
  * @author Sylvain Vissiere-Guerinet

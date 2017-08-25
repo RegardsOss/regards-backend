@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.domain.plugin;
+package fr.cnes.regards.modules.storage.plugin;
 
 import java.net.URL;
 

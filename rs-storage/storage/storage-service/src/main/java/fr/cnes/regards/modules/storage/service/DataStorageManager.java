@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 
 /**
  * @author Sylvain Vissiere-Guerinet

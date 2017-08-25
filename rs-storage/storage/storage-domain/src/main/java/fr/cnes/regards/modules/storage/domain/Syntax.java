@@ -47,7 +47,7 @@ public class Syntax implements Serializable {
 
     public Syntax generate() {
         description = "SYNTAX_DESCRIPTION";
-        mimeType = "MIME_TYPE";
+        mimeType = "application/name";
         name = "NAME";
         return this;
     }

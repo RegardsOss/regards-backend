@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.domain.plugin.validation;
+package fr.cnes.regards.modules.storage.plugin.validation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -13,19 +13,22 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 /**
+ *
+ * Validation annotation, validated by {@link FileSizeValidator}
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
-@Constraint(validatedBy = DirectoryValidator.class)
+@Constraint(validatedBy = FileSizeValidator.class)
 @Documented
-public @interface Directory {
+public @interface FileSize {
 
     /**
      * Class to validate
      */
-    static final String CLASS_NAME = "fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.Directory.";
+    static final String CLASS_NAME = "fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation.FileSize.";
 
     /**
      *
@@ -44,5 +47,4 @@ public @interface Directory {
      * @return custom payload
      */
     Class<? extends Payload>[] payload() default {};
-
 }

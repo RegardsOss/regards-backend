@@ -1,13 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugins.datastorage.domain.validation;
+package fr.cnes.regards.modules.storage.plugins.validation;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.storage.domain.plugin.validation.FileSizeValidator;
+import fr.cnes.regards.modules.storage.plugin.validation.FileSizeValidator;
 
 /**
  * @author Sylvain Vissiere-Guerinet

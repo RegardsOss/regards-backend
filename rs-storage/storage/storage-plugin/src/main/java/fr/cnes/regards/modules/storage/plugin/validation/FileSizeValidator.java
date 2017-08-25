@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.domain.plugin.validation;
+package fr.cnes.regards.modules.storage.plugin.validation;
 
 import java.util.regex.Pattern;
 
