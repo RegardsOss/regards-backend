@@ -219,6 +219,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         pluginId = other.pluginId;
         priorityOrder = other.priorityOrder;
         version = other.version;
+        iconUrl = other.iconUrl;
     }
 
     /**
