@@ -109,7 +109,7 @@ public class ServicesAggregatorController {
                 Stream<UIPluginConfiguration> streamUiServices = uiServices.stream()) {
             // Map catalog service to dto
             Stream<PluginServiceDto> streamCatalogServicesDto = streamCatalogServices
-                    .map(PluginServiceDto::fromPluginConfiguration);
+                    .map(PluginServiceDto::fromPluginConfigurationDto);
             // Map ui service to dto
             Stream<PluginServiceDto> streamUiServicesDto = streamUiServices
                     .map(PluginServiceDto::fromUIPluginConfiguration);
