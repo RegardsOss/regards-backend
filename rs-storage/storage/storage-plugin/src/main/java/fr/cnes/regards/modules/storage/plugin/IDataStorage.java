@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.plugin;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
      * @param replaceMode if file exists, to the store action should replace it ?
      * @param progressManager {@link ProgressManager} object to inform global store process after each transfer succeed or fail.
      */
-    void store(T workingSubset, Boolean replaceMode, ProgressManager progressManager);
+    void store(T workingSubset, Boolean replaceMode, ProgressManager progressManager) throws IOException;
 
     /**
      * Do the retreive action for the given {@link T} working subset.
@@ -48,7 +49,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
      * @param workingSubset Subset of files to store.
      * @param progressManager {@link ProgressManager} object to inform global store process after each deletion succeed or fail.
      */
-    void delete(T workingSubset, ProgressManager progressManager);
+    void delete(T workingSubset, ProgressManager progressManager) throws IOException;
 
     /**
      * Retreive informations about the storage system.

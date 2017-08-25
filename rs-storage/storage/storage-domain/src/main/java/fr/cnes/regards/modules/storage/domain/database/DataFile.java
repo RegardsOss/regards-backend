@@ -114,4 +114,12 @@ public class DataFile {
     public void setDataStorageUsed(PluginConfiguration dataStorageUsed) {
         this.dataStorageUsed = dataStorageUsed;
     }
+
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
+    }
 }

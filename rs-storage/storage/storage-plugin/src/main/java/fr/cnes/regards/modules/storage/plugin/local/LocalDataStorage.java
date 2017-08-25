@@ -25,18 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.file.utils.ChecksumUtils;
+import fr.cnes.regards.framework.file.utils.DownloadUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
-import fr.cnes.regards.modules.storage.plugin.DataStorageType;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.ProgressManager;
-import fr.cnes.regards.modules.storage.plugin.exception.StorageCorruptedException;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -45,7 +43,7 @@ import fr.cnes.regards.modules.storage.plugin.exception.StorageCorruptedExceptio
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
         id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class LocalDataStorage implements IDataStorage<LocalWorkingSubset> {
+public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 
     private static final Charset STORAGE_ENCODING = StandardCharsets.UTF_8;
 
@@ -67,34 +65,23 @@ public class LocalDataStorage implements IDataStorage<LocalWorkingSubset> {
     }
 
     @Override
-    public DataStorageType getType() {
-        return DataStorageType.ONLINE;
+    public Set<LocalWorkingSubset> prepare(Multimap<AIP, List<DataFile>> pAips) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    public AIP storeMetadata(AIP aip) throws IOException, StorageCorruptedException {
-        // We store the jsonified version of aip, so lets get the aip as a json string
-        String aipJsonString = gson.toJson(aip);
-
-        // We are storing the aip, it means that only us know under which form it is stored, so we are the only ones that knows the encoding used and on what the checksum should be calculated.
-        try {
-            // We are specifying the storage encoding and not the encoding of the attribute checksum for a simple reason:
-            // the encoding of the file is important while the encoding used for the attribute is not.
-            // Moreover, we better let the jvm handle attribute encoding and convert things as it is used to do.
-            String checksum = ChecksumUtils
-                    .getHexChecksum(MessageDigest.getInstance("MD5").digest(aipJsonString.getBytes(STORAGE_ENCODING)));
-
-            aip.setChecksum(checksum);
-            // Lets compute the filename: baseStorageLocation+3 first char of checksum+checksum
-            // This is the IDataStorage implementation for local file system, that means the url should not contain a host part or it is localhost.
-            // So the path to store the file is simply the path part or the URI.
-            // We assume that baseStorageLocation already exists on the file system.
-            // We just need to create if it does not already exist the directory between baseStorageLocation and the file.
-            String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
-            Files.createDirectory(Paths.get(storageLocation));
-            String fullPathToFile = storageLocation + "/" + checksum + ".json";
-            BufferedWriter writer = Files.newBufferedWriter(Paths.get(fullPathToFile), STORAGE_ENCODING,
-                                                            StandardOpenOption.CREATE);
-            writer.write(aipJsonString);
+    @Override
+    public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, ProgressManager progressManager)
+            throws IOException {
+        for (DataFile data : workingSubset.getDataFiles()) {
+            String fullPathToFile = getStorageLocation(data);
+            BufferedWriter writer = Files
+                    .newBufferedWriter(Paths.get(fullPathToFile), STORAGE_ENCODING, StandardOpenOption.CREATE);
+            InputStream sourceStream = DownloadUtils.download(data.getOriginUrl());
+            int read;
+            while ((read = sourceStream.read()) != -1) {
+                writer.write(read);
+            }
             writer.flush();
             writer.close();
             // Now that it is stored, lets checked that it is correctly stored!
@@ -103,58 +90,43 @@ public class LocalDataStorage implements IDataStorage<LocalWorkingSubset> {
                 while (dis.read() != -1) {
                 }
                 String fileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
-                if (!fileChecksum.equals(aip.getChecksum())) {
-                    StorageCorruptedException e = new StorageCorruptedException(
-                            "Storage of AIP metadata(" + aip.getIpId() + ") failed at the following location: "
-                                    + fullPathToFile + ". Its checksum once stored do not match with expected");
-                    LOG.error(e.getMessage(), e);
+                if (!fileChecksum.equals(data.getChecksum())) {
+                    String failureCause = String
+                            .format("Storage of DataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                                    data.getChecksum(), fullPathToFile);
                     Files.deleteIfExists(Paths.get(fullPathToFile));
-                    throw e;
+                    // FIXME: progressManager.storageFailed(data.getAip(), data, failureCause);
                 }
+            } catch (NoSuchAlgorithmException e) {
+                RuntimeException re = new RuntimeException(e);
+                LOG.error(
+                        "This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
+                        re);
+                throw re;
             }
-        } catch (NoSuchAlgorithmException e) {
-            RuntimeException re = new RuntimeException(e);
-            LOG.error("This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
-                      re);
-            throw re;
         }
-        return aip;
     }
 
-    public void checkIntegrity(AIP aip) throws NoSuchAlgorithmException, IOException {
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        //        md5.digest()
-        try (InputStream fileIs = Files.newInputStream(Paths.get(baseStorageLocationAsString));
-                DigestInputStream fileDis = new DigestInputStream(fileIs, md5);) {
-            while (fileDis.read() != -1) {
-            }
-            byte[] checksum = fileDis.getMessageDigest().digest();
-        }
-        InputStream aipIs = new ByteArrayInputStream(gson.toJson(aip).getBytes(StandardCharsets.UTF_8));
-    }
-
-    @Override
-    public Set<LocalWorkingSubset> prepare(Multimap<AIP, List<DataFile>> pAips) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void store(LocalWorkingSubset pWorkingSubset, Boolean pReplaceMode, ProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
-
+    private String getStorageLocation(DataFile data) throws IOException {
+        String checksum=data.getChecksum();
+        String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+        Files.createDirectory(Paths.get(storageLocation));
+        // files are stored with the checksum as their name and their extension is based on their MIMEType
+        String fullPathToFile =
+                storageLocation + "/" + checksum + "." + data.getMimeType().getSubtype().toLowerCase();
+        return fullPathToFile;
     }
 
     @Override
     public void retrieve(LocalWorkingSubset pWorkingSubset, ProgressManager pProgressManager) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
-    public void delete(LocalWorkingSubset pWorkingSubset, ProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
-
+    public void delete(LocalWorkingSubset workingSubset, ProgressManager pProgressManager) throws IOException {
+        for(DataFile data : workingSubset.getDataFiles()) {
+            Files.deleteIfExists(Paths.get(getStorageLocation(data)));
+        }
     }
 
     @Override
