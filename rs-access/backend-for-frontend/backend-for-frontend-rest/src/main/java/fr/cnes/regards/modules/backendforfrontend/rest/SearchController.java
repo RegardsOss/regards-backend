@@ -289,8 +289,6 @@ public class SearchController {
     private void injectApplicableServices(ResponseEntity<JsonObject> pEntities) {
         try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM
                 .apply(pEntities.getBody().get("content").getAsJsonArray())) {
-            // Enable system call as follow (thread safe action)
-            //            FeignSecurityManager.asSystem();
             // @formatter:off
             elements
                 .map(JsonElement::getAsJsonObject)
@@ -298,9 +296,6 @@ public class SearchController {
                 .map(JsonElement::getAsJsonObject)
                 .forEach(element -> element.add("services", entityToApplicableServices(element)));
             // @formatter:on
-        } finally {
-            // Disable system call if necessary after client request(s)
-            //            FeignSecurityManager.reset();
         }
     }
 
@@ -318,9 +313,9 @@ public class SearchController {
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
             .map(UniformResourceName::toString)
             .distinct()
-            .peek(unused -> FeignSecurityManager.asSystem())
+            .peek(unused -> FeignSecurityManager.asSystem()) // Enable system call
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
-            .peek(unused -> FeignSecurityManager.reset())
+            .peek(unused -> FeignSecurityManager.reset()) // Disable system call
             .map(ResponseEntity::getBody)
             .flatMap(List::stream)
             .collect(Collectors.toList());
