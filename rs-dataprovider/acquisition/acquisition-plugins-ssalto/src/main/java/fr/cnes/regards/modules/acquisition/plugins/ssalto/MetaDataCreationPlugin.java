@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xml.serialize.OutputFormat;
@@ -32,13 +33,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.MultipleFileNameFinder;
 
 public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
 
-    /**
-     * Logger de la classe
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
 
     // TODO CMZ à confirmer
@@ -107,22 +106,16 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
         //        setOnlinePath(dataStorageObject, pSsaltoFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
-        
+
         // TRANSFORMATION_SO_DO
         // TODO CMZ à confirmer
         //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
-        
+
         return dataStorageObject;
     }
 
     /**
-     * Generation du descripteur de fichier sous forme de chaine de caractere. Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICreateFileMetadataPlugin#generateXml(File, String, String)
-     * @since 1.2
-     * @DM SIPNG-DM-0047-CN : Modification : Ajout de pPRojectName et pDicoName
-     * @DM SIPNG-DM-0060-CN : Modification : Sort la portion de code defineDataStorageElement et Rajout du parametre
-     *     pDataSetId
+     * Generation du descripteur de fichier sous forme de chaine de caractere
      */
     @Override
     public String generateXml(File pSsaltoFile, String pProjectName, String pDicoName, String pDataSetId)
@@ -182,8 +175,6 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
      * @param pDescFile
      *            Objet descripteur
      * @throws IOException
-     * @since 1.2
-     * @FA SIPNG-FA-0400-CN : ajout de code
      */
     private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
 
@@ -205,6 +196,16 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
             LOGGER.info("***** DO NOT compute FILE xml descriptor");
         }
         return xmlString;
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin#createMetadataPlugin(java.lang.String, java.util.Map, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
+            String pDicoName, String pProjectName) throws ModuleException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

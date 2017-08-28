@@ -27,12 +27,6 @@ public class Hy2AProductMetadataPlugin extends GenericProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "HY2A";
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.GenericProductMetadataPlugin#getProjectName()
-     * @since 1.3
-     */
     protected String getProjectName() {
         return PROJECT_NAME;
     }

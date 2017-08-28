@@ -55,7 +55,6 @@ public abstract class AbstractDoris1BProductMetadataPlugin extends GenericProduc
      *            la liste des fichiers composant le produit
      * @param pDataSetName
      *            le nom du dataSet auquel rattacher l'objet de donnees.
-     * @since 1.2
      */
     @Override
     public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap, String pDataSetName) {

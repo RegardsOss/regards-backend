@@ -41,9 +41,6 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 
 /**
- *
- * Class JasonPltm1ProductMetadataPlugin
- *
  * Plugin pour les produits PLTM1 Des missions JASONX
  *
  * @author Christophe Mertz
@@ -67,12 +64,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
         super();
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.Map,
-     *      java.util.Map)
-     */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -80,11 +71,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
         registerRadicalAttribute(pFileMap, pAttributeMap);
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#init(java.lang.String)
-     */
     @Override
     public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
@@ -93,11 +79,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
                 + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})");
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getCreationDateValue(java.util.Collection)
-     */
     @Override
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -128,11 +109,6 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
         return valueList;
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getStopDateValue(java.util.Collection)
-     */
     @Override
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();

@@ -23,7 +23,6 @@ import java.io.File;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.plugins.ICheckFilePlugin;
 
-
 public class CheckInPlugin implements ICheckFilePlugin {
 
     protected static final int PRODUCT_NAME_MAX_SIZE = 128;
@@ -39,43 +38,20 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     protected String nodeIdentifier_;
 
-    /**
-     * Constructeur de la classe
-     * 
-     * @since 1.2
-     */
     public CheckInPlugin() {
         super();
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getFileVersion()
-     * @since 1.2
-     */
     @Override
     public int getFileVersion() {
         return fileVersion_;
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getLogFile()
-     * @since 1.2
-     */
     @Override
     public String getLogFile() {
         return logFilePath_;
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductName()
-     * @since 1.2
-     */
     @Override
     public String getProductName() {
         return productName_;
@@ -86,24 +62,11 @@ public class CheckInPlugin implements ICheckFilePlugin {
         return nodeIdentifier_;
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductVersion()
-     * @since 1.2
-     */
     @Override
     public int getProductVersion() {
         return productVersion_;
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @throws SsaltoDomainException
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#runPlugin(File, String)
-     * @since 1.2
-     */
     @Override
     public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
 
@@ -122,16 +85,14 @@ public class CheckInPlugin implements ICheckFilePlugin {
             // pFiletoCheck
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
                 productName_ = name.substring(0, PRODUCT_NAME_MAX_SIZE);
-            }
-            else {
+            } else {
                 productName_ = name;
             }
             productVersion_ = 1;
             fileVersion_ = 1;
             logFilePath_ = null; // TODO
             result = true;
-        }
-        else {
+        } else {
             throw new ModuleException("Can't read file " + pFiletoCheck.getAbsolutePath());
         }
 

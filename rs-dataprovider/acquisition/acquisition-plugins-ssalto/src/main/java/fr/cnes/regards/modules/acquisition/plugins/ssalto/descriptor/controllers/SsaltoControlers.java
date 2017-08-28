@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controller
 
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.ClobAttribute;
+import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.DateAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.GeoAttribute;
@@ -35,7 +36,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorD
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorDateTimeAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDeletionDescriptorElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement;
-
 
 /**
  * @author Christophe Mertz
@@ -61,7 +61,7 @@ public class SsaltoControlers {
      */
     //    private static DeletionDescriptorFileControler deletionDescriptorFileControler_ = new DeletionDescriptorFileControler();
 
-//    private static DescriptorFileControler descriptorFileControler_ = new DescriptorFileControler();
+    //    private static DescriptorFileControler descriptorFileControler_ = new DescriptorFileControler();
 
     /*
      * EntityDescriptorElement controlers
@@ -69,9 +69,9 @@ public class SsaltoControlers {
     private static EntityDeletionDescriptorElementControler entityDeletionDescriptorElementControler = new EntityDeletionDescriptorElementControler();
 
     private static ClobAttributeControler clobAttributeControler = new ClobAttributeControler();
-    
+
     private static GeoAttributeControler geoAttributeControler = new GeoAttributeControler();
-    
+
     private static RealAttributeControler realAttributeControler = new RealAttributeControler();
 
     private static LongAttributeControler longAttributeControler = new LongAttributeControler();
@@ -79,14 +79,15 @@ public class SsaltoControlers {
     private static StringAttributeControler stringAttributeControler = new StringAttributeControler();
 
     private static UrlAttributeControler urlAttributeControler = new UrlAttributeControler();
-    
+
     private static DescriptorDateAttributeControler descriptorDateAttributeControler = new DescriptorDateAttributeControler();
-    
+
     private static DateAttributeControler dateAttributeControler = new DateAttributeControler();
-    
+
     private static DescriptorDateTimeAttributeControler descriptorDateTimeAttributeControler = new DescriptorDateTimeAttributeControler();
-    
+
     private static DateTimeAttributeControler dateTimeAttributeControler = new DateTimeAttributeControler();
+
     //    /*
     //     * AbstractDomainObject controlers
     //     */
@@ -166,10 +167,10 @@ public class SsaltoControlers {
     //
     //    private static ProductMetaDataCreationPluginControler productMetaDataCreationPluginControler_ = new ProductMetaDataCreationPluginControler();
     //
-    //    /*
-    //     * Attribute controlers
-    //     */
-    //    private static CompositeAttributeControler compositeAttributeControler_ = new CompositeAttributeControler();
+    /*
+     * Attribute controlers
+     */
+    private static CompositeAttributeControler compositeAttributeControler_ = new CompositeAttributeControler();
     //
     //    /*
     //     * Ssalto File controlers
@@ -190,20 +191,20 @@ public class SsaltoControlers {
     //
     //    private static FileDeletionInformationsControler fileDeletionInformationsControler_ = new FileDeletionInformationsControler();
 
-        /**
-         * @param pDataObjectElement
-         * @return
-         * @since 5.2
-         */
-        public static DataObjectElementControler getControler(DataObjectElement pDataObjectElement) {
-            if (pDataObjectElement instanceof DataObjectDescriptionElement) {
-                return dataObjectDescriptionElementControler;
-            }
-            if (pDataObjectElement instanceof DataObjectUpdateElement) {
-                return dataObjectUpdateElementControler;
-            }
-            return null;
+    /**
+     * @param pDataObjectElement
+     * @return
+     * @since 5.2
+     */
+    public static DataObjectElementControler getControler(DataObjectElement pDataObjectElement) {
+        if (pDataObjectElement instanceof DataObjectDescriptionElement) {
+            return dataObjectDescriptionElementControler;
         }
+        if (pDataObjectElement instanceof DataObjectUpdateElement) {
+            return dataObjectUpdateElementControler;
+        }
+        return null;
+    }
     //
     //    /**
     //     * @param pDataStorageObjectElement
@@ -460,14 +461,13 @@ public class SsaltoControlers {
     //        }
     //        return null;
     //    }
-    //
-    //    public static CompositeAttributeControler getControler(Attribute pAttribute) {
-    //        if (pAttribute instanceof CompositeAttribute) {
-    //            return compositeAttributeControler_;
+    //    
+    //        public static CompositeAttributeControler getControler(Attribute pAttribute) {
+    //            if (pAttribute instanceof CompositeAttribute) {
+    //                return compositeAttributeControler_;
+    //            }
+    //            return null;
     //        }
-    //        return null;
-    //    }
-    //
     //    public static SsaltoFileStatusControler getControler(SsaltoFileStatus pSsaltoFileStatus) {
     //        if (pSsaltoFileStatus instanceof SsaltoFileStatus) {
     //            return ssaltoFileStatusControler_;
@@ -492,10 +492,7 @@ public class SsaltoControlers {
     //        }
     //        return physicalFileControler_;
     //    }
-    
-    
-    
-    
+
     /**
     *
     * Récupère le controleur de l'attribut en fonction de son type
@@ -505,69 +502,72 @@ public class SsaltoControlers {
     * @return le contrôleur de l'attribut ou null
     * @since 5.2
     */
-   public static AttributeControler getControler(Attribute pAttribute) {
-       if (pAttribute instanceof ClobAttribute) {
-           return clobAttributeControler;
-       }
-       if (pAttribute instanceof DateAttribute) {
-           return getControler((DateAttribute) pAttribute);
-       }
-       if (pAttribute instanceof DateTimeAttribute) {
-           return getControler((DateTimeAttribute) pAttribute);
-       }
-       if (pAttribute instanceof GeoAttribute) {
-           return geoAttributeControler;
-       }
-       if (pAttribute instanceof LongAttribute) {
-           return longAttributeControler;
-       }
-       if (pAttribute instanceof RealAttribute) {
-           return realAttributeControler;
-       }
-       if (pAttribute instanceof StringAttribute) {
-           return stringAttributeControler;
-       }
-       if (pAttribute instanceof UrlAttribute) {
-           return urlAttributeControler;
-       }
-       return null;
-   }
-   
-   /**
-   *
-   * Récupère le controleur de l'attribut en fonction de son type
-   *
-   * @param pAttribute
-   *            l'attribut
-   * @return le contrôleur de l'attribut ou null
-   * @since 5.2
-   */
-  public static DateAttributeControler getControler(DateAttribute pAttribute) {
-      if (pAttribute instanceof DescriptorDateAttribute) {
-          return descriptorDateAttributeControler;
-      }
-      if (pAttribute instanceof DateAttribute) {
-          return dateAttributeControler;
-      }
-      return null;
-  }
-  
-  /**
-  *
-  * Récupère le controleur de l'attribut en fonction de son type
-  *
-  * @param pAttribute
-  *            l'attribut
-  * @return le contrôleur de l'attribut ou null
-  * @since 5.2
-  */
- public static DateTimeAttributeControler getControler(DateTimeAttribute pAttribute) {
-     if (pAttribute instanceof DescriptorDateTimeAttribute) {
-         return descriptorDateTimeAttributeControler;
-     }
-     if (pAttribute instanceof DateTimeAttribute) {
-         return dateTimeAttributeControler;
-     }
-     return null;
- }
+    public static AttributeControler getControler(Attribute pAttribute) {
+        if (pAttribute instanceof ClobAttribute) {
+            return clobAttributeControler;
+        }
+        if (pAttribute instanceof DateAttribute) {
+            return getControler((DateAttribute) pAttribute);
+        }
+        if (pAttribute instanceof DateTimeAttribute) {
+            return getControler((DateTimeAttribute) pAttribute);
+        }
+        if (pAttribute instanceof GeoAttribute) {
+            return geoAttributeControler;
+        }
+        if (pAttribute instanceof LongAttribute) {
+            return longAttributeControler;
+        }
+        if (pAttribute instanceof RealAttribute) {
+            return realAttributeControler;
+        }
+        if (pAttribute instanceof StringAttribute) {
+            return stringAttributeControler;
+        }
+        if (pAttribute instanceof UrlAttribute) {
+            return urlAttributeControler;
+        }
+        if (pAttribute instanceof CompositeAttribute) {
+            return compositeAttributeControler_;
+        }
+        return null;
+    }
+
+    /**
+    *
+    * Récupère le controleur de l'attribut en fonction de son type
+    *
+    * @param pAttribute
+    *            l'attribut
+    * @return le contrôleur de l'attribut ou null
+    * @since 5.2
+    */
+    public static DateAttributeControler getControler(DateAttribute pAttribute) {
+        if (pAttribute instanceof DescriptorDateAttribute) {
+            return descriptorDateAttributeControler;
+        }
+        if (pAttribute instanceof DateAttribute) {
+            return dateAttributeControler;
+        }
+        return null;
+    }
+
+    /**
+    *
+    * Récupère le controleur de l'attribut en fonction de son type
+    *
+    * @param pAttribute
+    *            l'attribut
+    * @return le contrôleur de l'attribut ou null
+    * @since 5.2
+    */
+    public static DateTimeAttributeControler getControler(DateTimeAttribute pAttribute) {
+        if (pAttribute instanceof DescriptorDateTimeAttribute) {
+            return descriptorDateTimeAttributeControler;
+        }
+        if (pAttribute instanceof DateTimeAttribute) {
+            return dateTimeAttributeControler;
+        }
+        return null;
+    }
 }

@@ -20,21 +20,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 /**
  * Plugin de generation des metadonnees produit pour la mission SARAL
- * @author CS
- * @version 1.3
- * @since 1.3
+ * 
+ * @author Christophe Mertz
  */
 
 public class SaralProductMetadataPlugin extends GenericProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SARAL";
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.GenericProductMetadataPlugin#getProjectName()
-     * @since 1.3
-     */
     protected String getProjectName() {
         return PROJECT_NAME;
     }

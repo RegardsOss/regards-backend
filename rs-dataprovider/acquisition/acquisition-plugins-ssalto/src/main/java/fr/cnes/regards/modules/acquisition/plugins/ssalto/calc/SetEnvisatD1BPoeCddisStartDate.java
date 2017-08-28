@@ -31,23 +31,10 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurat
  */
 public class SetEnvisatD1BPoeCddisStartDate implements ICalculationClass {
 
-    /**
-     * 
-     * @since 1.2
-     * 
-     */
     public SetEnvisatD1BPoeCddisStartDate() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.ICalculationClass#calculateValue(java.lang.Object,
-     *      sipad.domain.model.AttributeTypeEnum)
-     * @since 1.2
-     */
     @Override
     public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
         Integer numeroArc = (Integer) pValue;

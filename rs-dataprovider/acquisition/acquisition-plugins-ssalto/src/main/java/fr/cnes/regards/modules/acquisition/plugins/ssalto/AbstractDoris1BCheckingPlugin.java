@@ -75,7 +75,6 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin,
         return result;
     }
 
-    // GETTERS
     @Override
     public int getFileVersion() {
         return fileVersion_;

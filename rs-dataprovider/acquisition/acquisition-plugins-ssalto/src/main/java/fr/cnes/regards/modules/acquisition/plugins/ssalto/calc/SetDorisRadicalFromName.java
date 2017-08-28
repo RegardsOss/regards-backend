@@ -31,9 +31,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurat
  */
 public class SetDorisRadicalFromName implements ICalculationClass {
 
-    private String patternD_ = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})$";
+    private String patternD = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})$";
 
-    private String patternS_ = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$";
+    private String patternS = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$";
 
     private String DATE_SEPARATOR = "_";
 
@@ -43,8 +43,8 @@ public class SetDorisRadicalFromName implements ICalculationClass {
         String str = (String) pValue;
         String radical = "";
 
-        Matcher matcherD = (Pattern.compile(patternD_)).matcher(str);
-        Matcher matcherS = (Pattern.compile(patternS_)).matcher(str);
+        Matcher matcherD = (Pattern.compile(patternD)).matcher(str);
+        Matcher matcherS = (Pattern.compile(patternS)).matcher(str);
         if (matcherD.matches()) {
             radical = matcherD.group(1) + matcherD.group(3) + matcherD.group(4);
         } else if (matcherS.matches()) {

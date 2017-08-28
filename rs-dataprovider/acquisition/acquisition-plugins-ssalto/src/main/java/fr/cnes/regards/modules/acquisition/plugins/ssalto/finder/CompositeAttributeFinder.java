@@ -57,28 +57,21 @@ public class CompositeAttributeFinder extends AttributeFinder {
     @Override
     public Attribute buildAttribute(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
             throws PluginAcquisitionException {
-        
+
         LOGGER.debug("START building composite attribute " + getName());
-        
+
         CompositeAttribute attribute = new CompositeAttribute();
         attribute.setName(name);
         for (AttributeFinder finder : finderList) {
             Attribute attribut = finder.buildAttribute(pFileMap, pAttributeValueMap);
             attribute.addAttribute(attribut);
         }
-        
+
         LOGGER.debug("END building composite attribute " + getName());
-        
+
         return attribute;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AttributeFinder#getValueList(java.util.Map, java.util.Map)
-     * @since 1.0
-     */
     @Override
     public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
             throws PluginAcquisitionException {
@@ -86,12 +79,6 @@ public class CompositeAttributeFinder extends AttributeFinder {
         return null;
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see java.lang.Object#toString()
-     * @since 1.2
-     */
     @Override
     public String toString() {
         StringBuffer buff = new StringBuffer();
@@ -106,8 +93,6 @@ public class CompositeAttributeFinder extends AttributeFinder {
         }
         return buff.toString();
     }
-
-    // GETTERS AND SETTERS
 
     public void addFileFinder(AttributeFinder pFinder) {
         if (finderList == null) {

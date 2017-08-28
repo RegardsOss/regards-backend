@@ -42,8 +42,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
 
 /**
- * @author : CS
- * @since : 1.3
+ * @author Christophe Mertz
  */
 public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin {
 
@@ -59,46 +58,35 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
 
     private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
-    protected Pattern patternd_;
+    protected Pattern patternd;
 
-    protected Pattern patternp_;
+    protected Pattern patternp;
 
-    protected Pattern patternh_;
+    protected Pattern patternh;
 
-    protected Pattern patternl_;
+    protected Pattern patternl;
 
-    /**
-     * @since 1.3
-     */
     public Hy2ADoris10ProductMetadataPlugin() {
         super();
     }
 
     /**
-     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Hy2AProductMetadataPlugin#init(java.lang.String)
-     * @since 1.2
+     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
     public void init(String pDataSetName) throws ModuleException {
         super.init(pDataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
-        patternd_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
-        patternp_ = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
-        patternh_ = Pattern.compile(prefix + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$");
-        patternl_ = Pattern
+        patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
+        patternp = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
+        patternh = Pattern.compile(prefix + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$");
+        patternl = Pattern
                 .compile(prefix + "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }
 
     /**
-     * cree les attributs time_period et file_creation_date Methode surchargee
-     * 
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Hy2AProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
-     *      java.util.Map)
-     * @since 1.3
+     * cree les attributs time_period et file_creation_date
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -137,17 +125,16 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      *            : les fichiers de donnees de la mission
      * @return valueList : date de debut de la mission
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
-            Matcher matcherH = patternh_.matcher(fileName);
-            Matcher matcherL = patternl_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     String dateStr = matcherD.group(1);
@@ -183,7 +170,6 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      *            liste de fichiers de donnees de la mission
      * @return valueList : date de fin de la mission
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -191,10 +177,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
         for (File file : pSsaltoFileList) {
             String fileName = file.getName();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
-            Matcher matcherH = patternh_.matcher(fileName);
-            Matcher matcherL = patternl_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     @SuppressWarnings("unchecked")
@@ -235,7 +221,6 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      *            liste de fichiers de données de la mission
      * @return valueList : date de creation des fichiers de donnees de la mission
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -243,10 +228,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
             String fileName = file.getName();
             SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             SimpleDateFormat fileFormat = new SimpleDateFormat("yyyyMMdd HHmmss");
-            Matcher matcherD = patternd_.matcher(fileName);
-            Matcher matcherP = patternp_.matcher(fileName);
-            Matcher matcherH = patternh_.matcher(fileName);
-            Matcher matcherL = patternl_.matcher(fileName);
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
             try {
                 if (matcherD.matches()) {
                     // go to search into file using RINExFileHelper

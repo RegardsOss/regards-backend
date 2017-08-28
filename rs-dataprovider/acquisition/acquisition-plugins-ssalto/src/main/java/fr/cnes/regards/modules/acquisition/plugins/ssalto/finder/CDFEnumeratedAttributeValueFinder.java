@@ -1,27 +1,21 @@
 /*
- * $Id$
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
- * HISTORIQUE
+ * This file is part of REGARDS.
  *
- * VERSION : 2012/07/27 : 5.1 : CS
- * DM-ID : SIPNG-DM-0105-CN : 2012/07/27 : maj java7 et correction test
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * VERSION : 2011/04/20 : 1.6 : CS
- * FA-ID : SIPNG-FA-0709-CN : 2011/04/20 : Ajout du parametre pluginProperties aux classes de calcul
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * VERSION : 2011/04/04 : 1.4.4 : CS
- * FA-ID : SIPNG-FA-0709-CN : 2011/04/04 : Ajout du parametre pluginProperties aux classes de calcul
- *
- * VERSION : 2009/04/22 : 1.3 : CS
- * FA-ID : SIPNG-FA-0397-CN : 2009/04/22 : ajout de la liberation de la classe helper.
- *
- * VERSION : 2009/01/12 : 1.2 : CS
- * FA-ID : V12-FA-VR-FC-SSALTO-PDT-020-02 : 2009/03/23 : modification de l'interface
- * DM-ID : SIPNG-DM-0047-CN : 2009/01/12 : creation
- *
- * FIN-HISTORIQUE
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
 import java.io.File;
@@ -44,9 +38,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.NetCdfFileHelper
  * Ce finder a pour but de lister les valeurs possible prises par l'attribut de toutes les variables d'un fichier au
  * format NetCDF
  * 
- * @author CS
- * @version 1.2
- * @since 1.2
+ * @author Christophe Mertz
  */
 public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
 
@@ -92,7 +84,7 @@ public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
     }
 
     /**
-     * va chercher pour chaque fichier la valeur Methode surchargee
+     * va chercher pour chaque fichier la valeur
      */
     @Override
     public List<Object> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)

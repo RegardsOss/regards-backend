@@ -36,28 +36,17 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
  * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
  * va lire dans les blocs de mesure.
  *
- * @author CS
- * @version 1.2
- * @since 1.2
+ * @author Christophe Mertz
  */
 
 public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
-    /**
-     *
-     * @since 1.2
-     *
-     */
     public AbstractJasonGpsp10FlotProductMetadataPlugin() {
         super();
     }
 
     /**
-     * cree les attributs time_period et file_creation_date Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
-     *      java.util.Map)
-     * @since 1.2
+     * cree les attributs time_period et file_creation_date
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -65,12 +54,6 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
         super.doCreateIndependantSpecificAttributes(pFileMap, pAttributeMap);
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getStartDateValue(java.util.Collection)
-     * @since 1.2
-     */
     @Override
     protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         long longValue = 0;
@@ -88,12 +71,6 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
         return valueList;
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getStopDateValue(java.util.Collection)
-     * @since 1.2
-     */
     @Override
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         long longValue = 0;
@@ -111,12 +88,6 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
         return valueList;
     }
 
-    /**
-     * Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2Doris10ProductMetadataPlugin#getCreationDateValue(java.util.Collection)
-     * @since 1.2
-     */
     @Override
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();

@@ -55,17 +55,12 @@ public abstract class DataStorageObjectElement extends EntityDescriptorElement {
     }
 
     /**
-     * renvoie le dataStorageObjectIdentifier Methode surchargee
-     * 
-     * @see ssalto.domain.data.descriptor.EntityDescriptorElement#getEntityId()
-     * @since 1.0
+     * renvoie le dataStorageObjectIdentifier
      */
     @Override
     public String getEntityId() {
         return dataStorageObjectIdentifier_;
     }
-
-    // GETTERS AND SETTERS
 
     public void setDataStorageObjectIdentifier(String pDataStorageObjectIdentifier) {
         dataStorageObjectIdentifier_ = pDataStorageObjectIdentifier;

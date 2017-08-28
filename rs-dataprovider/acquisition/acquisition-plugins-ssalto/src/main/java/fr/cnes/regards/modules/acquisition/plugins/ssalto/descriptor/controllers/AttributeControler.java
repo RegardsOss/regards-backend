@@ -59,7 +59,7 @@ public abstract class AttributeControler implements IXMLAttributeControler {
 
         // add composite attribute information if any
         if (pAttribute.getCompositeAttribute() != null) {
-            Element el = SipadControlers.getControler(pAttribute.getCompositeAttribute())
+            Element el = SsaltoControlers.getControler(pAttribute.getCompositeAttribute())
                     .getElement(pAttribute.getCompositeAttribute());
             attribute.addContent(el);
         }
@@ -84,7 +84,7 @@ public abstract class AttributeControler implements IXMLAttributeControler {
 
         // add composite attribute information if any
         if (pAttribute.getCompositeAttribute() != null) {
-            Element el = SipadControlers.getControler(pAttribute.getCompositeAttribute())
+            Element el = SsaltoControlers.getControler(pAttribute.getCompositeAttribute())
                     .getElement(pAttribute.getCompositeAttribute());
             attribute.addContent(el);
         }

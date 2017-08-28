@@ -1,12 +1,20 @@
 /*
- * $Id$
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
- * HISTORIQUE
+ * This file is part of REGARDS.
  *
- * VERSION : 5.2 : DM : SIPNG-DM-0112-CN : 01/07/2012 : RIA
- * Creation
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * FIN-HISTORIQUE
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers;
 
@@ -15,36 +23,24 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-import org.jdom.Element;
 
-import sipad.controlers.ControlersMessages;
-import sipad.controlers.model.DateTimeAttributeControler;
-import sipad.domain.file.DomainFileException;
-import sipad.domain.model.DateTimeAttribute;
+import org.jdom.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
+
 
 public class DescriptorDateTimeAttributeControler extends DateTimeAttributeControler {
 
     /**
      * Cette constante donne le format des dates utilisees dans les descriptors.
-     * 
-     * @since 3.0
      */
     private static final String DATE_ATTRIBUTE_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS";
 
-    /**
-     * Attribut permettant la journalisation.
-     * 
-     * @since 3.0
-     */
-    static private Logger logger_ = Logger.getLogger(DescriptorDateTimeAttributeControler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataObjectUpdateElementControler.class);
 
-    /**
-     * 
-     * Constructeur
-     * 
-     * @since 5.2
-     */
     public DescriptorDateTimeAttributeControler() {
         super();
     }
@@ -52,38 +48,34 @@ public class DescriptorDateTimeAttributeControler extends DateTimeAttributeContr
     /**
      * Ajoute une valeur a l'attribut. La chaine en entree doit etre du format yyyy/MM/dd HH:mm:ss.SSS.
      * 
-     * @param pValue
+     * @param newVal
      *            La valeur a ajouter
-     * @since 3.0
      */
-    public void addStringValue(DateTimeAttribute pAttribute, String pValue) throws DomainFileException {
+    public void addStringValue(DateTimeAttribute attr, String newVal) throws ModuleException {
         try {
             DateFormat parser = new SimpleDateFormat(DATE_ATTRIBUTE_FORMAT);
             parser.setLenient(false);
-            pAttribute.addValue(parser.parse(pValue));
+            attr.addValue(parser.parse(newVal));
         }
         catch (ParseException e) {
-            String msg = ControlersMessages.getInstance().getMessage("sipad.domain.descriptor.date.parse.error", pValue,
-                                                                 DATE_ATTRIBUTE_FORMAT);
-            logger_.error(msg, e);
-            throw new DomainFileException(msg, e);
-        }
+            String msg = String.format("The '%s' does not match the '%s' format", newVal, DATE_ATTRIBUTE_FORMAT);
+            LOGGER.error(msg, e);
+            throw new ModuleException(msg, e);        }
     }
 
     /**
      * Cette methode doit retourner une presentation String de l'objet pValue. Dans le cas de cette methode pValue doit
      * etre de la classe <code>java.util.Date</code>.
      * 
-     * @param pValue
+     * @param newVal
      *            La valeur courante.
      * @return La valeur courante transformee en string.
-     * @since 1.0
      */
     @Override
-    public Element doGetValueAsString(Object pValue) {
+    public Element doGetValueAsString(Object newVal) {
         Element value = new Element(XML_ELEMENT_VALUE);
         DateFormat formater = new SimpleDateFormat(DATE_ATTRIBUTE_FORMAT);
-        value.addContent(formater.format((Date) pValue));
+        value.addContent(formater.format((Date) newVal));
         return value;
     }
 }

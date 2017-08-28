@@ -22,20 +22,12 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  *
  * Plugin de generation des metadonnees produit pour la mission SENTINEL-3
  *
- * @author CS
- * @since 5.5.2
+ * @author Christophe Mertz
  */
 public class Sent3aProductMetadataPlugin extends GenericProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SENT3A";
 
-    /**
-     *
-     * Methode surchargee
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.GenericProductMetadataPlugin#getProjectName()
-     * @since 5.5.2
-     */
     @Override
     protected String getProjectName() {
         return PROJECT_NAME;

@@ -30,29 +30,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 
 /**
- * @author CS
- * @since 1.2
+ * @author Christophe Mertz
  */
 
-public class ProductMetadataPluginImpl implements ICreateProductMetadataPlugin {
+public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
 
-    /**
-     * Logger de la classe
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductMetadataPluginImpl.class);
 
     /**
-     * Cree les metadata niveau produit Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICreateProductMetadataPlugin#createMetadataPlugin(String, Map, String, String,
-     *      String)
-     * @since 1.2
-     * @DM SIPNG-DM-0047-CN : modification de la signature
+     * Cree les metadata niveau produit
      */
     @Override
     public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
@@ -111,8 +103,6 @@ public class ProductMetadataPluginImpl implements ICreateProductMetadataPlugin {
      * @param pDescFile
      *            Objet descripteur
      * @throws IOException
-     * @since 1.2
-     * @FA SIPNG-FA-0400-CN : ajout de code
      */
     private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
 
@@ -134,6 +124,13 @@ public class ProductMetadataPluginImpl implements ICreateProductMetadataPlugin {
             LOGGER.info("***** DO NOT compute PRODUCT xml descriptor");
         }
         return xmlString;
+    }
+
+    @Override
+    public String generateXml(File pFile, String pProjectName, String pDicoName, String pDataSetId)
+            throws ModuleException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

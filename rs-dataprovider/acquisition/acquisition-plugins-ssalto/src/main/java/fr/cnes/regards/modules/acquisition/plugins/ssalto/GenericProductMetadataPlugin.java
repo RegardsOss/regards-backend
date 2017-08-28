@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -46,6 +47,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.repository.PluginsRespositoryProperties;
@@ -54,8 +56,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurat
 /**
  * PlugIn generic de creation de metadonnees d'un produit. Cette classe possède une specification pour chaque produit.
  *
- * @author CS
- * @since 1.2
+ * @author Christophe Mertz
  */
 public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin {
 
@@ -184,9 +185,8 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
         // init the attributeOrderMap_ from the attributeOrderConfigurationFile.
         attributeOrderProperties_ = new Properties();
         try {
-            attributeOrderProperties_.load(ATTRIBUTE_ORDER_PROP_FILE);
-
-        } catch (FileException e) {
+            attributeOrderProperties_.load(new FileReader(ATTRIBUTE_ORDER_PROP_FILE));
+        } catch (IOException e) {
             String message = "unable to load property file" + ATTRIBUTE_ORDER_PROP_FILE;
             LOGGER.error(message, e);
             throw new ModuleException(message);
@@ -231,11 +231,6 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
 
     /**
      * cree les meta donnees pour le produit pProductName, les fichier pFileList et le jeux de donnees pDataSetName
-     * Methode surchargee
-     *
-     * @see ssalto.domain.plugins.decl.ICreateProductMetadataPlugin#createMetadataPlugin(String, Map, String, String,
-     *      String)
-     * @since 1.2
      */
     @Override
     public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
@@ -302,7 +297,6 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
      *            la map des attributs
      * @param pAttribute
      *            l'attribut a enregistrer.
-     * @since 1.0
      */
     protected void registerAttribute(String pName, Map<Integer, Attribute> pAttributeMap, Attribute pAttribute) {
 
@@ -313,7 +307,6 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
      * permet d'ajouter d'autres attributs que ceux definit dans le fichier de configuration
      *
      * @param pAttributeMap
-     * @since 1.0
      */
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -324,7 +317,6 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
      * permet d'ajouter d'autres attributs que ceux definit dans le fichier de configuration
      *
      * @param pAttributeMap
-     * @since 1.0
      */
     protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws ModuleException {
@@ -336,8 +328,6 @@ public abstract class GenericProductMetadataPlugin implements IGenerateSIPPlugin
         // TODO CMZ à confirmer
         return null;
     }
-
-    // Getters and Setters
 
     protected Properties getAttributeOrderProperties() {
         return attributeOrderProperties_;

@@ -24,9 +24,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.ReadFileException;
 
-
 /**
- * plugin de verification des fichiers generic. Verifi uniquement la taille du nom du fichier.
+ * plugin de verification des fichiers generic. Verifi uniquement la taille du nom du fichier
  * 
  * @author Christophe Mertz
  *
@@ -35,7 +34,6 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
 
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
-    // Attributes
     private String productName_;
 
     private int productVersion_;
@@ -44,65 +42,27 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
 
     private String logFilePath_;
 
-    /**
-     * @DM SIPNG-DM-0060-CN : creation
-     * @since 1.3
-     */
     private String nodeIdentifier_;
 
-    /**
-     * Constructeur de la classe
-     * 
-     * @since 1.2
-     * 
-     */
     public GenericCheckingPlugin() {
         super();
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getFileVersion()
-     * @since 1.2
-     */
     @Override
     public int getFileVersion() {
         return fileVersion_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getLogFile()
-     * @since 1.2
-     */
     @Override
     public String getLogFile() {
         return logFilePath_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductName()
-     * @since 1.2
-     */
     @Override
     public String getProductName() {
         return productName_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductVersion()
-     * @since 1.2
-     */
     @Override
     public int getProductVersion() {
         return productVersion_;
@@ -113,16 +73,6 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
         return nodeIdentifier_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @throws SsaltoDomainException
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#runPlugin(File, String)
-     * @since 1.2
-     * @DM SIPNG-DM-0060-CN : modification signature
-     */
     @Override
     public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
 
@@ -136,8 +86,7 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
             // pFiletoCheck
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
                 productName_ = name.substring(0, PRODUCT_NAME_MAX_SIZE);
-            }
-            else {
+            } else {
                 productName_ = name;
             }
             nodeIdentifier_ = productName_;
@@ -145,8 +94,7 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
             fileVersion_ = 1;
             logFilePath_ = null; // TODO
             result = true;
-        }
-        else {
+        } else {
             throw new ReadFileException(pFiletoCheck.getAbsolutePath());
         }
 

@@ -38,7 +38,8 @@ public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin 
     private static final String PREFIX_POE_CDDIS_COM = "POE_CDDIS_COM_";
 
     /**
-     * Methode definissant un element xml de type DataStorageElement Methode surchargee Traite les cas particuliers
+     * Methode definissant un element xml de type DataStorageElement.
+     * Traite les cas particuliers
      * JASON1_DORIS1B_MOE_CDDIS, JASON1_DORIS1B_MOE_CDDIS_COM, JASON1_DORIS1B_POE_CDDIS_COM data_storage_object_id doit
      * etre prefixe respectivement par MOE_CDDIS_, MOE_CDDIS_COM_ , POE_CDDIS_COM_
      */
@@ -70,14 +71,14 @@ public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin 
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
         // TODO CMZ à confirmer
         //        setOnlinePath(dataStorageObject, pSsaltoFile);
-        
+
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
-        
+
         // TRANSFORMATION_SO_DO
         // TODO CMZ à confirmer        
         //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
-        
+
         return dataStorageObject;
     }
 

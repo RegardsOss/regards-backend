@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,25 +54,11 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
 
     private static final String TRANSACTION_FILE = "OGDRTranslationFile.properties";
 
-    //    /**
-    //     * Methode surchargee
-    //     *
-    //     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.GenericProductMetadataPlugin#doCreateDependantSpecificAttributes(java.util.Map,
-    //     *      java.util.Map)
-    //     * @since 1.3
-    //     */
-    //    @Override
-    //    protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
-    //            throws PluginAcquisitionException {
-    //        registerOptionAttribute(pFileMap, pAttributeMap);
-    //    }
-
     /**
      *
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     private void registerOptionAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -95,7 +83,6 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<String> getOptionValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         String value = null;
@@ -116,13 +103,13 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
                 final String translationDirectory = pluginsRespositoryProperties.getPluginTranslationFilesDir();
                 final File translationFile = new File(translationDirectory, TRANSACTION_FILE);
                 if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
-                    translationProperties.load(translationFile);
+                    translationProperties.load(new FileReader(translationFile));
                 } else {
                     LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
                             + ". Checking in classpath ...");
-                    translationProperties.load("/ssalto/domain/plugins/impl/" + TRANSACTION_FILE);
+                    translationProperties.load(new FileReader("/ssalto/domain/plugins/impl/" + TRANSACTION_FILE));
                 }
-            } catch (final Exception e) {
+            } catch (IOException e) {
                 final String msg = "unable to load the translation properties file";
                 LOGGER.error(msg, e);
                 throw new PluginAcquisitionException(msg, e);

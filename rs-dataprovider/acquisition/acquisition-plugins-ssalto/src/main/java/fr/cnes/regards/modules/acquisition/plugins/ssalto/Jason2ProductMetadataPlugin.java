@@ -24,9 +24,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  * fileNameFinder, et les autres. Chaque finder renvoie une class Attribute qui est ajoutee ensuite dans une class
  * DataObjectDescriptionElement. Cet Element sert a creer le fichier de configuration grace à la classe descriptorFile
  * 
- * @author CS
- * @version 1.2
- * @since 1.2
+ * @author Christophe Mertz
  */
 public class Jason2ProductMetadataPlugin extends GenericProductMetadataPlugin {
 

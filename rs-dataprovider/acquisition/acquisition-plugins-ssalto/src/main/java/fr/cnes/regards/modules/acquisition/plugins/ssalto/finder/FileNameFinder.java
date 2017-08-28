@@ -113,8 +113,6 @@ public class FileNameFinder extends AttributeFinder {
         return valueList;
     }
 
-    // GETTERS AND SETTERS
-
     public void addGroupNumber(String pGroupNumber) {
         if (groupNumberList == null) {
             groupNumberList = new ArrayList<>();

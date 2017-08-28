@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.ReadFileException;
 
-
 /**
  * plugin de verification des fichiers pour les fournitures de jason2 qui ne contiennent qu'un type de fichier. le nom
  * du produit renvoye est le meme que le nom du fichier on ne supprime pas les extensions.
@@ -61,46 +60,18 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
         super();
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getFileVersion()
-     * @since 1.2
-     */
     public int getFileVersion() {
         return fileVersion_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getLogFile()
-     * @since 1.2
-     */
     public String getLogFile() {
         return logFilePath_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductName()
-     * @since 1.2
-     */
     public String getProductName() {
         return productName_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductVersion()
-     * @since 1.2
-     */
     public int getProductVersion() {
         return productVersion_;
     }
@@ -109,16 +80,6 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
         return nodeIdentifier_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @throws SsaltoDomainException
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#runPlugin(File, String)
-     * @since 1.2
-     * @DM SIPNG-DM-0060-CN : modification signature
-     */
     public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
 
         boolean result = false;
@@ -131,8 +92,7 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
             // pFiletoCheck
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
                 productName_ = name.substring(0, PRODUCT_NAME_MAX_SIZE);
-            }
-            else {
+            } else {
                 productName_ = name;
             }
             nodeIdentifier_ = productName_;
@@ -140,8 +100,7 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
             fileVersion_ = 1;
             logFilePath_ = null; // TODO
             result = true;
-        }
-        else {
+        } else {
             throw new ReadFileException(pFiletoCheck.getAbsolutePath());
         }
 

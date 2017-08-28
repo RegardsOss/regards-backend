@@ -43,7 +43,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
 
 public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadataPlugin {
 
-    
     private static final Logger LOGGER = LoggerFactory.getLogger(Cryosat2Doris10ProductMetadataPlugin.class);
 
     private static final String TIME_PERIOD = "TIME_PERIOD";
@@ -65,9 +64,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#init(java.lang.String)
+     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
     public void init(String pDataSetName) throws ModuleException {
@@ -77,11 +74,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * cree les attributs time_period et file_creation_date Methode surchargee
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
-     *      java.util.Map)
-     * @since 1.2
+     * cree les attributs time_period et file_creation_date
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -95,7 +88,6 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     private void registerTimePeriodAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -113,8 +105,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
                                                                            getStopDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap_.put(STOP_DATE, stopDateAttribute.getValueList());
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + TIME_PERIOD;
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
@@ -128,7 +119,6 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -142,21 +132,17 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
                     String dateStr = matcherD.group(1);
                     Date date = format.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(2);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(2);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -168,7 +154,6 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -185,21 +170,17 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
                     Date date = startDateValueList.get(i);
                     long newTime = date.getTime() + 86400000;
                     valueList.add(new Date(newTime));
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(3);
+                    Date date = format.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(3);
-                        Date date = format.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
             i++;
@@ -212,7 +193,6 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * @param pSsaltoFileList
      * @return
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
         List<Date> valueList = new ArrayList<>();
@@ -230,21 +210,17 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
                     String dateStr = helper.getValue(2, cdPattern, 1);
                     Date date = fileFormat.parse(dateStr);
                     valueList.add(date);
+                } else if (matcherP.matches()) {
+                    String dateStr = matcherP.group(1);
+                    Date date = fileNameFormat.parse(dateStr);
+                    valueList.add(date);
+                } else {
+                    String msg = "filename does not match";
+                    LOGGER.error(msg);
+                    throw new PluginAcquisitionException(msg);
                 }
-                else
-                    if (matcherP.matches()) {
-                        String dateStr = matcherP.group(1);
-                        Date date = fileNameFormat.parse(dateStr);
-                        valueList.add(date);
-                    }
-                    else {
-                        String msg = "filename does not match";
-                        LOGGER.error(msg);
-                        throw new PluginAcquisitionException(msg);
-                    }
 
-            }
-            catch (ParseException e) {
+            } catch (ParseException e) {
                 throw new PluginAcquisitionException(e);
             }
         }
@@ -256,20 +232,17 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * @param pFileMap
      * @param pAttributeMap
      * @throws PluginAcquisitionException
-     * @since 1.3
      */
     private void registerFileCreationDateAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
         try {
-            Attribute fileCreationDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME,
-                                                                                   CREATION_DATE,
-                                                                                   getCreationDateValue(pFileMap
-                                                                                           .keySet()));
+            Attribute fileCreationDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
+                                     getCreationDateValue(pFileMap.keySet()));
             registerAttribute(CREATION_DATE, pAttributeMap, fileCreationDateAttribute);
             attributeValueMap_.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
             throw new PluginAcquisitionException(msg, e);
         }

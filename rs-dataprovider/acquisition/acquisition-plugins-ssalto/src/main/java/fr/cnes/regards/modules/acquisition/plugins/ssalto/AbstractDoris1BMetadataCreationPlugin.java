@@ -30,15 +30,13 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
     /**
      * Liste des correspondances DatasetName => Prexix
      */
-    protected Map<String, String> prefixMap_ = null;
+    protected Map<String, String> prefixMap = null;
 
     /**
-     * Methode definissant un element xml de type DataStorageElement Methode surchargee Traite les cas particuliers
+     * Methode definissant un element xml de type DataStorageElement.
+     * Traite les cas particuliers
      * JASON1_DORIS1B_MOE_CDDIS, JASON1_DORIS1B_MOE_CDDIS_COM, JASON1_DORIS1B_POE_CDDIS_COM data_storage_object_id doit
      * etre prefixe respectivement par MOE_CDDIS_, MOE_CDDIS_COM_ , POE_CDDIS_COM_
-     * 
-     * @since 1.3
-     * @DM SIPNG-DM-0047-CN : Creation : Ajout de pPRojectName et pDicoName
      */
     @Override
     protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
@@ -52,8 +50,8 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
         String dataObjectIdentifier = pSsaltoFile.getName();
 
         // DATA_STORAGE_OBJECT_IDENTIFIER
-        if ((prefixMap_ != null) && prefixMap_.containsKey(pDataSetId)) {
-            String prefix = prefixMap_.get(pDataSetId);
+        if ((prefixMap != null) && prefixMap.containsKey(pDataSetId)) {
+            String prefix = prefixMap.get(pDataSetId);
             dataObjectIdentifier = prefix + dataObjectIdentifier;
         } else {
             throw new ModuleException("Prefix for " + pDataSetId + "does not exist!");
@@ -67,7 +65,8 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
             dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
-        setOnlinePath(dataStorageObject, pSsaltoFile);
+        // TODO CMZ à confirmer
+        //        setOnlinePath(dataStorageObject, pSsaltoFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
         //        // TRANSFORMATION_SO_DO
@@ -79,13 +78,12 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
      * 
      * @param pDatasetName
      * @param pPrefix
-     * @since 1.3
      */
     protected void addDatasetNamePrexif(String pDatasetName, String pPrefix) {
-        if (prefixMap_ == null) {
-            prefixMap_ = new HashMap<>();
+        if (prefixMap == null) {
+            prefixMap = new HashMap<>();
         }
-        prefixMap_.put(pDatasetName, pPrefix);
+        prefixMap.put(pDatasetName, pPrefix);
     }
 
 }

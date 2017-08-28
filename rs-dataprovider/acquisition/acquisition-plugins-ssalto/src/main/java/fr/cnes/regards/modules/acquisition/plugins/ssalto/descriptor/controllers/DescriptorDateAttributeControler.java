@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers;
 
 import java.text.DateFormat;
@@ -28,26 +46,26 @@ public class DescriptorDateAttributeControler extends DateAttributeControler {
     /**
      * Ajoute une valeur a l'attribut. La chaine en entree doit etre du format yyyy/MM/dd
      * 
-     * @param pValue
+     * @param newVal
      *            La valeur a ajouter
      */
-    public void addStringValue(DescriptorDateAttribute pAttribute, String pValue) throws ModuleException {
+    public void addStringValue(DescriptorDateAttribute attr, String newVal) throws ModuleException {
         try {
             DateFormat parser = new SimpleDateFormat(DATE_ATTRIBUTE_FORMAT);
             parser.setLenient(false);
-            pAttribute.addValue(parser.parse(pValue));
+            attr.addValue(parser.parse(newVal));
         } catch (ParseException e) {
-            String msg = String.format("The '%s' does not match the '%s' format", pValue, DATE_ATTRIBUTE_FORMAT);
+            String msg = String.format("The '%s' does not match the '%s' format", newVal, DATE_ATTRIBUTE_FORMAT);
             LOGGER.error(msg, e);
             throw new ModuleException(msg, e);
         }
     }
 
     @Override
-    public Element doGetValueAsString(Object pValue) {
+    public Element doGetValueAsString(Object newVal) {
         Element value = new Element(XML_ELEMENT_VALUE);
         DateFormat formater = new SimpleDateFormat(DATE_ATTRIBUTE_FORMAT);
-        value.addContent(formater.format((Date) pValue));
+        value.addContent(formater.format((Date) newVal));
         return value;
     }
 }

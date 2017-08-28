@@ -50,49 +50,21 @@ public class CheckInPluginFalse implements ICheckFilePlugin {
         super();
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getFileVersion()
-     * @since 1.2
-     */
     @Override
     public int getFileVersion() {
         return fileVersion_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getLogFile()
-     * @since 1.2
-     */
     @Override
     public String getLogFile() {
         return logFilePath_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductName()
-     * @since 1.2
-     */
     @Override
     public String getProductName() {
         return productName_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#getProductVersion()
-     * @since 1.2
-     */
     @Override
     public int getProductVersion() {
         return productVersion_;
@@ -103,16 +75,6 @@ public class CheckInPluginFalse implements ICheckFilePlugin {
         return nodeIdentifier_;
     }
 
-    /**
-     * 
-     * Methode surchargee
-     * 
-     * @throws SsaltoDomainException
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#runPlugin(File, String)
-     * @since 1.2
-     * @DM SIPNG-DM-0060-CN : modification signature
-     */
     @Override
     public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
 

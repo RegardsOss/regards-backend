@@ -23,7 +23,6 @@ import java.util.List;
 
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 
-
 /**
  * Cette classe permet de representer un element DATA_OBJECT_DESCRIPTION, de le parser pour pouvoir le reintegrer dans
  * le fichier global. Nous n'avons pas besoin de connaitre le contenu du bloc descripteur
@@ -94,8 +93,6 @@ public class DataObjectDescriptionElement extends DataObjectElement {
     /**
      * 
      * renvoie DESC_ELEMENT_TYPE
-     * 
-     * @see ssalto.domain.data.descriptor.IDescriptorElement#getElementType()
      */
     @Override
     public ElementType getElementType() {
@@ -103,9 +100,7 @@ public class DataObjectDescriptionElement extends DataObjectElement {
     }
 
     /**
-     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs. Methode surchargee
-     * 
-     * @see ssalto.domain.data.descriptor.EntityDescriptorElement#getOrder()
+     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs
      */
     @Override
     protected int getOrder() {
@@ -168,113 +163,46 @@ public class DataObjectDescriptionElement extends DataObjectElement {
         fileSize = newFileSize;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the startDate
-     * @since 5.2
-     */
     public String getStartDate() {
         return startDate;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the stopDate
-     * @since 5.2
-     */
     public String getStopDate() {
         return stopDate;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the cycleNumber
-     * @since 5.2
-     */
     public String getCycleNumber() {
         return cycleNumber;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the longitudeMin
-     * @since 5.2
-     */
     public String getLongitudeMin() {
         return longitudeMin;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the longitudeMax
-     * @since 5.2
-     */
     public String getLongitudeMax() {
         return longitudeMax;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the latitudeMin
-     * @since 5.2
-     */
     public String getLatitudeMin() {
         return latitudeMin;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the latitudeMax
-     * @since 5.2
-     */
     public String getLatitudeMax() {
         return latitudeMax;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the fileCreationDate
-     * @since 5.2
-     */
     public String getFileCreationDate() {
         return fileCreationDate;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the objectVersion
-     * @since 5.2
-     */
     public String getObjectVersion() {
         return objectVersion;
     }
 
-    /**
-     * Get method.
-     * 
-     * @return the attributeLst
-     * @since 5.2
-     */
     public List<Attribute> getAttributeLst() {
         return attributeLst;
     }
 
-    /**
-     * Set method.
-     * 
-     * @param pAttributeLst
-     *            the attributeLst to set
-     * @since 5.2
-     */
     public void setAttributeLst(List<Attribute> pAttributeLst) {
         attributeLst = pAttributeLst;
     }

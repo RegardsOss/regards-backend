@@ -1,12 +1,20 @@
 /*
- * $Id$
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
- * HISTORIQUE
+ * This file is part of REGARDS.
  *
- * VERSION : 5.2 : DM : SIPNG-DM-0112-CN : 01/07/2012 : RIA
- * Creation
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * FIN-HISTORIQUE
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers;
 
@@ -20,7 +28,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement;
-import sipad.controlers.SipadControlers;
 
 /**
  * Cette classe permet de representer un element DATA_OBJECT_DESCRIPTION, de le parser pour pouvoir le reintegrer dans
@@ -35,7 +42,7 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
     }
 
     /**
-     * renvoie le bloc DATA_OBJECT_DESCRIPTION_SSALTO a inserer dans un fichier descripteur Methode surchargee
+     * renvoie le bloc DATA_OBJECT_DESCRIPTION_SSALTO a inserer dans un fichier descripteur
      */
     @Override
     public Element getElement(EntityDescriptorElement pEntityDescriptorElement, DocumentImpl pNewDoc) {
@@ -43,11 +50,12 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
         Element doDescriptorElement = null;
 
         //        try {
-        doDescriptorElement = pNewDoc
-                .createElement(DescConfiguration.getInstance().getProperties().getDataObjectDescriptionNode());
-        doDescriptorElement
-                .setAttribute(ENTITY_TYPE,
-                              DescConfiguration.getInstance().getProperties().getDataObjectDescriptionType());
+        doDescriptorElement = pNewDoc.createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
+        // TODO CMZ à confirmer
+        //                .createElement(DescConfiguration.getInstance().getProperties().getDataObjectDescriptionNode());
+        doDescriptorElement.setAttribute(ENTITY_TYPE, "DATA_OBJECT_DESCRIPTION");
+        //                .setAttribute(ENTITY_TYPE,
+        //                              DescConfiguration.getInstance().getProperties().getDataObjectDescriptionType());
         Element identifierElement = pNewDoc.createElement(DATA_OBJECT_IDENTIFIER);
         identifierElement.appendChild(pNewDoc.createTextNode(dataObjectDescriptionElement.getDataObjectIdentifier()));
         doDescriptorElement.appendChild(identifierElement);
@@ -65,8 +73,6 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
      * 
      * @param pDataObjectElement
      * @param pNewDoc
-     * @since 1.0
-     * @DM SIPNG-DM-0047-CN : externalisation de la construction du bloc des compositeAttribute
      */
     protected void buildElement(DataObjectDescriptionElement pDataObjectDescriptionElement, Element pDataObjectElement,
             DocumentImpl pNewDoc) {
@@ -85,9 +91,6 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
 
     /**
      * construit le bloc de l'attribute fileSize
-     * 
-     * @since 1.2
-     * @DM SIPNG-DM-0047-CN : creation
      */
     private void buildFileSizeElement(DataObjectDescriptionElement pDataObjectDescriptionElement,
             Element pDataObjectElement, DocumentImpl pNewDoc) {
@@ -104,22 +107,18 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
      * @param element
      * @param pAttribute
      * @param pNewDoc
-     * @since 1.0
      */
     protected void buildAttributeElement(Element element, Attribute pAttribute, DocumentImpl pNewDoc) {
         for (Object value : pAttribute.getValueList()) {
             Element attElement = pNewDoc.createElement(pAttribute.getMetaAttribute().getName());
             attElement.appendChild(pNewDoc
-                    .createTextNode(SipadControlers.getControler(pAttribute).doGetStringValue(value)));
+                    .createTextNode(SsaltoControlers.getControler(pAttribute).doGetStringValue(value)));
             element.appendChild(attElement);
         }
     }
 
     /**
-     * remplace l'ancien descripteur par le nouveau Methode surchargee
-     * 
-     * @see ssalto.domain.data.descriptor.EntityDescriptorElement#merge(ssalto.domain.data.descriptor.EntityDescriptorElement)
-     * @since 1.0
+     * remplace l'ancien descripteur par le nouveau
      */
     @Override
     public void merge(EntityDescriptorElement pEntityDescriptorElement, EntityDescriptorElement pDescriptorElement) {
@@ -136,11 +135,10 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
     }
 
     /**
-     * Methode utilisee pour le plugin niveau produit ...
+     * Methode utilisee pour le plugin niveau produit
      * 
      * @param pDoDescriptorElement
      * @param pNewDoc
-     * @since 1.0
      */
     private void buildOtherElement(DataObjectDescriptionElement pDataObjectDescriptionElement,
             Element pDoDescriptorElement, DocumentImpl pNewDoc) {

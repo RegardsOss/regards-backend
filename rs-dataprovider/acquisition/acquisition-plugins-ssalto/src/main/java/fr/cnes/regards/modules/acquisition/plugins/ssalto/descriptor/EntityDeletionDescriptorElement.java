@@ -25,9 +25,7 @@ public class EntityDeletionDescriptorElement extends EntityDescriptorElement {
     }
 
     /**
-     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs. Methode surchargee
-     * 
-     * @see ssalto.domain.data.descriptor.EntityDescriptorElement#getOrder()
+     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs
      */
     @Override
     protected int getOrder() {

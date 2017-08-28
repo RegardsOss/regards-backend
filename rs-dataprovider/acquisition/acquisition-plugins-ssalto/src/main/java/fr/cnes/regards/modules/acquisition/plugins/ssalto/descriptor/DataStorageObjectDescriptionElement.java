@@ -35,7 +35,7 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
 
     /**
      * renvoie true si pObj est de type DataStorageObjectDescriptionElement et que les dataStorageObjectIdentifier sont
-     * identiques Methode surchargee
+     * identiques
      */
     @Override
     public boolean equals(Object obj) {
@@ -48,7 +48,7 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
     }
 
     /**
-     * renvoie DESC_ELEMENT_TYPE Methode surchargee
+     * renvoie DESC_ELEMENT_TYPE
      */
     @Override
     public ElementType getElementType() {
@@ -56,9 +56,7 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
     }
 
     /**
-     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs. Methode surchargee
-     * 
-     * @see ssalto.domain.data.descriptor.EntityDescriptorElement#getOrder()
+     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs
      */
     @Override
     protected int getOrder() {

@@ -59,15 +59,12 @@ public class CompressManager {
      */
     private File compressedFile_;
 
-    // Getters & setters
-
     public synchronized void setPercentage(double pPercentage) {
         percentage_ = pPercentage * ratio_;
     }
 
     public synchronized void upPercentage(long pPercentageToAdd) {
         percentage_ += pPercentageToAdd * ratio_;
-
     }
 
     public double getPercentage() {

@@ -43,9 +43,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
  */
 public class Pk4OnBoardProductMetaDataPlugin extends GenericProductMetadataPlugin {
 
-    /**
-     * Logger de la classe
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Pk4OnBoardProductMetaDataPlugin.class);
 
     private static final String PROJECT_NAME = "PK4";

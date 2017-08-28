@@ -56,32 +56,14 @@ public class CompressionTypeEnum {
      */
     private String extension = null;
 
-    /**
-     * Constructeur prive
-     * 
-     * @since 1.0
-     * @param type
-     *            le type de compression à appliquer.
-     */
     private CompressionTypeEnum(String type, String fileExtension) {
         value = type;
         extension = fileExtension;
     }
 
-    /**
-     * Default constructor
-     * 
-     * @since 1.0
-     */
     private CompressionTypeEnum() {
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see java.lang.Object#toString()
-     * @return l'objet sous forme d'une chaine de caractères.
-     */
     @Override
     public String toString() {
         return value;

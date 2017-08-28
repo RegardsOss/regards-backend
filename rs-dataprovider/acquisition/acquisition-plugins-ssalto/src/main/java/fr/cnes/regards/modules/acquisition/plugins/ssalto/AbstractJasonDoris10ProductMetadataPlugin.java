@@ -72,9 +72,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
     }
 
     /**
-     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique. Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#init(java.lang.String)
+     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
     public void init(String pDataSetName) throws ModuleException {
@@ -86,10 +84,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
     }
 
     /**
-     * cree les attributs time_period et file_creation_date Methode surchargee
-     *
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.Jason2ProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.List,
-     *      java.util.Map)
+     * cree les attributs time_period et file_creation_date
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)

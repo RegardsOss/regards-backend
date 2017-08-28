@@ -28,7 +28,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 public class DataObjectUpdateElement extends DataObjectElement {
 
     /**
-     * retourne true si les identfiants sont les memes Methode surchargee
+     * retourne true si les identfiants sont les memes
      */
     @Override
     public boolean equals(Object pObj) {
@@ -41,7 +41,7 @@ public class DataObjectUpdateElement extends DataObjectElement {
     }
 
     /**
-     * renvoie UPDATE_ELEMENT_TYPE Methode surchargee
+     * renvoie UPDATE_ELEMENT_TYPE
      */
     @Override
     public ElementType getElementType() {
@@ -49,7 +49,7 @@ public class DataObjectUpdateElement extends DataObjectElement {
     }
 
     /**
-     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs. Methode surchargee
+     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs
      */
     @Override
     protected int getOrder() {

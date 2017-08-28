@@ -59,11 +59,7 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
 
     /**
      * Cette methode supprime du nom du fichier l'extension _HDR ou _BIN si elle est presente dans le fichier. Sinon
-     * renvoie le nom du fichier. Methode surchargee
-     * 
-     * @see ssalto.domain.plugins.decl.ICheckFilePlugin#runPlugin(java.io.File)
-     * @since 1.2
-     * @DM SIPNG-DM-0060-CN : modification signature
+     * renvoie le nom du fichier
      */
     @Override
     public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException {

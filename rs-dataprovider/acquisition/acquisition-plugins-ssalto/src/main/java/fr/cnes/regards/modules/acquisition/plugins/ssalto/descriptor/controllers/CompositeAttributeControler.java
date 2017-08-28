@@ -59,7 +59,7 @@ public class CompositeAttributeControler extends AttributeControler {
             for (Attribute anotherAttribute : attribute.getAttributeList()) {
                 for (Object value : anotherAttribute.getValueList()) {
                     org.jdom.Element attElement = new org.jdom.Element(anotherAttribute.getMetaAttribute().getName());
-                    String val = SipadControlers.getControler(anotherAttribute).doGetStringValue(value);
+                    String val = SsaltoControlers.getControler(anotherAttribute).doGetStringValue(value);
                     attElement.addContent(val);
                     // add attribute element to the composite root element
                     element.addContent(attElement);
@@ -83,7 +83,7 @@ public class CompositeAttributeControler extends AttributeControler {
                     for (Object value : anotherAttribute.getValueList()) {
                         org.jdom.Element attElement = new org.jdom.Element(anotherAttribute.getMetaAttribute()
                                 .getName(), xmlns);
-                        String val = SipadControlers.getControler(anotherAttribute).doGetStringValue(value);
+                        String val = SsaltoControlers.getControler(anotherAttribute).doGetStringValue(value);
                         attElement.addContent(val);
                         // add attribute element to the composite root element
                         element.addContent(attElement);
@@ -113,7 +113,7 @@ public class CompositeAttributeControler extends AttributeControler {
         for (Attribute anotherAttribute : compositeAttribute.getAttributeList()) {
             for (Object value : anotherAttribute.getValueList()) {
                 Element attElement = newDoc.createElement(anotherAttribute.getMetaAttribute().getName());
-                String val = SipadControlers.getControler(anotherAttribute).doGetStringValue(value);
+                String val = SsaltoControlers.getControler(anotherAttribute).doGetStringValue(value);
                 attElement.appendChild(newDoc.createTextNode(val));
                 if (name != null) {
                     // add attribute element to the composite root element

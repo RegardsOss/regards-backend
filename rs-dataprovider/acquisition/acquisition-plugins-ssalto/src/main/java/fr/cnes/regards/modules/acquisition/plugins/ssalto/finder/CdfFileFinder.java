@@ -38,7 +38,6 @@ public abstract class CdfFileFinder extends DataFileFinder {
         return buff.toString();
     }
 
-    // GETTERS AND SETTERS
     public void setAttributeName(String pAttributeName) {
         attributeName = pAttributeName;
     }

@@ -37,16 +37,14 @@ public abstract class EntityDescriptorElement implements Comparable<Object> {
     public abstract String getEntityId();
 
     /**
-     * renvoie le type de l'element Methode surchargee
+     * renvoie le type de l'element
      * 
      * @return UPDATE_ELEMENT_TYPE ou DESC_ELEMENT_TYPE
      */
     public abstract ElementType getElementType();
 
     /**
-     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs. Methode surchargee
-     * 
-     * @see ssalto.domain.data.descriptor.EntityDescriptorElement#getOrder()
+     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs.
      */
     protected abstract int getOrder();
 
