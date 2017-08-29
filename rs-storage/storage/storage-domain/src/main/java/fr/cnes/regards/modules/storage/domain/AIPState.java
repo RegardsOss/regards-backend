@@ -15,19 +15,23 @@ public enum AIPState {
      */
     VALID,
     /**
-     * Store Job has been scheduled
+     * Data storage has been scheduled
      */
     PENDING,
     /**
-     * Store Job has finish successfully
+     * Metadata storage has been scheduled
+     */
+    STORING_METADATA,
+    /**
+     * Data and metadata storage has finish successfully
      */
     STORED,
     /**
-     * Store Job has encountered a problem
+     * Data or metadata storage has encountered a problem
      */
     STORAGE_ERROR,
     /**
      * AIP has been logically deleted
      */
-    DELETED;
+    DELETED
 }
