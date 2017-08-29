@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
@@ -73,6 +75,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Autowired
     private IUIPluginConfigurationRepository repository;
+
+    @Autowired
+    private IPublisher publisher;
 
     @Override
     public Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pPluginType,
@@ -144,7 +149,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("Configuration is not a valid json format.");
         }
 
-        return repository.save(pPluginConfiguration);
+        UIPluginConfiguration updated = repository.save(pPluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(updated));
+        return updated;
     }
 
     @Override
@@ -162,7 +169,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("Configuration is not a valid json format.");
         }
 
-        return repository.save(pPluginConfiguration);
+        UIPluginConfiguration created = repository.save(pPluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(created));
+        return created;
     }
 
     @Override

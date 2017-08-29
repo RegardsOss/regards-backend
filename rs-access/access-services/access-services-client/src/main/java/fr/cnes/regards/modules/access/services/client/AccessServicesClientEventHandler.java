@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 
 /**
@@ -64,10 +65,11 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         subscriber.subscribeTo(LinkUiPluginsDatasetsEvent.class, new LinkUiPluginsDatasetsEventHandler());
         subscriber.subscribeTo(LinkPluginsDatasetsEvent.class, new LinkPluginsDatasetsEventHandler());
+        subscriber.subscribeTo(UIPluginConfigurationEvent.class, new UIPluginConfigurationEventHandler());
     }
 
     /**
-     * Handle {@link LinkUiPluginsDatasetsEvent} event to refresh group cache
+     * Handle {@link LinkUiPluginsDatasetsEvent} event to clear "servicesAggregated" cache
      *
      * @author Xavier-Alexandre Brochard
      */
@@ -85,7 +87,7 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
     }
 
     /**
-     * Handle {@link LinkPluginsDatasetsEvent} event to refresh group cache
+     * Handle {@link LinkPluginsDatasetsEvent} event to clear "servicesAggregated" cache
      *
      * @author Xavier-Alexandre Brochard
      */
@@ -96,6 +98,27 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
                 clearServicesAggregatedCache();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
+    /**
+     * Handle {@link UIPluginConfigurationEvent} event to clear "servicesAggregated" cache.
+     * We maybe could optimize and change cache content instead of clearing...
+     *
+     * @author Xavier-Alexandre Brochard
+     */
+    private class UIPluginConfigurationEventHandler implements IHandler<UIPluginConfigurationEvent> {
+
+        @Override
+        public void handle(TenantWrapper<UIPluginConfigurationEvent> wrapper) {
+            try {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                if (wrapper.getContent().getUiPluginConfiguration().getLinkedToAllEntities()) {
+                    clearServicesAggregatedCache();
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

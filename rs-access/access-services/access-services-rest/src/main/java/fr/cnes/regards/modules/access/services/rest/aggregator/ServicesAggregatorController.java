@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.rest.assembler.PluginServiceDtoResourcesAssembler;
@@ -93,7 +94,8 @@ public class ServicesAggregatorController {
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset")
+    @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode) {
