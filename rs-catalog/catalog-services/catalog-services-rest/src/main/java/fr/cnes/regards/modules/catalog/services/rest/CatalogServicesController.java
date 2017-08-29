@@ -23,6 +23,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,7 +93,8 @@ public class CatalogServicesController {
      */
     @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> applyService(@PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
+    public ResponseEntity<InputStreamResource> applyService(
+            @PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
             @RequestBody ServicePluginParameters pServiceParameters, HttpServletResponse response)
             throws ModuleException {
         return serviceManager.apply(pPluginConfigurationId, pServiceParameters, response);
