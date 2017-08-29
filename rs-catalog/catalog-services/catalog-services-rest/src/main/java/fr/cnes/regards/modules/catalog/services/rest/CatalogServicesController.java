@@ -76,7 +76,8 @@ public class CatalogServicesController {
      * @return the list of services
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information")
+    @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
             @RequestParam(value = "dataset_id", required = false) final String pDatasetId,
             @RequestParam(value = "service_scope", required = false) final ServiceScope pServiceScope) {
