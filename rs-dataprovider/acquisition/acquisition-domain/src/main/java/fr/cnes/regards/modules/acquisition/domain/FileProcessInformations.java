@@ -16,15 +16,42 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto.tools;
+package fr.cnes.regards.modules.acquisition.domain;
 
-public class PluginConfigurationProperties_mock extends PluginConfigurationProperties {
+import java.time.LocalDateTime;
 
-    public void setOrfFilepath(String orfFilepath_) {
-        pluginProperties.put(ORF_FILE_PATH_KEY, orfFilepath_);
+/**
+ * contient les informations sur un process specifique a un fichier
+ * 
+ * @author Christophe Mertz
+ * 
+ */
+public abstract class FileProcessInformations {
+
+    /**
+     * Date a laquelle le process a traite le fichier
+     */
+    protected LocalDateTime date;
+
+    /**
+     * erreur rencontree lors du traitement du fichier par le process
+     */
+    protected ErrorType error;
+
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public void setCycleFileFilepath(String cycleFileFilepath_) {
-        pluginProperties.put(CYCLE_FILE_PATH_KEY, cycleFileFilepath_);
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
+
+    public ErrorType getError() {
+        return error;
+    }
+
+    public void setError(ErrorType error) {
+        this.error = error;
+    }
+
 }

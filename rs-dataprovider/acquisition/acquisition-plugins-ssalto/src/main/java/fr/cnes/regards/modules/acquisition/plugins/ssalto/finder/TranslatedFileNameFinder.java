@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsResp
 
 /**
  * ce finder recupere une valeur dans le nom d'un fichier a partir du filePattern et de la liste de groupe de capture et
- * ensuite utilise le fichier de traduction pour trouver la valeur correspondante.
+ * ensuite utilise le fichier de traduction pour trouver la valeur correspondante
  * 
  * @author Christophe Mertz
  *
@@ -43,45 +43,38 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsResp
 public class TranslatedFileNameFinder extends FileNameFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
-    
 
     /**
      * fichier de traduction
-     *
-     * @since 1.2
      */
-    private Properties translationProperties_;
-    
+    private Properties translationProperties;
+
     @Autowired
     protected PluginsRespositoryProperties pluginsRespositoryProperties;
 
-
     /**
-     * @param pTranslationPropertiesFilePath
+     * @param translationPropertiesFilePath
      * @throws PluginAcquisitionException
-     * @since 1.2
      */
-    public void setTranslationProperties(String pTranslationPropertiesFilePath) throws PluginAcquisitionException {
-        translationProperties_ = new Properties();
+    public void setTranslationProperties(String translationPropertiesFilePath) throws PluginAcquisitionException {
+        translationProperties = new Properties();
 
         try {
             // Get file from project configured directory
             String translationDirectory = pluginsRespositoryProperties.getPluginTranslationFilesDir();
-            File translationFile = new File(translationDirectory, pTranslationPropertiesFilePath);
+            File translationFile = new File(translationDirectory, translationPropertiesFilePath);
             if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
                 InputStream inStream = new FileInputStream(translationFile);
-                translationProperties_.load(inStream);
-            }
-            else {
+                translationProperties.load(inStream);
+            } else {
                 LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
-                             + ". Checking in classpath ...");
+                        + ". Checking in classpath ...");
                 // TODO CMZ à confirmer
-                File ff = new File("/ssalto/domain/plugins/impl" + pTranslationPropertiesFilePath);
+                File ff = new File("/ssalto/domain/plugins/impl" + translationPropertiesFilePath);
                 InputStream inStream = new FileInputStream(ff);
-                translationProperties_.load(inStream);
+                translationProperties.load(inStream);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             String msg = "unable to load the translation properties file";
             LOGGER.error(msg, e);
             throw new PluginAcquisitionException(msg, e);
@@ -89,16 +82,15 @@ public class TranslatedFileNameFinder extends FileNameFinder {
     }
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         @SuppressWarnings("unchecked")
-        List<Object> valueList = (List<Object>) super.getValueList(pFileMap, pAttributeValueMap);
+        List<Object> valueList = (List<Object>) super.getValueList(fileMap, attributeValueMap);
         List<Object> translatedValues = new ArrayList<>();
         for (Object element : valueList) {
             if (getTranslatedValue(element) != null) {
                 translatedValues.add(getTranslatedValue(element));
-            }
-            else {
+            } else {
                 LOGGER.debug("unable to find translation for value " + element.toString());
             }
         }
@@ -111,15 +103,15 @@ public class TranslatedFileNameFinder extends FileNameFinder {
      * @param pvalue
      * @return
      */
-    protected Object getTranslatedValue(Object pValue) {
-        return translationProperties_.get(pValue);
+    protected Object getTranslatedValue(Object value) {
+        return translationProperties.get(value);
     }
 
     @Override
     public String toString() {
         StringBuffer buff = new StringBuffer();
         buff.append(super.toString());
-        buff.append(" | translationProperties_").append(translationProperties_);
+        buff.append(" | translationProperties").append(translationProperties);
         return buff.toString();
     }
 }

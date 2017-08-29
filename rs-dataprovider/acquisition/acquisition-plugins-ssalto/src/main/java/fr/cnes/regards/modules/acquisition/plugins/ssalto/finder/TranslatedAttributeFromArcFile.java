@@ -53,14 +53,14 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     private final CharsetDecoder decoder = charset_.newDecoder();
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
 
         List<String> resultList = new ArrayList<>();
 
         // Get arc value from name
         @SuppressWarnings("unchecked")
-        List<Integer> arcList = (List<Integer>) super.getValueList(pFileMap, pAttributeValueMap);
+        List<Integer> arcList = (List<Integer>) super.getValueList(fileMap, attributeValueMap);
         Integer arcValue = null;
         if (!arcList.isEmpty() && (arcList.size() == 1)) {
             arcValue = arcList.get(0);
@@ -104,16 +104,16 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     }
 
     /**
-     * Lit un fichier sous forme de charBuffer.
+     * Lit un fichier sous forme de charBuffer
      * 
-     * @param pFile
+     * @param filePath
      * @return
      * @throws IOException
      */
-    private CharBuffer readFile(String pFilepath) throws IOException {
+    private CharBuffer readFile(String filePath) throws IOException {
 
         // Open the file and then get a channel from the stream
-        FileInputStream fis = new FileInputStream(pFilepath);
+        FileInputStream fis = new FileInputStream(filePath);
         FileChannel fc = fis.getChannel();
 
         // Get the file's size and then map it into memory

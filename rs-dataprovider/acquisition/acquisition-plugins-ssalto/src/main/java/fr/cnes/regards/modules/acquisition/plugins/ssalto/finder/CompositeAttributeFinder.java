@@ -33,8 +33,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 
 /**
- * Ce finder permet de construire une classe ssalto.domain.model.CompositeAttribute avec les attributs trouves par les
- * finder qui lui ont ete associes.
+ * Ce finder permet de construire une classe CompositeAttribute avec les attributs trouves par les
+ * finder qui lui ont ete associes
  * 
  * @author Christophe Mertz
  *
@@ -55,7 +55,7 @@ public class CompositeAttributeFinder extends AttributeFinder {
     private String name;
 
     @Override
-    public Attribute buildAttribute(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
 
         LOGGER.debug("START building composite attribute " + getName());
@@ -63,7 +63,7 @@ public class CompositeAttributeFinder extends AttributeFinder {
         CompositeAttribute attribute = new CompositeAttribute();
         attribute.setName(name);
         for (AttributeFinder finder : finderList) {
-            Attribute attribut = finder.buildAttribute(pFileMap, pAttributeValueMap);
+            Attribute attribut = finder.buildAttribute(fileMap, attributeValueMap);
             attribute.addAttribute(attribut);
         }
 
@@ -73,7 +73,7 @@ public class CompositeAttributeFinder extends AttributeFinder {
     }
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         // NOTHING TO DO
         return null;
@@ -94,30 +94,31 @@ public class CompositeAttributeFinder extends AttributeFinder {
         return buff.toString();
     }
 
-    public void addFileFinder(AttributeFinder pFinder) {
+    public void addFileFinder(AttributeFinder newFinder) {
         if (finderList == null) {
             finderList = new ArrayList<>();
         }
-        finderList.add(pFinder);
+        finderList.add(newFinder);
     }
 
-    public void addFileNameFinder(AttributeFinder pFinder) {
-        if (finderList == null) {
-            finderList = new ArrayList<>();
-        }
-        finderList.add(pFinder);
-    }
+    // TODO CMZ à confirmer
+//    public void addFileNameFinder(AttributeFinder pFinder) {
+//        if (finderList == null) {
+//            finderList = new ArrayList<>();
+//        }
+//        finderList.add(pFinder);
+//    }
 
     @Override
-    public void setAttributProperties(PluginConfigurationProperties pConfProperties) {
+    public void setAttributProperties(PluginConfigurationProperties confProperties) {
         for (AttributeFinder finder : finderList) {
-            finder.setAttributProperties(pConfProperties);
+            finder.setAttributProperties(confProperties);
         }
     }
 
     @Override
-    public void setName(String pName) {
-        name = pName;
+    public void setName(String newName) {
+        name = newName;
     }
 
     @Override

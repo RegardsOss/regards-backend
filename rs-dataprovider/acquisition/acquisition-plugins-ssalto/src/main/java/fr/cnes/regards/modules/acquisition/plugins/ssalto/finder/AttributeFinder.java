@@ -26,8 +26,9 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -53,9 +54,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.Comp
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.exception.CompressionException;
 
 /**
- * classe mere des finder dont le but est de construire une classe - Attribute a partir des informations suivante : -
- * liste des fichiers a traiter, fichier de traduction des valeurs des attributs - map des valeurs des attributs deja
- * trouves.
+ * Classe mère des Finder dont le but est de construire une classe - Attribute à partir des informations suivantes :
+ * <li> liste des fichiers a traiter, fichier de traduction des valeurs des attributs
+ * <li> map des valeurs des attributs deja trouves
  * 
  * @author Christophe Mertz
  *
@@ -72,7 +73,7 @@ public abstract class AttributeFinder {
     /**
      * type de valeur de l'attribut a trouver
      */
-    protected fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum valueType;
+    protected AttributeTypeEnum valueType;
 
     /**
      * ordre de traitement de l'attribut a trouver
@@ -122,9 +123,9 @@ public abstract class AttributeFinder {
     /**
      * cree un objet Attribute qui va servir a generer l'element XML dans le fichier descripteur
      * 
-     * @param pAttributeValueMap
+     * @param attributeValueMap
      *            : map de valeurs de l'attribut
-     * @param pFileMap
+     * @param fileMap
      *            la liste des fichiers a traiter, en clef se trouve le fichier a traiter et en valeur, le fichier sur
      *            l'espace de fourniture.
      * @return
@@ -132,7 +133,7 @@ public abstract class AttributeFinder {
      *             en cas d'erreur lors de la creation de l'attribute
      */
     @SuppressWarnings("unchecked")
-    public Attribute buildAttribute(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
 
         LOGGER.debug("START building attribute " + getName());
@@ -143,7 +144,7 @@ public abstract class AttributeFinder {
 
             try {
                 // get value list
-                valueList = (List<Object>) getValueList(pFileMap, pAttributeValueMap);
+                valueList = (List<Object>) getValueList(fileMap, attributeValueMap);
             } catch (NumberFormatException e) {
                 throw new PluginAcquisitionException(e);
             }
@@ -163,7 +164,7 @@ public abstract class AttributeFinder {
                 translatedValueList.add(defaultValue);
             }
             attribute = AttributeFactory.createAttribute(getValueType(), getName(), translatedValueList);
-            pAttributeValueMap.put(name, translatedValueList);
+            attributeValueMap.put(name, translatedValueList);
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + getName();
             throw new PluginAcquisitionException(msg, e);
@@ -179,13 +180,13 @@ public abstract class AttributeFinder {
     /**
      * traduit la liste des valeurs en applicant les classes de calcul si elles sont definies
      * 
-     * @param pValueList
-     *            la liste de valeurs a traduire
-     * @return List la liste de valeur traduite
+     * @param valueList
+     *            la {@link List} de valeurs a traduire
+     * @return la {@link List} de valeurs traduites
      */
-    protected List<Object> translateValueList(List<? extends Object> pValueList) {
+    protected List<Object> translateValueList(List<? extends Object> valueList) {
         List<Object> translatedValueList = new ArrayList<>();
-        for (Object value : pValueList) {
+        for (Object value : valueList) {
             // launch calculation if needed
             if (calculationClass != null) {
                 value = calculationClass.calculateValue(value, getValueType(), confProperties);
@@ -199,45 +200,45 @@ public abstract class AttributeFinder {
      * renvoie une liste d'objet dont le type depend du type de valeur de l'attribut.
      * 
      * @see AttributeFactory#createAttribute(AttributeTypeEnum, String, List)
-     * @param pFileMap
+     * @param fileMap
      *            une liste de SsaltoFile
-     * @param pAttributeValueMap
+     * @param attributeValueMap
      * @return
      * @throws PluginAcquisitionException
      */
-    public abstract List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public abstract List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException;
 
     /**
      * permet de positionner les propriete (filePattern et autre) sur les finder
      * 
-     * @param pConfProperties
+     * @param newConfProperties
      */
-    public void setAttributProperties(PluginConfigurationProperties pConfProperties) {
-        confProperties = pConfProperties;
+    public void setAttributProperties(PluginConfigurationProperties newConfProperties) {
+        confProperties = newConfProperties;
     }
 
     /**
      * permet de traduire la valeur lue du format formatRead dans le format formatInXml_ pour pouvoir inserer la valeur
      * dans la classe Attribute la traduction se fait essentiellement entre les valeur de type DATE
      */
-    protected String changeFormat(Object pValue) throws PluginAcquisitionException {
-        String returnValue = pValue.toString();
+    protected String changeFormat(Object value) throws PluginAcquisitionException {
+        String returnValue = value.toString();
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE) || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
             // the format must be externally synchronized
             try {
-                Date date = (Date) pValue;
+                Date date = (Date) value;
                 DateFormat outputFormat = new SimpleDateFormat(formatInXML);
                 returnValue = outputFormat.format(date);
             } catch (Exception e) {
-                String msg = "unable to parse attribute " + getName() + " value " + pValue + " in format " + formatRead;
+                String msg = "unable to parse attribute " + getName() + " value " + value + " in format " + formatRead;
                 LOGGER.error(msg, e);
                 throw new PluginAcquisitionException(msg, e);
             }
         } else if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
-            returnValue = pValue.toString();
+            returnValue = value.toString();
         } else if (valueType.equals(AttributeTypeEnum.TYPE_REAL)) {
-            returnValue = pValue.toString();
+            returnValue = value.toString();
         }
 
         return returnValue;
@@ -246,33 +247,33 @@ public abstract class AttributeFinder {
     /**
      * Parse la value et cree l'objet java en fonction du type de l'attribut
      * 
-     * @param pValue
+     * @param value
      * @return
      * @throws PluginAcquisitionException
      */
-    protected Object valueOf(String pValue) throws PluginAcquisitionException {
+    protected Object valueOf(String value) throws PluginAcquisitionException {
         Object parsedValue = null;
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE) || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
             DateFormat format = new SimpleDateFormat(formatRead, Locale.US);
             // the format must be externally synchronized
             synchronized (format) {
                 try {
-                    parsedValue = format.parse(pValue.toString());
+                    parsedValue = format.parse(value.toString());
                 } catch (ParseException e) {
                     LOGGER.error("", e);
                     throw new PluginAcquisitionException(e);
                 }
             }
         } else if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
-            parsedValue = Integer.valueOf(pValue);
+            parsedValue = Integer.valueOf(value);
         } else if (valueType.equals(AttributeTypeEnum.TYPE_REAL)) {
-            parsedValue = Double.valueOf(pValue);
+            parsedValue = Double.valueOf(value);
         } else if (valueType.equals(AttributeTypeEnum.TYPE_STRING)
                 || valueType.equals(AttributeTypeEnum.TYPE_LONG_STRING)) {
-            parsedValue = pValue;
+            parsedValue = value;
         } else if (valueType.equals(AttributeTypeEnum.TYPE_URL)) {
             try {
-                parsedValue = new URL(pValue);
+                parsedValue = new URL(value);
             } catch (MalformedURLException e) {
                 LOGGER.error("", e);
                 throw new PluginAcquisitionException(e);
@@ -289,14 +290,14 @@ public abstract class AttributeFinder {
      * @param pSsaltoFileList
      * @return
      */
-    protected List<File> buildFileList(Map<File, ?> pFileMap) throws PluginAcquisitionException {
-        if (pFileMap.isEmpty()) {
-            LOGGER.error("No SsaltoFile file");
+    protected List<File> buildFileList(Map<File, ?> fileMap) throws PluginAcquisitionException {
+        if (fileMap.isEmpty()) {
+            LOGGER.error("No file to acquire");
         }
         List<File> unzippedFileList = new ArrayList<>();
         // liste des fichiers zip
         List<File> zipFileList = new ArrayList<>();
-        for (File physicalFile : pFileMap.keySet()) {
+        for (File physicalFile : fileMap.keySet()) {
             // if physical file is null, file is not in the workingDirectory
             // so metada cannot be ingested
             if (physicalFile != null) {
@@ -339,25 +340,24 @@ public abstract class AttributeFinder {
     /**
      * cette methode dezippe le fichier passe en parametre, et renvoie la liste des fichiers resultants.
      * 
-     * @param pFile
+     * @param file
      * @return une liste de java.io.File
      */
-    private Collection<File> unzip(File pFile) throws PluginAcquisitionException {
+    private Collection<File> unzip(File file) throws PluginAcquisitionException {
         Collection<File> unzippedFileList = new HashSet<>();
-        ;
-        File temporaryDir = getTemporaryUnzippedDir(pFile);
+
+        File temporaryDir = getTemporaryUnzippedDir(file);
         try {
             CompressionFacade compressor = new CompressionFacade();
             // prepare le repertoire de sortie
             // sauvegarde le repertoire afin de l'effacer en cas de probleme
             temporaryUnzippedDirList.add(temporaryDir);
-            compressor.decompress(compression, pFile, temporaryDir);
+            compressor.decompress(compression, file, temporaryDir);
         } catch (CompressionException e) {
             LOGGER.error(e.getMessage());
             throw new PluginAcquisitionException(e);
         }
 
-        // TODO CMZ : à controler que c'est OK
         Files.fileTreeTraverser().children(temporaryDir).forEach(a -> unzippedFileList.add(a));
 
         return unzippedFileList;
@@ -374,9 +374,8 @@ public abstract class AttributeFinder {
     private File getTemporaryUnzippedDir(File pFile) throws PluginAcquisitionException {
         File temporaryUnzippedDir = null;
 
-        // recupere le nom du fichier sans l'extension
-        String baseDirName = com.google.common.io.Files.getNameWithoutExtension(pFile.getName());
-        baseDirName += "_" + Calendar.getInstance().getTimeInMillis();
+        String baseDirName = Files.getNameWithoutExtension(pFile.getName());
+        baseDirName += "_" + Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()).getTime();
 
         // verifie les droits d'ecriture
         if (pFile.getParentFile().canWrite()) {
@@ -415,34 +414,34 @@ public abstract class AttributeFinder {
         }
     }
 
-    public void setName(String pName) {
-        name = pName;
+    public void setName(String newName) {
+        name = newName;
     }
 
-    public void setValueType(String pType) throws Exception {
+    public void setValueType(String type) throws Exception {
         try {
-            valueType = AttributeTypeEnum.parse(pType);
+            valueType = AttributeTypeEnum.parse(type);
         } catch (Exception e) {
-            String msg = "unable to parse valueType " + pType;
+            String msg = "unable to parse valueType " + type;
             LOGGER.error(msg);
             throw e;
         }
     }
 
-    public void setOrder(String pOrder) {
-        order = Integer.parseInt(pOrder);
+    public void setOrder(String newOrder) {
+        order = Integer.parseInt(newOrder);
     }
 
-    public void setFormatRead(String pFormatRead) {
-        formatRead = pFormatRead;
+    public void setFormatRead(String newFormatRead) {
+        formatRead = newFormatRead;
     }
 
-    public void setFormatInXml(String pFormatInXml) {
-        formatInXML = pFormatInXml;
+    public void setFormatInXml(String newFormatInXml) {
+        formatInXML = newFormatInXml;
     }
 
-    public void setMultiValues(String pMultiValues) {
-        multiValues = new Boolean(pMultiValues);
+    public void setMultiValues(String newMultiValues) {
+        multiValues = new Boolean(newMultiValues);
     }
 
     public String getFormatInXML() {
@@ -469,19 +468,19 @@ public abstract class AttributeFinder {
         return valueType;
     }
 
-    public void setCalculationClass(String pCalculationClass) throws Exception {
-        calculationClass = (ICalculationClass) Class.forName(pCalculationClass).newInstance();
+    public void setCalculationClass(String newCalculationClass) throws Exception {
+        calculationClass = (ICalculationClass) Class.forName(newCalculationClass).newInstance();
     }
 
-    public void setDefaultValue(String pDefaultValue) {
-        defaultValue = pDefaultValue;
+    public void setDefaultValue(String newDefaultValue) {
+        defaultValue = newDefaultValue;
     }
 
-    public void setUnzipBefore(String pUnzipBefore) {
-        unzipBefore = Boolean.valueOf(pUnzipBefore);
+    public void setUnzipBefore(String newUnzipBefore) {
+        unzipBefore = Boolean.valueOf(newUnzipBefore);
     }
 
-    public void setCompression(String pCompression) {
-        compression = CompressionTypeEnum.parse(pCompression);
+    public void setCompression(String newCompression) {
+        compression = CompressionTypeEnum.parse(newCompression);
     }
 }

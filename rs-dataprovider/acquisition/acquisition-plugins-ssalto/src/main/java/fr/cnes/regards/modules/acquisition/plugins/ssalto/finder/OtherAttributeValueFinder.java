@@ -34,22 +34,21 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
 public class OtherAttributeValueFinder extends AttributeFinder {
 
     /**
-     * Nom de l'attribut dont on doit recuperer la valeur dans la pAttributeValueMap
+     * Nom de l'attribut dont on doit recuperer la valeur dans la attributeValueMap
      */
     private String otherAttributeName;
 
     @Override
-    public List<Object> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<Object> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         @SuppressWarnings("unchecked")
-        List<Object> otherValueList = (List<Object>) pAttributeValueMap.get(otherAttributeName);
+        List<Object> otherValueList = (List<Object>) attributeValueMap.get(otherAttributeName);
         if (otherValueList == null) {
 
             String msg = "unable to find the value for attribute " + otherAttributeName + " Check finder ordering.";
             throw new PluginAcquisitionException(msg);
         } else {
-            // La liste otheValueList est une liste de String car c'est la
-            // valeur XML
+            // La liste otheValueList est une liste de String car c'est la valeur XML
         }
         return otherValueList;
     }
@@ -62,8 +61,8 @@ public class OtherAttributeValueFinder extends AttributeFinder {
         return buff.toString();
     }
 
-    public void setOtherAttributeName(String pOtherAttributeName) {
-        otherAttributeName = pOtherAttributeName;
+    public void setOtherAttributeName(String newOtherAttributeName) {
+        otherAttributeName = newOtherAttributeName;
     }
 
     protected String getOtherAttributName() {

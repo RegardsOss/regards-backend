@@ -18,31 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
+public class PluginConfigurationProperties_mock extends PluginConfigurationProperties {
 
-/**
- * 
- * @author Christophe Mertz
- *
- */
-public class FixedValueAttributeFinder extends AttributeFinder {
-
-    private String fixedValue;
-
-    @Override
-    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
-            throws PluginAcquisitionException {
-        List<Object> valueList = new ArrayList<>();
-        valueList.add(valueOf(fixedValue));
-        return valueList;
+    public void setOrfFilepath(String orfFilepath_) {
+        pluginProperties.put(ORF_FILE_PATH_KEY, orfFilepath_);
     }
 
-    public void setFixedValue(String newFixedValue) {
-        fixedValue = newFixedValue;
+    public void setCycleFileFilepath(String cycleFileFilepath_) {
+        pluginProperties.put(CYCLE_FILE_PATH_KEY, cycleFileFilepath_);
     }
 }

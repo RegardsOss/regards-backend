@@ -20,10 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain;
 
 import java.util.Date;
 
-import javax.lang.model.type.ErrorType;
-
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-
 
 /**
  * instance d'un MetaFile. Un enregistrement de File est créé dés que l'on détecte l'arrivée d'un fichier sur un des
@@ -82,16 +79,15 @@ public class AcquisitionFile {
      */
     protected int version_;
 
-//    /**
-//     * fichier descripteur associe au AcquisitionFile
-//     */
-//    protected DescriptorFile metaDataFileName_;
+    //    /**
+    //     * fichier descripteur associe au AcquisitionFile
+    //     */
+    //    protected DescriptorFile metaDataFileName_;
 
-//    /**
-//     * informations sur l'acquisition de ce fichier
-//     */
-//    protected FileAcquisitionInformations acquisitionInformations_;
-
+    /**
+     * informations sur l'acquisition de ce fichier
+     */
+    protected FileAcquisitionInformations acquisitionInformations_;
 
     /**
      * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
@@ -155,20 +151,17 @@ public class AcquisitionFile {
 
     public boolean isADoublon(AcquisitionFile pFile) {
         boolean isADoublon = false;
-        if (pFile.getStatus().equals(SsaltoFileStatus.TO_ARCHIVE)
-                || pFile.getStatus().equals(SsaltoFileStatus.ARCHIVED)
+        if (pFile.getStatus().equals(SsaltoFileStatus.TO_ARCHIVE) || pFile.getStatus().equals(SsaltoFileStatus.ARCHIVED)
                 || pFile.getStatus().equals(SsaltoFileStatus.IN_CATALOGUE)
                 || pFile.getStatus().equals(SsaltoFileStatus.TAR_CURRENT)
                 || pFile.getStatus().equals(SsaltoFileStatus.ACQUIRED)) {
             if (pFile.getFileName().equals(fileName_) && (pFile.getVersion() == version_)
                     && (!pFile.getStatus().equals(status_))) {
                 isADoublon = true;
-            }
-            else {
+            } else {
                 isADoublon = false;
             }
-        }
-        else {
+        } else {
             isADoublon = false;
         }
         return isADoublon;
@@ -212,8 +205,8 @@ public class AcquisitionFile {
      */
     public boolean isDeletedFromLocalArchive() {
         return false;
-//        return (ARCHIVE_TYPE_BOTH.equalsIgnoreCase(archiveType_))
-//                || (ARCHIVE_TYPE_LOCAL.equalsIgnoreCase(archiveType_));
+        //        return (ARCHIVE_TYPE_BOTH.equalsIgnoreCase(archiveType_))
+        //                || (ARCHIVE_TYPE_LOCAL.equalsIgnoreCase(archiveType_));
     }
 
     /**
@@ -222,7 +215,6 @@ public class AcquisitionFile {
     public boolean isDeletedFromStafArchive() {
         return false;
     }
-
 
     /**
      * Indique si le fichier est archive au STAF
@@ -236,24 +228,28 @@ public class AcquisitionFile {
      */
     public boolean isInCurrentTar() {
         boolean result = false;
-//        if (status_.equals(SsaltoFileStatus.TAR_CURRENT)) {
-//            result = true;
-//        }
+        //        if (status_.equals(SsaltoFileStatus.TAR_CURRENT)) {
+        //            result = true;
+        //        }
         return result;
     }
 
-//    /**
-//     * Enregistre une anomalie sur le fichier
-//     * 
-//     * @param pError
-//     */
-//    public void setAcqErrorForProcess() {
-//        getAcquisitionInformations().setError(ErrorType.ERROR);
-//    }
-//
-//    public FileAcquisitionInformations getAcquisitionInformations() {
-//        return acquisitionInformations_;
-//    }
+    /**
+     * Enregistre une anomalie sur le fichier
+     * 
+     * @param pError
+     */
+    public void setAcqErrorForProcess() {
+        getAcquisitionInformations().setError(ErrorType.ERROR);
+    }
+
+    public FileAcquisitionInformations getAcquisitionInformations() {
+        return acquisitionInformations_;
+    }
+
+    public void setAcquisitionInformations(FileAcquisitionInformations pAcquisitionInformations) {
+        acquisitionInformations_ = pAcquisitionInformations;
+    }
 
     public int getCatalogueUpdateProcessList() {
         return catalogueUpdateProcessList_;
@@ -319,13 +315,13 @@ public class AcquisitionFile {
         fileId_ = pFileId;
     }
 
-//    public DescriptorFile getMetaDataFileName() {
-//        return metaDataFileName;
-//    }
-//
-//    public void setMetaDataFileName(DescriptorFile pMetaDataFileName) {
-//        metaDataFileName_ = pMetaDataFileName;
-//    }
+    //    public DescriptorFile getMetaDataFileName() {
+    //        return metaDataFileName;
+    //    }
+    //
+    //    public void setMetaDataFileName(DescriptorFile pMetaDataFileName) {
+    //        metaDataFileName_ = pMetaDataFileName;
+    //    }
 
     public ErrorType getErrorType() {
         return errorType_;
@@ -342,7 +338,6 @@ public class AcquisitionFile {
     public void setDateTraitement(Date pDateTraitement) {
         dateTraitement_ = pDateTraitement;
     }
-
 
     public String getNodeIdentifier() {
         return nodeIdentifier_;

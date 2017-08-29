@@ -42,15 +42,12 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.NetCdfFileHelper
  */
 public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CDFEnumeratedAttributeValueFinder.class);
-    
-    
 
     private List<String> exceptionList_;
 
     @Override
-    public Attribute buildAttribute(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         LOGGER.debug("START building attribute " + getName());
         CompositeAttribute composedAttribute = new CompositeAttribute();
@@ -59,9 +56,9 @@ public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
         // into the dataObjectDescription XML bloc.
         // composedAttribute.setName(null);
         try {
-            List<Object> valueList = getValueList(pFileMap, pAttributeValueMap);
+            List<Object> valueList = getValueList(fileMap, attributeValueMap);
             // add attribut to calculated attribut map
-            pAttributeValueMap.put(name, valueList);
+            attributeValueMap.put(name, valueList);
             for (Object value : valueList) {
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
@@ -74,8 +71,7 @@ public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
                 Attribute attribute = AttributeFactory.createAttribute(getValueType(), getName(), translatedValueList);
                 composedAttribute.addAttribute(attribute);
             }
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "unable to create attribute" + getName();
             throw new PluginAcquisitionException(msg, e);
         }
@@ -87,10 +83,10 @@ public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
      * va chercher pour chaque fichier la valeur
      */
     @Override
-    public List<Object> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<Object> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         List<Object> valueList = new ArrayList<>();
-        for (File file : buildFileList(pFileMap)) {
+        for (File file : buildFileList(fileMap)) {
             NetCdfFileHelper helper = new NetCdfFileHelper(file);
             for (String value : helper.getAllVariableAttributeValue(attributeName, exceptionList_)) {
                 valueList.add(changeFormat(value));
@@ -115,10 +111,10 @@ public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
         return buff.toString();
     }
 
-    public void addException(String pExcept) {
+    public void addException(String except) {
         if (exceptionList_ == null) {
             exceptionList_ = new ArrayList<>();
         }
-        exceptionList_.add(pExcept);
+        exceptionList_.add(except);
     }
 }

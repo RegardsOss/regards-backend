@@ -52,10 +52,10 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
     private CalculusTypeEnum Calculus;
 
     @Override
-    public List<Object> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<Object> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         List<Object> translatedValueList = new ArrayList<>();
-        for (File file : buildFileList(pFileMap)) {
+        for (File file : buildFileList(fileMap)) {
 
             NetCdfFileHelper helper = new NetCdfFileHelper(file);
             List<Object> values = helper.getVariableValues(variableName, getValueType());
@@ -95,9 +95,7 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
                             translatedValueList.clear();
                             translatedValueList.add(value);
                         }
-
                     }
-
                 }
             }
         }
@@ -107,10 +105,10 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
     /**
      * Ne fait pas la translation car elle a deja ete faite.
      */
-@Override
-    protected List<Object> translateValueList(List<? extends Object> pValueList) {
+    @Override
+    protected List<Object> translateValueList(List<? extends Object> newValueList) {
         @SuppressWarnings("unchecked")
-        List<Object> valueList = (List<Object>) pValueList;
+        List<Object> valueList = (List<Object>) newValueList;
         return valueList;
     }
 
@@ -123,11 +121,11 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
         return buff.toString();
     }
 
-    public void setCalculus(String pCalculus) {
-        Calculus = CalculusTypeEnum.parse(pCalculus);
+    public void setCalculus(String newCalculus) {
+        Calculus = CalculusTypeEnum.parse(newCalculus);
     }
 
-    public void setVariableName(String pVariableName) {
-        variableName = pVariableName;
+    public void setVariableName(String newVariableName) {
+        variableName = newVariableName;
     }
 }

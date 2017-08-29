@@ -50,6 +50,10 @@ public class PluginConfigurationProperties {
 
     private static final String URL_PROPERTIES = "ssalto/domain/plugins/impl/tools/pluginConfiguration.properties";
 
+    private static final String LOG_PROPERTY_NOT_FOUND = "Property not found %s in file '%s'";
+
+    private static final String LOG_PROJECT_NOT_SET = "The required project is not set : JASON, JASON2 ...";
+
     /**
      * filePattern du nom du fichier
      */
@@ -96,28 +100,33 @@ public class PluginConfigurationProperties {
 
     private String getPropertyValue(String value) {
         if (project == null) {
-            LOGGER.error("project was not set : JASON, JASON2 ...");
+            LOGGER.error(LOG_PROJECT_NOT_SET);
         }
+
         String propertyName = project + "_" + value;
         String propertyValue = pluginProperties.getProperty(propertyName);
+
         if (propertyValue == null) {
-            LOGGER.error(String.format("Property not found %s in file '%s'", propertyName, URL_PROPERTIES));
+            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, URL_PROPERTIES));
         }
+
         return propertyValue;
     }
 
     public String[] getOrfFilepath() {
-        // test if project was set
         if (project == null) {
-            LOGGER.error("project was not set : JASON, JASON2 ...");
+            LOGGER.error(LOG_PROJECT_NOT_SET);
         }
+
         String propertyName = project + "_" + ORF_FILE_PATH_KEY;
         String propertyValue = pluginProperties.getProperty(propertyName);
 
         if (propertyValue == null) {
-            LOGGER.error(String.format("Property not found %s in file '%s'", propertyName, URL_PROPERTIES));
+            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, URL_PROPERTIES));
         }
+
         String[] orfFilePath = propertyValue.split(SEPARATOR);
+
         return orfFilePath;
     }
 

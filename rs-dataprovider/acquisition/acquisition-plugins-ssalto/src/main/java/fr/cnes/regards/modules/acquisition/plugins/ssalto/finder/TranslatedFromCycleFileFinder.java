@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
 
 /**
  * Cette classe permet de passer d'une date a une occurence de cycle et vice versa. Elle utilise 2 fichiers pour cela
- * voir plusieurs dans un cas particulier. le fichier cycle et le(s) fichier(s) ORF.
+ * voir plusieurs dans un cas particulier. le fichier cycle et le(s) fichier(s) ORF
  * 
  * @author Christophe Mertz
  *
@@ -136,9 +136,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     }
 
     @Override
-    public List<Object> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<Object> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-        final List<Object> otherValueList = super.getValueList(pFileMap, pAttributeValueMap);
+        final List<Object> otherValueList = super.getValueList(fileMap, attributeValueMap);
         // la list doit etre de taille 1
         if (otherValueList.size() > 1) {
             final String msg = "Too much value for cycle attribut : " + super.getOtherAttributName();
@@ -155,18 +155,18 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Calcul l'integer de l'occurence de cycle a partir de la date ou vice versa
      *
-     * @param pOtherValue
-     *            Date ou Integer
-     * @return un Integer correspondant au numero de cycle ou une date correspondant au startDate
+     * @param otherValue
+     *            {@link Date} ou {@link Integer}
+     * @return un {@link Integer} correspondant au numero de cycle ou une date correspondant au startDate
      * @throws PluginAcquisitionException
      */
-    private Object processCalculOnValues(Object pOtherValue) throws PluginAcquisitionException {
+    private Object processCalculOnValues(Object otherValue) throws PluginAcquisitionException {
         // Integer or Date
         Object processedValue = null;
         // valueType est la valeur de sortie si c'est integer => on doit trouver
         // le cycle correspondant au start_date et vice versa
         if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
-            final Date startDate = (Date) pOtherValue;
+            final Date startDate = (Date) otherValue;
 
             // Check if cycle file exists
             final String cycleFilePath = confProperties.getCycleFileFilepath();
@@ -188,7 +188,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
         } else if (valueType.equals(AttributeTypeEnum.TYPE_DATE)
                 || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
-            final Integer cycleOccurence = (Integer) pOtherValue;
+            final Integer cycleOccurence = (Integer) otherValue;
             if (getName().equals("START_DATE")) {
                 processedValue = getCycleStartDate(cycleOccurence);
             } else if (getName().equals("STOP_DATE")) {
@@ -204,24 +204,23 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
     /**
      * Retourne la date correspondant à la premiere ligne contenant l'occurence du cycle pCycleOccurence dans le fichier
-     * orf.
+     * ORF.
      *
-     * @param pCycleOccurence
-     *            l'occurence du cycle.
+     * @param cycleOccurence
+     *            l'occurence du cycle
      * @return
      * @throws PluginAcquisitionException
      */
-    private synchronized Date getCycleStartDate(Integer pCycleOccurence) throws PluginAcquisitionException {
+    private synchronized Date getCycleStartDate(Integer cycleOccurence) throws PluginAcquisitionException {
         Date cycleStartDate = null;
         int increment = 0;
         String cycleAsString = null;
 
         // occurence du cycle
         final NumberFormat numberFormat = new DecimalFormat("000");
-        cycleAsString = numberFormat.format(pCycleOccurence.intValue());
+        cycleAsString = numberFormat.format(cycleOccurence.intValue());
 
         // recupere le ou les fichiers depuis le disk
-        // DM SIPNG-DM-0060-CN : Prise en compte de x fichiers ORF
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
         while ((cycleStartDate == null) && (increment <= (getOrfFilePath.length - 1))) {
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
@@ -239,6 +238,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 }
             }
         }
+        
         // le cycle n'a pas ete trouve
         if (cycleStartDate == null) {
             final String msg = "cycle not found in orf file : " + cycleAsString;
@@ -251,19 +251,19 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Retourne la date correspondant à la derniere ligne contenant l'occurence du cycle pCycleOccurence dans le fichier ORF
      *
-     * @param pCycleOccurence
-     *            l'occurence du cycle.
+     * @param cycleOccurence
+     *            l'occurence du cycle
      * @return
      * @throws PluginAcquisitionException
      */
-    private synchronized Date getCycleStopDate(Integer pCycleOccurence) throws PluginAcquisitionException {
+    private synchronized Date getCycleStopDate(Integer cycleOccurence) throws PluginAcquisitionException {
         Date cycleStopDate = null;
         int increment = 0;
         String cycleAsString = null;
 
         // occurence du cycle +1
         final NumberFormat numberFormat = new DecimalFormat("000");
-        cycleAsString = numberFormat.format(pCycleOccurence.intValue());
+        cycleAsString = numberFormat.format(cycleOccurence.intValue());
 
         // recupere le ou les fichiers depuis le disk
         // DM SIPNG-DM-0060-CN : Prise en compte de x fichiers ORF
@@ -480,7 +480,6 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * @return
      * @throws IOException
      */
-    @SuppressWarnings("resource")
     private CharBuffer readFile(String pFilepath) throws IOException {
 
         // Open the file and then get a channel from the stream

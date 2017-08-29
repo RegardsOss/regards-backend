@@ -41,11 +41,11 @@ public class FileInfoFinder extends AttributeFinder {
     public FileInformationTypeEnum fileInformation;
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         List<Object> valueList = new ArrayList<>();
-        for (File file : pFileMap.keySet()) {
-            File originalFile = (File) pFileMap.get(file);
+        for (File file : fileMap.keySet()) {
+            File originalFile = (File) fileMap.get(file);
             if (fileInformation.equals(FileInformationTypeEnum.LAST_MODIFICATION_DATE)) {
                 if (!valueList.isEmpty()) {
                     // check if date inside the list is before the new Date
@@ -81,7 +81,7 @@ public class FileInfoFinder extends AttributeFinder {
         return buff.toString();
     }
 
-    public void setFileInformation(String pFileInformation) {
-        fileInformation = FileInformationTypeEnum.parse(pFileInformation);
+    public void setFileInformation(String newFileInformation) {
+        fileInformation = FileInformationTypeEnum.parse(newFileInformation);
     }
 }

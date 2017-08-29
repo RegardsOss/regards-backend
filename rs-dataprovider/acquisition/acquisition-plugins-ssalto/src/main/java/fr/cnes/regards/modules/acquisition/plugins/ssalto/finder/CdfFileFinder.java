@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
 /**
- * classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF.
+ * classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF
  * 
  * @author Christophe Mertz
  *

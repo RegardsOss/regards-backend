@@ -34,8 +34,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties_mock;
 
 public class TranslatedFromCycleFileFinderTest {
 
@@ -70,7 +71,7 @@ public class TranslatedFromCycleFileFinderTest {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-        translatedFromCycleFileFinder.setValueType("INTEGER");
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Date> attValueList = new ArrayList<>();
@@ -90,7 +91,7 @@ public class TranslatedFromCycleFileFinderTest {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-        translatedFromCycleFileFinder.setValueType("INTEGER");
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Date> attValueList = new ArrayList<>();
@@ -110,7 +111,7 @@ public class TranslatedFromCycleFileFinderTest {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jason2ConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-        translatedFromCycleFileFinder.setValueType("INTEGER");
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Date> attValueList = new ArrayList<>();
@@ -128,7 +129,7 @@ public class TranslatedFromCycleFileFinderTest {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jason2ConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-        translatedFromCycleFileFinder.setValueType("INTEGER");
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Date> attValueList = new ArrayList<>();
@@ -154,12 +155,11 @@ public class TranslatedFromCycleFileFinderTest {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jason2ConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-        translatedFromCycleFileFinder.setValueType("INTEGER");
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Date> attValueList = new ArrayList<>();
         LocalDateTime ldt = LocalDateTime.of(2010, 4, 4, 5, 46);
-        // 2010/04/04 05:46
         attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
         attributMap.put(ATT_NAME, attValueList);
 
@@ -168,39 +168,45 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(64, ((Integer) resultList.get(0)).intValue());
     }
 
-    //    // FIXME TEST @Test
-    //    public void test_getDateFromCycle() throws Exception {
-    //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-    //        translatedFromCycleFileFinder.setAttributProperties(initConfProperties());
-    //
-    //        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-    //        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-    //        List<Integer> attValueList = new ArrayList<>();
-    //        attValueList.add(ATT_VALUE_CYCLE);
-    //        attributMap.put(ATT_NAME, attValueList);
-    //        translatedFromCycleFileFinder.setValueType("DATE");
-    //        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Assert.assertEquals(1, resultList.size());
-    //        Date dateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        Assert.assertEquals(sdf.format(dateResult), "2008/07/31 21:17:08.430", sdf.format(dateResult));
-    //    }
-    //
-    //    // FIXME TEST @Test
-    //    public void test_getDateFromCycle_incorrect() throws Exception {
-    //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-    //        translatedFromCycleFileFinder.setAttributProperties(initConfProperties());
-    //        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-    //        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-    //        List<Integer> attValueList = new ArrayList<>();
-    //        attValueList.add(ATT_VALUE_CYCLE_OVER);
-    //        attributMap.put(ATT_NAME, attValueList);
-    //        translatedFromCycleFileFinder.setValueType("DATE_TIME");
-    //
-    //            translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //            Assert.fail("must throw exception");
-    //
-    //    }
+    @Test
+    public void getDateFromCycle() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
+
+        translatedFromCycleFileFinder.setName("START_DATE");
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        attValueList.add(new Integer(300));
+        attributMap.put(ATT_NAME, attValueList);
+
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
+        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+
+        Assert.assertEquals(1, resultList.size());
+
+        LocalDateTime expectedLdt = LocalDateTime.of(2010, 2, 22, 00, 56, 25, 534000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+    }
+
+    @Test(expected = PluginAcquisitionException.class)
+    public void getDateFromCycleIncorrect() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
+
+        translatedFromCycleFileFinder.setName("START_DATE");
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        attValueList.add(new Integer(999));
+        attributMap.put(ATT_NAME, attValueList);
+
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE_TIME.toString());
+        translatedFromCycleFileFinder.getValueList(null, attributMap);
+
+        Assert.fail();
+    }
 
     //    // DM60 Gestion de plusieurs fichiers ORF
     //    // Cycle inclu dans le fichier orf cree

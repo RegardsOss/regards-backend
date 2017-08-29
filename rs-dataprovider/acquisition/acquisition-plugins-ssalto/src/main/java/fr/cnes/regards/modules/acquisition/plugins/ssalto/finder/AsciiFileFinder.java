@@ -29,7 +29,11 @@ import java.util.regex.Pattern;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
 
-/** */
+/**
+ * 
+ * @author Christophe Mertz
+ *
+ */
 public class AsciiFileFinder extends DataFileFinder {
 
     /**
@@ -53,11 +57,11 @@ public class AsciiFileFinder extends DataFileFinder {
     public String filterPattern = null;
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         Pattern pattern = Pattern.compile(linePattern);
         List<Object> valueList = new ArrayList<>();
-        for (File file : buildFileList(pFileMap)) {
+        for (File file : buildFileList(fileMap)) {
             RinexFileHelper helper = new RinexFileHelper(file);
             String value = "";
             for (Object element : groupNumberList) {
@@ -70,8 +74,8 @@ public class AsciiFileFinder extends DataFileFinder {
     }
 
     @Override
-    protected List<File> buildFileList(Map<File, ?> pFileMap) throws PluginAcquisitionException {
-        List<File> fileList = super.buildFileList(pFileMap);
+    protected List<File> buildFileList(Map<File, ?> fileMap) throws PluginAcquisitionException {
+        List<File> fileList = super.buildFileList(fileMap);
         if (filterPattern != null) {
             // Backup file list
             List<File> oldList = fileList;
@@ -106,23 +110,23 @@ public class AsciiFileFinder extends DataFileFinder {
         return buff.toString();
     }
 
-    public void setLinePattern(String pPatternLine) {
-        linePattern = pPatternLine;
+    public void setLinePattern(String newLinePattern) {
+        linePattern = newLinePattern;
     }
 
-    public void setLineNumber(String pLineNumber) {
-        lineNumber = Integer.parseInt(pLineNumber);
+    public void setLineNumber(String newLineNumber) {
+        lineNumber = Integer.parseInt(newLineNumber);
     }
 
-    public void addGroupNumber(String pGroupNumber) {
+    public void addGroupNumber(String groupNumber) {
         if (groupNumberList == null) {
             groupNumberList = new ArrayList<>();
         }
-        groupNumberList.add(new Integer(pGroupNumber));
+        groupNumberList.add(new Integer(groupNumber));
     }
 
-    public void setFilterPattern(String pFilterPattern) {
-        filterPattern = pFilterPattern;
+    public void setFilterPattern(String newFilterPattern) {
+        filterPattern = newFilterPattern;
     }
 
 }

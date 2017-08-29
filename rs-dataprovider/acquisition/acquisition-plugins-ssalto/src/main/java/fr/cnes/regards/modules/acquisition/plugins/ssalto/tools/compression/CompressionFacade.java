@@ -391,6 +391,7 @@ public class CompressionFacade {
         if (pMode.equals(CompressionTypeEnum.ZIP)) {
             strategy_.setCompression(new ZipCompression());
         }
+        // TODO CMZ : à compléter
         //        else if (pMode.equals(CompressionTypeEnum.GZIP)) {
         //            strategy_.setCompression(new GZipCompression());
         //        } else if (pMode.equals(CompressionTypeEnum.TAR)) {

@@ -34,8 +34,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.CalculusTypeEnum;
 
 /**
- * finder qui recuperer la valeur dans une liste de fichiers effectue eventuellement un calcul avec ces valeurs pour
- * renvoyer la valeur de l'attribut.
+ * finder qui recuperer la valeur dans une liste de fichiers, puis  effectue eventuellement un calcul avec ces valeurs pour
+ * renvoyer la valeur de l'attribut
  * 
  * @author Christophe Mertz
  *
@@ -50,13 +50,13 @@ public class MultipleFileNameFinder extends FileNameFinder {
     private CalculusTypeEnum calculus;
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-        LOGGER.debug("begin");
+        LOGGER.debug("--> begin");
         // List<Object> le type des objets depend du type AttributeTypeEnum
         List<Object> valueList = new ArrayList<>();
         // extrait les fichiers a partir des ssalto File
-        List<File> fileToProceedList = buildFileList(pFileMap);
+        List<File> fileToProceedList = buildFileList(fileMap);
 
         Pattern pattern = Pattern.compile(filePattern);
 
@@ -86,59 +86,57 @@ public class MultipleFileNameFinder extends FileNameFinder {
             String msg = "No filename matching pattern " + filePattern;
             LOGGER.warn(msg);
         }
-        LOGGER.debug("end");
+        LOGGER.debug("<-- end");
 
         return processedValuesList;
     }
 
     @Override
-    protected List<File> buildFileList(Map<File, ?> pSsaltoFileMap) throws PluginAcquisitionException {
+    protected List<File> buildFileList(Map<File, ?> acquisitionFileMap) throws PluginAcquisitionException {
         if (fileInZipNamepattern != null) {
             filePattern = fileInZipNamepattern;
         }
-        return super.buildFileList(pSsaltoFileMap);
+        return super.buildFileList(acquisitionFileMap);
 
     }
 
     /**
      * Execute le mode de calcul sur la liste
      * 
-     * @param pValuesList
+     * @param newValuesList
      *            List <Object>
      * @return List <Object>
      * @throws PluginAcquisitionException
      */
-    private List<Object> processCalculOnValues(List<Object> pValuesList) throws PluginAcquisitionException {
-        // List <Object> de taille 1 correspondant a la moyenne au min et au max
-        // de pValuesList
+    private List<Object> processCalculOnValues(List<Object> newValuesList) throws PluginAcquisitionException {
+        // List <Object> de taille 1 correspondant a la moyenne au min et au max de pValuesList
         List<Object> calculatedList = null;
-        if (pValuesList.isEmpty() || (calculus == null)) {
-            calculatedList = pValuesList;
+        if (newValuesList.isEmpty() || (calculus == null)) {
+            calculatedList = newValuesList;
         } else {
             // s'il n'y a pas de fonction de calcul on renvoie l'enumere
-
             if (calculus.equals(CalculusTypeEnum.AVG)) {
-                calculatedList = getAverage(pValuesList);
+                calculatedList = getAverage(newValuesList);
             } else if (calculus.equals(CalculusTypeEnum.MIN) || calculus.equals(CalculusTypeEnum.MAX)) {
-                calculatedList = getSortedList(pValuesList);
+                calculatedList = getSortedList(newValuesList);
             }
         }
         return calculatedList;
     }
 
     /**
-     * Cree une liste de taille 1 avec l'element MINJ ou MAX
+     * Cree une liste de taille 1 avec l'element MIN ou MAX
      * 
-     * @param pValuesList
-     *            List <Object>
+     * @param newValuesList
+     *            {@link List} of {@link Object}
      * @return List <Object> contenant l'element min ou max de pValuesList
      * @throws PluginAcquisitionException
      */
-    private List<Object> getSortedList(List<Object> pValuesList) throws PluginAcquisitionException {
+    private List<Object> getSortedList(List<Object> newValuesList) throws PluginAcquisitionException {
         List<Object> sortedList;
         // cree un sorted set a partir de la liste
         SortedSet<Object> sortedValueSet = new TreeSet<>();
-        sortedValueSet.addAll(pValuesList);
+        sortedValueSet.addAll(newValuesList);
         sortedList = new ArrayList<>(1);
         if (calculus.equals(CalculusTypeEnum.MIN)) {
             sortedList.add(sortedValueSet.first());
@@ -155,12 +153,12 @@ public class MultipleFileNameFinder extends FileNameFinder {
 
     /**
      * 
-     * @param pValuesList
+     * @param valuesList
      * @return
      */
-    private List<Object> getAverage(List<Object> pValuesList) {
-        return pValuesList;
-
+    // TODO CMZ à confirmer
+    private List<Object> getAverage(List<Object> valuesList) {
+        return valuesList;
     }
 
     @Override
@@ -171,8 +169,8 @@ public class MultipleFileNameFinder extends FileNameFinder {
         return buff.toString();
     }
 
-    public void setCalculus(String pCalculus) {
-        calculus = CalculusTypeEnum.parse(pCalculus);
+    public void setCalculus(String newCalculus) {
+        calculus = CalculusTypeEnum.parse(newCalculus);
     }
 
 }

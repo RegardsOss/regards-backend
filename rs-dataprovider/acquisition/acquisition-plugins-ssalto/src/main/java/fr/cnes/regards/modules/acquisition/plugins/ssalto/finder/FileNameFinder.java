@@ -74,13 +74,13 @@ public class FileNameFinder extends AttributeFinder {
     }
 
     @Override
-    public List<?> getValueList(Map<File, ?> pFileMap, Map<String, List<? extends Object>> pAttributeValueMap)
+    public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         LOGGER.debug("begin");
         // List<Object> le type des objets depend du type AttributeTypeEnum
         List<Object> valueList = new ArrayList<>();
         // extrait les fichiers a partir des ssalto File
-        List<File> fileToProceedList = buildFileList(pFileMap);
+        List<File> fileToProceedList = buildFileList(fileMap);
 
         Pattern pattern = Pattern.compile(filePattern);
 
@@ -106,27 +106,27 @@ public class FileNameFinder extends AttributeFinder {
         }
         // warn if no file are found
         if (valueList.isEmpty()) {
-            String msg = "No filename matching the pqttern " + filePattern;
+            String msg = "No filename matching the pattern " + filePattern;
             LOGGER.warn(msg);
         }
         LOGGER.debug("end");
         return valueList;
     }
 
-    public void addGroupNumber(String pGroupNumber) {
+    public void addGroupNumber(String newGroupNumber) {
         if (groupNumberList == null) {
             groupNumberList = new ArrayList<>();
         }
-        groupNumberList.add(new Integer(pGroupNumber));
+        groupNumberList.add(new Integer(newGroupNumber));
     }
 
     @Override
-    public void setAttributProperties(PluginConfigurationProperties pConfProperties) {
-        super.setAttributProperties(pConfProperties);
-        filePattern = pConfProperties.getFileNamePattern();
+    public void setAttributProperties(PluginConfigurationProperties confProperties) {
+        super.setAttributProperties(confProperties);
+        filePattern = confProperties.getFileNamePattern();
     }
 
-    public void setFileInZipNamePattern(String pFileInZipNamePattern) {
-        fileInZipNamepattern = pFileInZipNamePattern;
+    public void setFileInZipNamePattern(String fileInZipNamePattern) {
+        fileInZipNamepattern = fileInZipNamePattern;
     }
 }
