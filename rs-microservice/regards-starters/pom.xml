@@ -45,7 +45,9 @@
 		<module>security-config</module>
 		<module>oais-starter</module>
         <module>oais-regards</module>
-    </modules>
+    	<module>staf</module>
+    	<module>staf-starter</module>
+  </modules>
 
 	<dependencies>
 		<dependency>
