@@ -3,17 +3,16 @@
  */
 package fr.cnes.regards.modules.storage.plugin;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.collect.Multimap;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -24,7 +23,6 @@ import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.STAFException;
 import fr.cnes.regards.framework.staf.STAFManager;
 import fr.cnes.regards.framework.staf.STAFService;
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "STAF",
@@ -67,18 +65,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public Set<STAFWorkingSubset> prepare(Multimap<AIP, List<DataFile>> pAips) {
+    public Set<STAFWorkingSubset> prepare(Collection<DataFile> dataFiles) {
         return null;
-    }
-
-        Set<STAFWorkingSubset> workingSets = new HashSet<>();
-
-        pAips.forEach((pAip, pDataFiles) -> {
-
-        });
-
-        return workingSets;
-
     }
 
     private Map<STAFArchiveModeEnum, Set<DataFile>> dispatchFilesToArchive(Set<DataFile> pFiles) {
