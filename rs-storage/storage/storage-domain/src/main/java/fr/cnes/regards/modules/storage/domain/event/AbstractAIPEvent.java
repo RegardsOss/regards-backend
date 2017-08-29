@@ -28,7 +28,7 @@ public abstract class AbstractAIPEvent implements ISubscribable {
      */
     private String checksum;
 
-    public AbstractAIPEvent(AIP pAIP) throws NoSuchAlgorithmException, IOException {
+    public AbstractAIPEvent(AIP pAIP) {
         ipId = pAIP.getIpId();
         checksum = pAIP.getChecksum();
     }

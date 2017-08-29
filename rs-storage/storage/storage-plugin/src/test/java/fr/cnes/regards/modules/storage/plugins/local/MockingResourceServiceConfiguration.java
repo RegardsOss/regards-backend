@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.plugins.local;
 
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

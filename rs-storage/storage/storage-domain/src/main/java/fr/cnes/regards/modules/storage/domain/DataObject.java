@@ -16,6 +16,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
+import fr.cnes.regards.framework.urn.DataType;
+
 /**
  *
  * @author Sylvain Vissiere-Guerinet
@@ -23,7 +25,7 @@ import javax.persistence.SequenceGenerator;
  */
 public class DataObject implements Serializable {
 
-    private FileType type;
+    private DataType type;
 
     private URL url;
 
@@ -32,11 +34,11 @@ public class DataObject implements Serializable {
 
     }
 
-    public FileType getType() {
+    public DataType getType() {
         return type;
     }
 
-    public void setType(FileType pType) {
+    public void setType(DataType pType) {
         type = pType;
     }
 
@@ -49,7 +51,7 @@ public class DataObject implements Serializable {
     }
 
     public DataObject generate() throws MalformedURLException {
-        type = FileType.OTHER;
+        type = DataType.OTHER;
         url = new URL("ftp://bla");
         return this;
     }

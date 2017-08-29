@@ -3,11 +3,11 @@
  */
 package fr.cnes.regards.modules.storage.plugin;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "STAF",
         version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
+public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> {
 
     @Autowired
     private STAFManager stafManager;
@@ -67,7 +67,9 @@ public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
     }
 
     @Override
-    public Set<STAFWorkingSubset> prepare(Multimap<AIP, Set<DataFile>> pAips) {
+    public Set<STAFWorkingSubset> prepare(Multimap<AIP, List<DataFile>> pAips) {
+        return null;
+    }
 
         Set<STAFWorkingSubset> workingSets = new HashSet<>();
 
@@ -121,11 +123,6 @@ public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
     public Set<DataStorageInfo> getMonitoringInfos() {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    public DataStorageType getType() {
-        return DataStorageType.NEARLINE;
     }
 
 }
