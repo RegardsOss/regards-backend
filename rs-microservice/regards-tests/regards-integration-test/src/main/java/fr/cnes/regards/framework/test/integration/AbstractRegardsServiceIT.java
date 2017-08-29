@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class,
         MockAmqpConfiguration.class })
 @ActiveProfiles({ "default", "test" })
-@TestPropertySource(locations = { "classpath:application-default.properties" })
+@TestPropertySource(properties = { "regards.cloud.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 
     /**
