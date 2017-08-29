@@ -343,9 +343,7 @@ public abstract class AbstractRegardsITWithoutMockedCots {
         addSecurityHeader(requestBuilder, pAuthToken);
 
         requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        requestBuilder.header(HttpConstants.ACCEPT, MediaType.APPLICATION_XML_VALUE);
         requestBuilder.header(HttpConstants.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-        requestBuilder.header(HttpConstants.ACCEPT, MediaType.TEXT_PLAIN_VALUE);
 
         return requestBuilder;
     }
