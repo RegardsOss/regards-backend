@@ -58,17 +58,20 @@ public class TestService implements IService {
     @Override
     public ResponseEntity<InputStreamResource> apply(ServicePluginParameters pParameters,
             HttpServletResponse pResponse) {
-        if (!para.equals(EXPECTED_VALUE)) {
-            return new ResponseEntity<>(null, HttpStatus.OK);
-        }
 
+        LinkedHashSet<DataObject> responseList;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         pResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        Model model = Model.build("pName", "pDescription", EntityType.DATA);
-        DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
-        DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
-        LinkedHashSet<DataObject> responseList = Sets.newLinkedHashSet(do1, do2);
+
+        if (!para.equals(EXPECTED_VALUE)) {
+            responseList = Sets.newLinkedHashSet();
+        } else {
+            Model model = Model.build("pName", "pDescription", EntityType.DATA);
+            DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
+            DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
+            responseList = Sets.newLinkedHashSet(do1, do2);
+        }
 
         // Format to json format
         GsonBuilder builder = new GsonBuilder();

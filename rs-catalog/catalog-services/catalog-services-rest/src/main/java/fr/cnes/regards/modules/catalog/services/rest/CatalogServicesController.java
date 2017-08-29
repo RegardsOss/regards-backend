@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,7 +92,7 @@ public class CatalogServicesController {
      * @return whatever is returned by the given service
      * @throws ModuleException
      */
-    @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME)
+    @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> applyService(
             @PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
