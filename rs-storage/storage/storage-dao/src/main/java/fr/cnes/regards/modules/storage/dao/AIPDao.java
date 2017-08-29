@@ -27,8 +27,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public AIP save(AIP toSave, PluginConfiguration dataStorageUsed) {
-        AIPDataBase saved = repo.save(new AIPDataBase(toSave, dataStorageUsed));
+    public AIP save(AIP toSave) {
+        AIPDataBase saved = repo.save(new AIPDataBase(toSave));
         return reconstructAip(saved);
     }
 
@@ -39,8 +39,7 @@ public class AIPDao implements IAIPDao {
      */
     private AIP reconstructAip(AIPDataBase fromDb) {
         AIP aip=fromDb.getAip();
-        // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as checksum and state
-        aip.setChecksum(fromDb.getChecksum());
+        // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as state
         aip.setState(fromDb.getState());
         return aip;
     }
@@ -92,6 +91,11 @@ public class AIPDao implements IAIPDao {
             OffsetDateTime lastEventBefore, Pageable pageable) {
         return repo.findAllBySubmissionDateAfterAndLastEventDateBefore(submissionAfter, lastEventBefore, pageable)
                 .map(this::reconstructAip);
+    }
+
+    @Override
+    public Set<AIP> findAllByStateService(AIPState state) {
+        return repo.findAllByState(state).stream().map(this::reconstructAip).collect(Collectors.toSet());
     }
 
 }

@@ -37,13 +37,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @ContextConfiguration(classes = { IOTestConfiguration.class, MockingResourceServiceConfiguration.class })
-@TestPropertySource(locations = { "classpath:application-default.properties" })
+@TestPropertySource(locations = { "classpath:test.properties" })
 public class IOTest extends AbstractRegardsServiceIT {
 
     private static Logger LOG = LoggerFactory.getLogger(IOTest.class);
@@ -74,7 +75,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         ContentInformation contentInfo1 = new ContentInformation();
         // DataObject 1
         DataObject do1 = new DataObject();
-        do1.setType(FileType.valueOf("RAWDATA"));
+        do1.setType(DataType.valueOf("RAWDATA"));
         do1.setUrl(new URL("file:/tmp/example.fits"));
         contentInfo1.setDataObject(do1);
         // RepresentationInformation 1
@@ -256,7 +257,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         ContentInformation contentInfo2 = new ContentInformation();
         // DataObject 2
         DataObject do2 = new DataObject();
-        do2.setType(FileType.valueOf("QUICKLOOK"));
+        do2.setType(DataType.valueOf("QUICKLOOK"));
         do2.setUrl(new URL("file:/tmp/example.png"));
         contentInfo2.setDataObject(do2);
         // RepresentationInformation 2

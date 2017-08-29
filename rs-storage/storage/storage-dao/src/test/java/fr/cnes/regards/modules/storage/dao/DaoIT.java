@@ -75,32 +75,32 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         aip1.setState(AIPState.VALID);
         setSubmissionDate(aip1, OffsetDateTime.now().minusMinutes(10));
         aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
-        aip1 = dao.save(aip1, null);
+        aip1 = dao.save(aip1);
         aip12 = new AIP(aip1);
         UniformResourceName version2 = UniformResourceName.fromString(aip12.getIpId());
         version2.setVersion(2);
         aip12.setIpId(version2.toString());
-        aip12 = dao.save(aip12, null);
+        aip12 = dao.save(aip12);
         aip2 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip2.setState(AIPState.PENDING);
         setSubmissionDate(aip2, OffsetDateTime.now().minusMinutes(20));
         aip2.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(20));
-        aip2 = dao.save(aip2, null);
+        aip2 = dao.save(aip2);
         aip3 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip3.setState(AIPState.DELETED);
         setSubmissionDate(aip3, OffsetDateTime.now().minusMinutes(30));
         aip3.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(30));
-        aip3 = dao.save(aip3, null);
+        aip3 = dao.save(aip3);
         aip4 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip4.setState(AIPState.STORAGE_ERROR);
         setSubmissionDate(aip4, OffsetDateTime.now().minusMinutes(40));
         aip4.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(40));
-        aip4 = dao.save(aip4, null);
+        aip4 = dao.save(aip4);
         aip5 = new AIP(EntityType.COLLECTION).generateRandomAIP();
         aip5.setState(AIPState.STORED);
         setSubmissionDate(aip5, OffsetDateTime.now().minusMinutes(50));
         aip5.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(50));
-        aip5 = dao.save(aip5, null);
+        aip5 = dao.save(aip5);
     }
 
     private void setSubmissionDate(AIP aip1, OffsetDateTime submissionDate) {

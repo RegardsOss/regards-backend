@@ -13,11 +13,11 @@ public class ProgressManager {
 
     private boolean errorStatus = false;
 
-    public void storageSucceed(AIP aip, DataFile datafile, URL storedUrl) {
+    public void storageSucceed(DataFile datafile, URL storedUrl) {
         // TODO : Send AMQP Event
     }
 
-    public void storageFailed(AIP aip, DataFile datafile, String cause) {
+    public void storageFailed(DataFile datafile, String cause) {
         // TODO : Send AMQP Event
         failureCauses.add(cause);
         errorStatus = true;
@@ -27,4 +27,15 @@ public class ProgressManager {
         return errorStatus;
     }
 
+    public void deletionFailed(DataFile data, String failureCause) {
+
+    }
+
+    public void deletionSucceed(DataFile data) {
+
+    }
+
+    public Set<String> getFailureCauses() {
+        return failureCauses;
+    }
 }

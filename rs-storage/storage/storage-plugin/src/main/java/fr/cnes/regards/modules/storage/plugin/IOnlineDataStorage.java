@@ -1,11 +1,8 @@
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.io.InputStream;
 
-import com.google.common.collect.Multimap;
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
@@ -13,9 +10,12 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
  */
 public interface IOnlineDataStorage<T extends IWorkingSubset>  extends IDataStorage<T>{
 
-    @Override
-    default DataStorageType getType() {
-        return DataStorageType.ONLINE;
-    }
+
+    /**
+     * Do the retreive action for the given {@link DataFile}
+     * @param data DataFile to retrieve
+     */
+//    OutputStream retrieve(T workingSubset, ProgressManager progressManager);
+    InputStream retrieve(DataFile data) throws IOException;
 
 }

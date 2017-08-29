@@ -7,11 +7,14 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -44,7 +47,7 @@ public interface IAIPService {
      * @throws IOException
      * @throws NoSuchAlgorithmException
      */
-    Long create(AIP pAIP) throws NoSuchAlgorithmException, IOException;
+    Set<UUID> create(Set<AIP> pAIP) throws ModuleException;
 
     /**
      * @param pIpId

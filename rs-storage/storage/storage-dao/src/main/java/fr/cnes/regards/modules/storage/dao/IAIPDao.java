@@ -6,7 +6,6 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
@@ -15,7 +14,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  */
 public interface IAIPDao {
 
-    AIP save(AIP toSave, PluginConfiguration dataStorageUsed);
+    AIP save(AIP toSave);
 
     Page<AIP> findAllByState(AIPState state, Pageable pageable);
 
@@ -34,4 +33,6 @@ public interface IAIPDao {
 
     Page<AIP> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime submissionAfter,
             OffsetDateTime lastEventBefore, Pageable pageable);
+
+    Set<AIP> findAllByStateService(AIPState state);
 }

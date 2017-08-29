@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.storage.plugin.staf.STAFService;
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "STAF",
         version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
+public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> {
 
     @PluginParameter(name = "STAFParameters")
     private STAFConfiguration configuration;
@@ -45,7 +45,7 @@ public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
     }
 
     @Override
-    public Set<STAFWorkingSubset> prepare(Multimap<AIP, List<DataFile>> pAips) {
+    public Set<STAFWorkingSubset> prepare(List<DataFile> dataFiles) {
         return null;
     }
 
@@ -122,11 +122,6 @@ public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
     public Set<DataStorageInfo> getMonitoringInfos() {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    public DataStorageType getType() {
-        return DataStorageType.NEARLINE;
     }
 
 }

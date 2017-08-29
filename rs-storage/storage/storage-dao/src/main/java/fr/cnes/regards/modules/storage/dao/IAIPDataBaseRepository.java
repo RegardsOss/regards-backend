@@ -88,4 +88,5 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
     @Query("from AIPDataBase aip where aip.ipId LIKE :urnWithoutVersion%")
     Set<AIPDataBase> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);
 
+    Set<AIPDataBase> findAllByState(AIPState state);
 }

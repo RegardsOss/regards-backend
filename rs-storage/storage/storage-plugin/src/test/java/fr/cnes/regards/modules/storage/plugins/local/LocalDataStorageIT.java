@@ -1,14 +1,13 @@
 package fr.cnes.regards.modules.storage.plugins.local;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -16,10 +15,12 @@ import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,13 +40,16 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
  * @author Sylvain VISSIERE-GUERINET
  */
 @ContextConfiguration(classes = { MockingResourceServiceConfiguration.class })
-@TestPropertySource(locations = { "classpath:application-default.properties" })
+@TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
 public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorageIT.class);
 
     private static final String LOCAL_STORAGE_LABEL = "LocalDataStorageIT";
+
+    @Autowired
+    Environment env;
 
     @Autowired
     private IPluginService pluginService;
@@ -73,8 +77,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
+                              gson.toJson(baseStorageLocation)).getParameters();
         //new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
@@ -84,7 +87,59 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    @Ignore
+    @Ignore("This test is just here to see if we gain some time or not with parallelism")
+    public void testParallelGain() throws IOException, ModuleException {
+        // for test purpose, lets see minimum value to gain time with parallelStream just transferring a file with no verification
+        AIP aip = getAipFromFile();
+        String jsonAip = gson.toJson(aip);
+        List<String> groupToWrite = Lists.newArrayList();
+        int parallelSize = 100;
+        for (int i = 0; i < parallelSize; i++) {
+            groupToWrite.add(jsonAip);
+        }
+        String sequentialLocation = baseStorageLocation.getPath() + "/sequential";
+        Files.createDirectories(Paths.get(sequentialLocation));
+        int i = 0;
+        //add timer
+        LocalTime startTime = LocalTime.now();
+        for (String toWrite : groupToWrite) {
+            BufferedWriter writer = Files.newBufferedWriter(Paths.get(sequentialLocation, "aip" + i++ + ".json"));
+            writer.write(toWrite);
+            writer.flush();
+            writer.close();
+        }
+        //get timer
+        LocalTime endTime = LocalTime.now();
+        Duration spent = Duration.between(startTime, endTime);
+        LOG.info("#################################################");
+        LOG.info("############# Sequential storage took: " + spent.getSeconds() + " seconds and "
+                         + spent.getNano() / 1_000_000 + " millis");
+        LOG.info("#################################################");
+        //lets reset the timer
+        startTime = LocalTime.now();
+        String parallelLocation = baseStorageLocation.getPath() + "/parallel";
+        Files.createDirectories(Paths.get(parallelLocation));
+        groupToWrite.parallelStream().forEach(toWrite -> {
+            try {
+                BufferedWriter writer = Files
+                        .newBufferedWriter(Paths.get(parallelLocation, "aip" + Math.random() + ".json"));
+                writer.write(toWrite);
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        endTime = LocalTime.now();
+        spent = Duration.between(startTime, endTime);
+        LOG.info("#################################################");
+        LOG.info("############# Parallel storage took: " + spent.getSeconds() + " seconds and "
+                         + spent.getNano() / 1_000_000 + " millis");
+        LOG.info("#################################################");
+    }
+
+    @Test
+    @Ignore("This test should be done into service now, storage logic cannot be used to without job/service support for assert purpose")
     public void testStore() throws ModuleException, IOException {
         AIP aip = getAipFromFile();
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
@@ -107,7 +162,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     public void cleanUp() throws ModuleException, URISyntaxException, IOException {
         pluginService.deletePluginConfiguration(localStorageConf.getId());
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
-                .peek(System.out::println).forEach(File::delete);
+                .forEach(File::delete);
     }
 
     @Override
