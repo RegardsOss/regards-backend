@@ -13,6 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -61,20 +62,26 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public Set<LocalWorkingSubset> prepare(List<DataFile> dataFiles) {
+    public Set<LocalWorkingSubset> prepare(Collection<DataFile> dataFiles) {
         // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at once
         return Sets.newHashSet(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
     }
 
     @Override
     public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, ProgressManager progressManager) {
-        workingSubset.getDataFiles().parallelStream().forEach(data->doStore(progressManager, data));
+        workingSubset.getDataFiles().parallelStream().forEach(data->doStore(progressManager, data, replaceMode));
     }
 
-    private void doStore(ProgressManager progressManager, DataFile data) {
+    private void doStore(ProgressManager progressManager, DataFile data, Boolean replaceMode) {
         String fullPathToFile;
         try {
             fullPathToFile = getStorageLocation(data);
+            //check if file is already at the right place or not. Unless we are instructed not to(for updates for example
+            if(!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getOriginUrl().getPath()))){
+                //if it is, there is nothing to do
+                progressManager.storageSucceed(data, data.getOriginUrl());
+                return;
+            }
         } catch (IOException ioe) {
             String failureCause=String.format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(), ioe.getMessage());
             LOG.error(failureCause, ioe);

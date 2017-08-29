@@ -26,5 +26,5 @@ public interface IAllocationStrategy {
 
     IDataStorage getStorage(EntityType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
 
-    Multimap<PluginConfiguration, IWorkingSubset> dispatch(Set<DataFile> dataFilesToHandle);
+    Multimap<PluginConfiguration, DataFile> dispatch(Set<DataFile> dataFilesToHandle);
 }

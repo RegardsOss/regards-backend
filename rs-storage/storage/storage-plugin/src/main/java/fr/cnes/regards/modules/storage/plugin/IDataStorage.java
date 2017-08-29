@@ -4,13 +4,10 @@
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
-import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
@@ -27,7 +24,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
      * @param dataFiles {@link DataFile}s to transfer
      * @return {@link Set} of Workingset containing plugin information needed for each file to transfert
      */
-    Set<T> prepare(List<DataFile> dataFiles);
+    Set<T> prepare(Collection<DataFile> dataFiles);
 
     /**
      * Do the store action for the given {@link T} working subset.

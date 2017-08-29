@@ -20,7 +20,7 @@ import fr.cnes.regards.modules.storage.domain.Event;
  */
 @Entity
 @Table(name = "t_aip", indexes = {
-        @Index(name = "idx_aip_ip_id", columnList = "ipId")
+        @Index(name = "idx_aip_ip_id", columnList = "ip_id")
 })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPDataBase {
@@ -140,5 +140,22 @@ public class AIPDataBase {
 
     public void setAip(AIP aip) {
         this.aip = aip;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        AIPDataBase that = (AIPDataBase) o;
+
+        return ipId != null ? ipId.equals(that.ipId) : that.ipId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return ipId != null ? ipId.hashCode() : 0;
     }
 }

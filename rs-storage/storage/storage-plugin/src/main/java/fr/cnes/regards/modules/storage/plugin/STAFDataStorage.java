@@ -4,12 +4,7 @@
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.collect.Multimap;
 
@@ -45,7 +40,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public Set<STAFWorkingSubset> prepare(List<DataFile> dataFiles) {
+    public Set<STAFWorkingSubset> prepare(Collection<DataFile> dataFiles) {
         return null;
     }
 

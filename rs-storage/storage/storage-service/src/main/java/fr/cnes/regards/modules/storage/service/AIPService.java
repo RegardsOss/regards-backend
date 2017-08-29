@@ -45,10 +45,10 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
-import fr.cnes.regards.modules.storage.domain.FileType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPValid;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 
@@ -100,29 +100,35 @@ public class AIPService implements IAIPService {
             // Publish AIP_VALID
             publisher.publish(new AIPValid(aip));
         }
-        // Lets retrieve active configurations of IAllocationStrategy
-        List<PluginConfiguration> allocationStrategies = pluginService
-                .getPluginConfigurationsByType(IAllocationStrategy.class);
-        List<PluginConfiguration> activeAllocationStrategies = allocationStrategies.stream().filter(pc -> pc.isActive())
-                .collect(Collectors.toList());
-        // System can only handle one active configuration of IAllocationStrategy
-        if (activeAllocationStrategies.size() != 1) {
-            IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
-                            .getName());
-            throw e;
-        }
-        IAllocationStrategy allocationStrategy = pluginService.getPlugin(activeAllocationStrategies.get(0));
-        // now lets ask to the strategy to dispatch dataFiles into WorkingSet for each possible DataStorage
+        IAllocationStrategy allocationStrategy = getAllocationStrategy();
+
+        // now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         Set<DataFile> dataFilesToHandle = Sets.newHashSet();
         aipsInDb.forEach(aip -> dataFilesToHandle.addAll(DataFile.extractDataFiles(aip)));
-        Multimap<PluginConfiguration, IWorkingSubset> storageWorkingSetMap = allocationStrategy
-                .dispatch(dataFilesToHandle);
+        Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToHandle);
 
+        Set<UUID> jobIds = scheduleDataStorage(storageWorkingSetMap);
+        // change the state to PENDING
+        for (AIP aip : aipsInDb) {
+            aip.setState(AIPState.PENDING);
+            dao.save(aip);
+        }
+
+        return jobIds;
+        // stockage du descriptif sur fichier
+        // TODO: job synchrone?
+        // ouverture du flux sur le Workspace
+        // ecriture sur workspace
+    }
+
+    public Set<UUID> scheduleDataStorage(Multimap<PluginConfiguration, DataFile> storageWorkingSetMap)
+            throws ModuleException {
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (PluginConfiguration dataStorageConf : storageWorkingSetMap.keySet()) {
+            IDataStorage storage = pluginService.getPlugin(dataStorageConf);
+            Set<IWorkingSubset> workingSubSets = storage.prepare(storageWorkingSetMap.get(dataStorageConf));
             //lets instantiate every job for every DataStorage to use
-            for (IWorkingSubset workingSubset : storageWorkingSetMap.get(dataStorageConf)) {
+            for (IWorkingSubset workingSubset : workingSubSets) {
                 //for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(StoreDataFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
@@ -137,17 +143,23 @@ public class AIPService implements IAIPService {
         for (JobInfo job : jobsToSchedule) {
             jobIds.add(jobInfoService.create(job).getId());
         }
-        // change the state to PENDING
-        for (AIP aip : aipsInDb) {
-            aip.setState(AIPState.PENDING);
-            dao.save(aip);
-        }
-
         return jobIds;
-        // stockage du descriptif sur fichier
-        // TODO: job synchrone?
-        // ouverture du flux sur le Workspace
-        // ecriture sur workspace
+    }
+
+    public IAllocationStrategy getAllocationStrategy() throws ModuleException {
+        // Lets retrieve active configurations of IAllocationStrategy
+        List<PluginConfiguration> allocationStrategies = pluginService
+                .getPluginConfigurationsByType(IAllocationStrategy.class);
+        List<PluginConfiguration> activeAllocationStrategies = allocationStrategies.stream().filter(pc -> pc.isActive())
+                .collect(Collectors.toList());
+        // System can only handle one active configuration of IAllocationStrategy
+        if (activeAllocationStrategies.size() != 1) {
+            IllegalStateException e = new IllegalStateException(
+                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
+                            .getName());
+            throw e;
+        }
+        return pluginService.getPlugin(activeAllocationStrategies.get(0));
     }
 
     /**
@@ -184,6 +196,10 @@ public class AIPService implements IAIPService {
 //            }
         }
         //now that we know all the metadata that should be stored, lets schedule their storage!
+//        IAllocationStrategy allocationStrategy = getAllocationStrategy();
+//
+//        // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
+//        Set<UUID> jobsToMonitor = scheduleDataStorage(allocationStrategy.dispatch(metadataToStore));
     }
 
     private String getOwner() {

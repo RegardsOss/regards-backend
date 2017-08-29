@@ -257,7 +257,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         ContentInformation contentInfo2 = new ContentInformation();
         // DataObject 2
         DataObject do2 = new DataObject();
-        do2.setType(DataType.valueOf("QUICKLOOK"));
+        do2.setType(DataType.valueOf("QUICKLOOK_HD"));
         do2.setUrl(new URL("file:/tmp/example.png"));
         contentInfo2.setDataObject(do2);
         // RepresentationInformation 2

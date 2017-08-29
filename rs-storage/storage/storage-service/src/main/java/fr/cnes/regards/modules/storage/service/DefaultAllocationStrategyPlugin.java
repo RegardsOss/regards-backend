@@ -46,7 +46,7 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
     }
 
     @Override
-    public Multimap<PluginConfiguration, IWorkingSubset> dispatch(Set<DataFile> dataFilesToHandle) {
+    public Multimap<PluginConfiguration, DataFile> dispatch(Set<DataFile> dataFilesToHandle) {
         return null;
     }
 
