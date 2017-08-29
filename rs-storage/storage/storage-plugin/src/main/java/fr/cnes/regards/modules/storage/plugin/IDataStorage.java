@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.plugin;
 
-import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Multimap;
@@ -26,7 +25,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
      * @param aips {@link Multimap} keys are {@link AIP}s to handle, values are the{@link DataFile} to transfer for the {@link AIP}
      * @return {@link Set} of Workingset containing plugin information needed for each file to transfert
      */
-    Set<T> prepare(Multimap<AIP, List<DataFile>> aips);
+    Set<T> prepare(Multimap<AIP, Set<DataFile>> aips);
 
     /**
      * Do the store action for the given {@link T} working subset.

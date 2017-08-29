@@ -17,8 +17,6 @@ public class STAFWorkingSubset implements IWorkingSubset {
 
     private final Set<DataFile> datafiles;
 
-    private String productTye;
-
     public STAFWorkingSubset(Set<DataFile> pDatafiles) {
         super();
         datafiles = pDatafiles;

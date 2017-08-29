@@ -3,86 +3,87 @@
  */
 package fr.cnes.regards.modules.storage.plugin;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Multimap;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.staf.ArchiveAccessModeEnum;
+import fr.cnes.regards.framework.staf.STAFArchive;
+import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
+import fr.cnes.regards.framework.staf.STAFException;
+import fr.cnes.regards.framework.staf.STAFManager;
+import fr.cnes.regards.framework.staf.STAFService;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.staf.STAFArchiveModeEnum;
-import fr.cnes.regards.modules.storage.plugin.staf.STAFConfiguration;
-import fr.cnes.regards.modules.storage.plugin.staf.STAFService;
 
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "STAF",
         version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
 
-    @PluginParameter(name = "STAFParameters")
-    private STAFConfiguration configuration;
+    @Autowired
+    private STAFManager stafManager;
+
+    @PluginParameter(name = "archiveParameters")
+    private STAFArchive stafArchive;
 
     private STAFService stafService;
+
+    @PluginParameter(name = "workspaceDirectory")
+    private String workspaceDirectory;
 
     @PluginInit
     public void init() {
         // Initialize STAF Service
-        stafService = new STAFService(configuration);
+        stafService = stafManager.getNewArchiveAccessService(stafArchive);
     }
 
     @Override
     public void store(STAFWorkingSubset pSubset, Boolean replaceMode, ProgressManager progressManager) {
+
+        // 1. First we have to check if datafile to store are available. If not, first transfer files
+        // into a workspace directory
+        Path workspace = Paths.get(workspaceDirectory);
+
         // Process each AIP to regroup by staf archive
-        // stafService.connectArchiveSystem(pSTAFArchive, ArchiveAccessModeEnum.ARCHIVE_MODE);
+        try {
+            stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+        } catch (STAFException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 
     @Override
-    public Set<STAFWorkingSubset> prepare(Multimap<AIP, List<DataFile>> pAips) {
-        return null;
+    public Set<STAFWorkingSubset> prepare(Multimap<AIP, Set<DataFile>> pAips) {
+
+        Set<STAFWorkingSubset> workingSets = new HashSet<>();
+
+        pAips.forEach((pAip, pDataFiles) -> {
+
+        });
+
+        return workingSets;
+
     }
 
-    private Map<STAFArchiveModeEnum, List<File>> handleAIP(AIP aip) {
-
-        // Files list to add like that in archive : "standard" archive
-        final List<File> pFileListStandard = new ArrayList<>();
-        // Files list to cut before archive its (files too big): "cut" archive
-        final List<File> pFileListCut = new ArrayList<>();
-        // Files list to regroup before archive its (files too small): "tar" archive
-        final List<File> pFileListTar = new ArrayList<>();
-
-        // 1. Find from the AIP the product type
-        String productType = getProductType(aip);
-
-        // 2. get Files to archive from AIP
-        List<File> filesToArchive = getFilesToArchive(aip);
-
-        // 3. Dispatch files to archive by archiving mode
-        return dispatchFilesToArchive(filesToArchive);
-    }
-
-    private String getProductType(AIP aip) {
-        // TODO : Comment connaître le nom du produit depuis l'AIP ?
-        return "TODO";
-    }
-
-    private List<File> getFilesToArchive(AIP aip) {
-        // TODO : Comment récupérer les fichiers depuis l'AIP ?
-        return new ArrayList<>();
-    }
-
-    private Map<STAFArchiveModeEnum, List<File>> dispatchFilesToArchive(List<File> pFiles) {
-        Map<STAFArchiveModeEnum, List<File>> dispatchedFiles = new EnumMap<>(STAFArchiveModeEnum.class);
+    private Map<STAFArchiveModeEnum, Set<DataFile>> dispatchFilesToArchive(Set<DataFile> pFiles) {
+        Map<STAFArchiveModeEnum, Set<DataFile>> dispatchedFiles = new EnumMap<>(STAFArchiveModeEnum.class);
         pFiles.forEach(file -> {
-            STAFArchiveModeEnum mode = getFileArchiveMode(file);
-            dispatchedFiles.merge(mode, Arrays.asList(file), (olds, news) -> {
+            STAFArchiveModeEnum mode = getFileArchiveMode(file.getFileSize());
+            dispatchedFiles.merge(mode, new HashSet<>(Arrays.asList(file)), (olds, news) -> {
                 olds.addAll(news);
                 return olds;
             });
@@ -90,15 +91,13 @@ public class STAFDataStorage implements IDataStorage<STAFWorkingSubset> {
         return dispatchedFiles;
     }
 
-    private STAFArchiveModeEnum getFileArchiveMode(File pFile) {
+    private STAFArchiveModeEnum getFileArchiveMode(Double pFileSize) {
 
-        final long fileSize = pFile.length();
-
-        if (fileSize < configuration.getMinFileSize()) {
+        if (pFileSize < stafManager.getConfiguration().getMinFileSize()) {
             return STAFArchiveModeEnum.TAR;
         }
 
-        if (fileSize > configuration.getMaxFileSize()) {
+        if (pFileSize > stafManager.getConfiguration().getMaxFileSize()) {
             return STAFArchiveModeEnum.CUT;
         }
 
