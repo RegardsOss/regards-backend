@@ -16,9 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto.repository;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.properties;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -31,18 +30,24 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "regards.acquisition.ssalto")
 public class PluginsRespositoryProperties {
 
-    String pluginConfFilesDir;
+    private String pluginConfFilesDir;
 
-    String pluginTranslationFilesDir;
+    private String pluginTranslationFilesDir;
 
-    @Value("${plugin.conf.file.dir}")
     public String getPluginConfFilesDir() {
         return pluginConfFilesDir;
     }
 
-    @Value("${plugin.translation.files.dir}")
+    public void setPluginConfFilesDir(String pluginConfFilesDir) {
+        this.pluginConfFilesDir = pluginConfFilesDir;
+    }
+
     public String getPluginTranslationFilesDir() {
         return pluginTranslationFilesDir;
+    }
+
+    public void setPluginTranslationFilesDir(String pluginTranslationFilesDir) {
+        this.pluginTranslationFilesDir = pluginTranslationFilesDir;
     }
 
 }

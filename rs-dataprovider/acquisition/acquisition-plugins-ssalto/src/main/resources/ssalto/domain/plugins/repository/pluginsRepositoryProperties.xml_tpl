@@ -1,0 +1,14 @@
+<!-- 
+ $Id$
+ 
+ HISTORIQUE
+ 
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Creation
+ 
+ FIN-HISTORIQUE
+ 
+-->
+<pluginRepositoryProperties>
+	<pluginConfFilesDir>@project.acquisition.plugins.confs.dir_TOKEN@</pluginConfFilesDir>
+	<pluginTranslationFilesDir>@project.acquisition.plugins.translations.dir_TOKEN@</pluginTranslationFilesDir>
+</pluginRepositoryProperties>

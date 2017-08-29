@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!--
+ $Id$
+ 
+ HISTORIQUE
+
+ VERSION : 2009/07/29 : 1.3 : CS
+ DM-ID : SIPNG-DM-0060-CN : 2009/07/29 : ajout de regles
+ 
+ VERSION : 2009/01/28 : 1.2 : CS
+ DM-ID : SIPNG-DM-0047-CN : 2009/01/28 : creation
+
+ FIN-HISTORIQUE
+
+ fichier de regles de digestion des fichiers de configuration
+ des plugin pour jason2
+-->
+
+<!DOCTYPE digester-rules PUBLIC "-//Jakarta Apache //DTD digester-rules XML V1.0//EN" "http://jakarta.apache.org/commons/digester/dtds/digester-rules.dtd">
+
+<digester-rules>
+	<!-- REQUEST -->
+	<pattern value="PLUGIN_CONFIGURATION">
+		<object-create-rule classname="ssalto.domain.plugins.impl.tools.PluginConfigurationProperties" />
+		<call-method-rule pattern="fileNamePattern" methodname="setFileNamePattern" paramcount="0"/>		
+		<pattern value="compositeAttribute">
+			<object-create-rule classname="ssalto.domain.plugins.impl.finder.CompositeAttributeFinder"/>
+			<set-next-rule methodname="addFileFinder"/>
+		</pattern>		
+	</pattern>	
+	<pattern value="*/attributeFromName">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.FileNameFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/translatedAttributeFromName">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.TranslatedFileNameFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/translatedAttributeFromArcFile">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.TranslatedAttributeFromArcFile"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/translatedAttributeFromCycleFile">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.TranslatedFromCycleFileFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/multipleFileFromName">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.MultipleFileNameFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>			
+	<pattern value="*/fileInfoAttribute">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.FileInfoFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/globalAttributeFromCdfFile">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.CDFGlobalAttributeFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/variableValueAttributeFromCdfFile">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.CDFVariableAttributeValueFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/enumeratedAttributeFromCdfFile">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.CDFEnumeratedAttributeValueFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/attributeFromAsciiFile">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.AsciiFileFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/attributeFromOther">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.OtherAttributeValueFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+	<pattern value="*/fixedValueAttribute">
+		<object-create-rule classname="ssalto.domain.plugins.impl.finder.FixedValueAttributeFinder"/>
+		<set-next-rule methodname="addFileFinder"/>
+	</pattern>
+
+	<call-method-rule pattern="*/linePattern" methodname="setLinePattern" paramcount="0"/>
+	<call-method-rule pattern="*/lineNumber" methodname="setLineNumber" paramcount="0"/>
+	<call-method-rule pattern="*/groupNumber" methodname="addGroupNumber" paramcount="0" />
+	<call-method-rule pattern="*/except" methodname="addException" paramcount="0"/>
+	<call-method-rule pattern="*/attributeName" methodname="setAttributeName" paramcount="0"/>
+	<call-method-rule pattern="*/calculationClass" methodname="setCalculationClass" paramcount="0"/>
+	<call-method-rule pattern="*/variableName" methodname="setVariableName" paramcount="0"/>
+	<call-method-rule pattern="*/calculus" methodname="setCalculus" paramcount="0"/>
+	<call-method-rule pattern="*/translationFilePath" methodname="setTranslationProperties" paramcount="0"/>
+	<call-method-rule pattern="*/order" methodname="setOrder" paramcount="0" />
+	<call-method-rule pattern="*/valueType" methodname="setValueType" paramcount="0"/>
+	<call-method-rule pattern="*/name" methodname="setName" paramcount="0"/>
+	<call-method-rule pattern="*/formatRead" methodname="setFormatRead" paramcount="0"/>
+	<call-method-rule pattern="*/otherAttributeName" methodname="setOtherAttributeName" paramcount="0"/>
+	<call-method-rule pattern="*/fileInformation" methodname="setFileInformation" paramcount="0"/>
+	<call-method-rule pattern="*/fixedValue" methodname="setFixedValue" paramcount="0"/>
+	<call-method-rule pattern="*/defaultValue" methodname="setDefaultValue" paramcount="0"/>
+	<call-method-rule pattern="*/fileInZipNamePattern" methodname="setFileInZipNamePattern" paramcount="0"/>
+ 	<call-method-rule pattern="*/unzipBefore" methodname="setUnzipBefore" paramcount="0"/>
+	<call-method-rule pattern="*/compressionType" methodname="setCompression" paramcount="0"/>
+	<call-method-rule pattern="*/filterPattern" methodname="setFilterPattern" paramcount="0"/>
+</digester-rules>
+ 

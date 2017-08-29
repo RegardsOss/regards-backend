@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.tools;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Properties;
@@ -40,34 +38,25 @@ public class PluginConfigurationProperties {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfigurationProperties.class);
 
-    /**
-     * Default class loader
-     */
-    private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    protected Properties pluginProperties;
 
-    private Properties pluginProperties;
+    protected static final String ORF_FILE_PATH_KEY = "ORF_FILEPATH_PATTERN";
 
-    private static final String ORF_FILE_PATH_KEY = "ORF_FILEPATH_PATTERN";
+    protected static final String CYCLE_FILE_PATH_KEY = "CYCLE_FILEPATH";
 
-    private static final String CYCLE_FILE_PATH_KEY = "CYCLE_FILEPATH";
-
-    private static final String ARCS_FILEPATH_KEY = "ARCS_FILEPATH";
+    protected static final String ARCS_FILEPATH_KEY = "ARCS_FILEPATH";
 
     private static final String SEPARATOR = ";";
 
-    private static final String fileNameProperties = "pluginConfiguration.properties";
-
-    private static final String pluginConfigurationLocationPath = "/ssalto/domain/plugins/impl/tools";
+    private static final String URL_PROPERTIES = "ssalto/domain/plugins/impl/tools/pluginConfiguration.properties";
 
     /**
      * filePattern du nom du fichier
-     * TODO CMZ : à confirmer utilité
      */
     protected String fileNamePattern;
-    
+
     /**
      * liste des finder
-     * TODO CMZ : à confirmer utilité
      */
     private SortedMap<Integer, AttributeFinder> finderList;
 
@@ -97,28 +86,22 @@ public class PluginConfigurationProperties {
     private void loadProperties() {
         pluginProperties = new Properties();
 
-        String fileName = pluginConfigurationLocationPath + File.separator + fileNameProperties;
-
-        try (InputStream input = classLoader.getResourceAsStream(fileName)) {
-            if (input == null) {
-                LOGGER.info("Unable to read plugin configuration properties file \"{}\"", fileName);
-            } else {
-                pluginProperties.load(input);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Error reading or closing plugin properties\"{}\" \n{}", fileName, e);
+        try (InputStream stream = PluginConfigurationProperties.class.getClassLoader()
+                .getResourceAsStream(URL_PROPERTIES)) {
+            pluginProperties.load(stream);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
-    private String getPropertyValue(String pPropertyValue) {
+    private String getPropertyValue(String value) {
         if (project == null) {
             LOGGER.error("project was not set : JASON, JASON2 ...");
         }
-        String propertyName = project + "_" + pPropertyValue;
+        String propertyName = project + "_" + value;
         String propertyValue = pluginProperties.getProperty(propertyName);
         if (propertyValue == null) {
-            LOGGER.error("Property not found " + propertyName + " in file " + pluginConfigurationLocationPath
-                    + File.separator + fileNameProperties);
+            LOGGER.error(String.format("Property not found %s in file '%s'", propertyName, URL_PROPERTIES));
         }
         return propertyValue;
     }
@@ -132,37 +115,32 @@ public class PluginConfigurationProperties {
         String propertyValue = pluginProperties.getProperty(propertyName);
 
         if (propertyValue == null) {
-            LOGGER.error("Property not found " + propertyName + " in file " + pluginConfigurationLocationPath
-                    + File.separator + fileNameProperties);
+            LOGGER.error(String.format("Property not found %s in file '%s'", propertyName, URL_PROPERTIES));
         }
         String[] orfFilePath = propertyValue.split(SEPARATOR);
         return orfFilePath;
     }
 
-    // TODO CMZ : à confirmer utilité
     public String getFileNamePattern() {
         return fileNamePattern;
     }
 
-    // TODO CMZ : à confirmer utilité
-    public void setFileNamePattern(String pFileNamePattern) {
-        fileNamePattern = pFileNamePattern;
+    public void setFileNamePattern(String filePattern) {
+        fileNamePattern = filePattern;
     }
-    
+
     /**
      * ajoute un finder standard
      * 
-     * @param pFinder
-     * TODO CMZ : à confirmer utilité
+     * @param finder
      */
-    public void addFileFinder(AttributeFinder pFinder) {
+    public void addFileFinder(AttributeFinder finder) {
         if (finderList == null) {
             finderList = new TreeMap<>();
         }
-        finderList.put(new Integer(pFinder.getOrder()), pFinder);
+        finderList.put(new Integer(finder.getOrder()), finder);
     }
-    
-    // TODO CMZ : à confirmer utilité
+
     public Collection<AttributeFinder> getFinderList() {
         if (finderList != null) {
             return finderList.values();

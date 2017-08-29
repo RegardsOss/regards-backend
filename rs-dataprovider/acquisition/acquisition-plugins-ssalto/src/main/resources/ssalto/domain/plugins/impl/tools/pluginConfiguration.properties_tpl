@@ -1,0 +1,110 @@
+#
+# $Id$
+#
+# HISTORIQUE
+#
+# VERSION : 5.5.2 : DM : SIPNG-DM-168-CN : 19/11/2015 : Creation plugin pour Sentinel3A
+# VERSION : 5.5.1 : FA : SIPNG-FA-1105-CN : 09/03/2015 : Correction emplacement des fichiers cycles.
+# VERSION : 5.5 : DM : SIPNG-DM-154-CN : 03/12/2014 : Création plugins JASON3
+# VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+# 
+# VERSION : 2011/11/15: 2.0 : CS
+#
+# VERSION : 5.3 : DM : SIPNG-DM-0126-CN : 19/07/2013 : Mise à jour des plugins SSALTO
+#
+# FA-ID : SIPNG-FA-0743-CS : 2011/11/15 : mise a jour
+#
+# VERSION : 2009/05/05: 1.3 : CS
+# DM-ID : SIPNG-DM-0060-CN : 2010/02/01 : ajout des fichiers SARAL et HY2A
+# DM-ID : SIPNG-DM-0060-CN : 2009/05/27 : Prise en compte de plusieurs fichiers ORF. Generalisation de la gestion des cycles 
+# FA-ID : SIPNG-FA-0420-CS : 2009/05/05 : renommage pour configurator
+#
+# VERSION : 2009/01/28 : 1.2 : CS
+# DM-ID : SIPNG-DM-0047-CN : 2009/01/28 : creation
+#
+# FIN-HISTORIQUE
+# Contient les properties utilisees par les plugin lors de l'initialisation
+#
+#######################
+
+#pattern du path vers le fichier orf des orbites
+
+# JASON 
+
+# le nom change au fil des mises a jour. Il faut prendre le dernier
+# Cas de plusieurs fichiers ORF : 
+#    - Separer chaque fichier par le separateur ";"
+#    - A classer par ordre croissant de cycles ( ou de dates ) 
+# Cas particulier : Cycle(s) anterieur(s) au cycle 001 ou 000 (= 1er cycle du 1er fichier ORF fourni)
+#                 Dans ce cas creer un nouveau fichier ORF contenant la liste des cycles anterieurs avec leurs dates correspondantes
+#                 Respecter le format des fichiers ORF fournis
+#                 Fichier a placer dans la liste en tete des fichiers ORF
+#                 A placer par ex sous .../services.acquisition.conf.domain.plugins.impl.tools
+#                 A nommer par ex : <Mission>_ORF_FIRST_CYCLES  ( JA1_ORF_FIRST_CYCLES )
+
+# le nom change au fil des mises a jour. Il faut prendre le dernier
+JASON_ORF_FILEPATH_PATTERN=@project.acquisition.plugins.cycles.dir_TOKEN@/JA1_ORF_FIRST_CYCLES;@service.ssalto.supply.dir_TOKEN@/jason/orf_historique/BEF_DRIFT_JA1_ORF_AXXCNE*;@service.ssalto.supply.dir_TOKEN@/jason/orf_historique/JA1_ORF_AXXCNE*
+
+#path vers le fichier contenant les dates de passage de cycle
+JASON_CYCLE_FILEPATH=@service.ssalto.supply.dir_TOKEN@/jason/cycles/JASON1_CYCLES
+
+# JASON 2
+
+#pattern du path vers le fichier orf des orbites
+# le nom change au fil des mises a jour. Il faut prendre le dernier
+JASON2_ORF_FILEPATH_PATTERN=@project.acquisition.plugins.cycles.dir_TOKEN@/JA2_ORF_FIRST_CYCLES;@service.ssalto.supply.dir_TOKEN@/jason2/orf_historique/JA2_ORF_AXXCNE*
+#path vers le fichier contenant les dates de passage de cycle
+JASON2_CYCLE_FILEPATH=@service.ssalto.supply.dir_TOKEN@/jason2/cycles/JASON2_CYCLES
+
+# JASON 3
+
+#pattern du path vers le fichier orf des orbites
+# le nom change au fil des mises a jour. Il faut prendre le dernier
+JASON3_ORF_FILEPATH_PATTERN=@service.ssalto.supply.dir_TOKEN@/jason3/orf_historique/JA3_ORF_AXXCNE*
+#path vers le fichier contenant les dates de passage de cycle
+JASON3_CYCLE_FILEPATH=@service.ssalto.supply.dir_TOKEN@/jason3/cycles/JASON3_CYCLES
+
+
+# ENVISAT
+
+#pattern du path vers le fichier orf des orbites
+# le nom change au fil des mises a jour. Il faut prendre le dernier
+#
+ENVISAT_ORF_FILEPATH_PATTERN=@service.ssalto.supply.dir_TOKEN@/envisat/orf/EN1_ORF_AXXCNE*;@service.ssalto.supply.dir_TOKEN@/envisat/orf/BEFORE_ORBIT_CHANGE_EN1_ORF_AXXCNE20101116_151800_20020410_164440_20101025_194829
+
+
+#path vers le fichier contenant les dates de passage de cycle
+ENVISAT_CYCLE_FILEPATH=@service.ssalto.supply.dir_TOKEN@/envisat/cycles/ENVISAT_CYCLES
+
+# SPOT2
+# Fichier d'arc sur l'espace de fourniture
+SPOT2_ARCS_FILEPATH=@service.ssalto.supply.dir_TOKEN@/spot2/arcs/SPOT2_ARCS
+
+# SPOT4
+# Fichier d'arc sur l'espace de fourniture
+SPOT4_ARCS_FILEPATH=@service.ssalto.supply.dir_TOKEN@/spot4/arcs/SPOT4_ARCS
+
+# SPOT5
+# Fichier d'arc sur l'espace de fourniture
+SPOT5_ARCS_FILEPATH=@service.ssalto.supply.dir_TOKEN@/spot5/arcs/SPOT5_ARCS
+
+# CRYOSAT2
+CRYOSAT2_ORF_FILEPATH_PATTERN=@service.ssalto.supply.dir_TOKEN@/cryosat/orf/CS__ORF_AXXCNE*
+#path vers le fichier contenant les dates de passage de cycle (pas de fichier pour le moment)
+CRYOSAT2_CYCLE_FILEPATH=
+
+# SARAL
+#pattern du path vers le fichier orf des orbites
+# le nom change au fil des mises a jour. Il faut prendre le dernier
+SARAL_ORF_FILEPATH_PATTERN=@project.acquisition.plugins.cycles.dir_TOKEN@/SRL_ORF_FIRST_CYCLES;@service.ssalto.supply.dir_TOKEN@/saral/orf_historique/SRL_ORF_AXXCNE*
+#path vers le fichier contenant les dates de passage de cycle
+SARAL_CYCLE_FILEPATH=@service.ssalto.supply.dir_TOKEN@/saral/cycles/SARAL_CYCLES
+
+# HY2A
+#pattern du path vers le fichier orf des orbites
+HY2A_ORF_FILEPATH_PATTERN=@service.ssalto.supply.dir_TOKEN@/hy2a/orf_historique/H2A_ORF_AXXCNE*
+#path vers le fichier contenant les dates de passage de cycle
+HY2A_CYCLE_FILEPATH=@service.ssalto.supply.dir_TOKEN@/hy2a/cycles/HY2A_CYCLES
+
+# SENTINEL-3A
+SENT3A_ORF_FILEPATH_PATTERN=@service.ssalto.supply.dir_TOKEN@/sentinel3a/orf_historique/S3A_ORF_AXXCN*
