@@ -61,9 +61,10 @@ public class DataFile {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
-    private AIPDataBase aip;
+    private AIPDataBase aipDataBase;
 
-    public DataFile() {
+    public DataFile(URL urlToMetadata, String algorithm, DataType aip, String checksum, long fileSize,
+            MimeType mimeType) {
     }
 
     public DataFile(DataObject file, String algorithm, String checksum, Double fileSize, MimeType mimeType, AIP aip) {
@@ -78,7 +79,7 @@ public class DataFile {
         this.type = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
-        this.aip = new AIPDataBase(aip);
+        this.aipDataBase = new AIPDataBase(aip);
     }
 
     public Long getId() {
@@ -145,12 +146,28 @@ public class DataFile {
         this.mimeType = mimeType;
     }
 
-    public AIPDataBase getAip() {
-        return aip;
+    public DataFileState getState() {
+        return state;
     }
 
-    public void setAip(AIPDataBase aip) {
-        this.aip = aip;
+    public void setState(DataFileState state) {
+        this.state = state;
+    }
+
+    public void setAipDataBase(AIPDataBase aipDataBase) {
+        this.aipDataBase = aipDataBase;
+    }
+
+    public AIPDataBase getAipDataBase(AIPDataBase aipDataBase) {
+        return this.aipDataBase;
+    }
+
+    public AIP getAip() {
+        return aipDataBase.getAip();
+    }
+
+    public void setAip(AIP aip) {
+        this.aipDataBase = new AIPDataBase(aip);
     }
 
     public static Set<DataFile> extractDataFiles(AIP aip) {
