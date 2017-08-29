@@ -31,10 +31,7 @@ import org.springframework.http.MediaType;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
@@ -45,7 +42,6 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
 @Plugin(author = "REGARDS Team", contact = "regards@c-s.fr",
         description = "Representation plugin handling GeoJSON serialization", id = "GeoJsonRepresentation",
         licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "0.0.1")
-@CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.QUERY }, entityTypes = { EntityType.DATASET })
 public class GeoJsonRepresentation implements IRepresentation {
 
     public static final MediaType MEDIA_TYPE = new MediaType("application", "geo+json", StandardCharsets.UTF_8);
