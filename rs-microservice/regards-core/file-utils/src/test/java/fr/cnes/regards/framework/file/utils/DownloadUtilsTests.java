@@ -27,7 +27,7 @@ public class DownloadUtilsTests {
     public void testDownloadWithFileProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException{
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
-        InputStream is = DownloadUtils.download(source);
+        InputStream is = DownloadUtils.getInputStream(source);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -56,7 +56,7 @@ public class DownloadUtilsTests {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
         Proxy proxy=new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is = DownloadUtils.downloadThroughProxy(source, proxy);
+        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -80,7 +80,7 @@ public class DownloadUtilsTests {
     @Test
     public void testDownloadWithHttpProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://172.26.47.107:9020/conf/staticConfiguration.js");
-        InputStream is =DownloadUtils.download(source);
+        InputStream is =DownloadUtils.getInputStream(source);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while(dis.read()!=-1) {}
         String checksum=ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
@@ -93,7 +93,7 @@ public class DownloadUtilsTests {
     public void testDownloadWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
         Proxy proxy=new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is =DownloadUtils.downloadThroughProxy(source, proxy);
+        InputStream is =DownloadUtils.getInputStreamThroughProxy(source, proxy);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while(dis.read()!=-1) {}
         String checksum=ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
