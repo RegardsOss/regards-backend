@@ -71,6 +71,7 @@ public class CatalogServicesController {
     @Autowired
     private IServiceManager serviceManager;
 
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
