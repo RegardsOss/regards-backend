@@ -55,7 +55,9 @@ import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPValid;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
+import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -120,7 +122,7 @@ public class AIPService implements IAIPService {
         aipsInDb.forEach(aip -> dataFilesToHandle.addAll(DataFile.extractDataFiles(aip)));
         Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToHandle);
 
-        Set<UUID> jobIds = scheduleDataStorage(storageWorkingSetMap);
+        Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
         // change the state to PENDING
         for (AIP aip : aipsInDb) {
             aip.setState(AIPState.PENDING);
@@ -130,7 +132,7 @@ public class AIPService implements IAIPService {
         return jobIds;
     }
 
-    public Set<UUID> scheduleDataStorage(Multimap<PluginConfiguration, DataFile> storageWorkingSetMap)
+    public Set<UUID> scheduleStorage(Multimap<PluginConfiguration, DataFile> storageWorkingSetMap, boolean storingData)
             throws ModuleException {
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (PluginConfiguration dataStorageConf : storageWorkingSetMap.keySet()) {
@@ -140,10 +142,13 @@ public class AIPService implements IAIPService {
             for (IWorkingSubset workingSubset : workingSubSets) {
                 //for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(StoreDataFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
-                parameters.add(new JobParameter(StoreDataFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-                jobsToSchedule.add(new JobInfo(0, parameters, getOwner(), StoreDataFilesJob.class.getName(),
-                                               new JobStatusInfo()));
+                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
+                parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
+                if(storingData) {
+                    jobsToSchedule.add(new JobInfo(0, parameters, getOwner(), StoreDataFilesJob.class.getName(), new JobStatusInfo()));
+                } else {
+                    jobsToSchedule.add(new JobInfo(0, parameters, getOwner(), StoreMetadataFilesJob.class.getName(), new JobStatusInfo()));
+                }
             }
         }
 
@@ -257,7 +262,7 @@ public class AIPService implements IAIPService {
                 IAllocationStrategy allocationStrategy = getAllocationStrategy();
 
                 // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
-                Set<UUID> jobsToMonitor = scheduleDataStorage(allocationStrategy.dispatch(metadataToStore));
+                Set<UUID> jobsToMonitor = scheduleStorage(allocationStrategy.dispatch(metadataToStore), false);
 
                 //to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
                 for (DataFile dataFile : metadataToStore) {
