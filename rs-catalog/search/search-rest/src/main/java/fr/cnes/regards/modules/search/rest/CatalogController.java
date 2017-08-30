@@ -479,7 +479,7 @@ public class CatalogController {
      * and eventualy restricted by a given datasetIpId
      * @param allParams request params containing "q" query param (opensearch request)
      * @param datasetIpId restrict summary to this datasetIpIp (can be null)
-     * @param fileTypes asked files types {@link fr.cnes.regards.modules.entities.domain.DataType}
+     * @param fileTypes asked files types DataType somewhere in rs-microservice
      * @return the computed summary
      * @throws SearchException is opensearch request is mouldy
      */
