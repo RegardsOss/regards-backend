@@ -46,7 +46,7 @@ public class NotificationSettings implements IIdentifiable<Long> {
     /**
      * Self expl
      */
-    private static final long HOURS_IN_A_DAY = 24L;
+    private static final int HOURS_IN_A_DAY = 24;
 
     /**
      * The days frequency of notification<br>

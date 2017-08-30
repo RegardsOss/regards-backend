@@ -56,6 +56,18 @@ public class NotificationDTO {
      */
     private String title;
 
+    public NotificationDTO() {
+    }
+
+    public NotificationDTO(String message, List<String> projectUserRecipients, List<String> roleRecipients,
+            String sender, String title) {
+        this.message = message;
+        this.projectUserRecipients = projectUserRecipients;
+        this.roleRecipients = roleRecipients;
+        this.sender = sender;
+        this.title = title;
+    }
+
     /**
      * @return the message
      */

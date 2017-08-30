@@ -18,19 +18,13 @@
  */
 package fr.cnes.regards.modules.notification.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -52,8 +46,14 @@ import fr.cnes.regards.modules.notification.service.INotificationSettingsService
 @RestController
 @ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/notifications")
+@RequestMapping(NotificationController.NOTIFICATION_PATH)
 public class NotificationController {
+
+    public static final String NOTIFICATION_PATH = "/notifications";
+
+    public static final String NOTIFICATION_ID_PATH = "/{notification_id}";
+
+    public static final String NOTIFICATION_SETTINGS = "/settings";
 
     /**
      * The service responsible for managing notifications
@@ -105,7 +105,7 @@ public class NotificationController {
      *             Thrown when no notification with passed <code>id</code> could be found
      * @return The {@link Notification} wrapped in a {@link ResponseEntity}
      */
-    @RequestMapping(value = "/{notification_id}", method = RequestMethod.GET)
+    @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving a notification")
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId)
             throws EntityNotFoundException {
@@ -126,7 +126,7 @@ public class NotificationController {
      *
      */
     @ResponseBody
-    @RequestMapping(value = "/{notification_id}", method = RequestMethod.PUT)
+    @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public ResponseEntity<Notification> updateNotificationStatus(@PathVariable("notification_id") final Long pId,
             @Valid @RequestBody final NotificationStatus pStatus) throws EntityNotFoundException {
@@ -143,7 +143,7 @@ public class NotificationController {
      *             Thrown when no notification with passed <code>id</code> could be found
      * @return void
      */
-    @RequestMapping(value = "/{notification_id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "Define the endpoint for deleting a notification")
     public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") final Long pId)
             throws EntityNotFoundException {
@@ -158,7 +158,7 @@ public class NotificationController {
      * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
-    @RequestMapping(value = "/settings", method = RequestMethod.GET)
+    @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user")
     public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws EntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
@@ -174,7 +174,7 @@ public class NotificationController {
      * @throws EntityNotFoundException
      *             Thrown when no notification settings with passed <code>id</code> could be found
      */
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
+    @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public ResponseEntity<NotificationSettings> updateNotificationSettings(
             final NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException {

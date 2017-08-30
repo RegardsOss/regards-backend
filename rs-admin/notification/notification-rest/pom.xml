@@ -48,7 +48,7 @@
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
+			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

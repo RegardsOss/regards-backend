@@ -134,22 +134,21 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public Notification createNotification(final NotificationDTO pDto) {
-        final Notification notification = new Notification();
+        Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
         notification.setMessage(pDto.getMessage());
         notification.setTitle(pDto.getTitle());
         notification.setSender(pDto.getSender());
         notification.setStatus(NotificationStatus.UNREAD);
 
-        final List<ProjectUser> projectUserRecipients = projectUserRepository
-                .findByEmailIn(pDto.getProjectUserRecipients());
+        List<ProjectUser> projectUserRecipients = projectUserRepository.findByEmailIn(pDto.getProjectUserRecipients());
         notification.setProjectUserRecipients(projectUserRecipients);
 
-        final List<Role> roleRecipients = roleRepository.findByNameIn(pDto.getRoleRecipients());
+        List<Role> roleRecipients = roleRepository.findByNameIn(pDto.getRoleRecipients());
         notification.setRoleRecipients(roleRecipients);
 
         // Save it in db
-        notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);
 
         // TODO Trigger NOTIFICATION event on message broker
 
@@ -225,11 +224,9 @@ public class NotificationService implements INotificationService {
             return Stream.concat(usersStream,
                                  rolesStream.flatMap(// Define a function mapping each role to its project users by
                                                      // calling the roles client
-                                                     r -> HateoasUtils
-                                                             .retrieveAllPages(100,
-                                                                               pageable -> retrieveRoleProjectUserList(r,
-                                                                                                                       pageable))
-                                                             .stream())
+                                                     r -> HateoasUtils.retrieveAllPages(100,
+                                                                                        pageable -> retrieveRoleProjectUserList(
+                                                                                                r, pageable)).stream())
                                          .distinct());
         }
     }

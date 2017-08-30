@@ -22,11 +22,13 @@ import java.time.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
@@ -59,6 +61,9 @@ public class SendingScheduler {
      * The service responsible for managing notification settings
      */
     private final INotificationSettingsRepository notificationSettingsRepository;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Create a new scheduler with passed services and repositories
@@ -132,10 +137,12 @@ public class SendingScheduler {
      */
     private void filterAndSend(final Predicate<NotificationUserSetting> pFilter) {
         // With the stream of unsent notifications
-        try (final Stream<Notification> stream = notificationService.retrieveNotificationsToSend().parallelStream()) {
+        String tenant= runtimeTenantResolver.getTenant();
+        try (Stream<Notification> stream = notificationService.retrieveNotificationsToSend().parallelStream()) {
             stream.forEach(notification -> {
+                runtimeTenantResolver.forceTenant(tenant);
                 // Build the list of recipients
-                final String[] recipients = notificationService.findRecipients(notification)
+                String[] recipients = notificationService.findRecipients(notification)
                         .map(projectUser -> new NotificationUserSetting(notification, projectUser,
                                                                         notificationSettingsRepository
                                                                                 .findOneByProjectUser(projectUser)))
