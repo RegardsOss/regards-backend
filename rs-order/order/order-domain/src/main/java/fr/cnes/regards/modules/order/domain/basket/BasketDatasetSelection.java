@@ -56,10 +56,6 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Column(name = "files_size")
     private long filesSize = 0;
 
-    @Column(name = "data_type_selection", length = 10)
-    @Enumerated(EnumType.STRING)
-    private DataTypeSelection dataTypeSelection = DataTypeSelection.RAWDATA;
-
     @ElementCollection
     @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
             foreignKey = @javax.persistence.ForeignKey(name = "fk_items_selection"))
@@ -121,14 +117,6 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     public void setFilesCount(int filesCount) {
         this.filesCount = filesCount;
-    }
-
-    public DataTypeSelection getDataTypeSelection() {
-        return dataTypeSelection;
-    }
-
-    public void setDataTypeSelection(DataTypeSelection dataTypeSelection) {
-        this.dataTypeSelection = dataTypeSelection;
     }
 
     public SortedSet<BasketDatedItemsSelection> getItemsSelections() {

@@ -53,7 +53,7 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public void addSelection(Long basketId, String datasetIpId, String openSearchRequest) {
+    public Basket addSelection(Long basketId, String datasetIpId, String openSearchRequest) {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
@@ -82,7 +82,6 @@ public class BasketService implements IBasketService {
                 datasetSelection = new BasketDatasetSelection();
                 datasetSelection.setDatasetIpid(entry.getKey());
                 datasetSelection.setDatasetLabel(dataset.getLabel());
-                datasetSelection.setDataTypeSelection(DataTypeSelection.RAWDATA);
                 datasetSelection.setOpenSearchRequest("(" + openSearchRequest + ")");
                 basket.getDatasetSelections().add(datasetSelection);
             } else { // update dataset opensearch request
@@ -90,9 +89,7 @@ public class BasketService implements IBasketService {
                         datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + ")");
             }
             // Create dated items selection
-            BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, entry.getValue(),
-                                                                            datasetSelection.getDataTypeSelection()
-                                                                                    .getFileTypes());
+            BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, entry.getValue());
 
             // Add items selection to dataset selection
             datasetSelection.getItemsSelections().add(itemsSelection);
@@ -100,38 +97,7 @@ public class BasketService implements IBasketService {
             computeSummaryAndUpdateDatasetSelection(datasetSelection);
 
         }
-        repos.save(basket);
-    }
-
-    @Override
-    public void setFileTypes(Long basketId, String datasetIpId, DataTypeSelection dataTypeSelection) {
-        Basket basket = repos.findOneById(basketId);
-        // Search asked dataset selection
-        for (BasketDatasetSelection datasetSelection : basket.getDatasetSelections()) {
-            if (datasetSelection.getDatasetIpid().equals(datasetIpId)) {
-                // If data type selection hasn't changed, nothing to do
-                if (dataTypeSelection != datasetSelection.getDataTypeSelection()) {
-                    // Set new file types
-                    datasetSelection.setDataTypeSelection(dataTypeSelection);
-                    // Update all DatedItemsSelection
-                    for (BasketDatedItemsSelection itemsSelection : datasetSelection.getItemsSelections()) {
-                        Map<String, String> queryMap = new ImmutableMap.Builder<String, String>()
-                                .put("q", itemsSelection.getOpenSearchRequest()).build();
-                        DocFilesSummary summary = catalogClient
-                                .computeDatasetsSummary(queryMap, datasetIpId, dataTypeSelection.getFileTypes())
-                                .getBody();
-                        DocFilesSubSummary dsSelectionSummary = summary.getSubSummariesMap().get(datasetIpId);
-                        itemsSelection.setObjectsCount((int) dsSelectionSummary.getDocumentsCount());
-                        itemsSelection.setFilesCount((int) dsSelectionSummary.getFilesCount());
-                        itemsSelection.setFilesSize(dsSelectionSummary.getFilesSize());
-                    }
-                    // Update DatasetSelection (summary)
-                    computeSummaryAndUpdateDatasetSelection(datasetSelection);
-                }
-                break;
-            }
-        }
-        repos.save(basket);
+        return repos.save(basket);
     }
 
     /**
@@ -139,11 +105,10 @@ public class BasketService implements IBasketService {
      * @param openSearchRequest opensearch request from which this selection is created
      * @param now date of selection
      * @param subSummary dataset  selection (sub-)summary
-     * @param fileTypes asked file types of this dataset selection
      * @return dated items selection (what else ?)
      */
     private BasketDatedItemsSelection createItemsSelection(String openSearchRequest, OffsetDateTime now,
-            DocFilesSubSummary subSummary, String[] fileTypes) {
+            DocFilesSubSummary subSummary) {
         // Create a new basket dated items selection
         BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
         itemsSelection.setDate(now);
@@ -151,7 +116,7 @@ public class BasketService implements IBasketService {
         itemsSelection.setObjectsCount((int) subSummary.getDocumentsCount());
         int filesCount = 0;
         long filesSize = 0;
-        for (String fileType : fileTypes) {
+        for (String fileType : DataTypeSelection.ALL.getFileTypes()) {
             FilesSummary filesSummary = subSummary.getFileTypesSummaryMap().get(fileType);
             filesCount += filesSummary.getFilesCount();
             filesSize += filesSummary.getFilesSize();
@@ -166,13 +131,13 @@ public class BasketService implements IBasketService {
      */
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
         // Compute summary on dataset selection, need to recompute because of fileTypes differences between
-        // previous call to computeDatasetSummary or because of opensearch request on dataset selction that is
+        // previous call to computeDatasetSummary or because of opensearch request on dataset selection that is
         // a "OR" between previous one and nes item selection
         Map<String, String> dsQueryMap = new ImmutableMap.Builder<String, String>()
                 .put("q", datasetSelection.getOpenSearchRequest()).build();
         DocFilesSummary curDsSelectionSummary = catalogClient
                 .computeDatasetsSummary(dsQueryMap, datasetSelection.getDatasetIpid(),
-                                        datasetSelection.getDataTypeSelection().getFileTypes()).getBody();
+                                        DataTypeSelection.ALL.getFileTypes()).getBody();
         // Take into account only asked datasetIpId (sub-)summary
         DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
                 .get(datasetSelection.getDatasetIpid());

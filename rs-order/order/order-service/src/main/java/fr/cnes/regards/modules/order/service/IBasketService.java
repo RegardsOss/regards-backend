@@ -32,23 +32,18 @@ public interface IBasketService {
 
     /**
      * Add a selection to a basket through an opensearch request. The selection concerns a priori several datasets.
-     * Adding a selection concerned only RAWDATA files
+     * Adding a selection concerns RAWDATA and QUICKLOOKS files
      */
-    default void addSelection(Long basketId, String openSearchRequest) {
-        this.addSelection(basketId, null, openSearchRequest);
+    default Basket addSelection(Long basketId, String openSearchRequest) {
+        return this.addSelection(basketId, null, openSearchRequest);
     }
 
     /**
      * Add a selection through an opensearch request. Results are restricted to specified dataset
-     * Adding a selection concerns RAWDATA files by default BUT if a selection already exists fo a dataset,
-     * to be able to follow file types selcted for this dataset, all file types are retrieved (RAWDATA and QUICKLOOKS)
+     * Adding a selection concerns RAWDATA and QUICKLOOKS files by default
      * @param datasetIpId concerned dataset IP_ID (can be null)
      * @param openSearchRequest selection request
      */
-    void addSelection(Long basketId, String datasetIpId, String openSearchRequest);
+    Basket addSelection(Long basketId, String datasetIpId, String openSearchRequest);
 
-    /**
-     * Change data type selection for all items associated to a dataset
-     */
-    void setFileTypes(Long basketId, String datasetIpId, DataTypeSelection dataTypeSelection);
 }

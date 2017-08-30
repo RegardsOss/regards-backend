@@ -14,10 +14,10 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ObjectArrays;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.DataType;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -81,16 +81,9 @@ public class CatalogClientMock implements ICatalogClient {
         switch (insertionIdx) {
             case 0:
                 if (datasetIpId.equals(DS1_IP_ID.toString())) {
-                    // First call : empty opensearch request (only creationDate range), datasetIpId = DS1_IP_ID and all files
+                    // First and second call : empty opensearch request (only creationDate range), datasetIpId = DS1_IP_ID and all files
                     if (fileTypes.length == 4) {
-                        summary = createSummaryForDs1AllFilesFirstCall();
-                    } else if ((fileTypes.length == 1) && (fileTypes[0] == DataType.RAWDATA.toString())) {
-                        // Second call when computeDatasetSummary is asked for updating dataset only with RAW_DATA
-                        summary = createSummaryForDs1Raw();
-                    } else if ((fileTypes.length == 3) && (fileTypes[0] != DataType.RAWDATA.toString()) && (fileTypes[1]
-                            != DataType.RAWDATA.toString()) && (fileTypes[2] != DataType.RAWDATA.toString())) {
-                        // Third call when changing file types to QUICKLOOK
-                        summary = createSummaryForDs1QuicklooksFiles();
+                        summary = createSummaryForDs1AllFiles();
                     } else {
                         throw new RuntimeException(
                                 "Someone completely shit out this test ! Investigate and kick his ass !");
@@ -100,39 +93,33 @@ public class CatalogClientMock implements ICatalogClient {
                             "Someone completely shit out this test ! Investigate and kick his ass !");
                 }
                 break;
-            case 4:
+            case 2:
                 // When adding a selection on DS2 and DS3 (All files)
                 if ((datasetIpId == null) && (fileTypes.length == 4)) {
                     summary = createSummaryForDs2Ds3AllFilesFirstCall();
-                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
-                        == DataType.RAWDATA.toString())) {
-                    // same selection adding process, recomputing DS2 selection with default type (ie RAWADATA)
-                    summary = createSummaryForDs2Raw();
-                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
-                        == DataType.RAWDATA.toString())) {
-                    // same selection adding process, recomputing DS3 selection with default type (ie RAWADATA)
-                    summary = createSummaryForDs3Raw();
+                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 4)) {
+                    // same selection adding process, recomputing DS2 selection with default type (ie ALL)
+                    summary = createSummaryForDs2AllFiles();
+                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 4)) {
+                    // same selection adding process, recomputing DS3 selection with default type (ie ALL)
+                    summary = createSummaryForDs3AllFiles();
                 } else {
                     throw new RuntimeException(
                             "Someone completely shit out this test ! Investigate and kick his ass !");
                 }
                 break;
-            case 7:
+            case 5:
                 // Adding a selection on everything
                 if ((datasetIpId == null) && (fileTypes.length == 4)) {
-                    summary = createSummaryForAllDsAllFilesFirstCall();
-                } else if ((datasetIpId.equals(DS1_IP_ID.toString())) && (fileTypes.length == 3) && (fileTypes[0]
-                        != DataType.RAWDATA.toString()) && (fileTypes[1] != DataType.RAWDATA.toString()) && (
-                        fileTypes[2] != DataType.RAWDATA.toString())) {
-                    summary = createSummaryForDs1QuicklooksFiles();
-                } else if ((datasetIpId.equals(DS2_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
-                        == DataType.RAWDATA.toString())) {
+                    summary = createSummaryForAllDsAllFiles();
+                } else if (datasetIpId.equals(DS1_IP_ID.toString())) {
+                    summary = createSummaryForDs1AllFiles();
+                } else if (datasetIpId.equals(DS2_IP_ID.toString())) {
                     // same selection adding process, recomputing DS2 selection with default type (ie RAWADATA)
-                    summary = createSummaryForDs2Raw();
-                } else if ((datasetIpId.equals(DS3_IP_ID.toString())) && (fileTypes.length == 1) && (fileTypes[0]
-                        == DataType.RAWDATA.toString())) {
+                    summary = createSummaryForDs2AllFiles();
+                } else if (datasetIpId.equals(DS3_IP_ID.toString())) {
                     // same selection adding process, recomputing DS3 selection with default type (ie RAWADATA)
-                    summary = createSummaryForDs3Raw();
+                    summary = createSummaryForDs3AllFiles();
                 } else {
                     throw new RuntimeException(
                             "Someone completely shit out this test ! Investigate and kick his ass !");
@@ -148,43 +135,11 @@ public class CatalogClientMock implements ICatalogClient {
      * DS1 => 2 documents, 2 RAWDATA files (+ 6 QUICKLOOKS 2 x 3 of each size), 1 Mb each RAW file
      * 500 b QUICKLOOK SD, 1 kb MD, 500 kb HD (1 501 500 b)
      */
-    private static DocFilesSummary createSummaryForDs1AllFilesFirstCall() {
+    private static DocFilesSummary createSummaryForDs1AllFiles() {
         DocFilesSummary summary = new DocFilesSummary(2, 8, 3_003_000);
         DocFilesSubSummary dsSummary = new DocFilesSubSummary(2, 8, 3_003_000);
         FilesSummary rawSummary = new FilesSummary(2, 2_000_000);
         dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary);
-        FilesSummary qlHdSummary = new FilesSummary(2, 1_000_000);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary);
-        FilesSummary qlMdSummary = new FilesSummary(2, 2_000);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary);
-        FilesSummary qlSdSummary = new FilesSummary(2, 1_000);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary);
-
-        summary.getSubSummariesMap().put(DS1_IP_ID.toString(), dsSummary);
-        return summary;
-    }
-
-    /**
-     * DS1 => 2 documents, 2 RAWDATA files, 1 Mb each RAW file
-     */
-    private static DocFilesSummary createSummaryForDs1Raw() {
-        DocFilesSummary summary = new DocFilesSummary(2, 2, 2_000_000);
-        DocFilesSubSummary dsSummary = new DocFilesSubSummary(2, 2, 2_000_000);
-        FilesSummary rawSummary = new FilesSummary(2, 2_000_000);
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary);
-
-        summary.getSubSummariesMap().put(DS1_IP_ID.toString(), dsSummary);
-        return summary;
-
-    }
-
-    /**
-     * DS1 => 2 documents, 6 QUICKLOOKS 2 x 3 of each size
-     * 500 b QUICKLOOK SD, 1 kb MD, 500 kb HD (1 501 500 b)
-     */
-    private static DocFilesSummary createSummaryForDs1QuicklooksFiles() {
-        DocFilesSummary summary = new DocFilesSummary(2, 6, 1_003_000);
-        DocFilesSubSummary dsSummary = new DocFilesSubSummary(2, 6, 1_003_000);
         FilesSummary qlHdSummary = new FilesSummary(2, 1_000_000);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary);
         FilesSummary qlMdSummary = new FilesSummary(2, 2_000);
@@ -208,14 +163,14 @@ public class CatalogClientMock implements ICatalogClient {
         fileTypesSummaryDs2Map.put(DataType.RAWDATA.toString(), new FilesSummary(2, 2_000_000));
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD.toString(), new FilesSummary(2, 20_000));
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD.toString(), new FilesSummary(2, 200));
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(2, 20));
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(2, 2));
 
         DocFilesSubSummary ds3Summary = new DocFilesSubSummary(1, 4, 1_010_101);
         Map<String, FilesSummary> fileTypesSummaryDs3Map = ds3Summary.getFileTypesSummaryMap();
         fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString(), new FilesSummary(1, 1_000_000));
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD.toString(), new FilesSummary(1, 10_000));
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD.toString(), new FilesSummary(1, 100));
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(1, 10));
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(1, 1));
 
         summary.getSubSummariesMap().put(DS2_IP_ID.toString(), ds2Summary);
         summary.getSubSummariesMap().put(DS3_IP_ID.toString(), ds3Summary);
@@ -227,11 +182,14 @@ public class CatalogClientMock implements ICatalogClient {
      * 1 raw by doc
      * 1Mb
      */
-    private static DocFilesSummary createSummaryForDs2Raw() {
-        DocFilesSummary summary = new DocFilesSummary(2, 2, 2_000_000);
-        DocFilesSubSummary ds2Summary = new DocFilesSubSummary(2, 2, 2_000_000);
+    private static DocFilesSummary createSummaryForDs2AllFiles() {
+        DocFilesSummary summary = new DocFilesSummary(2, 8, 2_020_202);
+        DocFilesSubSummary ds2Summary = new DocFilesSubSummary(2, 8, 2_020_202);
         Map<String, FilesSummary> fileTypesSummaryDs2Map = ds2Summary.getFileTypesSummaryMap();
         fileTypesSummaryDs2Map.put(DataType.RAWDATA.toString(), new FilesSummary(2, 2_000_000));
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD.toString(), new FilesSummary(2, 20_000));
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD.toString(), new FilesSummary(2, 200));
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(2, 2));
 
         summary.getSubSummariesMap().put(DS2_IP_ID.toString(), ds2Summary);
         return summary;
@@ -242,17 +200,20 @@ public class CatalogClientMock implements ICatalogClient {
      * 1 raw by doc
      * 1Mb
      */
-    private static DocFilesSummary createSummaryForDs3Raw() {
-        DocFilesSummary summary = new DocFilesSummary(1, 1, 1_000_000);
-        DocFilesSubSummary ds3Summary = new DocFilesSubSummary(1, 1, 1_000_000);
+    private static DocFilesSummary createSummaryForDs3AllFiles() {
+        DocFilesSummary summary = new DocFilesSummary(1, 4, 1_010_101);
+        DocFilesSubSummary ds3Summary = new DocFilesSubSummary(1, 4, 1_010_101);
         Map<String, FilesSummary> fileTypesSummaryDs3Map = ds3Summary.getFileTypesSummaryMap();
-        fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString(), new FilesSummary(1, 1_000_000));
+        fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString(), new FilesSummary(1, 1_010_101));
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD.toString(), new FilesSummary(1, 10_000));
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD.toString(), new FilesSummary(1, 100));
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(1, 1));
 
         summary.getSubSummariesMap().put(DS3_IP_ID.toString(), ds3Summary);
         return summary;
     }
 
-    private static DocFilesSummary createSummaryForAllDsAllFilesFirstCall() {
+    private static DocFilesSummary createSummaryForAllDsAllFiles() {
         DocFilesSummary summary = new DocFilesSummary(5, 20, 5_023_202);
 
         DocFilesSubSummary dsSummary = new DocFilesSubSummary(2, 8, 3_003_00);
@@ -272,14 +233,14 @@ public class CatalogClientMock implements ICatalogClient {
         fileTypesSummaryDs2Map.put(DataType.RAWDATA.toString(), new FilesSummary(2, 2_000_000));
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD.toString(), new FilesSummary(2, 20_000));
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD.toString(), new FilesSummary(2, 200));
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(2, 20));
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(2, 2));
 
         DocFilesSubSummary ds3Summary = new DocFilesSubSummary(1, 4, 1_010_101);
         Map<String, FilesSummary> fileTypesSummaryDs3Map = ds3Summary.getFileTypesSummaryMap();
         fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString(), new FilesSummary(1, 1_000_000));
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD.toString(), new FilesSummary(1, 10_000));
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD.toString(), new FilesSummary(1, 100));
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(1, 10));
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString(), new FilesSummary(1, 1));
 
         summary.getSubSummariesMap().put(DS2_IP_ID.toString(), ds2Summary);
         summary.getSubSummariesMap().put(DS3_IP_ID.toString(), ds3Summary);

@@ -20,13 +20,20 @@ package fr.cnes.regards.modules.order.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.service.IBasketService;
 
 /**
  * REST module controller
@@ -42,6 +49,22 @@ public class BasketController implements IResourceController<Basket> {
 
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IBasketService basketService;
+
+    @ResourceAccess(description = "Add a selection to the basket")
+    @RequestMapping(method = RequestMethod.POST, value = "/addSelection")
+    public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest) {
+        String user = SecurityUtils.getActualUser();
+        // Does a basket exist ?
+        Basket basket = basketService.find(user);
+        if (basket == null) {
+            basket = basketService.create(user);
+        }
+        String openSearchRequest = basketSelectionRequest.computeOpenSearchRequest();
+        return ResponseEntity.ok(toResource(basketService.addSelection(basket.getId(), openSearchRequest)));
+    }
 
     @Override
     public Resource<Basket> toResource(Basket basket, Object... extras) {

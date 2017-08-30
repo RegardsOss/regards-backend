@@ -55,7 +55,7 @@ public class BasketServiceIT {
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
 
-        // Add a selection on DS1 => 2 documents, 2 RAWDATA files (+ 6 QUICKLOOKS 2 x 3 of each size), 1 Mb each RAW
+        // Add a selection on DS1 => 2 documents, 2 RAWDATA files + 6 QUICKLOOKS 2 x 3 of each size, 1 Mb each RAW
         // file, 500 b QUICKLOOK SD, 1 kb MD, 500 kb HD
         basketService.addSelection(basket.getId(), DS1_IP_ID.toString(), "");
 
@@ -63,22 +63,9 @@ public class BasketServiceIT {
         Assert.assertEquals(1, basket.getDatasetSelections().size());
         BasketDatasetSelection dsSelection = basket.getDatasetSelections().first();
         Assert.assertEquals(DS1_IP_ID.toString(), dsSelection.getDatasetIpid());
-        // Default selection type
-        Assert.assertEquals(DataTypeSelection.RAWDATA, dsSelection.getDataTypeSelection());
-        Assert.assertEquals(2, dsSelection.getFilesCount());
+        Assert.assertEquals(8, dsSelection.getFilesCount());
         Assert.assertEquals(2, dsSelection.getObjectsCount());
-        Assert.assertEquals(2_000_000l, dsSelection.getFilesSize());
-
-        // Change Data type selection for DS1 => ONLY QUICKLOOKS
-        basketService
-                .setFileTypes(basket.getId(), DS1_IP_ID.toString(), DataTypeSelection.QUICKLOOKS);
-        basket = basketService.load(basket.getId());
-        Assert.assertEquals(1, basket.getDatasetSelections().size());
-        dsSelection = basket.getDatasetSelections().first();
-        Assert.assertEquals(DS1_IP_ID.toString(), dsSelection.getDatasetIpid());
-        Assert.assertEquals(6, dsSelection.getFilesCount());
-        Assert.assertEquals(2, dsSelection.getObjectsCount());
-        Assert.assertEquals(1_003_000l, dsSelection.getFilesSize());
+        Assert.assertEquals(3_003_000l, dsSelection.getFilesSize());
 
         // Add a selection on DS2 and DS3 with an opensearch request
         basketService.addSelection(basket.getId(), "tags:(" + DS2_IP_ID.toString() + " OR "
@@ -86,28 +73,25 @@ public class BasketServiceIT {
         basket = basketService.load(basket.getId());
         Assert.assertEquals(3, basket.getDatasetSelections().size());
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
+            // No change on DS1
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
-                Assert.assertEquals(DataTypeSelection.QUICKLOOKS, dsSel.getDataTypeSelection());
-                Assert.assertEquals(6, dsSel.getFilesCount());
+                Assert.assertEquals(8, dsSel.getFilesCount());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(1_003_000l, dsSel.getFilesSize());
+                Assert.assertEquals(3_003_000l, dsSel.getFilesSize());
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
-                Assert.assertEquals(DataTypeSelection.RAWDATA, dsSel.getDataTypeSelection());
-                Assert.assertEquals(2, dsSel.getFilesCount());
+                Assert.assertEquals(8, dsSel.getFilesCount());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(2_000_000l, dsSel.getFilesSize());
+                Assert.assertEquals(2_020_202l, dsSel.getFilesSize());
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
-                Assert.assertEquals(DataTypeSelection.RAWDATA, dsSel.getDataTypeSelection());
-                Assert.assertEquals(1, dsSel.getFilesCount());
+                Assert.assertEquals(4, dsSel.getFilesCount());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
-                Assert.assertEquals(1_000_000l, dsSel.getFilesSize());
+                Assert.assertEquals(1_010_101l, dsSel.getFilesSize());
             } else {
                 Assert.fail("Unknown Dataset !!!");
             }
         }
 
-        // Add a selection on all DS (DS1, 2, 3) : for DS1, same results as previous must be returned (so 8 files BUT
-        // as ONLY QUICKLOOKS are asked now, only 6 files now)
+        // Add a selection on all DS (DS1, 2, 3) : for DS1, same results as previous must be returned
         basketService.addSelection(basket.getId(), "");
 
         basket = basketService.load(basket.getId());
@@ -115,10 +99,9 @@ public class BasketServiceIT {
         // Computations on dataset selections must not have been changed (concerns same files as previous)
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
-                Assert.assertEquals(DataTypeSelection.QUICKLOOKS, dsSel.getDataTypeSelection());
-                Assert.assertEquals(6, dsSel.getFilesCount());
+                Assert.assertEquals(8, dsSel.getFilesCount());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(1_003_000l, dsSel.getFilesSize());
+                Assert.assertEquals(3_003_000l, dsSel.getFilesSize());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
@@ -127,10 +110,9 @@ public class BasketServiceIT {
                     Assert.assertEquals(dsSel.getFilesSize(), itemsSel.getFilesSize());
                 }
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
-                Assert.assertEquals(DataTypeSelection.RAWDATA, dsSel.getDataTypeSelection());
-                Assert.assertEquals(2, dsSel.getFilesCount());
+                Assert.assertEquals(8, dsSel.getFilesCount());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(2_000_000l, dsSel.getFilesSize());
+                Assert.assertEquals(2_020_202l, dsSel.getFilesSize());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
@@ -139,10 +121,9 @@ public class BasketServiceIT {
                     Assert.assertEquals(dsSel.getFilesSize(), itemsSel.getFilesSize());
                 }
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
-                Assert.assertEquals(DataTypeSelection.RAWDATA, dsSel.getDataTypeSelection());
-                Assert.assertEquals(1, dsSel.getFilesCount());
+                Assert.assertEquals(4, dsSel.getFilesCount());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
-                Assert.assertEquals(1_000_000l, dsSel.getFilesSize());
+                Assert.assertEquals(1_010_101l, dsSel.getFilesSize());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
