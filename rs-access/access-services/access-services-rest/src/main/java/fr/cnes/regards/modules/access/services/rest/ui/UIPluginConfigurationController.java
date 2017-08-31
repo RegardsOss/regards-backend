@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfiguration
 @RequestMapping(UIPluginConfigurationController.REQUEST_MAPPING_ROOT)
 public class UIPluginConfigurationController implements IResourceController<UIPluginConfiguration> {
 
-    public static final String REQUEST_MAPPING_ROOT = "/plugins";
+    public static final String REQUEST_MAPPING_ROOT = "/uiplugins";
 
     public static final String REQUEST_PLUGIN_CONFIGURATIONS = "/configurations";
 
