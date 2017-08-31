@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.SsaltoFileStatus;
@@ -56,7 +58,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
  * @author Christophe Mertz
  */
 // TODO CMZ confirmer que peut être enlevé : extend SipadTst
-public abstract class AbstractProductMetadataPluginTest implements IProductMetadataPluginTest {
+public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT implements IProductMetadataPluginTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPluginTest.class);
 

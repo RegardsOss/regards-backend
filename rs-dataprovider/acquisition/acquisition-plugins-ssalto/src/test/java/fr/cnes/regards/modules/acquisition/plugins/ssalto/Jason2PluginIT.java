@@ -21,15 +21,16 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
 
@@ -39,11 +40,12 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsResp
  *
  */
 // TODO CMZ à voir si annotations ci-dessous peuvent être dans la classe abstraite
-@RunWith(SpringRunner.class)
+
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })
 @EnableAutoConfiguration
-@ComponentScan(basePackages = "fr.cnes.regards.framework.modules.plugins.service")
-public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
+public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Jason2PluginIT.class);
 
     @Autowired
     IPluginService pluginService;
@@ -56,8 +58,17 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
         return "ssalto/domain/plugins/impl/jason2plugin.properties";
     }
 
+    @Autowired
+    IRuntimeTenantResolver runtimeTenantResoler;
+
+    @Before
+    public void start() {
+        runtimeTenantResoler.forceTenant(DEFAULT_TENANT);
+    }
+
     @Override
     public void initTestList() {
+
         addPluginTestDef("DA_TC_JASON2_IGDR", "JASON2/IGDR", "JA2_IPN_2PcP016_166_20081214_053324_20081214_062937");
         addPluginTestDef("DA_TC_JASON2_PAR_LV_DORIS_DGXX", "JASON2/LOGVOL_DORIS",
                          "JA2__1_PAR_DORIS_20080112_140531.REF");
@@ -169,6 +180,11 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
         Jason2ProductMetadataPlugin plugin = new Jason2ProductMetadataPlugin();
         return plugin;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }
