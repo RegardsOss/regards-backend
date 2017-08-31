@@ -67,7 +67,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     /**
      * Root request mapping
      */
-    public static final String REQUEST_MAPPING_ROOT = "/plugins/definition";
+    public static final String REQUEST_MAPPING_ROOT = "/uiplugins/definition";
 
     public static final String REQUEST_MAPPING_PLUGIN_DEFINITION = "/{pluginId}";
 
