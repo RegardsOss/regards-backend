@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.DateUtilException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 
 /**
  * 

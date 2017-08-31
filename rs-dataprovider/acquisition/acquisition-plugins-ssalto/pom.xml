@@ -50,6 +50,10 @@
 			<artifactId>commons-digester</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-regards-starter</artifactId>
+		</dependency>
+		<dependency>
     		<groupId>junit</groupId>
     		<artifactId>junit</artifactId>
     		<scope>test</scope>

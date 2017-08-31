@@ -31,12 +31,15 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.NetCdfFileHelper;
 
 /**
@@ -44,6 +47,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.NetCdfFileHelper
  * @author Christophe Mertz
  *
  */
+@Plugin(author = "CS-SI", description = "Jason2OgdrProductMetadataPlugin", owner = "CNES", contact = "CS-SI",
+        id = "Jason2OgdrProductMetadataPlugin", licence = "Apache ", url = "http://regards.org", version = "1.0")
 public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2OgdrProductMetadataPlugin.class);
@@ -53,7 +58,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     private static final String PRODUCT_OPTION = "PRODUCT_OPTION";
 
     private static final String TRANSACTION_FILE = "OGDRTranslationFile.properties";
-
+    
     /**
      *
      * @param pFileMap
@@ -67,7 +72,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
         try {
             optionAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_STRING, PRODUCT_OPTION,
                                                                getOptionValue(pFileMap.keySet()));
-            attributeValueMap_.put(PRODUCT_OPTION, optionAttribute.getValueList());
+            attributeValueMap.put(PRODUCT_OPTION, optionAttribute.getValueList());
 
         } catch (final DomainModelException e) {
             final String msg = "unable to create attribute" + PRODUCT_OPTION;

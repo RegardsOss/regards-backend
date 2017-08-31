@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-public class EnvisatProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class EnvisatProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "ENVISAT";
 

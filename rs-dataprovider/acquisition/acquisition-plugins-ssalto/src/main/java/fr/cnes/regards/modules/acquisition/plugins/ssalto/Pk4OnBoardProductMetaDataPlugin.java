@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquis
  * @author Christophe Mertz
  *
  */
-public class Pk4OnBoardProductMetaDataPlugin extends GenericProductMetadataPlugin {
+public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Pk4OnBoardProductMetaDataPlugin.class);
 

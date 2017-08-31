@@ -22,8 +22,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 
 /**
  * Formate les dates recuperere dans le fichier cs_data([0-9]{3}).dat.Z

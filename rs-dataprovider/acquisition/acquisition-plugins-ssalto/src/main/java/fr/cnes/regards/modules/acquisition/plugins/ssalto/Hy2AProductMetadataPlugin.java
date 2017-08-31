@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  * @author Christophe Mertz
  *
  */
-public class Hy2AProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class Hy2AProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "HY2A";
 

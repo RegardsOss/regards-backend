@@ -46,6 +46,10 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     protected static final int STOP_JULIAN_DAY_GROUP = 3;
 
     protected static final int STOP_HOUR_GROUP = 4;
+    
+    private static final String START_DATE = "START_DATE";
+
+    private static final String STOP_DATE = "STOP_DATE";
 
     // Charset and decoder for ISO-8859-15
     private static Charset charset_ = Charset.forName("ISO-8859-15");
@@ -83,10 +87,10 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
             charSeq = readFile(arcFilePath);
             Matcher matcher = arcPattern.matcher(charSeq);
             if (matcher.find()) {
-                if (getName().equals("START_DATE")) {
+                if (getName().equals(START_DATE)) {
                     julianDay = matcher.group(START_JULIAN_DAY_GROUP);
                     secondInDay = matcher.group(START_HOUR_GROUP);
-                } else if (getName().equals("STOP_DATE")) {
+                } else if (getName().equals(STOP_DATE)) {
                     julianDay = matcher.group(STOP_JULIAN_DAY_GROUP);
                     secondInDay = matcher.group(STOP_HOUR_GROUP);
                 }

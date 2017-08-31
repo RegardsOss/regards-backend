@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 
 /**
  * Cette classe renvoie Ascending si la valeur est paire et Descending sinon.

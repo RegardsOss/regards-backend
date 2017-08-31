@@ -27,17 +27,15 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 
-
-
-public abstract class AbstractDoris1BProductMetadataPlugin extends GenericProductMetadataPlugin implements
-        IDoris1BPlugin {
+public abstract class AbstractDoris1BProductMetadataPlugin extends AbstractProductMetadataPlugin
+        implements IDoris1BPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDoris1BProductMetadataPlugin.class);
 
     /**
      * Liste des correspondances DatasetName => Prexix
      */
-    protected Map<String, String> prefixMap_ = null;
+    protected Map<String, String> prefixMap = null;
 
     /**
      * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
@@ -57,7 +55,8 @@ public abstract class AbstractDoris1BProductMetadataPlugin extends GenericProduc
      *            le nom du dataSet auquel rattacher l'objet de donnees.
      */
     @Override
-    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap, String pDataSetName) {
+    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap,
+            String pDataSetName) {
 
         initPrefixMap();
 
@@ -70,11 +69,10 @@ public abstract class AbstractDoris1BProductMetadataPlugin extends GenericProduc
         for (File file : pFileMap.keySet()) {
             size = size + file.length();
 
-            if ((prefixMap_ != null) && prefixMap_.containsKey(pDataSetName)) {
-                String prefix = prefixMap_.get(pDataSetName);
+            if ((prefixMap != null) && prefixMap.containsKey(pDataSetName)) {
+                String prefix = prefixMap.get(pDataSetName);
                 element.addDataStorageObjectIdentifier(prefix + file.getName());
-            }
-            else {
+            } else {
                 LOGGER.error("Prefix for " + pDataSetName + "does not exist!");
             }
         }
@@ -83,10 +81,10 @@ public abstract class AbstractDoris1BProductMetadataPlugin extends GenericProduc
     }
 
     protected void addDatasetNamePrexif(String pDatasetName, String pPrefix) {
-        if (prefixMap_ == null) {
-            prefixMap_ = new HashMap<>();
+        if (prefixMap == null) {
+            prefixMap = new HashMap<>();
         }
-        prefixMap_.put(pDatasetName, pPrefix);
+        prefixMap.put(pDatasetName, pPrefix);
     }
 
 }

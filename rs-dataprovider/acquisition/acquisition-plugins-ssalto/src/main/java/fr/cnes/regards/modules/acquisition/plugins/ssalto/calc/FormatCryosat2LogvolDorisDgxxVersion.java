@@ -20,7 +20,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 
 public class FormatCryosat2LogvolDorisDgxxVersion implements ICalculationClass {
 

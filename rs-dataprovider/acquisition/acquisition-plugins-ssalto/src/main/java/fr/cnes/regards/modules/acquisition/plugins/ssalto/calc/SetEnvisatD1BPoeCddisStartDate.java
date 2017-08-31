@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 import java.util.Calendar;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 
 /**
  * 

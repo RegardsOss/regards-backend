@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  * 
  * @author Christophe Mertz
  */
-public class Cryosat2ProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class Cryosat2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "CRYOSAT2";
     

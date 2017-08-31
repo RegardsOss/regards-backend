@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 
 
-public class Spot2ProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class Spot2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SPOT2";
     

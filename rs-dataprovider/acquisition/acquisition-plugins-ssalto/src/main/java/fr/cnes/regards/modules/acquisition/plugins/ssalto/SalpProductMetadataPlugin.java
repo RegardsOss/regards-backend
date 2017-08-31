@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  * @version 5.0
  * @since 5.0
  */
-public class SalpProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class SalpProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SALP";
 
@@ -42,7 +42,7 @@ public class SalpProductMetadataPlugin extends GenericProductMetadataPlugin {
      * 
      * Project name to to retrieve property values in plugin configuration
      * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.GenericProductMetadataPlugin#getProjectName()
+     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.AbstractProductMetadataPlugin#getProjectName()
      * @since 5.0
      */
     protected String getProjectName() {

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 
 /**
  * Met en forme la version passee en parametre XYYabb sous le format DORIS=X.YY  DIODE=a.bb

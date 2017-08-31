@@ -77,7 +77,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
      * 
      * Calcul des attributs LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX
      * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.GenericProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.Map,
+     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.AbstractProductMetadataPlugin#doCreateIndependantSpecificAttributes(java.util.Map,
      *      java.util.Map)
      * @since 1.4
      */
@@ -92,33 +92,33 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
         try {
             // Compute values
-            computeLongitudeMin(pFileMap, attributeValueMap_);
-            computeLongitudeMax(pFileMap, attributeValueMap_);
-            computeLatitude(pFileMap, attributeValueMap_);
+            computeLongitudeMin(pFileMap, attributeValueMap);
+            computeLongitudeMax(pFileMap, attributeValueMap);
+            computeLatitude(pFileMap, attributeValueMap);
 
             // Add LONGITUDE_MIN attribute
             Attribute longitudeMinAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL,
                                                                                LONGITUDE_MIN, longitudeMin_);
             coordinates.addAttribute(longitudeMinAttribute);
-            attributeValueMap_.put(LONGITUDE_MIN, longitudeMinAttribute.getValueList());
+            attributeValueMap.put(LONGITUDE_MIN, longitudeMinAttribute.getValueList());
 
             // Add LONGITUDE_MAX attribute
             Attribute longitudeMaxAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL,
                                                                                LONGITUDE_MAX, longitudeMax_);
             coordinates.addAttribute(longitudeMaxAttribute);
-            attributeValueMap_.put(LONGITUDE_MAX, longitudeMaxAttribute.getValueList());
+            attributeValueMap.put(LONGITUDE_MAX, longitudeMaxAttribute.getValueList());
 
             // Add LONGITUDE_MIN attribute
             Attribute latitudeMinAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL,
                                                                               LATITUDE_MIN, latitudeMin_);
             coordinates.addAttribute(latitudeMinAttribute);
-            attributeValueMap_.put(LATITUDE_MIN, latitudeMinAttribute.getValueList());
+            attributeValueMap.put(LATITUDE_MIN, latitudeMinAttribute.getValueList());
 
             // Add LONGITUDE_MAX attribute
             Attribute latitudeMaxAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL,
                                                                               LATITUDE_MAX, latitudeMax_);
             coordinates.addAttribute(latitudeMaxAttribute);
-            attributeValueMap_.put(LATITUDE_MAX, latitudeMaxAttribute.getValueList());
+            attributeValueMap.put(LATITUDE_MAX, latitudeMaxAttribute.getValueList());
 
         }
         catch (DomainModelException e) {

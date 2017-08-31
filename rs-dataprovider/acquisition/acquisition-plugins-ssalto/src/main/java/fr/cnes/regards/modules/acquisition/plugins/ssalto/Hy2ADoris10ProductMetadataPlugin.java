@@ -105,12 +105,12 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
                                                                             START_DATE,
                                                                             getStartDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(startDateAttribute);
-            attributeValueMap_.put(START_DATE, startDateAttribute.getValueList());
+            attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
             Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
                                                                            getStopDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
-            attributeValueMap_.put(STOP_DATE, stopDateAttribute.getValueList());
+            attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + TIME_PERIOD;
             LOGGER.error(msg);
@@ -184,7 +184,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
             try {
                 if (matcherD.matches()) {
                     @SuppressWarnings("unchecked")
-                    List<Date> startDateValueList = (List<Date>) attributeValueMap_.get(START_DATE);
+                    List<Date> startDateValueList = (List<Date>) attributeValueMap.get(START_DATE);
                     Date date = startDateValueList.get(i);
                     long newTime = date.getTime() + 86399000;
                     valueList.add(new Date(newTime));
@@ -194,7 +194,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
                     valueList.add(date);
                 } else if (matcherH.matches()) {
                     @SuppressWarnings("unchecked")
-                    List<Date> startDateValueList = (List<Date>) attributeValueMap_.get(START_DATE);
+                    List<Date> startDateValueList = (List<Date>) attributeValueMap.get(START_DATE);
                     Date date = startDateValueList.get(i);
                     long newTime = date.getTime() + 86399000;
                     valueList.add(new Date(newTime));
@@ -276,7 +276,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(pFileMap.keySet()));
             registerAttribute(CREATION_DATE, pAttributeMap, fileCreationDateAttribute);
-            attributeValueMap_.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
+            attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
             throw new PluginAcquisitionException(msg, e);

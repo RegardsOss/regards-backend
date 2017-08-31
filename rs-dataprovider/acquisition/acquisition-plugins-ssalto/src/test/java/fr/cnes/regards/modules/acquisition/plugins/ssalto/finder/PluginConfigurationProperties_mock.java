@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 
 public class PluginConfigurationProperties_mock extends PluginConfigurationProperties {
 
-    public void setOrfFilepath(String orfFilepath_) {
-        pluginProperties.put(ORF_FILE_PATH_KEY, orfFilepath_);
+    public void setOrfFilepath(String orfFilepath) {
+        pluginProperties.put(ORF_FILE_PATH_KEY, orfFilepath);
     }
 
-    public void setCycleFileFilepath(String cycleFileFilepath_) {
-        pluginProperties.put(CYCLE_FILE_PATH_KEY, cycleFileFilepath_);
+    public void setCycleFileFilepath(String cycleFileFilepath) {
+        pluginProperties.put(CYCLE_FILE_PATH_KEY, cycleFileFilepath);
     }
 }

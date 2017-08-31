@@ -103,12 +103,12 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
                                                                             START_DATE,
                                                                             getStartDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(startDateAttribute);
-            attributeValueMap_.put(START_DATE, startDateAttribute.getValueList());
+            attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
             Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
                                                                            getStopDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
-            attributeValueMap_.put(STOP_DATE, stopDateAttribute.getValueList());
+            attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + TIME_PERIOD;
             LOGGER.error(msg);

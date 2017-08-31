@@ -203,7 +203,7 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
                                                                           getRadicalValue(pFileMap.keySet()));
             if ((radicalAttribute.getValueList() != null) && (radicalAttribute.getValueList().size() != 0)) {
                 registerAttribute(RADICAL, pAttributeMap, radicalAttribute);
-                attributeValueMap_.put(RADICAL, radicalAttribute.getValueList());
+                attributeValueMap.put(RADICAL, radicalAttribute.getValueList());
             } else {
                 LOGGER.info("Attribute " + RADICAL + " is not defined");
             }

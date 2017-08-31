@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-public class Jason1ProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class Jason1ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON";
 

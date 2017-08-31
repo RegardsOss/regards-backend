@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.CompressionFacade;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.CompressionTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.exception.CompressionException;

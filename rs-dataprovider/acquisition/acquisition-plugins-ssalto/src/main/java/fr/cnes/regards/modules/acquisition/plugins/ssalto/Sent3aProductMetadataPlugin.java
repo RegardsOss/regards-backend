@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  *
  * @author Christophe Mertz
  */
-public class Sent3aProductMetadataPlugin extends GenericProductMetadataPlugin {
+public class Sent3aProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SENT3A";
 

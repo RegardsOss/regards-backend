@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
  * @author Christophe Mertz
  */
 
-public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericProductMetadataPlugin {
+public abstract class AbstractJasonDoris10ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJasonDoris10ProductMetadataPlugin.class);
 
@@ -109,12 +109,12 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, START_DATE,
                                      getStartDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(startDateAttribute);
-            attributeValueMap_.put(START_DATE, startDateAttribute.getValueList());
+            attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
             Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
                                                                            getStopDateValue(pFileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
-            attributeValueMap_.put(STOP_DATE, stopDateAttribute.getValueList());
+            attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + TIME_PERIOD;
             LOGGER.error(msg);
@@ -176,7 +176,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
             try {
                 if (matcherD.matches()) {
                     @SuppressWarnings("unchecked")
-                    List<Date> startDateValueList = (List<Date>) attributeValueMap_.get(START_DATE);
+                    List<Date> startDateValueList = (List<Date>) attributeValueMap.get(START_DATE);
                     Date date = startDateValueList.get(i);
                     long newTime = date.getTime() + 86400000;
                     valueList.add(new Date(newTime));
@@ -251,7 +251,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends GenericP
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(pFileMap.keySet()));
             registerAttribute(CREATION_DATE, pAttributeMap, fileCreationDateAttribute);
-            attributeValueMap_.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
+            attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
             throw new PluginAcquisitionException(msg, e);

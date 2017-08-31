@@ -36,13 +36,17 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 
 public class TranslatedFromCycleFileFinderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedFromCycleFileFinderTest.class);
 
     private static final String ATT_NAME = "ATT_NAME";
+
+    private static final String START_DATE = "START_DATE";
+
+    private static final String STOP_DATE = "STOP_DATE";
 
     //    private static final Date ATT_VALUE_DATE_INSIDE = new Date();// (108, 9, 10);
 
@@ -69,7 +73,7 @@ public class TranslatedFromCycleFileFinderTest {
     @Test
     public void jasonGetCycleFromDateInsideCycleInterval() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
+        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
@@ -89,7 +93,7 @@ public class TranslatedFromCycleFileFinderTest {
     @Test
     public void jasonGetCycleFromDateOverCycleInterval() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
+        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
@@ -109,7 +113,7 @@ public class TranslatedFromCycleFileFinderTest {
     @Test
     public void jason2GetCycleFromDateOverCycleInterval() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jason2ConfProperties());
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
@@ -127,7 +131,7 @@ public class TranslatedFromCycleFileFinderTest {
     @Test
     public void jason2GetCycleFromDateEqualCycleStartDate() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jason2ConfProperties());
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
@@ -153,7 +157,7 @@ public class TranslatedFromCycleFileFinderTest {
     @Test
     public void jason2GetCycleFromDateInsideCycleInterval() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jason2ConfProperties());
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
@@ -168,35 +172,13 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(64, ((Integer) resultList.get(0)).intValue());
     }
 
-    @Test
-    public void getDateFromCycle() throws Exception {
-        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
-
-        translatedFromCycleFileFinder.setName("START_DATE");
-        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-        List<Integer> attValueList = new ArrayList<>();
-        attValueList.add(new Integer(300));
-        attributMap.put(ATT_NAME, attValueList);
-
-        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
-        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-
-        Assert.assertEquals(1, resultList.size());
-
-        LocalDateTime expectedLdt = LocalDateTime.of(2010, 2, 22, 00, 56, 25, 534000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-    }
-
     @Test(expected = PluginAcquisitionException.class)
     public void getDateFromCycleIncorrect() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
-
-        translatedFromCycleFileFinder.setName("START_DATE");
+        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties());
+        translatedFromCycleFileFinder.setName(START_DATE);
         translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Integer> attValueList = new ArrayList<>();
         attValueList.add(new Integer(999));
@@ -208,126 +190,143 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.fail();
     }
 
-    //    // DM60 Gestion de plusieurs fichiers ORF
-    //    // Cycle inclu dans le fichier orf cree
-    //    // FIXME TEST @Test
-    //    public void test_jasonGetDateFromCycle_000() throws Exception {
-    //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-    //        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
-    //
-    //        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-    //        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-    //        List<Integer> attValueList = new ArrayList<>();
-    //        attValueList.add(ATT_VALUE_CYCLE_000_FILE);
-    //        attributMap.put(ATT_NAME, attValueList);
-    //        translatedFromCycleFileFinder.setValueType("DATE");
-    //        translatedFromCycleFileFinder.setName("START_DATE");
-    //
-    //        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Assert.assertEquals(1, resultList.size());
-    //        Date dateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("START_DATE : " + sdf.format(dateResult).toString());
-    //        Assert.assertEquals(sdf.format(dateResult), "2001/12/07 00:00:00.000", sdf.format(dateResult));
-    //
-    //        translatedFromCycleFileFinder.setName("STOP_DATE");
-    //        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Date stopDateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sstopdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("STOP_DATE : " + sstopdf.format(stopDateResult).toString());
-    //        Assert.assertEquals(sstopdf.format(stopDateResult), "2002/01/15 05:10:51.315", sstopdf.format(stopDateResult));
-    //
-    //    }
-    //
-    //    // DM60 Gestion de plusieurs fichiers ORF
-    //    // Cycle inclu dans le premier fichier
-    //    // FIXME TEST @Test
-    //    public void test_jasonGetDateFromCycle_firstFile() throws Exception {
-    //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-    //        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
-    //
-    //        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-    //        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-    //        List<Integer> attValueList = new ArrayList<>();
-    //        attValueList.add(ATT_VALUE_CYCLE);
-    //        attributMap.put(ATT_NAME, attValueList);
-    //        translatedFromCycleFileFinder.setValueType("DATE");
-    //        translatedFromCycleFileFinder.setName("START_DATE");
-    //
-    //        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Assert.assertEquals(1, resultList.size());
-    //        Date dateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("START_DATE : " + sdf.format(dateResult).toString());
-    //        Assert.assertEquals(sdf.format(dateResult), "2002/02/04 01:07:52.802", sdf.format(dateResult));
-    //
-    //        translatedFromCycleFileFinder.setName("STOP_DATE");
-    //        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Date stopDateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sstopdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("STOP_DATE : " + sstopdf.format(stopDateResult).toString());
-    //        Assert.assertEquals(sstopdf.format(stopDateResult), "2002/02/13 22:38:17.950", sstopdf.format(stopDateResult));
-    //    }
-    //
-    //    // DM60 Gestion de plusieurs fichiers ORF
-    //    // Cycle inclu dans le deuxieme fichier
-    //    @Test
-    //    public void test_jasonGetDateFromCycle_secondFile() throws Exception {
-    //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-    //        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
-    //
-    //        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-    //        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-    //        List<Integer> attValueList = new ArrayList<>();
-    //        attValueList.add(ATT_VALUE_CYCLE_FIRST_FILE);
-    //        attributMap.put(ATT_NAME, attValueList);
-    //        translatedFromCycleFileFinder.setValueType("DATE");
-    //        translatedFromCycleFileFinder.setName("START_DATE");
-    //
-    //        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Assert.assertEquals(1, resultList.size());
-    //        Date dateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("START_DATE : " + sdf.format(dateResult).toString());
-    //        Assert.assertEquals(sdf.format(dateResult), "2009/02/10 05:53:05.733", sdf.format(dateResult));
-    //
-    //        translatedFromCycleFileFinder.setName("STOP_DATE");
-    //        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Date stopDateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sstopdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("STOP_DATE : " + sstopdf.format(stopDateResult).toString());
-    //        Assert.assertEquals(sstopdf.format(stopDateResult), "2009/02/20 03:22:50.545", sstopdf.format(stopDateResult));
-    //    }
-    //
-    //    // DM60 Gestion de plusieurs fichiers ORF
-    //    // Cycle inclu dans aucun des deux fichiers
-    //    // FIXME TEST @Test
-    //    public void test_jasonGetDateFromUnknownCycle() throws Exception {
-    //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
-    //        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties1());
-    //
-    //        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
-    //        Map<String, List<? extends Object>> attributMap = new HashMap<>();
-    //        List<Integer> attValueList = new ArrayList<>();
-    //        attValueList.add(ATT_VALUE_CYCLE_UNKNOWN);
-    //        attributMap.put(ATT_NAME, attValueList);
-    //        translatedFromCycleFileFinder.setValueType("DATE");
-    //        translatedFromCycleFileFinder.setName("START_DATE");
-    //
-    //        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Assert.assertEquals(1, resultList.size());
-    //        Date dateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("START_DATE : " + sdf.format(dateResult).toString());
-    //
-    //        translatedFromCycleFileFinder.setName("STOP_DATE");
-    //        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-    //        Date stopDateResult = (Date) resultList.get(0);
-    //        SimpleDateFormat sstopdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    //        System.out.println("STOP_DATE : " + sstopdf.format(stopDateResult).toString());
-    //
-    //    }
-    //
+    @Test
+    public void getDateFromCycle() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jasonInitConfProperties());
+        translatedFromCycleFileFinder.setName(START_DATE);
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
+
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        attValueList.add(new Integer(300));
+        attributMap.put(ATT_NAME, attValueList);
+
+        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+
+        LocalDateTime expectedLdt = LocalDateTime.of(2010, 2, 22, 00, 56, 25, 534000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+    }
+
+    @Test
+    public void jason2GetDateFromCycleZero() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
+        translatedFromCycleFileFinder.setName(START_DATE);
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
+
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        // recherche du cycle 0
+        attValueList.add(new Integer(0));
+        attributMap.put(ATT_NAME, attValueList);
+
+        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+
+        LocalDateTime expectedLdt = LocalDateTime.of(2008, 7, 4, 5, 57, 7, 457000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+        LOGGER.debug("START_DATE : " + expectedLdt.toString());
+
+        translatedFromCycleFileFinder.setName(STOP_DATE);
+
+        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+        expectedLdt = LocalDateTime.of(2008, 7, 12, 0, 51, 58, 407000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+        LOGGER.debug("STOP_DATE : " + expectedLdt.toString());
+    }
+
+    // Cycle inclu dans le premier fichier
+    @Test
+    public void jason2GetDateFromCycleFirstFile() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
+        translatedFromCycleFileFinder.setName(START_DATE);
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
+
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        // recherche du cycle 1        
+        attValueList.add(new Integer(1));
+        attributMap.put(ATT_NAME, attValueList);
+
+        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+        LocalDateTime expectedLdt = LocalDateTime.of(2008, 7, 12, 1, 20, 5, 48000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+        LOGGER.debug("START_DATE : " + expectedLdt.toString());
+
+        translatedFromCycleFileFinder.setName(STOP_DATE);
+        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+        expectedLdt = LocalDateTime.of(2008, 7, 21, 22, 50, 30, 178000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+        LOGGER.debug("STOP_DATE : " + expectedLdt.toString());
+    }
+
+    // Cycle inclu dans le deuxieme fichier
+    @Test
+    public void jason2GetDateFromCycleSecondFile() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
+        translatedFromCycleFileFinder.setName(START_DATE);
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
+
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        // recherche du cycle 28 qui est dans le fichier
+        // JA2_ORF_AXXCNE20090624_122700_20080704_055707_20090702_080949
+        attValueList.add(new Integer(28));
+        attributMap.put(ATT_NAME, attValueList);
+
+        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+
+        LocalDateTime expectedLdt = LocalDateTime.of(2009, 4, 5, 18, 40, 19, 209000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+        LOGGER.debug("START_DATE : " + expectedLdt.toString());
+
+        translatedFromCycleFileFinder.setName(STOP_DATE);
+        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.assertEquals(1, resultList.size());
+
+        expectedLdt = LocalDateTime.of(2009, 4, 15, 16, 10, 43, 594000000);
+        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
+                            ((Date) resultList.get(0)).getTime());
+        LOGGER.debug("STOP_DATE : " + expectedLdt.toString());
+    }
+
+    // Cycle inclu dans aucun des fichiers
+    @Test(expected=PluginAcquisitionException.class)
+    public void jason2GetDateFromUnknownCycle() throws Exception {
+        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
+        translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
+        translatedFromCycleFileFinder.setName(START_DATE);
+        translatedFromCycleFileFinder.setOtherAttributeName(ATT_NAME);
+        translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_DATE.toString());
+
+        Map<String, List<? extends Object>> attributMap = new HashMap<>();
+        List<Integer> attValueList = new ArrayList<>();
+        // recherche du cycle 999 qui n'est dans aucun fichier
+        attValueList.add(new Integer(999));
+        attributMap.put(ATT_NAME, attValueList);
+
+        translatedFromCycleFileFinder.getValueList(null, attributMap);
+        Assert.fail();
+    }
+
     //    // FIXME TEST @Test
     //    public void test_jasonGetCycleFromDate_equal_cycle_startDate() throws Exception {
     //        TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
@@ -1411,7 +1410,7 @@ public class TranslatedFromCycleFileFinderTest {
     //        Assert.assertEquals(242, ((Integer) resultList.get(0)).intValue());
     //    }
 
-    private PluginConfigurationProperties jason2ConfProperties() {
+    private PluginConfigurationProperties jason2InitConfProperties() {
         PluginConfigurationProperties_mock mockProperties = new PluginConfigurationProperties_mock();
         mockProperties.setOrfFilepath(JA2_ORF_FILEPATH);
         mockProperties.setCycleFileFilepath(JA2_CYCLE_FILEPATH);
@@ -1420,7 +1419,7 @@ public class TranslatedFromCycleFileFinderTest {
     }
 
     // DM60 Prise en compte de plusieurs fichiers ORF
-    private PluginConfigurationProperties jasonInitConfProperties1() {
+    private PluginConfigurationProperties jasonInitConfProperties() {
         PluginConfigurationProperties_mock mockProperties = new PluginConfigurationProperties_mock();
         mockProperties.setProject("JASON");
         return mockProperties;

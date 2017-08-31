@@ -41,8 +41,8 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.CalculusTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.CompressionTypeEnum;
 
 /**

@@ -59,6 +59,10 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
 
+    private static final String START_DATE = "START_DATE";
+
+    private static final String STOP_DATE = "STOP_DATE";
+
     // Charset and decoder_ for ISO-8859-15
     private static Charset charset_ = Charset.forName("ISO-8859-15");
 
@@ -189,9 +193,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         } else if (valueType.equals(AttributeTypeEnum.TYPE_DATE)
                 || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
             final Integer cycleOccurence = (Integer) otherValue;
-            if (getName().equals("START_DATE")) {
+            if (getName().equals(START_DATE)) {
                 processedValue = getCycleStartDate(cycleOccurence);
-            } else if (getName().equals("STOP_DATE")) {
+            } else if (getName().equals(STOP_DATE)) {
                 processedValue = getCycleStopDate(cycleOccurence);
             }
         } else {
