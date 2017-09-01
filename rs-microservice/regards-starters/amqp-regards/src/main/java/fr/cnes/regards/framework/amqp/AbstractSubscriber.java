@@ -198,7 +198,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         try {
             virtualHostAdmin.bind(pTenant);
             Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pHandler.getType(), pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pEvt, pHandler.getType(), pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
         } finally {
             virtualHostAdmin.unbind();

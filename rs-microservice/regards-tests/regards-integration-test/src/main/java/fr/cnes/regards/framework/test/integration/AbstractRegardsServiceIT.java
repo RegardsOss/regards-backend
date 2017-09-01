@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.GsonBuilder;
@@ -37,8 +38,10 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  * @author svissier
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class, MockAmqpConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class,
+        MockAmqpConfiguration.class })
 @ActiveProfiles({ "default", "test" })
+@TestPropertySource(properties = { "regards.cloud.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 
     /**
