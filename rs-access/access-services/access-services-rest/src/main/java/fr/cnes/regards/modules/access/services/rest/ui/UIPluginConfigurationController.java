@@ -237,7 +237,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, pElement.getId()),
-                                MethodParamFactory.build(UIPluginDefinition.class));
+                                MethodParamFactory.build(UIPluginConfiguration.class));
         resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;
