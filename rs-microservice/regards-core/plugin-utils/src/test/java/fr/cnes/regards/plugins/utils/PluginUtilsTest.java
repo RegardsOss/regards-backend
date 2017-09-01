@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.plugins.utils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,12 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -100,17 +100,17 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         TestPojo pojoParam = new TestPojo();
         pojoParam.setValue(stringPojoParamValue);
         pojoParam.setValues(values);
-        JSONObject object = new JSONObject(pojoParam);
-        SimpleDateFormat format = new SimpleDateFormat(PluginParameterUtils.DATE_TIME_FORMAT);
-        object.put("date", format.format(currentDate));
 
+        pojoParam.setDate(currentDate);
+
+        Gson gson = new GsonBuilder().setDateFormat(PluginParameterUtils.DATE_TIME_FORMAT).create();;
         /*
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.POJO, object.toString()).addParameter(SamplePlugin.SUFFIXE, "chris_test_1")
+                .addParameter(SamplePlugin.POJO, gson.toJson(pojoParam)).addParameter(SamplePlugin.SUFFIXE, "chris_test_1")
                 .getParameters();
 
         // instantiate plugin

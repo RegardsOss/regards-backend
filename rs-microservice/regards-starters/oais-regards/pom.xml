@@ -30,8 +30,8 @@
             <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
         </dependency>
         <!-- TEST dependencies -->
         <dependency>
