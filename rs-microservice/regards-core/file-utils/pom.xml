@@ -17,6 +17,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <!-- TEST dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
