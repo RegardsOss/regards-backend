@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
@@ -52,6 +55,11 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 @RequestMapping(ServicesAggregatorController.ROOT_PATH)
 public class ServicesAggregatorController {
 
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServicesAggregatorController.class);
+
     public static final String ROOT_PATH = "/services/aggregated";
 
     /**
@@ -69,18 +77,22 @@ public class ServicesAggregatorController {
      */
     private final PluginServiceDtoResourcesAssembler assembler;
 
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * @param pCatalogServicesClient
      * @param pUiPluginConfigurationService
      * @param pAssembler
+     * @param pRuntimeTenantResolver
      */
     public ServicesAggregatorController(ICatalogServicesClient pCatalogServicesClient,
-            IUIPluginConfigurationService pUiPluginConfigurationService,
-            PluginServiceDtoResourcesAssembler pAssembler) {
+            IUIPluginConfigurationService pUiPluginConfigurationService, PluginServiceDtoResourcesAssembler pAssembler,
+            IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         catalogServicesClient = pCatalogServicesClient;
         uiPluginConfigurationService = pUiPluginConfigurationService;
         assembler = pAssembler;
+        runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
     /**
@@ -99,6 +111,7 @@ public class ServicesAggregatorController {
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode) {
+        LOGGER.error("[XAB] We are on tenant " + runtimeTenantResolver.getTenant());
         // Retrieve catalog services
         ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
                 .retrieveServices(pDatasetIpId, pApplicationMode);

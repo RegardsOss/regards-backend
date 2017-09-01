@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.rest.AccessServicesITConfiguration;
@@ -72,8 +73,12 @@ public class ServicesAggregatorControllerTest {
         Mockito.when(assembler.toResources(Mockito.anyCollection()))
                 .thenAnswer(pInvocation -> HateoasUtils.wrapCollection(pInvocation.getArgumentAt(0, Collection.class)));
 
+        // Mock the runtimeTenantRsolver
+        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+
         // Construct controller with mocked deps
-        controller = new ServicesAggregatorController(catalogServicesClient, uiPluginConfigurationService, assembler);
+        controller = new ServicesAggregatorController(catalogServicesClient, uiPluginConfigurationService, assembler,
+                runtimeTenantResolver);
     }
 
     /**
