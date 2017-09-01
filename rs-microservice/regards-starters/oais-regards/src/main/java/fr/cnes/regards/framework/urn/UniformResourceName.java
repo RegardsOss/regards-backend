@@ -26,8 +26,6 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.framework.urn.validator.RegardsOaisUrn;
 
@@ -209,7 +207,9 @@ public class UniformResourceName {
      */
     public static UniformResourceName fromString(String pUrn) {
         final Pattern pattern = Pattern.compile(URN_PATTERN);
-        Assert.isTrue(pattern.matcher(pUrn).matches());
+        if (!pattern.matcher(pUrn).matches()) {
+            throw new IllegalArgumentException();
+        }
         final String[] stringFragment = pUrn.split(DELIMITER);
         final OAISIdentifier oaisIdentifier = OAISIdentifier.valueOf(stringFragment[1]);
         final EntityType entityType = EntityType.valueOf(stringFragment[2]);

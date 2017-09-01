@@ -125,7 +125,7 @@ public class PluginParameterIT extends PluginDaoUtility {
         final PluginParameter paramFound2 = paramRepository.findOne(savedParam.getId());
         Assert.assertNotNull(paramFound2);
         Assert.assertEquals(savedParam.isDynamic(), paramFound2.isDynamic());
-        Assert.assertNull(savedParam.getDynamicsValues());
+        Assert.assertTrue(savedParam.getDynamicsValues().isEmpty());
         Assert.assertEquals(savedParam.getName(), paramFound2.getName());
         Assert.assertEquals(savedParam.getValue(), paramFound2.getValue());
         Assert.assertEquals(savedParam.getId(), paramFound2.getId());

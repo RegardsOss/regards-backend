@@ -33,7 +33,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.Type;
 
@@ -90,7 +92,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     @ElementCollection
     @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"),
             foreignKey = @ForeignKey(name = "fk_plugin_param_dyn_value_param_id"))
-    private List<PluginDynamicValue> dynamicsValues;
+    private Set<PluginDynamicValue> dynamicsValues = new HashSet<>();
 
     /**
      * Default constructor
@@ -156,7 +158,7 @@ public class PluginParameter implements IIdentifiable<Long> {
         pluginConfiguration = pPluginConfiguration;
     }
 
-    public List<PluginDynamicValue> getDynamicsValues() {
+    public Set<PluginDynamicValue> getDynamicsValues() {
         return dynamicsValues;
     }
 
@@ -168,7 +170,7 @@ public class PluginParameter implements IIdentifiable<Long> {
         return result;
     }
 
-    public void setDynamicsValues(List<PluginDynamicValue> pDynamicValues) {
+    public void setDynamicsValues(Set<PluginDynamicValue> pDynamicValues) {
         dynamicsValues = pDynamicValues;
     }
 

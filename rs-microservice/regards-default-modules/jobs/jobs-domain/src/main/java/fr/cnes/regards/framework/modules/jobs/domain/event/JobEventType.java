@@ -1,8 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.domain.event;
 
 /**
- *
- * Type of event, that occured on a job, we are propagating into the system thanks to AMQP.
+ * Type of event that occured on a job.
  *
  * @author Sylvain VISSIERE-GUERINET
  */
