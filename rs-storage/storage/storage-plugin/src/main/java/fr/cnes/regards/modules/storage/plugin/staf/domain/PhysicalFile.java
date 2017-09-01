@@ -1,31 +1,27 @@
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
+import java.nio.file.Path;
+
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 
 public class PhysicalFile extends STAFPhysicalFile {
 
-    private String stafLocation;
+    private final Path localFile;
 
-    private String localLocation;
+    private final String stafFileName;
 
-    public PhysicalFile() {
-        super(STAFArchiveModeEnum.NORMAL);
+    public PhysicalFile(String pSTAFNode, Path pLocalFile, String pSTAFFileName) {
+        super(STAFArchiveModeEnum.NORMAL, pSTAFNode);
+        localFile = pLocalFile;
+        stafFileName = pSTAFFileName;
     }
 
-    public String getStafLocation() {
-        return stafLocation;
+    public Path getLocalFile() {
+        return localFile;
     }
 
-    public void setStafLocation(String pStafLocation) {
-        stafLocation = pStafLocation;
-    }
-
-    public String getLocalLocation() {
-        return localLocation;
-    }
-
-    public void setLocalLocation(String pLocalLocation) {
-        localLocation = pLocalLocation;
+    public String getStafFileName() {
+        return stafFileName;
     }
 
 }

@@ -21,10 +21,8 @@ public class STAFUrlFactory {
 
     }
 
-    public static String toSTAFUrl(Set<STAFPhysicalFile> pFileLocations) {
-        String stafUrl = "";
-        // TODO : !!
-        return stafUrl;
+    public static String getSTAFUrl(String pArchiveName, String pStafNode, String pStafFileName) {
+        return "";
     }
 
 }

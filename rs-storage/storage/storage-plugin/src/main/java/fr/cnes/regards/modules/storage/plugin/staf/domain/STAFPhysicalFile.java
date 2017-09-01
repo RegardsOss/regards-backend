@@ -9,9 +9,12 @@ public abstract class STAFPhysicalFile {
      */
     private final STAFArchiveModeEnum archiveMode;
 
-    public STAFPhysicalFile(STAFArchiveModeEnum pArchiveMode) {
+    private final String stafNode;
+
+    public STAFPhysicalFile(STAFArchiveModeEnum pArchiveMode, String pSTAFNode) {
         super();
         archiveMode = pArchiveMode;
+        stafNode = pSTAFNode;
     }
 
     public STAFArchiveModeEnum getArchiveMode() {
