@@ -18,12 +18,22 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 public class Spot4ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SPOT4";
-    
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
+
     protected String getProjectName() {
         return PROJECT_NAME;
     }

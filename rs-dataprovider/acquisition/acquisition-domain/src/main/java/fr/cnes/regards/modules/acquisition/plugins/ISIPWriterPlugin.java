@@ -16,29 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.plugins;
+package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.io.File;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to validate a product")
-public interface ICheckFilePlugin {
+@PluginInterface(description = "Plugin to write a SIP in a file")
+public interface ISIPWriterPlugin {
 
-    public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException;
-    
-    public int getFileVersion();
-
-    public String getLogFile();
-
-    public String getProductName();
-
-    public int getProductVersion();
-
-    public String getNodeIdentifier();
 }

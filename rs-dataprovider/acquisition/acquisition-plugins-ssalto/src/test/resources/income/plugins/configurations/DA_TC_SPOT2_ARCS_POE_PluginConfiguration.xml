@@ -32,7 +32,7 @@
 		<specification>
 			<name>STOP_DATE</name>
 			<valueType>STRING</valueType>
-			<calculationClass>ssalto.domain.plugins.impl.calc.FormatJulianDate</calculationClass>
+			<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.FormatJulianDate</calculationClass>
 		</specification>
 	</attributeFromAsciiFile>
   </compositeAttribute>

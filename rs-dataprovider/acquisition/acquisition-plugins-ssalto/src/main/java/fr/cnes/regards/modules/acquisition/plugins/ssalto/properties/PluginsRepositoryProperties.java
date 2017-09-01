@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  */
 @ConfigurationProperties(prefix = "regards.acquisition.ssalto")
-public class PluginsRespositoryProperties {
+public class PluginsRepositoryProperties {
 
     private String pluginConfFilesDir;
 

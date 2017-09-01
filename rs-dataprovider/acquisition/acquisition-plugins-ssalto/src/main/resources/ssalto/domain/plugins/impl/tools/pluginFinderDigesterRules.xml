@@ -21,59 +21,59 @@
 <digester-rules>
 	<!-- REQUEST -->
 	<pattern value="PLUGIN_CONFIGURATION">
-		<object-create-rule classname="ssalto.domain.plugins.impl.tools.PluginConfigurationProperties" />
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties" />
 		<call-method-rule pattern="fileNamePattern" methodname="setFileNamePattern" paramcount="0"/>		
 		<pattern value="compositeAttribute">
-			<object-create-rule classname="ssalto.domain.plugins.impl.finder.CompositeAttributeFinder"/>
+			<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.CompositeAttributeFinder"/>
 			<set-next-rule methodname="addFileFinder"/>
 		</pattern>		
 	</pattern>	
 	<pattern value="*/attributeFromName">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.FileNameFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.FileNameFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/translatedAttributeFromName">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.TranslatedFileNameFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.TranslatedFileNameFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/translatedAttributeFromArcFile">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.TranslatedAttributeFromArcFile"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.TranslatedAttributeFromArcFile"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/translatedAttributeFromCycleFile">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.TranslatedFromCycleFileFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.TranslatedFromCycleFileFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/multipleFileFromName">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.MultipleFileNameFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.MultipleFileNameFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>			
 	<pattern value="*/fileInfoAttribute">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.FileInfoFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.FileInfoFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/globalAttributeFromCdfFile">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.CDFGlobalAttributeFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.CDFGlobalAttributeFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/variableValueAttributeFromCdfFile">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.CDFVariableAttributeValueFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.CDFVariableAttributeValueFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/enumeratedAttributeFromCdfFile">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.CDFEnumeratedAttributeValueFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.CDFEnumeratedAttributeValueFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/attributeFromAsciiFile">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.AsciiFileFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AsciiFileFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/attributeFromOther">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.OtherAttributeValueFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.OtherAttributeValueFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 	<pattern value="*/fixedValueAttribute">
-		<object-create-rule classname="ssalto.domain.plugins.impl.finder.FixedValueAttributeFinder"/>
+		<object-create-rule classname="fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.FixedValueAttributeFinder"/>
 		<set-next-rule methodname="addFileFinder"/>
 	</pattern>
 

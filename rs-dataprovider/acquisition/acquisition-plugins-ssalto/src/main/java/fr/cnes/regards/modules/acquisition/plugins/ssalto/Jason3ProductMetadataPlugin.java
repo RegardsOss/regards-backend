@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  *
  * Class Jason3ProductMetadataPlugin
@@ -30,6 +34,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 public class Jason3ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON3";
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     @Override
     protected String getProjectName() {

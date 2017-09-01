@@ -12,6 +12,14 @@
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>multitenant-regards-starter</artifactId>
+		</dependency>
 		<!-- Module -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -70,6 +78,6 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 </project>

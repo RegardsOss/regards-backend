@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD ( résolu
  * comme pour les donnees Doris, et FILE_CREATION_DATE, qui ne se recupere pas de la meme maniere en fonction du nom des
@@ -31,6 +35,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 public class Jason2Ptlm1ProductMetadataPlugin extends JasonPltm1ProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON2";
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     @Override
     protected String getProjectName() {

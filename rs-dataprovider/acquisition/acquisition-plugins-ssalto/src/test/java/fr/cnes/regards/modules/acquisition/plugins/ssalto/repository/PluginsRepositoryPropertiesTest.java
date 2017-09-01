@@ -25,25 +25,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { PluginRepositoryTestsConfiguration.class })
-public class PluginsRespositoryPropertiesTest {
+public class PluginsRepositoryPropertiesTest {
 
     @Autowired
-    PluginsRespositoryProperties pluginsRespositoryProperties;
+    PluginsRepositoryProperties pluginsRepositoryProperties;
 
     @Test
     public void loadfileTest() {
 
-        Assert.assertNotNull(pluginsRespositoryProperties);
+        Assert.assertNotNull(pluginsRepositoryProperties);
 
-        String pluginConfFilesDir = pluginsRespositoryProperties.getPluginConfFilesDir();
+        String pluginConfFilesDir = pluginsRepositoryProperties.getPluginConfFilesDir();
         Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
                           ((pluginConfFilesDir != null) && !pluginConfFilesDir.isEmpty()));
 
-        String pluginConfTranslationFilesDir = pluginsRespositoryProperties.getPluginTranslationFilesDir();
+        String pluginConfTranslationFilesDir = pluginsRepositoryProperties.getPluginTranslationFilesDir();
         Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
                           (pluginConfTranslationFilesDir != null) && !pluginConfTranslationFilesDir.isEmpty());
     }

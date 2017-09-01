@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  * plugin specifiques au donnees jason2 doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
  * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
@@ -30,6 +34,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 public class Jason2Doris10ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON2";
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     @Override
     protected String getProjectName() {

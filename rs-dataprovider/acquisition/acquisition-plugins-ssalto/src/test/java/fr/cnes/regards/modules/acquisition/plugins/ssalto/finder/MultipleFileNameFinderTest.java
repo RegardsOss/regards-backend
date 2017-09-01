@@ -67,7 +67,7 @@ public class MultipleFileNameFinderTest {
         Assert.assertTrue(new File(FINDER_PATH + tclogZipFileName).getAbsolutePath(),
                           new File(FINDER_PATH + tclogZipFileName).exists());
         FileNameFinder fileNameFinder = new FileNameFinder();
-        fileNameFinder.setAttributProperties(initConfProperties());
+        fileNameFinder.setAttributProperties(initPluginConfigurationProperties());
         Map<File, ?> fileMap = new HashMap<>();
         @SuppressWarnings("unchecked")
         List<Object> resultList = (List<Object>) fileNameFinder.getValueList(fileMap, null);
@@ -85,7 +85,7 @@ public class MultipleFileNameFinderTest {
         MultipleFileNameFinder fileNameFinder = new MultipleFileNameFinder();
         fileNameFinder.setFileInZipNamePattern(filenamePattern);
         fileNameFinder.setValueType(AttributeTypeEnum.TYPE_STRING.toString());
-        fileNameFinder.setAttributProperties(initConfProperties());
+        fileNameFinder.setAttributProperties(initPluginConfigurationProperties());
         fileNameFinder.setUnzipBefore(Boolean.toString(true));
         fileNameFinder.setCompression(CompressionTypeEnum.ZIP.toString());
 
@@ -110,7 +110,7 @@ public class MultipleFileNameFinderTest {
         fileNameFinder.setFormatRead(DATE_FORMAT);
         fileNameFinder.setValueType(AttributeTypeEnum.TYPE_DATE_TIME.toString());
         fileNameFinder.setFileInZipNamePattern(filenamePattern);
-        fileNameFinder.setAttributProperties(initConfProperties());
+        fileNameFinder.setAttributProperties(initPluginConfigurationProperties());
         fileNameFinder.setUnzipBefore("true");
         fileNameFinder.setCompression(CompressionTypeEnum.ZIP.toString());
 
@@ -139,7 +139,7 @@ public class MultipleFileNameFinderTest {
         fileNameFinder.setFormatRead(DATE_FORMAT);
         fileNameFinder.setValueType(AttributeTypeEnum.TYPE_DATE_TIME.toString());
         fileNameFinder.setFileInZipNamePattern(filenamePattern);
-        fileNameFinder.setAttributProperties(initConfProperties());
+        fileNameFinder.setAttributProperties(initPluginConfigurationProperties());
         fileNameFinder.setUnzipBefore("true");
         fileNameFinder.setCompression(CompressionTypeEnum.ZIP.toString());
 
@@ -176,7 +176,7 @@ public class MultipleFileNameFinderTest {
         return acquisitionFile;
     }
 
-    private PluginConfigurationProperties initConfProperties() {
+    private PluginConfigurationProperties initPluginConfigurationProperties() {
         PluginConfigurationProperties_mock mockProperties = new PluginConfigurationProperties_mock();
         mockProperties.setFileNamePattern(filenamePattern);
         return mockProperties;

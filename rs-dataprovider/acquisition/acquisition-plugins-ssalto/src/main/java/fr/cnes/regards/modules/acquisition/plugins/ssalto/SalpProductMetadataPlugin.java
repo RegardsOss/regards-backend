@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  * 
  * @author CS
@@ -28,23 +32,18 @@ public class SalpProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SALP";
 
-    /**
-     * Default constructor
-     * 
-     * @since 5.0
-     * 
-     */
     public SalpProductMetadataPlugin() {
         super();
     }
 
-    /**
-     * 
-     * Project name to to retrieve property values in plugin configuration
-     * 
-     * @see fr.cnes.regards.modules.acquisition.plugins.ssalto.AbstractProductMetadataPlugin#getProjectName()
-     * @since 5.0
-     */
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
+
     protected String getProjectName() {
         return PROJECT_NAME;
     }

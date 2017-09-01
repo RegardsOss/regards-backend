@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.NetCdfFileHelper;
 
 /**
@@ -58,7 +58,15 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     private static final String PRODUCT_OPTION = "PRODUCT_OPTION";
 
     private static final String TRANSACTION_FILE = "OGDRTranslationFile.properties";
-    
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
+
     /**
      *
      * @param pFileMap
@@ -105,7 +113,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             final Properties translationProperties = new Properties();
             try {
                 // Get file from project configured directory
-                final String translationDirectory = pluginsRespositoryProperties.getPluginTranslationFilesDir();
+                final String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
                 final File translationFile = new File(translationDirectory, TRANSACTION_FILE);
                 if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
                     translationProperties.load(new FileReader(translationFile));
@@ -127,4 +135,5 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
         valueList.add(value);
         return valueList;
     }
+
 }

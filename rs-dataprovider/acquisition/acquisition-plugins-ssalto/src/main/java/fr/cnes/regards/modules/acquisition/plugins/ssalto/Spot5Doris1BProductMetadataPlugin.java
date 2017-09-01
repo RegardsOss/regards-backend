@@ -18,20 +18,30 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 public class Spot5Doris1BProductMetadataPlugin extends AbstractDoris1BProductMetadataPlugin {
-    
+
     private static final String PROJECT_NAME = "SPOT5";
-    
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
+
     protected String getProjectName() {
         return PROJECT_NAME;
     }
 
     public void initPrefixMap() {
-        addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS); 
-        addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_MOE_CDDIS_COM",PREFIX_MOE_CDDIS_COM);
-        addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_POE_CDDIS_COM",PREFIX_POE_CDDIS_COM);
+        addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS);
+        addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);
+        addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
     }
 
 }

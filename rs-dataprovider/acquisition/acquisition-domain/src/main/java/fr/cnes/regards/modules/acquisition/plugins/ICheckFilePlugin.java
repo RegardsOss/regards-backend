@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.plugins;
+package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.io.File;
-import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -28,15 +27,18 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to create product and file metadata")
-public interface IGenerateSIPPlugin {
+@PluginInterface(description = "Plugin to validate a product")
+public interface ICheckFilePlugin {
 
-    // TODO CMZ : à confirmer mais je pense pas que ça retourne une String
-    public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
-            String pDicoName, String pProjectName) throws ModuleException;
+    public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException;
     
-    // TODO CMZ à revoir
-    public String generateXml(File pFile, String pProjectName, String pDicoName, String pDataSetId)
-            throws ModuleException;
+    public int getFileVersion();
 
+    public String getLogFile();
+
+    public String getProductName();
+
+    public int getProductVersion();
+
+    public String getNodeIdentifier();
 }

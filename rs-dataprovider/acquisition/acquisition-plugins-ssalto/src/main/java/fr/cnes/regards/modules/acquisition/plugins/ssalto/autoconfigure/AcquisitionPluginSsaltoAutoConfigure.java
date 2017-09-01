@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.autoconfigure;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
  *
@@ -34,15 +34,11 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsResp
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.acquisition.ssalto", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties({ PluginsRespositoryProperties.class })
+@EnableConfigurationProperties({ PluginsRepositoryProperties.class})
 @EnableTransactionManagement
 public class AcquisitionPluginSsaltoAutoConfigure {
 
     @Autowired
-    private PluginsRespositoryProperties pluginsRespositoryProperties;
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
-    @Bean
-    public PluginsRespositoryProperties pluginsRespositoryProperties() {
-        return pluginsRespositoryProperties;
-    }
 }

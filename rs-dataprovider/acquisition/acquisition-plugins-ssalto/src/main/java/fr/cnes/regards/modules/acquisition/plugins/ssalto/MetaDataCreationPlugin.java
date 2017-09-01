@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
@@ -199,7 +199,7 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     }
 
     /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin#createMetadataPlugin(java.lang.String, java.util.Map, java.lang.String, java.lang.String, java.lang.String)
+     * @see fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin#createMetadataPlugin(java.lang.String, java.util.Map, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,

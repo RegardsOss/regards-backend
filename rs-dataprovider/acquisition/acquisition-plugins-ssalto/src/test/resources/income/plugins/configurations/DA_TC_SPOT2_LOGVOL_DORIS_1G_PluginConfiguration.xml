@@ -46,7 +46,7 @@
 			<name>OBJECT_VERSION</name>
 			<valueType>STRING</valueType>
 			<order>3</order>
-			<calculationClass>ssalto.domain.plugins.impl.calc.SetSeparator</calculationClass>
+			<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetSeparator</calculationClass>
 		</specification>
 	</attributeFromName>
 </PLUGIN_CONFIGURATION>

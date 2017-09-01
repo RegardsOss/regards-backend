@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.plugins.ICheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.ReadFileException;
 
 /**

@@ -122,7 +122,7 @@
             <specification>
                 <name>LATITUDE_MIN</name>
                 <valueType>REAL</valueType>
-                <calculationClass>ssalto.domain.plugins.impl.calc.FormatLatitude</calculationClass>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.FormatLatitude</calculationClass>
             </specification>
         </variableValueAttributeFromCdfFile>
         <variableValueAttributeFromCdfFile>
@@ -131,7 +131,7 @@
             <specification>
                 <name>LONGITUDE_MIN</name>
                 <valueType>REAL</valueType>
-                <calculationClass>ssalto.domain.plugins.impl.calc.GreenwichCenterLongitudeCalculation</calculationClass>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.GreenwichCenterLongitudeCalculation</calculationClass>
             </specification>
         </variableValueAttributeFromCdfFile>
         <variableValueAttributeFromCdfFile>
@@ -140,7 +140,7 @@
             <specification>
                 <name>LATITUDE_MAX</name>
                 <valueType>REAL</valueType>
-                <calculationClass>ssalto.domain.plugins.impl.calc.FormatLatitude</calculationClass>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.FormatLatitude</calculationClass>
             </specification>
         </variableValueAttributeFromCdfFile>
         <variableValueAttributeFromCdfFile>
@@ -149,7 +149,7 @@
             <specification>
                 <name>LONGITUDE_MAX</name>
                 <valueType>REAL</valueType>
-                <calculationClass>ssalto.domain.plugins.impl.calc.GreenwichCenterLongitudeCalculation</calculationClass>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.GreenwichCenterLongitudeCalculation</calculationClass>
             </specification>
         </variableValueAttributeFromCdfFile>
     </compositeAttribute>
@@ -187,7 +187,7 @@
             <name>PHASE</name>
             <valueType>STRING</valueType>
             <order>11</order>
-            <calculationClass>ssalto.domain.plugins.impl.calc.IsPairCalculation</calculationClass>
+            <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.IsPairCalculation</calculationClass>
         </specification>
     </attributeFromOther>
 </PLUGIN_CONFIGURATION>

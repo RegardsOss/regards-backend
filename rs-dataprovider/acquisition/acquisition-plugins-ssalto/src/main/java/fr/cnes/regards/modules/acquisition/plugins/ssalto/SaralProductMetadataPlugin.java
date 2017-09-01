@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  * Plugin de generation des metadonnees produit pour la mission SARAL
  * 
@@ -27,6 +31,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SARAL";
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     protected String getProjectName() {
         return PROJECT_NAME;

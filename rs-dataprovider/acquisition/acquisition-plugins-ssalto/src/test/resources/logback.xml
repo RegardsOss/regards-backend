@@ -28,6 +28,9 @@
 	</appender>
 
 	<logger name="org.springframework" level="INFO" />
+	<logger name="com.mchange.v2.resourcepool" level="INFO" />
+	<logger name="com.mchange.v2.c3p0.impl" level="INFO" />
+	
 
 	<root level="debug">
 		<appender-ref ref="STDOUT" />

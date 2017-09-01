@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.plugins.ICheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 public class CheckInPlugin implements ICheckFilePlugin {
 

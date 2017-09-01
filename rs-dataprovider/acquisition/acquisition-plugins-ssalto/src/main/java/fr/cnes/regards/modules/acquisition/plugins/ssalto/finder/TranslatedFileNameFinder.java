@@ -29,9 +29,11 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
  * ce finder recupere une valeur dans le nom d'un fichier a partir du filePattern et de la liste de groupe de capture et
@@ -40,6 +42,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsResp
  * @author Christophe Mertz
  *
  */
+@Component
 public class TranslatedFileNameFinder extends FileNameFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
@@ -50,7 +53,7 @@ public class TranslatedFileNameFinder extends FileNameFinder {
     private Properties translationProperties;
 
     @Autowired
-    protected PluginsRespositoryProperties pluginsRespositoryProperties;
+    protected PluginsRepositoryProperties pluginsRepositoryProperties;
 
     /**
      * @param translationPropertiesFilePath
@@ -61,19 +64,30 @@ public class TranslatedFileNameFinder extends FileNameFinder {
 
         try {
             // Get file from project configured directory
-            String translationDirectory = pluginsRespositoryProperties.getPluginTranslationFilesDir();
-            File translationFile = new File(translationDirectory, translationPropertiesFilePath);
-            if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
-                InputStream inStream = new FileInputStream(translationFile);
-                translationProperties.load(inStream);
-            } else {
-                LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
-                        + ". Checking in classpath ...");
-                // TODO CMZ à confirmer
-                File ff = new File("/ssalto/domain/plugins/impl" + translationPropertiesFilePath);
-                InputStream inStream = new FileInputStream(ff);
-                translationProperties.load(inStream);
-            }
+         // TODO CMZ à revoir pour le moment pluginsRepositoryProperties est null
+            
+//            String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
+//            File translationFile = new File(translationDirectory, translationPropertiesFilePath);
+//            if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
+//                InputStream inStream = new FileInputStream(translationFile);
+//                translationProperties.load(inStream);
+//            } else {
+//                LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
+//                        + ". Checking in classpath ...");
+//                File ff = new File("income/plugins/translations" + translationPropertiesFilePath);
+//                InputStream inStream = new FileInputStream(ff);
+//                translationProperties.load(inStream);
+                
+
+                try (InputStream stream = TranslatedFileNameFinder.class.getClassLoader()
+                        .getResourceAsStream("income/plugins/translations" + translationPropertiesFilePath)) {
+                    translationProperties.load(stream);
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+                
+                
+//            }
         } catch (Exception e) {
             String msg = "unable to load the translation properties file";
             LOGGER.error(msg, e);

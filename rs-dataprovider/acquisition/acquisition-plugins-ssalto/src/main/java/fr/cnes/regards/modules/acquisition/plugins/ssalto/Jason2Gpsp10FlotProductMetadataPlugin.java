@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
  * va lire dans les blocs de mesure.
@@ -30,6 +34,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 public class Jason2Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10FlotProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON2";
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     @Override
     protected String getProjectName() {

@@ -16,20 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.plugins;
+package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.util.List;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 
 /**
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to process treatement after the SIP generation is done")
-public interface IPostProcessSIP {
+@PluginInterface(description = "Plugin to detect file to acquire")
+public interface IAcquisitionScanPlugin {
 
-    public void runPlugin(List<AcquisitionFile> acquiredFiles, String sipDirectory) throws ModuleException;
 }

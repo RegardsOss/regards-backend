@@ -47,8 +47,8 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.SsaltoFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.SupplyDirectory;
-import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
 
 /**
@@ -63,7 +63,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPluginTest.class);
 
     @Autowired
-    PluginsRespositoryProperties pluginsRespositoryProperties;
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
     // ****************************************************************************************
     // PARAMETRES
@@ -174,8 +174,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     /**
      * Lance le ou les tests
+     * @throws ModuleException 
      */
-    protected void launchTest() {
+    protected void launchTest() throws ModuleException {
         List<String> errorList = new ArrayList<String>();
         List<String> successList = new ArrayList<String>();
         boolean isTestOk = true;
@@ -216,7 +217,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             }
 
             String pluginsConfDir;
-            pluginsConfDir = pluginsRespositoryProperties.getPluginConfFilesDir();
+            pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesDir();
             File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
             if ((pluginConfFile == null) || !pluginConfFile.exists() || !pluginConfFile.canRead()) {
                 LOGGER.warn("NOT FOUND " + pluginConfFile.getPath());
@@ -241,9 +242,10 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @param errorList
      * @param sucessList
      * @return
+     * @throws ModuleException 
      */
     protected boolean createMetadataPlugIn(PluginTestDef pluginTestDef, List<String> errorList,
-            List<String> sucessList) {
+            List<String> sucessList) throws ModuleException {
         boolean isCreationOk = true;
         List<AcquisitionFile> fileList = new ArrayList<>();
 

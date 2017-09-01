@@ -38,7 +38,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.io.Files;
 
@@ -103,7 +102,6 @@ public abstract class AttributeFinder {
     /**
      * Properties utile pour l'attribut (filePattern entre autre)
      */
-    @Autowired
     protected PluginConfigurationProperties confProperties;
 
     /**

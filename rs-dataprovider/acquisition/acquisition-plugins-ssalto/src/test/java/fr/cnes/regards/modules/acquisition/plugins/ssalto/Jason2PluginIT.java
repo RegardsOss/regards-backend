@@ -29,10 +29,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 
 /**
  * 
@@ -51,7 +54,12 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
     IPluginService pluginService;
 
     @Autowired
-    protected PluginsRespositoryProperties pluginsRespositoryProperties;
+    private IRuntimeTenantResolver tenantResolver;
+
+    @Before
+    public void before() {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
+    }
 
     @Override
     public String getProjectProperties() {
@@ -168,18 +176,41 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
     @Override
     @Test
     public void createMetadataPlugin_solo() {
-        pluginsRespositoryProperties.getPluginConfFilesDir();
         super.createMetadataPlugin_solo();
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() {
-        // TODO CMZ récupérer une instance du plugin
+    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration();
 
-        pluginService.getAllPluginConfigurations();
+        return pluginService.getPlugin(pluginConfiguration.getId());
 
-        Jason2ProductMetadataPlugin plugin = new Jason2ProductMetadataPlugin();
-        return plugin;
+        // TODO CMZ à voir pour créer automatiquement une conf par type de plugin  
+        //         return pluginService.getFirstPluginByType(IGenerateSIPPlugin.class);
+    }
+
+    /**
+     * Get an existing configuration if exists otherwise creates it
+     * 
+     * @return an existing {@link PluginConfiguration}
+     * 
+     * @throws ModuleException if an error occurs
+     */
+    private PluginConfiguration getPluginConfiguration() throws ModuleException {
+        // Test if a configuration exists for this Plugin
+        List<PluginConfiguration> pluginConfigurations = pluginService
+                .getPluginConfigurationsByType(IGenerateSIPPlugin.class);
+        if (!pluginConfigurations.isEmpty()) {
+            return pluginConfigurations.get(0);
+        }
+
+        // Get the PluginMetadata
+        List<PluginMetaData> metaDatas = pluginService.getPluginsByType(IGenerateSIPPlugin.class);
+
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
+                "Unique configuration for acquisition plugin : " + IGenerateSIPPlugin.class.getName());
+        return pluginService.savePluginConfiguration(pluginConfiguration);
+
     }
 
     @Override

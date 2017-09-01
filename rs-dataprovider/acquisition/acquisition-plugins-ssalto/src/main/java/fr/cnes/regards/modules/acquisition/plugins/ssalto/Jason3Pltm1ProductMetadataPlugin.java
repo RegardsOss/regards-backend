@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+
 /**
  *
  * Class Jason3Ptlm1ProductMetadataPlugin
@@ -34,6 +38,14 @@ public class Jason3Pltm1ProductMetadataPlugin extends JasonPltm1ProductMetadataP
     @Override
     protected String getProjectName() {
         return PROJECT_NAME;
+    }
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
     }
 
     @Override

@@ -40,19 +40,17 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRespositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
  * PlugIn generic de creation de metadonnees d'un produit. Cette classe possède une specification pour chaque produit.
@@ -80,16 +78,12 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     /**
      * map qui permet d'ordonner les attributs dans le fichier descripteur
      */
-    protected java.util.Properties attributeOrderProperties;
+    protected Properties attributeOrderProperties;
 
     /**
      * proprietes contenant la configuration du plugin, notamment, la liste des finder a utiliser pour chaque attribut.
      */
-    @Autowired
     protected PluginConfigurationProperties pluginConfProperties;
-
-    @Autowired
-    protected PluginsRespositoryProperties pluginsRespositoryProperties;
 
     /**
      * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
@@ -137,7 +131,8 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         }
 
         // Getting conf file from project configured directory
-        String pluginConfDirectory = pluginsRespositoryProperties.getPluginConfFilesDir();
+        String pluginConfDirectory = getPluginsRepositoryProperties().getPluginConfFilesDir();
+        //        String pluginConfDirectory = pluginsRepositoryProperties.getPluginConfFilesDir();
         File pluginConfFile = new File(pluginConfDirectory, pDataSetName + CONFIG_FILE_SUFFIX);
         URL confFile = null;
 
@@ -174,19 +169,22 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             throw new ModuleException(e);
         }
 
-        // init the attributeOrderMap_ from the attributeOrderConfigurationFile.
+        // init the attributeOrderMap_ from the attributeOrderConfigurationFile
         attributeOrderProperties = new Properties();
-        try {
-            attributeOrderProperties.load(new FileReader(ATTRIBUTE_ORDER_PROP_FILE));
-        } catch (IOException e) {
+        try (InputStream stream = AbstractProductMetadataPlugin.class.getClassLoader()
+                .getResourceAsStream(ATTRIBUTE_ORDER_PROP_FILE)) {
+            attributeOrderProperties.load(stream);
+        } catch (Exception e) {
             String message = "unable to load property file" + ATTRIBUTE_ORDER_PROP_FILE;
-            LOGGER.error(message, e);
+            LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);
         }
-
+        
     }
 
     protected abstract String getProjectName();
+
+    protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
 
     /**
      * Ecriture du descripteur

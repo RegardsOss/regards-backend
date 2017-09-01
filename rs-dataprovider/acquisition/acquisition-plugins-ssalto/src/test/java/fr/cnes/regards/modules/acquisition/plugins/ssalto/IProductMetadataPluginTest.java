@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-import fr.cnes.regards.modules.acquisition.domain.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 
 public interface IProductMetadataPluginTest {
 
@@ -42,5 +43,5 @@ public interface IProductMetadataPluginTest {
      * 
      * @return
      */
-    public IGenerateSIPPlugin buildPlugin();
+    public IGenerateSIPPlugin buildPlugin() throws ModuleException;
 }

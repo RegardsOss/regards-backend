@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+
 /**
  * plugin de creation des meta donnees d'un produit jason2. Ce plugin est generique, et utilise un fichier de
  * configuration pour pouvoir initialiser un finder par attribut a trouver. Il y a differents types de finder, les
@@ -26,11 +28,15 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
  * 
  * @author Christophe Mertz
  */
-public class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
+@Plugin(description = "Jason2ProductMetadataPlugin", id = "Jason2ProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public abstract class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON2";
 
     protected String getProjectName() {
         return PROJECT_NAME;
     }
+
 }
