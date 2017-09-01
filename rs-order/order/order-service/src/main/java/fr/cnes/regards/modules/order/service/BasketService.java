@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.order.service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableMap;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
@@ -38,14 +40,29 @@ public class BasketService implements IBasketService {
     private ICatalogClient catalogClient;
 
     @Override
-    public Basket create(String email) {
-        return repos.save(new Basket(email));
+    public Basket findOrCreate(String user) {
+        Basket basket = repos.findByEmail(user);
+        return (basket == null) ? repos.save(new Basket(user)) : basket;
     }
 
     @Override
-    public Basket find(String email) {
-        return repos.findByEmail(email);
+    public Basket find(String email) throws EmptyBasketException {
+        Basket basket = repos.findByEmail(email);
+        if (basket == null) {
+            throw new EmptyBasketException();
+        }
+        return basket;
     }
+
+
+    @Override
+    public void deleteIfExists(String user) {
+        Basket basket = repos.findByEmail(user);
+        if (basket != null) {
+            repos.delete(basket.getId());
+        }
+    }
+
 
     @Override
     public Basket load(Long id) {
@@ -98,6 +115,35 @@ public class BasketService implements IBasketService {
 
         }
         return repos.save(basket);
+    }
+
+    @Override
+    public Basket removeDatasetSelection(Basket basket, Long datasetId) {
+        for (Iterator<BasketDatasetSelection> i = basket.getDatasetSelections().iterator(); i.hasNext(); ) {
+            if (i.next().getId().equals(datasetId)) {
+                i.remove();
+                repos.save(basket);
+                break;
+            }
+        }
+        return basket;
+    }
+
+    @Override
+    public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
+        for (BasketDatasetSelection dsSelection : basket.getDatasetSelections()) {
+            if (dsSelection.getId().equals(datasetId)) {
+                for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i.hasNext(); ) {
+                    if (i.next().getDate().equals(itemsSelectionDate)) {
+                        i.remove();
+                        break;
+                    }
+                }
+                repos.save(basket);
+                break;
+            }
+        }
+        return basket;
     }
 
     /**

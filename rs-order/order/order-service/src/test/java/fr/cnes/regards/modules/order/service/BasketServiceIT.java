@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.validation.constraints.AssertTrue;
-
+import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import static fr.cnes.regards.modules.order.test.CatalogClientMock.*;
 
@@ -17,10 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.test.CatalogClientMock;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
 
 /**
  * @author oroussel
@@ -36,9 +32,6 @@ public class BasketServiceIT {
     @Autowired
     private IBasketRepository basketRepository;
 
-    @Autowired
-    private ICatalogClient catalogClientMocked;
-
     private static final String USER_EMAIL = "marc.sordi@baltringue.fr";
 
     @Before
@@ -47,11 +40,11 @@ public class BasketServiceIT {
     }
 
     /**
-     * BECAUSE OF OffsetDateTime.now() use from BasketService, THIS TEST CLASS MUST DEFINE ONLY ONLY TEST
+     * BECAUSE OF OffsetDateTime.now() use from BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
      */
     @Test
-    public void test() {
-        Basket basket = basketService.create(USER_EMAIL);
+    public void test() throws EmptyBasketException {
+        Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
 

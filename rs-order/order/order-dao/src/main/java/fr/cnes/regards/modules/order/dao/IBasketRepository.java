@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 
 /**
+ * Basket repository
  * @author oroussel
  */
 public interface IBasketRepository extends JpaRepository<Basket, Long> {
@@ -13,8 +14,6 @@ public interface IBasketRepository extends JpaRepository<Basket, Long> {
     /**
      * Load a basket with all its relations
      */
-/*    @EntityGraph(attributePaths = { "datasetSelections", "datasetSelections.itemsSelections" },
-            type = EntityGraph.EntityGraphType.LOAD)*/
     @EntityGraph("graph.basket")
     Basket findOneById(Long id);
 

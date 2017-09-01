@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,20 +32,21 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.service.IBasketService;
+import fr.cnes.regards.modules.order.service.IOrderService;
 
 /**
- * REST module controller
+ * Basket controller
  *
- * TODO Description
- * @author TODO
+ * @author oroussel
  */
 @RestController
-@ModuleInfo(name = "order-rest", version = "2.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+@ModuleInfo(name = "order", version = "2.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 @RequestMapping("/order/basket")
 public class BasketController implements IResourceController<Basket> {
@@ -53,17 +57,63 @@ public class BasketController implements IResourceController<Basket> {
     @Autowired
     private IBasketService basketService;
 
+    @Autowired
+    private IOrderService orderService;
+
+    /**
+     * Add a selection to the basket
+     * @param basketSelectionRequest selection request
+     * @return updated or created basket
+     */
     @ResourceAccess(description = "Add a selection to the basket")
-    @RequestMapping(method = RequestMethod.POST, value = "/addSelection")
+    @RequestMapping(method = RequestMethod.POST, value = "/selection")
     public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest) {
         String user = SecurityUtils.getActualUser();
-        // Does a basket exist ?
-        Basket basket = basketService.find(user);
-        if (basket == null) {
-            basket = basketService.create(user);
-        }
+        Basket basket = basketService.findOrCreate(user);
         String openSearchRequest = basketSelectionRequest.computeOpenSearchRequest();
         return ResponseEntity.ok(toResource(basketService.addSelection(basket.getId(), openSearchRequest)));
+    }
+
+    /**
+     * Remove dataset selection from basket
+     * @param dsSelectionId dataset selection id (from basket)
+     * @return updated basket
+     * @throws EmptyBasketException if no basket currently exists
+     */
+    @ResourceAccess(description = "Remove dataset selection from basket")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/dataset/{datasetSelectionId}")
+    public ResponseEntity<Resource<Basket>> removeDatasetSelection(
+            @PathVariable("datasetSelectionId") Long dsSelectionId) throws EmptyBasketException {
+        Basket basket = basketService.find(SecurityUtils.getActualUser());
+        return ResponseEntity.ok(toResource(basketService.removeDatasetSelection(basket, dsSelectionId)));
+    }
+
+    /**
+     * Remove dated item selection under dataset selection from basket
+     * @param dsSelectionId dataset selection id (from basket, the one which contains dated items selection)
+     * @param itemsSelectionDate items selection date
+     * @return updated basket
+     * @throws EmptyBasketException if no basket currently exists
+     */
+    @ResourceAccess(description = "Remove dated item selection under dataset selection from basket")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/dataset/{datasetSelectionId}/{itemsSelectionDate}")
+    public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
+            @PathVariable("datasetSelectionId") Long dsSelectionId,
+            @PathVariable("itemsSelectionDate") OffsetDateTime itemsSelectionDate) throws EmptyBasketException {
+        Basket basket = basketService.find(SecurityUtils.getActualUser());
+        return ResponseEntity
+                .ok(toResource(basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate)));
+    }
+
+    /**
+     * Empty current basket
+     * @return nothing
+     */
+    @ResourceAccess(description = "Empty the basket")
+    @RequestMapping(method = RequestMethod.DELETE)
+    public ResponseEntity<Void> empty() {
+        basketService.deleteIfExists(SecurityUtils.getActualUser());
+        return ResponseEntity.<Void>noContent().build();
     }
 
     @Override
