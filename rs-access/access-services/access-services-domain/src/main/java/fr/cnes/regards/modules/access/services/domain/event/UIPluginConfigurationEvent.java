@@ -31,7 +31,14 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 @Event(target = Target.ALL)
 public class UIPluginConfigurationEvent implements ISubscribable {
 
-    private final UIPluginConfiguration uiPluginConfiguration;
+    private UIPluginConfiguration uiPluginConfiguration;
+
+    /**
+     * Default constructor required by Jackson
+     */
+    public UIPluginConfigurationEvent() {
+        super();
+    }
 
     /**
      * @param pUiPluginConfiguration Source object of the event

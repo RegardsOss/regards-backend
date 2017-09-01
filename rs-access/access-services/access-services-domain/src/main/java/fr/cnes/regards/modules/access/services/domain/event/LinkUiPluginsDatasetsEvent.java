@@ -28,10 +28,17 @@ import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
  *
  * @author Xavier-Alexandre Brochard
  */
-@Event(target = Target.ALL)
+@Event(target = Target.MICROSERVICE)
 public class LinkUiPluginsDatasetsEvent implements ISubscribable {
 
-    private final LinkUIPluginsDatasets linkUIPluginsDatasets;
+    private LinkUIPluginsDatasets linkUIPluginsDatasets;
+
+    /**
+     * Default constructor required by Jackson
+     */
+    public LinkUiPluginsDatasetsEvent() {
+        super();
+    }
 
     /**
      * @param pLinkUIPluginsDatasets Source object of the event
