@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.configuration.dao;
 
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.configuration.domain.Theme;
@@ -38,5 +37,7 @@ import fr.cnes.regards.modules.configuration.domain.Theme;
 public interface IThemeRepository extends JpaRepository<Theme, Long> {
 
     List<Theme> findByActiveTrue();
+
+    Optional<Theme> findByName(String name);
 
 }

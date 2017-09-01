@@ -71,6 +71,12 @@ public class ThemeService extends AbstractUiConfigurationService
     @Value("classpath:DefaultLightTheme.json")
     private Resource defaultLightThemeResource;
 
+    /**
+     * The default configuration for energy theme
+     */
+    @Value("classpath:DefaultEnergyTheme.json")
+    private Resource defaultEnergyThemeResource;
+
     @Autowired
     private IThemeRepository repository;
 
@@ -159,9 +165,8 @@ public class ThemeService extends AbstractUiConfigurationService
 
     @Override
     protected void initProjectUI(final String pTenant) {
-        final List<Theme> themes = repository.findAll();
-        if ((themes == null) || themes.isEmpty()) {
-            final Theme defaultTheme = new Theme();
+        if (!repository.findByName("Dark").isPresent()) {
+            Theme defaultTheme = new Theme();
             defaultTheme.setName("Dark");
             defaultTheme.setActive(true);
             try {
@@ -171,7 +176,9 @@ public class ThemeService extends AbstractUiConfigurationService
                 throw new InitUIException(e);
             }
             repository.save(defaultTheme);
+        }
 
+        if (!repository.findByName("Light").isPresent()) {
             final Theme defaultLightTheme = new Theme();
             defaultLightTheme.setName("Light");
             defaultLightTheme.setActive(false);
@@ -184,6 +191,18 @@ public class ThemeService extends AbstractUiConfigurationService
             repository.save(defaultLightTheme);
         }
 
+        if (!repository.findByName("Energy").isPresent()) {
+            final Theme defaultEnergyTheme = new Theme();
+            defaultEnergyTheme.setName("Energy");
+            defaultEnergyTheme.setActive(false);
+            try {
+                defaultEnergyTheme.setConfiguration(readDefaultFileResource(defaultEnergyThemeResource));
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                throw new InitUIException(e);
+            }
+            repository.save(defaultEnergyTheme);
+        }
     }
 
     @Override
