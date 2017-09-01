@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -99,6 +100,9 @@ public class ServiceManager implements IServiceManager {
 
     @Override
     public List<PluginConfigurationDto> retrieveServices(String pDatasetId, final ServiceScope pServiceScope) {
+        if (pDatasetId == null) {
+            return new ArrayList<>();
+        }
         final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
         final Set<PluginConfiguration> services = datasetPlugins.getServices();
 
