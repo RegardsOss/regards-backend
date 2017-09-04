@@ -81,6 +81,7 @@ public abstract class AbstractUiConfigurationService {
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 initProjectUI(tenant);
+                runtimeTenantResolver.clearTenant();
             }
         } else {
             // Initialize database if not already done

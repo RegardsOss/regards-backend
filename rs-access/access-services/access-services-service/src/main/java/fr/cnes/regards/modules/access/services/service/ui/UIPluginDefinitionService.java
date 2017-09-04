@@ -85,6 +85,7 @@ public class UIPluginDefinitionService
         public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
             runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
             initDefault();
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -98,6 +99,7 @@ public class UIPluginDefinitionService
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 initDefault();
+                runtimeTenantResolver.clearTenant();
             }
         }
     }

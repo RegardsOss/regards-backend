@@ -90,6 +90,7 @@ public class ThemeService extends AbstractUiConfigurationService
             if (getMicroserviceName().equals(pWrapper.getContent().getMicroserviceName())) {
                 getRuntimeTenantResolver().forceTenant(pWrapper.getContent().getTenant());
                 initProjectUI(pWrapper.getContent().getTenant());
+                getRuntimeTenantResolver().clearTenant();
             }
         }
 
