@@ -68,6 +68,21 @@ public class STAFConfiguration {
     private Long maxFileSize = null;
 
     /**
+     * Taille maximale d'un TAR pour archive au STAF.
+     */
+    private Long maxTarSize = null;
+
+    /**
+     * Taille minimal d'un TAR pour archivage au STAF.
+     */
+    private Long tarSizeThreshold = null;
+
+    /**
+     * Durée d'attente maximum avant l'archivage d'un TAR.
+     */
+    private Long maxTarArchivingHours = null;
+
+    /**
      * classe de service petits fichiers ( STAF GF et generaliste ) (CS1 ou CS2) - Garantie de performance : le temps de
      * restitution du fichier est inférieur à 1 minute - Garantie de stockage : le fichier est sauvegardé (2 copies
      * disponibles) - Disponibilité : le fichier est accessible 24 heures sur 24 et 7 jours sur 7 - Taille maximum du
@@ -198,6 +213,38 @@ public class STAFConfiguration {
     }
 
     public void setConvertInvalidCaracters(boolean pConvertInvalidCaracters) {
+        convertInvalidCaracters = pConvertInvalidCaracters;
+    }
+
+    public Long getMaxTarSize() {
+        return maxTarSize;
+    }
+
+    public void setMaxTarSize(Long pMaxTarSize) {
+        maxTarSize = pMaxTarSize;
+    }
+
+    public Long getTarSizeThreshold() {
+        return tarSizeThreshold;
+    }
+
+    public void setTarSizeThreshold(Long pTarSizeThreshold) {
+        tarSizeThreshold = pTarSizeThreshold;
+    }
+
+    public Long getMaxTarArchivingHours() {
+        return maxTarArchivingHours;
+    }
+
+    public void setMaxTarArchivingHours(Long pMaxTarArchivingHours) {
+        maxTarArchivingHours = pMaxTarArchivingHours;
+    }
+
+    public Boolean getConvertInvalidCaracters() {
+        return convertInvalidCaracters;
+    }
+
+    public void setConvertInvalidCaracters(Boolean pConvertInvalidCaracters) {
         convertInvalidCaracters = pConvertInvalidCaracters;
     }
 
