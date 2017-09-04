@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -35,6 +36,6 @@ public interface ISingleEntityServicePlugin extends IService {
      * Apply the current service for the given entity identifier.
      * @param pEntityId entity identifier
      */
-    ResponseEntity<?> applyOnEntity(String pEntityId, HttpServletResponse response);
+    ResponseEntity<InputStreamResource> applyOnEntity(String pEntityId, HttpServletResponse response);
 
 }

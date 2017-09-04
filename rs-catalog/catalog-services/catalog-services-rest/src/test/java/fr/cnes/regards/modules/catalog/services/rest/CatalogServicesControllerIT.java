@@ -29,10 +29,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
@@ -45,6 +48,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -267,6 +271,24 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters, expectations, "there should not be any error", samplePlgConf.getId());
+    }
+
+    /**
+     * If you find why it works...
+    */
+    @Override
+    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
+            final String pUrlTemplate, final Object... pUrlVars) {
+
+        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
+                                                                                            pUrlVars);
+        addSecurityHeader(requestBuilder, pAuthToken);
+
+        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
+        requestBuilder.header(HttpConstants.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+        requestBuilder.header(HttpConstants.ACCEPT, MediaType.TEXT_PLAIN_VALUE);
+
+        return requestBuilder;
     }
 
 }

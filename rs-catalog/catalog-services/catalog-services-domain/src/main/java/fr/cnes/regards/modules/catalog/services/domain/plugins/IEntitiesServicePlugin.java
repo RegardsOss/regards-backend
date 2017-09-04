@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.models.domain.EntityType;
@@ -41,13 +42,14 @@ public interface IEntitiesServicePlugin extends IService {
      * Apply the current service to the provided list of entities.
      * @param pEntitiesId Identifier of each entity
      */
-    ResponseEntity<?> applyOnEntities(List<String> pEntitiesId, HttpServletResponse response);
+    ResponseEntity<InputStreamResource> applyOnEntities(List<String> pEntitiesId, HttpServletResponse response);
 
     /**
      * Apply the current service with a given openSearch request and an entityType to apply on.
      * @param pOpenSearchQuery OpenSearch query
      * @param pEntityType Entity type
      */
-    ResponseEntity<?> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType, HttpServletResponse response);
+    ResponseEntity<InputStreamResource> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+            HttpServletResponse response);
 
 }

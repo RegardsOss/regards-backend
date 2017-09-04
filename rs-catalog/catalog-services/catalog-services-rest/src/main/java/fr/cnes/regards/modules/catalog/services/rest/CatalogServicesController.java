@@ -22,9 +22,13 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -54,12 +59,20 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 @RequestMapping(CatalogServicesController.PATH_SERVICES)
 public class CatalogServicesController {
 
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogServicesController.class);
+
     public static final String PATH_SERVICES = "/services";
 
     public static final String PATH_SERVICE_NAME = "/{pluginConfigurationId}/apply";
 
     @Autowired
     private IServiceManager serviceManager;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset.
@@ -74,10 +87,12 @@ public class CatalogServicesController {
      * @return the list of services
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information")
+    @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
             @RequestParam(value = "dataset_id", required = false) final String pDatasetId,
             @RequestParam(value = "service_scope", required = false) final ServiceScope pServiceScope) {
+        LOGGER.error("[XAB] We are on tenant " + runtimeTenantResolver.getTenant());
         final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
         return new ResponseEntity<>(HateoasUtils.wrapList(services), HttpStatus.OK);
     }
@@ -90,9 +105,10 @@ public class CatalogServicesController {
      * @return whatever is returned by the given service
      * @throws ModuleException
      */
-    @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME)
+    @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> applyService(@PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
+    public ResponseEntity<InputStreamResource> applyService(
+            @PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
             @RequestBody ServicePluginParameters pServiceParameters, HttpServletResponse response)
             throws ModuleException {
         return serviceManager.apply(pPluginConfigurationId, pServiceParameters, response);

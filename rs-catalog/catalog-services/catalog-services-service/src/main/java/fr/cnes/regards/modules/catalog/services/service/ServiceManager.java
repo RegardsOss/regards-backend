@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -98,6 +100,9 @@ public class ServiceManager implements IServiceManager {
 
     @Override
     public List<PluginConfigurationDto> retrieveServices(String pDatasetId, final ServiceScope pServiceScope) {
+        if (pDatasetId == null) {
+            return new ArrayList<>();
+        }
         final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
         final Set<PluginConfiguration> services = datasetPlugins.getServices();
 
@@ -108,7 +113,7 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public ResponseEntity<?> apply(final Long pPluginConfigurationId,
+    public ResponseEntity<InputStreamResource> apply(final Long pPluginConfigurationId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException {
         final PluginConfiguration conf = pluginService.getPluginConfiguration(pPluginConfigurationId);

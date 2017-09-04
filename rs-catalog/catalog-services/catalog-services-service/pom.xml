@@ -21,7 +21,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>catalog-services-domain</artifactId>
+			<artifactId>catalog-services-plugin</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -71,11 +71,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>catalog-services-plugin</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

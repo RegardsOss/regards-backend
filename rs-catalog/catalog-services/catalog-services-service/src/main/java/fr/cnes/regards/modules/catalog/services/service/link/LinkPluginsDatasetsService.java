@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.catalog.services.service.link;
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
@@ -120,6 +121,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
     @Override
     public LinkPluginsDatasets retrieveLink(final String pDatasetId) {
+        Assert.notNull(pDatasetId);
         final LinkPluginsDatasets linkPluginsDatasets = linkRepo.findOneByDatasetId(pDatasetId);
         if (linkPluginsDatasets == null) {
             return createLink(pDatasetId);
@@ -161,10 +163,11 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
     /**
      * Create a new link in db with given data id
      *
-     * @param pDatasetId the value of the dataset id to init the link with
+     * @param pDatasetId the value of the dataset id to init the link with. Must not be null
      * @return the created link
      */
     private LinkPluginsDatasets createLink(final String pDatasetId) {
+        Assert.notNull(pDatasetId);
         LinkPluginsDatasets newLink = linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
         publisher.publish(new LinkPluginsDatasetsEvent(newLink));
         return newLink;

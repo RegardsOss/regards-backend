@@ -31,7 +31,14 @@ import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 @Event(target = Target.ALL)
 public class LinkPluginsDatasetsEvent implements ISubscribable {
 
-    private final LinkPluginsDatasets linkPluginsDatasets;
+    private LinkPluginsDatasets linkPluginsDatasets;
+
+    /**
+     * Default constructor required by Jackson
+     */
+    public LinkPluginsDatasetsEvent() {
+        super();
+    }
 
     /**
      * @param pLinkPluginsDatasets

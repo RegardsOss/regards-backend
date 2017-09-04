@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.plugins;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +30,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -94,7 +97,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     }
 
     @Override
-    public ResponseEntity<?> applyOnEntities(List<String> pEntitiesId, HttpServletResponse response) {
+    public ResponseEntity<InputStreamResource> applyOnEntities(List<String> pEntitiesId, HttpServletResponse response) {
         if ((pEntitiesId == null) || pEntitiesId.isEmpty()) {
             return apply("no entities", response);
         }
@@ -102,13 +105,13 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     }
 
     @Override
-    public ResponseEntity<?> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+    public ResponseEntity<InputStreamResource> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
             HttpServletResponse response) {
         return apply(pOpenSearchQuery, response);
     }
 
     @Override
-    public ResponseEntity<?> applyOnEntity(String pEntityId, HttpServletResponse response) {
+    public ResponseEntity<InputStreamResource> applyOnEntity(String pEntityId, HttpServletResponse response) {
         return apply(pEntityId, response);
     }
 
@@ -119,20 +122,27 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      * @param response HttpResponse
      * @return {@link ResponseEntity}
      */
-    private ResponseEntity<?> apply(String pResultValue, HttpServletResponse response) {
+    private ResponseEntity<InputStreamResource> apply(String pResultValue, HttpServletResponse response) {
         ResponseObject resp = new ResponseObject(pResultValue);
+
+        GsonBuilder builder = new GsonBuilder();
+
+        InputStreamResource respin = new InputStreamResource(
+                new ByteArrayInputStream(builder.create().toJson(resp).getBytes()));
         HttpHeaders headers = new HttpHeaders();
         switch (responseType) {
             case RESPONSE_TYPE_JSON:
                 // Simulate return of a JSON Object
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                return new ResponseEntity<>(resp, headers, HttpStatus.OK);
+                return new ResponseEntity<>(respin, headers, HttpStatus.OK);
             case RESPONSE_TYPE_XML:
                 // Simulate return of a XML Object
                 headers.setContentType(MediaType.APPLICATION_XML);
                 response.setContentType(MediaType.APPLICATION_XML_VALUE);
-                return new ResponseEntity<>(resp, headers, HttpStatus.OK);
+                String xmlString = String.format("<id>%s</id>", pResultValue);
+                return new ResponseEntity<>(new InputStreamResource(new ByteArrayInputStream(xmlString.getBytes())),
+                        headers, HttpStatus.OK);
             case RESPONSE_TYPE_IMG:
                 // Simulate return of an image through the image format
                 return retrieveImage(response);
@@ -150,7 +160,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      * @param response {@link HttpServletResponse}
      * @return {@link ResponseEntity}
      */
-    private ResponseEntity<?> retrieveImage(HttpServletResponse response) {
+    private ResponseEntity<InputStreamResource> retrieveImage(HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
         InputStreamResource resource = new InputStreamResource(
                 this.getClass().getClassLoader().getResourceAsStream("LogoCnes.png"));
@@ -164,7 +174,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      * @param response {@link HttpServletResponse}
      * @return {@link ResponseEntity}
      */
-    private ResponseEntity<?> retrieveOther(HttpServletResponse response) {
+    private ResponseEntity<InputStreamResource> retrieveOther(HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
         InputStreamResource resource = new InputStreamResource(
                 this.getClass().getClassLoader().getResourceAsStream("result.other"));

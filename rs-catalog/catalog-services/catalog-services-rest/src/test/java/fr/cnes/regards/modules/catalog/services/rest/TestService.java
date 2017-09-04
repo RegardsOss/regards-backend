@@ -18,13 +18,19 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.Set;
+import java.io.ByteArrayInputStream;
+import java.util.LinkedHashSet;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.assertj.core.util.Sets;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -50,14 +56,30 @@ public class TestService implements IService {
     private String para;
 
     @Override
-    public ResponseEntity<?> apply(ServicePluginParameters pParameters, HttpServletResponse pResponse) {
+    public ResponseEntity<InputStreamResource> apply(ServicePluginParameters pParameters,
+            HttpServletResponse pResponse) {
+
+        LinkedHashSet<DataObject> responseList;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        pResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
         if (!para.equals(EXPECTED_VALUE)) {
-            return new ResponseEntity<Set<DataObject>>(Sets.newHashSet(), HttpStatus.OK);
+            responseList = Sets.newLinkedHashSet();
+        } else {
+            Model model = Model.build("pName", "pDescription", EntityType.DATA);
+            DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
+            DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
+            responseList = Sets.newLinkedHashSet(do1, do2);
         }
-        Model model = Model.build("pName", "pDescription", EntityType.DATA);
-        DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
-        DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
-        return new ResponseEntity<Set<DataObject>>(Sets.newLinkedHashSet(do1, do2), HttpStatus.OK);
+
+        // Format to json format
+        GsonBuilder builder = new GsonBuilder();
+
+        InputStreamResource response = new InputStreamResource(
+                new ByteArrayInputStream(builder.create().toJson(responseList).getBytes()));
+
+        return new ResponseEntity<>(response, headers, HttpStatus.OK);
     }
 
 }
