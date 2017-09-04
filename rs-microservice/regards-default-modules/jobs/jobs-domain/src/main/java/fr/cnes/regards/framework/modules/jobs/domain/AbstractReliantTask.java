@@ -72,4 +72,26 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
     public void setReliantTasks(Set<K> reliantTasks) {
         this.reliantTasks = reliantTasks;
     }
+
+    /**
+     * No Business key ! Id is the only parameter to check equality between reliant tasks
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        AbstractReliantTask<?> that = (AbstractReliantTask<?>) o;
+
+        return id != null ? id.equals(that.id) : that.id == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }
