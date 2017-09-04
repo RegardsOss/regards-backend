@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -26,5 +27,5 @@ public interface IAllocationStrategy {
 
     IDataStorage getStorage(EntityType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
 
-    Multimap<PluginConfiguration, DataFile> dispatch(Set<DataFile> dataFilesToHandle);
+    Multimap<PluginConfiguration, DataFile> dispatch(Collection<DataFile> dataFilesToHandle);
 }

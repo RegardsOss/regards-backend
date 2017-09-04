@@ -34,6 +34,8 @@ public class DataFile {
     @Column(length = AIPDataBase.CHECKSUM_MAX_LENGTH, nullable = false)
     private String checksum;
 
+
+
     @Column(nullable = false)
     private String algorithm;
 
@@ -42,7 +44,7 @@ public class DataFile {
     private DataType type;
 
     @Column
-    private Double fileSize;
+    private Long fileSize;
 
     @Column
     private DataFileState state;
@@ -63,15 +65,11 @@ public class DataFile {
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
     private AIPDataBase aipDataBase;
 
-    public DataFile(URL urlToMetadata, String algorithm, DataType aip, String checksum, long fileSize,
-            MimeType mimeType) {
-    }
-
-    public DataFile(DataObject file, String algorithm, String checksum, Double fileSize, MimeType mimeType, AIP aip) {
+    public DataFile(DataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
         this(file.getUrl(), checksum, algorithm, file.getType(), fileSize, mimeType, aip);
     }
 
-    public DataFile(URL originUrl, String checksum, String algorithm, DataType type, Double fileSize, MimeType mimeType,
+    public DataFile(URL originUrl, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
             AIP aip) {
         this.originUrl = originUrl;
         this.checksum = checksum;
@@ -122,11 +120,11 @@ public class DataFile {
         this.type = type;
     }
 
-    public Double getFileSize() {
+    public Long getFileSize() {
         return fileSize;
     }
 
-    public void setFileSize(Double fileSize) {
+    public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
     }
 
@@ -178,7 +176,7 @@ public class DataFile {
                     .valueOf(io.getContentInformation().getRepresentationInformation().getSyntax().getMimeType());
             String algorithm = io.getPdi().getFixityInformation().getAlgorithm();
             String checksum = io.getPdi().getFixityInformation().getChecksum();
-            Double fileSize = io.getPdi().getFixityInformation().getFileSize();
+            Long fileSize = io.getPdi().getFixityInformation().getFileSize();
             dataFiles.add(new DataFile(file, algorithm, checksum, fileSize, mimeType, aip));
         }
         return dataFiles;

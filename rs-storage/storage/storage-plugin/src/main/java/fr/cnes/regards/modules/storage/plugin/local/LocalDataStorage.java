@@ -3,18 +3,15 @@
  */
 package fr.cnes.regards.modules.storage.plugin.local;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -23,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.file.utils.ChecksumUtils;
 import fr.cnes.regards.framework.file.utils.DownloadUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -41,8 +37,6 @@ import fr.cnes.regards.modules.storage.plugin.ProgressManager;
         id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
-
-    private static final Charset STORAGE_ENCODING = StandardCharsets.UTF_8;
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorage.class);
 
@@ -69,48 +63,38 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     @Override
     public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, ProgressManager progressManager) {
-        workingSubset.getDataFiles().parallelStream().forEach(data->doStore(progressManager, data, replaceMode));
+        workingSubset.getDataFiles().parallelStream().forEach(data -> doStore(progressManager, data, replaceMode));
     }
 
     private void doStore(ProgressManager progressManager, DataFile data, Boolean replaceMode) {
         String fullPathToFile;
         try {
             fullPathToFile = getStorageLocation(data);
-            //check if file is already at the right place or not. Unless we are instructed not to(for updates for example
-            if(!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getOriginUrl().getPath()))){
-                //if it is, there is nothing to do
+            //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
+            if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getOriginUrl().getPath()))) {
+                //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
                 progressManager.storageSucceed(data, data.getOriginUrl());
                 return;
             }
         } catch (IOException ioe) {
-            String failureCause=String.format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(), ioe.getMessage());
+            String failureCause = String
+                    .format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(),
+                            ioe.getMessage());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, failureCause);
             return;
         }
         try {
-            BufferedWriter writer = Files
-                    .newBufferedWriter(Paths.get(fullPathToFile), STORAGE_ENCODING, StandardOpenOption.CREATE);
-            InputStream sourceStream = DownloadUtils.download(data.getOriginUrl());
-            int read;
-            while ((read = sourceStream.read()) != -1) {
-                writer.write(read);
+            boolean downloadOk = DownloadUtils
+                    .downloadAndCheckChecksum(data.getOriginUrl(), Paths.get(fullPathToFile), data.getAlgorithm(), data.getChecksum());
+                if (!downloadOk) {
+                String failureCause = String
+                        .format("Storage of DataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                                data.getChecksum(), fullPathToFile);
+                Files.deleteIfExists(Paths.get(fullPathToFile));
+                progressManager.storageFailed(data, failureCause);
             }
-            writer.flush();
-            writer.close();
-            // Now that it is stored, lets checked that it is correctly stored!
-            try (InputStream is = Files.newInputStream(Paths.get(fullPathToFile));
-                    DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"))) {
-                while (dis.read() != -1) {
-                }
-                String fileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
-                if (!fileChecksum.equals(data.getChecksum())) {
-                    String failureCause = String.format("Storage of DataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
-                                                        data.getChecksum(), fullPathToFile);
-                    Files.deleteIfExists(Paths.get(fullPathToFile));
-                    progressManager.storageFailed(data, failureCause);
-                }
-            }
+
             progressManager.storageSucceed(data, new URL("file", "", fullPathToFile));
         } catch (NoSuchAlgorithmException e) {
             RuntimeException re = new RuntimeException(e);
@@ -119,7 +103,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                     re);
             throw re;
         } catch (IOException ioe) {
-            String failureCause=String.format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(), ioe.getMessage());
+            String failureCause = String
+                    .format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(),
+                            ioe.getMessage());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, failureCause);
@@ -127,23 +113,24 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     private String getStorageLocation(DataFile data) throws IOException {
-        String checksum=data.getChecksum();
+        String checksum = data.getChecksum();
         String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
         Files.createDirectory(Paths.get(storageLocation));
         // files are stored with the checksum as their name and their extension is based on their MIMEType
-        String fullPathToFile =
-                storageLocation + "/" + checksum + "." + data.getMimeType().getSubtype().toLowerCase();
+        String fullPathToFile = storageLocation + "/" + checksum + "." + data.getMimeType().getSubtype().toLowerCase();
         return fullPathToFile;
     }
 
     @Override
-    public void delete(LocalWorkingSubset workingSubset, ProgressManager progressManager){
-        for(DataFile data : workingSubset.getDataFiles()) {
+    public void delete(Set<DataFile> dataFiles, ProgressManager progressManager) {
+        for (DataFile data : dataFiles) {
             try {
                 Files.deleteIfExists(Paths.get(getStorageLocation(data)));
                 progressManager.deletionSucceed(data);
             } catch (IOException ioe) {
-                String failureCause=String.format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(), ioe.getMessage());
+                String failureCause = String
+                        .format("Storage of DataFile(%s) failed due to the following IOException: %s",
+                                data.getChecksum(), ioe.getMessage());
                 LOG.error(failureCause, ioe);
                 progressManager.deletionFailed(data, failureCause);
             }

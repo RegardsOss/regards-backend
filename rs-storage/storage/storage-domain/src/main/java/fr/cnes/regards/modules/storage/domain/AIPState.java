@@ -29,8 +29,7 @@ public enum AIPState {
     /**
      * Data or metadata storage has encountered a problem
      */
-    STORAGE_ERROR,
-    /**
+    STORAGE_ERROR, UPDATED, /**
      * AIP has been logically deleted
      */
     DELETED
