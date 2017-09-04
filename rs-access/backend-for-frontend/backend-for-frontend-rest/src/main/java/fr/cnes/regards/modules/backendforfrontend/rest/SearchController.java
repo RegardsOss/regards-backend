@@ -317,21 +317,17 @@ public class SearchController {
      * @return The list of applicable services, represented as a {@link JsonObject}
      */
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
-        String tenant = runtimeTenantResolver.getTenant();
-
         // @formatter:off
-        List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray())
-            .map(JsonElement::getAsString)
-            .map(UniformResourceName::fromString)
-            .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
-            .map(UniformResourceName::toString)
-            .distinct()
-            .peek(unused -> runtimeTenantResolver.forceTenant(tenant)) // We are on a parallel stream so we need to inject the tenant
+        List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
+            .map(JsonElement::getAsString) // Convert elements of the stream to strings
+            .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
+            .filter(urn -> EntityType.DATASET.equals(urn.getEntityType())) // Only keep URNs of datasets
+            .map(UniformResourceName::toString) // Go back to strings
+            .distinct() // Remove doubles
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
-            .peek(unused -> runtimeTenantResolver.clearTenant())
             .map(ResponseEntity::getBody)
-            .flatMap(List::stream)
-            .distinct()
+            .flatMap(List::stream) // Now each element of the stream is a List of services, so we flatten the structure in a stream of services
+            .distinct() // Remove doubles
             .collect(Collectors.toList());
         // @formatter:on
 
