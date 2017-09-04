@@ -30,6 +30,10 @@
     		<artifactId>commons-lang</artifactId>
     		<version>2.6</version>
 		</dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <!-- TEST dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

@@ -1,18 +1,19 @@
 package fr.cnes.regards.framework.file.utils;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import com.google.common.io.ByteStreams;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -29,29 +30,64 @@ public class DownloadUtils {
         return getInputStreamThroughProxy(source, Proxy.NO_PROXY);
     }
 
-    public static String download(URL source, Path destination, Charset encoding, String checksumAlgorithm)
+    /**
+     * works as {@link DownloadUtils#downloadThroughProxy} without proxy.
+     */
+    public static String download(URL source, Path destination, String checksumAlgorithm)
             throws IOException, NoSuchAlgorithmException {
-        return downloadThroughProxy(source, destination, encoding, checksumAlgorithm, Proxy.NO_PROXY);
+        return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY);
     }
 
-    public static String downloadThroughProxy(URL source, Path destination, Charset encoding, String checksumAlgorithm, Proxy proxy)
-            throws IOException, NoSuchAlgorithmException {
-        BufferedWriter writer = Files
-                .newBufferedWriter(destination, encoding, StandardOpenOption.CREATE);
+    /**
+     *
+     * Download from the source and write it onto the file system at the destination provided.
+     * Use the provided checksumAlgorithm to calculate the checksum at the end for further verification
+     *
+     * @param source
+     * @param destination
+     * @param checksumAlgorithm
+     * @param proxy
+     * @return checksum, computed using the provided algorithm, of the file created at destination
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    public static String downloadThroughProxy(URL source, Path destination, String checksumAlgorithm, Proxy proxy)
+            throws NoSuchAlgorithmException, IOException {
+        OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
         InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy);
-        int read;
-        while ((read = sourceStream.read()) != -1) {
-            writer.write(read);
-        }
-        writer.flush();
-        writer.close();
-        // Now that it is stored, lets checked that it is correctly stored!
-        InputStream is = Files.newInputStream(destination);
-        DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance(checksumAlgorithm));
-        while (dis.read() != -1) {
-        }
+        // lets compute the checksum during the copy!
+        DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm));
+        ByteStreams.copy(dis, os);
+        os.close();
         dis.close();
         return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
+    }
+
+    /**
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy)} with {@link Proxy#NO_PROXY} as proxy
+     */
+    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
+            String expectedChecksum) throws IOException, NoSuchAlgorithmException {
+        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY);
+    }
+
+    /**
+     * Download a source to the provided destination using the provided proxy.
+     * Checks if the checksum computed thanks to checksumAlgorithm match to the expected checksum
+     *
+     * @param source
+     * @param destination
+     * @param checksumAlgorithm
+     * @param expectedChecksum
+     * @param proxy
+     * @return checksum.equals(expectedChecksum)
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
+            String expectedChecksum, Proxy proxy) throws IOException, NoSuchAlgorithmException {
+        String checksum = downloadThroughProxy(source, destination, checksumAlgorithm, proxy);
+        return checksum.equals(expectedChecksum);
     }
 
     /**

@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -27,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  * Unit testing of {@link PluginService}.
- *
  * @author Christophe Mertz
  */
 public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtility {
@@ -61,7 +60,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver);
+                                                runtimeTenantResolver);
     }
 
     /**
@@ -140,10 +139,10 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 if (!p.isDynamic()) {
                     parameters.remove(p);
                     p.setIsDynamic(true);
-                    p.setDynamicsValues(Arrays.asList(new PluginDynamicValue("one"), new PluginDynamicValue("two"),
-                                                      new PluginDynamicValue("three"), new PluginDynamicValue("for"),
-                                                      new PluginDynamicValue("five"), new PluginDynamicValue("six")));
-                    p.setValue(p.getDynamicsValues().get(0).getValue());
+                    p.setDynamicsValues(Sets.newHashSet(new PluginDynamicValue("one"), new PluginDynamicValue("two"),
+                                                        new PluginDynamicValue("three"), new PluginDynamicValue("for"),
+                                                        new PluginDynamicValue("five"), new PluginDynamicValue("six")));
+                    p.setValue(p.getDynamicsValues().iterator().next().getValue());
                     parameters.add(p);
                     break;
                 }
