@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.access.services.client;
 
 import java.util.List;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +38,7 @@ public interface IServiceAggregatorClient {
      * @return the list of services configured for the given dataset and the given scope
      * @throws EntityNotFoundException
      */
-    @Cacheable(value = "servicesAggregated")
+    //    @Cacheable(value = "servicesAggregated", sync = true)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
