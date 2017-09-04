@@ -317,6 +317,8 @@ public class SearchController {
      * @return The list of applicable services, represented as a {@link JsonObject}
      */
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
+        String tenant = runtimeTenantResolver.getTenant();
+
         // @formatter:off
         List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray())
             .map(JsonElement::getAsString)
@@ -324,11 +326,14 @@ public class SearchController {
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
             .map(UniformResourceName::toString)
             .distinct()
+            .peek(unused -> runtimeTenantResolver.forceTenant(tenant))
 //            .peek(unused -> FeignSecurityManager.asSystem()) // Enable system call
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
 //            .peek(unused -> FeignSecurityManager.reset()) // Disable system call
+            .peek(unused -> runtimeTenantResolver.clearTenant())
             .map(ResponseEntity::getBody)
             .flatMap(List::stream)
+            .distinct()
             .collect(Collectors.toList());
         // @formatter:on
 
