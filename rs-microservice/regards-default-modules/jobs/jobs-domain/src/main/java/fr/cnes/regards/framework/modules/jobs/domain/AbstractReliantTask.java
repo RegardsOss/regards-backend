@@ -73,6 +73,10 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
         this.reliantTasks = reliantTasks;
     }
 
+    public void addReliantTask(K reliantTask) {
+        this.reliantTasks.add(reliantTask);
+    }
+
     /**
      * No Business key ! Id is the only parameter to check equality between reliant tasks
      */
