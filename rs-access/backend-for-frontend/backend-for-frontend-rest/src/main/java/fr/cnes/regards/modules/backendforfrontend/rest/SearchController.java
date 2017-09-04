@@ -40,7 +40,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -78,7 +77,7 @@ public class SearchController {
      * Function converting a {@link JsonArray} into a parallel {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
-            .stream(pJsonArray.spliterator(), true);
+            .stream(pJsonArray.spliterator(), false);
 
     @Autowired
     private IServiceAggregatorClient serviceAggregatorClient;
@@ -325,9 +324,9 @@ public class SearchController {
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
             .map(UniformResourceName::toString)
             .distinct()
-            .peek(unused -> FeignSecurityManager.asSystem()) // Enable system call
+//            .peek(unused -> FeignSecurityManager.asSystem()) // Enable system call
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
-            .peek(unused -> FeignSecurityManager.reset()) // Disable system call
+//            .peek(unused -> FeignSecurityManager.reset()) // Disable system call
             .map(ResponseEntity::getBody)
             .flatMap(List::stream)
             .collect(Collectors.toList());
