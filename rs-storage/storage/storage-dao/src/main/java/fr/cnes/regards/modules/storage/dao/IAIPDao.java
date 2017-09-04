@@ -35,4 +35,6 @@ public interface IAIPDao {
             OffsetDateTime lastEventBefore, Pageable pageable);
 
     Set<AIP> findAllByStateService(AIPState state);
+
+    AIP findOneByIpId(String ipId);
 }

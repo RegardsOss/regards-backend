@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.Set;
 
 import fr.cnes.regards.framework.urn.DataType;
@@ -28,5 +29,10 @@ public class DataFileDao implements IDataFileDao {
     @Override
     public DataFile findByAipAndType(AIP aip, DataType dataType) {
         return repository.findByAipDataBaseAndType(new AIPDataBase(aip), dataType);
+    }
+
+    @Override
+    public Collection<DataFile> save(Collection<DataFile> dataFiles) {
+        return repository.save(dataFiles);
     }
 }

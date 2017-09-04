@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
@@ -63,6 +62,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
+import fr.cnes.regards.modules.storage.domain.InformationObject;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPValid;
@@ -86,17 +86,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPService.class);
 
-    private static final String OLD_ONES = "old_ones";
-
-    private static final String TO_STORE = "to_store";
-
     private final IAIPDao dao;
 
     private final IPublisher publisher;
 
     private final ISubscriber subscriber;
-
-    private final DataStorageManager storageManager;
 
     private final PluginService pluginService;
 
@@ -112,15 +106,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     private String workspace;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public AIPService(IAIPDao dao, IPublisher publisher, DataStorageManager storageManager, PluginService pluginService,
-            ISubscriber subscriber, IJobInfoService jobInfoService, ITenantResolver tenantResolver,
-            IRuntimeTenantResolver runtimeTenantResolver, Gson gson, IDataFileDao dataFileDao) {
+    public AIPService(IAIPDao dao, IPublisher publisher, PluginService pluginService, ISubscriber subscriber,
+            IJobInfoService jobInfoService, ITenantResolver tenantResolver,
+            IRuntimeTenantResolver runtimeTenantResolver, Gson gson, IDataFileDao dataFileDao,
+            @Value("${regards.storage.workspace}") String workspace) {
         this.dao = dao;
         this.publisher = publisher;
-        this.storageManager = storageManager;
         this.pluginService = pluginService;
         this.subscriber = subscriber;
         this.jobInfoService = jobInfoService;
@@ -128,6 +119,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.gson = gson;
         this.dataFileDao = dataFileDao;
+        this.workspace = workspace;
     }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -138,45 +130,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     private class DataStorageEventHandler implements IHandler<DataStorageEvent> {
 
-        //        @Override
-        //        public void handle(TenantWrapper<JobEvent> wrapper) {
-        //            String tenant = wrapper.getTenant();
-        //            JobEvent event = wrapper.getContent();
-        //            JobEventType type = event.getJobEventType();
-        //
-        //            runtimeTenantResolver.forceTenant(tenant);
-        //            JobInfo jobInfo = jobInfoService.retrieveJob(event.getJobId());
-        //            IWorkingSubset workingSubset = jobInfo.getParameters().stream()
-        //                    .filter(jobParameter -> jobParameter.getName()
-        //                            .equals(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME)).findFirst().get()
-        //                    .getValue();
-        //            switch (type) {
-        //                case ABORTED:
-        //                case FAILED:
-        //                    // in case of error or abortion, data storage state is ERROR and so is its aip state
-        //                    for (DataFile data : workingSubset.getDataFiles()) {
-        //                        data.setState(DataFileState.ERROR);
-        //                        dataFileDao.save(data);
-        //                        data.getAip().setState(AIPState.STORAGE_ERROR);
-        //                        dao.save(data.getAip());
-        //                    }
-        //                    break;
-        //                case RUNNING:
-        //                    break;
-        //                case SUCCEEDED:
-        //                    // in case of success, the data storage state is STORED
-        //                    for (DataFile data : workingSubset.getDataFiles()) {
-        //                        data.setState(DataFileState.STORED);
-        //                        dataFileDao.save(data);
-        //                    }
-        //                    break;
-        //            }
-        //            runtimeTenantResolver.clearTenant();
-        //        }
-
         @Override
         public void handle(TenantWrapper<DataStorageEvent> wrapper) {
             String tenant = wrapper.getTenant();
+            runtimeTenantResolver.forceTenant(tenant);
             DataStorageEvent event = wrapper.getContent();
             DataFile data = event.getDataFile();
             StorageAction action = event.getStorageAction();
@@ -191,6 +148,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 default:
                     break;
             }
+            runtimeTenantResolver.clearTenant();
         }
 
         private void handleDeletionAction(StorageEventType type, DataFile data) {
@@ -210,15 +168,34 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         private void handleStoreAction(StorageEventType type, DataFile data) {
             switch (type) {
                 case SUCCESSFUL:
-                    //update data status
+                    // update data status
                     data.setState(DataFileState.STORED);
                     dataFileDao.save(data);
-                    //update AIP metadata
+                    if (data.getType() == DataType.AIP) {
+                        // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
+                        // if we just stored the AIP, there is nothing to do but changing AIP state
+                        data.getAip().setState(AIPState.STORED);
+                        dao.save(data.getAip());
+                    } else {
+                        // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
+                        // just let set the new information about this DataFile
+                        AIP aip = dao.findOneByIpId(data.getAip().getIpId());
+                        InformationObject io = aip.getInformationObjects().stream()
+                                .filter(informationObject -> informationObject.getPdi().getFixityInformation()
+                                        .getChecksum().equals(data.getChecksum())).findFirst().get();
+                        io.getPdi().getFixityInformation().setFileSize(data.getFileSize());
+                        io.getContentInformation().getDataObject().setUrl(data.getOriginUrl());
+                        dao.save(aip);
+                    }
                     break;
                 case FAILED:
                     //update data status
                     data.setState(DataFileState.ERROR);
                     dataFileDao.save(data);
+                    AIP aip = data.getAip();
+                    aip = dao.findOneByIpId(aip.getIpId());
+                    aip.setState(AIPState.STORAGE_ERROR);
+                    dao.save(aip);
                     break;
             }
         }
@@ -233,22 +210,34 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Override
     public Set<UUID> create(Set<AIP> aips) throws ModuleException {
         // save into DB as valid
-        //TODO: check with rs-ingest if ipIds are already set or not
+        // TODO: check with rs-ingest if ipIds are already set or not
         Set<AIP> aipsInDb = Sets.newHashSet();
+        Set<DataFile> dataFilesToStore = Sets.newHashSet();
         for (AIP aip : aips) {
             aip.setState(AIPState.VALID);
             aipsInDb.add(dao.save(aip));
-            //TODO: create dataFiles too
+            dataFilesToStore.addAll(dataFileDao.save(DataFile.extractDataFiles(aip)));
             // Publish AIP_VALID
             publisher.publish(new AIPValid(aip));
         }
         IAllocationStrategy allocationStrategy = getAllocationStrategy(); //FIXME: should probably set the tenant into maintenance in case of module exception
-        // now lets ask to the strategy to dispatch dataFiles between possible DataStorages
-        Set<DataFile> dataFilesToHandle = Sets.newHashSet();
-        aipsInDb.forEach(aip -> dataFilesToHandle.addAll(DataFile.extractDataFiles(aip)));
-        Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToHandle);
-        // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
 
+        // now lets ask to the strategy to dispatch dataFiles between possible DataStorages
+        Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
+        // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
+        Set<DataFile> dataFilesInSubSet = storageWorkingSetMap.entries().stream().map(entry -> entry.getValue())
+                .collect(Collectors.toSet());
+        if (dataFilesToStore.size() != dataFilesInSubSet.size()) {
+            Set<DataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToStore);
+            notSubSetDataFiles.removeAll(dataFilesInSubSet);
+            for (DataFile prepareFailed : notSubSetDataFiles) {
+                prepareFailed.setState(DataFileState.ERROR);
+                prepareFailed.getAip().setState(AIPState.STORAGE_ERROR);
+                dataFileDao.save(prepareFailed);
+                dao.save(prepareFailed.getAip());
+                //TODO: notify
+            }
+        }
         Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
         // change the state to PENDING
         for (AIP aip : aipsInDb) {
@@ -329,6 +318,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Collection<DataFile> dataFilesToSubSet = storageWorkingSetMap.get(dataStorageConf);
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet);
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
+        checkPrepareResult(dataFilesToSubSet, workingSubSets);
+        return workingSubSets;
+    }
+
+    private void checkPrepareResult(Collection<DataFile> dataFilesToSubSet, Set<IWorkingSubset> workingSubSets) {
         Set<DataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
                 .collect(Collectors.toSet());
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
@@ -336,17 +330,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             notSubSetDataFiles.removeAll(subSetDataFiles);
             for (DataFile prepareFailed : notSubSetDataFiles) {
                 prepareFailed.setState(DataFileState.ERROR);
+                prepareFailed.getAip().setState(AIPState.STORAGE_ERROR);
                 dataFileDao.save(prepareFailed);
+                dao.save(prepareFailed.getAip());
+                //TODO: notify
             }
         }
-        return workingSubSets;
     }
 
-    /**
-     *
-     * @return
-     * @throws ModuleException
-     */
     public IAllocationStrategy getAllocationStrategy() throws ModuleException {
         // Lets retrieve active configurations of IAllocationStrategy
         List<PluginConfiguration> allocationStrategies = pluginService
@@ -367,10 +358,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         try {
             IAllocationStrategy allocationStrategy = getAllocationStrategy();
 
-            // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
+            // we need to listen to those jobs event to clean up the workspace
             Set<UUID> jobsToMonitor = scheduleStorage(allocationStrategy.dispatch(metadataToStore), false);
             //TODO: save those jobs uuid somewhere
-            //to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
+            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
             for (DataFile dataFile : metadataToStore) {
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
@@ -453,7 +444,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (AIP aip : notFullyStored) {
             Set<DataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             if (storedDataFile.containsAll(DataFile.extractDataFiles(aip))) {
-                // that means all DataFile of this AIP has been stored, lets prepare the metadata storage
+                // that means all DataFile of this AIP has been stored, lets prepare the metadata storage,
                 // first we need to write the metadata into a file
                 DataFile meta = writeMetaToWorkspace(aip, tenantWorkspace);
                 if (meta != null) {
@@ -588,6 +579,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * Waiting one minute in the worst case to eventually store the aip metadata seems acceptable and it might allow us to treat multiple aip metadata
      */
     @Scheduled(fixedDelay = 60000)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void storeMetadata() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
@@ -611,7 +603,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     /**
      * Scheduled to be executed every 24H
      */
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24)
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void updateAlreadyStoredMetadata() {
         // Then lets get AIP that should be restored after an update
         for (String tenant : tenantResolver.getAllActiveTenants()) {

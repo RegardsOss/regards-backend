@@ -34,8 +34,6 @@ public class DataFile {
     @Column(length = AIPDataBase.CHECKSUM_MAX_LENGTH, nullable = false)
     private String checksum;
 
-
-
     @Column(nullable = false)
     private String algorithm;
 

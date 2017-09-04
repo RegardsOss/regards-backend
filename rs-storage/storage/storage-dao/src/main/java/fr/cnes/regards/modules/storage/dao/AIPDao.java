@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -96,6 +97,11 @@ public class AIPDao implements IAIPDao {
     @Override
     public Set<AIP> findAllByStateService(AIPState state) {
         return repo.findAllByState(state).stream().map(this::reconstructAip).collect(Collectors.toSet());
+    }
+
+    @Override
+    public AIP findOneByIpId(String ipId) {
+        return reconstructAip(repo.findOneByIpId(ipId));
     }
 
 }

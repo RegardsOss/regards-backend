@@ -5,7 +5,32 @@ package fr.cnes.regards.modules.storage.domain;
 
 /**
  * Represent the state of an AIP.
- *
+ * State transition from top to bottom unless indicated otherwise.
+ * <pre>
+ *              VALID
+ *                |
+ *             PENDING
+ *             /     \
+ *            /       \
+ *           /         \
+ *          /           \
+ * STORAGE_ERROR -> STORING_METADATA
+ *        |                 |     |^
+ *        |                 |     |
+ *        |                 |  UPDATED
+ *        |                 |  /^
+ *        |              STORED
+ *        |              /
+ *        |             /
+ *        |            /
+ *        |           /
+ *        |          /
+ *        |         /
+ *        |        /
+ *        |       /
+ *        |      /
+ *        DELETED
+ * </pre>
  * @author Sylvain Vissiere-Guerinet
  *
  */
