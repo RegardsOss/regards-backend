@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +43,7 @@ import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
@@ -65,6 +68,11 @@ import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
         documentation = "http://test")
 @RequestMapping(path = SearchController.ROOT_PATH)
 public class SearchController {
+
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
 
     /**
      * Function converting a {@link JsonArray} into a parallel {@link Stream}
@@ -98,6 +106,9 @@ public class SearchController {
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * The main path
@@ -228,6 +239,7 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
+        LOGGER.error("[XAB] We are on tenant " + runtimeTenantResolver.getTenant());
         ResponseEntity<JsonObject> entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets);
         injectApplicableServices(entities);
         return entities;
