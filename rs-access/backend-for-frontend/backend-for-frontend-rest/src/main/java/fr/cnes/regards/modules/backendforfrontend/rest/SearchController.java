@@ -77,7 +77,7 @@ public class SearchController {
      * Function converting a {@link JsonArray} into a parallel {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
-            .stream(pJsonArray.spliterator(), false);
+            .stream(pJsonArray.spliterator(), true);
 
     @Autowired
     private IServiceAggregatorClient serviceAggregatorClient;
@@ -326,10 +326,8 @@ public class SearchController {
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
             .map(UniformResourceName::toString)
             .distinct()
-            .peek(unused -> runtimeTenantResolver.forceTenant(tenant))
-//            .peek(unused -> FeignSecurityManager.asSystem()) // Enable system call
+            .peek(unused -> runtimeTenantResolver.forceTenant(tenant)) // We are on a parallel stream so we need to inject the tenant
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
-//            .peek(unused -> FeignSecurityManager.reset()) // Disable system call
             .peek(unused -> runtimeTenantResolver.clearTenant())
             .map(ResponseEntity::getBody)
             .flatMap(List::stream)
