@@ -77,7 +77,7 @@ public class SearchController {
      * Function converting a {@link JsonArray} into a parallel {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
-            .stream(pJsonArray.spliterator(), true);
+            .stream(pJsonArray.spliterator(), false);
 
     @Autowired
     private IServiceAggregatorClient serviceAggregatorClient;
