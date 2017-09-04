@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
+import javax.validation.ValidationException;
 import java.io.IOException;
 import java.util.NoSuchElementException;
-
-import javax.validation.ValidationException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -36,6 +35,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.WebUtils;
 
+import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
 import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionTooLargeException;
@@ -93,6 +93,12 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<ServerErrorResponse> handleModelException(final IOException pEx) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ServerErrorResponse("Internal server error"));
+    }
+
+    @ExceptionHandler(EmptyBasketException.class)
+    public ResponseEntity<ServerErrorResponse> handleModelException(final EmptyBasketException ebe) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ServerErrorResponse(ebe.getMessage()));
     }
 
     @ExceptionHandler(EntityAlreadyExistsException.class)

@@ -16,21 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.module.rest.exception;
+package fr.cnes.regards.framework.urn;
 
 /**
- * Error occurs when an exception is thrown during OpenSearch query parsing process.
+ * {@link AbstractEntity} types
  *
- * @author Xavier-Alexandre Brochard
+ * @author lmieulet
+ *
  */
-public class SearchException extends ModuleException {
+public enum DataType {
 
-    public SearchException(String pErrorMessage) {
-        super(pErrorMessage);
+    /**
+     * Available data types
+     */
+    RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP;
+
+    @Override
+    public String toString() {
+        return this.name();
     }
-
-    public SearchException(String pQuery, Throwable pCause) {
-        super(String.format("Could not handle the query %s", pQuery), pCause);
-    }
-
 }

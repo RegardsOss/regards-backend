@@ -20,7 +20,7 @@ public class StopJobEvent implements ISubscribable {
     }
 
     public StopJobEvent(UUID jobId) {
-        this.jobId=jobId;
+        this.jobId = jobId;
     }
 
     public UUID getJobId() {
