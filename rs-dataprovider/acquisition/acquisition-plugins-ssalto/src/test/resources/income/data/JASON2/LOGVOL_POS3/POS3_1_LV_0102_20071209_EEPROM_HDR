@@ -1,0 +1,6 @@
+< zone memoire : EEPROM ou RAM_DATA ou RAM_PROG >
+EEPROM
+< adresse absolue de début en Hexa >
+0x201BFFFE
+<N nombre de mots en décimal : EEPROM mots de 8 bits, RAM_DATA mots de 32 bits , RAM_PROG mots de 48 bits >
+2

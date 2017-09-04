@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.SsaltoFileStatus;
@@ -50,6 +50,9 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.SupplyDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.IngestXsdResolver;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidation;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidatorFactory;
 
 /**
  * Cette classe permet de simplifier la creation des tests sur les plugins.<br>
@@ -58,7 +61,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
  * @author Christophe Mertz
  */
 // TODO CMZ confirmer que peut être enlevé : extend SipadTst
-public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT implements IProductMetadataPluginTest {
+public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT
+        implements IProductMetadataPluginTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPluginTest.class);
 
@@ -244,8 +248,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @return
      * @throws ModuleException 
      */
-    protected boolean createMetadataPlugIn(PluginTestDef pluginTestDef, List<String> errorList,
-            List<String> sucessList) throws ModuleException {
+    protected boolean createMetadataPlugIn(PluginTestDef pluginTestDef, List<String> errorList, List<String> sucessList)
+            throws ModuleException {
         boolean isCreationOk = true;
         List<AcquisitionFile> fileList = new ArrayList<>();
 
@@ -319,15 +323,15 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     protected AcquisitionFile initSsaltoFile(File aFile) {
         AcquisitionFile ssaltoFile = new AcquisitionFile();
         ssaltoFile.setFileName(aFile.getName());
-        
+
         SupplyDirectory dir = new SupplyDirectory();
         dir.setSupplyDir(aFile.getParent());
-        
+
         FileAcquisitionInformations acqInfos = new FileAcquisitionInformations();
         acqInfos.setSupplyDirectory(dir);
         acqInfos.setWorkingDirectory(aFile.getParent());
         acqInfos.setAcquisitionDirectory(aFile.getParent());
-        
+
         ssaltoFile.setAcquisitionInformations(acqInfos);
         ssaltoFile.setStatus(SsaltoFileStatus.VALID);
 
@@ -393,16 +397,14 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 File descFile = new File(DESCRIPTOR_DIRECTORY, desc_product_ + pluginTestDef.getProductName() + ".xml");
                 writeDescOnDisk(xml, descFile);
 
-                // TODO CMZ à remettre
-                //                if (validate(descFile)) {
-                //                    LOGGER.debug("XML is valid with dico " + dicoName);
-                //                    isValidate = true;
-                //
-                //                } else {
-                //                    // descFile.renameTo(new File("ERROR_" +
-                //                    // descFile.getName()));
-                //                    isValidate = false;
-                //                }
+                if (validate(descFile)) {
+                    LOGGER.debug("XML is valid with dico " + dicoName);
+                    isValidate = true;
+                } else {
+                    // descFile.renameTo(new File("ERROR_" +
+                    // descFile.getName()));
+                    isValidate = false;
+                }
 
             } catch (ModuleException e1) {
                 // TODO CMZ à remettre
@@ -477,40 +479,39 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @param descFile
      * @return
      */
-    // TODO CMZ à remettre
-    //    protected boolean validate(File pdescFile) {
-    //        boolean isValid = false;
-    //        String xmlString = "";
-    //        try {
-    //            xmlString = FileUtils.readFileToString(pdescFile);
-    //        } catch (IOException e1) {
-    //            e1.printStackTrace();
-    //            Assert.fail();
-    //        }
-    //        IngestXsdResolver resolver = new IngestXsdResolver();
-    //        resolver.addDictionary(new File(System.getProperty("user.dir") + File.separator + DICO_DIR + File.separator,
-    //                dicoName));
-    //        resolver.addDictionary(new File(System.getProperty("user.dir") + File.separator + DICO_DIR + File.separator,
-    //                dicoBase));
-    //        XMLValidatorFactory validatorFactory = new XMLValidatorFactory(resolver);
-    //        validatorFactory.setXmlSchema(dicoName);
-    //        try {
-    //            XMLValidation validator = (XMLValidation) validatorFactory.makeObject();
-    //            // Validator of the request
-    //            validator.validate(xmlString);
-    //            isValid = true;
-    //        } catch (Exception e) {
-    //            LOGGER.error("", e);
-    //            isValid = false;
-    //        }
-    //        if (isValid) {
-    //            isValid = compare_to_reference(pdescFile);
-    //        }
-    //        if (!isValid) {
-    //            LOGGER.error("INVALID " + pdescFile.getAbsolutePath());
-    //        }
-    //        return isValid;
-    //    }
+    protected boolean validate(File pdescFile) {
+        boolean isValid = false;
+        String xmlString = "";
+        try {
+            xmlString = FileUtils.readFileToString(pdescFile);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            Assert.fail();
+        }
+        IngestXsdResolver resolver = new IngestXsdResolver();
+        resolver.addDictionary(new File(System.getProperty("user.dir") + File.separator + DICO_DIR + File.separator,
+                dicoName));
+        resolver.addDictionary(new File(System.getProperty("user.dir") + File.separator + DICO_DIR + File.separator,
+                dicoBase));
+        XMLValidatorFactory validatorFactory = new XMLValidatorFactory(resolver);
+        validatorFactory.setXmlSchema(dicoName);
+        try {
+            XMLValidation validator = (XMLValidation) validatorFactory.makeObject();
+            // Validator of the request
+            validator.validate(xmlString);
+            isValid = true;
+        } catch (Exception e) {
+            LOGGER.error("", e);
+            isValid = false;
+        }
+        if (isValid) {
+            isValid = compare_to_reference(pdescFile);
+        }
+        if (!isValid) {
+            LOGGER.error("INVALID " + pdescFile.getAbsolutePath());
+        }
+        return isValid;
+    }
 
     protected boolean compare_to_reference(File descFile) {
         boolean isEqual = false;

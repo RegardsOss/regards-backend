@@ -1,0 +1,67 @@
+		Satellite Attitude Event Information
+                     SPA_STATE:SPA_SATATT_JASON2.TXT
+Update Time (UTC)					Definitions
+2008-176T14:00:00				P: Predicted Event 
+						U: Event Line Has Been Updated 
+
+         EVENT	                              OBSERVED TIME (UTC) Cycle  Pass
+Start Yaw Ramp(Sinusoidal to Fixed BETAP=+14.8)2008-174T11:55:44    998   014
+Stop  Yaw Ramp(Sinusoidal to Fixed)            2008-174T11:57:19    998   014
+Start Maneuver Burn                            2008-175T01:31:14    998   028
+Stop  Maneuver Burn                            2008-175T01:31:18    998   028
+Start Maneuver Burn                            2008-175T04:19:36    998   031
+Stop  Maneuver Burn                            2008-175T04:19:40    998   031
+Start Maneuver Burn                            2008-177T02:07:43    998   080
+Stop  Maneuver Burn                            2008-177T02:12:44    998   080
+Start Maneuver Burn                            2008-177T04:52:24    998   083
+Stop  Maneuver Burn                            2008-177T04:58:13    998   083
+Start Yaw Flip                                 2008-179T15:52:10    998   146
+Stop  Yaw Flip                                 2008-179T16:01:53    998   146
+Start Maneuver Burn                            2008-180T02:11:08    998   157
+Stop  Maneuver Burn                            2008-180T02:13:58    998   157
+Start Maneuver Burn                            2008-180T04:59:47    998   160
+Stop  Maneuver Burn                            2008-180T05:02:40    998   160
+Start Maneuver Burn                            2008-182T18:58:28    998   226
+Stop  Maneuver Burn                            2008-182T19:04:16    998   226
+Start Maneuver Burn                            2008-182T21:47:33    998   229
+Stop  Maneuver Burn                            2008-182T21:53:24    998   229
+Start Yaw Ramp(Fixed to Sinusoid BETAP=-16.2)  2008-185T14:33:37    999   044
+Stop  Yaw Ramp(Fixed to Sinusoidal)            2008-185T14:35:37    999   044
+Start Maneuver Burn                            2008-186T03:48:55    999   058
+Stop  Maneuver Burn                            2008-186T03:55:43    999   058
+Start Maneuver Burn                            2008-186T06:37:44    000   055
+Stop  Maneuver Burn                            2008-186T06:44:52    000   055
+Start Maneuver Burn                            2008-186T22:31:58    000   072
+Stop  Maneuver Burn                            2008-186T22:32:02    000   072
+Start Maneuver Burn                            2008-187T01:20:37    000   075
+Stop  Maneuver Burn                            2008-187T01:20:41    000   075
+Start Maneuver Burn                            2008-190T03:11:45    000   154
+Stop  Maneuver Burn                            2008-190T03:11:45    000   154
+Start Yaw Ramp(Sinusoidal to Fixed BETAP=-15.2)2008-227T06:29:48    004   089
+Stop  Yaw Ramp(Sinusoidal to Fixed)            2008-227T06:31:25    004   089
+Start Yaw Flip                                 2008-233T04:21:18    004   241
+Stop  Yaw Flip                                 2008-233T04:30:59    004   241
+Start Yaw Ramp(Fixed to Sinusoid BETAP=+17.3)  2008-240T04:43:04    005   166
+Stop  Yaw Ramp(Fixed to Sinusoidal)            2008-240T04:44:46    005   166
+Start Maneuver Burn                            2008-240T16:44:59    005   179
+Stop  Maneuver Burn                            2008-240T16:45:01    005   179
+Start Yaw Ramp(Sinusoidal to Fixed BETAP=+15.0)2008-288T13:28:56    010   135
+Stop  Yaw Ramp(Sinusoidal to Fixed)            2008-288T13:30:35    010   135
+Start Yaw Flip                                 2008-293T15:38:30    011   012
+Stop  Yaw Flip                                 2008-293T15:48:11    011   012
+Start Yaw Ramp(Fixed to Sinusoid BETAP=-15.0)  2008-299T16:33:18    011   166
+Stop  Yaw Ramp(Fixed to Sinusoidal)            2008-299T16:34:57    011   166
+Start Yaw Ramp(Sinusoidal to Fixed BETAP=-15.7)2008-351T00:43:34    016   212
+Stop  Yaw Ramp(Sinusoidal to Fixed)            2008-351T00:45:13    016   212
+Start Maneuver Burn                            2008-353T23:46:59    017   033
+Stop  Maneuver Burn                            2008-353T23:47:51    017   033
+Start Yaw Flip                                 2008-357T00:26:42    017   111
+Stop  Yaw Flip                                 2008-357T00:36:22    017   111
+Start Yaw Ramp(Fixed to Sinusoid BETAP=+15.3)  2008-362T20:41:36    018   007
+Stop  Yaw Ramp(Fixed to Sinusoidal)            2008-362T20:43:11    018   007
+Start Yaw Ramp(Sinusoidal to Fixed BETAP=+15.0)2009-036T16:58:06    022   011
+Stop  Yaw Ramp(Sinusoidal to Fixed)            2009-036T16:59:42    022   011
+Start Yaw Flip                                 2009-042T15:45:53    022   164
+Stop  Yaw Flip                                 2009-042T15:55:34    022   164
+Start Yaw Ramp(Fixed to Sinusoid BETAP=-15.3)  2009-048T12:57:00    023   060
+Stop  Yaw Ramp(Fixed to Sinusoidal)            2009-048T12:58:36    023   060
