@@ -33,19 +33,23 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
+import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
-import fr.cnes.regards.modules.access.services.rest.ui.UIPluginConfigurationController;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.domain.EntityType;
+import fr.cnes.regards.modules.models.domain.Model;
 
 /**
  *
@@ -71,9 +75,16 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     @Autowired
     private IUIPluginConfigurationRepository repository;
 
+    @Autowired
+    private ILinkUIPluginsDatasetsRepository linkRepository;
+
     private UIPluginDefinition plugin;
 
     private UIPluginConfiguration pluginConf;
+
+    private UIPluginConfiguration pluginConf1;
+
+    private UIPluginConfiguration pluginConf2;
 
     @Override
     protected Logger getLogger() {
@@ -112,8 +123,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
 
         // Create plugin Configurations
         pluginConf = repository.save(createPluginConf(plugin, true, false));
-        repository.save(createPluginConf(plugin, true, true));
-        repository.save(createPluginConf(plugin, false, true));
+        pluginConf1 = repository.save(createPluginConf(plugin, true, true));
+        pluginConf2 = repository.save(createPluginConf(plugin, false, true));
         repository.save(createPluginConf(plugin2, false, false));
     }
 
@@ -245,6 +256,26 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
      */
     @Test
     public void deletePluginConfiguration() {
+        final List<ResultMatcher> expectations = new ArrayList<>(1);
+        expectations.add(status().isOk());
+        performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, expectations,
+                             "Error getting all plugins", pluginConf.getId());
+    }
+
+    /**
+     *
+     * Test endpoint to delete a UIPluginConfiguration
+     *
+     * @since 1.0-SNAPSHOT
+     */
+    @Test
+    public void deletePluginConfiguration_shouldSucceedWhenLinkedToDataset() {
+        Dataset dataset = new Dataset(new Model(), "tenant", "label");
+        LinkUIPluginsDatasets link = new LinkUIPluginsDatasets(dataset.getIpId().toString(),
+                Lists.newArrayList(pluginConf, pluginConf1, pluginConf2));
+        linkRepository.save(link);
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
