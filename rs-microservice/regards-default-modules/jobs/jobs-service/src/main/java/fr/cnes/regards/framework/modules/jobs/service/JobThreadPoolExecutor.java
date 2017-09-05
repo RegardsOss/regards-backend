@@ -53,8 +53,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             jobInfo = jobsMap.inverse().get(r);
         }
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
-        jobInfo.updateStatus(JobStatus.RUNNING);
-        jobInfoService.save(jobInfo);
+        // JobInfo is already as RUNNING state BUT AMQP event has not yet been published
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING));
         super.beforeExecute(t, r);
     }

@@ -114,7 +114,7 @@ public class JobService implements IJobService {
                     }
                 }
                 // Find highest priority job to execute
-                JobInfo jobInfo = jobInfoService.findHighestPriorityPendingJobAndSetAsQueued();
+                JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsRunning();
                 if (jobInfo != null) {
                     noJobAtAll = false;
                     jobInfo.setTenant(tenant);

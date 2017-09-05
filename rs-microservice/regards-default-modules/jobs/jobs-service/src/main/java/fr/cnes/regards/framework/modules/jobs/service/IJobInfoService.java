@@ -36,12 +36,19 @@ public interface IJobInfoService {
     /**
      * Find Job info with highest priority and update status to RUNNING
      */
-    JobInfo findHighestPriorityPendingJobAndSetAsQueued();
+    JobInfo findHighestPriorityQueuedJobAndSetAsRunning();
 
     /**
-     * Create a JObInfo setting its state to PENDING and do all stuffs to be correct
+     * Create a JobInfo setting its state as PENDING ie <b>it will not be taken into account by job service until its
+     * state is QUEUED</b>
      */
-    JobInfo create(JobInfo jobInfo);
+    JobInfo createAsPending(JobInfo jobInfo);
+
+    /**
+     * Create a JobInfo setting its state as QUEUED ie <b>it will be taken into account by job service as soon as
+     * possible</b>
+     */
+    JobInfo createAsQueued(JobInfo jobInfo);
 
     /**
      * @param jobInfo the jobInfo to save

@@ -144,6 +144,7 @@ public class JobInfo {
         this.status.setStatus(status);
         switch (status) {
             case PENDING:
+            case QUEUED:
                 this.status.setPercentCompleted(0);
                 break;
             case RUNNING:

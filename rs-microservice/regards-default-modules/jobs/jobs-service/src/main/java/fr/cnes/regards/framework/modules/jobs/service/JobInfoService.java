@@ -58,11 +58,11 @@ public class JobInfoService implements IJobInfoService {
     private IJobInfoRepository jobInfoRepository;
 
     @Override
-    public JobInfo findHighestPriorityPendingJobAndSetAsQueued() {
-        JobInfo found = jobInfoRepository.findHighestPriorityPending();
+    public JobInfo findHighestPriorityQueuedJobAndSetAsRunning() {
+        JobInfo found = jobInfoRepository.findHighestPriorityQueued();
         if (found != null) {
             Hibernate.initialize(found.getParameters());
-            found.updateStatus(JobStatus.QUEUED);
+            found.updateStatus(JobStatus.RUNNING);
             jobInfoRepository.save(found);
         }
         return found;
@@ -84,8 +84,14 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
-    public JobInfo create(JobInfo jobInfo) {
+    public JobInfo createAsPending(JobInfo jobInfo) {
         jobInfo.updateStatus(JobStatus.PENDING);
+        return jobInfoRepository.save(jobInfo);
+    }
+
+    @Override
+    public JobInfo createAsQueued(JobInfo jobInfo) {
+        jobInfo.updateStatus(JobStatus.QUEUED);
         return jobInfoRepository.save(jobInfo);
     }
 
