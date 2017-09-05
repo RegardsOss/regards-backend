@@ -106,6 +106,18 @@ public class BasketController implements IResourceController<Basket> {
     }
 
     /**
+     * Retrieve basket if it does exist
+     * @return basket
+     * @throws EmptyBasketException if basket doesn't exist
+     */
+    @ResourceAccess(description = "Get the basket")
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<Resource<Basket>> get() throws EmptyBasketException {
+        Basket basket = basketService.find(SecurityUtils.getActualUser());
+        return ResponseEntity.ok(toResource(basket));
+    }
+
+    /**
      * Empty current basket
      * @return nothing
      */
