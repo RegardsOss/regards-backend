@@ -74,7 +74,7 @@ public class SearchController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
 
     /**
-     * Function converting a {@link JsonArray} into a parallel {@link Stream}
+     * Function converting a {@link JsonArray} into a {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
             .stream(pJsonArray.spliterator(), false);
