@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
  * @author Xavier-Alexandre Brochard
  */
 @Configuration
-public class AccessServicesClientITConfiguration {
+public class ServiceAggregatorClientITConfiguration {
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
@@ -55,6 +55,11 @@ public class AccessServicesClientITConfiguration {
         Mockito.when(client.retrieveServices(Mockito.anyString(), Mockito.any())).thenReturn(result);
 
         return client;
+    }
+
+    @Bean
+    public ServiceAggregatorClientEventHandler serviceAggregatorClientEventHandler() {
+        return Mockito.mock(ServiceAggregatorClientEventHandler.class);
     }
 
     public PluginConfigurationDto dummyPluginConfigurationDto() {

@@ -25,13 +25,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
@@ -52,9 +53,10 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  * Business service to manage {@link UIPluginConfiguration} entities.
  *
  * @author Sébastien Binda
+ * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-@Service(value = "pluginConfigurationService")
+@Service
 @RegardsTransactional
 public class UIPluginConfigurationService implements IUIPluginConfigurationService {
 
@@ -65,14 +67,29 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration -> (pApplicationMode == null)
             || pConfiguration.getPluginDefinition().getApplicationModes().contains(pApplicationMode);
 
-    @Autowired
-    private IUIPluginDefinitionRepository pluginRepository;
+    private final IUIPluginDefinitionRepository pluginRepository;
 
-    @Autowired
-    private ILinkUIPluginsDatasetsRepository linkedUiPluginRespository;
+    private final ILinkUIPluginsDatasetsRepository linkedUiPluginRespository;
 
-    @Autowired
-    private IUIPluginConfigurationRepository repository;
+    private final IUIPluginConfigurationRepository repository;
+
+    private final IPublisher publisher;
+
+    /**
+     * @param pPluginRepository
+     * @param pLinkedUiPluginRespository
+     * @param pRepository
+     * @param pPublisher
+     */
+    public UIPluginConfigurationService(IUIPluginDefinitionRepository pPluginRepository,
+            ILinkUIPluginsDatasetsRepository pLinkedUiPluginRespository, IUIPluginConfigurationRepository pRepository,
+            IPublisher pPublisher) {
+        super();
+        pluginRepository = pPluginRepository;
+        linkedUiPluginRespository = pLinkedUiPluginRespository;
+        repository = pRepository;
+        publisher = pPublisher;
+    }
 
     @Override
     public Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pPluginType,
@@ -144,7 +161,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("Configuration is not a valid json format.");
         }
 
-        return repository.save(pPluginConfiguration);
+        UIPluginConfiguration updated = repository.save(pPluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(updated));
+        return updated;
     }
 
     @Override
@@ -162,7 +181,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("Configuration is not a valid json format.");
         }
 
-        return repository.save(pPluginConfiguration);
+        UIPluginConfiguration created = repository.save(pPluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(created));
+        return created;
     }
 
     @Override
@@ -174,7 +195,25 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         if (!repository.exists(pPluginConfiguration.getId())) {
             throw new EntityNotFoundException(pPluginConfiguration.getId(), UIPluginConfiguration.class);
         }
+
+        // Remove the config from the links
+        try (Stream<LinkUIPluginsDatasets> links = linkedUiPluginRespository
+                .findAllByServicesContaining(pPluginConfiguration)) {
+            // @formatter:off
+            links
+                .peek(link -> link.getServices().remove(pPluginConfiguration))
+                .forEach(link -> {
+                    if(link.getServices().isEmpty()) {
+                        linkedUiPluginRespository.delete(link);
+                    } else {
+                        linkedUiPluginRespository.save(link);
+                    }}
+                );
+            // @formatter:on
+        }
+
         repository.delete(pPluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(pPluginConfiguration));
 
     }
 

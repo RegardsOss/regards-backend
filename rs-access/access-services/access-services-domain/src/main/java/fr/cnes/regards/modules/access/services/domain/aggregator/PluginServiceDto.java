@@ -5,21 +5,14 @@ package fr.cnes.regards.modules.access.services.domain.aggregator;
 
 import java.net.URL;
 import java.util.Set;
-import java.util.function.Function;
 
-import org.springframework.core.annotation.AnnotationUtils;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
- * DTO class representing either a {@link PluginConfiguration}, either a {@link UIPluginConfiguration}
+ * DTO class representing either a {@link PluginConfigurationDto}, either a {@link UIPluginConfiguration}
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -36,20 +29,6 @@ public class PluginServiceDto {
     private final Set<EntityType> entityTypes;
 
     private final PluginServiceType type;
-
-    /**
-     * Finds the application mode of the given plugin configuration
-     */
-    private static final Function<PluginConfiguration, CatalogServicePlugin> GET_CATALOG_SERVICE_PLUGIN_ANNOTATION = pPluginConfiguration -> {
-        try {
-            return AnnotationUtils.findAnnotation(Class.forName(pPluginConfiguration.getPluginClassName()),
-                                                  CatalogServicePlugin.class);
-        } catch (ClassNotFoundException e) {
-            // No exception should occurs there. If any occurs it should set the application into maintenance mode so we
-            // can safely rethrow as a runtime
-            throw new PluginUtilsRuntimeException("Could not instanciate plugin", e);
-        }
-    };
 
     /**
      * Constructor. It is private in order to force the caller to use one of the 'from' builder methods
@@ -72,18 +51,17 @@ public class PluginServiceDto {
     }
 
     /**
-     * Build a new instance from the given {@link PluginConfiguration}
-     * @param pPluginConfiguration
+     * Build a new instance from the given {@link PluginConfigurationDto}
+     * @param pPluginConfigurationDto
      * @return the new instance
      */
-    public static final PluginServiceDto fromPluginConfiguration(PluginConfiguration pPluginConfiguration) {
-        // Retrieve applicationModes & entityTypes from CatalogServicePlugin annotation
-        CatalogServicePlugin annotation = GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration);
-        Set<ServiceScope> appModes = Sets.newHashSet(annotation.applicationModes());
-        Set<EntityType> entTypes = Sets.newHashSet(annotation.entityTypes());
+    public static final PluginServiceDto fromPluginConfigurationDto(PluginConfigurationDto pPluginConfigurationDto) {
+        // Retrieve applicationModes & entityTypes from Dto
+        Set<ServiceScope> appModes = pPluginConfigurationDto.getApplicationModes();
+        Set<EntityType> entTypes = pPluginConfigurationDto.getEntityTypes();
 
-        return new PluginServiceDto(pPluginConfiguration.getId(), pPluginConfiguration.getLabel(),
-                pPluginConfiguration.getIconUrl(), appModes, entTypes, PluginServiceType.CATALOG);
+        return new PluginServiceDto(pPluginConfigurationDto.getId(), pPluginConfigurationDto.getLabel(),
+                pPluginConfigurationDto.getIconUrl(), appModes, entTypes, PluginServiceType.CATALOG);
     }
 
     /**

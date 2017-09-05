@@ -86,6 +86,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
                         deleteLink(link);
                     }
                 }
+                runtimeTenantResolver.clearTenant();
             }
         }
     }

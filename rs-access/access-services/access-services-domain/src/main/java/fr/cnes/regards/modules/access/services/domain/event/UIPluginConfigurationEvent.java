@@ -21,38 +21,38 @@ package fr.cnes.regards.modules.access.services.domain.event;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 
 /**
- * Published when a {@link LinkUiPluginsDatasets} is created
+ * Published when a {@link UIPluginConfiguration} is created or updated
  *
  * @author Xavier-Alexandre Brochard
  */
-@Event(target = Target.MICROSERVICE)
-public class LinkUiPluginsDatasetsEvent implements ISubscribable {
+@Event(target = Target.ALL)
+public class UIPluginConfigurationEvent implements ISubscribable {
 
-    private LinkUIPluginsDatasets linkUIPluginsDatasets;
+    private UIPluginConfiguration uiPluginConfiguration;
 
     /**
      * Default constructor required by Jackson
      */
-    public LinkUiPluginsDatasetsEvent() {
+    public UIPluginConfigurationEvent() {
         super();
     }
 
     /**
-     * @param pLinkUIPluginsDatasets Source object of the event
+     * @param pUiPluginConfiguration Source object of the event
      */
-    public LinkUiPluginsDatasetsEvent(LinkUIPluginsDatasets pLinkUIPluginsDatasets) {
+    public UIPluginConfigurationEvent(UIPluginConfiguration pUiPluginConfiguration) {
         super();
-        linkUIPluginsDatasets = pLinkUIPluginsDatasets;
+        uiPluginConfiguration = pUiPluginConfiguration;
     }
 
     /**
-     * @return the linkUIPluginsDatasets
+     * @return the uiPluginConfiguration
      */
-    public LinkUIPluginsDatasets getLinkUIPluginsDatasets() {
-        return linkUIPluginsDatasets;
+    public UIPluginConfiguration getUiPluginConfiguration() {
+        return uiPluginConfiguration;
     }
 
 }

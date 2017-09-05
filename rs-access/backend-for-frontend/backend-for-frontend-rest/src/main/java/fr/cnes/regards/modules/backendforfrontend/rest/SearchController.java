@@ -38,7 +38,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -67,10 +66,10 @@ import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
 public class SearchController {
 
     /**
-     * Function converting a {@link JsonArray} into a parallel {@link Stream}
+     * Function converting a {@link JsonArray} into a {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
-            .stream(pJsonArray.spliterator(), true);
+            .stream(pJsonArray.spliterator(), false);
 
     @Autowired
     private IServiceAggregatorClient serviceAggregatorClient;
@@ -289,8 +288,6 @@ public class SearchController {
     private void injectApplicableServices(ResponseEntity<JsonObject> pEntities) {
         try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM
                 .apply(pEntities.getBody().get("content").getAsJsonArray())) {
-            // Enable system call as follow (thread safe action)
-            //            FeignSecurityManager.asSystem();
             // @formatter:off
             elements
                 .map(JsonElement::getAsJsonObject)
@@ -298,9 +295,6 @@ public class SearchController {
                 .map(JsonElement::getAsJsonObject)
                 .forEach(element -> element.add("services", entityToApplicableServices(element)));
             // @formatter:on
-        } finally {
-            // Disable system call if necessary after client request(s)
-            //            FeignSecurityManager.reset();
         }
     }
 
@@ -312,17 +306,16 @@ public class SearchController {
      */
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
         // @formatter:off
-        List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray())
-            .map(JsonElement::getAsString)
-            .map(UniformResourceName::fromString)
-            .filter(urn -> EntityType.DATASET.equals(urn.getEntityType()))
-            .map(UniformResourceName::toString)
-            .distinct()
-            .peek(unused -> FeignSecurityManager.asSystem())
+        List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
+            .map(JsonElement::getAsString) // Convert elements of the stream to strings
+            .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
+            .filter(urn -> EntityType.DATASET.equals(urn.getEntityType())) // Only keep URNs of datasets
+            .map(UniformResourceName::toString) // Go back to strings
+            .distinct() // Remove doubles
             .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
-            .peek(unused -> FeignSecurityManager.reset())
             .map(ResponseEntity::getBody)
-            .flatMap(List::stream)
+            .flatMap(List::stream) // Now each element of the stream is a List of services, so we flatten the structure in a stream of services
+            .distinct() // Remove doubles
             .collect(Collectors.toList());
         // @formatter:on
 

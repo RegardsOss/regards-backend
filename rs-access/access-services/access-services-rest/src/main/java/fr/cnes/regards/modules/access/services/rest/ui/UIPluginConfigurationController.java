@@ -51,13 +51,16 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
 
+/**
+ * Controller managing {@link UIPluginConfiguration}s
+ */
 @RestController
 @ModuleInfo(name = "Plugin", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 @RequestMapping(UIPluginConfigurationController.REQUEST_MAPPING_ROOT)
 public class UIPluginConfigurationController implements IResourceController<UIPluginConfiguration> {
 
-    public static final String REQUEST_MAPPING_ROOT = "/plugins";
+    public static final String REQUEST_MAPPING_ROOT = "/uiplugins";
 
     public static final String REQUEST_PLUGIN_CONFIGURATIONS = "/configurations";
 
@@ -78,17 +81,13 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     private IResourceService resourceService;
 
     /**
-     *
      * Endpoint to retrieve all {@link UIPluginConfiguration}
      *
-     * @param pIsActive
-     *            QueryParam Retrieve only the active {@link UIPluginConfiguration}
-     * @param pIsLinkedToAllEntities
-     *            QueryParam Retrieve only the pluginConfigurations linked to all entities
-     * @param pAssembler
-     *            Assembler to manage PagedResources.
-     * @param pPageable
-     *            Pagination parameters
+     * @param pIsActive QueryParam Retrieve only the active {@link UIPluginConfiguration}
+     * @param pIsLinkedToAllEntities QueryParam Retrieve only the pluginConfigurations linked to all entities
+     * @param pPluginType The plugin type
+     * @param pAssembler Assembler to manage PagedResources.
+     * @param pPageable Pagination parameters
      * @return Page {@link UIPluginConfiguration}
      * @throws EntityInvalidException
      *             error occurred.
@@ -109,7 +108,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     }
 
     /**
-     *
      * Endpoint to retrieve all {@link UIPluginConfiguration} for a given plugin
      *
      * @param pPluginId
@@ -145,7 +143,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     }
 
     /**
-     *
      * Endpoint to retrieve one {@link UIPluginConfiguration} by his identifier.
      *
      * @param pPluginConfigurationId
@@ -237,15 +234,19 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, pElement.getId()),
-                                MethodParamFactory.build(UIPluginDefinition.class));
+                                MethodParamFactory.build(UIPluginConfiguration.class));
         resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;
     }
 
+    /**
+     * Convert services to resources
+     * @param pElement
+     * @return
+     */
     public Resource<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration pElement) {
-        final Resource<UIPluginConfiguration> resource = resourceService.toResource(pElement);
-        return resource;
+        return resourceService.toResource(pElement);
     }
 
 }

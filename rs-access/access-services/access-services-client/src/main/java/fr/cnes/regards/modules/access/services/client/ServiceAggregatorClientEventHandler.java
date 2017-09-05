@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +27,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 
 /**
@@ -38,36 +36,36 @@ import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasets
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class AccessServicesClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
-
-    /**
-     * Logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessServicesClientEventHandler.class);
+public class ServiceAggregatorClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     private final ISubscriber subscriber;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final IServiceAggregatorClient serviceAggregatorClient;
+
     /**
-     * Constructor
-     *
-     * @param subscriber
-     * @param runtimeTenantResolver
+     * @param pSubscriber
+     * @param pRuntimeTenantResolver
+     * @param pServiceAggregatorClient
      */
-    public AccessServicesClientEventHandler(ISubscriber subscriber, IRuntimeTenantResolver runtimeTenantResolver) {
-        this.subscriber = subscriber;
-        this.runtimeTenantResolver = runtimeTenantResolver;
+    public ServiceAggregatorClientEventHandler(ISubscriber pSubscriber, IRuntimeTenantResolver pRuntimeTenantResolver,
+            IServiceAggregatorClient pServiceAggregatorClient) {
+        super();
+        subscriber = pSubscriber;
+        runtimeTenantResolver = pRuntimeTenantResolver;
+        serviceAggregatorClient = pServiceAggregatorClient;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         subscriber.subscribeTo(LinkUiPluginsDatasetsEvent.class, new LinkUiPluginsDatasetsEventHandler());
         subscriber.subscribeTo(LinkPluginsDatasetsEvent.class, new LinkPluginsDatasetsEventHandler());
+        subscriber.subscribeTo(UIPluginConfigurationEvent.class, new UIPluginConfigurationEventHandler());
     }
 
     /**
-     * Handle {@link LinkUiPluginsDatasetsEvent} event to refresh group cache
+     * Handle {@link LinkUiPluginsDatasetsEvent} event to clear "servicesAggregated" cache
      *
      * @author Xavier-Alexandre Brochard
      */
@@ -77,7 +75,7 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
         public void handle(TenantWrapper<LinkUiPluginsDatasetsEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                clearServicesAggregatedCache();
+                serviceAggregatorClient.clearServicesAggregatedCache();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -85,7 +83,7 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
     }
 
     /**
-     * Handle {@link LinkPluginsDatasetsEvent} event to refresh group cache
+     * Handle {@link LinkPluginsDatasetsEvent} event to clear "servicesAggregated" cache
      *
      * @author Xavier-Alexandre Brochard
      */
@@ -95,7 +93,7 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
         public void handle(TenantWrapper<LinkPluginsDatasetsEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                clearServicesAggregatedCache();
+                serviceAggregatorClient.clearServicesAggregatedCache();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -103,11 +101,22 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
     }
 
     /**
-     * Empty the whole "servicesAggregated" cache. Maybe we can perform a finer eviction?
+     * Handle {@link UIPluginConfigurationEvent} event to clear "servicesAggregated" cache.
+     * We maybe could optimize and change cache content instead of clearing...
+     *
+     * @author Xavier-Alexandre Brochard
      */
-    @CacheEvict(cacheNames = "servicesAggregated", allEntries = true)
-    private void clearServicesAggregatedCache() {
-        LOGGER.debug("Rejecting all entries of servicesAggregated cache");
+    private class UIPluginConfigurationEventHandler implements IHandler<UIPluginConfigurationEvent> {
+
+        @Override
+        public void handle(TenantWrapper<UIPluginConfigurationEvent> wrapper) {
+            try {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                serviceAggregatorClient.clearServicesAggregatedCache();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
 }

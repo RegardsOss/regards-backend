@@ -18,20 +18,31 @@
  */
 package fr.cnes.regards.modules.access.services.dao.ui;
 
+import java.util.stream.Stream;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 
 /**
  * JPA Respository to access {@link LinkUIPluginsDatasets} entities
  *
  * @author Sébastien Binda
- *
+ * @author Xavier-Alexandre Brochard
  */
 public interface ILinkUIPluginsDatasetsRepository extends JpaRepository<LinkUIPluginsDatasets, Long> {
 
     @EntityGraph(value = "graph.link.configurations")
     LinkUIPluginsDatasets findOneByDatasetId(String pDatasetId);
+
+    /**
+     * Retrieve all links having the given configuration in their services list
+     *
+     * @param pPluginConfiguration
+     * @return The query result wrapped in a {@link Stream}
+     */
+    Stream<LinkUIPluginsDatasets> findAllByServicesContaining(UIPluginConfiguration pPluginConfiguration);
 
 }

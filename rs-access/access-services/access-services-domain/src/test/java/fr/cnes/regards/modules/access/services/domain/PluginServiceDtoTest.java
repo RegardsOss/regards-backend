@@ -5,8 +5,6 @@ package fr.cnes.regards.modules.access.services.domain;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -17,12 +15,12 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
@@ -54,18 +52,17 @@ public class PluginServiceDtoTest {
     public final void testFromPluginConfiguration() {
         PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin");
+
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetaData, LABEL);
-        List<PluginParameter> pluginParameters = new ArrayList<>();
         pluginConfiguration.setId(ID);
         pluginConfiguration.setIconUrl(ICON_URL);
-        pluginConfiguration.setParameters(pluginParameters);
 
-        pluginParameters.add(new PluginParameter("color", "blue"));
+        PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
 
-        PluginServiceDto dto = PluginServiceDto.fromPluginConfiguration(pluginConfiguration);
+        PluginServiceDto pluginServiceDto = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
 
-        checkDto(dto);
-        Assert.assertEquals(PluginServiceType.CATALOG, dto.getType());
+        checkDto(pluginServiceDto);
+        Assert.assertEquals(PluginServiceType.CATALOG, pluginServiceDto.getType());
     }
 
     /**
