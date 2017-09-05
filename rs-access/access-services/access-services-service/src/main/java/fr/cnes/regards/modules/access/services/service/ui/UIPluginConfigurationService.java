@@ -184,6 +184,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityNotFoundException(pPluginConfiguration.getId(), UIPluginConfiguration.class);
         }
         repository.delete(pPluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(pPluginConfiguration));
 
     }
 

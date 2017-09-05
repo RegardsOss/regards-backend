@@ -112,9 +112,7 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
         public void handle(TenantWrapper<UIPluginConfigurationEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                if (wrapper.getContent().getUiPluginConfiguration().getLinkedToAllEntities()) {
-                    serviceAggregatorClient.clearServicesAggregatedCache();
-                }
+                serviceAggregatorClient.clearServicesAggregatedCache();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
