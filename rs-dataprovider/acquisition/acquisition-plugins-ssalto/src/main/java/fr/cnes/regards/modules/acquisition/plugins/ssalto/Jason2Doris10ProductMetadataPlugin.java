@@ -27,8 +27,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepo
  * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
  * FILE_CREATION_DATE.
  *
- * @author CS
- * @since 1.2
+ * @author Christophe Mertz
  */
 
 public class Jason2Doris10ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {

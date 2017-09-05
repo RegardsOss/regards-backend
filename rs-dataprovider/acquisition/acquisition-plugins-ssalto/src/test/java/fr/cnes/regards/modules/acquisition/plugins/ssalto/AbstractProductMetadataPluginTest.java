@@ -368,8 +368,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             // get the original file from supplyDirectory
             File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
                     acqFile.getFileName());
-            // Mise a jour de la date de creation pour les plugins qui l'utilise afin qu'elle corresponde au fichier de
-            // référence
+            // Mise a jour de la date de creation pour les plugins qui l'utilise afin qu'elle corresponde au fichier de référence
             originalFile.setLastModified(1257785981000L);
             if (acqFile.getStatus().equals(SsaltoFileStatus.VALID)) {
                 File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
@@ -400,28 +399,16 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 if (validate(descFile)) {
                     LOGGER.debug("XML is valid with dico " + dicoName);
                     isValidate = true;
-                } else {
-                    // descFile.renameTo(new File("ERROR_" +
-                    // descFile.getName()));
-                    isValidate = false;
                 }
 
             } catch (ModuleException e1) {
-                // TODO CMZ à remettre
-                //                if ((e1.getErrorCode() != null) && e1.getErrorCode().equals("NO_FILE")) {
-                //                    LOGGER.error("CONF FILE " + pluginTestDef.getDataSetName() + "_PluginConfiguration.xml NOT FOUND");
-                //                }
                 LOGGER.error("File in directory does not match the required pattern for dataSet "
                         + pluginTestDef.getDataSetName());
-                isValidate = false;
-
             } catch (Exception e) {
                 LOGGER.error("Error occured creating metadata for file", e);
-                isValidate = false;
             }
         } else {
             LOGGER.warn("UNABLE TO RUN TEST : NO FILE FOUND FOR DATASET " + pluginTestDef.getDataSetName());
-            isValidate = false;
         }
         return isValidate;
     }
@@ -495,6 +482,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 dicoBase));
         XMLValidatorFactory validatorFactory = new XMLValidatorFactory(resolver);
         validatorFactory.setXmlSchema(dicoName);
+        
         try {
             XMLValidation validator = (XMLValidation) validatorFactory.makeObject();
             // Validator of the request
@@ -504,12 +492,15 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             LOGGER.error("", e);
             isValid = false;
         }
+        
         if (isValid) {
             isValid = compare_to_reference(pdescFile);
         }
+        
         if (!isValid) {
             LOGGER.error("INVALID " + pdescFile.getAbsolutePath());
         }
+        
         return isValid;
     }
 
@@ -527,7 +518,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     }
 
     protected Boolean compareFiles(File firstFile, File secondFile) {
-
         boolean sameFiles = Boolean.FALSE;
 
         if (firstFile.exists() && firstFile.canRead() && secondFile.exists() && secondFile.canRead()) {

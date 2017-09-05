@@ -176,7 +176,7 @@ public abstract class AttributeFinder {
     }
 
     /**
-     * traduit la liste des valeurs en applicant les classes de calcul si elles sont definies
+     * traduit la liste des valeurs en appliquant les classes de calcul si elles sont definies
      * 
      * @param valueList
      *            la {@link List} de valeurs a traduire
@@ -243,7 +243,7 @@ public abstract class AttributeFinder {
     }
 
     /**
-     * Parse la value et cree l'objet java en fonction du type de l'attribut
+     * Parse la value et cree l'objet Java en fonction du type de l'attribut
      * 
      * @param value
      * @return
@@ -364,29 +364,29 @@ public abstract class AttributeFinder {
     /**
      * Cree le repertoire dans lequel les fichiers sont dezippe
      * 
-     * @param pFile
+     * @param file
      *            le fichier zip
      * @return le repertoire dans lequel les fichiers sont dezippe
      * @throws PluginAcquisitionException
      */
-    private File getTemporaryUnzippedDir(File pFile) throws PluginAcquisitionException {
+    private File getTemporaryUnzippedDir(File file) throws PluginAcquisitionException {
         File temporaryUnzippedDir = null;
 
-        String baseDirName = Files.getNameWithoutExtension(pFile.getName());
+        String baseDirName = Files.getNameWithoutExtension(file.getName());
         baseDirName += "_" + Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()).getTime();
 
         // verifie les droits d'ecriture
-        if (pFile.getParentFile().canWrite()) {
+        if (file.getParentFile().canWrite()) {
             // cree le repertoire
-            temporaryUnzippedDir = new File(pFile.getParentFile(), baseDirName);
+            temporaryUnzippedDir = new File(file.getParentFile(), baseDirName);
             if (!temporaryUnzippedDir.mkdir()) {
                 String message = String.format("Unable to create the directory '%s'",
-                                               pFile.getParentFile().getAbsolutePath());
+                                               file.getParentFile().getAbsolutePath());
                 LOGGER.error(message);
                 throw new PluginAcquisitionException(message);
             }
         } else {
-            String message = String.format("No access right to '%s'", pFile.getName());
+            String message = String.format("No access right to '%s'", file.getName());
             LOGGER.error(message);
             throw new PluginAcquisitionException(message);
         }

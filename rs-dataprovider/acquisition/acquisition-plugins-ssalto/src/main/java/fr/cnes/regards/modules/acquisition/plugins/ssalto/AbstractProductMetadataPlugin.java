@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -90,20 +89,19 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * des object
      *
      * @return un DataObjectDescriptionElement minimum.
-     * @param pProductName
+     * @param productName
      *            , le nom du produit dont on cree les meta donnees
-     * @param pFileMap
+     * @param fileMap
      *            la liste des fichiers composant le produit
-     * @param pDataSetName
+     * @param dataSetName
      *            le nom du dataSet auquel rattacher l'objet de donnees.
      */
-    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap,
-            String pDataSetName) {
+    public DataObjectDescriptionElement createSkeleton(String productName, Map<File, ?> fileMap, String dataSetName) {
         DataObjectDescriptionElement element = new DataObjectDescriptionElement();
-        element.setAscendingNode(pDataSetName);
-        element.setDataObjectIdentifier(pProductName);
+        element.setAscendingNode(dataSetName);
+        element.setDataObjectIdentifier(productName);
         long size = 0;
-        for (File file : pFileMap.keySet()) {
+        for (File file : fileMap.keySet()) {
             size = size + file.length();
             element.addDataStorageObjectIdentifier(file.getName());
         }
@@ -116,12 +114,12 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     /**
      * parse le fichier de configuration pour remplir les properties, et initialise la map de l'ordre des attributs.
      *
-     * @param pDataSetName
+     * @param dataSetName
      * @throws SsaltoDomainException
      *             en cas d'erreur du parsing du fichier de configuration ou de la lecture du fichier d'ordonnancement
      *             des attributs.
      */
-    public void init(String pDataSetName) throws ModuleException {
+    public void init(String dataSetName) throws ModuleException {
         // Get the path to the digester rules file
         URL ruleFile = AbstractProductMetadataPlugin.class.getClassLoader().getResource(RULE_FILE);
         if (ruleFile == null) {
@@ -133,16 +131,16 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         // Getting conf file from project configured directory
         String pluginConfDirectory = getPluginsRepositoryProperties().getPluginConfFilesDir();
         //        String pluginConfDirectory = pluginsRepositoryProperties.getPluginConfFilesDir();
-        File pluginConfFile = new File(pluginConfDirectory, pDataSetName + CONFIG_FILE_SUFFIX);
+        File pluginConfFile = new File(pluginConfDirectory, dataSetName + CONFIG_FILE_SUFFIX);
         URL confFile = null;
 
         // If conf file doesn't exists in the project configuration directory, check in the classpath
         if ((pluginConfFile == null) || !pluginConfFile.exists() || !pluginConfFile.canRead()) {
             String msg = "unable to load the conf file " + pluginConfFile.getPath() + ", checking in classpath ...";
             LOGGER.warn(msg);
-            confFile = getClass().getResource("tools/" + pDataSetName + CONFIG_FILE_SUFFIX);
+            confFile = getClass().getResource("tools/" + dataSetName + CONFIG_FILE_SUFFIX);
             if (confFile == null) {
-                msg = "unable to load the conf file " + "tools/" + pDataSetName + CONFIG_FILE_SUFFIX;
+                msg = "unable to load the conf file " + "tools/" + dataSetName + CONFIG_FILE_SUFFIX;
                 LOGGER.error(msg);
                 throw new ModuleException(msg);
             }
@@ -164,7 +162,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
             pluginConfProperties.setProject(getProjectName());
         } catch (Exception e) {
-            String msg = "unable to parse file " + pDataSetName + CONFIG_FILE_SUFFIX + " using rule file " + RULE_FILE;
+            String msg = "unable to parse file " + dataSetName + CONFIG_FILE_SUFFIX + " using rule file " + RULE_FILE;
             LOGGER.error(msg, e);
             throw new ModuleException(e);
         }
@@ -179,7 +177,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);
         }
-        
+
     }
 
     protected abstract String getProjectName();
@@ -191,15 +189,15 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      *
      * @param pTargetFile
      *            Fichier physique dans lequel ecrire
-     * @param pDescFile
+     * @param descFile
      *            Objet descripteur
      * @throws IOException
      */
-    private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
+    private String writeXmlToString(DescriptorFile descFile) throws IOException {
 
         String xmlString = null;
         // Write the description document to a String
-        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(pDescFile);
+        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(descFile);
         if (descDocumentToWrite != null) {
             LOGGER.info("***** Computing FILE xml descriptor");
             StringWriter out = new StringWriter();
@@ -221,17 +219,17 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * cree les meta donnees pour le produit pProductName, les fichier pFileList et le jeux de donnees pDataSetName
      */
     @Override
-    public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
-            String pDicoName, String pProjectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName, String dicoName,
+            String projectName) throws ModuleException {
         String outputXml = null;
-        init(pDatasetName);
+        init(datasetName);
         // init descriptor file
         DescriptorFile descFile = new DescriptorFile();
-        descFile.setDicoName(pDicoName);
-        descFile.setProjectName(pProjectName);
+        descFile.setDicoName(dicoName);
+        descFile.setProjectName(projectName);
 
         // add dataObject skeleton bloc
-        DataObjectDescriptionElement element = createSkeleton(pProductName, pFileMap, pDatasetName);
+        DataObjectDescriptionElement element = createSkeleton(productName, fileMap, datasetName);
 
         // add attribute from attribute finders
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
@@ -241,20 +239,20 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             // first do the specific attributes not depending from other
             // attribute value
             // or should be available for finders
-            doCreateIndependantSpecificAttributes(pFileMap, attributeMap);
+            doCreateIndependantSpecificAttributes(fileMap, attributeMap);
 
             if (pluginConfProperties.getFinderList() != null) {
                 Collection<AttributeFinder> finderList = pluginConfProperties.getFinderList();
                 for (AttributeFinder finder : finderList) {
                     finder.setAttributProperties(pluginConfProperties);
-                    Attribute attribute = finder.buildAttribute(pFileMap, attributeValueMap);
+                    Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
                     registerAttribute(finder.getName(), attributeMap, attribute);
                 }
             }
 
             // then do specific attributs which can depend on other attribute
             // value
-            doCreateDependantSpecificAttributes(pFileMap, attributeMap);
+            doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
             // now get the attributeMap values to add the attribute ordered into
             // the dataObjectDescriptionElement
@@ -270,9 +268,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             // "Error writing xml"
             throw new ModuleException(e);
         } catch (PluginAcquisitionException e1) {
-            LOGGER.error("", e1);
-            // TODO CMZ
-            // "Error building metadata"
+            LOGGER.error(e1.getMessage(), e1);
             throw new ModuleException(e1.toString());
         }
         return outputXml;
@@ -281,22 +277,22 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     /**
      * enregistre l'attribut dans la map des attributs
      *
-     * @param pAttributeMap
+     * @param attributeMap
      *            la map des attributs
-     * @param pAttribute
+     * @param attribute
      *            l'attribut a enregistrer.
      */
-    protected void registerAttribute(String pName, Map<Integer, Attribute> pAttributeMap, Attribute pAttribute) {
+    protected void registerAttribute(String attrName, Map<Integer, Attribute> attributeMap, Attribute attribute) {
 
-        pAttributeMap.put(new Integer(attributeOrderProperties.getProperty(pName)), pAttribute);
+        attributeMap.put(new Integer(attributeOrderProperties.getProperty(attrName)), attribute);
     }
 
     /**
      * permet d'ajouter d'autres attributs que ceux definit dans le fichier de configuration
      *
-     * @param pAttributeMap
+     * @param attributeMap
      */
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         // DO NOTHING
     }
@@ -304,16 +300,15 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     /**
      * permet d'ajouter d'autres attributs que ceux definit dans le fichier de configuration
      *
-     * @param pAttributeMap
+     * @param attributeMap
      */
-    protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws ModuleException {
         // DO NOTHING
     }
 
-    public String generateXml(File pFile, String pProjectName, String pDicoName, String pDataSetId)
-            throws ModuleException {
-        // TODO CMZ à confirmer
+    // TODO CMZ à confirmer
+    public String generateXml(File file, String projectName, String dicoName, String dataSetId) throws ModuleException {
         return null;
     }
 

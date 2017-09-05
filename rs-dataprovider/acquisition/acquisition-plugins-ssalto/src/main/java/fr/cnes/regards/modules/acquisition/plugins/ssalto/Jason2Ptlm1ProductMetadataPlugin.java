@@ -27,9 +27,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepo
  * comme pour les donnees Doris, et FILE_CREATION_DATE, qui ne se recupere pas de la meme maniere en fonction du nom des
  * fichiers.
  *
- * @author CS
- * @version 1.2
- * @since 1.2
+ * @author Christophe Mertz
  */
 
 public class Jason2Ptlm1ProductMetadataPlugin extends JasonPltm1ProductMetadataPlugin {

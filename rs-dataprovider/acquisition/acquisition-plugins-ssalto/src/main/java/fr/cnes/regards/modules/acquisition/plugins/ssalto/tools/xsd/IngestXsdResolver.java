@@ -51,16 +51,11 @@ public class IngestXsdResolver implements EntityResolver {
      * Les fichiers doivent etre accessible dans le classpath de l'application.
      * 
      * Cet objet est cree lors de la creation du premier objet XsdResolver.
-     * 
-     * @since 1.0
      */
     protected static Map<String, File> xsdMap = null;
 
     /**
      * Constructeur par defaut
-     * 
-     * @see XMLValidation
-     * @since 1.0
      */
     public IngestXsdResolver() {
         super();
@@ -82,10 +77,7 @@ public class IngestXsdResolver implements EntityResolver {
      *             En cas de probleme.
      * @throws java.io.IOException
      *             En cas de probleme.
-     * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
-     * @since 1.0
      */
-    @SuppressWarnings("resource")
     @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
@@ -128,7 +120,6 @@ public class IngestXsdResolver implements EntityResolver {
     }
 
     /**
-     * 
      * @param dictionary
      */
     public void addDictionary(File dictionary) {

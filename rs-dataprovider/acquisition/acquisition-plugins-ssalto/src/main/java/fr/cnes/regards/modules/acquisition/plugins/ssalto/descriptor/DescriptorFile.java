@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +43,16 @@ public class DescriptorFile {
     protected String projectName;
 
     /**
-     * une map contenant les elements du document Cette map est constitue de la maniere suivante : en clef : une String
-     * entityId en valeur une liste de EntityDescriptorElement
+     * Une {@link Map} contenant les elements du document.
+     * Cette map est constituée de la manière suivante :
+     * <li>en clef : une {@link String}
+     * <li>en valeur : une {@link List} de {@link EntityDescriptorElement}
      */
     private final HashMap<String, List<EntityDescriptorElement>> descElementMap;
 
     private final HashMap<String, List<EntityDescriptorElement>> updateElementMap;
 
-    private final List<String> deleteElementList_;
+    private final List<String> deleteElementList;
 
     /**
      * le nom du fichier descripteur
@@ -60,7 +63,7 @@ public class DescriptorFile {
         super();
         descElementMap = new HashMap<>();
         updateElementMap = new HashMap<>();
-        deleteElementList_ = new ArrayList<>();
+        deleteElementList = new ArrayList<>();
     }
 
     public String getFileName() {
@@ -80,7 +83,7 @@ public class DescriptorFile {
     }
 
     public List<String> getDeleteElementList() {
-        return deleteElementList_;
+        return deleteElementList;
     }
 
     public void setProjectName(String name) {
@@ -161,13 +164,13 @@ public class DescriptorFile {
 
         // For each element of the deletion descriptor element
         for (String entityId : elementList) {
-            if (deleteElementList_.contains(entityId)) {
+            if (deleteElementList.contains(entityId)) {
                 String msg = String.format("Descriptor bloc found in file '%s' for entity '%s'", fileName,
                                            pElement.getEntityId());
                 throw new DescriptorException(msg);
             }
 
-            deleteElementList_.add(entityId);
+            deleteElementList.add(entityId);
 
             LOGGER.info("***** Element added to delete element list : delete bloc id " + pElement.getEntityId());
         }
