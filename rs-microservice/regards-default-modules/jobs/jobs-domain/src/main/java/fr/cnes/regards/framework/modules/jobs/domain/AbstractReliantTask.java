@@ -11,10 +11,9 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,14 +33,13 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TaskSequence")
     protected Long id;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.PERSIST)
     // Using a join table better than a foreign key on t_job_info to avoid adding a dependence. A job/job_info knows
     // nothing (like Job Snow), it just have something to do regardless of everything else
-    @JoinTable(name = "ta_task_job_infos",
+    @JoinTable(name = "ta_task_job_info",
             joinColumns = @JoinColumn(name = "task_id", foreignKey = @ForeignKey(name = "fk_task")),
-            inverseJoinColumns = @JoinColumn(name = "job_info_id", foreignKey = @ForeignKey(name = "fk_job_info")),
-            uniqueConstraints = @UniqueConstraint(name = "uk_job_info_id", columnNames = "job_info_id"))
-    protected Set<JobInfo> jobInfos = new HashSet<>();
+            inverseJoinColumns = @JoinColumn(name = "job_info_id", foreignKey = @ForeignKey(name = "fk_job_info")))
+    protected JobInfo jobInfo;
 
     @ManyToMany(targetEntity = AbstractReliantTask.class, cascade = CascadeType.ALL)
     @JoinTable(name = "ta_tasks_reliant_tasks",
@@ -58,12 +56,12 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
         id = pId;
     }
 
-    public Set<JobInfo> getJobInfos() {
-        return jobInfos;
+    public JobInfo getJobInfo() {
+        return jobInfo;
     }
 
-    public void setJobInfos(Set<JobInfo> jobInfos) {
-        this.jobInfos = jobInfos;
+    public void setJobInfos(JobInfo jobInfo) {
+        this.jobInfo = jobInfo;
     }
 
     public Set<K> getReliantTasks() {

@@ -75,7 +75,7 @@ public class JobInfo {
     /**
      * Date when the job should be expired
      */
-    @Column(name = "expirationDate")
+    @Column(name = "expire_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
