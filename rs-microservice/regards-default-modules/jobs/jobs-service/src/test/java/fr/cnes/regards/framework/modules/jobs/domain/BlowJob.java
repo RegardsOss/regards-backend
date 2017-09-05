@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author xbrochard
  */
-public class BlowJob extends AbstractJob<Float> {
+public class BlowJob extends AbstractNoParamJob<Float> {
 
     @Override
     public void run() {
