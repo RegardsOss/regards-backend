@@ -1,9 +1,5 @@
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
-import java.util.Set;
-
-import org.assertj.core.util.Sets;
-
 public class STAFUrlFactory {
 
     public static final String STAF_URL_PROTOCOLE = "staf";
@@ -14,14 +10,7 @@ public class STAFUrlFactory {
 
     }
 
-    public static Set<STAFPhysicalFile> fromSTAFUrl(String pUrl) {
-        Set<STAFPhysicalFile> stafLocations = Sets.newHashSet();
-        // TODO : !!
-        return stafLocations;
-
-    }
-
-    public static String getSTAFUrl(String pArchiveName, String pStafNode, String pStafFileName) {
+    public static String getSTAFFullURL(String pArchiveName, String pStafNode, String pStafFileName) {
         return "";
     }
 

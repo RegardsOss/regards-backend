@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.file.utils.CutFileUtils;
@@ -57,7 +57,7 @@ public class STAFController {
     /**
      * List of prepared files to store into STAF System.
      */
-    private final Set<STAFPhysicalFile> filesToArchive = Sets.newHashSet();
+    private final Set<AbstractPhysicalFile> filesToArchive = Sets.newHashSet();
 
     /**
      * List of prepared tar to store into STAF System.
@@ -87,11 +87,11 @@ public class STAFController {
             Files.createDirectories(localWorkspace);
             if (!Files.isReadable(localWorkspace)) {
                 throw new IOException(
-                        String.format("STAF Local workspace %s is not readable", localWorkspace.toString()));
+                        String.format("[STAF] Local workspace %s is not readable", localWorkspace.toString()));
             }
             if (!Files.isWritable(localWorkspace)) {
                 throw new IOException(
-                        String.format("STAF Local workspace %s is not writable", localWorkspace.toString()));
+                        String.format("[STAF] Local workspace %s is not writable", localWorkspace.toString()));
             }
         }
         tarController = new TARController(pStafConfiguration, pLocalWorkspace);
@@ -102,15 +102,19 @@ public class STAFController {
      * @param pFileToArchivePerStafNode
      * @param pMode
      * @return
-     * @throws STAFException
      */
-    public Set<STAFPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
-            STAFArchiveModeEnum pMode) throws STAFException {
+    public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
+            STAFArchiveModeEnum pMode) {
 
         this.clear();
         for (String stafNode : pFileToArchivePerStafNode.keySet()) {
             for (Path fileToArchive : pFileToArchivePerStafNode.get(stafNode)) {
-                this.prepareFileToArchive(fileToArchive, stafNode, pMode);
+                try {
+                    this.prepareFileToArchive(fileToArchive, stafNode, pMode);
+                } catch (STAFException e) {
+                    LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
+                    LOG.debug(e.getMessage(), e);
+                }
             }
         }
         return this.getAllFilesToArchive();
@@ -123,30 +127,37 @@ public class STAFController {
      * @param pMode
      * @throws STAFException
      */
-    public void prepareFileToArchive(Path pFileToArchivePerStafNode, String pSTAFNode, STAFArchiveModeEnum pMode)
+    private void prepareFileToArchive(Path pFileToArchive, String pSTAFNode, STAFArchiveModeEnum pMode)
             throws STAFException {
         try {
+
+            // 1. Check file existance
+            if (!Files.exists(pFileToArchive) || !Files.isReadable(pFileToArchive)) {
+                String message = String.format("[STAF] File %s to archive, is not accessible",
+                                               pFileToArchive.toString());
+                LOG.error(message);
+                throw new STAFException(message);
+            }
 
             // 2. Manage file transformation if needed before staf storage
             switch (pMode) {
                 case CUT:
                     // 1. Cut file in part
-                    filesToArchive.add(cutFile(pFileToArchivePerStafNode, pSTAFNode));
+                    filesToArchive.addAll(cutFile(pFileToArchive, pSTAFNode).getCutedFiles());
                     // STAF Location : staf://<ARCHIVE>/<NODE>/<full_file_name>?cut=3
                     break;
                 case TAR:
                     // Add file to TAR
-                    tarController.addFileToTar(pFileToArchivePerStafNode, pSTAFNode, tarsToArchive);
+                    tarController.addFileToTar(pFileToArchive, pSTAFNode, tarsToArchive);
                     // STAF Location : staf://<ARCHIVE>/<NODE>/<tar_file>?file=<file_name>
                     break;
                 case NORMAL:
                 default:
                     // 1. Create simple file
-                    PhysicalFile simpleFile = new PhysicalFile(pSTAFNode, pFileToArchivePerStafNode,
-                            getFileNameForSTAF(pFileToArchivePerStafNode));
+                    PhysicalNormalFile simpleFile = new PhysicalNormalFile(pFileToArchive, pFileToArchive, pSTAFNode);
                     filesToArchive.add(simpleFile);
-                    LOG.info("New file prepared {} to staf : {}", simpleFile.getLocalFile().toString(),
-                             simpleFile.getStafFileName());
+                    LOG.info("[STAF] New file prepared {} to staf : {}/{}", simpleFile.getLocalFile().toString(),
+                             pSTAFNode, simpleFile.getSTAFFilePath());
                     // STAF Location : staf://<ARCHIVE>/<NODE>/<file_name>
                     break;
             }
@@ -175,14 +186,19 @@ public class STAFController {
         // 3. Do cut files
         Set<File> cutedLocalFiles = CutFileUtils.cutFile(pPhysicalFileToArchive.toFile(), tmpCutDirectory.toString(),
                                                          stafConfiguration.getMaxFileSize());
+        LOG.info("[STAF] Number of cuted files : {} for file {}", cutedLocalFiles.size(),
+                 pPhysicalFileToArchive.toString());
 
         // 4. Create cut Physical file object to return
-        Set<PhysicalFile> cutedFiles = Sets.newHashSet();
+        Set<PhysicalNormalFile> cutedFiles = Sets.newHashSet();
         for (File cutedFile : cutedLocalFiles) {
             Path cutedFilePath = Paths.get(cutedFile.getPath());
-            cutedFiles.add(new PhysicalFile(pSTAFNode, cutedFilePath, getFileNameForSTAF(cutedFilePath)));
+            PhysicalNormalFile cutedFilePart = new PhysicalNormalFile(cutedFilePath, pPhysicalFileToArchive, pSTAFNode);
+            cutedFiles.add(cutedFilePart);
         }
-        return new PhysicalCutFile(pSTAFNode, pPhysicalFileToArchive, cutedFiles);
+        PhysicalCutFile physicalCutFile = new PhysicalCutFile(pSTAFNode, pPhysicalFileToArchive, cutedFiles);
+        physicalCutFile.addRawAssociatedFile(pPhysicalFileToArchive);
+        return physicalCutFile;
     }
 
     /**
@@ -214,57 +230,77 @@ public class STAFController {
      * @return list of successfuly stored local file path.
      * @throws STAFException staf store error
      */
-    public List<String> archiveFiles(Map<String, String> pFilesToArchiveMap, boolean pReplaceMode)
-            throws STAFException {
-        List<String> archivedFiles = Lists.newArrayList();
+    public Set<AbstractPhysicalFile> doArchivePreparedFiles(boolean pReplaceMode) throws STAFException {
+        Set<String> archivedFiles = Sets.newHashSet();
+
+        // Create map bewteen localFile to archive and destination file path into STAF
+        Map<String, String> localFileToArchiveMap = Maps.newHashMap();
+        this.getAllFilesToArchive().forEach(stafFile -> {
+            if (PhysicalFileStatusEnum.TO_STORE.equals(stafFile.getStatus())) {
+                if ((stafFile.getLocalFilePath() != null) && (stafFile.getSTAFFilePath() != null)) {
+                    localFileToArchiveMap.put(stafFile.getLocalFilePath().toString(),
+                                              stafFile.getSTAFFilePath().toString());
+                } else {
+                    stafFile.setStatus(PhysicalFileStatusEnum.ERROR);
+                    LOG.warn("Undefined file to archive for origine(local)={} and destination(STAF)={}",
+                             stafFile.getLocalFilePath(), stafFile.getSTAFFilePath());
+                }
+            }
+        });
+
         stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
         try {
-            archivedFiles = stafService.archiveFiles(pFilesToArchiveMap, "/", pReplaceMode);
+            archivedFiles = stafService.archiveFiles(localFileToArchiveMap, "/", pReplaceMode);
+
+            archivedFiles.forEach(archivedFile ->
+            // For each file to store, check if the file has really been stored and set the status to STORED.
+            // @formatter:off
+            this.getAllFilesToArchive()
+                .stream()
+                .filter(f -> PhysicalFileStatusEnum.TO_STORE.equals(f.getStatus()))
+                .filter(f -> archivedFile.equals(f.getLocalFilePath().toString()))
+                .forEach(f -> f.setStatus(PhysicalFileStatusEnum.STORED)));
+            // @formatter:on
+
         } finally {
             stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
         }
-        return archivedFiles;
+        // Return all Physical file stored
+        // @formatter:off
+        return this.getAllFilesToArchive().stream()
+                .filter(file -> PhysicalFileStatusEnum.STORED.equals(file.getStatus()))
+                .collect(Collectors.toSet());
+        // @formatter:on
     }
 
-    public Set<STAFPhysicalFile> getAllFilesToArchive() {
-        Set<STAFPhysicalFile> allFilesToArchive = Sets.newHashSet();
+    public Set<Path> getRawFilesArchived() {
+        // Get all raw associated files to each file in STORED status
+        Set<Path> rawFilesStored = this.getAllFilesToArchive().stream()
+                .filter(file -> PhysicalFileStatusEnum.STORED.equals(file.getStatus()))
+                .flatMap(file -> file.getRawAssociatedFiles().stream()).distinct().collect(Collectors.toSet());
+
+        // Add all files stored temporarly in PENDING tar
+        // Files are concidered as STORED if there are in a current pending TAR. This TAR should be sent to
+        // STAF during a future archive process if new files make the TAR file big enought to be send to STAF
+        // system.
+        rawFilesStored
+                .addAll(tarsToArchive.stream().filter(tar -> PhysicalFileStatusEnum.PENDING.equals(tar.getStatus()))
+                        .flatMap(file -> file.getRawAssociatedFiles().stream()).distinct().collect(Collectors.toSet()));
+
+        return rawFilesStored;
+    }
+
+    public Set<AbstractPhysicalFile> getAllFilesToArchive() {
+        Set<AbstractPhysicalFile> allFilesToArchive = Sets.newHashSet();
         allFilesToArchive.addAll(filesToArchive);
         allFilesToArchive.addAll(tarsToArchive);
         return allFilesToArchive;
-    }
-
-    private String getFileNameForSTAF(Path pPhysicalFile) {
-
-        // Name of the archive in STAF
-        String result = null;
-
-        if (stafConfiguration.isConvertInvalidCaracters()) {
-            String fileName;
-            fileName = pPhysicalFile.getFileName().toString();
-            result = fileName.replace('-', '_');
-
-            // If the archive file name is changed, add a warning in the log
-            if (!result.equals(fileName)) {
-                LOG.warn("File name changed to be archive to staf from <" + fileName + "> to <" + result + ">.");
-            }
-        } else {
-            // Standard case, STAF Archive File Name is the Physical file name
-            if (pPhysicalFile != null) {
-                result = pPhysicalFile.getFileName().toString();
-            }
-        }
-        return result;
     }
 
     public void clear() {
         // Clear already calculated files to archive
         filesToArchive.clear();
         tarsToArchive.clear();
-    }
-
-    public void storePreparedFiles() {
-        // TODO Auto-generated method stub
-
     }
 
 }

@@ -111,6 +111,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public Set<STAFWorkingSubset> prepare(Collection<DataFile> dataFiles) {
         Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         // Create workingSubset for file to stored dispatching by archive mode
+
+        // TODO working subset per STAF NOde. Calculate here staf node for each file
         dispatchFilesToArchiveByArchiveMode(dataFiles).forEach((mode, files) -> {
             LOG.info("[STAF PLUGIN] {} - Prepare - Number of files to archive in mode {} : {}",
                      stafArchive.getArchiveName(), mode.toString(), dataFiles.size());
@@ -143,7 +145,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     private void doStore(Set<DataFile> pFilesToStore, STAFArchiveModeEnum pMode, Boolean pReplaceMode,
             ProgressManager pProgressManager) {
 
-        // 1. Dispatch fils to store by stafNode
+        // 1. Dispatch files to store by stafNode
         Map<String, Set<Path>> filesToPrepare = Maps.newHashMap();
         for (DataFile file : pFilesToStore) {
             Path filePath;
@@ -159,14 +161,17 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             }
         }
 
-        try {
-            stafController.clear();
-            stafController.prepareFilesToArchive(filesToPrepare, pMode);
-        } catch (STAFException e) {
-            // TODO : inform progress manager that all files are in error.
-        }
+        // 2. Perpare files to store
+        stafController.clear();
+        stafController.prepareFilesToArchive(filesToPrepare, pMode);
 
-        stafController.storePreparedFiles();
+        try {
+            // Do store all prepared files
+            stafController.doArchivePreparedFiles(pReplaceMode);
+        } catch (STAFException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
@@ -260,7 +265,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 try {
                     LOG.info("[STAF PLUGIN] {} - Store - Retrieving file from {} to {}", stafArchive.getArchiveName(),
                              file.getOriginUrl().getPath(), destinationFilePath.toFile().getPath());
-                    DownloadUtils.download(file.getOriginUrl(), destinationFilePath, null, file.getAlgorithm());
+                    DownloadUtils.download(file.getOriginUrl(), destinationFilePath, file.getAlgorithm());
                     // File is now in our workspace, so change origine url
                     // TODO : Can I change the origine URL ?
                     physicalFile = destinationFilePath.toFile();

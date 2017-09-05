@@ -1,39 +1,26 @@
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
+import fr.cnes.regards.framework.file.utils.ChecksumUtils;
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 
-public class PhysicalTARFile extends STAFPhysicalFile {
+public class PhysicalTARFile extends AbstractPhysicalFile {
 
-    private final String stafFileName;
+    private String stafFileName;
 
     private final Set<Path> localFiles;
 
     private Path localTarFile;
 
-    /**
-     * Status of the current Tar file.<br/>
-     * Does the TAR raised the conditions to be send to the STAF System ?<br/>
-     * If not, the TAR stays in workspace waiting for new files to add in.
-     */
-    private boolean toStore;
-
-    public PhysicalTARFile(String pSTAFNode, Set<Path> pLocalFiles, String pSTAFFileName, Path pLocalTarFile) {
-        super(STAFArchiveModeEnum.TAR, pSTAFNode);
+    public PhysicalTARFile(String pSTAFNode, Set<Path> pLocalFiles) {
+        super(STAFArchiveModeEnum.TAR, pSTAFNode, PhysicalFileStatusEnum.PENDING);
         localFiles = pLocalFiles;
-        stafFileName = pSTAFFileName;
-        localTarFile = pLocalTarFile;
-        toStore = false;
-    }
-
-    public boolean isToStore() {
-        return toStore;
-    }
-
-    public void setToStore(boolean pToStore) {
-        toStore = pToStore;
     }
 
     public String getStafFileName() {
@@ -50,6 +37,30 @@ public class PhysicalTARFile extends STAFPhysicalFile {
 
     public void setLocalTarFile(Path pLocalTarFile) {
         localTarFile = pLocalTarFile;
+    }
+
+    @Override
+    public Path getLocalFilePath() {
+        return localTarFile;
+    }
+
+    @Override
+    public Path getSTAFFilePath() {
+        // If staf file path is already calculed return it
+        if (stafFileName != null) {
+            return Paths.get(super.getStafNode(), stafFileName);
+        } else if ((localTarFile != null) && localTarFile.toFile().exists() && localTarFile.toFile().canRead()) {
+            // Else, calculate staf file name with the current date
+            try (FileInputStream is = new FileInputStream(localTarFile.toFile())) {
+                stafFileName = ChecksumUtils.computeHexChecksum(is, "md5");
+                return Paths.get(super.getStafNode(), stafFileName);
+            } catch (IOException | NoSuchAlgorithmException e) {
+                LOG.error("Error calculating file checksum {}", localTarFile.toString(), e);
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
 }
