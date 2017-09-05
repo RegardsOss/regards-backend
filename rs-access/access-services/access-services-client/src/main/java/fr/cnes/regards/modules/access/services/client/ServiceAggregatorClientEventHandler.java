@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.access.services.client;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -34,7 +35,8 @@ import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasets
  *
  * @author Xavier-Alexandre Brochard
  */
-public class AccessServicesClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
+@Component
+public class ServiceAggregatorClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     private final ISubscriber subscriber;
 
@@ -47,7 +49,7 @@ public class AccessServicesClientEventHandler implements ApplicationListener<App
      * @param pRuntimeTenantResolver
      * @param pServiceAggregatorClient
      */
-    public AccessServicesClientEventHandler(ISubscriber pSubscriber, IRuntimeTenantResolver pRuntimeTenantResolver,
+    public ServiceAggregatorClientEventHandler(ISubscriber pSubscriber, IRuntimeTenantResolver pRuntimeTenantResolver,
             IServiceAggregatorClient pServiceAggregatorClient) {
         super();
         subscriber = pSubscriber;
