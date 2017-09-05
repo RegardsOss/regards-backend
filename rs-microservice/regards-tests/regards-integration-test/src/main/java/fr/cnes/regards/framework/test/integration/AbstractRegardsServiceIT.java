@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.test.integration;
 
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -71,7 +72,9 @@ public abstract class AbstractRegardsServiceIT {
     @Autowired
     protected GsonBuilder gsonBuilder;
 
-    protected abstract Logger getLogger();
+    protected Logger getLogger() {
+        return LoggerFactory.getLogger(this.getClass());
+    }
 
     /**
      * Generate token for default tenant
