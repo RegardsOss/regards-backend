@@ -75,7 +75,7 @@ public class JobInfo {
     /**
      * Date when the job should be expired
      */
-    @Column(name = "expirationDate")
+    @Column(name = "expire_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
@@ -144,6 +144,8 @@ public class JobInfo {
         this.status.setStatus(status);
         switch (status) {
             case PENDING:
+            case QUEUED:
+            case TO_BE_RUN:
                 this.status.setPercentCompleted(0);
                 break;
             case RUNNING:

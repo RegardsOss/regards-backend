@@ -25,13 +25,17 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  */
 public enum JobStatus {
     /**
-     * Job created
+     * Job created but not yet to be taken into account
      */
     PENDING,
     /**
-     * Job waiting to be taken into account by job service pool
+     * Job taken into account by job service pool
      */
     QUEUED,
+    /**
+     * Job taken into account by a microservice to be run
+     */
+    TO_BE_RUN,
     /**
      * Job running
      */
@@ -47,11 +51,7 @@ public enum JobStatus {
     /**
      * Job cancelled
      */
-    ABORTED,
-    /**
-     * Unused state for job temporary suspended because requiring additional resources
-     */
-    SUSPENDED;
+    ABORTED;
 
     @Override
     public String toString() {

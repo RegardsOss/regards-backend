@@ -146,7 +146,7 @@ public class JobServiceTest {
         waitJobInfo.setDescription("Job that wait 500ms");
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
-        waitJobInfo = jobInfoService.create(waitJobInfo);
+        waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
         // Wait for job to terminate
         while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < 1) {
@@ -164,7 +164,7 @@ public class JobServiceTest {
         waitJobInfo.setDescription("Job that wait 3 x 1s");
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
-        waitJobInfo = jobInfoService.create(waitJobInfo);
+        waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
         jobInfoService.stopJob(waitJobInfo.getId());
         LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
         Thread.sleep(1_500);
@@ -180,7 +180,7 @@ public class JobServiceTest {
         waitJobInfo.setDescription("Job that wait 3 x 1s");
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
-        waitJobInfo = jobInfoService.create(waitJobInfo);
+        waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
         Thread.sleep(2_000);
         LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
@@ -197,7 +197,7 @@ public class JobServiceTest {
         failedJobInfo.setPriority(10);
         failedJobInfo.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo.setDescription("Job that failed after 1s");
-        failedJobInfo = jobInfoService.create(failedJobInfo);
+        failedJobInfo = jobInfoService.createAsQueued(failedJobInfo);
 
         LOGGER.info("Failed job : {}", failedJobInfo.getId());
 
@@ -223,7 +223,7 @@ public class JobServiceTest {
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         for (int i = 0; i < jobInfos.length; i++) {
-            jobInfos[i] = jobInfoService.create(jobInfos[i]);
+            jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
         }
         try {
             // Wait to be sure jobs are treated by pool
@@ -256,7 +256,7 @@ public class JobServiceTest {
         springJobInfo.setClassName(SpringJob.class.getName());
         springJobInfo.setDescription("Job with spring beans");
 
-        jobInfoService.create(springJobInfo);
+        jobInfoService.createAsQueued(springJobInfo);
 
         // Wait for job to terminate
         while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < 1) {

@@ -53,34 +53,34 @@ public class JobStatusInfo implements Observer {
     /**
      * Date of current status update
      */
-    @Column(name = "statusDate")
+    @Column(name = "status_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime statusDate;
 
     /**
      * Estimated date to job completion
      */
-    @Column(name = "estimatedCompletion")
+    @Column(name = "estimate_completion")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime estimatedCompletion;
 
     /**
      * the job advancement
      */
-    @Column(name = "percentCompleted")
+    @Column(name = "percent_complete")
     private int percentCompleted;
 
     /**
      * the job creation date
      */
-    @Column(name = "startDate")
+    @Column(name = "start_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime startDate;
 
     /**
      * the job end date
      */
-    @Column(name = "stopDate")
+    @Column(name = "stop_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
 
