@@ -13,8 +13,8 @@ public class PhysicalNormalFile extends AbstractPhysicalFile {
 
     private final Path localFile;
 
-    public PhysicalNormalFile(Path pLocalFile, Path pRawFilePath, String pSTAFNode) {
-        super(STAFArchiveModeEnum.NORMAL, pSTAFNode, PhysicalFileStatusEnum.TO_STORE);
+    public PhysicalNormalFile(Path pLocalFile, Path pRawFilePath, String pSTAFArchiveName, String pSTAFNode) {
+        super(STAFArchiveModeEnum.NORMAL, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.TO_STORE);
         localFile = pLocalFile;
         super.addRawAssociatedFile(pRawFilePath);
     }

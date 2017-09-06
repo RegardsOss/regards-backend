@@ -28,6 +28,11 @@ public abstract class AbstractPhysicalFile {
     private final String stafNode;
 
     /**
+     * Name of the STAF Archive where the file is stored.
+     */
+    private final String stafArchiveName;
+
+    /**
      * file status
      */
     protected PhysicalFileStatusEnum status;
@@ -40,12 +45,15 @@ public abstract class AbstractPhysicalFile {
     /**
      *
      * @param pArchiveMode {@link STAFArchiveModeEnum} STAF Archiving mode TAR|CUT|NORMAL
+     * @param pSTAFArchiveName {@link String} Name of the STAF Archive where the file is stored.
      * @param pSTAFNode {@link String} Path into the STAF Archive where to store the current file.
      * @param pIsReadyForSTAFTransfer {@link Boolean} Does this file is ready to be transfer to STAF ?
      */
-    public AbstractPhysicalFile(STAFArchiveModeEnum pArchiveMode, String pSTAFNode, PhysicalFileStatusEnum pStatus) {
+    public AbstractPhysicalFile(STAFArchiveModeEnum pArchiveMode, String pSTAFArchiveName, String pSTAFNode,
+            PhysicalFileStatusEnum pStatus) {
         super();
         archiveMode = pArchiveMode;
+        stafArchiveName = pSTAFArchiveName;
         stafNode = pSTAFNode;
         status = pStatus;
     }
@@ -59,8 +67,9 @@ public abstract class AbstractPhysicalFile {
     /**
      * Return the STAF Path where to transfer file when ready.
      * @return {@link Path} STAF File path
+     * @throws STAFException Error during STAF Path creation.
      */
-    public abstract Path getSTAFFilePath();
+    public abstract Path getSTAFFilePath() throws STAFException;
 
     public STAFArchiveModeEnum getArchiveMode() {
         return archiveMode;
@@ -88,6 +97,10 @@ public abstract class AbstractPhysicalFile {
 
     public void setStatus(PhysicalFileStatusEnum pStatus) {
         status = pStatus;
+    }
+
+    public String getStafArchiveName() {
+        return stafArchiveName;
     }
 
 }

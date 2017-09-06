@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -162,16 +163,24 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         }
 
         // 2. Perpare files to store
-        stafController.clear();
         stafController.prepareFilesToArchive(filesToPrepare, pMode);
 
         try {
             // Do store all prepared files
             stafController.doArchivePreparedFiles(pReplaceMode);
         } catch (STAFException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // TODO Handle preparation error.
         }
+
+        stafController.getRawFilesArchived().forEach((rawFile, storedUrl) -> {
+            Optional<DataFile> dataFile = pFilesToStore.stream().filter(data -> data.getOriginUrl().equals(rawFile))
+                    .findFirst();
+            if (dataFile.isPresent()) {
+                pProgressManager.storageSucceed(dataFile.get(), storedUrl);
+            } else {
+                LOG.warn("Raw file archived do not match a given DataFile {}", rawFile);
+            }
+        });
 
     }
 

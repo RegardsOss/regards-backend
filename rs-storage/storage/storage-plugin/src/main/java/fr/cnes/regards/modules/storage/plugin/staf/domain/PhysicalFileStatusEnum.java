@@ -18,6 +18,11 @@ public enum PhysicalFileStatusEnum {
     STORED,
 
     /**
+     * File has been stored in local temporary file system. (Waiting to be send to STAF System).
+     */
+    LOCALY_STORED,
+
+    /**
      * Error during STAF archive.
      */
     ERROR;

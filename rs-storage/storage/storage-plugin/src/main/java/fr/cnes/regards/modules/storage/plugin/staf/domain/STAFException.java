@@ -7,4 +7,8 @@ public class STAFException extends Exception {
         super(e);
     }
 
+    public STAFException(String pMessage) {
+        super(pMessage);
+    }
+
 }

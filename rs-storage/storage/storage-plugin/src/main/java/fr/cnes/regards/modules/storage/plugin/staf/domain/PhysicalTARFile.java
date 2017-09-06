@@ -1,34 +1,45 @@
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.Map;
 
-import fr.cnes.regards.framework.file.utils.ChecksumUtils;
+import com.google.common.collect.Maps;
+
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 
 public class PhysicalTARFile extends AbstractPhysicalFile {
 
-    private String stafFileName;
+    /**
+     * Map to assciate raw files to add into the STAF System and prepared files into the TAR directory used to create the TAR file.
+     *
+     * Key : file in tar path (file added in the tar file stored in STAF)
+     * value : raw file path (raw file to archive)
+     */
+    private final Map<Path, Path> filesInTar = Maps.newHashMap();
 
-    private final Set<Path> localFiles;
-
+    /**
+     * {@link Path} to the local TAR file to store into STAF system.
+     */
     private Path localTarFile;
 
-    public PhysicalTARFile(String pSTAFNode, Set<Path> pLocalFiles) {
-        super(STAFArchiveModeEnum.TAR, pSTAFNode, PhysicalFileStatusEnum.PENDING);
-        localFiles = pLocalFiles;
+    /**
+     * {@link Path} to the local directory containing files to TAR
+     */
+    private Path localTarDirectory;
+
+    /**
+     * {@link LocalDateTime} creation date of the TAR directory.
+     */
+    private LocalDateTime localTarDirectoryCreationDate;
+
+    public PhysicalTARFile(String pSTAFArchiveName, String pSTAFNode) {
+        super(STAFArchiveModeEnum.TAR, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.PENDING);
     }
 
-    public String getStafFileName() {
-        return stafFileName;
-    }
-
-    public Set<Path> getLocalFiles() {
-        return localFiles;
+    public Map<Path, Path> getFilesInTar() {
+        return filesInTar;
     }
 
     public Path getLocalTarFile() {
@@ -39,27 +50,37 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
         localTarFile = pLocalTarFile;
     }
 
+    public void addFileInTar(Path pFileInTar, Path pRawFile) {
+        filesInTar.put(pFileInTar, pRawFile);
+    }
+
+    public Path getLocalTarDirectory() {
+        return localTarDirectory;
+    }
+
+    public void setLocalTarDirectory(Path pLocalTarDirectory) {
+        localTarDirectory = pLocalTarDirectory;
+    }
+
+    public LocalDateTime getLocalTarDirectoryCreationDate() {
+        return localTarDirectoryCreationDate;
+    }
+
+    public void setLocalTarDirectoryCreationDate(LocalDateTime pLocalTarDirectoryCreationDate) {
+        localTarDirectoryCreationDate = pLocalTarDirectoryCreationDate;
+    }
+
     @Override
     public Path getLocalFilePath() {
         return localTarFile;
     }
 
     @Override
-    public Path getSTAFFilePath() {
-        // If staf file path is already calculed return it
-        if (stafFileName != null) {
-            return Paths.get(super.getStafNode(), stafFileName);
-        } else if ((localTarFile != null) && localTarFile.toFile().exists() && localTarFile.toFile().canRead()) {
-            // Else, calculate staf file name with the current date
-            try (FileInputStream is = new FileInputStream(localTarFile.toFile())) {
-                stafFileName = ChecksumUtils.computeHexChecksum(is, "md5");
-                return Paths.get(super.getStafNode(), stafFileName);
-            } catch (IOException | NoSuchAlgorithmException e) {
-                LOG.error("Error calculating file checksum {}", localTarFile.toString(), e);
-                return null;
-            }
+    public Path getSTAFFilePath() throws STAFException {
+        if (localTarFile != null) {
+            return Paths.get(super.getStafNode(), localTarFile.getFileName().toString());
         } else {
-            return null;
+            throw new STAFException("[STAF] Error during STAF PATH creation");
         }
     }
 
