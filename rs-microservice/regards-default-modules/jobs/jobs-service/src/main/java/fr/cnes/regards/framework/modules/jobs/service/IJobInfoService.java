@@ -36,7 +36,7 @@ public interface IJobInfoService {
     /**
      * Find Job info with highest priority and update status to RUNNING
      */
-    JobInfo findHighestPriorityQueuedJobAndSetAsRunning();
+    JobInfo findHighestPriorityQueuedJobAndSetAsToBeRun();
 
     /**
      * Create a JobInfo setting its state as PENDING ie <b>it will not be taken into account by job service until its

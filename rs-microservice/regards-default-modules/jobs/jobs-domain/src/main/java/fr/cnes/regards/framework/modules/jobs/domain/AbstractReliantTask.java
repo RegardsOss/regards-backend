@@ -60,7 +60,7 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
         return jobInfo;
     }
 
-    public void setJobInfos(JobInfo jobInfo) {
+    public void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
     }
 
