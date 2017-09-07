@@ -3,20 +3,21 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.net.MalformedURLException;
-
-import javax.validation.constraints.NotNull;
 
 public class ContentInformation implements Serializable {
 
     @NotNull
     private DataObject dataObject;
 
+    @NotNull
     private RepresentationInformation representationInformation;
 
-    public ContentInformation(DataObject pDataObject) {
-        dataObject = pDataObject;
+    public ContentInformation(DataObject dataObject, RepresentationInformation representationInformation) {
+        this.dataObject = dataObject;
+        this.representationInformation = representationInformation;
     }
 
     /**
@@ -43,7 +44,6 @@ public class ContentInformation implements Serializable {
     }
 
     public ContentInformation generate() throws MalformedURLException {
-
         dataObject = new DataObject().generate();
         representationInformation = new RepresentationInformation().generate();
         return this;
@@ -74,18 +74,16 @@ public class ContentInformation implements Serializable {
             if (other.dataObject != null) {
                 return false;
             }
-        } else
-            if (!dataObject.equals(other.dataObject)) {
-                return false;
-            }
+        } else if (!dataObject.equals(other.dataObject)) {
+            return false;
+        }
         if (representationInformation == null) {
             if (other.representationInformation != null) {
                 return false;
             }
-        } else
-            if (!representationInformation.equals(other.representationInformation)) {
-                return false;
-            }
+        } else if (!representationInformation.equals(other.representationInformation)) {
+            return false;
+        }
         return true;
     }
 

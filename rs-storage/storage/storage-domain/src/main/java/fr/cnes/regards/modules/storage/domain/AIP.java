@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
@@ -50,6 +51,7 @@ public class AIP implements Serializable {
     /**
      * List of Information Object
      */
+    @NotNull
     private List<InformationObject> informationObjects;
 
     private List<Event> history;
@@ -227,5 +229,9 @@ public class AIP implements Serializable {
 
     public Event getSubmissionEvent() {
         return getHistory().stream().filter(e->e.getType().equals(EventType.SUBMISSION)).findFirst().orElse(null);
+    }
+
+    public void addEvent(Event event) {
+        getHistory().add(event);
     }
 }

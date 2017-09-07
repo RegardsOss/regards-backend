@@ -21,6 +21,12 @@ public class Syntax implements Serializable {
     public Syntax() {
     }
 
+    public Syntax(String description, String mimeType, String name) {
+        this.description = description;
+        this.mimeType = mimeType;
+        this.name = name;
+    }
+
     public String getDescription() {
         return description;
     }

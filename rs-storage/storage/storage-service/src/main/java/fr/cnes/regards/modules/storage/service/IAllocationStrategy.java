@@ -25,7 +25,5 @@ import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 @PluginInterface(description = "Interface for all AllocationStrategy plugin")
 public interface IAllocationStrategy {
 
-    IDataStorage getStorage(EntityType pAipType, FileType pFileType, List<IDataStorage> pStoragesAvailable);
-
     Multimap<PluginConfiguration, DataFile> dispatch(Collection<DataFile> dataFilesToHandle);
 }

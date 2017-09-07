@@ -24,6 +24,11 @@ public class FixityInformation implements Serializable {
         super();
     }
 
+    public FixityInformation(String algorithm, String checksum) {
+        this.algorithm = algorithm;
+        this.checksum = checksum;
+    }
+
     private String sha1(String input) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA1");
         byte[] result = digest.digest(input.getBytes());

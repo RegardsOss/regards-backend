@@ -6,8 +6,6 @@ package fr.cnes.regards.modules.storage.plugin.local;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -86,8 +84,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         }
         try {
             boolean downloadOk = DownloadUtils
-                    .downloadAndCheckChecksum(data.getOriginUrl(), Paths.get(fullPathToFile), data.getAlgorithm(), data.getChecksum());
-                if (!downloadOk) {
+                    .downloadAndCheckChecksum(data.getOriginUrl(), Paths.get(fullPathToFile), data.getAlgorithm(),
+                                              data.getChecksum());
+            if (!downloadOk) {
                 String failureCause = String
                         .format("Storage of DataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
                                 data.getChecksum(), fullPathToFile);
@@ -115,10 +114,28 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     private String getStorageLocation(DataFile data) throws IOException {
         String checksum = data.getChecksum();
         String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
-        Files.createDirectory(Paths.get(storageLocation));
-        // files are stored with the checksum as their name and their extension is based on their MIMEType
-        String fullPathToFile = storageLocation + "/" + checksum + "." + data.getMimeType().getSubtype().toLowerCase();
+        if(!Files.exists(Paths.get(storageLocation))) {
+            Files.createDirectory(Paths.get(storageLocation));
+        }
+        // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url
+        String fullPathToFile = storageLocation + "/" + checksum + getExtension(data.getOriginUrl());
         return fullPathToFile;
+    }
+
+    /**
+     * does not take into account hidden files
+     *
+     * @param originUrl
+     * @return the extension with '.' prefixing it or "" in case of hidden files and files without extension
+     */
+    private String getExtension(URL originUrl) {
+        String[] pathParts = originUrl.getPath().split("/");
+        String fileName = pathParts[pathParts.length - 1];
+        int i;
+        if ((i = fileName.indexOf('.')) > 0) {
+            return fileName.substring(i);
+        }
+        return "";
     }
 
     @Override

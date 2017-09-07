@@ -69,15 +69,20 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         return null;
     }
 
+    @Override
+    public void delete(Set<DataFile> dataFiles, ProgressManager progressManager) {
+
+    }
+
     private Map<STAFArchiveModeEnum, Set<DataFile>> dispatchFilesToArchive(Set<DataFile> pFiles) {
         Map<STAFArchiveModeEnum, Set<DataFile>> dispatchedFiles = new EnumMap<>(STAFArchiveModeEnum.class);
-        pFiles.forEach(file -> {
-            STAFArchiveModeEnum mode = getFileArchiveMode(file.getFileSize());
-            dispatchedFiles.merge(mode, new HashSet<>(Arrays.asList(file)), (olds, news) -> {
-                olds.addAll(news);
-                return olds;
-            });
-        });
+//        pFiles.forEach(file -> {
+//            STAFArchiveModeEnum mode = getFileArchiveMode(file.getFileSize());
+//            dispatchedFiles.merge(mode, new HashSet<>(Arrays.asList(file)), (olds, news) -> {
+//                olds.addAll(news);
+//                return olds;
+//            });
+//        });
         return dispatchedFiles;
     }
 
@@ -101,11 +106,11 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     }
 
-    @Override
-    public void delete(STAFWorkingSubset pWorkingSubset, ProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
-
-    }
+//    @Override
+//    public void delete(STAFWorkingSubset pWorkingSubset, ProgressManager pProgressManager) {
+//        // TODO Auto-generated method stub
+//
+//    }
 
     @Override
     public Set<DataStorageInfo> getMonitoringInfos() {

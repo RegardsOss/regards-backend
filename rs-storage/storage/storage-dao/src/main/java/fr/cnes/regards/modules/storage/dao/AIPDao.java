@@ -104,4 +104,9 @@ public class AIPDao implements IAIPDao {
         return reconstructAip(repo.findOneByIpId(ipId));
     }
 
+    @Override
+    public void deleteAll() {
+        repo.deleteAll();
+    }
+
 }

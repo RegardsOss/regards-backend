@@ -18,6 +18,10 @@ public class RepresentationInformation implements Serializable {
 
     }
 
+    public RepresentationInformation(Syntax syntax) {
+        this.syntax = syntax;
+    }
+
     public Syntax getSyntax() {
         return syntax;
     }

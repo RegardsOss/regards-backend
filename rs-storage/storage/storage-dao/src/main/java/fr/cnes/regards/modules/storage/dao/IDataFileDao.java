@@ -20,4 +20,8 @@ public interface IDataFileDao {
     DataFile findByAipAndType(AIP aip, DataType dataType);
 
     Collection<DataFile> save(Collection<DataFile> dataFiles);
+
+    void deleteAll();
+
+    DataFile findOneById(Long dataFileId);
 }

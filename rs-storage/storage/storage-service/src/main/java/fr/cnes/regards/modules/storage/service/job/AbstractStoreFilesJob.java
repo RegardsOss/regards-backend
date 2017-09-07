@@ -10,12 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
@@ -26,7 +29,7 @@ import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public abstract class AbstractStoreFilesJob extends AbstractJob {
+public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     public static final String PLUGIN_TO_USE_PARAMETER_NAME = "pluginToUse";
 
@@ -41,7 +44,10 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
     protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    protected PluginService pluginService;
+    protected IPluginService pluginService;
+
+    @Autowired
+    protected IPublisher publisher;
 
     protected ProgressManager progressManager;
 
@@ -89,7 +95,14 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
     }
 
     @Override
+    public void setParameters(Set<JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+        checkParameters(parameters);
+        this.parameters=parameters;
+    }
+
+    @Override
     public void run() {
+        progressManager = new ProgressManager(publisher);
         // first lets check that all parameters are there and valid.
         Map<String, JobParameter> parameterMap = beforeRun();
         // then lets store the files
@@ -146,4 +159,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
         }
     }
 
+    public ProgressManager getProgressManager() {
+        return progressManager;
+    }
 }

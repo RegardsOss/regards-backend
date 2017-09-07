@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -15,13 +16,15 @@ import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 
 public class ProgressManager {
 
-    private Publisher publisher;
+    private IPublisher publisher;
 
     private Set<String> failureCauses = Sets.newHashSet();
 
     private boolean errorStatus = false;
 
-    public ProgressManager(Publisher publisher) {
+    private Collection<DataFile> failedDataFile = Sets.newHashSet();
+
+    public ProgressManager(IPublisher publisher) {
         this.publisher = publisher;
     }
 
@@ -35,6 +38,7 @@ public class ProgressManager {
     public void storageFailed(DataFile dataFile, String cause) {
         failureCauses.add(cause);
         errorStatus = true;
+        failedDataFile.add(dataFile);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE, StorageEventType.FAILED);
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
@@ -56,5 +60,9 @@ public class ProgressManager {
 
     public Set<String> getFailureCauses() {
         return failureCauses;
+    }
+
+    public Collection<DataFile> getFailedDataFile() {
+        return failedDataFile;
     }
 }

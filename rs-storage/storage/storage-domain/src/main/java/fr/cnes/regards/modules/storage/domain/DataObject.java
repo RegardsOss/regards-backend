@@ -3,18 +3,10 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 
 import fr.cnes.regards.framework.urn.DataType;
 
@@ -25,13 +17,18 @@ import fr.cnes.regards.framework.urn.DataType;
  */
 public class DataObject implements Serializable {
 
+    @NotNull
     private DataType type;
 
+    @NotNull
     private URL url;
 
-
     public DataObject() {
+    }
 
+    public DataObject(DataType type, URL url) {
+        this.type = type;
+        this.url = url;
     }
 
     public DataType getType() {
@@ -58,8 +55,8 @@ public class DataObject implements Serializable {
 
     @Override
     public boolean equals(Object pOther) {
-        return (pOther instanceof DataObject) && type.equals(((DataObject) pOther).type)
-                && url.toString().equals(((DataObject) pOther).url.toString());
+        return (pOther instanceof DataObject) && type.equals(((DataObject) pOther).type) && url.toString()
+                .equals(((DataObject) pOther).url.toString());
     }
 
     @Override
