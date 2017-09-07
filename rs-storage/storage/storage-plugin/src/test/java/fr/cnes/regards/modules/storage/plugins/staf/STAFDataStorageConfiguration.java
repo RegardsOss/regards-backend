@@ -23,10 +23,10 @@ public class STAFDataStorageConfiguration {
     public STAFManager getStafManager() throws STAFException {
         STAFConfiguration configuration = new STAFConfiguration();
         configuration.setMinFileSize(5000L);
-        configuration.setMaxFileSize(1000L);
+        configuration.setMaxFileSize(10000L);
 
         // TODO : Use of two limits max and threshold
-        configuration.setTarSizeThreshold(5000L);
+        configuration.setTarSizeThreshold(2000L);
         configuration.setMaxTarSize(5000L);
         configuration.setMaxTarArchivingHours(5L);
 
@@ -43,6 +43,7 @@ public class STAFDataStorageConfiguration {
         STAFSession stafSessionMock = Mockito.mock(STAFSession.class);
         STAFManager stafManagerMock = Mockito.mock(STAFManager.class);
 
+        Mockito.when(stafManagerMock.getNewArchiveAccessService(Mockito.any())).thenCallRealMethod();
         Mockito.when(stafManagerMock.getConfiguration()).thenReturn(configuration);
         Mockito.when(stafManagerMock.getReservation(Mockito.any())).thenReturn(0);
         // Simulate archive is ok for all files.

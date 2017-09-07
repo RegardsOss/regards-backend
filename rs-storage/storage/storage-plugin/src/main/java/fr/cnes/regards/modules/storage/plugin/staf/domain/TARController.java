@@ -164,8 +164,8 @@ public class TARController {
                 // Delete curent directory and all associated files
                 FileUtils.deleteDirectory(workingTarPhysicalFile.getLocalTarDirectory().toFile());
             } else {
-                LOG.info("[STAF] Current TAR {} not big enougth to be stored in staf ({}octets < {}octets)",
-                         workingTarPhysicalFile.getLocalTarDirectory(), size, stafConfiguration.getMaxTarSize());
+                LOG.debug("[STAF] Current TAR {} not big enougth to be stored in staf ({}octets < {}octets)",
+                          workingTarPhysicalFile.getLocalTarDirectory(), size, stafConfiguration.getMaxTarSize());
             }
 
             LOG.debug("[STAF] Releasing lock for directory {}", lockFile.toString());

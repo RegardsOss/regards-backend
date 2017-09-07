@@ -348,8 +348,8 @@ public class STAFController {
         // 2. Do cut files
         Set<File> cutedLocalFiles = CutFileUtils.cutFile(pPhysicalFileToArchive.toFile(), tmpCutDirectory.toString(),
                                                          stafConfiguration.getMaxFileSize());
-        LOG.debug("[STAF] Number of cuted files : {} for file {}", cutedLocalFiles.size(),
-                  pPhysicalFileToArchive.toString());
+        LOG.info("[STAF] Number of cuted files : {} for file {}", cutedLocalFiles.size(),
+                 pPhysicalFileToArchive.toString());
 
         // 3. Create cut Physical file object to return
         PhysicalCutFile physicalCutFile = new PhysicalCutFile(pPhysicalFileToArchive,
