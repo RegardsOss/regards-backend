@@ -131,13 +131,11 @@ public class JobInfo {
         super();
     }
 
-    public JobInfo(Integer priority, Set<JobParameter> parameters, String owner, String className,
-            JobStatusInfo status) {
+    public JobInfo(Integer priority, Set<JobParameter> parameters, String owner, String className) {
         this.priority = priority;
         this.parameters = parameters;
         this.owner = owner;
         this.className = className;
-        this.status = status;
     }
 
     public void updateStatus(JobStatus status) {
@@ -233,13 +231,6 @@ public class JobInfo {
      */
     public void setClassName(String pClassName) {
         className = pClassName;
-    }
-
-    /**
-     * @param pStatus the status to set
-     */
-    public void setStatus(JobStatusInfo pStatus) {
-        status = pStatus;
     }
 
     public void setPriority(Integer priority) {
