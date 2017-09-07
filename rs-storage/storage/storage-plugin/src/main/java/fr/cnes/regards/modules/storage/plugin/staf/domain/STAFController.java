@@ -1,13 +1,16 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,8 +26,25 @@ import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.STAFConfiguration;
 import fr.cnes.regards.framework.staf.STAFException;
 import fr.cnes.regards.framework.staf.STAFService;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFTarException;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFUrlFactory;
 
+/**
+ * STAF Controller to handle STAF recommandations before storing files.<br/>
+ * Recommandations are :
+ * <ul>
+ * <li>Do not store short files as single files into STAF Archive. Store short files into a single archive file (TAR File)</li>
+ * <li>Do not store files that exceed Xoctets. Cut too big files into multiple files in STAF</li>
+ * </ul>
+ * <br/>
+ * To do so, use the prepareFilesToArchive method.<br/>
+ * Then you can use the doArchivePreparedFiles to store the prepared files.<br/>
+ * After the store process is over, you can retrieve the associations between <br/>
+ * raw files and actually stored files with the getRawFilesArchived method.
+ *
+ * @author Sébastien Binda
+ *
+ */
 public class STAFController {
 
     /**
@@ -110,10 +130,10 @@ public class STAFController {
             STAFArchiveModeEnum pMode) {
 
         this.clearPreparedFiles();
-        for (String stafNode : pFileToArchivePerStafNode.keySet()) {
-            for (Path fileToArchive : pFileToArchivePerStafNode.get(stafNode)) {
+        for (Entry<String, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
+            for (Path fileToArchive : stafNode.getValue()) {
                 try {
-                    this.prepareFileToArchive(fileToArchive, stafNode, pMode);
+                    this.prepareFileToArchive(fileToArchive, stafNode.getKey(), pMode);
                 } catch (STAFException e) {
                     LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
                     LOG.debug(e.getMessage(), e);
@@ -149,7 +169,7 @@ public class STAFController {
                         LOG.warn("Undefined file to archive for origine(local)={} and destination(STAF)={}",
                                  stafFile.getLocalFilePath(), stafFile.getSTAFFilePath());
                     }
-                } catch (fr.cnes.regards.modules.storage.plugin.staf.domain.STAFException e) {
+                } catch (fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
@@ -218,7 +238,7 @@ public class STAFController {
                 try {
                     Map<Path, URL> urls = STAFUrlFactory.getSTAFFullURLs(file);
                     rawFilesStored.putAll(urls);
-                } catch (MalformedURLException | fr.cnes.regards.modules.storage.plugin.staf.domain.STAFException e) {
+                } catch (fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException e) {
                     // Error creating file URL
                     LOG.error("Error during STAF URL creation for staf file {}",file.getLocalFilePath(),e);
                 }
@@ -253,27 +273,24 @@ public class STAFController {
      * The archive mode to store file in STAF is calculated with the file size.
      * The modes are {@link STAFArchiveModeEnum}
      * @param pFileSize int
-     * @return
+     * @return {@link STAFArchiveModeEnum}
      */
     public STAFArchiveModeEnum getFileArchiveMode(Long pFileSize) {
-
         if (pFileSize < stafConfiguration.getMinFileSize()) {
             return STAFArchiveModeEnum.TAR;
         }
-
         if (pFileSize > stafConfiguration.getMaxFileSize()) {
             return STAFArchiveModeEnum.CUT;
         }
-
         return STAFArchiveModeEnum.NORMAL;
     }
 
     /**
      * Prepare the given file to archive into the staf.
-     * @param pFileToArchivePerStafNode
-     * @param pSTAFNode
-     * @param pMode
-     * @throws STAFException
+     * @param pFileToArchivePerStafNode {@lnik Path} File to prepare.
+     * @param pSTAFNode {@link String} STAF Node where to store file.
+     * @param pMode {@link STAFArchiveModeEnum} Archiving mode
+     * @throws STAFException Error during file preparation. File is not available for store.
      */
     private void prepareFileToArchive(Path pFileToArchive, String pSTAFNode, STAFArchiveModeEnum pMode)
             throws STAFException {
@@ -302,7 +319,6 @@ public class STAFController {
                     break;
                 default:
                     throw new STAFException(String.format("Unhandle Archive mode %s", pMode.toString()));
-
             }
 
         } catch (IOException | STAFTarException e) {
@@ -312,10 +328,10 @@ public class STAFController {
 
     /**
      * Cur a file which is too big to be archive in one part into STAF System.
-     * @param pPhysicalFileToArchive
-     * @param pStafNode
-     * @return
-     * @throws IOException
+     * @param pPhysicalFileToArchive {@link Path} file to cut in parts
+     * @param pStafNode {@link String} STAF Node where to archive the given File
+     * @return {@link PhysicalCutFile} containing {@link PhysicalCutPartFile}s for each part of the cuted file
+     * @throws IOException Error during file cut.
      */
     private PhysicalCutFile cutFile(Path pPhysicalFileToArchive, String pSTAFNode) throws IOException {
 
@@ -326,21 +342,21 @@ public class STAFController {
             tmpCutDirectory.toFile().mkdirs();
         }
 
-        // 3. Do cut files
+        // 2. Do cut files
         Set<File> cutedLocalFiles = CutFileUtils.cutFile(pPhysicalFileToArchive.toFile(), tmpCutDirectory.toString(),
                                                          stafConfiguration.getMaxFileSize());
         LOG.debug("[STAF] Number of cuted files : {} for file {}", cutedLocalFiles.size(),
                   pPhysicalFileToArchive.toString());
 
-        // 4. Create cut Physical file object to return
+        // 3. Create cut Physical file object to return
         PhysicalCutFile physicalCutFile = new PhysicalCutFile(pPhysicalFileToArchive,
                 stafService.getStafArchive().getArchiveName(), pSTAFNode);
         physicalCutFile.addRawAssociatedFile(pPhysicalFileToArchive);
         int partIndex = 0;
         for (File cutedFile : cutedLocalFiles) {
             Path cutedFilePath = Paths.get(cutedFile.getPath());
-            PhysicalCutPartFile cutFilePart = new PhysicalCutPartFile(cutedFilePath, pPhysicalFileToArchive,
-                    physicalCutFile, partIndex, stafService.getStafArchive().getArchiveName(), pSTAFNode);
+            PhysicalCutPartFile cutFilePart = new PhysicalCutPartFile(cutedFilePath, physicalCutFile, partIndex,
+                    stafService.getStafArchive().getArchiveName(), pSTAFNode);
             physicalCutFile.addCutedPartFile(cutFilePart);
             partIndex++;
         }
@@ -348,34 +364,86 @@ public class STAFController {
         return physicalCutFile;
     }
 
+    /**
+     * Delete temporary files associated to the given {@link AbstractPhysicalFile}
+     * @param pFile {@link AbstractPhysicalFile}
+     */
     private void deleteTemporaryFiles(AbstractPhysicalFile pFile) {
         switch (pFile.getArchiveMode()) {
             case CUT_PART:
-                if (pFile.getLocalFilePath().getParent().toFile().exists()) {
-                    try {
-                        Files.walk(pFile.getLocalFilePath().getParent()).map(Path::toFile)
-                                .sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
-                    } catch (IOException e) {
-                        LOG.error("[STAF] Error deleting file (CUT MODE", e);
-                    }
-                }
+                deleteTemporaryFile((PhysicalCutPartFile) pFile);
                 break;
             case NORMAL:
+                deleteTemporaryFile((PhysicalNormalFile) pFile);
+                break;
             case TAR:
-                if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
-                    try {
-                        Files.delete(pFile.getLocalFilePath());
-                    } catch (IOException e) {
-                        LOG.error("[STAF] Error deleting file (TAR MODE", e);
-                    }
-                }
+                deleteTemporaryFile((PhysicalTARFile) pFile);
                 break;
             case CUT:
             default:
-                // Nothing to do
+                deleteTemporaryFile((PhysicalCutFile) pFile);
                 break;
 
         }
     }
 
+    /**
+     * Delete temporary files for the given {@link PhysicalCutPartFile}
+     * @param pFile {@link PhysicalCutPartFile}
+     */
+    private void deleteTemporaryFile(PhysicalCutPartFile pCutPartFile) {
+        if (pCutPartFile.getLocalFilePath().getParent().toFile().exists()) {
+            try {
+                Files.walk(pCutPartFile.getLocalFilePath().getParent()).map(Path::toFile)
+                        .sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (CUT MODE", e);
+            }
+        }
+    }
+
+    /**
+     * Delete temporary file for the given {@link PhysicalNormalFile}
+     * @param pFile {@link PhysicalNormalFile}
+     */
+    private void deleteTemporaryFile(PhysicalNormalFile pFile) {
+        // Only delete local file if the file is in the STAF workspace.
+        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
+            try {
+                Files.delete(pFile.getLocalFilePath());
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
+            }
+        }
+    }
+
+    /**
+     * Delete temporary file for the given {@link PhysicalTARFile}
+     * @param pFile {@link PhysicalTARFile}
+     */
+    private void deleteTemporaryFile(PhysicalTARFile pFile) {
+        // Only delete local file if the file is in the STAF workspace.
+        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
+            try {
+                Files.delete(pFile.getLocalFilePath());
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (TAR MODE", e);
+            }
+        }
+    }
+
+    /**
+     * Delete temporary file for the given {@link PhysicalCutFile}
+     * @param pFile {@link PhysicalCutFile}
+     */
+    private void deleteTemporaryFile(PhysicalCutFile pFile) {
+        // Only delete local file if the file is in the STAF workspace.
+        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
+            try {
+                Files.delete(pFile.getLocalFilePath());
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
+            }
+        }
+    }
 }

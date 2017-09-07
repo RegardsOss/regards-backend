@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
 import java.io.File;
@@ -34,7 +37,12 @@ import fr.cnes.regards.framework.file.utils.compression.CompressionFacade;
 import fr.cnes.regards.framework.file.utils.compression.CompressionTypeEnum;
 import fr.cnes.regards.framework.staf.STAFConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFTarException;
 
+/**
+ * STAF Controller to handle TAR files creation.
+ * @author Sébastien Binda
+ */
 public class TARController {
 
     /**
@@ -42,18 +50,41 @@ public class TARController {
      */
     private static final Logger LOG = LoggerFactory.getLogger(TARController.class);
 
+    /**
+     * Global STAF Configuration
+     */
     private final STAFConfiguration stafConfiguration;
 
+    /**
+     * STAF Workspace directory
+     */
     private final Path workspaceDirectory;
 
+    /**
+     * Subdirectory containing tar creation workspace.
+     */
     public static final String TAR_DIRECTORY = "tar";
 
+    /**
+     * Pattern of the directory containg the current pending TAR.
+     */
     private static final Pattern TAR_CURRENT_DIRECTORY_PATTERN = Pattern.compile("^([0-9]{17})_current$");
 
+    /**
+     * Name of the file used to create a lock on the pending TAR.
+     */
     private static final String LOCK_FILE_NAME = ".staf_lock";
 
+    /**
+     * Date time format.
+     */
     public static final String TAR_FILE_NAME_DATA_FORMAT = "yyyyMMddHHmmssSSS";
 
+    /**
+     * Constructor
+     * @param pStafConfiguration Global STAF Configuration
+     * @param pWorkspaceDirectory STAF Workspace directory
+     */
     public TARController(STAFConfiguration pStafConfiguration, Path pWorkspaceDirectory) {
         super();
         stafConfiguration = pStafConfiguration;
@@ -71,14 +102,20 @@ public class TARController {
      * @throws STAFTarException : Unable to add file to current TAR.
      */
     public void addFileToTar(Path pPhysicalFileToArchive, Set<PhysicalTARFile> pTarFiles, String pSTAFArciveName,
-            String pStafNode) throws STAFTarException, IOException {
+            String pStafNode) throws STAFTarException {
 
         // 1. Initialize lock on the tar current directory of the specified node
-        Path localTarDirectory = Paths.get(workspaceDirectory.toString(), TAR_DIRECTORY, pStafNode);
+        Path localTarDirectory = getWorkingTarPath(pSTAFArciveName, pStafNode);
         Path lockFile = Paths.get(localTarDirectory.toString(), LOCK_FILE_NAME);
 
         // If TAR directory for the given doesn't exists, create it before lock
-        Files.createDirectories(localTarDirectory);
+        try {
+            Files.createDirectories(localTarDirectory);
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+            throw new STAFTarException(
+                    String.format("[STAF] Error creating temporary tar directoty %s", localTarDirectory.toString()));
+        }
 
         // 2. Get lock
         FileLock lock = null;
@@ -138,12 +175,70 @@ public class TARController {
             // Error adding file to tar
             if ((lock != null) && lock.isValid()) {
                 LOG.debug("[STAF] Releasing lock for directory {}", lockFile.toString());
-                lock.release();
+                try {
+                    lock.release();
+                } catch (IOException e1) {
+                    LOG.error("[STAF] Error releasing lock for directory {}", lockFile.toString(), e1);
+                }
                 LOG.debug("[STAF] Lock released for directory {}", lockFile.toString());
             }
             throw new STAFTarException(e);
         }
+    }
 
+    /**
+     * Retrieve, if exists, the current pending tar as a {@link PhysicalTARFile}.
+     * @param pWorkspaceTarPath {@link Path} of the TAR Workspace.
+     * @param pSTAFArchiveName {@link String} Name of the STAF Archive.
+     * @param pSTAFNode {@link String} STAF Node.
+     * @return {@link Optional}<{@link PhysicalTARFile}
+     */
+    private Optional<PhysicalTARFile> findPendingTarDirectory(Path pWorkspaceTarPath, String pSTAFArchiveName,
+            String pSTAFNode) {
+        Optional<PhysicalTARFile> tarFile = Optional.empty();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(pWorkspaceTarPath,
+                                                                     path -> path.toFile().isDirectory())) {
+            for (Path dir : stream) {
+                // Check if the directory match the pending current TAR directory regex.
+                Matcher matcher = TAR_CURRENT_DIRECTORY_PATTERN.matcher(dir.getFileName().toString());
+                if (matcher.matches()) {
+                    // Pending current TAR directory found. Create the new associated PhysicalTARFile
+                    // The creation date of the pending directory can be read in the directory name.
+                    tarFile = Optional
+                            .of(createPendingTarFromDirectory(dir, pSTAFArchiveName, pSTAFNode, matcher.group(1)));
+                }
+            }
+        } catch (IOException e) {
+            LOG.error("[STAF] Tar preparation - Error looking for current pending tar", e);
+        }
+        return tarFile;
+    }
+
+    /**
+     * Create a {@link PhysicalTARFile} associated to the given current TAR pending directory.
+     * @param pDirectory {@link Path} to current pending TAR directory.
+     * @param pSTAFArchiveName {@link String} STAF Archive name.
+     * @param pSTAFNode {@link String} STAF Node
+     * @param pDateStr {@link String} Creation date of the directory with TAR_FILE_NAME_DATA_FORMAT format.
+     * @return {@link PhysicalTARFile} of the current pending TAR directory.
+     */
+    private PhysicalTARFile createPendingTarFromDirectory(Path pDirectory, String pSTAFArchiveName, String pSTAFNode,
+            String pDateStr) {
+        try {
+            PhysicalTARFile pendingTarFile = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode);
+            Date date = DateUtils.parseDate(pDateStr, new String[] { TAR_FILE_NAME_DATA_FORMAT });
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
+                                                             ZoneId.systemDefault());
+            // Set TAR directory path
+            pendingTarFile.setLocalTarDirectory(pDirectory);
+            // Set futur TAR file path
+            pendingTarFile.setLocalTarFile(Paths.get(pDirectory.getParent().toString(), getLocalTarFileName(dateTime)));
+            pendingTarFile.setLocalTarDirectoryCreationDate(dateTime);
+            return pendingTarFile;
+        } catch (ParseException e) {
+            LOG.error("[STAF] Error parsing date from TAR current directory {}", pDirectory);
+            return null;
+        }
     }
 
     /**
@@ -167,72 +262,68 @@ public class TARController {
 
         if (!tar.isPresent()) {
             // The current TAR is not already calculated.
-            // Create the new TarPhysicalFile
-
-            PhysicalTARFile newWorkingTar = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode);
-            Path tarPath = Paths.get(workspaceDirectory.toString(), TAR_DIRECTORY, pSTAFNode);
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(tarPath,
-                                                                         path -> path.toFile().isDirectory())) {
-                stream.forEach(dir -> {
-                    Matcher matcher = TAR_CURRENT_DIRECTORY_PATTERN.matcher(dir.getFileName().toString());
-                    if (matcher.matches()) {
-                        String dateStr = matcher.group(1);
-                        Date date;
-                        try {
-                            date = DateUtils.parseDate(dateStr, new String[] { TAR_FILE_NAME_DATA_FORMAT });
-                            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
-                                                                             ZoneId.systemDefault());
-                            // Set TAR directory path
-                            newWorkingTar.setLocalTarDirectory(dir);
-                            // Set futur TAR file path
-                            newWorkingTar.setLocalTarFile(Paths.get(tarPath.toString(), getLocalTarFileName(dateTime)));
-                            newWorkingTar.setLocalTarDirectoryCreationDate(dateTime);
-                        } catch (ParseException e) {
-                            LOG.error("[STAF] Error parsing date from TAR current directory {}", dir);
-                        }
-                    }
-                });
-            }
-
-            // No working tar exists, so create a new one
-            if (newWorkingTar.getLocalTarDirectory() == null) {
+            // Get the current pending TAR from workspace if exists.
+            PhysicalTARFile workingTar;
+            Path tarPath = getWorkingTarPath(pSTAFArchiveName, pSTAFNode);
+            // Check into the TAR directory if a pending one exists for the given STAFNode.
+            Optional<PhysicalTARFile> existingPendingTar = findPendingTarDirectory(tarPath, pSTAFArchiveName,
+                                                                                   pSTAFNode);
+            if (existingPendingTar.isPresent()) {
+                workingTar = existingPendingTar.get();
+            } else {
+                workingTar = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode);
                 LocalDateTime date = LocalDateTime.now();
                 String tarName = date.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT));
                 Path newTarDirectory = Paths.get(tarPath.toString(), tarName + "_current");
                 Files.createDirectories(newTarDirectory);
-                newWorkingTar.setLocalTarFile(Paths.get(tarPath.toString(), getLocalTarFileName(date)));
-                newWorkingTar.setLocalTarDirectory(newTarDirectory);
-                newWorkingTar.setLocalTarDirectoryCreationDate(date);
+                workingTar.setLocalTarFile(Paths.get(tarPath.toString(), getLocalTarFileName(date)));
+                workingTar.setLocalTarDirectory(newTarDirectory);
+                workingTar.setLocalTarDirectoryCreationDate(date);
             }
 
             // Get already present files in the current tar folder
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(newWorkingTar.getLocalTarDirectory(),
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(workingTar.getLocalTarDirectory(),
                                                                          path -> path.toFile().isFile())) {
                 // For old files in TAR, we don't know the raw file path. We only have the current file in tar.
-                stream.forEach(file -> newWorkingTar.addFileInTar(file, null));
+                stream.forEach(file -> workingTar.addFileInTar(file, null));
             }
 
             // Add working tar file to the tar list.
-            pTarFiles.add(newWorkingTar);
-            return newWorkingTar;
+            pTarFiles.add(workingTar);
+            return workingTar;
         } else {
             return tar.get();
         }
     }
 
     /**
+     * Return a file name without his extension.
+     * @param pFilePath {@link Path} Path to the file.
+     * @return {@link File} without file extension.
+     */
+    private File getFileWithoutExtension(Path pFilePath) {
+        return new File(pFilePath.toString().replaceFirst("[.][^.]+$", ""));
+    }
+
+    /**
      * Calculate a TAR file name for the current working TAR.
      *
      * @param pDate {@link LocalDateTime} The TAR working directory creation date.
-     * @return
+     * @return {@link String} TAR file name.
      */
     private String getLocalTarFileName(LocalDateTime pDate) {
         return String.format("%s.tar", pDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT)));
 
     }
 
-    private File getFileWithoutExtension(Path pFilePath) {
-        return new File(pFilePath.toString().replaceFirst("[.][^.]+$", ""));
+    /**
+     * Retrieve the workspace working directory to create new TAR for the given STAF Archive name and STAF Node.
+     * @param pSTAFArciveName {@link String} STAF Archive name
+     * @param pStafNode {@link String} STAF Node
+     * @return {@link Path} to the TAR working directory
+     */
+    private Path getWorkingTarPath(String pSTAFArciveName, String pStafNode) {
+        return Paths.get(workspaceDirectory.toString(), pSTAFArciveName, TAR_DIRECTORY, pStafNode);
     }
 
 }

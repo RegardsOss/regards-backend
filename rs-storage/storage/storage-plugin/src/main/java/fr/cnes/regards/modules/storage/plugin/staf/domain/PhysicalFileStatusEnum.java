@@ -1,14 +1,22 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
+/**
+ * Eumeration of all possible status for an {@link AbstractPhysicalFile}
+ * @author Sébastien Binda
+ *
+ */
 public enum PhysicalFileStatusEnum {
 
     /**
-     * File is not ready to store yet.
+     * File is not ready get stored into the STAF Archive yet.
      */
     PENDING,
 
     /**
-     * File can be store into the STAF archive.
+     * File is ready to get stored into the STAF Archive.
      */
     TO_STORE,
 
@@ -23,7 +31,7 @@ public enum PhysicalFileStatusEnum {
     LOCALY_STORED,
 
     /**
-     * Error during STAF archive.
+     * STAF store error.
      */
     ERROR;
 

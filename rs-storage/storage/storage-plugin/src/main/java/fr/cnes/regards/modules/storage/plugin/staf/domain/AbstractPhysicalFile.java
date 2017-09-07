@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
 import java.nio.file.Path;
@@ -9,7 +12,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException;
 
+/**
+ * Abstract class to define standard parameters of a STAF File.
+ *
+ * @author Sébastien Binda
+ */
 public abstract class AbstractPhysicalFile {
 
     /**

@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
 import java.nio.file.Path;
@@ -8,7 +11,12 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException;
 
+/**
+ * Class to represent a list of files stored in the same STAF file into a tar file.
+ * @author Sébastien Binda
+ */
 public class PhysicalTARFile extends AbstractPhysicalFile {
 
     /**
@@ -34,10 +42,22 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
      */
     private LocalDateTime localTarDirectoryCreationDate;
 
+    /**
+     * Constructor
+     * @param pSTAFArchiveName {@link String} STAF Archive name where the tar is stored
+     * @param pSTAFNode {@link String} STAF Node where the tar is stored.
+     */
     public PhysicalTARFile(String pSTAFArchiveName, String pSTAFNode) {
         super(STAFArchiveModeEnum.TAR, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.PENDING);
     }
 
+    /**
+     * Return map assciating raw files and prepared STAF file in the current TAR.<br/>
+     * <ul>
+     * <li><b>Key</b> : file in tar path (file added in the tar file stored in STAF)</li>
+     * <li><b>value</b> : raw file path (raw file to archive)</li>
+     * </ul>
+     */
     public Map<Path, Path> getFilesInTar() {
         return filesInTar;
     }
