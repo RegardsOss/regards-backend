@@ -44,6 +44,7 @@ import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 
 /**
@@ -97,6 +98,11 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * Whether to refresh mapping after factory creation at runtime
      */
     protected boolean refreshMapping = false;
+
+    /**
+     * Whether to serialize null for this adapter
+     */
+    protected boolean serializeNulls = false;
 
     /**
      *
@@ -263,6 +269,14 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     }
 
     /**
+     * Enable null serialization for current adapter factory.<br/>
+     * Warning: this action disables a global null serialization configuration! Do not call this method if such configuration is set globally.
+     */
+    public void serializeNulls() {
+        this.serializeNulls = true;
+    }
+
+    /**
      * Store mappings
      *
      * @param pGson
@@ -416,7 +430,14 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
                 // Raw JSON object
                 JsonElement rawJson = delegate.toJsonTree(pValue);
+
+                if (serializeNulls) {
+                    pOut.setSerializeNulls(true);
+                }
                 Streams.write(beforeWrite(rawJson, srcType), pOut);
+                if (serializeNulls) {
+                    pOut.setSerializeNulls(false);
+                }
             }
 
             /**

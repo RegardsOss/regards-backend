@@ -45,7 +45,8 @@
 		<module>security-config</module>
 		<module>oais-starter</module>
         <module>oais-regards</module>
-    </modules>
+        <module>geojson-starter</module>
+	</modules>
 
 	<dependencies>
 		<dependency>
