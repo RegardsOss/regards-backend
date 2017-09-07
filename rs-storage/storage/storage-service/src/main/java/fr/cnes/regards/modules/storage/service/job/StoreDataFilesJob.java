@@ -10,7 +10,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 public class StoreDataFilesJob extends AbstractStoreFilesJob {
 
     @Override
-    public void doStore(Map<String, JobParameter> parameterMap) {
+    public void doRun(Map<String, JobParameter> parameterMap) {
         storeFile(parameterMap, false);
     }
 }

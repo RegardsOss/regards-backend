@@ -18,7 +18,7 @@ public class FixityInformation implements Serializable {
     @NotNull
     private String checksum;
 
-    private Double fileSize;
+    private Long fileSize;
 
     public FixityInformation() {
         super();
@@ -50,17 +50,17 @@ public class FixityInformation implements Serializable {
         checksum = pChecksum;
     }
 
-    public Double getFileSize() {
+    public Long getFileSize() {
         return fileSize;
     }
 
-    public void setFileSize(Double pFileSize) {
+    public void setFileSize(Long pFileSize) {
         fileSize = pFileSize;
     }
 
     public FixityInformation generate() throws NoSuchAlgorithmException {
         algorithm = "SHA1";
-        fileSize = new Double((new Random()).nextInt(10000000));
+        fileSize = new Long((new Random()).nextInt(10000000));
         checksum = sha1("blahblah");
         return this;
     }

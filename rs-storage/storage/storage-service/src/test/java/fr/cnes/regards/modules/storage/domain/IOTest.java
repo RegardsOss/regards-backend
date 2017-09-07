@@ -237,7 +237,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         FixityInformation fi1 = new FixityInformation();
         fi1.setChecksum("d6aa97d33d459ea3670056e737c99a3d");
         fi1.setAlgorithm("md5");
-        fi1.setFileSize(1024.0);
+        fi1.setFileSize(1024L);
         pdi1.setFixityInformation(fi1);
         // END OF ficityInformation 1
         // accessRightInformation 1

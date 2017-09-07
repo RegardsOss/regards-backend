@@ -21,7 +21,7 @@ public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
      * @param parameterMap parsed parameters
      */
     @Override
-    protected void doStore(Map<String, JobParameter> parameterMap) {
+    protected void doRun(Map<String, JobParameter> parameterMap) {
         storeFile(parameterMap, true);
     }
 }

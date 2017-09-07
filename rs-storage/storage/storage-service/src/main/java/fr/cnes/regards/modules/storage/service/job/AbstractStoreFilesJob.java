@@ -17,6 +17,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.modules.storage.domain.StorageException;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.ProgressManager;
@@ -39,9 +41,9 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
     protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private PluginService pluginService;
+    protected PluginService pluginService;
 
-    private ProgressManager progressManager;
+    protected ProgressManager progressManager;
 
     /**
      * Check that the given job parameters contains required parameters and that they are valid.
@@ -89,18 +91,18 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
     @Override
     public void run() {
         // first lets check that all parameters are there and valid.
-        Map<String, JobParameter> parameterMap = beforeStorage();
+        Map<String, JobParameter> parameterMap = beforeRun();
         // then lets store the files
-        doStore(parameterMap);
+        doRun(parameterMap);
         // eventually, lets see if everything went as planned
-        afterStorage();
+        afterRun();
     }
 
     /**
      * Parses the parameters and do any check that has to be done
      * @return parsed parameters
      */
-    protected Map<String, JobParameter> beforeStorage() {
+    protected Map<String, JobParameter> beforeRun() {
         try {
             return checkParameters(parameters);
         } catch (JobParameterMissingException | JobParameterInvalidException e) {
@@ -113,15 +115,15 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
      *
      * @param parameterMap parsed parameters
      */
-    protected abstract void doStore(Map<String, JobParameter> parameterMap);
+    protected abstract void doRun(Map<String, JobParameter> parameterMap);
 
     /**
      * Decides if the job should fail or not
      */
-    protected void afterStorage() {
+    protected void afterRun() {
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
-            throw new RuntimeException(String.format(FAILURE_CAUSES, progressManager.getFailureCauses().stream()
+            throw new StorageException(String.format(FAILURE_CAUSES, progressManager.getFailureCauses().stream()
                     .collect(Collectors.joining(", ", "[", " ]"))));
         }
     }
@@ -133,7 +135,10 @@ public abstract class AbstractStoreFilesJob extends AbstractJob {
             IDataStorage storagePlugin = pluginService.getPlugin(confToUse.getId());
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to do the storage
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-            // storagePlugin.storeMetadata(aip);
+            // before storage on file system, lets update the DataFiles by setting which data storage is used to store them.
+            for(DataFile data: workingSubset.getDataFiles()) {
+                data.setDataStorageUsed(confToUse);
+            }
             storagePlugin.store(workingSubset, replaceMode, progressManager);
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.
