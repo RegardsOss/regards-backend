@@ -51,25 +51,18 @@ public class CutFileUtils {
         Set<File> cutFiles = Sets.newHashSet();
         try (FileInputStream inputStream = new FileInputStream(pFileToCut)) {
             int fileCount = 0;
-            String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
-            File cutFile = new File(pFileToCut.getName() + "_" + strFileCount);
-            while (writeInFile(inputStream, cutFile, pCutfilesMaxSize)) {
+            boolean continueCutFile = true;
+            do {
                 // New cut file to write
-                strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
+                String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
                 LOG.info("creating new cut File " + pFileToCut.getName() + "_" + strFileCount);
-                cutFile = new File(pTargetDirectory, pFileToCut.getName() + "_" + strFileCount);
+                File cutFile = new File(pTargetDirectory, pFileToCut.getName() + "_" + strFileCount);
+                continueCutFile = writeInFile(inputStream, cutFile, pCutfilesMaxSize);
                 cutFiles.add(cutFile);
                 fileCount++;
-            }
-            if (fileCount == 0) {
-                // Only one part, file has not been cuted
-                LOG.warn("File {} size=({}octets)has not been cut in parts as expected.", pFileToCut.getPath(),
-                         pFileToCut.length());
-                if (!cutFile.delete()) {
-                    throw new IOException(String.format("Error delecting temporay cuted file %s", cutFile.getPath()));
-                }
-                cutFiles.add(pFileToCut);
-            }
+
+            } while (continueCutFile);
+
         } catch (IOException e) {
             String msg = "Error cutting file" + pFileToCut + " to directory " + pTargetDirectory;
             LOG.error(msg, e);
@@ -89,12 +82,18 @@ public class CutFileUtils {
     private static boolean writeInFile(FileInputStream pInputStream, File outputFile, Long maxSizeToWrite)
             throws IOException {
         byte[] buffer = new byte[BUFFER_SIZE];
+        if (maxSizeToWrite < BUFFER_SIZE) {
+            buffer = new byte[maxSizeToWrite.intValue()];
+        }
         long charcount = 0;
         int charRead = 0;
         try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-            while (((charRead = pInputStream.read(buffer)) > 0) && (charcount >= maxSizeToWrite)) {
-                charcount = charcount + charRead;
-                outputStream.write(buffer, 0, charRead);
+            while ((charcount < maxSizeToWrite) && (charRead >= 0)) {
+                charRead = pInputStream.read(buffer);
+                if (charRead >= 0) {
+                    charcount = charcount + charRead;
+                    outputStream.write(buffer, 0, charRead);
+                }
             }
             outputStream.flush();
         }

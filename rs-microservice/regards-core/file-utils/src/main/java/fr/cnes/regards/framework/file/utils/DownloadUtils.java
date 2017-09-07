@@ -21,6 +21,11 @@ import com.google.common.io.ByteStreams;
 public class DownloadUtils {
 
     /**
+     * Connection timeout in ms.
+     */
+    private static final int CONNECT_TIMEOUT = 10000;
+
+    /**
      * Get an InputStream on a source URL with no proxy used
      * @param source
      * @return
@@ -99,6 +104,7 @@ public class DownloadUtils {
      */
     public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy) throws IOException {
         URLConnection connection = source.openConnection(proxy);
+        connection.setConnectTimeout(CONNECT_TIMEOUT);
         connection.setDoInput(true); //that's the default but lets set it explicitly for understanding
         connection.connect();
         return connection.getInputStream();
