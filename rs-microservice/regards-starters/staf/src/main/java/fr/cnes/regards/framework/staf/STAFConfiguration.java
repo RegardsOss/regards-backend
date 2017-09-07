@@ -107,11 +107,6 @@ public class STAFConfiguration {
 
     private String biggerFileGFClass = null;
 
-    /**
-     * Convert file names before staf access (fill and retreive)
-     */
-    private Boolean convertInvalidCaracters = true;
-
     public Integer getMaxStreamFilesRestitutionMode() {
         return maxStreamFilesRestitutionMode;
     }
@@ -208,14 +203,6 @@ public class STAFConfiguration {
         biggerFileGFClass = pBiggerFileGFClass;
     }
 
-    public boolean isConvertInvalidCaracters() {
-        return convertInvalidCaracters;
-    }
-
-    public void setConvertInvalidCaracters(boolean pConvertInvalidCaracters) {
-        convertInvalidCaracters = pConvertInvalidCaracters;
-    }
-
     public Long getMaxTarSize() {
         return maxTarSize;
     }
@@ -238,14 +225,6 @@ public class STAFConfiguration {
 
     public void setMaxTarArchivingHours(Long pMaxTarArchivingHours) {
         maxTarArchivingHours = pMaxTarArchivingHours;
-    }
-
-    public Boolean getConvertInvalidCaracters() {
-        return convertInvalidCaracters;
-    }
-
-    public void setConvertInvalidCaracters(Boolean pConvertInvalidCaracters) {
-        convertInvalidCaracters = pConvertInvalidCaracters;
     }
 
 }

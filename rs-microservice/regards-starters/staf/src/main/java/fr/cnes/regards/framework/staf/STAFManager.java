@@ -44,6 +44,10 @@ public class STAFManager {
 
     }
 
+    public STAFSession getNewSession() {
+        return new STAFSession(configuration);
+    }
+
     /**
      * Recupere l'instance unique du gestionnaire STAF
      *

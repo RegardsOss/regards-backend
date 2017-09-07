@@ -51,10 +51,11 @@ public class CutFileUtils {
         Set<File> cutFiles = Sets.newHashSet();
         try (FileInputStream inputStream = new FileInputStream(pFileToCut)) {
             int fileCount = 0;
-            File cutFile = new File(pTargetDirectory, pFileToCut.getName());
+            String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
+            File cutFile = new File(pFileToCut.getName() + "_" + strFileCount);
             while (writeInFile(inputStream, cutFile, pCutfilesMaxSize)) {
                 // New cut file to write
-                String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
+                strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
                 LOG.info("creating new cut File " + pFileToCut.getName() + "_" + strFileCount);
                 cutFile = new File(pTargetDirectory, pFileToCut.getName() + "_" + strFileCount);
                 cutFiles.add(cutFile);

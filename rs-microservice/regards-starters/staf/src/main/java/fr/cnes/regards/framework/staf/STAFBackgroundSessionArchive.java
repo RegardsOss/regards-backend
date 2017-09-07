@@ -81,8 +81,7 @@ public class STAFBackgroundSessionArchive extends AbstractSTAFBackgroundSession 
         while (iter.hasNext()) {
             final STAFArchivingFlow flow = iter.next();
             // Archive files by bufferisation (by flow)
-            archivedFilesList.addAll(session.staffilArchive(flow.getFilesMap(), flow.getServiceClass(), replace,
-                                                            configuration.isConvertInvalidCaracters()));
+            archivedFilesList.addAll(session.staffilArchive(flow.getFilesMap(), flow.getServiceClass(), replace));
         }
     }
 

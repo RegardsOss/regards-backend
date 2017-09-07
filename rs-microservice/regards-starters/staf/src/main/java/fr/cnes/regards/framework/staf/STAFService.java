@@ -72,8 +72,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.event.CollectEvent;
 import fr.cnes.regards.framework.staf.event.CollectEventOffLine;
@@ -121,21 +124,6 @@ public class STAFService {
     protected Integer mainSessionId;
 
     /**
-     * Nom du projet STAF (a distinguer du nom du projet utilisateur)
-     */
-    protected String stafProject;
-
-    /**
-     * Mot de passe de connexion au STAF
-     */
-    protected String password;
-
-    /**
-     * Projet GF (Gros Fichiers)
-     */
-    protected boolean gfAccount;
-
-    /**
      * Mode d archivage "standard" : le fichier est ajoute tel quel dans l'archive
      *
      * @since 4.1
@@ -177,7 +165,7 @@ public class STAFService {
      * Constructeur.
      */
     public STAFService(STAFManager pStafManager, STAFArchive pStafArchive) {
-        mainSession = new STAFSession(pStafManager.getConfiguration());
+        mainSession = pStafManager.getNewSession();
         stafManager = pStafManager;
         stafArchive = pStafArchive;
     }
@@ -198,13 +186,10 @@ public class STAFService {
         try {
             // Memorise la valeur des parametres de connexion pour permettre
             // l'ouverture ulterieure de sessions supplementaires
-            stafProject = stafArchive.getArchiveName();
-            password = stafArchive.getPassword();
-            gfAccount = stafArchive.isGFAccount();
             // Reserve une session et ouvre la connexion selon le mode :
             // restitution ou archivage
             mainSessionId = stafManager.getReservation(pMode);
-            mainSession.stafconOpen(stafProject, password);
+            mainSession.stafconOpen(stafArchive.getArchiveName(), stafArchive.getPassword());
             logger.debug("Connection to STAF Ok.");
         } catch (final STAFException e) {
             logger.error(e);
@@ -459,8 +444,8 @@ public class STAFService {
             // Recupere un lot de fichiers pour la session batch
             final HashMap<String, String> files = pSessionsFiles.remove(0);
             // Cree puis execute la session batch
-            final STAFBackgroundSessionRetrieve session = getBackgroundSessionRetrieve(identifier, stafProject,
-                                                                                       password, gfAccount, files);
+            final STAFBackgroundSessionRetrieve session = getBackgroundSessionRetrieve(identifier, stafArchive
+                    .getArchiveName(), stafArchive.getPassword(), stafArchive.isGFAccount(), files);
             session.setParentStack(NDC.cloneStack());
             batchSessions.add(session);
             session.start();
@@ -548,7 +533,9 @@ public class STAFService {
                 sessionFlowList.add(flow);
             }
             // Create and execute the batch session
-            final STAFBackgroundSessionArchive session = getBackgroundSessionArchive(identifier, stafProject, password,
+            final STAFBackgroundSessionArchive session = getBackgroundSessionArchive(identifier,
+                                                                                     stafArchive.getArchiveName(),
+                                                                                     stafArchive.getPassword(),
                                                                                      sessionFlowList, pDirectory,
                                                                                      archivedFilesList, pReplace);
             session.setParentStack(NDC.cloneStack());
@@ -560,9 +547,7 @@ public class STAFService {
             // Launch archiving of the last lot via principal session.
             // Archiving is bufferised (by flow).
             final STAFArchivingFlow flow = pFlowList.remove(0);
-            archivedFilesList
-                    .addAll(mainSession.staffilArchive(flow.getFilesMap(), flow.getServiceClass(), pReplace,
-                                                       stafManager.getConfiguration().isConvertInvalidCaracters()));
+            archivedFilesList.addAll(mainSession.staffilArchive(flow.getFilesMap(), flow.getServiceClass(), pReplace));
         } catch (final STAFException e) {
             logger.warn("", e);
             error = true;
@@ -648,11 +633,11 @@ public class STAFService {
      *            le repertoire dans lequel ajouter les fichiers.
      * @return une HashMap contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
      */
-    public List<String> archiveFiles(Map<String, String> pFileMap, String pDirectory, boolean pReplace)
+    public Set<String> archiveFiles(Map<String, String> pFileMap, String pDirectory, boolean pReplace)
             throws STAFException {
 
         // List of files really archived
-        final List<String> archivedFilesList = new ArrayList<>();
+        final Set<String> archivedFilesList = Sets.newHashSet();
         // Iterateur sur les fichiers a archiver
         final Set<String> fileLocalList = pFileMap.keySet();
         final Iterator<String> files = fileLocalList.iterator();
@@ -688,7 +673,7 @@ public class STAFService {
                 else {
                     // CS5 : GF Account STAF (big file) : size>50Mo
                     // ********************************************
-                    if (gfAccount) {
+                    if (stafArchive.isGFAccount()) {
                         biggerFileGFServiceClassMap.put(currentFile, destinationCurrentFile);
                     }
                     // CS3 : generalist STAF : size>50Mo
@@ -876,6 +861,10 @@ public class STAFService {
 
     protected ICollectListener getCollectListener() {
         return collectListener_;
+    }
+
+    public STAFArchive getStafArchive() {
+        return stafArchive;
     }
 
 }

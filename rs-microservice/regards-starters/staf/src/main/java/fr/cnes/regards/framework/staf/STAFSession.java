@@ -673,8 +673,8 @@ public class STAFSession {
      * @DM SIPNG-DM-0044-2-CN : ajout de pReplace
      * @FA SIPNG-FA-0410-CN : amelioration de la creation des repertoires lors de l'archivage
      */
-    public List<String> staffilArchive(Map<String, String> pFiles, String pServiceClass, boolean pReplace,
-            boolean pReplaceInvalidCaracters) throws STAFException {
+    public List<String> staffilArchive(Map<String, String> pFiles, String pServiceClass, boolean pReplace)
+            throws STAFException {
         final List<String> archivedFilesList = new ArrayList<>();
 
         // Prepare commande STAF command
@@ -690,9 +690,6 @@ public class STAFSession {
         while (files.hasNext()) {
             String mdtFile = files.next();
             final String stafFile = pFiles.get(mdtFile);
-            if (pReplaceInvalidCaracters) {
-                mdtFile = renameStafFileForArchiving(mdtFile, renamedLocalFilePathMap, Boolean.TRUE);
-            }
             builder.append(mdtFile + "," + stafFile + " ");
             if (!checkLongFilename(stafFile)) {
                 final String msg = String.format("Error file name is too long : %s", stafFile);
@@ -744,11 +741,6 @@ public class STAFSession {
                         logger.info(successMessage);
                         // File location on STAF
                         String sourceFilePath = getFileNameFromResponse(response, STAF_SUCCESS_MESSAGE_ARCHIVE);
-
-                        // Change the file name archived to his orginal name if there was invalid caracters
-                        if ((renamedLocalFilePathMap != null) && !renamedLocalFilePathMap.isEmpty()) {
-                            sourceFilePath = getSTAFOriginalFilePath(sourceFilePath, renamedLocalFilePathMap);
-                        }
                         logger.info("File properly archived : " + sourceFilePath);
 
                         // Add file location in list

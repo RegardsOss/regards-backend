@@ -6,6 +6,8 @@ public enum STAFArchiveModeEnum {
 
     CUT,
 
+    CUT_PART,
+
     TAR
 
 }

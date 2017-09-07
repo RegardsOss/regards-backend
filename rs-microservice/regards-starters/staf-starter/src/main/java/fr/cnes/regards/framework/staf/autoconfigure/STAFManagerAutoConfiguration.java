@@ -17,7 +17,7 @@ public class STAFManagerAutoConfiguration {
     private STAFConfiguration configuration;
 
     @Bean
-    private STAFManager initSTAFManager() throws STAFException {
+    public STAFManager initSTAFManager() throws STAFException {
         return STAFManager.getInstance(configuration);
     }
 
