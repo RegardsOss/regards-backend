@@ -16,24 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.geojson.geometry;
+package fr.cnes.regards.framework.geojson.validator;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.geometry.LineString;
 
 /**
- * RFC 7946 -August 2016<br/>
- * GeoJson MultiLineString representation
+ * Validate {@link LineString} structure
  *
  * @author Marc Sordi
  *
  */
-public class MultiLineString extends AbstractGeometry<List<Positions>> {
+public class LineStringValidator implements ConstraintValidator<LineStringConstraints, LineString> {
 
-    public MultiLineString() {
-        super(GeoJsonType.MULTILINESTRING);
-        coordinates = new ArrayList<>();
+    @Override
+    public void initialize(LineStringConstraints constraintAnnotation) {
+        // Nothing to do
     }
+
+    @Override
+    public boolean isValid(LineString value, ConstraintValidatorContext context) {
+        return value.getCoordinates().size() > 1;
+    }
+
 }

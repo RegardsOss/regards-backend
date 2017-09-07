@@ -19,21 +19,15 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import fr.cnes.regards.framework.geojson.GeoJsonType;
 
 /**
- * RFC 7946 -August 2016<br/>
- * GeoJson MultiLineString representation
+ * Not in RFC 7946 -August 2016<br/>
+ * GeoJson multiple geometry positions representation
  *
  * @author Marc Sordi
  *
  */
-public class MultiLineString extends AbstractGeometry<List<Positions>> {
+@SuppressWarnings("serial")
+public class Positions extends ArrayList<Position> {
 
-    public MultiLineString() {
-        super(GeoJsonType.MULTILINESTRING);
-        coordinates = new ArrayList<>();
-    }
 }

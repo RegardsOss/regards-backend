@@ -27,9 +27,15 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  * @author Marc Sordi
  *
  */
-public class MultiPoint extends AbstractGeometry<Position[]> {
+public class MultiPoint extends AbstractGeometry<Positions> {
+
+    public MultiPoint() {
+        super(GeoJsonType.MULTIPOINT);
+        coordinates = new Positions();
+    }
 
     public MultiPoint(GeoJsonType type) {
-        super(GeoJsonType.MULTIPOINT);
+        super(type);
+        coordinates = new Positions();
     }
 }

@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.validator.LineStringConstraints;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -26,13 +27,13 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  * <br/>
  * LineString MUST be an array of <b>two or more positions</b>.<br/>
  *
- * TODO check that coordinates is an array of two or more positions
  * @author Marc Sordi
  *
  */
+@LineStringConstraints
 public class LineString extends MultiPoint {
 
-    public LineString(GeoJsonType type) {
+    public LineString() {
         super(GeoJsonType.LINESTRING);
     }
 }
