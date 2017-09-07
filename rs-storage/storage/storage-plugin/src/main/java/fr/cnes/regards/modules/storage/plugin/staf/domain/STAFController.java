@@ -122,13 +122,16 @@ public class STAFController {
 
     /**
      * Prepare the list of file to archive into the STAF for the given files
-     * @param pFileToArchivePerStafNode
-     * @param pMode
-     * @return
+     * @param pFileToArchivePerStafNode {@link Map}<{@link String},{@link Set}<{@link Path}>> <br/>
+     * <ul>
+     * <li>key : STAF Node where to store the {@link Path}s in map value</li>
+     * <li>value : {@link Path} Files to store for the given STAF Node.</li>
+     * </ul>
+     * @param pMode {@link STAFArchiveModeEnum} Archiving mode.
+     * @return {@link Set}<{@link AbstractPhysicalFile}> prepared files to archive with STAF recomandations.
      */
     public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
             STAFArchiveModeEnum pMode) {
-
         this.clearPreparedFiles();
         for (Entry<String, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
             for (Path fileToArchive : stafNode.getValue()) {
