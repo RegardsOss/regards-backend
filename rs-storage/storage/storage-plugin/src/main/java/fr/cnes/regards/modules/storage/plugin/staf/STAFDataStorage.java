@@ -271,7 +271,6 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             } catch (IOException e) {
                 LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getOriginUrl().getPath(),
                           e);
-                // TODO : Inform the upper plugin manager thaht the file is not storable.
             }
 
         });
