@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -41,6 +44,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
 
 public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
+    protected final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public AbstractJasonGpsp10FlotProductMetadataPlugin() {
         super();
     }
@@ -55,9 +60,9 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
     }
 
     @Override
-    protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         long longValue = 0;
-        for (File file : pSsaltoFileList) {
+        for (File file : files) {
             RinexFileHelper helper = new RinexFileHelper(file);
             long valueRead = helper.getBlocMeasureDateInterval().getMinValue();
             if (longValue == 0) {
@@ -66,15 +71,17 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
                 longValue = valueRead;
             }
         }
-        List<Date> valueList = new ArrayList<>();
-        valueList.add(new Date(longValue));
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        Date newDate = new Date(longValue);
+        valueList.add(OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC")));
         return valueList;
     }
 
     @Override
-    protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files)
+            throws PluginAcquisitionException {
         long longValue = 0;
-        for (File file : pSsaltoFileList) {
+        for (File file : files) {
             RinexFileHelper helper = new RinexFileHelper(file);
             long valueRead = helper.getBlocMeasureDateInterval().getMaxValue();
             if (longValue == 0) {
@@ -83,35 +90,32 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
                 longValue = valueRead;
             }
         }
-        List<Date> valueList = new ArrayList<>();
-        valueList.add(new Date(longValue));
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        Date newDate = new Date(longValue);
+        valueList.add(OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC")));
         return valueList;
     }
 
     @Override
-    protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        Date creationDate = null;
-        try {
-            for (File file : pSsaltoFileList) {
-                RinexFileHelper helper = new RinexFileHelper(file);
-                Pattern creationDatePattern = Pattern
-                        .compile(".* ([\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}) .*");
-                String dateStr = helper.getValue(2, creationDatePattern, 1);
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    protected List<OffsetDateTime> getCreationDateValue(Collection<File> files)
+            throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        OffsetDateTime creationDate = null;
+        for (File file : files) {
+            RinexFileHelper helper = new RinexFileHelper(file);
+            Pattern creationDatePattern = Pattern
+                    .compile(".* ([\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}) .*");
+            String dateStr = helper.getValue(2, creationDatePattern, 1);
+            LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+            OffsetDateTime dateRead = OffsetDateTime.of(ldt, ZoneOffset.UTC);
 
-                Date dateRead = format.parse(dateStr);
-                if (creationDate == null) {
-                    creationDate = dateRead;
-                } else if (creationDate.after(dateRead)) {
-                    creationDate = dateRead;
-                }
+            if (creationDate == null) {
+                creationDate = dateRead;
+            } else if (creationDate.isAfter(dateRead)) {
+                creationDate = dateRead;
             }
-            valueList.add(creationDate);
-        } catch (ParseException e) {
-            String msg = "unable to parse creation date";
-            throw new PluginAcquisitionException(msg, e);
         }
+        valueList.add(creationDate);
 
         return valueList;
     }

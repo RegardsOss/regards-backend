@@ -54,7 +54,7 @@
 		<fileInformation>LAST_MODIFICATION_DATE</fileInformation>
 		<specification>
 			<name>FILE_CREATION_DATE</name>
-			<valueType>DATE</valueType>
+			<valueType>DATE_TIME</valueType>
 			<order>3</order>
 		</specification>
 	</fileInfoAttribute>

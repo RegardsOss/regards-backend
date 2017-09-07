@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
@@ -37,12 +35,9 @@ public class SetStartDateSaralDoris10Redate implements ICalculationClass {
     }
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime((Date) pValue);
-        calendar.add(Calendar.DAY_OF_YEAR, -3);
-
-        return calendar.getTime();
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
+        return ((OffsetDateTime) value).minusDays(3);
     }
 
 }

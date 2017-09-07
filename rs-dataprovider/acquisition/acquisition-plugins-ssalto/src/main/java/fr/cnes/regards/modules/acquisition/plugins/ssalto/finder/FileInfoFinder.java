@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
 import java.io.File;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,14 +51,19 @@ public class FileInfoFinder extends AttributeFinder {
             if (fileInformation.equals(FileInformationTypeEnum.LAST_MODIFICATION_DATE)) {
                 if (!valueList.isEmpty()) {
                     // check if date inside the list is before the new Date
-                    Date oldDate = (Date) valueList.get(0);
-                    if (oldDate.after(new Date(originalFile.lastModified()))) {
-                        // replace the value
+                    OffsetDateTime oldOffSetDateTime = (OffsetDateTime) valueList.get(0);
+
+                    Date newDate = new Date(originalFile.lastModified());
+                    OffsetDateTime newOffsetDateTime = OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC"));
+
+                    if (oldOffSetDateTime.isBefore(newOffsetDateTime)) {
                         valueList = new ArrayList<>();
-                        valueList.add(0, new Date(originalFile.lastModified()));
+                        valueList.add(0, newOffsetDateTime);
                     }
                 } else {
-                    valueList.add(0, new Date(originalFile.lastModified()));
+                    Date date = new Date(originalFile.lastModified());
+                    OffsetDateTime offDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+                    valueList.add(0, offDateTime);
                 }
             } else if (fileInformation.equals(FileInformationTypeEnum.FILE_SIZE)) {
                 // reset the list

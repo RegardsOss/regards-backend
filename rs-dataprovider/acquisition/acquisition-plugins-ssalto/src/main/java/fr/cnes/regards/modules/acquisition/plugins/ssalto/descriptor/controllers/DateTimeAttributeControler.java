@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.jdom.Element;
@@ -25,7 +27,6 @@ import org.jdom.Element;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
 
 /**
  * Attribut de type DATE TIME
@@ -49,36 +50,32 @@ public class DateTimeAttributeControler extends AttributeControler {
     }
 
     @Override
-    public Element doGetValueAsString(Object pValue) {
+    public Element doGetValueAsString(Object strValue) {
         Element value = new Element(XML_ELEMENT_VALUE);
-        value.addContent(String.valueOf(((Date) pValue).getTime()));
+        value.addContent(String.valueOf(((Date) strValue).getTime()));
         return value;
     }
 
     /**
      * renvoie une representation de type String d'un objet pValue
      * 
-     * @param pValue
+     * @param value
      * @return
      */
     @Override
-    public String doGetStringValue(Object pValue) {
-        String outputValue;
-        outputValue = String
-                .valueOf(DateFormatter.getDateRepresentation((Date) pValue, DateFormatter.XS_DATE_TIME_FORMAT));
-        return outputValue;
+    public String doGetStringValue(Object value) {
+        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((OffsetDateTime)value);
     }
 
     /**
-     * Retourne la valeur de l'attribut.
-     * 
-     * @param pIndex
-     * @return La valeur de l'attribut.
-     * @throws DomainModelException
-     *             l'index n'est pas valide
+     * Retourne la valeur de l'attribut
+     * @param attribut
+     * @param index
+     * @return la valeur de l'attribut
+     * @throws ModuleException
      */
-    public Date getValue(DateTimeAttribute pAttribut, int pIndex) throws ModuleException {
-        Date retour = (Date) getObjectValue(pAttribut, pIndex);
-        return retour;
+    public Date getValue(DateTimeAttribute attribut, int index) throws ModuleException {
+        // TODO CMZ à revoir        
+        return (Date) getObjectValue(attribut, index);
     }
 }

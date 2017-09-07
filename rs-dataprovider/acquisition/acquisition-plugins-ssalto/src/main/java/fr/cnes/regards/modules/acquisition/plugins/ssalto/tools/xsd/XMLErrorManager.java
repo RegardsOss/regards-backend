@@ -109,9 +109,8 @@ public class XMLErrorManager implements ErrorHandler {
      */
     @Override
     public void error(SAXParseException exception) {
-        String message = String.format("Error at line %d, column %d while parsing\n%s",
-                                       Integer.toString(exception.getLineNumber()),
-                                       Integer.toString(exception.getColumnNumber()), exception.getMessage());
+        String message = String.format("Error at line %d, column %d while parsing\n%s", exception.getLineNumber(),
+                                       exception.getColumnNumber(), exception.getMessage());
         LOGGER.error(message);
 
         //        // Log validation message in validation logger

@@ -29,8 +29,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -98,11 +101,6 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     private static final int CYCLE_STOP_GROUP = 3;
 
     /**
-     * Format de la date dans les fichiers cycle
-     */
-    private final SimpleDateFormat CYCLE_DATE_FORMAT;
-
-    /**
      * Pattern de date dans un fichier orf
      */
     private static final String ORF_DATE_PATTERN = "\\d{4}/\\d{2}/\\d{2}";
@@ -131,19 +129,23 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Format de la date dans le fichier orf
      */
-    private final SimpleDateFormat ORF_DATE_TIME_FORMAT;
+    private final static DateTimeFormatter ORF_DATE_TIME_FORMAT = DateTimeFormatter
+            .ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+
+    /**
+     * Format de la date dans les fichiers cycle
+     */
+    private final static DateTimeFormatter CYCLE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public TranslatedFromCycleFileFinder() {
         super();
-        ORF_DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-        CYCLE_DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
     }
 
     @Override
     public List<Object> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         final List<Object> otherValueList = super.getValueList(fileMap, attributeValueMap);
-        // la list doit etre de taille 1
+        // la liste doit etre de taille 1
         if (otherValueList.size() > 1) {
             final String msg = "Too much value for cycle attribut : " + super.getOtherAttributName();
             LOGGER.error(msg);
@@ -170,8 +172,6 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // valueType est la valeur de sortie si c'est integer => on doit trouver
         // le cycle correspondant au start_date et vice versa
         if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
-            final Date startDate = (Date) otherValue;
-
             // Check if cycle file exists
             final String cycleFilePath = confProperties.getCycleFileFilepath();
 
@@ -180,14 +180,14 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 final File cycleFile = new File(cycleFilePath);
                 if (cycleFile.exists()) {
                     // Compute value from cycle file first and orf file if necessary
-                    processedValue = getCycleOcurrence(startDate);
+                    processedValue = getCycleOcurrence((OffsetDateTime) otherValue);
                     computeOrfFile = false;
                 }
             }
 
             if (computeOrfFile) {
                 // Compute value from orf file only
-                processedValue = getCycleOccurenceFromOrf(startDate);
+                processedValue = getCycleOccurenceFromOrf((OffsetDateTime) otherValue);
             }
 
         } else if (valueType.equals(AttributeTypeEnum.TYPE_DATE)
@@ -203,6 +203,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg);
         }
+        
         return processedValue;
     }
 
@@ -215,8 +216,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * @return
      * @throws PluginAcquisitionException
      */
-    private synchronized Date getCycleStartDate(Integer cycleOccurence) throws PluginAcquisitionException {
-        Date cycleStartDate = null;
+    private synchronized OffsetDateTime getCycleStartDate(Integer cycleOccurence) throws PluginAcquisitionException {
+        OffsetDateTime cycleStartDate = null;
         int increment = 0;
         String cycleAsString = null;
 
@@ -233,16 +234,13 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             final Matcher matcher = ORF_LINE_PATTERN.matcher(fileBuffer);
             while (matcher.find() && (cycleStartDate == null)) {
                 if (cycleAsString.equals(matcher.group(ORF_CYCLE_GROUP))) {
-                    // cree la date pour comparaison
-                    try {
-                        cycleStartDate = ORF_DATE_TIME_FORMAT.parse(matcher.group(ORF_TIME_GROUP));
-                    } catch (final ParseException e) {
-                        throw new PluginAcquisitionException(e);
-                    }
+                    LocalDateTime ldt = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
+                    cycleStartDate = OffsetDateTime.of(ldt, ZoneOffset.UTC);
+                    ;
                 }
             }
         }
-        
+
         // le cycle n'a pas ete trouve
         if (cycleStartDate == null) {
             final String msg = "cycle not found in orf file : " + cycleAsString;
@@ -260,8 +258,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * @return
      * @throws PluginAcquisitionException
      */
-    private synchronized Date getCycleStopDate(Integer cycleOccurence) throws PluginAcquisitionException {
-        Date cycleStopDate = null;
+    private synchronized OffsetDateTime getCycleStopDate(Integer cycleOccurence) throws PluginAcquisitionException {
+        OffsetDateTime cycleStopDate = null;
         int increment = 0;
         String cycleAsString = null;
 
@@ -281,12 +279,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             final Matcher matcher = ORF_LINE_PATTERN.matcher(fileBuffer);
             while (matcher.find()) {
                 if (cycleAsString.equals(matcher.group(ORF_CYCLE_GROUP))) {
-                    // cree la date pour comparaison
-                    try {
-                        cycleStopDate = ORF_DATE_TIME_FORMAT.parse(matcher.group(ORF_TIME_GROUP));
-                    } catch (final ParseException e) {
-                        throw new PluginAcquisitionException(e);
-                    }
+                    LocalDateTime ldt = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
+                    cycleStopDate = OffsetDateTime.of(ldt, ZoneOffset.UTC);
+                    ;
                 }
             }
         }
@@ -302,16 +297,16 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Le nom des fichiers ORF evolue en fonction des mises a jours. On ne selectionne que le dernier modifie
      *
-     * @param orfFilepathPattern_
+     * @param orfFilePathPattern
      *            de preference en chemin absolu
      * @return
      * @throws PluginAcquisitionException
      */
-    private CharBuffer getOrfFile(String orfFilepathPattern_) throws PluginAcquisitionException {
+    private CharBuffer getOrfFile(String orfFilePathPattern) throws PluginAcquisitionException {
 
         CharBuffer fileBuffer;
-        final File dir = new File(new File(orfFilepathPattern_).getParent());
-        final String filePattern = new File(orfFilepathPattern_).getName();
+        final File dir = new File(new File(orfFilePathPattern).getParent());
+        final String filePattern = new File(orfFilePathPattern).getName();
         final FileFilter fileFilter = new WildcardFileFilter(filePattern);
         final File[] files = dir.listFiles(fileFilter);
         // recupere le dernier fichier modifier
@@ -341,14 +336,14 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     }
 
     /**
-     * Retourne l'occurence du cycle correpondant a la Date
+     * Retourne l'occurence du cycle correspondant a la Date
      *
-     * @param pStartDate
+     * @param startDate
      *            la date pour laquelle on cherche le cycle correspondant
      * @return
      * @throws PluginAcquisitionException
      */
-    public synchronized Integer getCycleOcurrence(Date pStartDate) throws PluginAcquisitionException {
+    public synchronized Integer getCycleOcurrence(OffsetDateTime startDate) throws PluginAcquisitionException {
         Integer cycleOccurence = null;
         int firstStartDate = 0;
 
@@ -361,7 +356,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         }
 
         // convertit la date pour la comparaison
-        final String stringpStartDate = CYCLE_DATE_FORMAT.format(pStartDate);
+        final String stringpStartDate = CYCLE_DATE_FORMAT.format(startDate);
         // parcours le fichier ligne par ligne
         final Matcher matcher = CYCLE_LINE_PATTERN.matcher(fileBuffer);
         // look in ORF file
@@ -372,29 +367,22 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 // Si la date passee en parametre est identique ou
                 // inferieure a la PREMIERE date de debut du premier cycle
                 // alors affiner la recherche en cherchant parmi les
-                // fichiers ORF ( cas des cycles 000 pour jason ou 998 et
-                // 999 pour jason2 )
+                // fichiers ORF ( cas des cycles 000 pour jason ou 998 et 999 pour jason2 )
                 final String startDateString = matcher.group(CYCLE_START_GROUP);
 
                 firstStartDate = 1;
 
-                Date startDate = null;
-                try {
-                    startDate = CYCLE_DATE_FORMAT.parse(startDateString);
-                } catch (final ParseException e) {
-                    throw new PluginAcquisitionException(e);
-                }
-                if (pStartDate.before(startDate) || pStartDate.equals(startDate)) {
-                    cycleOccurence = getCycleOccurenceFromOrf(pStartDate);
+                LocalDate cycleDate = LocalDate.parse(startDateString, CYCLE_DATE_FORMAT);
+
+                if (LocalDate.from(startDate).isBefore(cycleDate) || LocalDate.from(startDate).isEqual(cycleDate)) {
+                    cycleOccurence = getCycleOccurenceFromOrf(startDate);
                     orfCycle = true;
                 }
             }
 
             if (!orfCycle) {
 
-                // si la date cherchee est superieur a la stopDate on passe
-                // a la
-                // ligne suivante
+                // si la date cherchee est superieure a la stopDate on passe a la igne suivante
                 final String stopDateString = matcher.group(CYCLE_STOP_GROUP);
 
                 // cas du dernier cycle
@@ -403,20 +391,14 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 } else if (stopDateString.equals(stringpStartDate)) {
                     // Les dates sont egales sans la precision des heures
                     // il faut regarder le 2eme fichier
-                    cycleOccurence = getCycleOccurenceFromOrf(pStartDate);
+                    cycleOccurence = getCycleOccurenceFromOrf(startDate);
                 } else {
+                    LocalDate cycleDate = LocalDate.parse(stopDateString, CYCLE_DATE_FORMAT);
 
-                    Date stopDate = null;
-                    try {
-                        stopDate = CYCLE_DATE_FORMAT.parse(stopDateString);
-                    } catch (final ParseException e) {
-                        throw new PluginAcquisitionException(e);
-                    }
-                    if (pStartDate.after(stopDate)) {
+                    if (LocalDate.from(startDate).isAfter(cycleDate)) {
                         // rien a faire
                     } else {
-                        // La date est entre la stopDate de la ligne
-                        // precedente =
+                        // La date est entre la stopDate de la ligne precedente =
                         // startDate de la ligne courante
                         // et la stopDate de la ligne courante
                         cycleOccurence = new Integer(matcher.group(CYCLE_GROUP));
@@ -431,11 +413,11 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Retrouve dans le fichier Orf l'occurence du cycle correspondant a la date
      *
-     * @param pStartDate
+     * @param startDate
      * @return l'occurence du cycle correspondant a la date
      * @throws PluginAcquisitionException
      */
-    public synchronized Integer getCycleOccurenceFromOrf(Date pStartDate) throws PluginAcquisitionException {
+    public synchronized Integer getCycleOccurenceFromOrf(OffsetDateTime startDate) throws PluginAcquisitionException {
         Integer cycleOccurence = null;
         int increment = 0;
         // indique que le bon cycle occurence a ete trouve
@@ -451,16 +433,13 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             final Matcher matcher = ORF_LINE_PATTERN.matcher(fileBuffer);
             while (matcher.find() && !cycleFound) {
 
-                // cree la date pour comparaison
-                Date startDate = null;
-                try {
-                    startDate = ORF_DATE_TIME_FORMAT.parse(matcher.group(ORF_TIME_GROUP));
-                } catch (final ParseException e) {
-                    throw new PluginAcquisitionException(e);
-                }
+                LocalDateTime cycleDateTime = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
+
                 // Si la date trouvee est anterieure on stocke l'occurence sinon
                 // c'est la fin
-                if (startDate.before(pStartDate)) {
+
+                // TODO CMZ : à confirmer le  toLocalDateTime
+                if (cycleDateTime.isBefore(startDate.toLocalDateTime())) {
                     // sauvegarde l'occurence
                     cycleOccurence = new Integer(matcher.group(ORF_CYCLE_GROUP));
                 } else {
@@ -480,14 +459,14 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Lit un fichier sous forme de charBuffer.
      *
-     * @param pFile
+     * @param filePath
      * @return
      * @throws IOException
      */
-    private CharBuffer readFile(String pFilepath) throws IOException {
+    private CharBuffer readFile(String filePath) throws IOException {
 
         // Open the file and then get a channel from the stream
-        final FileInputStream fis = new FileInputStream(pFilepath);
+        final FileInputStream fis = new FileInputStream(filePath);
         final FileChannel fc = fis.getChannel();
 
         // Get the file's size and then map it into memory
@@ -503,7 +482,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         return cb;
     }
 
-    protected Object getTranslatedValue(Object pvalue) throws PluginAcquisitionException {
-        return processCalculOnValues(pvalue);
+    protected Object getTranslatedValue(Object value) throws PluginAcquisitionException {
+        return processCalculOnValues(value);
     }
 }

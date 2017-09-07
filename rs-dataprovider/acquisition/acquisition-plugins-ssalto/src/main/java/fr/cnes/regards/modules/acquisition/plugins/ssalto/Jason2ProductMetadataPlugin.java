@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
  * plugin de creation des meta donnees d'un produit jason2. Ce plugin est generique, et utilise un fichier de
@@ -31,9 +34,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 @Plugin(description = "Jason2ProductMetadataPlugin", id = "Jason2ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public abstract class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
+public class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON2";
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     protected String getProjectName() {
         return PROJECT_NAME;

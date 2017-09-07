@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +44,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
@@ -60,7 +65,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidator
  *
  * @author Christophe Mertz
  */
-// TODO CMZ confirmer que peut être enlevé : extend SipadTst
 public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT
         implements IProductMetadataPluginTest {
 
@@ -68,6 +72,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Autowired
+    IPluginService pluginService;
 
     // ****************************************************************************************
     // PARAMETRES
@@ -112,6 +119,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     public AbstractProductMetadataPluginTest() {
         super();
     }
+
+    public abstract IGenerateSIPPlugin buildPlugin() throws ModuleException;
 
     /**
      * Initialisation des proprietes
@@ -368,13 +377,17 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             // get the original file from supplyDirectory
             File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
                     acqFile.getFileName());
+
             // Mise a jour de la date de creation pour les plugins qui l'utilise afin qu'elle corresponde au fichier de référence
-            originalFile.setLastModified(1257785981000L);
+            OffsetDateTime odt = OffsetDateTime.of(2009, 11, 9, 16, 59, 41, 0, ZoneOffset.UTC);
+            originalFile.setLastModified(1000 * odt.toEpochSecond());
+
             if (acqFile.getStatus().equals(SsaltoFileStatus.VALID)) {
                 File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
                         acqFile.getFileName());
                 fileMap.put(newFile, originalFile);
             }
+
             // TODO CMZ à confirmer que la condition du if est toujours VRAI
             //            else if ((ssaltoFile.getStatus().equals(SsaltoFileStatus.ACQUIRED))
             //                    || (ssaltoFile.getStatus().equals(SsaltoFileStatus.TO_ARCHIVE))
@@ -387,7 +400,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             //                        ssaltoFile.getFileName());
             //                fileMap.put(newFile, originalFile);
             //            }
-
         }
 
         if (!fileMap.isEmpty()) {
@@ -482,7 +494,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 dicoBase));
         XMLValidatorFactory validatorFactory = new XMLValidatorFactory(resolver);
         validatorFactory.setXmlSchema(dicoName);
-        
+
         try {
             XMLValidation validator = (XMLValidation) validatorFactory.makeObject();
             // Validator of the request
@@ -492,15 +504,15 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             LOGGER.error("", e);
             isValid = false;
         }
-        
+
         if (isValid) {
             isValid = compare_to_reference(pdescFile);
         }
-        
+
         if (!isValid) {
             LOGGER.error("INVALID " + pdescFile.getAbsolutePath());
         }
-        
+
         return isValid;
     }
 
@@ -555,6 +567,59 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      */
     protected void addPluginTestDef(String dataSetName, String fileDirectory) {
         pluginTestDefList.add(new PluginTestDef(dataSetName, fileDirectory));
+    }
+
+    /**
+     * Get an existing configuration if exists otherwise creates it
+     * 
+     * @return an existing {@link PluginConfiguration}
+     * 
+     * @throws ModuleException if an error occurs
+     */
+    protected PluginConfiguration getPluginConfiguration(String pluginId) throws ModuleException {
+
+        // Test if a configuration exists for this pluginId
+        List<PluginConfiguration> pluginConfigurations = pluginService
+                .getPluginConfigurationsByType(IGenerateSIPPlugin.class);
+
+        if (!pluginConfigurations.isEmpty()) {
+            PluginConfiguration plgConf = loadPluginConfiguration(pluginId, pluginConfigurations);
+            if (plgConf != null) {
+                return plgConf;
+            }
+        }
+
+        // Get the PluginMetadata
+        List<PluginMetaData> metaDatas = pluginService.getPluginsByType(IGenerateSIPPlugin.class);
+
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
+                "Automatic plugin configuration for plugin id : " + pluginId);
+        pluginConfiguration.setPluginId(pluginId);
+        return pluginService.savePluginConfiguration(pluginConfiguration);
+
+    }
+
+    /**
+     * Return a {@link PluginConfiguration} for a pluginId
+     *  
+     * @param pluginId the pluginid to search
+     * 
+     * @return the found {@link PluginConfiguration}
+     */
+    private PluginConfiguration loadPluginConfiguration(String pluginId, List<PluginConfiguration> pluginConfs) {
+        PluginConfiguration foundPlgConf = null;
+        boolean exist = false;
+
+        for (PluginConfiguration aPluginConf : pluginConfs) {
+            if (!exist) {
+                exist = aPluginConf.getPluginId().equals(pluginId);
+                if (exist) {
+                    foundPlgConf = aPluginConf;
+                }
+            }
+        }
+
+        return foundPlgConf;
     }
 
 }

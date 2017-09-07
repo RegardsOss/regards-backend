@@ -30,9 +30,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfi
 public interface ICalculationClass {
 
     /**
-     * calcule la valeur de retour a partir de pValue
+     * calcule la valeur de retour a partir d'une valeur
      * @return
      */
-    Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties);
+    Object calculateValue(Object value, AttributeTypeEnum attributeType, PluginConfigurationProperties properties);
 
 }

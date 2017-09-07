@@ -26,9 +26,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepo
  * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
  * va lire dans les blocs de mesure.
  *
- * @author CS
- * @version 1.2
- * @since 1.2
+ * @author Christophe Mertz
  */
 
 public class Jason2Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10FlotProductMetadataPlugin {

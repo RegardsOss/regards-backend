@@ -1,0 +1,73 @@
+PRODUCT="CS__COM_AXXCNE20090428_133555_20100705_021300_20100710_051300 "
+PROC_STAGE=X
+REF_DOC="                       "
+                                        
+ACQUISITION_STATION="FOS                 "
+PROC_CENTER="SD    "
+PROC_TIME="28-Apr-2009 13:35:55.000000"
+SOFTWARE_VER="ser-don/4.1.2 "
+                                        
+SENSING_START="05-Jul-2010 02:13:00.000000"
+SENSING_STOP="10-Jul-2010 05:13:00.000000"
+                                        
+PHASE=X
+CYCLE=+000
+REL_ORBIT=+00000
+ABS_ORBIT=+00000
+STATE_VECTOR_TIME="                           "
+DELTA_UT1=+.000000<s>
+X_POSITION=+0000000.000<m>
+Y_POSITION=+0000000.000<m>
+Z_POSITION=+0000000.000<m>
+X_VELOCITY=+0000.000000<m/s>
+Y_VELOCITY=+0000.000000<m/s>
+Z_VELOCITY=+0000.000000<m/s>
+VECTOR_SOURCE="  "
+                                        
+UTC_SBT_TIME="                           "
+SAT_BINARY_TIME=+0000000000
+CLOCK_STEP=+0000000000<ps>
+                                
+LEAP_UTC="                           "
+LEAP_SIGN=+000
+LEAP_ERR=0
+                                        
+PRODUCT_ERR=0
+TOT_SIZE=+00000000000000002895<bytes>
+SPH_SIZE=+0000000658<bytes>
+NUM_DSD=+0000000002
+DSD_SIZE=+0000000280<bytes>
+NUM_DATA_SETS=+0000000002
+                                        
+SPH_DESCRIPTOR="CENTRE DE MASSE CRYOSAT     "
+                                                   
+DS_NAME="ENTETES                     "
+DS_TYPE=G
+FILENAME="NOT USED                                                      "
+DS_OFFSET=+00000000000000001905<bytes>
+DS_SIZE=+00000000000000000876<bytes>
+NUM_DSR=+0000000012
+DSR_SIZE=+0000000073<bytes>
+                                
+DS_NAME="CENTRE DE MASSE             "
+DS_TYPE=G
+FILENAME="NOT USED                                                      "
+DS_OFFSET=+00000000000000002781<bytes>
+DS_SIZE=+00000000000000000114<bytes>
+NUM_DSR=+0000000002
+DSR_SIZE=+0000000057<bytes>
+                                
+C***********************************************************************
+C*                                                                      
+C*                    *** SATELLITE CRYOSAT  ***                        
+C*                                                                      
+C* HISTORIQUE D'EVOLUTION DE LA MASSE ET DU CDG                         
+C* PAR RAPPORT A LA MASSE INITIALE:  669.000                            
+C* ET AU CDG INITIAL: Xinit= +1.5855, Yinit= +0.0160, Zinit= -0.0020    
+C*                                                                      
+C***********************************************************************
+C                                                                       
+CJJCNES SSCNES  Delta MASSE Delta X   Delta Y   Delta Z                 
+/-----/---------/---------/---------/---------/---------/               
+ 22100 07980.000 -0007.400 +0000.001 +0000.000 +0000.000
+ 22105 18780.000 -0007.400 +0000.001 +0000.000 +0000.000

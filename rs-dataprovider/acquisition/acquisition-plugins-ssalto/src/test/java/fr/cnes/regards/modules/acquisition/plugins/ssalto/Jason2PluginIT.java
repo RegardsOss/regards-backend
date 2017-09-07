@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,18 +30,16 @@ import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 
 /**
+ * Test des plugins JASON2 de niveau produit
  * 
  * @author Christophe Mertz
  *
  */
-// TODO CMZ à voir si annotations ci-dessous peuvent être dans la classe abstraite
-
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })
 @EnableAutoConfiguration
 public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
@@ -55,6 +52,9 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Autowired
+    IRuntimeTenantResolver runtimeTenantResoler;
+
     @Before
     public void before() {
         tenantResolver.forceTenant(DEFAULT_TENANT);
@@ -65,9 +65,6 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
         return "ssalto/domain/plugins/impl/jason2plugin.properties";
     }
 
-    @Autowired
-    IRuntimeTenantResolver runtimeTenantResoler;
-
     @Before
     public void start() {
         runtimeTenantResoler.forceTenant(DEFAULT_TENANT);
@@ -77,7 +74,7 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
     public void initTestList() {
 
         addPluginTestDef("DA_TC_JASON2_IGDR", "JASON2/IGDR", "JA2_IPN_2PcP016_166_20081214_053324_20081214_062937");
-        
+
         addPluginTestDef("DA_TC_JASON2_PAR_LV_DORIS_DGXX", "JASON2/LOGVOL_DORIS",
                          "JA2__1_PAR_DORIS_20080112_140531.REF");
         addPluginTestDef("DA_TC_JASON2_FREQAJ_BALPUB", "COMMUN/BALISES_PUBLIQUES/FA",
@@ -114,8 +111,8 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
                          "JA2_POR_AXPCNE20080625_170200_20080622_215527_20080624_002327");
         addPluginTestDef("DA_TC_JASON2_TC_LOGBOOK_SSALTO", "JASON2/LOG_SSALTO",
                          "R_TCLOG_JA2_SSALTO_2008_12_04_09_44_57_2008_12_04_11_45_09");
-        // addPluginTestDef("DA_TC_JASON2_TC_FILE_SSALTO", "JASON2/TC_SSALTO",
-        // "JA2_TC_EXCP_DOR-1_TCH_DOR1INITBUL001_2008_09_24_13_30_00");
+        addPluginTestDef("DA_TC_JASON2_TC_FILE_SSALTO", "JASON2/TC_SSALTO",
+                         "JA2_TC_EXCP_DOR-1_TCH_DOR1INITBUL001_2008_09_24_13_30_00");
         addPluginTestDef("DA_TC_JASON2_ZQS_DIODE_DGXX", "JASON2/LOGVOL_DORIS", "JA2__1_ZQS_DIODE_20080902_140000.REF");
         addPluginTestDef("DA_TC_JASON2_ZQS_SYS_DGXX", "JASON2/LOGVOL_DORIS", "JA2__2_ZQS_SYSBD_20080205_015400.REF");
         addPluginTestDef("DA_TC_JASON2_ZQS_RESEAU_BORD_DGXX", "JASON2/LOGVOL_DORIS",
@@ -126,11 +123,11 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_JASON2_SELECTED_HKTMR_SOLARPANEL", "JASON2/PANNEAU_SOLAIRE",
                          "R_JA2_SOLARPANEL_2008_10_24_22_00_00_2008_10_26_08_00_00");
         // KO addPluginTestDef("DA_TC_JASON2_DORIS1B_POE_CDDIS", "JASON2/DORIS1B_POE_CDDIS", "ja2data001.dat.Z"); pas de donnees
-        // CMZ KO addPluginTestDef("DA_TC_JASON2_PLTM2", "JASON2/PLTM2", "JA2_PLTM2_P_CARMEN2MC_20081204_114541.zip");
-        // CMZ KO addPluginTestDef("DA_TC_JASON2_HKTM_PASSMC", "JASON2/HKTM_PASSMC", "JA2_HKTMR_P_CARMEN2MC_20081204_151215.zip");
-        // CMZ KO addPluginTestDef("DA_TC_JASON2_TC_FILE_PASSMC", "JASON2/TC_PASSMC", "JA2_TC_T2L2MC_2008_06_23_14_07_05.zip");
-        // CMZ KO addPluginTestDef("DA_TC_JASON2_TC_LOGBOOK_PASSMC", "JASON2/LOG_PASSMC",
-//                         "R_TCLOG_JA2_CARMEN2MC_2008_12_04_11_55_34.zip");
+        addPluginTestDef("DA_TC_JASON2_PLTM2", "JASON2/PLTM2", "JA2_PLTM2_P_CARMEN2MC_20081204_114541.zip");
+        addPluginTestDef("DA_TC_JASON2_HKTM_PASSMC", "JASON2/HKTM_PASSMC", "JA2_HKTMR_P_CARMEN2MC_20081204_151215.zip");
+        addPluginTestDef("DA_TC_JASON2_TC_FILE_PASSMC", "JASON2/TC_PASSMC", "JA2_TC_T2L2MC_2008_06_23_14_07_05.zip");
+        addPluginTestDef("DA_TC_JASON2_TC_LOGBOOK_PASSMC", "JASON2/LOG_PASSMC",
+                         "R_TCLOG_JA2_CARMEN2MC_2008_12_04_11_55_34.zip");
         addPluginTestDef("DA_TC_JASON2_GDR", "JASON2/GDR", "JA2_GPN_2PaP184_254_20050914_100022_20490603_082321");
         addPluginTestDef("DA_TC_JASON2_OGDR", "JASON2/OGDR", "JA2_OPN_2PcS015_184_20081205_003016_20081205_020223");
 
@@ -159,62 +156,20 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_JASON2_PAR_LV_DORIS_DGXX", "JASON2/LOGVOL_DORIS",
-                "JA2__1_PAR_DORIS_20080112_140531.REF");
-    }
-
-    @Override
-    @Test
-    public void createMetadataPlugin_all() {
-        super.createMetadataPlugin_all();
-    }
-
-    /**
-     * Permet de ne tester qu'un fichier : utilise pour la mise au point de testCreateMetadataPlugin_All
-     */
-    @Override
-    @Test
-    public void createMetadataPlugin_solo() {
-        super.createMetadataPlugin_solo();
-    }
-
-    @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration();
-
-        return pluginService.getPlugin(pluginConfiguration.getId());
-
-        // TODO CMZ à voir pour créer automatiquement une conf par type de plugin  
-        //         return pluginService.getFirstPluginByType(IGenerateSIPPlugin.class);
-    }
-
-    /**
-     * Get an existing configuration if exists otherwise creates it
-     * 
-     * @return an existing {@link PluginConfiguration}
-     * 
-     * @throws ModuleException if an error occurs
-     */
-    private PluginConfiguration getPluginConfiguration() throws ModuleException {
-        // Test if a configuration exists for this Plugin
-        List<PluginConfiguration> pluginConfigurations = pluginService
-                .getPluginConfigurationsByType(IGenerateSIPPlugin.class);
-        if (!pluginConfigurations.isEmpty()) {
-            return pluginConfigurations.get(0);
-        }
-
-        // Get the PluginMetadata
-        List<PluginMetaData> metaDatas = pluginService.getPluginsByType(IGenerateSIPPlugin.class);
-
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
-                "Unique configuration for acquisition plugin : " + IGenerateSIPPlugin.class.getName());
-        return pluginService.savePluginConfiguration(pluginConfiguration);
-
+        addPluginTestDef("DA_TC_JASON2_TC_FILE_SSALTO", "JASON2/TC_SSALTO",
+                         "JA2_TC_EXCP_DOR-1_TCH_DOR1INITBUL001_2008_09_24_13_30_00");
     }
 
     @Override
     protected Logger getLogger() {
         return LOGGER;
+    }
+
+    @Override
+    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason2ProductMetadataPlugin");
+
+        return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
 }

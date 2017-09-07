@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 import java.io.File;
 import java.io.FileFilter;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,9 +80,9 @@ public class TranslatedFromCycleFileFinderTest {
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
-        List<Date> attValueList = new ArrayList<>();
+        List<OffsetDateTime> attValueList = new ArrayList<>();
         LocalDateTime ldt = LocalDateTime.of(2010, 9, 9, 0, 31);
-        attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
+        attValueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         attributMap.put(ATT_NAME, attValueList);
 
         List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
@@ -98,9 +100,9 @@ public class TranslatedFromCycleFileFinderTest {
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
-        List<Date> attValueList = new ArrayList<>();
+        List<OffsetDateTime> attValueList = new ArrayList<>();
         LocalDateTime ldt = LocalDateTime.of(2012, 3, 4, 10, 25);
-        attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
+        attValueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         attributMap.put(ATT_NAME, attValueList);
 
         List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
@@ -118,9 +120,9 @@ public class TranslatedFromCycleFileFinderTest {
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
-        List<Date> attValueList = new ArrayList<>();
+        List<OffsetDateTime> attValueList = new ArrayList<>();
         LocalDateTime ldt = LocalDateTime.of(2020, 1, 1, 0, 31);
-        attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
+        attValueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         attributMap.put(ATT_NAME, attValueList);
 
         List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
@@ -136,9 +138,9 @@ public class TranslatedFromCycleFileFinderTest {
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
-        List<Date> attValueList = new ArrayList<>();
+        List<OffsetDateTime> attValueList = new ArrayList<>();
         LocalDateTime ldt = LocalDateTime.of(2009, 5, 15, 10, 6);
-        attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
+        attValueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         attributMap.put(ATT_NAME, attValueList);
 
         List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
@@ -147,8 +149,9 @@ public class TranslatedFromCycleFileFinderTest {
 
         attValueList = new ArrayList<>();
         ldt = LocalDateTime.of(2009, 5, 15, 10, 35);
-        attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
+        attValueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         attributMap.put(ATT_NAME, attValueList);
+
         resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
         Assert.assertEquals(1, resultList.size());
         Assert.assertEquals(32, ((Integer) resultList.get(0)).intValue());
@@ -162,9 +165,9 @@ public class TranslatedFromCycleFileFinderTest {
         translatedFromCycleFileFinder.setValueType(AttributeTypeEnum.TYPE_INTEGER.toString());
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
-        List<Date> attValueList = new ArrayList<>();
+        List<OffsetDateTime> attValueList = new ArrayList<>();
         LocalDateTime ldt = LocalDateTime.of(2010, 4, 4, 5, 46);
-        attValueList.add(Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant()));
+        attValueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         attributMap.put(ATT_NAME, attValueList);
 
         List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
@@ -207,8 +210,7 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(1, resultList.size());
 
         LocalDateTime expectedLdt = LocalDateTime.of(2010, 2, 22, 00, 56, 25, 534000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
     @Test
@@ -229,18 +231,15 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(1, resultList.size());
 
         LocalDateTime expectedLdt = LocalDateTime.of(2008, 7, 4, 5, 57, 7, 457000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-        LOGGER.debug("START_DATE : " + expectedLdt.toString());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
 
         translatedFromCycleFileFinder.setName(STOP_DATE);
 
         resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
         Assert.assertEquals(1, resultList.size());
+
         expectedLdt = LocalDateTime.of(2008, 7, 12, 0, 51, 58, 407000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-        LOGGER.debug("STOP_DATE : " + expectedLdt.toString());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
     // Cycle inclu dans le premier fichier
@@ -261,17 +260,13 @@ public class TranslatedFromCycleFileFinderTest {
         List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
         Assert.assertEquals(1, resultList.size());
         LocalDateTime expectedLdt = LocalDateTime.of(2008, 7, 12, 1, 20, 5, 48000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-        LOGGER.debug("START_DATE : " + expectedLdt.toString());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
 
         translatedFromCycleFileFinder.setName(STOP_DATE);
         resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
         Assert.assertEquals(1, resultList.size());
         expectedLdt = LocalDateTime.of(2008, 7, 21, 22, 50, 30, 178000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-        LOGGER.debug("STOP_DATE : " + expectedLdt.toString());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
     // Cycle inclu dans le deuxieme fichier
@@ -294,22 +289,18 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(1, resultList.size());
 
         LocalDateTime expectedLdt = LocalDateTime.of(2009, 4, 5, 18, 40, 19, 209000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-        LOGGER.debug("START_DATE : " + expectedLdt.toString());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
 
         translatedFromCycleFileFinder.setName(STOP_DATE);
         resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
         Assert.assertEquals(1, resultList.size());
 
         expectedLdt = LocalDateTime.of(2009, 4, 15, 16, 10, 43, 594000000);
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
-        LOGGER.debug("STOP_DATE : " + expectedLdt.toString());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
     // Cycle inclu dans aucun des fichiers
-    @Test(expected=PluginAcquisitionException.class)
+    @Test(expected = PluginAcquisitionException.class)
     public void jason2GetDateFromUnknownCycle() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());

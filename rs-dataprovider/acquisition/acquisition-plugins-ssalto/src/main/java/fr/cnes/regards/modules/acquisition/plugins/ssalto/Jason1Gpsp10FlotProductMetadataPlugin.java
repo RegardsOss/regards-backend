@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -58,6 +61,8 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
 
     private static final String STOP_DATE = "STOP_DATE";
 
+    protected final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     protected Pattern patternd;
 
     protected Pattern patternp;
@@ -70,8 +75,8 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
-    public void init(String pDataSetName) throws ModuleException {
-        super.init(pDataSetName);
+    public void init(String dataSetName) throws ModuleException {
+        super.init(dataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
         patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
@@ -82,31 +87,31 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * cree les attributs time_period et file_creation_date
      */
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
-        registerTimePeriodAttributes(pFileMap, pAttributeMap);
+        registerTimePeriodAttributes(fileMap, attributeMap);
     }
 
     /**
      * 
-     * @param pFileMap
-     * @param pAttributeMap
+     * @param fileMap
+     * @param attributeMap
      * @throws PluginAcquisitionException
      */
-    private void registerTimePeriodAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + TIME_PERIOD);
+
         CompositeAttribute timePeriodAttribute = new CompositeAttribute();
         timePeriodAttribute.setName(TIME_PERIOD);
         try {
-            Attribute startDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME,
-                                                                            START_DATE,
-                                                                            getStartDateValue(pFileMap.keySet()));
+            Attribute startDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, START_DATE, getStartDateValue(fileMap.keySet()));
             timePeriodAttribute.addAttribute(startDateAttribute);
             attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
             Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
-                                                                           getStopDateValue(pFileMap.keySet()));
+                                                                           getStopDateValue(fileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
@@ -114,19 +119,21 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
         }
-        registerAttribute(TIME_PERIOD, pAttributeMap, timePeriodAttribute);
+
+        registerAttribute(TIME_PERIOD, attributeMap, timePeriodAttribute);
+
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }
 
     /**
      * 
-     * @param pSsaltoFileList
+     * @param files
      * @return
      * @throws PluginAcquisitionException
      */
-    protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         long longValue = 0;
-        for (File file : pSsaltoFileList) {
+        for (File file : files) {
             RinexFileHelper helper = new RinexFileHelper(file);
             long valueRead = helper.getBlocMeasureDateInterval().getMinValue();
             if (longValue == 0) {
@@ -135,20 +142,21 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
                 longValue = valueRead;
             }
         }
-        List<Date> valueList = new ArrayList<>();
-        valueList.add(new Date(longValue));
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        Date newDate = new Date(longValue);
+        valueList.add(OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC")));
         return valueList;
     }
 
     /**
      * 
-     * @param pSsaltoFileList
+     * @param files
      * @return
      * @throws PluginAcquisitionException
      */
-    protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         long longValue = 0;
-        for (File file : pSsaltoFileList) {
+        for (File file : files) {
             RinexFileHelper helper = new RinexFileHelper(file);
             long valueRead = helper.getBlocMeasureDateInterval().getMaxValue();
             if (longValue == 0) {
@@ -157,40 +165,36 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
                 longValue = valueRead;
             }
         }
-        List<Date> valueList = new ArrayList<>();
-        valueList.add(new Date(longValue));
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        Date newDate = new Date(longValue);
+        valueList.add(OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC")));
         return valueList;
     }
 
     /**
      * 
-     * @param pSsaltoFileList
+     * @param files
      * @return
      * @throws PluginAcquisitionException
      */
-    protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        Date creationDate = null;
-        try {
-            for (File file : pSsaltoFileList) {
-                RinexFileHelper helper = new RinexFileHelper(file);
-                Pattern creationDatePattern = Pattern
-                        .compile(".* ([\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}) .*");
-                String dateStr = helper.getValue(2, creationDatePattern, 1);
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        OffsetDateTime creationDate = null;
+        for (File file : files) {
+            RinexFileHelper helper = new RinexFileHelper(file);
+            Pattern creationDatePattern = Pattern
+                    .compile(".* ([\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}) .*");
+            String dateStr = helper.getValue(2, creationDatePattern, 1);
+            LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+            OffsetDateTime dateRead = OffsetDateTime.of(ldt, ZoneOffset.UTC);
 
-                Date dateRead = format.parse(dateStr);
-                if (creationDate == null) {
-                    creationDate = dateRead;
-                } else if (creationDate.after(dateRead)) {
-                    creationDate = dateRead;
-                }
+            if (creationDate == null) {
+                creationDate = dateRead;
+            } else if (creationDate.isAfter(dateRead)) {
+                creationDate = dateRead;
             }
-            valueList.add(creationDate);
-        } catch (ParseException e) {
-            String msg = "unable to parse creation date";
-            throw new PluginAcquisitionException(msg, e);
         }
+        valueList.add(creationDate);
 
         return valueList;
     }

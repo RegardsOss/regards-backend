@@ -24,9 +24,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,8 +123,7 @@ public class MultipleFileNameFinderTest {
 
         LocalDateTime expectedLdt = LocalDateTime.of(2007, 12, 26, 8, 26, 26);
 
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
     @Test
@@ -152,8 +151,7 @@ public class MultipleFileNameFinderTest {
 
         LocalDateTime expectedLdt = LocalDateTime.of(2007, 12, 26, 10, 18, 13);
 
-        Assert.assertEquals(Date.from(expectedLdt.atZone(ZoneId.systemDefault()).toInstant()).getTime(),
-                            ((Date) resultList.get(0)).getTime());
+        Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
     @After

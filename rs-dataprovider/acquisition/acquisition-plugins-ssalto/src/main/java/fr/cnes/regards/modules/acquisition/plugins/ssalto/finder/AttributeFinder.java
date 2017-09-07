@@ -22,20 +22,24 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,6 +227,7 @@ public abstract class AttributeFinder {
     protected String changeFormat(Object value) throws PluginAcquisitionException {
         String returnValue = value.toString();
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE) || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
+            // TODO CMZ : à revoir
             // the format must be externally synchronized
             try {
                 Date date = (Date) value;
@@ -251,16 +256,20 @@ public abstract class AttributeFinder {
      */
     protected Object valueOf(String value) throws PluginAcquisitionException {
         Object parsedValue = null;
-        if (valueType.equals(AttributeTypeEnum.TYPE_DATE) || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
-            DateFormat format = new SimpleDateFormat(formatRead, Locale.US);
-            // the format must be externally synchronized
-            synchronized (format) {
-                try {
-                    parsedValue = format.parse(value.toString());
-                } catch (ParseException e) {
-                    LOGGER.error("", e);
-                    throw new PluginAcquisitionException(e);
-                }
+        if (valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME) || valueType.equals(AttributeTypeEnum.TYPE_DATE)) {
+            boolean isOnlyDate = false;
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(formatRead);
+            try {
+                LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormatter);
+                parsedValue = OffsetDateTime.of(ldt, ZoneOffset.UTC);
+            } catch (DateTimeParseException e) {
+                LOGGER.warn(e.getMessage());
+                isOnlyDate = true;
+            }
+
+            if (isOnlyDate) {
+                LocalDate ld = LocalDate.parse(value, dateTimeFormatter);
+                parsedValue = OffsetDateTime.of(ld, LocalTime.MIN, ZoneOffset.UTC);
             }
         } else if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
             parsedValue = Integer.valueOf(value);
@@ -277,7 +286,7 @@ public abstract class AttributeFinder {
                 throw new PluginAcquisitionException(e);
             }
         }
-        // le type CLOB n'est pas utilise
+
         return parsedValue;
     }
 
@@ -308,7 +317,7 @@ public abstract class AttributeFinder {
         }
         if (unzipBefore.booleanValue()) {
             for (File zipFile : zipFileList) {
-                // ajoute les fichiers dezippé
+                // ajoute les fichiers dezippés
                 unzippedFileList.addAll(unzip(zipFile));
             }
         } else {
@@ -403,7 +412,7 @@ public abstract class AttributeFinder {
             for (Object element : temporaryUnzippedDirList) {
                 File dir = (File) element;
                 try {
-                    java.nio.file.Files.delete(Paths.get(dir.getAbsolutePath()));
+                    FileUtils.deleteDirectory(dir);
                 } catch (IOException e) {
                     throw new PluginAcquisitionException(e);
                 }

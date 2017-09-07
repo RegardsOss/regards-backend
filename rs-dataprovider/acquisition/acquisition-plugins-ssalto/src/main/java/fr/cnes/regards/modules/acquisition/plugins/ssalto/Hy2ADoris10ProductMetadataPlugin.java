@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -56,6 +57,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
 
     private static final String CREATION_DATE = "FILE_CREATION_DATE";
 
+    private final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+
+    private final static DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
+
     private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
     protected Pattern patternd;
@@ -74,8 +79,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
-    public void init(String pDataSetName) throws ModuleException {
-        super.init(pDataSetName);
+    public void init(String dataSetName) throws ModuleException {
+        super.init(dataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
         patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");
@@ -86,7 +91,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * cree les attributs time_period et file_creation_date
+     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -95,20 +100,26 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
         registerFileCreationDateAttribute(pFileMap, pAttributeMap);
     }
 
-    private void registerTimePeriodAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    /**
+     * Add the START_DATE and the STOP_DATE attributs
+     * @param fileMap
+     * @param attributeMap
+     * @throws PluginAcquisitionException
+     */
+    private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + TIME_PERIOD);
+
         CompositeAttribute timePeriodAttribute = new CompositeAttribute();
         timePeriodAttribute.setName(TIME_PERIOD);
         try {
-            Attribute startDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME,
-                                                                            START_DATE,
-                                                                            getStartDateValue(pFileMap.keySet()));
+            Attribute startDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, START_DATE, getStartDateValue(fileMap.keySet()));
             timePeriodAttribute.addAttribute(startDateAttribute);
             attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
             Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
-                                                                           getStopDateValue(pFileMap.keySet()));
+                                                                           getStopDateValue(fileMap.keySet()));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
@@ -116,166 +127,27 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
         }
-        registerAttribute(TIME_PERIOD, pAttributeMap, timePeriodAttribute);
+
+        registerAttribute(TIME_PERIOD, attributeMap, timePeriodAttribute);
+
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }
 
     /**
-     * @param pSsaltoFileList
-     *            : les fichiers de donnees de la mission
-     * @return valueList : date de debut de la mission
+     * Add the CREATION_DATE attribut
+     * @param fileMap
+     * @param attributeMap
      * @throws PluginAcquisitionException
      */
-    protected List<Date> getStartDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        for (File file : pSsaltoFileList) {
-            String fileName = file.getName();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd.matcher(fileName);
-            Matcher matcherP = patternp.matcher(fileName);
-            Matcher matcherH = patternh.matcher(fileName);
-            Matcher matcherL = patternl.matcher(fileName);
-            try {
-                if (matcherD.matches()) {
-                    String dateStr = matcherD.group(1);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherP.matches()) {
-                    String dateStr = matcherP.group(2);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherH.matches()) {
-                    String dateStr = matcherH.group(3);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherL.matches()) {
-                    String dateStr = matcherL.group(4);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else {
-                    String msg = "filename does not match";
-                    LOGGER.error(msg);
-                    throw new PluginAcquisitionException(msg);
-                }
-
-            } catch (ParseException e) {
-                throw new PluginAcquisitionException(e);
-            }
-        }
-        return valueList;
-    }
-
-    /**
-     * @param pSsaltoFileList
-     *            liste de fichiers de donnees de la mission
-     * @return valueList : date de fin de la mission
-     * @throws PluginAcquisitionException
-     */
-    protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        int i = 0;
-        for (File file : pSsaltoFileList) {
-            String fileName = file.getName();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            Matcher matcherD = patternd.matcher(fileName);
-            Matcher matcherP = patternp.matcher(fileName);
-            Matcher matcherH = patternh.matcher(fileName);
-            Matcher matcherL = patternl.matcher(fileName);
-            try {
-                if (matcherD.matches()) {
-                    @SuppressWarnings("unchecked")
-                    List<Date> startDateValueList = (List<Date>) attributeValueMap.get(START_DATE);
-                    Date date = startDateValueList.get(i);
-                    long newTime = date.getTime() + 86399000;
-                    valueList.add(new Date(newTime));
-                } else if (matcherP.matches()) {
-                    String dateStr = matcherP.group(3);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherH.matches()) {
-                    @SuppressWarnings("unchecked")
-                    List<Date> startDateValueList = (List<Date>) attributeValueMap.get(START_DATE);
-                    Date date = startDateValueList.get(i);
-                    long newTime = date.getTime() + 86399000;
-                    valueList.add(new Date(newTime));
-                } else if (matcherL.matches()) {
-                    String dateStr = matcherL.group(5);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else {
-                    String msg = "filename does not match";
-                    LOGGER.error(msg);
-                    throw new PluginAcquisitionException(msg);
-                }
-
-            } catch (ParseException e) {
-                throw new PluginAcquisitionException(e);
-            }
-            i++;
-        }
-        return valueList;
-    }
-
-    /**
-     * @param pSsaltoFileList
-     *            liste de fichiers de données de la mission
-     * @return valueList : date de creation des fichiers de donnees de la mission
-     * @throws PluginAcquisitionException
-     */
-    protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        for (File file : pSsaltoFileList) {
-            String fileName = file.getName();
-            SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            SimpleDateFormat fileFormat = new SimpleDateFormat("yyyyMMdd HHmmss");
-            Matcher matcherD = patternd.matcher(fileName);
-            Matcher matcherP = patternp.matcher(fileName);
-            Matcher matcherH = patternh.matcher(fileName);
-            Matcher matcherL = patternl.matcher(fileName);
-            try {
-                if (matcherD.matches()) {
-                    // go to search into file using RINExFileHelper
-                    RinexFileHelper helper = new RinexFileHelper(file);
-                    Pattern cdPattern = CREATION_DATE_PATTERN;
-                    String dateStr = helper.getValue(2, cdPattern, 1);
-                    Date date = fileFormat.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherP.matches()) {
-                    String dateStr = matcherP.group(1);
-                    Date date = fileNameFormat.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherH.matches()) {
-                    // go to search into file using RINExFileHelper
-                    RinexFileHelper helper = new RinexFileHelper(file);
-                    Pattern cdPattern = CREATION_DATE_PATTERN;
-                    String dateStr = helper.getValue(2, cdPattern, 1);
-                    Date date = fileFormat.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherL.matches()) {
-                    String dateStr = matcherL.group(3);
-                    Date date = fileNameFormat.parse(dateStr);
-                    valueList.add(date);
-                } else {
-                    String msg = "filename does not match";
-                    LOGGER.error(msg);
-                    throw new PluginAcquisitionException(msg);
-                }
-
-            } catch (ParseException e) {
-                throw new PluginAcquisitionException(e);
-            }
-        }
-        return valueList;
-    }
-
-    private void registerFileCreationDateAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
+
         try {
             Attribute fileCreationDateAttribute = AttributeFactory
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
-                                     getCreationDateValue(pFileMap.keySet()));
-            registerAttribute(CREATION_DATE, pAttributeMap, fileCreationDateAttribute);
+                                     getCreationDateValue(fileMap.keySet()));
+            registerAttribute(CREATION_DATE, attributeMap, fileCreationDateAttribute);
             attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
@@ -283,5 +155,129 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
         }
 
         LOGGER.info("END building attribute " + CREATION_DATE);
+    }
+
+    /**
+     * Get the START_DATE
+     * @param files
+     *            : les fichiers de donnees de la mission
+     * @return valueList : date de debut de la mission
+     * @throws PluginAcquisitionException
+     */
+    protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        for (File file : files) {
+            String fileName = file.getName();
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
+            String dateStr;
+
+            if (matcherD.matches()) {
+                dateStr = matcherD.group(1);
+            } else if (matcherP.matches()) {
+                dateStr = matcherP.group(2);
+            } else if (matcherH.matches()) {
+                dateStr = matcherH.group(3);
+            } else if (matcherL.matches()) {
+                dateStr = matcherL.group(4);
+            } else {
+                String msg = "filename does not match";
+                LOGGER.error(msg);
+                throw new PluginAcquisitionException(msg);
+            }
+
+            LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+            valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+        }
+        return valueList;
+    }
+
+    /**
+     * Get the STOP_DATE
+     * @param files
+     *            liste de fichiers de donnees de la mission
+     * @return valueList : date de fin de la mission
+     * @throws PluginAcquisitionException
+     */
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        int n = 0;
+        for (File file : files) {
+            String fileName = file.getName();
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
+            if (matcherD.matches()) {
+                OffsetDateTime date = (OffsetDateTime) attributeValueMap.get(START_DATE).get(n);
+                valueList.add(date.plusSeconds(86399));
+
+            } else if (matcherP.matches()) {
+                String dateStr = matcherP.group(3);
+                LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+                valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+            } else if (matcherH.matches()) {
+                OffsetDateTime date = (OffsetDateTime) attributeValueMap.get(START_DATE).get(n);
+                valueList.add(date.plusSeconds(86399));
+            } else if (matcherL.matches()) {
+                String dateStr = matcherL.group(5);
+                LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+                valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+            } else {
+                String msg = "filename does not match";
+                LOGGER.error(msg);
+                throw new PluginAcquisitionException(msg);
+            }
+            n++;
+        }
+        return valueList;
+    }
+
+    /**
+     * Get the CREATION_DATE
+     * @param pSsaltoFileList
+     *            liste de fichiers de données de la mission
+     * @return valueList : date de creation des fichiers de donnees de la mission
+     * @throws PluginAcquisitionException
+     */
+    protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        for (File file : files) {
+            String fileName = file.getName();
+            Matcher matcherD = patternd.matcher(fileName);
+            Matcher matcherP = patternp.matcher(fileName);
+            Matcher matcherH = patternh.matcher(fileName);
+            Matcher matcherL = patternl.matcher(fileName);
+            if (matcherD.matches()) {
+                // go to search into file using RINExFileHelper
+                RinexFileHelper helper = new RinexFileHelper(file);
+                Pattern cdPattern = CREATION_DATE_PATTERN;
+                String dateStr = helper.getValue(2, cdPattern, 1);
+                LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FILE_FORMATTER);
+                valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+            } else if (matcherP.matches()) {
+                String dateStr = matcherP.group(1);
+                LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+                valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+            } else if (matcherH.matches()) {
+                // go to search into file using RINExFileHelper
+                RinexFileHelper helper = new RinexFileHelper(file);
+                Pattern cdPattern = CREATION_DATE_PATTERN;
+                String dateStr = helper.getValue(2, cdPattern, 1);
+                LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FILE_FORMATTER);
+                valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+            } else if (matcherL.matches()) {
+                String dateStr = matcherL.group(3);
+                LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+                valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
+            } else {
+                String msg = "filename does not match";
+                LOGGER.error(msg);
+                throw new PluginAcquisitionException(msg);
+            }
+        }
+        return valueList;
     }
 }

@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
@@ -36,17 +34,11 @@ public class SetStopDateHours implements ICalculationClass {
         super();
     }
 
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-        GregorianCalendar calendar = new GregorianCalendar();
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
 
-        calendar.setTime((Date) pValue);
-        calendar.set(Calendar.HOUR, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-
-        return calendar.getTime();
+        return ((OffsetDateTime) value).withHour(23).withMinute(59).withSecond(59);
     }
 
 }

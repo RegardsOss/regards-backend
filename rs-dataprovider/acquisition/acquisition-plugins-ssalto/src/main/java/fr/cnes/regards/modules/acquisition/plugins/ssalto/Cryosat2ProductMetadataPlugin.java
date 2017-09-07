@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
@@ -27,10 +28,13 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepo
  * 
  * @author Christophe Mertz
  */
+@Plugin(description = "Cryosat2ProductMetadataPlugin", id = "Cryosat2ProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Cryosat2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "CRYOSAT2";
-    
+
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

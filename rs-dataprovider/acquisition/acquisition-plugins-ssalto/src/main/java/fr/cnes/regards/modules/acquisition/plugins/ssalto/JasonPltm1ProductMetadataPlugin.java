@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,69 +72,58 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
     }
 
     @Override
-    public void init(String pDataSetName) throws ModuleException {
-        super.init(pDataSetName);
+    public void init(String dataSetName) throws ModuleException {
+        super.init(dataSetName);
         patternd = Pattern.compile(getProjectPrefix() + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})__");
         patternp = Pattern.compile(getProjectPrefix()
                 + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})");
     }
 
     @Override
-    protected List<Date> getCreationDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        for (File file : pSsaltoFileList) {
+    protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        for (File file : files) {
             String fileName = file.getName();
-            SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             Matcher matcherD = patternd.matcher(fileName);
             Matcher matcherP = patternp.matcher(fileName);
-            try {
-                if (matcherD.matches()) {
-                    String dateStr = matcherD.group(1);
-                    Date date = fileNameFormat.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherP.matches()) {
-                    String dateStr = matcherP.group(1);
-                    Date date = fileNameFormat.parse(dateStr);
-                    valueList.add(date);
-                } else {
-                    String msg = "filename does not match";
-                    LOGGER.error(msg);
-                    throw new PluginAcquisitionException(msg);
-                }
-
-            } catch (ParseException e) {
-                throw new PluginAcquisitionException(e);
+            String dateStr;
+            if (matcherD.matches()) {
+                dateStr = matcherD.group(1);
+            } else if (matcherP.matches()) {
+                dateStr = matcherP.group(1);
+            } else {
+                String msg = "filename does not match";
+                LOGGER.error(msg);
+                throw new PluginAcquisitionException(msg);
             }
+
+            LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+            valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         }
         return valueList;
     }
 
     @Override
-    protected List<Date> getStopDateValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
-        List<Date> valueList = new ArrayList<>();
-        for (File file : pSsaltoFileList) {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+        List<OffsetDateTime> valueList = new ArrayList<>();
+        for (File file : files) {
             String fileName = file.getName();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
             Matcher matcherD = patternd.matcher(fileName);
             Matcher matcherP = patternp.matcher(fileName);
-            try {
-                if (matcherD.matches()) {
-                    String dateStr = matcherD.group(1);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else if (matcherP.matches()) {
-                    String dateStr = matcherP.group(3);
-                    Date date = format.parse(dateStr);
-                    valueList.add(date);
-                } else {
-                    String msg = "filename does not match";
-                    LOGGER.error(msg);
-                    throw new PluginAcquisitionException(msg);
-                }
+            String dateStr;
 
-            } catch (ParseException e) {
-                throw new PluginAcquisitionException(e);
+            if (matcherD.matches()) {
+                dateStr = matcherD.group(1);
+            } else if (matcherP.matches()) {
+                dateStr = matcherP.group(3);
+            } else {
+                String msg = "filename does not match";
+                LOGGER.error(msg);
+                throw new PluginAcquisitionException(msg);
             }
+
+            LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
+            valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
         }
         return valueList;
     }
@@ -143,14 +132,14 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      *
      * Calcul de l'attribut RADICAL
      *
-     * @param pSsaltoFileList
+     * @param files
      * @return
      * @throws PluginAcquisitionException
      */
-    protected List<String> getRadicalValue(Set<File> pSsaltoFileList) throws PluginAcquisitionException {
+    protected List<String> getRadicalValue(Set<File> files) throws PluginAcquisitionException {
 
         List<String> valueList = new ArrayList<>();
-        for (File file : pSsaltoFileList) {
+        for (File file : files) {
             String fileName = file.getName();
 
             Matcher matcherD = patternd.matcher(fileName);
@@ -191,18 +180,19 @@ public abstract class JasonPltm1ProductMetadataPlugin extends AbstractJasonDoris
      *
      * Ajout de l'attribut RADICAL à la map des attributs
      *
-     * @param pFileMap
-     * @param pAttributeMap
+     * @param fileMap
+     * @param attributeMap
      * @throws PluginAcquisitionException
      */
-    private void registerRadicalAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    private void registerRadicalAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + RADICAL);
+
         try {
             Attribute radicalAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_STRING, RADICAL,
-                                                                          getRadicalValue(pFileMap.keySet()));
+                                                                          getRadicalValue(fileMap.keySet()));
             if ((radicalAttribute.getValueList() != null) && (radicalAttribute.getValueList().size() != 0)) {
-                registerAttribute(RADICAL, pAttributeMap, radicalAttribute);
+                registerAttribute(RADICAL, attributeMap, radicalAttribute);
                 attributeValueMap.put(RADICAL, radicalAttribute.getValueList());
             } else {
                 LOGGER.info("Attribute " + RADICAL + " is not defined");

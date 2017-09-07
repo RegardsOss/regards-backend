@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.model;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
@@ -38,12 +40,13 @@ public class DateAttribute extends Attribute {
     }
 
     /**
-     * Ajoute une valeur a l'attribut La classe de l'objet en entree doit correspondre avec la classe de l'attribut.
+     * Ajoute une valeur a l'attribut La classe de l'objet en entree doit correspondre avec la classe de l'attribut
      * 
-     * @param pValue
-     *            La nouvelle valeur de l'attribut.
+     * @param value
+     *            La nouvelle valeur de l'attribut
      */
-    public void addValue(Long pValue) {
-        super.addValue(new Date(pValue.longValue()));
+    public void addValue(Long value) {
+        Date date = new Date(value);
+        super.addValue(OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")));        
     }
 }

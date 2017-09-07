@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfi
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
 
 /**
- * Formate les dates recuperere dans le fichier cs_data([0-9]{3}).dat.Z
+ * Formate les dates recupererees dans le fichier cs_data([0-9]{3}).dat.Z
  * 
  * @author Christophe Mertz
  *
@@ -35,22 +35,19 @@ public class SetCryosat2Doris1bPoeCddisDate implements ICalculationClass {
 
     public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
-        Date date = calculate(value,type);
-        
-        String tmp2String = DateFormatter.getDateRepresentation(date, DateFormatter.XS_DATE_TIME_FORMAT);
-        return tmp2String;
+        Date date = calculate(value, type);
+
+        return DateFormatter.getDateRepresentation(date, DateFormatter.XS_DATE_TIME_FORMAT);
     }
-    
+
     /**
-     * Calcule la date associee au parametre value.
+     * Calcule la date associee au parametre value
      * @param value
      * @param type
      * @return type Date
-     * @since 1.4.4
-     * @FA SIPNG-FA-0709-CN
      */
-    public Date calculate(Object value, AttributeTypeEnum type){
-    	// Read line
+    public Date calculate(Object value, AttributeTypeEnum type) {
+        // Read line
         String line = (String) value;
         // Parameters for compute values
         String compute = null;
@@ -99,10 +96,10 @@ public class SetCryosat2Doris1bPoeCddisDate implements ICalculationClass {
         compute = line.substring(beginIndex, endIndex).trim();
         int second = Integer.valueOf(compute).intValue();
         cal.set(Calendar.SECOND, second);
-        
+
         // 27-32 Fractional part of seconds (microseconds)
         // Not used
-        
+
         return cal.getTime();
     }
 }
