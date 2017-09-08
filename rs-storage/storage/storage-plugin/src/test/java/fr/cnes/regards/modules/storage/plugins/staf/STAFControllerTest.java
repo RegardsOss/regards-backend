@@ -150,13 +150,13 @@ public class STAFControllerTest {
         // Construct map of files to archive to test staffFileArchive method call
         Map<String, String> localFileToArchiveMap = Maps.newHashMap();
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_3.txt",
-                                  "/test/node/eadcc622739d58e8a78170b67c6ff9f5");
+                                  "/test/node/1f4add9aecfc4c623cdda55771f4b984");
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_4.txt",
-                                  "/test/node/eadcc622739d58e8a78170b67c6ff9f5");
+                                  "/test/node/955fd5652aadd97329a50e029163f3a9");
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_5.txt",
-                                  "/test/node/0382f59c9ef53216677f7a725f8cac41");
+                                  "/test/node/61142380c96f899eaea71b229dcc4247");
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_2.txt",
-                                  "/test/node/eadcc622739d58e8a78170b67c6ff9f5");
+                                  "/test/node/8e3d5e32119c70881316a1a2b17a64d1");
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_1.txt",
                                   "/test/node/eadcc622739d58e8a78170b67c6ff9f5");
 
@@ -179,8 +179,8 @@ public class STAFControllerTest {
                 .forEach(file -> Assert.assertTrue("Missing a stored file in STAFController raw files stored",
                                                    rawArchivedFiles.keySet().contains(file)));
 
-        // Check that there is 2 file url for the 5 files stored. Only 2 md5 different for all the 5 files.
-        Assert.assertEquals("There should be 2 files URL from STAF for the 5 raw files to archive", 2,
+        // Check that there is 5 file url for the 5 files stored.
+        Assert.assertEquals("There should be 5 files URL from STAF for the 5 raw files to archive", 5,
                             rawArchivedFiles.values().stream().distinct().collect(Collectors.toSet()).size());
 
     }
@@ -323,8 +323,8 @@ public class STAFControllerTest {
                 .forEach(file -> Assert.assertTrue("Missing a stored file in STAFController raw files stored",
                                                    rawArchivedFiles.keySet().contains(file)));
 
-        // Check that there is 2 file url for the 5 files stored. Only 2 md5 different for all the 5 files.
-        Assert.assertEquals("There should be 2 files URL from STAF for the 5 raw files to archive", 2,
+        // Check that there is 5 file url for the 5 files stored.
+        Assert.assertEquals("There should be 5 files URL from STAF for the 5 raw files to archive", 5,
                             rawArchivedFiles.values().stream().distinct().collect(Collectors.toSet()).size());
 
     }

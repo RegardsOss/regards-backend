@@ -93,54 +93,54 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         filesToArchiveWithoutInvalides.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_2.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveWithoutInvalides.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_3.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveWithoutInvalides.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_4.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveWithoutInvalides.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_5.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveWithoutInvalides.add(new DataFile(
                 new URL("http", "172.26.47.107", 9020, "/conf/staticConfiguration.js"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
         filesToArchive.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/invalid_test_file.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchive.add(new DataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
         filesToArchiveMultiplesMode.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/big_file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveMultiplesMode.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/big_file_test_2.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveMultiplesMode.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/big_file_test_3.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
 
         filesToArchiveMultiplesMode.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/normal_file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveMultiplesMode.add(new DataFile(
                 new URL("file", "",
                         "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/normal_file_test_2.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
+                "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
     }
 
     @Test

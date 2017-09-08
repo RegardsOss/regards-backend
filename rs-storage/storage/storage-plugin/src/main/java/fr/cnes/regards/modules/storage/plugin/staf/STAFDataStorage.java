@@ -124,7 +124,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         // Create workingSubset for file to stored dispatching by archive mode
         dispatchFilesToArchiveByArchiveMode(dataFiles).forEach((mode, files) -> {
             LOG.info("[STAF] {} - Prepare - Working subset created for archiving mode {} with {} files to store.",
-                     stafArchive.getArchiveName(), mode.toString(), dataFiles.size());
+                     stafArchive.getArchiveName(), mode.toString(), files.size());
             workingSubsets.add(new STAFWorkingSubset(files, mode));
         });
         LOG.info("[STAF] {} - Prepare action - End, {} working sets to store", stafArchive.getArchiveName(),
@@ -247,13 +247,11 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         pFiles.forEach(file -> {
             STAFArchiveModeEnum mode;
             try {
-                LOG.info("SEB --------------> start {}", file.getOriginUrl().toString());
                 mode = stafController.getFileArchiveMode(getDataFileSize(file));
                 dispatchedFiles.merge(mode, new HashSet<>(Arrays.asList(file)), (olds, news) -> {
                     olds.addAll(news);
                     return olds;
                 });
-                LOG.info("SEB --------------> End {}", file.getOriginUrl().toString());
             } catch (IOException e) {
                 LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getOriginUrl().getPath(),
                           e);
