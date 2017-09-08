@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * @author xbrochard
  */
-public class HandJob extends AbstractJob<Map<String, Double>> {
+public class HandJob extends AbstractNoParamJob<Map<String, Double>> {
 
     @Override
     public void run() {

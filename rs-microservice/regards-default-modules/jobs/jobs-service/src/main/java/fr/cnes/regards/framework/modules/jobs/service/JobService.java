@@ -114,7 +114,7 @@ public class JobService implements IJobService {
                     }
                 }
                 // Find highest priority job to execute
-                JobInfo jobInfo = jobInfoService.findHighestPriorityPendingJobAndSetAsQueued();
+                JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
                 if (jobInfo != null) {
                     noJobAtAll = false;
                     jobInfo.setTenant(tenant);
@@ -216,8 +216,9 @@ public class JobService implements IJobService {
                         task.cancel(true);
                     }
                     break;
-                case PENDING:
+                case PENDING: // this case should not occurred but...
                 case QUEUED:
+                case TO_BE_RUN:
                     // Job not yet running
                     abortedBeforeStartedJobs.add(jobInfo.getId());
                     break;
