@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
  *
  */
 @FunctionalInterface
-public interface IGeometry {
+public interface IGeometry { // NOSONAR
 
     static final Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
 
@@ -108,22 +108,21 @@ public interface IGeometry {
 
         Positions result = new Positions();
         result.addAll(Arrays.asList(positions));
-        if (!result.isLineString()) {
-            throw new IllegalArgumentException("Invalid line string!");
-        }
+        assertLineString(result, "Invalid line string!");
         return result;
     }
 
     /**
      * Create a new {@link LineString} geometry
-     * @param positions positions representing the line string. Use
+     * @param lineString positions representing the line string. Use
      *            {@link IGeometry#toLineStringCoordinates(Position...)}
      *            to create line string coordinates.
      * @return {@link LineString}
      */
-    static LineString lineString(Positions positions) {
+    static LineString lineString(Positions lineString) {
+        assertNotNull(lineString, "Line string cannot be null.");
         LineString geometry = new LineString();
-        geometry.setCoordinates(positions);
+        geometry.setCoordinates(lineString);
         return geometry;
     }
 
@@ -157,10 +156,8 @@ public interface IGeometry {
 
         Positions result = new Positions();
         result.addAll(Arrays.asList(positions));
-        if (!result.isLinearRing()) {
-            throw new IllegalArgumentException(
-                    "At least four positions is required to make a linear ring with first and latest positions equivalents.");
-        }
+        assertLinearRing(result,
+                         "At least four positions is required to make a linear ring with first and latest positions equivalents.");
         return result;
     }
 
@@ -176,19 +173,12 @@ public interface IGeometry {
 
         // Manage exterior ring
         assertNotNull(exteriorRing, "At least exterior ring is required to make a polygon!");
-        if (!exteriorRing.isLinearRing()) {
-            throw new IllegalArgumentException("Exterior ring is not a valid linear ring!");
-        }
+
         PolygonPositions result = new PolygonPositions();
         result.add(exteriorRing);
 
         // Manage holes
         if (holes != null) {
-            for (Positions hole : holes) {
-                if ((hole == null) || !hole.isLinearRing()) {
-                    throw new IllegalArgumentException("At least one hole is not a valid linear ring!");
-                }
-            }
             result.addAll(Arrays.asList(holes));
         }
 
@@ -208,10 +198,28 @@ public interface IGeometry {
         return geometry;
     }
 
+    /**
+     * Create a new {@link MultiPolygon} geometry
+     * @param polygons list of polygons coordinates
+     * @return {@link MultiPolygon}
+     */
     static MultiPolygon multiPolygon(PolygonPositions... polygons) {
         MultiPolygon geometry = new MultiPolygon();
         geometry.setCoordinates(Arrays.asList(polygons));
-        return null;
+        return geometry;
+    }
+
+    /**
+     * Create a new {@link GeometryCollection}
+     * @param geometries list of geometries. Use other geometry construction method to fill this collection.
+     * @return {@link GeometryCollection}
+     */
+    static GeometryCollection geometryCollection(AbstractGeometry<?>... geometries) {
+        assertNotNull(geometries, "Geometries cannot be null");
+
+        GeometryCollection geoCollection = new GeometryCollection();
+        geoCollection.setGeometries(Arrays.asList(geometries));
+        return geoCollection;
     }
 
     static void assertNotNull(Object object, String errorMessage) {
@@ -228,11 +236,17 @@ public interface IGeometry {
         }
     }
 
-    static void assertLineString() {
-        // TODO
+    static void assertLineString(Positions positions, String errorMessage) {
+        if (!positions.isLineString()) {
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
-    static void assertLinearRing() {
-        // TODO
+    static void assertLinearRing(Positions positions, String errorMessage) {
+        if (!positions.isLinearRing()) {
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 }

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.cnes.regards.framework.geojson.AbstractGeoJsonObject;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 
@@ -30,17 +33,18 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  */
 public class GeometryCollection extends AbstractGeoJsonObject implements IGeometry {
 
-    private AbstractGeometry<?>[] geometries;
+    private List<AbstractGeometry<?>> geometries;
 
     public GeometryCollection() {
         super(GeoJsonType.GEOMETRY_COLLECTION);
+        setGeometries(new ArrayList<>());
     }
 
-    public AbstractGeometry<?>[] getGeometries() {
+    public List<AbstractGeometry<?>> getGeometries() {
         return geometries;
     }
 
-    public void setGeometries(AbstractGeometry<?>[] geometries) {
+    public void setGeometries(List<AbstractGeometry<?>> geometries) {
         this.geometries = geometries;
     }
 }
