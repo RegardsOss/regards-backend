@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.plugins.staf;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -65,10 +66,17 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private final static Path workspace = Paths.get("target/workspace");
 
+    private static String incomTestSourcesDir = new File("src/test/resources/staf/income/file_test_1.txt")
+            .getAbsoluteFile().getParent();
+
     @BeforeClass
     public static void initAll() throws IOException {
         // TODO Add in STAF starter !!!
-        URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
+        try {
+            URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
+        } catch (Error e) {
+            // Factory already defined. Nothing to do.
+        }
     }
 
     @Before
@@ -86,60 +94,41 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         aip.getHistory().add(new Event("testEvent", OffsetDateTime.now(), EventType.SUBMISSION));
         aip.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1)
                 .toString());
-        filesToArchiveWithoutInvalides.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_1.txt"),
+        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveWithoutInvalides.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_2.txt"),
+
+        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt"),
                 "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveWithoutInvalides.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_3.txt"),
+        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt"),
                 "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveWithoutInvalides.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_4.txt"),
+        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt"),
                 "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveWithoutInvalides.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/file_test_5.txt"),
+        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt"),
                 "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveWithoutInvalides.add(new DataFile(
                 new URL("http", "172.26.47.107", 9020, "/conf/staticConfiguration.js"),
                 "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
-        filesToArchive.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/invalid_test_file.txt"),
+        filesToArchive.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchive.add(new DataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
-        filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/big_file_test_1.txt"),
+        filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/big_file_test_2.txt"),
+        filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/big_file_test_3.txt"),
+        filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
 
         filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/normal_file_test_1.txt"),
+                new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt"),
                 "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
         filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "",
-                        "/home/sbinda/git/rs-storage/storage/storage-plugin/src/test/resources/staf/income/normal_file_test_2.txt"),
+                new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt"),
                 "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
     }
 
