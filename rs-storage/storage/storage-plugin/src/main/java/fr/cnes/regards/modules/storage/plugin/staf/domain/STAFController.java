@@ -105,45 +105,17 @@ public class STAFController {
         stafConfiguration = pStafConfiguration;
         localWorkspace = pLocalWorkspace;
         stafService = pSTAFService;
-        // Check if workspace exists and is writable/readable
-        if (!Files.exists(localWorkspace)) {
-            Files.createDirectories(localWorkspace);
-            if (!Files.isReadable(localWorkspace)) {
-                throw new IOException(
-                        String.format("[STAF] Local workspace %s is not readable", localWorkspace.toString()));
-            }
-            if (!Files.isWritable(localWorkspace)) {
-                throw new IOException(
-                        String.format("[STAF] Local workspace %s is not writable", localWorkspace.toString()));
-            }
-        }
-        tarController = new TARController(pStafConfiguration, pLocalWorkspace);
+        // Initialize TAR Controller
+        tarController = new TARController(stafConfiguration, localWorkspace);
     }
 
     /**
-     * Prepare the list of file to archive into the STAF for the given files
-     * @param pFileToArchivePerStafNode {@link Map}<{@link String},{@link Set}<{@link Path}>> <br/>
-     * <ul>
-     * <li>key : STAF Node where to store the {@link Path}s in map value</li>
-     * <li>value : {@link Path} Files to store for the given STAF Node.</li>
-     * </ul>
-     * @param pMode {@link STAFArchiveModeEnum} Archiving mode.
-     * @return {@link Set}<{@link AbstractPhysicalFile}> prepared files to archive with STAF recomandations.
+     * Allow to clear prepared files to handle a new preparation.
      */
-    public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
-            STAFArchiveModeEnum pMode) {
-        this.clearPreparedFiles();
-        for (Entry<String, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
-            for (Path fileToArchive : stafNode.getValue()) {
-                try {
-                    this.prepareFileToArchive(fileToArchive, stafNode.getKey(), pMode);
-                } catch (STAFException e) {
-                    LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
-                    LOG.debug(e.getMessage(), e);
-                }
-            }
-        }
-        return this.getAllPreparedFilesToArchive();
+    public void clearPreparedFiles() {
+        // Clear already calculated files to archive
+        filesToArchive.clear();
+        tarsToArchive.clear();
     }
 
     /**
@@ -158,7 +130,6 @@ public class STAFController {
      */
     public Set<AbstractPhysicalFile> doArchivePreparedFiles(boolean pReplaceMode) throws STAFException {
         Set<String> archivedFiles = Sets.newHashSet();
-
         // Create map bewteen localFile to archive and destination file path into STAF
         Map<String, String> localFileToArchiveMap = Maps.newHashMap();
         this.getAllPreparedFilesToArchive().forEach(stafFile -> {
@@ -177,11 +148,9 @@ public class STAFController {
                 }
             }
         });
-
         stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
         try {
             archivedFiles = stafService.archiveFiles(localFileToArchiveMap, "/", pReplaceMode);
-
             archivedFiles.forEach(archivedFile ->
             // For each file to store, check if the file has really been stored and set the status to STORED.
             // @formatter:off
@@ -221,11 +190,21 @@ public class STAFController {
     }
 
     /**
+     * Return all {@link AbstractPhysicalFile} prepared for storage into STAF System.
+     * @return {@link AbstractPhysicalFile}s
+     */
+    public Set<AbstractPhysicalFile> getAllPreparedFilesToArchive() {
+        Set<AbstractPhysicalFile> allFilesToArchive = Sets.newHashSet();
+        allFilesToArchive.addAll(filesToArchive);
+        allFilesToArchive.addAll(tarsToArchive);
+        return allFilesToArchive;
+    }
+
+    /**
      * Return a mapping between raw files given by the preparation step and STAF URL of archived files by the sotre step.
      * @return {@link Map}<{@link Path}, {@link URL}> (key : Path of the raw file to archive, value : URL of STAF file)
      */
     public Map<Path, URL> getRawFilesArchived() {
-
         Map<Path, URL> rawFilesStored = Maps.newHashMap();
         // @formatter:off
         this.getAllPreparedFilesToArchive()
@@ -247,29 +226,15 @@ public class STAFController {
                 }
             });
         // @formatter:on
-
         return rawFilesStored;
-
     }
 
     /**
-     * Return all {@link AbstractPhysicalFile} prepared for storage into STAF System.
-     * @return {@link AbstractPhysicalFile}s
+     * Retreive the temporary directory from the workspace for the current STAF Archive.
+     * @return {@link Path} of the STAF TMP workspace directory for the current STAF Archive.
      */
-    public Set<AbstractPhysicalFile> getAllPreparedFilesToArchive() {
-        Set<AbstractPhysicalFile> allFilesToArchive = Sets.newHashSet();
-        allFilesToArchive.addAll(filesToArchive);
-        allFilesToArchive.addAll(tarsToArchive);
-        return allFilesToArchive;
-    }
-
-    /**
-     * Allow to clear prepared files to handle a new preparation.
-     */
-    public void clearPreparedFiles() {
-        // Clear already calculated files to archive
-        filesToArchive.clear();
-        tarsToArchive.clear();
+    public Path getWorkspaceTmpDirectory() {
+        return Paths.get(localWorkspace.toString(), stafService.getStafArchive().getArchiveName(), TMP_DIRECTORY);
     }
 
     /**
@@ -289,6 +254,32 @@ public class STAFController {
     }
 
     /**
+     * Prepare the list of file to archive into the STAF for the given files
+     * @param pFileToArchivePerStafNode {@link Map}<{@link String},{@link Set}<{@link Path}>> <br/>
+     * <ul>
+     * <li>key : STAF Node where to store the {@link Path}s in map value</li>
+     * <li>value : {@link Path} Files to store for the given STAF Node.</li>
+     * </ul>
+     * @param pMode {@link STAFArchiveModeEnum} Archiving mode.
+     * @return {@link Set}<{@link AbstractPhysicalFile}> prepared files to archive with STAF recomandations.
+     */
+    public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
+            STAFArchiveModeEnum pMode) {
+        this.clearPreparedFiles();
+        for (Entry<String, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
+            for (Path fileToArchive : stafNode.getValue()) {
+                try {
+                    this.prepareFileToArchive(fileToArchive, stafNode.getKey(), pMode);
+                } catch (STAFException e) {
+                    LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
+                    LOG.debug(e.getMessage(), e);
+                }
+            }
+        }
+        return this.getAllPreparedFilesToArchive();
+    }
+
+    /**
      * Prepare the given file to archive into the staf.
      * @param pFileToArchivePerStafNode {@lnik Path} File to prepare.
      * @param pSTAFNode {@link String} STAF Node where to store file.
@@ -298,7 +289,6 @@ public class STAFController {
     private void prepareFileToArchive(Path pFileToArchive, String pSTAFNode, STAFArchiveModeEnum pMode)
             throws STAFException {
         try {
-
             // 1. Check file existance
             if (!Files.exists(pFileToArchive) || !Files.isReadable(pFileToArchive)) {
                 String message = String.format("[STAF] File %s to archive, is not accessible",
@@ -306,7 +296,6 @@ public class STAFController {
                 LOG.error(message);
                 throw new STAFException(message);
             }
-
             // 2. Manage file transformation if needed before staf storage
             switch (pMode) {
                 case CUT:
@@ -323,7 +312,6 @@ public class STAFController {
                 default:
                     throw new STAFException(String.format("Unhandle Archive mode %s", pMode.toString()));
             }
-
         } catch (IOException | STAFTarException e) {
             LOG.error("[STAF] Error preparing file {}", pFileToArchive, e);
         }
@@ -337,14 +325,12 @@ public class STAFController {
      * @throws IOException Error during file cut.
      */
     private PhysicalCutFile cutFile(Path pPhysicalFileToArchive, String pSTAFNode) throws IOException {
-
         // 1. Create cut temporary directory into workspace
-        Path tmpCutDirectory = Paths.get(localWorkspace.toString(), TMP_DIRECTORY,
+        Path tmpCutDirectory = Paths.get(getWorkspaceTmpDirectory().toString(),
                                          pPhysicalFileToArchive.getFileName().toString());
         if (!tmpCutDirectory.toFile().exists()) {
             tmpCutDirectory.toFile().mkdirs();
         }
-
         // 2. Do cut files
         Set<File> cutedLocalFiles = CutFileUtils.cutFile(pPhysicalFileToArchive.toFile(), tmpCutDirectory.toString(),
                                                          stafConfiguration.getMaxFileSize());
@@ -363,7 +349,6 @@ public class STAFController {
             physicalCutFile.addCutedPartFile(cutFilePart);
             partIndex++;
         }
-
         return physicalCutFile;
     }
 
@@ -386,7 +371,6 @@ public class STAFController {
             default:
                 deleteTemporaryFile((PhysicalCutFile) pFile);
                 break;
-
         }
     }
 
@@ -447,6 +431,37 @@ public class STAFController {
             } catch (IOException e) {
                 LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
             }
+        }
+    }
+
+    /**
+     * Initialize needed directories fot the current controller.
+     * @throws IOException Directories are not accessible.
+     */
+    public void initializeWorkspaceDirectories() throws IOException {
+        if (!Files.exists(localWorkspace)) {
+            Files.createDirectories(localWorkspace);
+        }
+        if (!Files.isReadable(localWorkspace)) {
+            throw new IOException(
+                    String.format("[STAF] Local workspace %s is not readable", localWorkspace.toString()));
+        }
+        if (!Files.isWritable(localWorkspace)) {
+            throw new IOException(
+                    String.format("[STAF] Local workspace %s is not writable", localWorkspace.toString()));
+        }
+        // Initialize TMP Directory
+        Path tmpWorkspaceDir = getWorkspaceTmpDirectory();
+        if (!Files.exists(tmpWorkspaceDir)) {
+            Files.createDirectories(tmpWorkspaceDir);
+        }
+        if (!Files.isReadable(tmpWorkspaceDir)) {
+            throw new IOException(
+                    String.format("[STAF] workspace TMP directory %s is not readable", tmpWorkspaceDir.toString()));
+        }
+        if (!Files.isWritable(tmpWorkspaceDir)) {
+            throw new IOException(
+                    String.format("[STAF] workspace TMP directory %s is not writable", tmpWorkspaceDir.toString()));
         }
     }
 }

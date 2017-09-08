@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -59,16 +60,24 @@ public class STAFControllerTest {
 
     private final static String STAF_TEST_NODE = "/test/node";
 
+    private final static Path STAF_WORKSPACE_PATH = Paths.get("target/workspace");
+
     @BeforeClass
     public static void initAll() throws IOException {
         // TODO Add in STAF starter !!!
         URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
+
+        if (Files.exists(STAF_WORKSPACE_PATH)) {
+            Files.setPosixFilePermissions(STAF_WORKSPACE_PATH,
+                                          Sets.newHashSet(PosixFilePermission.OWNER_EXECUTE,
+                                                          PosixFilePermission.OWNER_READ,
+                                                          PosixFilePermission.OWNER_WRITE));
+            FileUtils.deleteDirectory(STAF_WORKSPACE_PATH.toFile());
+        }
     }
 
     @Before
     public void init() throws STAFException, IOException {
-
-        FileUtils.deleteDirectory(Paths.get("target/workspace").toFile());
 
         filesToArchiveWithoutInvalides.add(Paths.get("src/test/resources/staf/income/file_test_1.txt"));
         filesToArchiveWithoutInvalides.add(Paths.get("src/test/resources/staf/income/file_test_2.txt"));
@@ -120,7 +129,7 @@ public class STAFControllerTest {
 
         stafService = new STAFService(stafManagerMock, stafArchive);
 
-        controller = new STAFController(configuration, Paths.get("target/workspace"), stafService);
+        controller = new STAFController(configuration, STAF_WORKSPACE_PATH, stafService);
 
     }
 

@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -79,8 +77,6 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      */
     public static final String FILE_PROTOCOLE = "file";
 
-    private static final String TMP_DIRECTORY = "tmp";
-
     /**
      * STAF connections manager
      */
@@ -93,6 +89,9 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     @PluginParameter(name = "archiveParameters")
     private STAFArchive stafArchive;
 
+    /**
+     * STAF Controller to handle file preparation
+     */
     private STAFController stafController;
 
     /**
@@ -108,24 +107,9 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         try {
             stafController = new STAFController(stafManager.getConfiguration(), Paths.get(workspaceDirectory),
                     stafService);
+            stafController.initializeWorkspaceDirectories();
         } catch (IOException e) {
             LOG.error("[STAF Plugin] Error during plugin initialization", e);
-        }
-
-        // Initialize workspace
-        Path tmpWorkspaceDir = getWorkspaceTmpDirectory();
-        if (!tmpWorkspaceDir.toFile().exists()) {
-            try {
-                Files.createDirectories(tmpWorkspaceDir);
-            } catch (IOException e) {
-                LOG.error("[STAF Plugin] Error during plugin initialization", e);
-            }
-        }
-
-        if (!tmpWorkspaceDir.toFile().canRead() || !tmpWorkspaceDir.toFile().canWrite()) {
-            LOG.error(String.format(
-                                    "[STAF Plugin] Error during plugin initialization. Directory %s is not readable/writtable",
-                                    tmpWorkspaceDir.toString()));
         }
     }
 
@@ -263,11 +247,13 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         pFiles.forEach(file -> {
             STAFArchiveModeEnum mode;
             try {
+                LOG.info("SEB --------------> start {}", file.getOriginUrl().toString());
                 mode = stafController.getFileArchiveMode(getDataFileSize(file));
                 dispatchedFiles.merge(mode, new HashSet<>(Arrays.asList(file)), (olds, news) -> {
                     olds.addAll(news);
                     return olds;
                 });
+                LOG.info("SEB --------------> End {}", file.getOriginUrl().toString());
             } catch (IOException e) {
                 LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getOriginUrl().getPath(),
                           e);
@@ -286,25 +272,20 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @throws IOException If the origineUrl of the given {@link DataFile} is not available.
      */
     private Long getDataFileSize(DataFile file) throws IOException {
-        Long fileSize;
-        URLConnection urlConn = file.getOriginUrl().openConnection();
-        urlConn.setConnectTimeout(10000);
-        Integer contentLenght = urlConn.getContentLength();
+        Long contentLenght = DownloadUtils.getContentLength(file.getOriginUrl(), 1000).longValue();
         if (contentLenght == -1) {
             LOG.info("[STAF PLUGIN] {} - Prepare - Unknown length for file {}. Retrieving file ...",
                      file.getOriginUrl().getPath());
             // Size undefined, we have to donwload file to know his size
             File pysicalFile = getPhysicalFile(file);
-            fileSize = pysicalFile.length();
+            contentLenght = pysicalFile.length();
             LOG.info("[STAF PLUGIN] {} - Prepare - Unknown length for file {}. File retrieved {}.",
                      file.getOriginUrl().getPath(), pysicalFile.getPath());
             if (contentLenght == -1) {
                 LOG.error("[STAF PLUGIN] {} - Prepare - Error retrieving file {}", file.getOriginUrl().getPath());
             }
-        } else {
-            fileSize = contentLenght.longValue();
         }
-        return fileSize;
+        return contentLenght;
     }
 
     /**
@@ -316,14 +297,15 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         File physicalFile;
         if (!FILE_PROTOCOLE.equals(file.getOriginUrl().getProtocol())) {
             // File to transfert locally is temporarelly named with the file checksum to ensure unicity
-            Path destinationFilePath = Paths.get(getWorkspaceTmpDirectory().toString(), file.getChecksum());
+            Path destinationFilePath = Paths.get(stafController.getWorkspaceTmpDirectory().toString(),
+                                                 file.getChecksum());
             if (!destinationFilePath.toFile().exists()) {
                 try {
                     LOG.info("[STAF PLUGIN] {} - Store - Retrieving file from {} to {}", stafArchive.getArchiveName(),
                              file.getOriginUrl().toString(), destinationFilePath.toFile().getPath());
-                    DownloadUtils.download(file.getOriginUrl(), destinationFilePath, file.getAlgorithm());
+                    DownloadUtils.downloadAndCheckChecksum(file.getOriginUrl(), destinationFilePath,
+                                                           file.getAlgorithm(), file.getChecksum(), 100);
                     // File is now in our workspace, so change origine url
-                    // TODO : Can I change the origine URL ?
                 } catch (IOException | NoSuchAlgorithmException e) {
                     String errorMsg = String.format("Error retrieving file from %s to %s",
                                                     file.getOriginUrl().getPath(), destinationFilePath.toString());
@@ -342,6 +324,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             try {
                 physicalFile = new File(file.getOriginUrl().toURI());
             } catch (URISyntaxException e) {
+                LOG.debug(e.getMessage(), e);
                 physicalFile = new File(file.getOriginUrl().getPath());
             }
         }
@@ -364,14 +347,6 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public void delete(Set<DataFile> pDataFiles, ProgressManager pProgressManager) {
         // TODO Auto-generated method stub
 
-    }
-
-    /**
-     * Retreive the temporary directory from the workspace for the current STAF Archive.
-     * @return
-     */
-    private Path getWorkspaceTmpDirectory() {
-        return Paths.get(workspaceDirectory, stafArchive.getArchiveName(), TMP_DIRECTORY);
     }
 
 }

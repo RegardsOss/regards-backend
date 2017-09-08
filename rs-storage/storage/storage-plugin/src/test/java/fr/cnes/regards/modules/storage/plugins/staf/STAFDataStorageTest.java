@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -62,6 +63,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private final Set<DataFile> filesToArchiveMultiplesMode = Sets.newHashSet();
 
+    private final static Path workspace = Paths.get("target/workspace");
+
     @BeforeClass
     public static void initAll() throws IOException {
         // TODO Add in STAF starter !!!
@@ -71,13 +74,12 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     @Before
     public void init() throws IOException {
 
-        Path workspaceDir = Paths.get("target/workspace");
-        if (workspaceDir.toFile().exists()) {
-            Files.setPosixFilePermissions(workspaceDir,
+        if (workspace.toFile().exists()) {
+            Files.setPosixFilePermissions(workspace,
                                           Sets.newHashSet(PosixFilePermission.OWNER_READ,
                                                           PosixFilePermission.OWNER_WRITE,
                                                           PosixFilePermission.OWNER_EXECUTE));
-            FileUtils.deleteDirectory(workspaceDir.toFile());
+            FileUtils.deleteDirectory(workspace.toFile());
         }
 
         AIP aip = new AIP(EntityType.DATA);
@@ -142,7 +144,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     }
 
     @Test
-    public void storeTest() {
+    public void storeSingleModeTest() {
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -185,7 +187,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     }
 
     @Test
-    public void storeMultipleTypesTest() {
+    public void storeMultipleModesTest() {
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -293,6 +295,16 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     @Override
     protected Logger getLogger() {
         return LOG;
+    }
+
+    @AfterClass
+    public static void postTest() throws IOException {
+        if (workspace.toFile().exists()) {
+            Files.setPosixFilePermissions(workspace,
+                                          Sets.newHashSet(PosixFilePermission.OWNER_READ,
+                                                          PosixFilePermission.OWNER_WRITE,
+                                                          PosixFilePermission.OWNER_EXECUTE));
+        }
     }
 
 }
