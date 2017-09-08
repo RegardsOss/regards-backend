@@ -8,10 +8,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +25,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,9 +39,15 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.Event;
+import fr.cnes.regards.modules.storage.domain.EventType;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
@@ -139,13 +153,27 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    @Ignore("This test should be done into service now, storage logic cannot be used to without job/service support for assert purpose")
     public void testStore() throws ModuleException, IOException {
+        ProgressManager progressManager = Mockito.mock(ProgressManager.class);
         AIP aip = getAipFromFile();
+        aip.addEvent(new Event("just for fun", OffsetDateTime.now(), EventType.SUBMISSION));
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
-        //FIXME: change to store(LocalWorkingSubset) aip = storagePlugin.storeMetadata(aip);
-        //just to be sure checksum is correct, lets compare the given checksum by our algorithm to one from a 3rd party(md5sum)
-//        Assert.assertEquals("db92b88b61f5e0fb49ee6f76c79a4689", aip.getChecksum());
+        // valid file to get a call to progressManager.storageSucceed
+        DataFile validDF = new DataFile(
+                new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
+                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip);
+        // file that does not exist to get a call to progressManager.storageFailed
+        DataFile ghostDF = new DataFile(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt"),
+                                          "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip);
+        // invalid checksum to check call to progressManager.storageFailed
+        DataFile invalidDF = new DataFile(
+                new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
+                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip);
+        Set<DataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
+        LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
+        storagePlugin.store(workingSubSet, false, progressManager);
+        Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any());
+        Mockito.verify(progressManager, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
     }
 
     private AIP getAipFromFile() throws IOException {

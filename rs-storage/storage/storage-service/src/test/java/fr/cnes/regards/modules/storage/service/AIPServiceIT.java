@@ -206,7 +206,7 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         pluginRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
-        Files.walk(Paths.get(workspace)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+        Files.walk(Paths.get(workspace, DEFAULT_TENANT)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
                 File::delete);
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
                 File::delete);

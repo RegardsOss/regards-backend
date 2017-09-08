@@ -92,9 +92,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                                 data.getChecksum(), fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
+            } else {
+                progressManager.storageSucceed(data, new URL("file", "", fullPathToFile));
             }
-
-            progressManager.storageSucceed(data, new URL("file", "", fullPathToFile));
         } catch (NoSuchAlgorithmException e) {
             RuntimeException re = new RuntimeException(e);
             LOG.error(
@@ -114,8 +114,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     private String getStorageLocation(DataFile data) throws IOException {
         String checksum = data.getChecksum();
         String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
-        if(!Files.exists(Paths.get(storageLocation))) {
-            Files.createDirectory(Paths.get(storageLocation));
+        if (!Files.exists(Paths.get(storageLocation))) {
+            Files.createDirectories(Paths.get(storageLocation));
         }
         // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url
         String fullPathToFile = storageLocation + "/" + checksum + getExtension(data.getOriginUrl());

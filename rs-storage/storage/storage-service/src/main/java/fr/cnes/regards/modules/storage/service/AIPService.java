@@ -224,7 +224,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             aip.setState(AIPState.VALID);
             aip.addEvent(new Event("Submission to REGARDS", OffsetDateTime.now(), EventType.SUBMISSION));
             aipsInDb.add(dao.save(aip));
-            dataFilesToStore.addAll(dataFileDao.save(DataFile.extractDataFiles(aip)));
+            Collection<DataFile> dataFiles = dataFileDao.save(DataFile.extractDataFiles(aip));
+            dataFiles.forEach(df->df.setState(DataFileState.PENDING));
+            dataFilesToStore.addAll(dataFiles);
             publisher.publish(new AIPEvent(aip));
         }
         IAllocationStrategy allocationStrategy = getAllocationStrategy(); //FIXME: should probably set the tenant into maintenance in case of module exception
