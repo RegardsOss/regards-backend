@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * {@link IPublisherContract} allows to publish {@link ISubscribable} or {@link IPollable} events. This interface
@@ -65,4 +67,7 @@ public interface IPublisherContract {
      *            event priority
      */
     void publish(IPollable pEvent, int pPriority);
+
+    <T> void publish(T pEvt, WorkerMode pWorkerMode, Target pTarget,
+            int pPriority);
 }

@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.security.autoconfigure;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  *
@@ -45,6 +47,11 @@ public class SubscriberMock implements ISubscriber {
      */
     @Override
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
+        // Nothing to do
+    }
+
+    @Override
+    public <T> void subscribeTo(Class<T> pEvt, IHandler<T> pHandler, WorkerMode pWorkerMode, Target pTarget) {
         // Nothing to do
     }
 

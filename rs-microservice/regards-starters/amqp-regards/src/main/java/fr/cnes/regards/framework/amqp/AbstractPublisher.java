@@ -110,6 +110,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param pTarget
      *            publishing scope
      */
+    @Override
     public final <T> void publish(final T pEvt, final WorkerMode pWorkerMode, final Target pTarget,
             final int pPriority) {
 
