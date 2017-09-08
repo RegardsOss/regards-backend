@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.coordinates.Position;
 
 /**
  * RFC 7946 -August 2016<br/>

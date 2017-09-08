@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.geojson.geometry;
 import java.util.Arrays;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.coordinates.Position;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
 
 /**
  *
@@ -92,9 +94,9 @@ public interface IGeometry {
     /**
      * Utility method to create {@link LineString} coordinates. Useful for {@link MultiLineString} creation.
      * @param positions positions representing the line string. At least 2 positions is required.
-     * @return a list of {@link Position}
+     * @return {@link Positions} (i.e a list of at least 2 {@link Position})
      */
-    static Positions lineStringCoordinates(Position... positions) {
+    static Positions toLineStringCoordinates(Position... positions) {
         if ((positions == null) || (positions.length < 2)) {
             throw new IllegalArgumentException("At least two positions is required to make a line string!");
         }
@@ -105,7 +107,8 @@ public interface IGeometry {
 
     /**
      * Create a new {@link LineString} geometry
-     * @param positions positions representing the line string. Use {@link IGeometry#lineStringCoordinates(Position...)}
+     * @param positions positions representing the line string. Use
+     *            {@link IGeometry#toLineStringCoordinates(Position...)}
      *            to create line string coordinates.
      * @return {@link LineString}
      */
@@ -117,7 +120,8 @@ public interface IGeometry {
 
     /**
      * Create a new {@link MultiLineString} geometry
-     * @param lineStrings list of line strings. Use {@link IGeometry#lineStringCoordinates(Position...)} to create each
+     * @param lineStrings list of line strings. Use {@link IGeometry#toLineStringCoordinates(Position...)} to create
+     *            each
      *            line string coordinates.
      * @return {@link MultiLineString}
      */
@@ -125,8 +129,67 @@ public interface IGeometry {
         if ((lineStrings == null) || (lineStrings.length < 2)) {
             throw new IllegalArgumentException("At least two line strings is required! Use lineString otherwise.");
         }
+        for (Positions lineString : lineStrings) {
+            if ((lineString == null) || !lineString.isLineString()) {
+                throw new IllegalArgumentException("At least one line string is invalid!");
+            }
+        }
         MultiLineString geometry = new MultiLineString();
         geometry.getCoordinates().addAll(Arrays.asList(lineStrings));
+        return geometry;
+    }
+
+    /**
+     * Utility method to create closed {@link LineString} coordinates also called <b>linear ring</b>. Useful for
+     * {@link Polygon} creation.
+     * @param positions positions representing the linear string. At least 4 positions is required. The first and
+     *            last
+     *            positions MUST be equivalent.
+     * @return {@link Positions} (i.e a list of at least 4 {@link Position})
+     */
+    static Positions toLinearRingCoordinates(Position... positions) {
+        if ((positions == null) || (positions.length < 4)) {
+            throw new IllegalArgumentException("At least four positions is required to make a linear ring!");
+        }
+        Positions result = new Positions();
+        result.addAll(Arrays.asList(positions));
+        if (!result.isLinearRing()) {
+            throw new IllegalArgumentException(
+                    "At least four positions is required to make a linear ring with first and latest positions equivalents.");
+        }
+        return result;
+    }
+
+    /**
+     * Create a new {@link Polygon} geometry
+     * @param exteriorRing counterclockwise exterior ring. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to
+     *            create this ring.
+     * @param holes clockwise interior rings. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to create
+     *            holes.
+     * @return {@link Polygon}
+     */
+    static Polygon polygon(Positions exteriorRing, Positions... holes) {
+
+        // Manage exterior ring
+        if (exteriorRing == null) {
+            throw new IllegalArgumentException("At least exterior ring is required to make a polygon!");
+        }
+        if (!exteriorRing.isLinearRing()) {
+            throw new IllegalArgumentException("Exterior ring is not a valid linear ring!");
+        }
+        Polygon geometry = new Polygon();
+        geometry.getCoordinates().add(exteriorRing);
+
+        // Manage holes
+        if (holes != null) {
+            for (Positions hole : holes) {
+                if ((hole == null) || !hole.isLinearRing()) {
+                    throw new IllegalArgumentException("At least one hole is not a valid linear ring!");
+                }
+            }
+            geometry.getCoordinates().addAll(Arrays.asList(holes));
+        }
+
         return geometry;
     }
 }

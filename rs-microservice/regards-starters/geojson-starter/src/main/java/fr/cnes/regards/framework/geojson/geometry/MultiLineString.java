@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.validator.MultiLineStringConstraints;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -30,6 +32,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  * @author Marc Sordi
  *
  */
+@MultiLineStringConstraints
 public class MultiLineString extends AbstractGeometry<List<Positions>> {
 
     public MultiLineString() {

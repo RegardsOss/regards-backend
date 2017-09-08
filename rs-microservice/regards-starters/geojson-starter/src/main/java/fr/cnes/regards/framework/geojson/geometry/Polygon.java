@@ -18,25 +18,31 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.validator.PolygonConstraints;
 
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson Polygon representation<br/>
  * <br/>
  * LineStrings are closed LineString with <b>four or more positions</b>.<br/>
- * First and last positions are equivalent, and they MUST contain identical values.<br/>
+ * First and last positions are equivalents, and they MUST contain identical values.<br/>
  * The first LineString MUST be the exterior ring.<br/>
  * Any others LineString MUST be interior rings.<br/>
  * Exterior rings are counterclockwise, and holes are clockwise.
  *
- * TODO check that coordinates in each LineString is an array of four or more positions
  * @author Marc Sordi
  *
  */
-public class Polygon extends AbstractGeometry<LineString[]> {
+@PolygonConstraints
+public class Polygon extends AbstractGeometry<List<Positions>> {
 
     public Polygon() {
         super(GeoJsonType.POLYGON);
+        coordinates = new ArrayList<>();
     }
 }

@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.geojson.geometry;
+package fr.cnes.regards.framework.geojson.coordinates;
 
 import java.util.ArrayList;
 
 /**
  * Not in RFC 7946 -August 2016<br/>
- * GeoJson multiple geometry positions representation
+ * GeoJson set of positions representation.<br/>
  *
  * @author Marc Sordi
  *
@@ -30,4 +30,27 @@ import java.util.ArrayList;
 @SuppressWarnings("serial")
 public class Positions extends ArrayList<Position> {
 
+    /**
+     * Check that this set of positions is or not a line string. A line string has at least 2 positions.
+     * @return true if line string
+     */
+    public boolean isLineString() {
+        return size() > 1;
+    }
+
+    /**
+     * Check that this set of positions is or not a linear ring. A linear ring has at least 4 positions. Its first and
+     * latest positions MUST be equivalents.
+     * @return true if linear ring.
+     */
+    public boolean isLinearRing() {
+        // Check size
+        if (size() < 4) {
+            return false;
+        }
+        // Check if it's closed
+        Position first = get(0);
+        Position latest = get(size() - 1);
+        return first.equals(latest);
+    }
 }

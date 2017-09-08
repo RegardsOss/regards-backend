@@ -21,24 +21,30 @@ package fr.cnes.regards.framework.geojson.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.geojson.geometry.LineString;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
 /**
- * Validate {@link LineString} structure
+ * Validate {@link Polygon} structure
  *
  * @author Marc Sordi
  *
  */
-public class LineStringValidator implements ConstraintValidator<LineStringConstraints, LineString> {
+public class PolygonValidator implements ConstraintValidator<PolygonConstraints, Polygon> {
 
     @Override
-    public void initialize(LineStringConstraints constraintAnnotation) {
+    public void initialize(PolygonConstraints constraintAnnotation) {
         // Nothing to do
     }
 
     @Override
-    public boolean isValid(LineString lineString, ConstraintValidatorContext context) {
-        return lineString.getCoordinates().isLineString();
+    public boolean isValid(Polygon polygon, ConstraintValidatorContext context) {
+        for (Positions linearRing : polygon.getCoordinates()) {
+            if (!linearRing.isLinearRing()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

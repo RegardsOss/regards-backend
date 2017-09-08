@@ -21,24 +21,31 @@ package fr.cnes.regards.framework.geojson.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.geojson.geometry.LineString;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
 /**
- * Validate {@link LineString} structure
+ * Validate {@link Polygon} structure
  *
  * @author Marc Sordi
  *
  */
-public class LineStringValidator implements ConstraintValidator<LineStringConstraints, LineString> {
+public class MultiLineStringValidator implements ConstraintValidator<MultiLineStringConstraints, MultiLineString> {
 
     @Override
-    public void initialize(LineStringConstraints constraintAnnotation) {
+    public void initialize(MultiLineStringConstraints constraintAnnotation) {
         // Nothing to do
     }
 
     @Override
-    public boolean isValid(LineString lineString, ConstraintValidatorContext context) {
-        return lineString.getCoordinates().isLineString();
+    public boolean isValid(MultiLineString multiLineString, ConstraintValidatorContext context) {
+        for (Positions lineString : multiLineString.getCoordinates()) {
+            if (!lineString.isLineString()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

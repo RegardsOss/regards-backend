@@ -18,27 +18,34 @@
  */
 package fr.cnes.regards.framework.geojson.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 import fr.cnes.regards.framework.geojson.geometry.LineString;
 
 /**
- * Validate {@link LineString} structure
+ * {@link LineString} validation annotation
  *
  * @author Marc Sordi
  *
  */
-public class LineStringValidator implements ConstraintValidator<LineStringConstraints, LineString> {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE })
+@Constraint(validatedBy = PolygonValidator.class)
+@Documented
+public @interface PolygonConstraints {
 
-    @Override
-    public void initialize(LineStringConstraints constraintAnnotation) {
-        // Nothing to do
-    }
+    static final String CLASS_NAME = "fr.cnes.regards.framework.geojson.geometry.Polygon.";
 
-    @Override
-    public boolean isValid(LineString lineString, ConstraintValidatorContext context) {
-        return lineString.getCoordinates().isLineString();
-    }
+    String message() default "{" + CLASS_NAME + "message}";
 
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }
