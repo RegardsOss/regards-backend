@@ -64,6 +64,7 @@ package fr.cnes.regards.framework.staf;
  */
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -122,27 +123,6 @@ public class STAFService {
      * Identifiant de la session principale du service
      */
     protected Integer mainSessionId;
-
-    /**
-     * Mode d archivage "standard" : le fichier est ajoute tel quel dans l'archive
-     *
-     * @since 4.1
-     */
-    public static Integer STANDARD_ARCHIVE = 1;
-
-    /**
-     * Mode d archivage "cut" : le fichier doit etre decoupe pour pouvoir etre ajoute dans l'archive
-     *
-     * @since 4.1
-     */
-    public static Integer CUT_ARCHIVE = 2;
-
-    /**
-     * Mode d archivage "tar" : le fichier est trop petit pour etre ajoute tel quel et doit etre regroupe dans un tar
-     *
-     * @since 4.1
-     */
-    public static Integer TAR_ARCHIVE = 3;
 
     /**
      * Maximum size (in Mo) for service classe : 50Mo
@@ -249,11 +229,11 @@ public class STAFService {
      *            : Emplacement ou restaurer le fichier
      * @throws ArchiveException
      */
-    public void restoreAllFiles(List<String> pStafFilePathList, String pDestination) throws STAFException {
+    public void restoreAllFiles(Set<Path> pStafFilePathList, String pDestination) throws STAFException {
 
         if ((pStafFilePathList != null) && !pStafFilePathList.isEmpty()) {
             // Iterateur sur les fichiers a restituer
-            final Iterator<String> files = pStafFilePathList.iterator();
+            final Iterator<Path> files = pStafFilePathList.iterator();
 
             while (files.hasNext()) {
 
@@ -317,19 +297,19 @@ public class STAFService {
                         while ((fileIndex < stafManager.getConfiguration().getMaxStreamFilesRestitutionMode()
                                 .intValue()) && files.hasNext()) {
                             // Ajoute le prochain fichier au lot courant
-                            final String currentFile = files.next();
+                            final Path currentFile = files.next();
                             // si le fichier target existe,
                             // dans ce cas, ne pas le mettre dans la map
-                            final String targetFileName = computeTargetFilename(currentFile, pDestination);
+                            final String targetFileName = computeTargetFilename(currentFile.toString(), pDestination);
                             final File targetFile = new File(targetFileName);
                             if (!targetFile.exists()) {
-                                currentMap.put(currentFile, targetFileName);
+                                currentMap.put(currentFile.toString(), targetFileName);
                             } else {
-                                alreadyRestoredFile.add(currentFile);
+                                alreadyRestoredFile.add(currentFile.toString());
                             }
                             // Add the file to the list
                             // event if the targetFile exists
-                            fileList.add(currentFile);
+                            fileList.add(currentFile.toString());
 
                             // On passe au fichier suivant
                             fileIndex++;
@@ -741,69 +721,6 @@ public class STAFService {
             }
         }
         return files;
-    }
-
-    /**
-     * Cette methode permet de donner pour chaque fichier a archiver le mode d'archivage necessaire : "standard", "cut"
-     * ou "tar".
-     *
-     * Les fichiers dont la taille est inferieure à la taille A (parametre de configuration) devront etre regroupes dans
-     * un tar : archive "tar" Les fichiers dont la taille est superieure à la taille B (parametre de configuration)
-     * devront etre coupes : archive "cut" Les fichiers dont la taille est comprises entre la A et B (parametres de
-     * configuration) devront etre archives tels quels : archive "standard"
-     */
-    public Map<Integer, List<File>> prepareFiles(List<String> pFileList) throws STAFException {
-        // Files list to add like that in archive : "standard" archive
-        final List<File> pFileListStandard = new ArrayList<>();
-
-        // Files list to cut before archive its (files too big): "cut" archive
-        final List<File> pFileListCut = new ArrayList<>();
-
-        // Files list to regroup before archive its (files too small): "tar"
-        // archive
-        final List<File> pFileListTar = new ArrayList<>();
-
-        // Get file size interval in configuration :
-        final long minStandardFileSize = stafManager.getConfiguration().getMinFileSize().longValue();
-        final long maxStandardFileSize = stafManager.getConfiguration().getMaxFileSize().longValue();
-
-        // loop on files list
-        final Iterator<String> iter = pFileList.iterator();
-        while (iter.hasNext()) {
-            // File name
-            final String fileName = iter.next();
-            // File path
-            final File filePath = new File(fileName);
-            // File size
-            if (filePath.exists() && filePath.isFile()) {
-                final long sizeFile = filePath.length();
-
-                // TAR : small file to regroup with others(size<min)
-                if (sizeFile < minStandardFileSize) {
-                    pFileListTar.add(filePath);
-                }
-                // CUT : big file to cut(size>max)
-                else if (sizeFile > maxStandardFileSize) {
-                    pFileListCut.add(filePath);
-                }
-                // STANDARD : standard file (min<=size<=max)
-                else {
-                    pFileListStandard.add(filePath);
-                }
-            } else {
-                logger.warn(String.format("File %s does not exist or can not be read, check file existence or rights.",
-                                          fileName));
-                logger.warn(String.format("File %s cannot be archived.", fileName));
-            }
-        }
-
-        // Output Map : Key=archivage mode, Value=Files name list
-        final Map<Integer, List<File>> prepareFilesMap = new HashMap<>();
-        prepareFilesMap.put(STANDARD_ARCHIVE, pFileListStandard);
-        prepareFilesMap.put(CUT_ARCHIVE, pFileListCut);
-        prepareFilesMap.put(TAR_ARCHIVE, pFileListTar);
-
-        return prepareFilesMap;
     }
 
     /**
