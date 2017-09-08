@@ -50,14 +50,16 @@ public class EnvisatPluginTest extends AbstractProductMetadataPluginTest {
     @Autowired
     IRuntimeTenantResolver runtimeTenantResoler;
 
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/envisatplugin.properties";
-    }
-
     @Before
     public void start() {
         runtimeTenantResoler.forceTenant(DEFAULT_TENANT);
+    }
+
+    @Override
+    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("EnvisatProductMetadataPlugin");
+    
+        return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
     @Override
@@ -102,13 +104,15 @@ public class EnvisatPluginTest extends AbstractProductMetadataPluginTest {
 
     }
 
+    @Override
+    public void initTestSoloList() {
+    }
+
     @Test
-    public void testDate1() {
+    public void parseDateInsensitiveCase() {
         DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder().parseCaseInsensitive()
                 .appendPattern("dd-MMM-yyyy HH:mm:ss").toFormatter().withLocale(Locale.US);
-
-        //                DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm:ss").withLocale(Locale.US);
-        String dateStr = "11-May-2009 02:00:44";
+        String dateStr = "11-MAY-2009 02:00:44";
         try {
             LocalDateTime ld = LocalDateTime.parse(dateStr, dateTimeFormatter);
             Assert.assertNotNull(ld);
@@ -119,13 +123,11 @@ public class EnvisatPluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Test
-    public void testDate2() {
-        DateTimeFormatter dateTimeFormatter2 = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm:ss")
-                .withLocale(Locale.US);
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    public void parseAndFormatDate() {
+        DateTimeFormatter dateTimeFormatterToParse = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        
         String dateStr = "11-05-2009 02:00:44";
-
-        LocalDateTime ld = LocalDateTime.parse(dateStr, dateTimeFormatter);
+        LocalDateTime ld = LocalDateTime.parse(dateStr, dateTimeFormatterToParse);
         Assert.assertNotNull(ld);
         Assert.assertEquals(11, ld.getDayOfMonth());
         Assert.assertEquals(5, ld.getMonthValue());
@@ -134,34 +136,17 @@ public class EnvisatPluginTest extends AbstractProductMetadataPluginTest {
         Assert.assertEquals(0, ld.getMinute());
         Assert.assertEquals(44, ld.getSecond());
 
-        String newDate = ld.format(dateTimeFormatter2);
+        DateTimeFormatter dateTimeFormatterToFormat = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm:ss")
+                .withLocale(Locale.US);
+        String newDate = ld.format(dateTimeFormatterToFormat);
         Assert.assertNotNull(newDate);
 
         LOGGER.info("------>" + newDate);
     }
 
     @Override
-    public void initTestSoloList() {
-        addPluginTestDef("DA_TC_ENVISAT_DORIS10_COM", "ENVISAT/commerciales_10");
-    }
-
-    @Override
-    @Test
-    public void createMetadataPlugin_all() {
-        super.createMetadataPlugin_all();
-    }
-
-    @Override
-    @Test
-    public void createMetadataPlugin_solo() {
-        super.createMetadataPlugin_solo();
-    }
-
-    @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("EnvisatProductMetadataPlugin");
-
-        return pluginService.getPlugin(pluginConfiguration.getId());
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/envisatplugin.properties";
     }
 
     @Override

@@ -20,17 +20,17 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
- *
- * Class Jason3ProductMetadataPlugin
- *
  * Plugin JASON3
  *
- * @author CS
- * @since 5.5
+ * @author Christophe Mertz
  */
+@Plugin(description = "Jason3ProductMetadataPlugin", id = "Jason3ProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason3ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON3";

@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepo
 @Plugin(description = "Jason2Ptlm1ProductMetadataPlugin", id = "Jason2Ptlm1ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class Jason2Ptlm1ProductMetadataPlugin extends JasonPltm1ProductMetadataPlugin {
+public class Jason2Ptlm1ProductMetadataPlugin extends AbstractJasonPltm1ProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON2";
 
@@ -46,13 +46,13 @@ public class Jason2Ptlm1ProductMetadataPlugin extends JasonPltm1ProductMetadataP
     }
 
     @Override
-    protected String getProjectName() {
-        return PROJECT_NAME;
-    }
-
-    @Override
     protected String getProjectPrefix() {
         return "JA2";
+    }
+    
+    @Override
+    protected String getProjectName() {
+        return PROJECT_NAME;
     }
 
 }

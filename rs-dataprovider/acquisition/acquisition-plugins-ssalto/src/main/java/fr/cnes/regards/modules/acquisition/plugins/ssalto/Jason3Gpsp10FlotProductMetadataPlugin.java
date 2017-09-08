@@ -20,17 +20,18 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
+ * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
+ * va lire dans les blocs de mesure.
  *
- * Class Jason3Gpsp10FlotProductMetaDataPlugin
- *
- * Exactly the same plugin that the JASON2 one.
- *
- * @author CS
- * @since 5.5
+ * @author Christophe Mertz
  */
+@Plugin(description = "Jason3Gpsp10FlotProductMetadataPlugin", id = "Jason3Gpsp10FlotProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason3Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10FlotProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON3";

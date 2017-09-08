@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,14 +43,16 @@ public class EnvisatPLTMPluginTest extends AbstractProductMetadataPluginTest {
     @Autowired
     IRuntimeTenantResolver runtimeTenantResoler;
 
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/envisatplugin.properties";
-    }
-
     @Before
     public void start() {
         runtimeTenantResoler.forceTenant(DEFAULT_TENANT);
+    }
+
+    @Override
+    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("EnvisatPLTMProductMetadataPlugin");
+
+        return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
     @Override
@@ -66,22 +67,8 @@ public class EnvisatPLTMPluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    @Test
-    public void createMetadataPlugin_all() {
-        super.createMetadataPlugin_all();
-    }
-
-    @Override
-    @Test
-    public void createMetadataPlugin_solo() {
-        super.createMetadataPlugin_solo();
-    }
-
-    @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("EnvisatPLTMProductMetadataPlugin");
-
-        return pluginService.getPlugin(pluginConfiguration.getId());
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/envisatplugin.properties";
     }
 
     @Override

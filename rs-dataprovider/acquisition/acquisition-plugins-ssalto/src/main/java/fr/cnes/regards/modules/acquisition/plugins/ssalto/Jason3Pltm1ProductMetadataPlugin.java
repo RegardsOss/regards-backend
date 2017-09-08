@@ -20,25 +20,21 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
  *
- * Class Jason3Ptlm1ProductMetadataPlugin
- *
  * Plugin JASON 3 pour les produits PLTM1
  *
- * @author CS
- * @since 5.5
+ * @author Christophe Mertz
  */
-public class Jason3Pltm1ProductMetadataPlugin extends JasonPltm1ProductMetadataPlugin {
+@Plugin(description = "Jason3Pltm1ProductMetadataPlugin", id = "Jason3Pltm1ProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public class Jason3Pltm1ProductMetadataPlugin extends AbstractJasonPltm1ProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON3";
-
-    @Override
-    protected String getProjectName() {
-        return PROJECT_NAME;
-    }
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
@@ -51,6 +47,11 @@ public class Jason3Pltm1ProductMetadataPlugin extends JasonPltm1ProductMetadataP
     @Override
     protected String getProjectPrefix() {
         return "JA3";
+    }
+    
+    @Override
+    protected String getProjectName() {
+        return PROJECT_NAME;
     }
 
 }
