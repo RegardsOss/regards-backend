@@ -22,7 +22,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Calendar;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,67 +50,65 @@ public class RinexFileHelper {
     /**
      * fichier a lire, est initialise dans le constructeur
      */
-    private File file_;
+    private File currentFile;
 
     /**
      * filePattern permettant d'indentifier la ligne representant la date d'un bloc de mesure dans un fichier RINEX
      */
-    private static final String MEASURE_BLOC_DATE_LINE_PATTERN = "\\s+([0-9]{2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\.(.)*";
+    private static final String MEASURE_BLOC_DATE_LINE_PATTERN = "\\s+([0-9]{2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\.([0-9]{7})(.)*";
 
     /**
      * constructeur par defaut
      *
-     * @param pFileName
-     *            , le fichier a lire
-     *
+     * @param fileName
      */
-    public RinexFileHelper(String pFileName) {
-        file_ = new File(pFileName);
+    public RinexFileHelper(String fileName) {
+        currentFile = new File(fileName);
     }
 
     /**
      * constructeur
      *
-     * @param pFile
+     * @param aFile
      *
      */
-    public RinexFileHelper(File pFile) {
-        file_ = pFile;
+    public RinexFileHelper(File aFile) {
+        currentFile = aFile;
     }
 
     /**
      * renvoie la chaine de caractere recuperee a la ligne pLineNumber dans le groupe de capture pCatchGroup du filePattern
      * pPattern.
      *
-     * @param pLineNumber
-     *            ( Si 0 ou -1 = Recherche de la ligne a partir d'un filePattern; Si -2 = Recherche de la derniere ligne; Si
-     *            >0 = Recherche de la ligne x dans le fichier )
-     * @param pPattern
-     * @param pCatchGroup
+     * @param lineNumber
+     *            Si 0 ou -1 = Recherche de la ligne a partir d'un filePattern; Si -2 = Recherche de la derniere ligne;
+     *            Si >0 = Recherche de la ligne x dans le fichier
+     * @param pattern
+     * @param catchGroup
      * @return
      * @throws PluginAcquisitionException
      *             if get line return an empty string
      */
-    public String getValue(int pLineNumber, Pattern pPattern, int pCatchGroup) throws PluginAcquisitionException {
+    public String getValue(int lineNumber, Pattern pattern, int catchGroup) throws PluginAcquisitionException {
 
         String value = null;
         try {
-            if (pLineNumber > 0) {
-                String line = getLine(pLineNumber, file_);
+            if (lineNumber > 0) {
+                String line = getLine(lineNumber, currentFile);
                 LOGGER.debug("line read : " + line);
-                Matcher valueMatcher = pPattern.matcher(line);
+                Matcher valueMatcher = pattern.matcher(line);
                 valueMatcher.matches();
-                value = valueMatcher.group(pCatchGroup);
-            } else if ((pLineNumber == 0) || (pLineNumber == -1)) {
+                value = valueMatcher.group(catchGroup);
+            } else if ((lineNumber == 0) || (lineNumber == -1)) {
                 // all must be done using filePattern.
                 // the first line which matches the filePattern contains the value
-                BufferedReader reader = new BufferedReader(new FileReader(file_));
+                BufferedReader reader = new BufferedReader(new FileReader(currentFile));
                 String line = "";
                 try {
                     while ((line = reader.readLine()) != null) {
-                        Matcher valueMatcher = pPattern.matcher(line);
+                        Matcher valueMatcher = pattern.matcher(line);
                         if (valueMatcher.matches()) {
-                            value = valueMatcher.group(pCatchGroup);
+                            value = valueMatcher.group(catchGroup);
                             break;
                         }
                     }
@@ -118,22 +117,22 @@ public class RinexFileHelper {
                 }
             }
             // get the file's last line
-            else if (pLineNumber == -2) {
-                String line = getLine(pLineNumber, file_);
+            else if (lineNumber == -2) {
+                String line = getLine(lineNumber, currentFile);
                 LOGGER.debug("line read : " + line);
-                Matcher valueMatcher = pPattern.matcher(line);
+                Matcher valueMatcher = pattern.matcher(line);
                 valueMatcher.matches();
-                value = valueMatcher.group(pCatchGroup);
-            } else if (pLineNumber == -3) {
+                value = valueMatcher.group(catchGroup);
+            } else if (lineNumber == -3) {
                 // all must be done using filePattern.
                 // the last line which matches the filePattern contains the value
-                BufferedReader reader = new BufferedReader(new FileReader(file_));
+                BufferedReader reader = new BufferedReader(new FileReader(currentFile));
                 String line = "";
                 try {
                     while ((line = reader.readLine()) != null) {
-                        Matcher valueMatcher = pPattern.matcher(line);
+                        Matcher valueMatcher = pattern.matcher(line);
                         if (valueMatcher.matches()) {
-                            value = valueMatcher.group(pCatchGroup);
+                            value = valueMatcher.group(catchGroup);
                         }
                     }
                 } finally {
@@ -141,7 +140,7 @@ public class RinexFileHelper {
                 }
             }
 
-            LOGGER.info("value : " + value + " found at line " + pLineNumber + " and column " + pCatchGroup);
+            LOGGER.info("value : " + value + " found at line " + lineNumber + " and column " + catchGroup);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new PluginAcquisitionException(e);
@@ -154,24 +153,24 @@ public class RinexFileHelper {
      * alors la valeur "" est renvoyee Si pLineNumber=-2, alors on renvoie la derniere ligne. Les valeurs de pLineNumber
      * = 0 et -1 sont a exclure de cette methode car la recherche de la ligne se fait d'apres un filePattern
      *
-     * @param pLineNumber
+     * @param lineNumber
      *            le numero de la ligne a renvoyer
-     * @param pFile
+     * @param aFile
      *            le fichier a lire
      * @return a string that may be empty
      * @throws IOException
      */
-    private String getLine(int pLineNumber, File pFile) throws PluginAcquisitionException {
+    private String getLine(int lineNumber, File aFile) throws PluginAcquisitionException {
         BufferedReader reader = null;
         String line = EMPTY_STRING;
         try {
-            reader = new BufferedReader(new FileReader(pFile));
+            reader = new BufferedReader(new FileReader(aFile));
             // get the last line
             String lastLine = EMPTY_STRING;
-            if (pLineNumber > 0) {
+            if (lineNumber > 0) {
                 // Go to line
                 int count = 1;
-                while ((count <= pLineNumber) && (lastLine != null)) {
+                while ((count <= lineNumber) && (lastLine != null)) {
                     // Read line to go to next line
                     lastLine = reader.readLine();
                     count++;
@@ -180,7 +179,7 @@ public class RinexFileHelper {
                 if (lastLine != null) {
                     line = lastLine;
                 }
-            } else if (pLineNumber == -2) {
+            } else if (lineNumber == -2) {
                 // DM060 : get the last line
                 while (lastLine != null) {
                     // Backup line (if empty file, line value = "")
@@ -208,7 +207,7 @@ public class RinexFileHelper {
 
         // If empty : throws a plugin exception
         if (EMPTY_STRING.equals(line)) {
-            String message = "No value found at this line (" + pLineNumber + ")";
+            String message = "No value found at this line (" + lineNumber + ")";
             throw new PluginAcquisitionException(message);
         }
 
@@ -223,7 +222,7 @@ public class RinexFileHelper {
     public Interval getBlocMeasureDateInterval() {
         Pattern mesureBlocPattern = Pattern.compile(MEASURE_BLOC_DATE_LINE_PATTERN);
         Interval interval = new Interval();
-        try (BufferedReader reader = new BufferedReader(new FileReader(file_))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(currentFile))) {
             String line = reader.readLine();
 
             while (line != null) {
@@ -236,7 +235,7 @@ public class RinexFileHelper {
             }
 
         } catch (Exception e) {
-            LOGGER.error("unable to get date interval from file " + file_.getPath());
+            LOGGER.error("unable to get date interval from file " + currentFile.getPath());
         }
         return interval;
     }
@@ -244,25 +243,21 @@ public class RinexFileHelper {
     /**
      * renvoie un date parsee par le Pattern de date de bloc.
      *
-     * @param pMatcher
-     * @return
+     * @param matcher
+     * @return date en milliseconds
      */
-    private long getDate(Matcher pMatcher) {
-        Calendar myCalendar = Calendar.getInstance();
-        myCalendar.set(Calendar.YEAR, Integer.parseInt("20" + pMatcher.group(1)));
-        myCalendar.set(Calendar.MONTH, Integer.parseInt(pMatcher.group(2)) - 1);
-        myCalendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(pMatcher.group(3)));
-        myCalendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(pMatcher.group(4)));
-        myCalendar.set(Calendar.MINUTE, Integer.parseInt(pMatcher.group(5)));
-        myCalendar.set(Calendar.SECOND, Integer.parseInt(pMatcher.group(6)));
-        myCalendar.set(Calendar.MILLISECOND, Integer.parseInt(pMatcher.group(7)));
-        // the parser must be externally synchronized
+    private long getDate(Matcher matcher) {
 
-        return myCalendar.getTimeInMillis();
+        OffsetDateTime odt = OffsetDateTime.of(Integer.parseInt("20" + matcher.group(1)),
+                                               Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)),
+                                               Integer.parseInt(matcher.group(4)), Integer.parseInt(matcher.group(5)),
+                                               Integer.parseInt(matcher.group(6)), Integer.parseInt(matcher.group(7)),
+                                               ZoneOffset.UTC);
+        return 1000 * odt.toEpochSecond();
     }
 
     public void releaseFile() {
-        file_ = null;
+        currentFile = null;
     }
 
 }

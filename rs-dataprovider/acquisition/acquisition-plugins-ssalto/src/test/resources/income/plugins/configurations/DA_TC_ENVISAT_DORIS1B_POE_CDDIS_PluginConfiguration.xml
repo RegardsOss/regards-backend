@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+
+ HISTORIQUE
+ 
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+
+ VERSION : 2011/08/15 : 1.6 : CS
+ FA-ID : SIPNG-FA-0729-CS : 2011/08/05 : maj fichiers de conf
+
+ VERSION : 2009/07/01 : 1.3 : CS
+ DM-ID : SIPNG-DM-0060-CN : 2009/07/01 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>en1data([0-9]{3}).dat.Z</fileNamePattern>
+	<compositeAttribute>
+		<name>TIME_PERIOD</name>
+		<order>1</order>
+		<attributeFromName>
+			<groupNumber>1</groupNumber>
+			<specification>
+				<name>START_DATE</name>
+				<valueType>INTEGER</valueType>
+				<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetEnvisatD1BPoeCddisStartDate</calculationClass>
+			</specification>
+		</attributeFromName>
+        
+        <attributeFromOther>
+			<otherAttributeName>START_DATE</otherAttributeName>
+			<specification>
+				<name>STOP_DATE</name>
+				<valueType>INTEGER</valueType>
+				<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetEnvisatD1BPoeCddisStopDate</calculationClass>
+			</specification>
+		</attributeFromOther>
+		
+	</compositeAttribute>
+
+	<compositeAttribute>
+		<name>CYCLE_RANGE</name>
+		<order>2</order>
+		<attributeFromName>
+			<groupNumber>1</groupNumber>
+			<specification>
+				<name>CYCLE_MIN</name>
+				<valueType>INTEGER</valueType>
+				<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetEnvisatD1BPoeCddisCycleMin</calculationClass>
+			</specification>
+		</attributeFromName>
+        
+		<attributeFromName>
+			<groupNumber>1</groupNumber>
+			<specification>
+				<name>CYCLE_MAX</name>
+				<valueType>INTEGER</valueType>
+				<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetEnvisatD1BPoeCddisCycleMin</calculationClass>
+			</specification>
+		</attributeFromName>
+		
+	</compositeAttribute>
+	
+	
+	<fileInfoAttribute>
+		<fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+		<specification>
+			<name>FILE_CREATION_DATE</name>
+			<valueType>DATE_TIME</valueType>
+			<order>3</order>
+		</specification>
+	</fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

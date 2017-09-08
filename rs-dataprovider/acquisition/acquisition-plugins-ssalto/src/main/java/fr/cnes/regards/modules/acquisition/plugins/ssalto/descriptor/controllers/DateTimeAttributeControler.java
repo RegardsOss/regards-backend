@@ -26,7 +26,6 @@ import org.jdom.Element;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
-import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 
 /**
  * Attribut de type DATE TIME
@@ -39,6 +38,8 @@ public class DateTimeAttributeControler extends AttributeControler {
      * Nom de l'element XML equivalent a l'objet.
      */
     public static final String XML_ELEMENT = "dateTimeAttribute";
+
+    private final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public DateTimeAttributeControler() {
         super();
@@ -64,7 +65,7 @@ public class DateTimeAttributeControler extends AttributeControler {
      */
     @Override
     public String doGetStringValue(Object value) {
-        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((OffsetDateTime)value);
+        return DATETIME_FORMATTER.format((OffsetDateTime) value);
     }
 
     /**

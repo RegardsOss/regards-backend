@@ -49,16 +49,9 @@ public class Jason2PluginIT extends AbstractProductMetadataPluginTest {
     @Autowired
     IPluginService pluginService;
 
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResoler;
-
-    @Before
-    public void before() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
-    }
 
     @Override
     public String getProjectProperties() {

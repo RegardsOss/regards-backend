@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+
+ HISTORIQUE
+
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+ 
+
+ VERSION : 5.3 : DM : SIPNG-DM-0126-CN : 19/07/2013 : Mise à jour des plugins SSALTO
+
+ VERSION : 2011/01/10 : 1.2 : CNES
+ DM-ID : SIPNG-DM-0047-CN : 2011/01/10 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(RA2_USO_clock_C-GDR-)([0-9]{3})(.txt.gz)</fileNamePattern>
+    
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>2</order>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>CYCLE_MIN</otherAttributeName>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>DD-MM-yyyy</formatRead>
+            </specification>
+        </translatedAttributeFromCycleFile>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>CYCLE_MAX</otherAttributeName>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>DD-MM-yyyy</formatRead>
+            </specification>
+        </translatedAttributeFromCycleFile>
+    </compositeAttribute>
+    
+
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>2</groupNumber>
+            <specification>
+                <name>CYCLE_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromName>
+        <attributeFromOther>
+            <otherAttributeName>CYCLE_MIN</otherAttributeName>
+            <specification>
+                <name>CYCLE_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromOther>
+    </compositeAttribute>
+
+    <fileInfoAttribute>
+        <fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>3</order>
+        </specification>
+    </fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
 
 /**
- * Met en forme la version passee en parametre XYYab sous le format DORIS=X.YY  DIODE=a.b
+ * Met en forme la version passee en parametre XYYab sous le format DORIS=X.YY - DIODE=a.b
  * pour le cas particulier DA_TC_ENVISAT_LOGVOL_DORIS_2G 
  * @author Christophe Mertz
  */
@@ -34,9 +34,9 @@ public class SetEnvisatLogvolDoris2GSeparator implements ICalculationClass {
     }
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object newValue, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
-        String value = (String) pValue;
+        String value = (String) newValue;
         String version = new String("");
 
         version = "DORIS=" + value.substring(0, 1) + "." + value.substring(1, 3) + " - DIODE=" + value.substring(3, 4)

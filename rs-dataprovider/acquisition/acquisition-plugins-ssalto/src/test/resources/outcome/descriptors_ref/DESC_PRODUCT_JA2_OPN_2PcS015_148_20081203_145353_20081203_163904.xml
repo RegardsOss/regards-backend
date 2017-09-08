@@ -16,7 +16,7 @@
             <ORBIT_MAX>148</ORBIT_MAX>
         </ORBIT_RANGE>
         <PHASE>Descending</PHASE>
-        <PRODUCT_OPTION>NOAA - Native</PRODUCT_OPTION>
+        <PRODUCT_OPTION>Native</PRODUCT_OPTION>
         <GEO_COORDINATES>
             <LATITUDE_MIN>-66.15</LATITUDE_MIN>
             <LONGITUDE_MIN>-29.48</LONGITUDE_MIN>

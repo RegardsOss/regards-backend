@@ -34,6 +34,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -236,7 +238,6 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 if (cycleAsString.equals(matcher.group(ORF_CYCLE_GROUP))) {
                     LocalDateTime ldt = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
                     cycleStartDate = OffsetDateTime.of(ldt, ZoneOffset.UTC);
-                    ;
                 }
             }
         }

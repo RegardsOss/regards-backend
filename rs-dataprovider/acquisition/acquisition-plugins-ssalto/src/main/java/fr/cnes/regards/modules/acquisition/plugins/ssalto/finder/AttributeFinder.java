@@ -31,12 +31,14 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -258,7 +260,10 @@ public abstract class AttributeFinder {
         Object parsedValue = null;
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME) || valueType.equals(AttributeTypeEnum.TYPE_DATE)) {
             boolean isOnlyDate = false;
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(formatRead);
+            
+            DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder().parseCaseInsensitive()
+                    .appendPattern(formatRead).toFormatter().withLocale(Locale.US);
+            
             try {
                 LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormatter);
                 parsedValue = OffsetDateTime.of(ldt, ZoneOffset.UTC);
@@ -271,6 +276,7 @@ public abstract class AttributeFinder {
                 LocalDate ld = LocalDate.parse(value, dateTimeFormatter);
                 parsedValue = OffsetDateTime.of(ld, LocalTime.MIN, ZoneOffset.UTC);
             }
+
         } else if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
             parsedValue = Integer.valueOf(value);
         } else if (valueType.equals(AttributeTypeEnum.TYPE_REAL)) {

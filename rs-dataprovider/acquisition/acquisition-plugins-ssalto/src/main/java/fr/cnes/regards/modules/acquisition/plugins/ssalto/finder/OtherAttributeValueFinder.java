@@ -43,8 +43,8 @@ public class OtherAttributeValueFinder extends AttributeFinder {
             throws PluginAcquisitionException {
         @SuppressWarnings("unchecked")
         List<Object> otherValueList = (List<Object>) attributeValueMap.get(otherAttributeName);
+        
         if (otherValueList == null) {
-
             String msg = "unable to find the value for attribute " + otherAttributeName + " Check finder ordering.";
             throw new PluginAcquisitionException(msg);
         } else {

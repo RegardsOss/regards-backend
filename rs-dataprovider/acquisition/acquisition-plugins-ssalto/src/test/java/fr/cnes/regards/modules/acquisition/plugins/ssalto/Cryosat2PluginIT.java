@@ -45,15 +45,7 @@ public class Cryosat2PluginIT extends AbstractProductMetadataPluginTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2PluginIT.class);
 
     @Autowired
-    private IRuntimeTenantResolver tenantResolver;
-
-    @Autowired
     IRuntimeTenantResolver runtimeTenantResoler;
-
-    @Before
-    public void before() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
-    }
 
     @Override
     public String getProjectProperties() {
@@ -231,11 +223,7 @@ public class Cryosat2PluginIT extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        List<String> fileList = new ArrayList<>(2);
-        fileList.add("CS_OPER_AUX_IONGIM_20100710T000000_20100710T235959_0002.HDR");
-        fileList.add("CS_OPER_AUX_IONGIM_20100710T000000_20100710T235959_0002.DBL");
-        addPluginTestDef("DA_TC_CRYOSAT2_COR_IONO_GIM", "cryosat2/gim", fileList,
-                         "CS_OPER_AUX_IONGIM_20100710T000000_20100710T235959_0002");
+        addPluginTestDef("DA_TC_CRYOSAT2_HISTO_FOUS_BORD", "cryosat2/fous");
     }
 
     @Override

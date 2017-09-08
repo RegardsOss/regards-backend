@@ -27,7 +27,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -35,6 +37,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AsciiFileFinder;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
 /**
  * Cette classe permet de calculer de maniere specifique pour les fichiers ENVISAT PLTM, les elements suivants :
@@ -45,11 +48,20 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AsciiFileFinder
  * <li>GEO_COORDINATES/LATITUDE_MAX</li>
  * </ul>
  * 
- * @author CS
- * @version 1.4
- * @since 1.4
+ * @author Christophe Mertz
  */
+@Plugin(description = "EnvisatPLTMProductMetadataPlugin", id = "EnvisatPLTMProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlugin {
+    
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     private static final String GEO_COORDINATES = "GEO_COORDINATES";
 
@@ -109,19 +121,18 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
             attributeValueMap.put(LONGITUDE_MAX, longitudeMaxAttribute.getValueList());
 
             // Add LONGITUDE_MIN attribute
-            Attribute latitudeMinAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL,
-                                                                              LATITUDE_MIN, latitudeMin_);
+            Attribute latitudeMinAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL, LATITUDE_MIN,
+                                                                              latitudeMin_);
             coordinates.addAttribute(latitudeMinAttribute);
             attributeValueMap.put(LATITUDE_MIN, latitudeMinAttribute.getValueList());
 
             // Add LONGITUDE_MAX attribute
-            Attribute latitudeMaxAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL,
-                                                                              LATITUDE_MAX, latitudeMax_);
+            Attribute latitudeMaxAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_REAL, LATITUDE_MAX,
+                                                                              latitudeMax_);
             coordinates.addAttribute(latitudeMaxAttribute);
             attributeValueMap.put(LATITUDE_MAX, latitudeMaxAttribute.getValueList());
 
-        }
-        catch (DomainModelException e) {
+        } catch (DomainModelException e) {
             String msg = "Unable to create attribute" + GEO_COORDINATES;
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
@@ -152,8 +163,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
         finder.addGroupNumber("1");
         try {
             finder.setValueType(AttributeTypeEnum.TYPE_REAL.toString());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new PluginAcquisitionException(e);
         }
         @SuppressWarnings("unchecked")
@@ -183,8 +193,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
         finder.addGroupNumber("1");
         try {
             finder.setValueType(AttributeTypeEnum.TYPE_REAL.toString());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new PluginAcquisitionException(e);
         }
         @SuppressWarnings("unchecked")
@@ -216,8 +225,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
         finder.addGroupNumber("1");
         try {
             finder.setValueType(AttributeTypeEnum.TYPE_REAL.toString());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new PluginAcquisitionException(e);
         }
         @SuppressWarnings("unchecked")
@@ -230,8 +238,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
         finder.addGroupNumber("1");
         try {
             finder.setValueType(AttributeTypeEnum.TYPE_REAL.toString());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new PluginAcquisitionException(e);
         }
         @SuppressWarnings("unchecked")
@@ -247,13 +254,11 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
             if (startLat < stopLat) {
                 latitudeMin_.add(formatCoordinate(startLat));
                 latitudeMax_.add(formatCoordinate(stopLat));
-            }
-            else {
+            } else {
                 latitudeMin_.add(formatCoordinate(stopLat));
                 latitudeMax_.add(formatCoordinate(startLat));
             }
-        }
-        else {
+        } else {
             throw new PluginAcquisitionException("Unknown START_LAT or STOP_LAT in file");
         }
     }

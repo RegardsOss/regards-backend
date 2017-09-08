@@ -21,8 +21,12 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.io.File;
 import java.util.Map;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 
+@Plugin(description = "Jason1Doris1BProductMetadataPlugin", id = "Jason1Doris1BProductMetadataPlugin", version = "1.0.0",
+author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+url = "https://github.com/RegardsOss")
 public class Jason1Doris1BProductMetadataPlugin extends Jason1ProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON";
