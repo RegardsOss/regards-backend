@@ -1,17 +1,28 @@
 package fr.cnes.regards.modules.order.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.hibernate.annotations.SortNatural;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -22,6 +33,10 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  */
 @Entity
 @Table(name = "t_order")
+@NamedEntityGraph(name = "graph.order",
+        attributeNodes = @NamedAttributeNode(value = "datasetTasks", subgraph = "graph.order.datasetTasks"),
+        subgraphs = { @NamedSubgraph(name = "graph.order.datasetTasks",
+                attributeNodes = @NamedAttributeNode(value = "reliantTasks")) })
 public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     @Id
@@ -35,6 +50,15 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime creationDate;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "ta_order_dataset_task", foreignKey = @ForeignKey(name = "fk_order"),
+            inverseForeignKey = @ForeignKey(name = "fk_dataset_task"),
+            inverseJoinColumns = @JoinColumn(name = "dataset_task_id"),
+            uniqueConstraints = @UniqueConstraint(name = "uk_dataset_task_id",
+                    columnNames = "dataset_task_id"))
+    @SortNatural
+    private SortedSet<DatasetTask> datasetTasks = new TreeSet<>(Comparator.naturalOrder());
 
     public Order() {
     }
@@ -62,6 +86,14 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public void setCreationDate(OffsetDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public SortedSet<DatasetTask> getDatasetTasks() {
+        return datasetTasks;
+    }
+
+    public void addDatasetOrderTask(DatasetTask datasetTask) {
+        this.datasetTasks.add(datasetTask);
     }
 
     @Override

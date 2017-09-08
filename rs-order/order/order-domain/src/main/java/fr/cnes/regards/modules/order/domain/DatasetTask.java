@@ -1,13 +1,32 @@
 package fr.cnes.regards.modules.order.domain;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
+import java.util.Comparator;
 
 import org.hibernate.annotations.Type;
 
+import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
+
 /**
+ * Dataset specific order task. This task is linked to optional processing task and to all sub-orders (files tasks) of
+ * this dataset
  * @author oroussel
  */
-public class DatasetOrderTask extends OrderTask {
+@Entity
+@Table(name = "t_dataset_task")
+@PrimaryKeyJoinColumn(foreignKey = @ForeignKey(name = "fk_task_id"))
+public class DatasetTask extends AbstractReliantTask<FilesTask> implements Comparable<DatasetTask> {
+
+    /**
+     * Comparator by dataset label.
+     */
+    private static final Comparator<DatasetTask> COMPARATOR = Comparator.comparing(DatasetTask::getDatasetLabel);
+
     @Column(name = "dataset_ip_id", length = 128, nullable = false)
     private String datasetIpid;
 
@@ -30,12 +49,13 @@ public class DatasetOrderTask extends OrderTask {
     @Column(name = "files_size")
     private long filesSize = 0;
 
-    // To be defined
+    // To be defined : a ProcessingTask should certainly be better
+    // Or directly specifying JobInfo managing processing task
     @Column(name = "processing_service")
     @Type(type = "text")
     private String processingService;
 
-    public DatasetOrderTask() {
+    public DatasetTask() {
     }
 
     public String getDatasetIpid() {
@@ -92,5 +112,10 @@ public class DatasetOrderTask extends OrderTask {
 
     public void setProcessingService(String processingService) {
         this.processingService = processingService;
+    }
+
+    @Override
+    public int compareTo(DatasetTask o) {
+        return COMPARATOR.compare(this, o);
     }
 }
