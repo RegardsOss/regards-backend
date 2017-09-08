@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
-import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException;
+import fr.cnes.regards.framework.staf.STAFException;
 
 /**
  * Abstract class to define standard parameters of a STAF File.
@@ -40,6 +41,11 @@ public abstract class AbstractPhysicalFile {
      * Name of the STAF Archive where the file is stored.
      */
     private final String stafArchiveName;
+
+    /**
+     * STAF File name.
+     */
+    private String stafFileName;
 
     /**
      * file status
@@ -74,11 +80,26 @@ public abstract class AbstractPhysicalFile {
     public abstract Path getLocalFilePath();
 
     /**
+     * Calculate the STAF File path for a new file to store.
+     * @return {@link Path} STAF file path
+     * @throws STAFException
+     */
+    public abstract Path calculateSTAFFilePath() throws STAFException;
+
+    /**
      * Return the STAF Path where to transfer file when ready.
      * @return {@link Path} STAF File path
      * @throws STAFException Error during STAF Path creation.
      */
-    public abstract Path getSTAFFilePath() throws STAFException;
+    public Path getSTAFFilePath() throws STAFException {
+        if ((stafNode != null) && (stafFileName != null)) {
+            return Paths.get(stafNode, stafFileName);
+        } else {
+            Path path = calculateSTAFFilePath();
+            stafFileName = path.getFileName().toString();
+            return path;
+        }
+    }
 
     public STAFArchiveModeEnum getArchiveMode() {
         return archiveMode;
@@ -110,6 +131,14 @@ public abstract class AbstractPhysicalFile {
 
     public String getStafArchiveName() {
         return stafArchiveName;
+    }
+
+    public String getStafFileName() {
+        return stafFileName;
+    }
+
+    public void setStafFileName(String pStafFileName) {
+        stafFileName = pStafFileName;
     }
 
 }

@@ -6,7 +6,10 @@ package fr.cnes.regards.modules.storage.plugin.staf.domain;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang.StringUtils;
+
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
+import fr.cnes.regards.framework.staf.STAFException;
 
 /**
  * Class to represent one of the parts of a file stored in STAF as multiple parts.
@@ -53,10 +56,11 @@ public class PhysicalCutPartFile extends AbstractPhysicalFile {
     }
 
     @Override
-    public Path getSTAFFilePath() {
+    public Path calculateSTAFFilePath() throws STAFException {
         // The file path of the stored cuted part file is not calculated with the md5 of the part
         // but with the md5 of the global file with index prefix.
-        return Paths.get(String.format("%s_%d", includingCutFile.getSTAFFilePath(), partIndex));
+        return Paths.get(String.format("%s_%s", includingCutFile.getSTAFFilePath(),
+                                       StringUtils.leftPad(String.valueOf(partIndex), 2, "0")));
     }
 
     public PhysicalCutFile getIncludingCutFile() {

@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.staf.STAFException;
 import fr.cnes.regards.framework.staf.STAFService;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFTarException;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFUrlFactory;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFUrlParameter;
 
 /**
  * STAF Controller to handle STAF recommandations before storing files.<br/>
@@ -135,15 +136,15 @@ public class STAFController {
         this.getAllPreparedFilesToArchive().forEach(stafFile -> {
             if (PhysicalFileStatusEnum.TO_STORE.equals(stafFile.getStatus())) {
                 try {
-                    if ((stafFile.getLocalFilePath() != null) && (stafFile.getSTAFFilePath() != null)) {
+                    if ((stafFile.getLocalFilePath() != null) && (stafFile.calculateSTAFFilePath() != null)) {
                         localFileToArchiveMap.put(stafFile.getLocalFilePath().toString(),
-                                                  stafFile.getSTAFFilePath().toString());
+                                                  stafFile.calculateSTAFFilePath().toString());
                     } else {
                         stafFile.setStatus(PhysicalFileStatusEnum.ERROR);
                         LOG.warn("Undefined file to archive for origine(local)={} and destination(STAF)={}",
-                                 stafFile.getLocalFilePath(), stafFile.getSTAFFilePath());
+                                 stafFile.getLocalFilePath(), stafFile.calculateSTAFFilePath());
                     }
-                } catch (fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException e) {
+                } catch (STAFException e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
@@ -220,7 +221,7 @@ public class STAFController {
                 try {
                     Map<Path, URL> urls = STAFUrlFactory.getSTAFFullURLs(file);
                     rawFilesStored.putAll(urls);
-                } catch (fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException e) {
+                } catch (STAFException e) {
                     // Error creating file URL
                     LOG.error("Error during STAF URL creation for staf file {}",file.getLocalFilePath(),e);
                 }
@@ -254,7 +255,7 @@ public class STAFController {
     }
 
     /**
-     * Prepare the list of file to archive into the STAF for the given files
+     * Create the list of {@link AbstractPhysicalFile} associated to the given list of {@link Path} file to archive.
      * @param pFileToArchivePerStafNode {@link Map}<{@link String},{@link Set}<{@link Path}>> <br/>
      * <ul>
      * <li>key : STAF Node where to store the {@link Path}s in map value</li>
@@ -265,11 +266,11 @@ public class STAFController {
      */
     public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
             STAFArchiveModeEnum pMode) {
-        this.clearPreparedFiles();
+        clearPreparedFiles();
         for (Entry<String, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
             for (Path fileToArchive : stafNode.getValue()) {
                 try {
-                    this.prepareFileToArchive(fileToArchive, stafNode.getKey(), pMode);
+                    prepareFileToArchive(fileToArchive, stafNode.getKey(), pMode);
                 } catch (STAFException e) {
                     LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
                     LOG.debug(e.getMessage(), e);
@@ -277,6 +278,122 @@ public class STAFController {
             }
         }
         return this.getAllPreparedFilesToArchive();
+    }
+
+    /**
+     * Restore the files from the given STAF {@link URL}
+     * @param pSTAFFilesToRestore {@link Set}<{@link URL}> STAF URL of files to retrieve.
+     * @param pDestinationPath {@link Path} Directory where to put restored files.
+     */
+    public void restoreFiles(Set<URL> pSTAFFilesToRestore, Path pDestinationPath) {
+        Set<AbstractPhysicalFile> physicalFiles = Sets.newHashSet();
+        //1. Create STAF File from given urls
+        pSTAFFilesToRestore.forEach(stafURL -> {
+            try {
+                physicalFiles.add(getSTAFPhysicalFile(stafURL, pDestinationPath));
+            } catch (STAFException e) {
+                LOG.error("[STAF] Error retreiving file {}", stafURL.toString(), e);
+            }
+        });
+
+        //2. Retrieve staf files path to retrieve
+        Set<Path> stafFilePathsToRetrieive = Sets.newHashSet();
+        for (AbstractPhysicalFile physicalFile : physicalFiles) {
+            try {
+                stafFilePathsToRetrieive.addAll(getSTAFFilePaths(physicalFile));
+            } catch (STAFException e) {
+                // TODO Handle exception
+                LOG.error("[STAF] Error creating STAF file path for file {}", physicalFile.getLocalFilePath());
+            }
+        }
+        //2. Do the STAF Restitution for each physicalFile
+        try {
+            stafService.connectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
+            stafService.restoreAllFiles(stafFilePathsToRetrieive, pDestinationPath.toString());
+            stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
+        } catch (STAFException e) {
+            // TODO Handle exception
+            LOG.error("[STAF] Error during STAF Restoration", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Return all file STAF {@link Path} associted to the given {@link AbstractPhysicalFile}
+     * @param pPhysicalFile {@link AbstractPhysicalFile} Prepared file (CUT|NORMAL|TAR) to retreive STAF files paths.
+     * @return {@link Set}<{@link Path}> for each physical file in STAF for the given {@link AbstractPhysicalFile}
+     * @throws STAFException
+     */
+    private Set<Path> getSTAFFilePaths(AbstractPhysicalFile pPhysicalFile) throws STAFException {
+        Set<Path> stafFilePaths = Sets.newHashSet();
+        switch (pPhysicalFile.getArchiveMode()) {
+            case CUT:
+                // Add path to all parts of the cuted file in STAF.
+                PhysicalCutFile cutFile = (PhysicalCutFile) pPhysicalFile;
+                for (PhysicalCutPartFile cutedFilePart : cutFile.getCutedFileParts()) {
+                    stafFilePaths.add(cutedFilePart.getSTAFFilePath());
+                }
+                break;
+            case CUT_PART:
+            case NORMAL:
+            case TAR:
+                // Add path to the file.
+                // CUT PART : 1 file in STAF = 1 file to retrieve
+                // NORMAL : 1 file in STAF = 1 file to retrieve
+                // TAR : 1 file in STAF = 1 file to retrieve (containing many files stored).
+                stafFilePaths.add(pPhysicalFile.getSTAFFilePath());
+                stafFilePaths.add(pPhysicalFile.getSTAFFilePath());
+                break;
+            default:
+                break;
+        }
+        return stafFilePaths;
+    }
+
+    /**
+     * Create an object {@link AbstractPhysicalFile} from a given STAF {@link URL}
+     * @param pUrl STAF {@link URL}
+     * @param destinationDirectory {@link Path} local files directory for retrieve actions.
+     * @return created {@link AbstractPhysicalFile}
+     * @throws STAFException
+     */
+    private AbstractPhysicalFile getSTAFPhysicalFile(URL pUrl, Path destinationDirectory) throws STAFException {
+
+        String stafArchive = STAFUrlFactory.getSTAFArchiveFromURL(pUrl);
+        String stafNode = STAFUrlFactory.getSTAFNodeFromURL(pUrl);
+        String stafFileName = STAFUrlFactory.getSTAFFileNameFromURL(pUrl);
+        STAFArchiveModeEnum mode = STAFUrlFactory.getSTAFArchiveModeFromURL(pUrl);
+        Map<STAFUrlParameter, String> parameters = STAFUrlFactory.getSTAFURLParameters(pUrl);
+
+        Path localFilePath = Paths.get(destinationDirectory.toString(), stafFileName);
+
+        switch (mode) {
+            case CUT:
+                PhysicalCutFile cutFile = new PhysicalCutFile(localFilePath, stafArchive, stafNode);
+                cutFile.setStafFileName(stafFileName);
+                if (parameters.get(STAFUrlParameter.CUT_PARTS_PARAMETER) != null) {
+                    Integer numberOfParts = Integer.parseInt(parameters.get(STAFUrlParameter.CUT_PARTS_PARAMETER));
+                    for (int i = 0; i < numberOfParts; i++) {
+                        cutFile.addCutedPartFile(new PhysicalCutPartFile(null, cutFile, i, stafArchive, stafNode));
+                    }
+                }
+
+                return cutFile;
+            case NORMAL:
+                PhysicalNormalFile physicalFile = new PhysicalNormalFile(localFilePath, null, stafArchive, stafNode);
+                physicalFile.setStafFileName(stafFileName);
+                return physicalFile;
+            case TAR:
+                PhysicalTARFile tar = new PhysicalTARFile(stafArchive, stafNode);
+                tar.setStafFileName(stafFileName);
+                tar.setLocalTarFile(localFilePath);
+                if (parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER) != null) {
+                    Path FileInTar = Paths.get(parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER));
+                    tar.addFileInTar(FileInTar, null);
+                }
+                return tar;
+            default:
+                throw new STAFException(String.format("STAF Archive mode invalid for restituion %s", mode));
+        }
     }
 
     /**

@@ -51,7 +51,7 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
     }
 
     @Override
-    public Path getSTAFFilePath() {
+    public Path calculateSTAFFilePath() {
         try (FileInputStream is = new FileInputStream(localFile.toFile())) {
             return Paths.get(super.getStafNode(), ChecksumUtils.computeHexChecksum(is, "md5"));
         } catch (IOException | NoSuchAlgorithmException e) {

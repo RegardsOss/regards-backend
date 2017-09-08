@@ -11,7 +11,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
-import fr.cnes.regards.modules.storage.plugin.staf.domain.exception.STAFException;
+import fr.cnes.regards.framework.staf.STAFException;
 
 /**
  * Class to represent a list of files stored in the same STAF file into a tar file.
@@ -96,7 +96,7 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
     }
 
     @Override
-    public Path getSTAFFilePath() throws STAFException {
+    public Path calculateSTAFFilePath() throws STAFException {
         if (localTarFile != null) {
             return Paths.get(super.getStafNode(), localTarFile.getFileName().toString());
         } else {

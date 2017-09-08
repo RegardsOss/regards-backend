@@ -1,7 +1,11 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugins.staf;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -38,6 +42,8 @@ import fr.cnes.regards.modules.storage.plugin.staf.domain.PhysicalFileStatusEnum
 import fr.cnes.regards.modules.storage.plugin.staf.domain.STAFController;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.TARController;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFURLStreamHandlerFactory;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFUrlFactory;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFUrlParameter;
 
 public class STAFControllerTest {
 
@@ -332,6 +338,99 @@ public class STAFControllerTest {
         // Check that there is 5 file url for the 5 files stored.
         Assert.assertEquals("There should be 5 files URL from STAF for the 5 raw files to archive", 5,
                             rawArchivedFiles.values().stream().distinct().collect(Collectors.toSet()).size());
+
+    }
+
+    @Test
+    public void testRestoreFiles() throws MalformedURLException, STAFException {
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.txt").toString());
+        stafUrls.add(stafUrl);
+        restoreParameters.put(stafUrl.getPath().toString(),
+                              Paths.get(STAF_WORKSPACE_PATH.toString(), "file.txt").toString());
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+    }
+
+    @Test
+    public void testRestoreCutedFiles() throws MalformedURLException, STAFException {
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE,
+                          "cuted_file.txt?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=3")
+                        .toString());
+        stafUrls.add(stafCutUrl);
+        restoreParameters.put(stafCutUrl.getPath().toString() + "_00",
+                              Paths.get(STAF_WORKSPACE_PATH.toString(), "cuted_file.txt_00").toString());
+        restoreParameters.put(stafCutUrl.getPath().toString() + "_01",
+                              Paths.get(STAF_WORKSPACE_PATH.toString(), "cuted_file.txt_01").toString());
+        restoreParameters.put(stafCutUrl.getPath().toString() + "_02",
+                              Paths.get(STAF_WORKSPACE_PATH.toString(), "cuted_file.txt_02").toString());
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // TODO : Check concatenation of 3 restored files into 1.
+
+    }
+
+    @Test
+    public void testRestoreTARFiles() throws MalformedURLException, STAFException {
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        // Three STAF Url , two from the same file TAR but for two differents files in it and one from an other TAR file.
+        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE,
+                          "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=file.txt")
+                        .toString());
+        stafUrls.add(stafCutUrl);
+        URL stafCutUrl2 = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE,
+                          "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=file2.txt")
+                        .toString());
+        stafUrls.add(stafCutUrl2);
+        URL stafCutUrl3 = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE,
+                          "file2.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=file2.txt")
+                        .toString());
+        stafUrls.add(stafCutUrl3);
+
+        // Only two tar should be retreived from the STAF.
+        restoreParameters.put(stafCutUrl.getPath().toString(),
+                              Paths.get(STAF_WORKSPACE_PATH.toString(), "file.tar").toString());
+        restoreParameters.put(stafCutUrl3.getPath().toString(),
+                              Paths.get(STAF_WORKSPACE_PATH.toString(), "file2.tar").toString());
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // TODO : Check extraction of wanted file.
 
     }
 

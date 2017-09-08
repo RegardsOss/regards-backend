@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.storage.plugin.staf.domain.exception;
 
+import fr.cnes.regards.framework.staf.STAFException;
+
 /**
  * Exception for errors that occurs during tar files preparation.
  * @author Sébastien Binda
