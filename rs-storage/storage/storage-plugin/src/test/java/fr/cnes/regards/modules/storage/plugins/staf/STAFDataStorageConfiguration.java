@@ -23,7 +23,7 @@ public class STAFDataStorageConfiguration {
     public STAFManager getStafManager() throws STAFException {
         STAFConfiguration configuration = new STAFConfiguration();
         configuration.setMinFileSize(5000L);
-        configuration.setMaxFileSize(10000L);
+        configuration.setMaxFileSize(15000L);
 
         // TODO : Use of two limits max and threshold
         configuration.setTarSizeThreshold(2000L);
