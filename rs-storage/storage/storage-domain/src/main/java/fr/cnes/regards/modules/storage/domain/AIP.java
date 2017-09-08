@@ -16,7 +16,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.framework.urn.validator.RegardsOaisUrn;
 
 /**
  *
@@ -57,12 +56,6 @@ public class AIP implements Serializable {
     private List<Event> history;
 
     /**
-     * Checksum computed during storage process
-     */
-    @GsonIgnore
-    private String checksum;
-
-    /**
      * State determined through different storage steps
      */
     @GsonIgnore
@@ -83,8 +76,8 @@ public class AIP implements Serializable {
                 .toString();
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
-        checksum = "checksum";
-        history=Lists.newArrayList(new Event("addition of this aip into our beautiful system!", OffsetDateTime.now(), EventType.SUBMISSION));
+        history = Lists.newArrayList(new Event("addition of this aip into our beautiful system!", OffsetDateTime.now(),
+                                               EventType.SUBMISSION));
         return this;
     }
 
@@ -174,17 +167,9 @@ public class AIP implements Serializable {
         informationObjects = pInformationObjects;
     }
 
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public void setChecksum(String pChecksum) {
-        checksum = pChecksum;
-    }
-
     public List<Event> getHistory() {
-        if(history==null) {
-            history=Lists.newArrayList();
+        if (history == null) {
+            history = Lists.newArrayList();
         }
         return history;
     }
@@ -199,15 +184,13 @@ public class AIP implements Serializable {
         sipId = String.valueOf(src.sipId);
         tags = Lists.newArrayList(src.tags);
         type = src.type;
-        checksum = String.valueOf(src.checksum);
         history = Lists.newArrayList(src.history);
         state = AIPState.valueOf(src.state.toString());
     }
 
-
     @Override
     public boolean equals(Object pOther) {
-        return (pOther instanceof AIP) && ipId.equals(((AIP) pOther).ipId) && checksum.equals(((AIP) pOther).checksum);
+        return (pOther instanceof AIP) && ipId.equals(((AIP) pOther).ipId);
     }
 
     /**
@@ -228,7 +211,7 @@ public class AIP implements Serializable {
     }
 
     public Event getSubmissionEvent() {
-        return getHistory().stream().filter(e->e.getType().equals(EventType.SUBMISSION)).findFirst().orElse(null);
+        return getHistory().stream().filter(e -> e.getType().equals(EventType.SUBMISSION)).findFirst().orElse(null);
     }
 
     public void addEvent(Event event) {

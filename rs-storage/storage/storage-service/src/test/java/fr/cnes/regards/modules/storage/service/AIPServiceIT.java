@@ -1,12 +1,15 @@
 package fr.cnes.regards.modules.storage.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
@@ -101,6 +105,9 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
 
     @Autowired
     private ISubscriber subscriber;
+
+    @Value("${regards.storage.workspace}")
+    private String workspace;
 
     private AIP aip;
 
@@ -194,11 +201,15 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
     }
 
     @After
-    public void cleanUp() {
+    public void cleanUp() throws URISyntaxException, IOException {
         jobRepo.deleteAll();
         pluginRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
+        Files.walk(Paths.get(workspace)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+                File::delete);
+        Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+                File::delete);
     }
 
 }
