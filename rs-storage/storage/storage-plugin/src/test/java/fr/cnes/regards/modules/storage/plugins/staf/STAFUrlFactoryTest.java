@@ -21,7 +21,7 @@ public class STAFUrlFactoryTest {
 
     private final static String STAF_ARCHIVE = "ARCHIVE_TEST";
 
-    private final static String STAF_NODE = "node/test";
+    private final static String STAF_NODE = "/node/test";
 
     private final static String STAF_FILE_NAME = "file.txt";
 
@@ -29,15 +29,15 @@ public class STAFUrlFactoryTest {
 
     private final static String STAF_CUT_NUMBER_OF_PARTS = "12";
 
-    private final static String STAF_URL_NORMAL_TEST = String.format("%s:/%s/%s/%s", STAFUrlFactory.STAF_URL_PROTOCOLE,
+    private final static String STAF_URL_NORMAL_TEST = String.format("%s://%s%s/%s", STAFUrlFactory.STAF_URL_PROTOCOLE,
                                                                      STAF_ARCHIVE, STAF_NODE, STAF_FILE_NAME);
 
     private final static String STAF_URL_TAR_TEST = String
-            .format("%s:/%s/%s/%s?%s=%s", STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_TAR_NAME,
+            .format("%s://%s%s/%s?%s=%s", STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_TAR_NAME,
                     STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName(), STAF_FILE_NAME);
 
     private final static String STAF_URL_CUT_TEST = String
-            .format("%s:/%s/%s/%s?%s=%s", STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_FILE_NAME,
+            .format("%s://%s%s/%s?%s=%s", STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_FILE_NAME,
                     STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName(), STAF_CUT_NUMBER_OF_PARTS);
 
     @BeforeClass
