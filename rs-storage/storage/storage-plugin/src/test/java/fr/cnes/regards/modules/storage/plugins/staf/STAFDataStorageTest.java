@@ -64,7 +64,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private final Set<DataFile> filesToArchiveMultiplesMode = Sets.newHashSet();
 
-    private final static Path workspace = Paths.get("target/workspace");
+    private final static Path workspace = Paths.get("target/STAF/workspace");
 
     private static String incomTestSourcesDir = new File("src/test/resources/staf/income/file_test_1.txt")
             .getAbsoluteFile().getParent();
@@ -191,7 +191,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter("workspaceDirectory", "target/workspace")
+                .addParameter("workspaceDirectory", workspace.toString())
                 .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
 
         // Get plugin
@@ -237,7 +237,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void storeTestWorkspaceUnavailable() throws IOException {
 
         // Create workspace directory and set writes to simulate access denied.
-        Path workspace = Paths.get("target/workspace");
         Files.createDirectories(workspace);
         Files.setPosixFilePermissions(workspace, Sets.newHashSet());
 
@@ -259,7 +258,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter("workspaceDirectory", "target/workspace")
+                .addParameter("workspaceDirectory", workspace.toString())
                 .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
 
         // Get plugin
