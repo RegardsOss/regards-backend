@@ -60,7 +60,7 @@ public class STAFControllerTest {
 
     private final static String STAF_TEST_NODE = "/test/node";
 
-    private final static Path STAF_WORKSPACE_PATH = Paths.get("target/workspace");
+    private final static Path STAF_WORKSPACE_PATH = Paths.get("target/STAF/workspace");
 
     @BeforeClass
     public static void initAll() throws IOException {
@@ -241,7 +241,7 @@ public class STAFControllerTest {
 
         // Init a tar current to test with existing files
         Path newTarCurrentPath = Paths
-                .get("target/workspace", STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY, STAF_TEST_NODE,
+                .get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY, STAF_TEST_NODE,
                      String.format("%s_current", LocalDateTime.now()
                              .format(DateTimeFormatter.ofPattern(TARController.TAR_FILE_NAME_DATA_FORMAT))));
         Files.createDirectories(newTarCurrentPath);
