@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.plugins.staf;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -60,7 +61,7 @@ public class STAFControllerTest {
 
     private final static String STAF_TEST_NODE = "/test/node";
 
-    private final static Path STAF_WORKSPACE_PATH = Paths.get("target/STAF/workspace");
+    private final static Path STAF_WORKSPACE_PATH = Paths.get(new File("target/STAF/workspace").getAbsolutePath());
 
     @BeforeClass
     public static void initAll() throws IOException {

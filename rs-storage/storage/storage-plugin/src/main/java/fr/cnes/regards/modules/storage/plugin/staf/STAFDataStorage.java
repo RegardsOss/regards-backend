@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.plugin.staf;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -320,7 +321,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             file.setOriginUrl(new URL(FILE_PROTOCOLE, null, destinationFilePath.toString()));
         } else {
             try {
-                physicalFile = new File(file.getOriginUrl().toURI());
+                URI uri = file.getOriginUrl().toURI();
+                physicalFile = new File(uri.getPath());
             } catch (URISyntaxException e) {
                 LOG.debug(e.getMessage(), e);
                 physicalFile = new File(file.getOriginUrl().getPath());
