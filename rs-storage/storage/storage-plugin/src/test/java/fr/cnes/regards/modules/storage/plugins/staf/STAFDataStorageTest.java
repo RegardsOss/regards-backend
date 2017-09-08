@@ -64,7 +64,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private final Set<DataFile> filesToArchiveMultiplesMode = Sets.newHashSet();
 
-    private final static Path workspace = Paths.get("target/STAF/workspace");
+    private final static Path workspace = Paths.get(new File("target/STAF/workspace").getAbsolutePath());
 
     private static String incomTestSourcesDir = new File("src/test/resources/staf/income/file_test_1.txt")
             .getAbsoluteFile().getParent();
@@ -153,7 +153,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter("workspaceDirectory", "target/workspace")
+                .addParameter("workspaceDirectory", workspace.toString())
                 .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
 
         // Get plugin
