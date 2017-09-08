@@ -81,6 +81,14 @@ public class DownloadUtils {
     }
 
     /**
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy)} with {@link Proxy#NO_PROXY} as proxy
+     */
+    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
+            String expectedChecksum) throws IOException, NoSuchAlgorithmException {
+        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY, null);
+    }
+
+    /**
      * Download a source to the provided destination using the provided proxy.
      * Checks if the checksum computed thanks to checksumAlgorithm match to the expected checksum
      *
@@ -126,7 +134,9 @@ public class DownloadUtils {
             throws IOException {
         URLConnection connection = source.openConnection(proxy);
         connection.setDoInput(true); //that's the default but lets set it explicitly for understanding
-        connection.setConnectTimeout(pConnectTimeout);
+        if (pConnectTimeout != null) {
+            connection.setConnectTimeout(pConnectTimeout);
+        }
         connection.connect();
         return connection.getInputStream();
     }
