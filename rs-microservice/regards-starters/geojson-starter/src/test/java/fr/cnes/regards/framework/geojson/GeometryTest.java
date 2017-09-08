@@ -228,7 +228,7 @@ public class GeometryTest {
                                          IGeometry.position(-150.0, 13.0), IGeometry.position(-160.0, 13.0),
                                          IGeometry.position(-160.0, 17.0));
 
-        Polygon geometry = IGeometry.polygon(exteriorRing, hole);
+        Polygon geometry = IGeometry.polygon(IGeometry.toPolygonCoordinates(exteriorRing, hole));
 
         feature.setGeometry(geometry);
 

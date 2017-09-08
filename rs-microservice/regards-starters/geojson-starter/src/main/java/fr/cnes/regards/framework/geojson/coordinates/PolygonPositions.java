@@ -16,25 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.geojson.geometry;
+package fr.cnes.regards.framework.geojson.coordinates;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import fr.cnes.regards.framework.geojson.GeoJsonType;
-import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 
 /**
- * RFC 7946 -August 2016<br/>
- * GeoJson MultiPolygon representation<br/>
+ * Not in RFC 7946 -August 2016<br/>
+ * GeoJson set of positions representation for polygon.<br/>
  *
  * @author Marc Sordi
  *
  */
-public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
+@SuppressWarnings("serial")
+public class PolygonPositions extends ArrayList<Positions> {
 
-    public MultiPolygon() {
-        super(GeoJsonType.MULTIPOLYGON);
-        coordinates = new ArrayList<>();
-    }
 }

@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import fr.cnes.regards.framework.geojson.GeoJsonType;
-import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.validator.PolygonConstraints;
 
 /**
@@ -39,10 +36,10 @@ import fr.cnes.regards.framework.geojson.validator.PolygonConstraints;
  *
  */
 @PolygonConstraints
-public class Polygon extends AbstractGeometry<List<Positions>> {
+public class Polygon extends AbstractGeometry<PolygonPositions> {
 
     public Polygon() {
         super(GeoJsonType.POLYGON);
-        coordinates = new ArrayList<>();
+        coordinates = new PolygonPositions();
     }
 }

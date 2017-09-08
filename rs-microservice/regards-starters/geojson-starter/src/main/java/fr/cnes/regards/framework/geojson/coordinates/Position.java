@@ -36,7 +36,7 @@ public class Position {
     private Double altitude = null;
 
     public Position() {
-        // Useful For serialization
+        // Useful for serialization
     }
 
     public Position(Double longitude, Double latitude) {
