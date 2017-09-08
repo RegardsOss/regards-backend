@@ -3,34 +3,30 @@
  */
 package fr.cnes.regards.modules.storage.domain.event;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @Event(target = Target.ALL)
-public abstract class AbstractAIPEvent implements ISubscribable {
+public class AIPEvent implements ISubscribable {
+
+    private AIPState aipState;
 
     /**
      * IP ID of the AIP
      */
     private String ipId;
 
-    /**
-     * checksum of the AIP
-     */
-    private String checksum;
 
-    public AbstractAIPEvent(AIP pAIP) {
-        ipId = pAIP.getIpId();
-        checksum = pAIP.getChecksum();
+    public AIPEvent(AIP aip) {
+        ipId = aip.getIpId();
+        aipState = aip.getState();
     }
 
     public String getIpId() {
@@ -41,12 +37,11 @@ public abstract class AbstractAIPEvent implements ISubscribable {
         ipId = pIpId;
     }
 
-    public String getChecksum() {
-        return checksum;
+    public AIPState getAipState() {
+        return aipState;
     }
 
-    public void setChecksum(String pChecksum) {
-        checksum = pChecksum;
+    public void setAipState(AIPState aipState) {
+        this.aipState = aipState;
     }
-
 }

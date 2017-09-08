@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
@@ -65,7 +64,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.*;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
-import fr.cnes.regards.modules.storage.domain.event.AIPValid;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
@@ -179,8 +178,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     if (data.getType() == DataType.AIP) {
                         // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
                         // if we just stored the AIP, there is nothing to do but changing AIP state
-                        data.getAip().setState(AIPState.STORED);
-                        dao.save(data.getAip());
+                        AIP aip = data.getAip();
+                        aip.setState(AIPState.STORED);
+                        dao.save(aip);
+                        publisher.publish(new AIPEvent(aip));
                     } else {
                         // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
                         // just let set the new information about this DataFile
@@ -201,6 +202,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     aip = dao.findOneByIpId(aip.getIpId());
                     aip.setState(AIPState.STORAGE_ERROR);
                     dao.save(aip);
+                    publisher.publish(new AIPEvent(aip));
                     break;
             }
         }
@@ -223,8 +225,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             aip.addEvent(new Event("Submission to REGARDS", OffsetDateTime.now(), EventType.SUBMISSION));
             aipsInDb.add(dao.save(aip));
             dataFilesToStore.addAll(dataFileDao.save(DataFile.extractDataFiles(aip)));
-            // Publish AIP_VALID
-            publisher.publish(new AIPValid(aip));
+            publisher.publish(new AIPEvent(aip));
         }
         IAllocationStrategy allocationStrategy = getAllocationStrategy(); //FIXME: should probably set the tenant into maintenance in case of module exception
 
@@ -238,9 +239,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             notSubSetDataFiles.removeAll(dataFilesInSubSet);
             for (DataFile prepareFailed : notSubSetDataFiles) {
                 prepareFailed.setState(DataFileState.ERROR);
-                prepareFailed.getAip().setState(AIPState.STORAGE_ERROR);
+                AIP aip = prepareFailed.getAip();
+                aip.setState(AIPState.STORAGE_ERROR);
                 dataFileDao.save(prepareFailed);
-                dao.save(prepareFailed.getAip());
+                dao.save(aip);
+                publisher.publish(new AIPEvent(aip));
                 //TODO: notify
             }
         }
@@ -249,6 +252,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (AIP aip : aipsInDb) {
             aip.setState(AIPState.PENDING);
             dao.save(aip);
+            publisher.publish(new AIPEvent(aip));
         }
 
         return jobIds;
@@ -332,9 +336,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             notSubSetDataFiles.removeAll(subSetDataFiles);
             for (DataFile prepareFailed : notSubSetDataFiles) {
                 prepareFailed.setState(DataFileState.ERROR);
-                prepareFailed.getAip().setState(AIPState.STORAGE_ERROR);
+                AIP aip = prepareFailed.getAip();
+                aip.setState(AIPState.STORAGE_ERROR);
                 dataFileDao.save(prepareFailed);
-                dao.save(prepareFailed.getAip());
+                dao.save(aip);
+                publisher.publish(new AIPEvent(aip));
                 //TODO: notify
             }
         }
@@ -369,6 +375,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
                 dao.save(aip);
+                publisher.publish(new AIPEvent(aip));
             }
         } catch (ModuleException e) {
             LOG.error(e.getMessage(), e);
@@ -388,6 +395,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             for (AIP aip : aips) {
                 aip.setState(AIPState.STORING_METADATA);
                 dao.save(aip);
+                publisher.publish(new AIPEvent(aip));
             }
         } catch (ModuleException e) {
             LOG.error(e.getMessage(), e);
@@ -437,6 +445,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 // if we don't have a meta to store that means a problem happened and we set the aip to STORAGE_ERROR
                 aip.setState(AIPState.STORAGE_ERROR);
                 dao.save(aip);
+                publisher.publish(new AIPEvent(aip));
             }
         }
         return result;
@@ -461,6 +470,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     // if we don't have a meta to store that means a problem happened and we set the aip to STORAGE_ERROR
                     aip.setState(AIPState.STORAGE_ERROR);
                     dao.save(aip);
+                    publisher.publish(new AIPEvent(aip));
                 }
             }
         }
@@ -592,7 +602,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             String tenantWorkspace = workspace + "/" + tenant;
-            if(!Files.exists(Paths.get(tenantWorkspace))) {
+            if (!Files.exists(Paths.get(tenantWorkspace))) {
                 try {
                     Files.createDirectories(Paths.get(tenantWorkspace));
                 } catch (IOException e) {
@@ -619,7 +629,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             String tenantWorkspace = workspace + "/" + tenant;
-            if(!Files.exists(Paths.get(tenantWorkspace))) {
+            if (!Files.exists(Paths.get(tenantWorkspace))) {
                 try {
                     Files.createDirectories(Paths.get(tenantWorkspace));
                 } catch (IOException e) {
