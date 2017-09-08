@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+
+ HISTORIQUE
+
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+ 
+
+ VERSION : 2011/08/15 : 1.6 : CS
+ FA-ID : SIPNG-FA-0729-CS : 2011/08/05 : maj fichiers de conf
+ 
+ VERSION : 2011/04/07 : 1.0 : CNES : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(SP4_RBC_AXXCNE(_){0,1})([0-9]{8}_[0-9]{6})(_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6}))</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>5</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd_HHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+        <attributeFromName>
+            <groupNumber>6</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd_HHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+    </compositeAttribute>
+
+    <attributeFromName>
+        <groupNumber>1</groupNumber>
+        <groupNumber>4</groupNumber>
+        <specification>
+            <name>RADICAL</name>
+            <valueType>STRING</valueType>
+            <order>4</order>
+        </specification>
+    </attributeFromName>
+
+    <attributeFromName>
+        <groupNumber>3</groupNumber>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>5</order>
+            <formatRead>yyyyMMdd_HHmmss</formatRead>
+        </specification>
+    </attributeFromName>
+</PLUGIN_CONFIGURATION>

@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
+ * 
  * @author Christophe Mertz
  */
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })

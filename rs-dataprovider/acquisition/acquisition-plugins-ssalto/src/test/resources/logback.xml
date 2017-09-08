@@ -32,7 +32,7 @@
 	<logger name="com.mchange.v2.c3p0.impl" level="INFO" />
 	
 
-	<root level="debug">
+	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

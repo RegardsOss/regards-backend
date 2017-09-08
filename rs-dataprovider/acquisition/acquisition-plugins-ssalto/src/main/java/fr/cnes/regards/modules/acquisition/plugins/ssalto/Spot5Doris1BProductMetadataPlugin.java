@@ -20,8 +20,12 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 
+@Plugin(description = "Spot5Doris1BProductMetadataPlugin", id = "Spot5Doris1BProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Spot5Doris1BProductMetadataPlugin extends AbstractDoris1BProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SPOT5";

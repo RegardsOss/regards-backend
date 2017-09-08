@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+
+ HISTORIQUE
+
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+ 
+ 
+ VERSION : 5.3 : DM : SIPNG-DM-0126-CN : 19/07/2013 : Mise à jour des plugins SSALTO
+
+ VERSION : 2011/08/15 : 1.6 : CS
+ FA-ID : SIPNG-FA-0729-CS : 2011/08/05 : maj fichiers de conf
+ 
+ VERSION : 2011/04/04 : 1.0 : CNES
+ DM-ID : SIPNG-DM-00XX-CN : 2011/04/15 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(DSA_MED_1P)([a-z]{1})(D([0-9]{8})_000000)</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>4</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd</formatRead>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetStartDateSaralDoris10Redate</calculationClass>
+            </specification>
+        </attributeFromName>
+    <attributeFromName>
+            <groupNumber>4</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd</formatRead>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetStopDateSaralDoris10Redate</calculationClass>
+            </specification>
+        </attributeFromName>
+    </compositeAttribute>
+
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+      <order>3</order>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>START_DATE</otherAttributeName>
+            <specification>
+                <name>CYCLE_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </translatedAttributeFromCycleFile>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>STOP_DATE</otherAttributeName>
+            <specification>
+                <name>CYCLE_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </translatedAttributeFromCycleFile>
+    </compositeAttribute>
+
+    <attributeFromName>
+        <groupNumber>1</groupNumber>
+        <groupNumber>3</groupNumber>
+        <specification>
+            <name>RADICAL</name>
+            <valueType>STRING</valueType>
+            <order>6</order>
+        </specification>
+    </attributeFromName>
+
+    <fileInfoAttribute>
+            <fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+            <specification>
+                <name>FILE_CREATION_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <order>4</order>
+            </specification>
+    </fileInfoAttribute>
+
+    <attributeFromName>
+            <groupNumber>2</groupNumber>
+            <specification>
+                <name>OBJECT_VERSION</name>
+                <valueType>STRING</valueType>
+                <order>5</order>
+            </specification>
+     </attributeFromName>
+
+</PLUGIN_CONFIGURATION>

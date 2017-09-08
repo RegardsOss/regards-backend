@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id: DA_TC_SENT3A_HISTO_FOUS_ESA_PluginConfiguration.xml 799 2011-08-18 15:13:11Z rgcsipad $
+
+ HISTORIQUE
+
+ VERSION : 5.5.2 : DM : SIPNG-DM-168-CN : 19/11/2015 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(S3A_SR_1_USO_AX_([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})___________________CNE_O_______).HDR</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>2</groupNumber>
+            <groupNumber>3</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMddHHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+        <attributeFromName>
+            <groupNumber>4</groupNumber>
+            <groupNumber>5</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMddHHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+    </compositeAttribute>
+    <compositeAttribute>
+             <name>CYCLE_RANGE</name>
+                     <order>3</order>
+                             <translatedAttributeFromCycleFile>
+                                         <otherAttributeName>START_DATE</otherAttributeName>
+                                         <specification>
+                                                    <name>CYCLE_MIN</name>
+                                                    <valueType>INTEGER</valueType>
+                                         </specification>
+                            </translatedAttributeFromCycleFile>
+                            <translatedAttributeFromCycleFile>
+                                   <otherAttributeName>STOP_DATE</otherAttributeName>
+                                   <specification>
+                                   	<name>CYCLE_MAX</name>
+                                   	<valueType>INTEGER</valueType>
+                                   </specification>
+                            </translatedAttributeFromCycleFile>
+    </compositeAttribute>
+    <attributeFromName>
+        <groupNumber>1</groupNumber>
+        <specification>
+            <name>RADICAL</name>
+            <valueType>STRING</valueType>
+             <order>4</order>
+        </specification>
+    </attributeFromName>
+    <attributeFromName>
+            <groupNumber>6</groupNumber>
+            <groupNumber>7</groupNumber>
+            <specification>
+            	<name>FILE_CREATION_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMddHHmmss</formatRead>
+                 <order>5</order>
+            </specification>
+    </attributeFromName>
+    <attributeFromAsciiFile>
+               <linePattern>\s*&lt;File_Version&gt;([0-9]{4})&lt;/File_Version&gt;\s*</linePattern>
+         <lineNumber>0</lineNumber>
+          <groupNumber>1</groupNumber>
+          <filterPattern>S3A_SR_1_USO_AX_([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})___________________CNE_O_______.HDR</filterPattern>
+        <specification>
+            <name>OBJECT_VERSION</name>
+            <valueType>STRING</valueType>
+             <order>6</order>
+         </specification>
+    </attributeFromAsciiFile>
+
+</PLUGIN_CONFIGURATION>

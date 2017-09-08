@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+
+ HISTORIQUE
+
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+ 
+ 
+ VERSION : 5.3 : DM : SIPNG-DM-0126-CN : 19/07/2013 : Mise à jour des plugins SSALTO
+ 
+ VERSION : 2012/10/13 : 1.0 : CNES : creation
+ 
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(ALK_CAL_AXXCNE)([0-9]{8}_[0-9]{6})(_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6}))</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>4</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd_HHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+        <attributeFromName>
+            <groupNumber>5</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd_HHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+    </compositeAttribute>
+
+    <fixedValueAttribute>
+        <fixedValue>ALK_CAL</fixedValue>
+        <specification>
+            <name>RADICAL</name>
+            <valueType>STRING</valueType>
+            <order>3</order>
+        </specification>
+    </fixedValueAttribute>
+
+
+    <attributeFromName>
+        <groupNumber>2</groupNumber>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>2</order>
+            <formatRead>yyyyMMdd_HHmmss</formatRead>
+        </specification>
+    </attributeFromName>
+
+</PLUGIN_CONFIGURATION>
