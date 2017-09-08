@@ -3,11 +3,13 @@ package fr.cnes.regards.modules.storage.plugin;
 import java.io.IOException;
 import java.io.InputStream;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@PluginInterface(description = "Contract to respect by any ONLINE data storage plugin")
 public interface IOnlineDataStorage<T extends IWorkingSubset>  extends IDataStorage<T>{
 
 

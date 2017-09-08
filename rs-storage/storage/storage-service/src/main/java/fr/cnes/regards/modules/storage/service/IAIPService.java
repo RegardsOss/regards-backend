@@ -19,6 +19,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -61,5 +62,17 @@ public interface IAIPService {
      * @return
      */
     List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////// These methods should only be called by IAIPServices
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    void scheduleStorageMetadata(Set<DataFile> metadataToStore);
+
+    void scheduleStorageMetadataUpdate(Set<AIPService.History> metadataToUpdate);
+
+    Set<AIPService.History> prepareUpdatedAIP(String tenantWorkspace);
+
+    Set<DataFile> prepareNotFullyStored(String tenantWorkspace);
 
 }

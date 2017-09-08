@@ -12,7 +12,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.DataObject;
-import fr.cnes.regards.modules.storage.domain.FileType;
 import fr.cnes.regards.modules.storage.domain.InformationObject;
 
 /**
@@ -21,6 +20,7 @@ import fr.cnes.regards.modules.storage.domain.InformationObject;
  */
 @Entity
 @Table(name = "t_data_file")
+@NamedEntityGraph(name = "graph.datafile.aip", attributeNodes = @NamedAttributeNode("aipDataBase"))
 public class DataFile {
 
     @Id
@@ -62,6 +62,10 @@ public class DataFile {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
     private AIPDataBase aipDataBase;
+
+    // serialization
+    private DataFile() {
+    }
 
     public DataFile(DataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
         this(file.getUrl(), checksum, algorithm, file.getType(), fileSize, mimeType, aip);
@@ -154,7 +158,7 @@ public class DataFile {
         this.aipDataBase = aipDataBase;
     }
 
-    public AIPDataBase getAipDataBase(AIPDataBase aipDataBase) {
+    public AIPDataBase getAipDataBase() {
         return this.aipDataBase;
     }
 
@@ -178,5 +182,26 @@ public class DataFile {
             dataFiles.add(new DataFile(file, algorithm, checksum, fileSize, mimeType, aip));
         }
         return dataFiles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        DataFile dataFile = (DataFile) o;
+
+        if (checksum != null ? !checksum.equals(dataFile.checksum) : dataFile.checksum != null)
+            return false;
+        return algorithm != null ? algorithm.equals(dataFile.algorithm) : dataFile.algorithm == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = checksum != null ? checksum.hashCode() : 0;
+        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        return result;
     }
 }

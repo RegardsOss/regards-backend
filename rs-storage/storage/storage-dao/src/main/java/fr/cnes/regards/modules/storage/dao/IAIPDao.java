@@ -37,4 +37,6 @@ public interface IAIPDao {
     Set<AIP> findAllByStateService(AIPState state);
 
     AIP findOneByIpId(String ipId);
+
+    void deleteAll();
 }

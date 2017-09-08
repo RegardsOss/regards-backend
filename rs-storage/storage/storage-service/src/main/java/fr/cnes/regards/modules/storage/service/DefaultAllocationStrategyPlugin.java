@@ -4,51 +4,45 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.Comparator;
 
-import javax.validation.constraints.Size;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.storage.domain.FileType;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.DataStorageType;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 
 /**
+ * Default Implementation of IAllocationStrategy.
+ * Finds the PluginConfiguration with the highest priority(lowest value of PluginConfiguration#priorityOrder) and associate all the dataFiles to it.
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
 @Plugin(author = "REGARDS Team", description = "Default plugin of Allocation Strategy",
         id = "DefaultAllocationStrategyPlugin", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
-// FIXME: quelque chose de bizzare
 public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
-    @Override
-    public IDataStorage getStorage(final EntityType pAipType, final FileType pFileType,
-            @Size(min = 1, max = 2) final List<IDataStorage> pStoragesAvailable) {
-        //TODO: totally redo this
-//        if (pStoragesAvailable.size() == 1) {
-//            return pStoragesAvailable.get(0);
-//        }
-//        if (pFileType.equals(FileType.RAWDATA)) {
-//            // OFFLINE
-//            return pStoragesAvailable.stream().filter(s -> s.getType().equals(DataStorageType.NEARLINE)).findFirst()
-//                    .get();
-//        }
-//        // online
-//        return pStoragesAvailable.stream().filter(s -> s.getType().equals(DataStorageType.ONLINE)).findFirst().get();
-        return null;
-    }
+    @Autowired
+    private IPluginService pluginService;
 
     @Override
     public Multimap<PluginConfiguration, DataFile> dispatch(Collection<DataFile> dataFilesToHandle) {
-        return null;
+        //first lets get the plugin configuration of type IDataStorage, then lets get only the active ones,
+        // eventually order them and choose the one with the highest priority
+        PluginConfiguration dataStorageConfToUse = pluginService.getPluginConfigurationsByType(IDataStorage.class)
+                .stream().filter(pc -> pc.isActive())
+                .sorted(Comparator.comparing(PluginConfiguration::getPriorityOrder)).findFirst().orElseThrow(
+                        () -> new MaintenanceException("There is no active plugin configuration of type IDataStorage"));
+        HashMultimap<PluginConfiguration, DataFile> result = HashMultimap.create(1, dataFilesToHandle.size());
+        result.putAll(dataStorageConfToUse, dataFilesToHandle);
+        return result;
     }
 
 }
