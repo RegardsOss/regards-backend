@@ -64,8 +64,13 @@ public class STAFControllerTest {
 
     @BeforeClass
     public static void initAll() throws IOException {
+
         // TODO Add in STAF starter !!!
-        URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
+        try {
+            URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
+        } catch (Error e) {
+            // Nothing to do.
+        }
 
         if (Files.exists(STAF_WORKSPACE_PATH)) {
             Files.setPosixFilePermissions(STAF_WORKSPACE_PATH,
