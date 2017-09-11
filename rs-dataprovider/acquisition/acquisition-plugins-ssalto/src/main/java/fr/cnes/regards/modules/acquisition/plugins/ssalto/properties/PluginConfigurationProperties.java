@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.properties;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AttributeFinder;
+
 
 /**
  * 
@@ -114,8 +116,11 @@ public class PluginConfigurationProperties {
     }
 
     public String[] getOrfFilepath() {
+        String[] orfFilePath = new String[0];
+        
         if (project == null) {
             LOGGER.error(LOG_PROJECT_NOT_SET);
+            return orfFilePath;
         }
 
         String propertyName = project + "_" + ORF_FILE_PATH_KEY;
@@ -123,9 +128,10 @@ public class PluginConfigurationProperties {
 
         if (propertyValue == null) {
             LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, URL_PROPERTIES));
+            return orfFilePath;
         }
 
-        String[] orfFilePath = propertyValue.split(SEPARATOR);
+        orfFilePath = propertyValue.split(SEPARATOR);
 
         return orfFilePath;
     }

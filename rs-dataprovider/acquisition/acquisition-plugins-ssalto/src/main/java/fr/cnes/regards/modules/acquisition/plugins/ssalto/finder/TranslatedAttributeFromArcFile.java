@@ -46,7 +46,7 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     protected static final int STOP_JULIAN_DAY_GROUP = 3;
 
     protected static final int STOP_HOUR_GROUP = 4;
-    
+
     private static final String START_DATE = "START_DATE";
 
     private static final String STOP_DATE = "STOP_DATE";
@@ -115,21 +115,29 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
      * @throws IOException
      */
     private CharBuffer readFile(String filePath) throws IOException {
+        FileInputStream fis = null;
+        FileChannel fc = null;
+        CharBuffer cb;
+        try {
+            // Open the file and then get a channel from the stream
+            fis = new FileInputStream(filePath);
+            fc = fis.getChannel();
 
-        // Open the file and then get a channel from the stream
-        FileInputStream fis = new FileInputStream(filePath);
-        FileChannel fc = fis.getChannel();
+            // Get the file's size and then map it into memory
+            int sz = (int) fc.size();
+            MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
 
-        // Get the file's size and then map it into memory
-        int sz = (int) fc.size();
-        MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
+            // Decode the file into a char buffer
+            cb = decoder.decode(bb);
 
-        // Decode the file into a char buffer
-        CharBuffer cb = decoder.decode(bb);
-
-        // Close Stream
-        fc.close();
-        fis.close();
+        } finally {
+            if (fc != null) {
+                fc.close();
+            }
+            if (fis != null) {
+                fis.close();
+            }
+        }
 
         return cb;
     }

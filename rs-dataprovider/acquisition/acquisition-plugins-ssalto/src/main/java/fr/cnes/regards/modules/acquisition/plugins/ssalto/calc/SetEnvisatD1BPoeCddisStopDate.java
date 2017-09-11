@@ -59,7 +59,7 @@ public class SetEnvisatD1BPoeCddisStopDate implements ICalculationClass {
             calendar.set(Calendar.SECOND, 59);
             stopDate = calendar.getTime();
         } catch (DateUtilException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(),e);
         }
 
         return DateFormatter.getDateRepresentation(stopDate, DateFormatter.XS_DATE_TIME_FORMAT);

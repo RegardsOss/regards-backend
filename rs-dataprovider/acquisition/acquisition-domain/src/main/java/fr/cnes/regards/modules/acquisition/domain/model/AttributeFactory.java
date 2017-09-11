@@ -92,7 +92,7 @@ public class AttributeFactory {
             }
             default: {
                 LOGGER.error("Type inconnu : " + pType.getTypeName());
-                break;
+                return null;
             }
         }
 

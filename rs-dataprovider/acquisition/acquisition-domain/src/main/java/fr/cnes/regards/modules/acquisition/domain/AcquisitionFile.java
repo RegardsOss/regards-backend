@@ -74,15 +74,8 @@ public class AcquisitionFile {
 
     /**
      * numero de version du fichier
-     * 
-     * @since 1.0
      */
     protected int version_;
-
-    //    /**
-    //     * fichier descripteur associe au AcquisitionFile
-    //     */
-    //    protected DescriptorFile metaDataFileName_;
 
     /**
      * informations sur l'acquisition de ce fichier
@@ -119,12 +112,28 @@ public class AcquisitionFile {
     }
 
     @Override
-    public boolean equals(Object pArg0) {
-        boolean result = false;
-        if (((AcquisitionFile) pArg0).getFileId().equals(getFileId())) {
-            result = true;
-        }
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fileId_ == null) ? 0 : fileId_.hashCode());
         return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AcquisitionFile other = (AcquisitionFile) obj;
+        if (fileId_ == null) {
+            if (other.fileId_ != null)
+                return false;
+        } else if (!fileId_.equals(other.fileId_))
+            return false;
+        return true;
     }
 
     /**
@@ -354,4 +363,5 @@ public class AcquisitionFile {
     public void setFileMD5Signature(String fileMD5Signature) {
         fileMD5Signature_ = fileMD5Signature;
     }
+
 }

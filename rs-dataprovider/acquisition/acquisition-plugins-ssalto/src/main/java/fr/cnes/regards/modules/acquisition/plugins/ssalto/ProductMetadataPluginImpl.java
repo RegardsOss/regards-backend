@@ -88,7 +88,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
         try {
             xmlString = writeXmlToString(descriptorFile);
         } catch (IOException e) {
-            LOGGER.error("Cannot create xml descriptor string for product " + pProductName);
+            LOGGER.error("Cannot create xml descriptor string for product " + pProductName,e);
             throw new ModuleException(e.getMessage());
         }
 

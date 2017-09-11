@@ -99,23 +99,33 @@ public class ErrorType {
         }
     }
 
-    /**
-     * teste les champs value_ Methode surchargee
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     * @since 1.0
-     */
     @Override
-    public boolean equals(Object pArg0) {
-        boolean result = false;
-        ErrorType status = (ErrorType) pArg0;
-        if (status.value_ == value_) {
-            result = true;
-        }
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((meaning_ == null) ? 0 : meaning_.hashCode());
+        result = prime * result + value_;
         return result;
     }
 
-    // GETTERS AND SETTERS
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ErrorType other = (ErrorType) obj;
+        if (meaning_ == null) {
+            if (other.meaning_ != null)
+                return false;
+        } else if (!meaning_.equals(other.meaning_))
+            return false;
+        if (value_ != other.value_)
+            return false;
+        return true;
+    }
 
     public String getMeaning() {
         return meaning_;

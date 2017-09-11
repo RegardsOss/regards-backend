@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
+
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
 
 /**
@@ -206,7 +208,7 @@ public class RinexFileHelper {
         }
 
         // If empty : throws a plugin exception
-        if (EMPTY_STRING.equals(line)) {
+        if (line.length()==0) {
             String message = "No value found at this line (" + lineNumber + ")";
             throw new PluginAcquisitionException(message);
         }
@@ -235,7 +237,7 @@ public class RinexFileHelper {
             }
 
         } catch (Exception e) {
-            LOGGER.error("unable to get date interval from file " + currentFile.getPath());
+            LOGGER.error("unable to get date interval from file " + currentFile.getPath(),e);
         }
         return interval;
     }

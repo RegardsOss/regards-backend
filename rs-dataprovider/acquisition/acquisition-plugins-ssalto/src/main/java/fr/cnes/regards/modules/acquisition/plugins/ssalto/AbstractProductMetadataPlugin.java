@@ -136,11 +136,15 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
         // If conf file doesn't exists in the project configuration directory, check in the classpath
         if ((pluginConfFile == null) || !pluginConfFile.exists() || !pluginConfFile.canRead()) {
-            String msg = "unable to load the conf file " + pluginConfFile.getPath() + ", checking in classpath ...";
-            LOGGER.warn(msg);
+
+            if (pluginConfFile != null) {
+                String msg = "unable to load the conf file " + pluginConfFile.getPath() + ", checking in classpath ...";
+                LOGGER.warn(msg);
+            }
+
             confFile = getClass().getResource("tools/" + dataSetName + CONFIG_FILE_SUFFIX);
             if (confFile == null) {
-                msg = "unable to load the conf file " + "tools/" + dataSetName + CONFIG_FILE_SUFFIX;
+                String msg = "unable to load the conf file " + "tools/" + dataSetName + CONFIG_FILE_SUFFIX;
                 LOGGER.error(msg);
                 throw new ModuleException(msg);
             }
@@ -223,7 +227,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             String projectName) throws ModuleException {
         String outputXml = null;
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
-        
+
         loadDataSetConfiguration(datasetName);
 
         // add dataObject skeleton bloc
@@ -231,7 +235,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
         // add attribute from attribute finders
         attributeValueMap = new HashMap<>();
-        
+
         // find all attributeValue and add each one into attributeMap
         try {
             // first do the specific attributes not depending from other
@@ -256,16 +260,16 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             for (Attribute att : attributeMap.values()) {
                 element.addAttribute(att);
             }
-            
+
             // init descriptor file
             DescriptorFile descFile = new DescriptorFile();
             descFile.setDicoName(dicoName);
             descFile.setProjectName(projectName);
             descFile.addDescElementToDocument(element);
-            
+
             // output the descriptorFile on a physical file
             outputXml = writeXmlToString(descFile);
-            
+
         } catch (IOException e) {
             // "Error writing xml"
             throw new ModuleException(e);

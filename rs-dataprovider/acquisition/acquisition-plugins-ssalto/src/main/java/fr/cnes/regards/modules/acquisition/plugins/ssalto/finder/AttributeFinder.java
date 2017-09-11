@@ -435,7 +435,7 @@ public abstract class AttributeFinder {
             valueType = AttributeTypeEnum.parse(type);
         } catch (Exception e) {
             String msg = "unable to parse valueType " + type;
-            LOGGER.error(msg);
+            LOGGER.error(msg,e);
             throw e;
         }
     }
