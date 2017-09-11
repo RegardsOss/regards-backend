@@ -48,6 +48,7 @@
 		<module>oais-starter</module>
 		<module>oais-regards</module>
 		<module>geojson-starter</module>
+		<module>geojson-regards</module>
 	</modules>
 
 	<dependencies>
