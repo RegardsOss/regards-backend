@@ -86,8 +86,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
-    public void init(String dataSetName) throws ModuleException {
-        super.init(dataSetName);
+    public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
+        super.loadDataSetConfiguration(dataSetName);
         patternd = Pattern.compile(".*[A-Z]([0-9]{8}_[0-9]{6})$");
         patternp = Pattern.compile(".*[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }

@@ -115,11 +115,11 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * parse le fichier de configuration pour remplir les properties, et initialise la map de l'ordre des attributs.
      *
      * @param dataSetName
-     * @throws SsaltoDomainException
+     * @throws ModuleException
      *             en cas d'erreur du parsing du fichier de configuration ou de la lecture du fichier d'ordonnancement
      *             des attributs.
      */
-    public void init(String dataSetName) throws ModuleException {
+    public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
         // Get the path to the digester rules file
         URL ruleFile = AbstractProductMetadataPlugin.class.getClassLoader().getResource(RULE_FILE);
         if (ruleFile == null) {
@@ -222,18 +222,16 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName, String dicoName,
             String projectName) throws ModuleException {
         String outputXml = null;
-        init(datasetName);
-        // init descriptor file
-        DescriptorFile descFile = new DescriptorFile();
-        descFile.setDicoName(dicoName);
-        descFile.setProjectName(projectName);
+        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
+        
+        loadDataSetConfiguration(datasetName);
 
         // add dataObject skeleton bloc
         DataObjectDescriptionElement element = createSkeleton(productName, fileMap, datasetName);
 
         // add attribute from attribute finders
-        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
         attributeValueMap = new HashMap<>();
+        
         // find all attributeValue and add each one into attributeMap
         try {
             // first do the specific attributes not depending from other
@@ -250,8 +248,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
                 }
             }
 
-            // then do specific attributs which can depend on other attribute
-            // value
+            // then do specific attributs which can depend on other attribute value
             doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
             // now get the attributeMap values to add the attribute ordered into
@@ -259,11 +256,16 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             for (Attribute att : attributeMap.values()) {
                 element.addAttribute(att);
             }
-
+            
+            // init descriptor file
+            DescriptorFile descFile = new DescriptorFile();
+            descFile.setDicoName(dicoName);
+            descFile.setProjectName(projectName);
             descFile.addDescElementToDocument(element);
-            // output the descriptorFile on a physical file.
-
+            
+            // output the descriptorFile on a physical file
             outputXml = writeXmlToString(descFile);
+            
         } catch (IOException e) {
             // "Error writing xml"
             throw new ModuleException(e);
@@ -305,11 +307,6 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws ModuleException {
         // DO NOTHING
-    }
-
-    // TODO CMZ à confirmer
-    public String generateXml(File file, String projectName, String dicoName, String dataSetId) throws ModuleException {
-        return null;
     }
 
     protected Properties getAttributeOrderProperties() {

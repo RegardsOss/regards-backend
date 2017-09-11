@@ -126,11 +126,4 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
         return xmlString;
     }
 
-    @Override
-    public String generateXml(File pFile, String pProjectName, String pDicoName, String pDataSetId)
-            throws ModuleException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

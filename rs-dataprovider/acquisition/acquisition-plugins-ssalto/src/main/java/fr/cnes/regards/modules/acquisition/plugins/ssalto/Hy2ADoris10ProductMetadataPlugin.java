@@ -93,8 +93,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
      */
     @Override
-    public void init(String dataSetName) throws ModuleException {
-        super.init(dataSetName);
+    public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
+        super.loadDataSetConfiguration(dataSetName);
         String fileNamePattern = getProperties().getFileNamePattern();
         String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
         patternd = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})$");

@@ -34,9 +34,6 @@ public interface IGenerateSIPPlugin {
     // TODO CMZ : à confirmer mais je pense pas que ça retourne une String
     public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
             String pDicoName, String pProjectName) throws ModuleException;
-    
-    // TODO CMZ à revoir
-    public String generateXml(File pFile, String pProjectName, String pDicoName, String pDataSetId)
-            throws ModuleException;
+
 
 }

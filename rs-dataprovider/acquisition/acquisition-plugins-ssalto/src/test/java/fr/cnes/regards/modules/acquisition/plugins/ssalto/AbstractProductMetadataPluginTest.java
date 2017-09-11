@@ -404,7 +404,10 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         if (!fileMap.isEmpty()) {
             try {
+                // Get metadata
                 String xml = createMetaData(pluginTestDef, pluginGenerateSIP, fileMap);
+                
+                // Create the file descriptor
                 File descFile = new File(DESCRIPTOR_DIRECTORY, desc_product_ + pluginTestDef.getProductName() + ".xml");
                 writeDescOnDisk(xml, descFile);
 

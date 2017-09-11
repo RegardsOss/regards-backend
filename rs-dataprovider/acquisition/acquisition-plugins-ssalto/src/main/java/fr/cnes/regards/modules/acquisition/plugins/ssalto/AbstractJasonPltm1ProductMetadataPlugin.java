@@ -72,8 +72,8 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
     }
 
     @Override
-    public void init(String dataSetName) throws ModuleException {
-        super.init(dataSetName);
+    public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
+        super.loadDataSetConfiguration(dataSetName);
         patternd = Pattern.compile(getProjectPrefix() + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})__");
         patternp = Pattern.compile(getProjectPrefix()
                 + "_PLTM1_P_.*_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})");

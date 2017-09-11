@@ -19,21 +19,14 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Map;
 
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.MultipleFileNameFinder;
 
 public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
@@ -83,9 +76,6 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
 
     /**
      * Methode definissant un element xml de type DataStorageElement
-     * 
-     * @since 1.3
-     * @DM SIPNG-DM-0047-CN : Creation : Ajout de pPRojectName et pDicoName
      */
     protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
             String pDicoName, String pDataSetId) throws ModuleException {
@@ -114,36 +104,6 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
         return dataStorageObject;
     }
 
-    /**
-     * Generation du descripteur de fichier sous forme de chaine de caractere
-     */
-    @Override
-    public String generateXml(File pSsaltoFile, String pProjectName, String pDicoName, String pDataSetId)
-            throws ModuleException {
-        String xmlString = null;
-
-        // Init descriptor
-        DescriptorFile descriptorFile = new DescriptorFile();
-        descriptorFile.setDicoName(pDicoName);
-        descriptorFile.setFileName(pSsaltoFile.getName());
-        descriptorFile.setProjectName(pProjectName);
-
-        DataStorageObjectDescriptionElement dataStorageObject = defineDataStorageElement(pSsaltoFile, pProjectName,
-                                                                                         pDicoName, pDataSetId);
-
-        // Add element to descriptor
-        descriptorFile.addDescElementToDocument(dataStorageObject);
-
-        // Write descriptor into a string
-        try {
-            xmlString = writeXmlToString(descriptorFile);
-        } catch (IOException e) {
-            LOGGER.error("Cannot create xml descriptor string for file " + pSsaltoFile.getAbsolutePath());
-            throw new ModuleException(e.getMessage());
-        }
-
-        return xmlString;
-    }
 
     // TODO CMZ à confirmer
     //    /**
@@ -167,44 +127,8 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //        pDataStorageObject.setOnlinePath(relativeOnlinePath);
     //    }
 
-    /**
-     * Ecriture du descripteur
-     * 
-     * @param pTargetFile
-     *            Fichier physique dans lequel ecrire
-     * @param pDescFile
-     *            Objet descripteur
-     * @throws IOException
-     */
-    private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
-
-        String xmlString = null;
-        // Write the description document to a String
-        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(pDescFile);
-        if (descDocumentToWrite != null) {
-            LOGGER.info("***** Computing FILE xml descriptor");
-            StringWriter out = new StringWriter();
-            // write the update document to the disk
-            OutputFormat format = new OutputFormat(descDocumentToWrite, "UTF-8", true);
-            format.setLineWidth(0);
-            XMLSerializer output = new XMLSerializer(out, format);
-            output.serialize(descDocumentToWrite);
-            out.flush();
-            out.close();
-            xmlString = out.getBuffer().toString();
-        } else {
-            LOGGER.info("***** DO NOT compute FILE xml descriptor");
-        }
-        return xmlString;
-    }
-
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin#createMetadataPlugin(java.lang.String, java.util.Map, java.lang.String, java.lang.String, java.lang.String)
-     */
-    @Override
     public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
             String pDicoName, String pProjectName) throws ModuleException {
-        // TODO Auto-generated method stub
         return null;
     }
 
