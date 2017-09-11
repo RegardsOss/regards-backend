@@ -35,7 +35,7 @@
                <name>RADICAL</name>        
                <valueType>STRING</valueType>
                <order>2</order>
-               <calculationClass>ssalto.domain.plugins.impl.calc.SetDorisRadicalFromName</calculationClass>
+               <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetDorisRadicalFromName</calculationClass>
         </specification>
     </attributeFromName>
 

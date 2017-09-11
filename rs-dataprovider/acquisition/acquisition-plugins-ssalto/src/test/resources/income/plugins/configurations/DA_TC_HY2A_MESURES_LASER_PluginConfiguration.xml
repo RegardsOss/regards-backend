@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+ 
+ HISTORIQUE
+
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+ 
+
+ VERSION : 5.3 : DM : SIPNG-DM-0126-CN : 09/07/2013 : report de la 5.1.1
+
+ VERSION : 2013/01/30 : 5.1.1 : CNES
+ DM-ID : SIPNG-DM-0120-CN : 2013/01/30 : maj fichiers de conf
+ 
+  VERSION : 2011/11/07 : 1.6.1 : CNES CREATION
+  DM-ID : SIPNG-DM-0098-CN : 2011/11/07 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>hy2a_([0-9]{8}).npt</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd</formatRead>
+            </specification>
+        </attributeFromName>
+        <attributeFromName>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMdd</formatRead>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetStopDateHours</calculationClass>
+            </specification>
+        </attributeFromName>
+    </compositeAttribute>
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+        <order>3</order>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>START_DATE</otherAttributeName>
+            <specification>
+                <name>CYCLE_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </translatedAttributeFromCycleFile>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>STOP_DATE</otherAttributeName>
+            <specification>
+                <name>CYCLE_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </translatedAttributeFromCycleFile>
+    </compositeAttribute>
+
+    <fileInfoAttribute>
+        <fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>2</order>
+        </specification>
+    </fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

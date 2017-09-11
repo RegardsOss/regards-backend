@@ -32,22 +32,36 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.RinexFileHelper;
 
 /**
  * @author Christophe Mertz
  */
+@Plugin(description = "Hy2ADoris10ProductMetadataPlugin", id = "Hy2ADoris10ProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SaralDoris10ProductMetadataPlugin.class);
+
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     private static final String TIME_PERIOD = "TIME_PERIOD";
 

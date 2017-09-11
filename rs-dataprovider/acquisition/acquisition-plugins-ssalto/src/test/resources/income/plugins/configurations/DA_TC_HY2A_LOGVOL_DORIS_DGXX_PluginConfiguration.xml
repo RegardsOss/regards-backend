@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id$
+
+ HISTORIQUE
+
+ VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
+ 
+ VERSION : 2011/07/13 : 1.6 : CS
+ DM-ID : SIPNG-DM-0070-CN : 2011/06/13 : Amelioration des perf. Plus de mots reserves Oracle comme nom d'attributs. Changer OPTION par PRODUCT_OPTION
+ FA-ID : SIPNG-FA-0729-CS : 2011/08/05 : maj fichiers de conf
+ 
+ VERSION : 2010/01/13 : 1.0 : CS
+ DM-ID : SIPNG-DM-060-CN : 2010/02/03 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>LOGICIEL_DORIS_HY2_([a-zA-Z0-9]{3}_[a-zA-Z0-9]{3})_([0-9]{8}_[0-9]{6})_([A-Z]+).REF</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>3</order>
+        <attributeFromName>
+            <groupNumber>2</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+        	<order>1</order>
+                <formatRead>yyyyMMdd_HHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+        <attributeFromOther>
+            <otherAttributeName>START_DATE</otherAttributeName>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+        	<order>2</order>
+            </specification>
+        </attributeFromOther>
+    </compositeAttribute>
+<attributeFromName>
+	<groupNumber>3</groupNumber>
+	<specification>
+		<name>PRODUCT_OPTION</name>
+		<valueType>STRING</valueType>
+        <order>4</order>
+	</specification>
+</attributeFromName>
+	<attributeFromAsciiFile>
+		<linePattern>\! Creation date : ([0-9]{2}/[0-9]{2}/[0-9]{4})</linePattern>
+		<lineNumber>4</lineNumber>
+		<groupNumber>1</groupNumber>
+		<specification>
+			<name>FILE_CREATION_DATE</name>
+			<valueType>DATE_TIME</valueType>
+			<order>5</order>
+			<formatRead>dd/MM/yyyy</formatRead>
+		</specification>
+	</attributeFromAsciiFile>
+	<attributeFromName>
+		<groupNumber>1</groupNumber>
+		<specification>
+			<name>OBJECT_VERSION</name>
+			<valueType>STRING</valueType>
+			<order>6</order>
+			<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetLogvolDorisDGXXSeparator</calculationClass>
+			</specification>
+	</attributeFromName>   	
+</PLUGIN_CONFIGURATION>

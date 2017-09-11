@@ -26,7 +26,7 @@
             <specification>
                 <name>STOP_DATE</name>
                 <valueType>DATE_TIME</valueType>
-                <calculationClass>ssalto.domain.plugins.impl.calc.SetStopDateHours</calculationClass>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetStopDateHours</calculationClass>
             </specification>
         </attributeFromOther>
     </compositeAttribute>
