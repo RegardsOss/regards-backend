@@ -128,51 +128,22 @@ public class TARController {
 
             // 3. Get the current creating tar file
             PhysicalTARFile workingTarPhysicalFile = getCurrentTarPhysicalFile(pTarFiles, pSTAFArciveName, pStafNode);
-
             // 4. Move file in the tar directory
-            Path sourceFile = pPhysicalFileToArchive;
-            Path destinationFile = Paths.get(workingTarPhysicalFile.getLocalTarDirectory().toString(),
-                                             pPhysicalFileToArchive.getFileName().toString());
-            Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
-            // Add files into TAR
-            workingTarPhysicalFile.addFileInTar(destinationFile, pPhysicalFileToArchive);
+            Path destinationFile = copyFileIntoTarCurrentDirectory(pPhysicalFileToArchive, workingTarPhysicalFile);
             // Add originale associated file
             workingTarPhysicalFile.addRawAssociatedFile(pPhysicalFileToArchive);
+
             LOG.debug("[STAF] File {} added to current TAR file (original file={})", destinationFile,
                       pPhysicalFileToArchive);
-
-            // 5. Check TAR size
-            long size = Files.walk(workingTarPhysicalFile.getLocalTarDirectory()).filter(f -> f.toFile().isFile())
-                    .mapToLong(p -> p.toFile().length()).sum();
-            if (size > stafConfiguration.getMaxTarSize()) {
-                LOG.debug("[STAF] Current TAR Size exceed limit ({}octets > {}octets), tar creation ... ", size,
-                          stafConfiguration.getMaxTarSize());
-                // No other files can be added in tar.
-                // Create TAR
-                LOG.debug("[STAF] Creating TAR file {}", workingTarPhysicalFile.getLocalTarFile());
-                CompressionFacade facade = new CompressionFacade();
-                List<File> filesToTar = Files.walk(workingTarPhysicalFile.getLocalTarDirectory())
-                        .filter(f -> f.toFile().isFile()).filter(f -> !LOCK_FILE_NAME.equals(f.toFile().getName()))
-                        .map(f -> f.toFile()).collect(Collectors.toList());
-                facade.compress(CompressionTypeEnum.TAR, workingTarPhysicalFile.getLocalTarDirectory().toFile(),
-                                filesToTar, getFileWithoutExtension(workingTarPhysicalFile.getLocalTarFile()),
-                                workingTarPhysicalFile.getLocalTarDirectory().toFile(), true, false);
-                // Set the TAR local path
-                workingTarPhysicalFile.setStatus(PhysicalFileStatusEnum.TO_STORE);
-                LOG.info("[STAF] TAR FILE created and ready to send to STAF System : {}",
-                         workingTarPhysicalFile.getLocalTarFile());
-                // Delete curent directory and all associated files
-                FileUtils.deleteDirectory(workingTarPhysicalFile.getLocalTarDirectory().toFile());
-            } else {
-                LOG.debug("[STAF] Current TAR {} not big enougth to be stored in staf ({}octets < {}octets)",
-                          workingTarPhysicalFile.getLocalTarDirectory(), size, stafConfiguration.getMaxTarSize());
+            if (workingTarPhysicalFile.getTarSize() > stafConfiguration.getMaxTarSize()) {
+                // TAR size is over the maximum TAR file size, so do not add any more files and store it.
+                LOG.debug("[STAF] Current TAR Size exceed limit ({}octets > {}octets), tar creation ... ",
+                          workingTarPhysicalFile.getTarSize(), stafConfiguration.getMaxTarSize());
+                createTAR(workingTarPhysicalFile);
             }
-
-            LOG.debug("[STAF] Releasing lock for directory {}", lockFile.toString());
-            lock.release();
-            LOG.debug("[STAF] Lock released for directory {}", lockFile.toString());
-        } catch (IOException | CompressionException e) {
-            // Error adding file to tar
+        } catch (IOException e1) {
+            throw new STAFTarException(e1);
+        } finally {
             if ((lock != null) && lock.isValid()) {
                 LOG.debug("[STAF] Releasing lock for directory {}", lockFile.toString());
                 try {
@@ -182,8 +153,83 @@ public class TARController {
                 }
                 LOG.debug("[STAF] Lock released for directory {}", lockFile.toString());
             }
+        }
+    }
+
+    /**
+     * Do copy the given {@link Path} file to the directory of the working given {@link PhysicalTARFile}
+     * @param pFileToCopy {@link Path}
+     * @param pTARFile {@link PhysicalTARFile}
+     * @return {@link Path} of the file copied in the current TAR directory.
+     * @throws STAFTarException Error during file copy.
+     */
+    private Path copyFileIntoTarCurrentDirectory(Path pFileToCopy, PhysicalTARFile pTARFile) throws STAFTarException {
+        Path destinationFile = Paths.get(pTARFile.getLocalTarDirectory().toString(),
+                                         pFileToCopy.getFileName().toString());
+        try {
+            // Copy file to current TAR directory and check new tar size.
+            Files.copy(pFileToCopy, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+            Long size = Files.walk(pTARFile.getLocalTarDirectory()).filter(f -> f.toFile().isFile())
+                    .mapToLong(p -> p.toFile().length()).sum();
+            pTARFile.setTarSize(size);
+            pTARFile.addFileInTar(destinationFile, pFileToCopy);
+            return destinationFile;
+        } catch (IOException e) {
+            pTARFile.setStatus(PhysicalFileStatusEnum.ERROR);
             throw new STAFTarException(e);
         }
+    }
+
+    /**
+     * Finish and create the current pending TAR if his size or creation date is over the limit configuration value.
+     * @param pTarFiles
+     * @throws STAFTarException
+     */
+    public void createPreparedTAR(Set<PhysicalTARFile> pTarFiles) throws STAFTarException {
+        Optional<PhysicalTARFile> tar = pTarFiles.stream()
+                .filter(t -> PhysicalFileStatusEnum.PENDING.equals(t.getStatus())).findFirst();
+        if (tar.isPresent()) {
+            PhysicalTARFile workingTarPhysicalFile = tar.get();
+            Long tarSize = workingTarPhysicalFile.getTarSize();
+            LocalDateTime tarCreationDate = workingTarPhysicalFile.getLocalTarDirectoryCreationDate();
+            LocalDateTime dateLimit = tarCreationDate.plusHours(stafConfiguration.getMaxTarArchivingHours());
+            if (LocalDateTime.now().isAfter(dateLimit) || (tarSize > stafConfiguration.getTarSizeThreshold())) {
+                // If TAR size is over the minimal limit or if TAR date creation is over the limite date, store TAR.
+                LOG.info("[STAF] Current TAR can be created (size={}, creation date={}). ", tarSize,
+                         tarCreationDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT)));
+                createTAR(workingTarPhysicalFile);
+            } else {
+                LOG.info("[STAF] Current TAR {} not big enougth to be stored in staf ({}octets < {}octets && {} < {})",
+                         workingTarPhysicalFile.getLocalTarDirectory(), workingTarPhysicalFile.getTarSize(),
+                         stafConfiguration.getTarSizeThreshold(), LocalDateTime.now(), dateLimit);
+            }
+        }
+    }
+
+    /**
+     * Do compress the files from the given  {@link PhysicalTARFile}.
+     * @param pTARToCreate {@link PhysicalTARFile} to create.
+     * @throws STAFTarException Error during TAR Compression.
+     */
+    private void createTAR(PhysicalTARFile pTARToCreate) throws STAFTarException {
+        LOG.debug("[STAF] Creating TAR file {}", pTARToCreate.getLocalTarFile());
+        CompressionFacade facade = new CompressionFacade();
+        try {
+            List<File> filesToTar = Files.walk(pTARToCreate.getLocalTarDirectory()).filter(f -> f.toFile().isFile())
+                    .filter(f -> !LOCK_FILE_NAME.equals(f.toFile().getName())).map(f -> f.toFile())
+                    .collect(Collectors.toList());
+            facade.compress(CompressionTypeEnum.TAR, pTARToCreate.getLocalTarDirectory().toFile(), filesToTar,
+                            getFileWithoutExtension(pTARToCreate.getLocalTarFile()),
+                            pTARToCreate.getLocalTarDirectory().toFile(), true, false);
+            // Delete curent directory and all associated files
+            FileUtils.deleteDirectory(pTARToCreate.getLocalTarDirectory().toFile());
+        } catch (IOException | CompressionException e) {
+            pTARToCreate.setStatus(PhysicalFileStatusEnum.ERROR);
+            throw new STAFTarException(e);
+        }
+        // Set TAR Status to "TO_STORE"
+        pTARToCreate.setStatus(PhysicalFileStatusEnum.TO_STORE);
+        LOG.info("[STAF] TAR FILE created and ready to send to STAF System : {}", pTARToCreate.getLocalTarFile());
     }
 
     /**

@@ -130,7 +130,7 @@ public class STAFController {
      * @throws STAFException staf store error
      */
     public Set<AbstractPhysicalFile> doArchivePreparedFiles(boolean pReplaceMode) throws STAFException {
-        Set<String> archivedFiles = Sets.newHashSet();
+        Set<String> archivedFiles;
         // Create map bewteen localFile to archive and destination file path into STAF
         Map<String, String> localFileToArchiveMap = Maps.newHashMap();
         this.getAllPreparedFilesToArchive().forEach(stafFile -> {
@@ -149,26 +149,30 @@ public class STAFController {
                 }
             }
         });
-        stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
-        try {
-            archivedFiles = stafService.archiveFiles(localFileToArchiveMap, "/", pReplaceMode);
-            archivedFiles.forEach(archivedFile ->
-            // For each file to store, check if the file has really been stored and set the status to STORED.
-            // @formatter:off
-            this.getAllPreparedFilesToArchive()
-                .stream()
-                .filter(f -> PhysicalFileStatusEnum.TO_STORE.equals(f.getStatus()))
-                .filter(f -> archivedFile.equals(f.getLocalFilePath().toString()))
-                .forEach(f -> {
-                    // Set status to STORED
-                    f.setStatus(PhysicalFileStatusEnum.STORED);
-                    // Delete local temporary files
-                    deleteTemporaryFiles(f);
-                }));
-            // @formatter:on
 
-        } finally {
-            stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+        // If there is files to store. Run STAF archive.
+        if (!localFileToArchiveMap.isEmpty()) {
+            stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+            try {
+                archivedFiles = stafService.archiveFiles(localFileToArchiveMap, "/", pReplaceMode);
+                archivedFiles.forEach(archivedFile ->
+                // For each file to store, check if the file has really been stored and set the status to STORED.
+                // @formatter:off
+                this.getAllPreparedFilesToArchive()
+                    .stream()
+                    .filter(f -> PhysicalFileStatusEnum.TO_STORE.equals(f.getStatus()))
+                    .filter(f -> archivedFile.equals(f.getLocalFilePath().toString()))
+                    .forEach(f -> {
+                        // Set status to STORED
+                        f.setStatus(PhysicalFileStatusEnum.STORED);
+                        // Delete local temporary files
+                        deleteTemporaryFiles(f);
+                    }));
+                // @formatter:on
+
+            } finally {
+                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+            }
         }
 
         // handle special case of TAR PENDING. Status is not STORED but LOCALY_STORED.
@@ -177,7 +181,7 @@ public class STAFController {
             .stream()
             .filter(tar -> PhysicalFileStatusEnum.PENDING.equals(tar.getStatus()))
             .forEach(tar -> {
-                LOG.info("[STAF] Working TAR {} not big enought for transfert to STAF System. This TAR is localy stored waiting for new files.",tar.getLocalTarDirectory());
+                LOG.info("[STAF] Current TAR {} not big enought for transfert to STAF System. This TAR is localy stored waiting for new files.",tar.getLocalTarDirectory());
                 tar.setStatus(PhysicalFileStatusEnum.LOCALY_STORED);
             });
         // @formatter:on
@@ -277,6 +281,12 @@ public class STAFController {
                 }
             }
         }
+        // After all files added, check if TAR files are in TO_STORE state in order to create associated TAR.
+        try {
+            tarController.createPreparedTAR(tarsToArchive);
+        } catch (STAFTarException e) {
+            LOG.error("[STAF] Error creating TAR File", e);
+        }
         return this.getAllPreparedFilesToArchive();
     }
 
@@ -302,8 +312,8 @@ public class STAFController {
             try {
                 stafFilePathsToRetrieive.addAll(getSTAFFilePaths(physicalFile));
             } catch (STAFException e) {
-                // TODO Handle exception
-                LOG.error("[STAF] Error creating STAF file path for file {}", physicalFile.getLocalFilePath());
+                physicalFile.setStatus(PhysicalFileStatusEnum.ERROR);
+                LOG.error("[STAF] Error creating STAF file path for file {}", physicalFile.getLocalFilePath(), e);
             }
         }
         //2. Do the STAF Restitution for each physicalFile

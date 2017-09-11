@@ -43,6 +43,11 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
     private LocalDateTime localTarDirectoryCreationDate;
 
     /**
+     * Current size of the TAR file.
+     */
+    private Long tarSize = 0L;
+
+    /**
      * Constructor
      * @param pSTAFArchiveName {@link String} STAF Archive name where the tar is stored
      * @param pSTAFNode {@link String} STAF Node where the tar is stored.
@@ -88,6 +93,14 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
 
     public void setLocalTarDirectoryCreationDate(LocalDateTime pLocalTarDirectoryCreationDate) {
         localTarDirectoryCreationDate = pLocalTarDirectoryCreationDate;
+    }
+
+    public Long getTarSize() {
+        return tarSize;
+    }
+
+    public void setTarSize(Long pTarSize) {
+        tarSize = pTarSize;
     }
 
     @Override
