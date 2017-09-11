@@ -21,25 +21,30 @@ package fr.cnes.regards.framework.geojson.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
 /**
- * Validate {@link Polygon} structure
+ * Validate {@link Polygon} coordinate structure
  *
  * @author Marc Sordi
  *
  */
-public class PolygonValidator implements ConstraintValidator<PolygonConstraints, Polygon> {
+public class PolygonPositionsValidator implements ConstraintValidator<PolygonPositionsConstraints, PolygonPositions> {
 
     @Override
-    public void initialize(PolygonConstraints constraintAnnotation) {
+    public void initialize(PolygonPositionsConstraints constraintAnnotation) {
         // Nothing to do
     }
 
     @Override
-    public boolean isValid(Polygon polygon, ConstraintValidatorContext context) {
-        for (Positions linearRing : polygon.getCoordinates()) {
+    public boolean isValid(PolygonPositions positions, ConstraintValidatorContext context) {
+        if ((positions == null) || positions.isEmpty()) {
+            // At least exterior ring is required
+            return false;
+        }
+        for (Positions linearRing : positions) {
             if (!linearRing.isLinearRing()) {
                 return false;
             }

@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.geojson.geometry.Unlocated;
 
 /**
- * Test GeoJson serialization
+ * Test GeoJson geometry (de)serialization
  *
  * @author Marc Sordi
  *

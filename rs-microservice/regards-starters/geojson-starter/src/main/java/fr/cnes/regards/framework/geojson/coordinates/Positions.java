@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 /**
  * Not in RFC 7946 -August 2016<br/>
- * GeoJson set of positions representation.<br/>
+ * GeoJson consistent set of positions representation.<br/>
  *
  * @author Marc Sordi
  *

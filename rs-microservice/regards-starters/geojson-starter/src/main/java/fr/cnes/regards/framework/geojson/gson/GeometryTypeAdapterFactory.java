@@ -51,7 +51,7 @@ public class GeometryTypeAdapterFactory extends PolymorphicTypeAdapterFactory<IG
         registerSubtype(Polygon.class, GeoJsonType.POLYGON.getType());
         registerSubtype(MultiPolygon.class, GeoJsonType.MULTIPOLYGON.getType());
         registerSubtype(GeometryCollection.class, GeoJsonType.GEOMETRY_COLLECTION.getType());
-        registerSubtype(Unlocated.class, GeoJsonType.UNLOCATED.getType(), true);
+        registerSubtype(Unlocated.class, GeoJsonType.UNLOCATED.getType(), true); // Serialize nulls
     }
 
     /**

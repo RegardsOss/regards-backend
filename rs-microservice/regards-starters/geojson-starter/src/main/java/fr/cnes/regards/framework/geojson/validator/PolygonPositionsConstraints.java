@@ -27,21 +27,21 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import fr.cnes.regards.framework.geojson.geometry.LineString;
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 
 /**
- * {@link LineString} validation annotation
+ * {@link PolygonPositions} validation annotation
  *
  * @author Marc Sordi
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
-@Constraint(validatedBy = PolygonValidator.class)
+@Constraint(validatedBy = PolygonPositionsValidator.class)
 @Documented
-public @interface PolygonConstraints {
+public @interface PolygonPositionsConstraints {
 
-    static final String CLASS_NAME = "fr.cnes.regards.framework.geojson.geometry.Polygon.";
+    static final String CLASS_NAME = "fr.cnes.regards.framework.geojson.coordinates.PolygonPositions.";
 
     String message() default "{" + CLASS_NAME + "message}";
 

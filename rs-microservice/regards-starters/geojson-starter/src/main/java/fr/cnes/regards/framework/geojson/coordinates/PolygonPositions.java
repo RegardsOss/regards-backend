@@ -19,6 +19,10 @@
 package fr.cnes.regards.framework.geojson.coordinates;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import fr.cnes.regards.framework.geojson.validator.PolygonPositionsConstraints;
 
 /**
  * Not in RFC 7946 -August 2016<br/>
@@ -28,6 +32,20 @@ import java.util.ArrayList;
  *
  */
 @SuppressWarnings("serial")
+@PolygonPositionsConstraints
 public class PolygonPositions extends ArrayList<Positions> {
 
+    public Positions getExteriorRing() {
+        if (size() > 0) {
+            return get(0);
+        }
+        return null; // Should not occur!
+    }
+
+    public List<Positions> getHoles() {
+        if (size() > 1) {
+            return subList(1, size());
+        }
+        return Collections.emptyList();
+    }
 }

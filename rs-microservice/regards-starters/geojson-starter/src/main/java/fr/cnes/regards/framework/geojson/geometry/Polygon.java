@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.geojson.geometry;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
-import fr.cnes.regards.framework.geojson.validator.PolygonConstraints;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -35,7 +34,6 @@ import fr.cnes.regards.framework.geojson.validator.PolygonConstraints;
  * @author Marc Sordi
  *
  */
-@PolygonConstraints
 public class Polygon extends AbstractGeometry<PolygonPositions> {
 
     public Polygon() {
