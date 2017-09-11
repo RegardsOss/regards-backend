@@ -229,7 +229,6 @@ public abstract class AttributeFinder {
     protected String changeFormat(Object value) throws PluginAcquisitionException {
         String returnValue = value.toString();
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE) || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
-            // TODO CMZ : à revoir
             // the format must be externally synchronized
             try {
                 Date date = (Date) value;

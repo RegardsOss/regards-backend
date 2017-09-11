@@ -101,14 +101,6 @@ public class CompositeAttributeFinder extends AttributeFinder {
         finderList.add(newFinder);
     }
 
-    // TODO CMZ à confirmer
-//    public void addFileNameFinder(AttributeFinder pFinder) {
-//        if (finderList == null) {
-//            finderList = new ArrayList<>();
-//        }
-//        finderList.add(pFinder);
-//    }
-
     @Override
     public void setAttributProperties(PluginConfigurationProperties confProperties) {
         for (AttributeFinder finder : finderList) {

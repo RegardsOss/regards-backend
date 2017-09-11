@@ -75,8 +75,7 @@ public class DateTimeAttributeControler extends AttributeControler {
      * @return la valeur de l'attribut
      * @throws ModuleException
      */
-    public Date getValue(DateTimeAttribute attribut, int index) throws ModuleException {
-        // TODO CMZ à revoir        
-        return (Date) getObjectValue(attribut, index);
+    public OffsetDateTime getValue(DateTimeAttribute attribut, int index) throws ModuleException {
+        return (OffsetDateTime) getObjectValue(attribut, index);
     }
 }

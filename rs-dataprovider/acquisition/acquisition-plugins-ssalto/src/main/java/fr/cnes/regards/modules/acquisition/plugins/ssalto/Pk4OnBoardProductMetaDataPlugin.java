@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -43,6 +44,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepo
  * @author Christophe Mertz
  *
  */
+@Plugin(description = "Pk4OnBoardProductMetaDataPlugin", id = "Pk4OnBoardProductMetaDataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Pk4OnBoardProductMetaDataPlugin.class);

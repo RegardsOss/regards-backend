@@ -27,21 +27,20 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 
 public abstract class DataStorageObjectElement extends EntityDescriptorElement {
 
-    private String dataStorageObjectIdentifier_;
+    private String dataStorageObjectIdentifier;
 
-    private Long fileSize_;
+    private Long fileSize;
 
-    private String onlinePath_;
+    private String onlinePath;
 
-    private String onlineFileName_;
+    private String onlineFileName;
 
-    private String offLinePath_;
+    private String offLinePath;
 
-    private String offLineArchive_;
+    private String offLineArchive;
 
-    private String offLineFileName_;
+    private String offLineFileName;
 
-    // TODO CMZ à confirmer
     //    private TransformerTypeEnum transformer_;
 
     /**
@@ -59,66 +58,65 @@ public abstract class DataStorageObjectElement extends EntityDescriptorElement {
      */
     @Override
     public String getEntityId() {
-        return dataStorageObjectIdentifier_;
+        return dataStorageObjectIdentifier;
     }
 
     public void setDataStorageObjectIdentifier(String pDataStorageObjectIdentifier) {
-        dataStorageObjectIdentifier_ = pDataStorageObjectIdentifier;
+        dataStorageObjectIdentifier = pDataStorageObjectIdentifier;
     }
 
     public String getDataStorageObjectIdentifier() {
-        return dataStorageObjectIdentifier_;
+        return dataStorageObjectIdentifier;
     }
 
     public void setFileSize(Long pFileSize) {
-        fileSize_ = pFileSize;
+        fileSize = pFileSize;
     }
 
     public void setOffLineArchive(String pOffLineArchive) {
-        offLineArchive_ = pOffLineArchive;
+        offLineArchive = pOffLineArchive;
     }
 
     public void setOffLineFileName(String pOffLineFileName) {
-        offLineFileName_ = pOffLineFileName;
+        offLineFileName = pOffLineFileName;
     }
 
     public void setOffLinePath(String pOffLinePath) {
-        offLinePath_ = pOffLinePath;
+        offLinePath = pOffLinePath;
     }
 
     public void setOnlineFileName(String pOnlineFileName) {
-        onlineFileName_ = pOnlineFileName;
+        onlineFileName = pOnlineFileName;
     }
 
     public void setOnlinePath(String pOnlinePath) {
-        onlinePath_ = pOnlinePath;
+        onlinePath = pOnlinePath;
     }
 
     public Long getFileSize() {
-        return fileSize_;
+        return fileSize;
     }
 
     public String getOffLineArchive() {
-        return offLineArchive_;
+        return offLineArchive;
     }
 
     public String getOffLineFileName() {
-        return offLineFileName_;
+        return offLineFileName;
     }
 
     public String getOffLinePath() {
-        return offLinePath_;
+        return offLinePath;
     }
 
     public String getOnlineFileName() {
-        return onlineFileName_;
+        return onlineFileName;
     }
 
     public String getOnlinePath() {
-        return onlinePath_;
+        return onlinePath;
     }
 
-    // TODO CMZ à confirmer
     //    public TransformerTypeEnum getTransformer() {
     //        return transformer_;
     //    }

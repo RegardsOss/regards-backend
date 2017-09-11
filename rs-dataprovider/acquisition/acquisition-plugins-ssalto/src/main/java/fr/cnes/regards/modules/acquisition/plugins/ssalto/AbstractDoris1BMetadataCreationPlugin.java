@@ -65,7 +65,7 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
             dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
-        // TODO CMZ à confirmer
+        // TODO CMZ à confirmer : suppression de setOnlinePath et setTransformer
         //        setOnlinePath(dataStorageObject, pSsaltoFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
         dataStorageObject.setOnlineFileName(pSsaltoFile.getName());

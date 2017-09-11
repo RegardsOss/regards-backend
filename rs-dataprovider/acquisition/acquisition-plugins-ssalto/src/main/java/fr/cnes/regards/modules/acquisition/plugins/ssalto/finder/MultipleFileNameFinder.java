@@ -66,7 +66,7 @@ public class MultipleFileNameFinder extends FileNameFinder {
             if (matcher.matches()) {
 
                 String value = "";
-                // la valeur finale peut etre compose de plusieurs groupes
+                // la valeur finale peut etre composée de plusieurs groupes
                 for (Integer groupNumber : groupNumberList) {
                     value = value + matcher.group(groupNumber.intValue());
                 }
@@ -156,7 +156,6 @@ public class MultipleFileNameFinder extends FileNameFinder {
      * @param valuesList
      * @return
      */
-    // TODO CMZ à confirmer
     private List<Object> getAverage(List<Object> valuesList) {
         return valuesList;
     }

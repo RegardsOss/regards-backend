@@ -37,8 +37,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.zip.
  * contexte de compression qui s'occupe de l'execution. Les informations necessaires a la compression sont gerees au
  * niveau du contexte "CompressionContext".
  * 
- * @author CS
- * @since 1.0
+ * @author Christophe Mertz
  */
 public class CompressionFacade {
 
@@ -48,58 +47,44 @@ public class CompressionFacade {
 
     /**
      * Le contexte de compression qui pilote la compression proprement dite
-     * 
-     * @since 1.0
      */
-    private final CompressionContext strategy_;
+    private final CompressionContext strategy;
 
     //    private int maxFileSize_ = 2000000;
 
     /**
      * Constructeur par defaut
-     * 
-     * @since 1.0
      */
     public CompressionFacade() {
-        strategy_ = new CompressionContext();
-        //        try {
-        //            maxArchiveSize_ = BasicFileProperties.getInstance().getMaxFileSize();
-        //        } catch (FileException e) {
-        //            maxArchiveSize_ = 2000000;
-        //            e.printStackTrace();
-        //        }
+        strategy = new CompressionContext();
     }
 
     /**
      * Taille max des fichiers compresses en ko : 2Go valeur par défaut
-     * 
-     * @since 4.4
      */
-    private long maxArchiveSize_ = 2000000;
+    private long maxArchiveSize = 2000000;
 
     /**
      * Compression d'une liste de fichiers
      * 
      * @param pFileList
      *            une liste contenant les fichiers a compresser (classe File)
-     * @param pZipFile
+     * @param zipFile
      *            definit le chemin et le nom du fichier compresse SANS l'extension
      * 
      * @return le fichier compresse
-     * 
-     * @since 4.4
      */
-    private CompressManager compress(List<File> fileList, File pZipFile) throws CompressionException {
+    private CompressManager compress(List<File> fileList, File zipFile) throws CompressionException {
 
         // specify input file list
-        strategy_.setInputSource(fileList);
+        strategy.setInputSource(fileList);
 
         // specify compressed file
-        strategy_.setCompressedFile(pZipFile);
+        strategy.setCompressedFile(zipFile);
 
-        CompressManager manager = strategy_.doCompress();
+        CompressManager manager = strategy.doCompress();
 
-        if (!strategy_.isRunInThread() && manager.getCompressedFile() != null
+        if (!strategy.isRunInThread() && manager.getCompressedFile() != null
                 && manager.getCompressedFile().length() == 0) {
             throw new CompressionException(String.format("A compressed file is required"));
         }
@@ -112,31 +97,29 @@ public class CompressionFacade {
      * liste des fichiers a compresser est precisee, mais si le parametre pFileList est nul tout le repertoire en entree
      * est compresse.
      * 
-     * @param pMode
+     * @param compressionMode
      *            le type de compression (ZIP, GZIP, TAR, ...)
-     * @param pInputDirectory
+     * @param inputDirectory
      *            repertoire source
-     * @param pFileList
+     * @param fileList
      *            une liste contenant les fichiers a compresser (classe File)
-     * @param pZipFile
+     * @param zipFile
      *            definit le chemin et le nom du fichier compresse SANS l'extension
-     * @param pRootDirectory
+     * @param rootDirectory
      *            le répertoire racine dans le cas d'une liste de fichiers.
-     * @param pFlatArchive
+     * @param flatArchive
      *            contenu de l'archive à plat ou non
      * 
      * @return la liste des fichiers compresses
      * 
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 1.0
-     * @FA SIPNG-FA-0450-CN : ajout d'un parametre et modification de code
      */
-    public Vector<CompressManager> compress(CompressionTypeEnum pMode, File pInputDirectory, List<File> pFileList,
-            File pZipFile, File pRootDirectory, Boolean pFlatArchive, Boolean pRunInThread)
+    public Vector<CompressManager> compress(CompressionTypeEnum compressionMode, File inputDirectory, List<File> fileList,
+            File zipFile, File rootDirectory, Boolean flatArchive, Boolean runInThread)
             throws CompressionException {
 
-        return compress(pMode, pInputDirectory, pFileList, pZipFile, pRootDirectory, pFlatArchive, pRunInThread, null);
+        return compress(compressionMode, inputDirectory, fileList, zipFile, rootDirectory, flatArchive, runInThread, null);
 
     }
 
@@ -149,57 +132,55 @@ public class CompressionFacade {
      * 
      * Attention : l'encodage des caractères n'est implémenté que pour le format ZIP.
      * 
-     * @param pMode
+     * @param compressionMode
      *            le type de compression (ZIP, GZIP, TAR, ...)
-     * @param pInputDirectory
+     * @param inputDirectory
      *            repertoire source
-     * @param pFileList
+     * @param fileList
      *            une liste contenant les fichiers a compresser (classe File)
-     * @param pZipFile
+     * @param zipFile
      *            definit le chemin et le nom du fichier compresse SANS l'extension
-     * @param pRootDirectory
+     * @param rootDirectory
      *            le répertoire racine dans le cas d'une liste de fichiers.
-     * @param pFlatArchive
+     * @param flatArchive
      *            contenu de l'archive à plat ou non
-     * @param pCharset
+     * @param aCharset
      *            Encodage des caractères utilisé lors de la compression.
      * 
      * @return la liste des fichiers compresses
      * 
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 1.0
-     * @FA SIPNG-FA-0450-CN : ajout d'un parametre et modification de code
      */
-    public Vector<CompressManager> compress(CompressionTypeEnum pMode, File pInputDirectory, List<File> pFileList,
-            File pZipFile, File pRootDirectory, Boolean pFlatArchive, Boolean pRunInThread, Charset pCharset)
+    public Vector<CompressManager> compress(CompressionTypeEnum compressionMode, File inputDirectory, List<File> fileList,
+            File zipFile, File rootDirectory, Boolean flatArchive, Boolean runInThread, Charset aCharset)
             throws CompressionException {
 
         Vector<CompressManager> compressManagers = new Vector<>();
 
         // initialise concrete compression
-        initCompression(pMode);
+        initCompression(compressionMode);
 
         // specify input file list
-        List<File> fileList = validateFilesForCompress(pFileList, pInputDirectory);
+        List<File> validateFileList = validateFilesForCompress(fileList, inputDirectory);
 
         // Sets the root directory
-        if (pInputDirectory != null) {
-            strategy_.setRootDirectory(pInputDirectory);
+        if (inputDirectory != null) {
+            strategy.setRootDirectory(inputDirectory);
         } else {
-            if (pRootDirectory != null) {
-                strategy_.setRootDirectory(pRootDirectory);
+            if (rootDirectory != null) {
+                strategy.setRootDirectory(rootDirectory);
             } else {
                 throw new CompressionException(String.format("The root directory must be set and cannot be null"));
             }
         }
-        strategy_.setFlatArchive(pFlatArchive.booleanValue());
+        strategy.setFlatArchive(flatArchive.booleanValue());
 
         // Apply the encoding format
-        strategy_.setCharSet(pCharset);
+        strategy.setCharSet(aCharset);
 
         // Set synchrone or asynchrone compression mode
-        strategy_.setRunInThread(pRunInThread);
+        strategy.setRunInThread(runInThread);
 
         /*
          * Check the size of the files to compress
@@ -211,7 +192,7 @@ public class CompressionFacade {
          * Apply the max size for each file
          */
         long sizeTotal = 0;
-        for (File tmpFile : fileList) {
+        for (File tmpFile : validateFileList) {
             if (!isTooLargeFile(tmpFile)) {
                 listFile2Compress.add(tmpFile);
                 sizeTotal += tmpFile.length() / BYTES_IN_KILOBYTE;
@@ -229,13 +210,13 @@ public class CompressionFacade {
         /*
          * If the total size does not exceed the max proceed the compress into one archive file
          */
-        if (sizeTotal < maxArchiveSize_) {
+        if (sizeTotal < maxArchiveSize) {
             if (listFile2Compress.size() > 0) {
-                compressManagers.add(this.compress(listFile2Compress, pZipFile));
+                compressManagers.add(this.compress(listFile2Compress, zipFile));
             } else {
                 if (LOGGER.isInfoEnabled()) {
                     Long sizeData = new Long(sizeTotal);
-                    Long sizeMax = new Long(maxArchiveSize_);
+                    Long sizeMax = new Long(maxArchiveSize);
                     LOGGER.info(String.format(
                                               "The total file size to compress %d does not exceed the archive max size %d, then compress in one file",
                                               sizeData, sizeMax));
@@ -244,7 +225,7 @@ public class CompressionFacade {
         } else {
             if (LOGGER.isInfoEnabled()) {
                 Long sizeData = new Long(sizeTotal);
-                Long sizeMax = new Long(maxArchiveSize_);
+                Long sizeMax = new Long(maxArchiveSize);
                 LOGGER.info(String.format(
                                           "The size of data is %d ko, it exceeds the maximum size %d ko for the compression, the compression is splitted in a multiple file.",
                                           sizeData, sizeMax));
@@ -252,8 +233,8 @@ public class CompressionFacade {
             /*
              * The total size exceed the max, split it in several files
              */
-            if (pRunInThread) {
-                strategy_.setRunInThread(false);
+            if (runInThread) {
+                strategy.setRunInThread(false);
                 LOGGER.warn(String
                         .format("The size of data exceeds the maximum size, synchrone compression mode is used."));
             }
@@ -266,7 +247,7 @@ public class CompressionFacade {
             for (File currentFile : listFile2Compress) {
                 long currentFileSize = currentFile.length() / BYTES_IN_KILOBYTE;
                 // check if the max size is attempt
-                if (tailleCourante + currentFileSize < maxArchiveSize_) {
+                if (tailleCourante + currentFileSize < maxArchiveSize) {
                     listFileOneArchive.add(currentFile);
                     tailleCourante += currentFileSize;
                 } else {
@@ -274,7 +255,7 @@ public class CompressionFacade {
                 }
                 if (compress) {
                     Integer rang = new Integer(indiceArchive++);
-                    File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + rang.toString());
+                    File archiveName = new File(zipFile.getAbsoluteFile() + "_" + rang.toString());
                     compressManagers.add(this.compress(listFileOneArchive, archiveName));
                     listFileOneArchive.clear();
 
@@ -287,7 +268,7 @@ public class CompressionFacade {
 
             if (listFileOneArchive.size() > 0) {
                 Integer rang = new Integer(indiceArchive++);
-                File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + rang.toString());
+                File archiveName = new File(zipFile.getAbsoluteFile() + "_" + rang.toString());
                 compressManagers.add(this.compress(listFileOneArchive, archiveName));
                 listFileOneArchive.clear();
             }
@@ -311,19 +292,18 @@ public class CompressionFacade {
     /**
      * Cette methode permet de decompresser un fichier ou ensemble de fichier d'un repertoire vers un autre repertoire
      * 
-     * @param pMode
+     * @param compressionMode
      *            le type de compression (ZIP, GZIP, TAR, ...)
-     * @param pInputFile
+     * @param inputFile
      *            le fichier a décompresser
-     * @param pOutputDirectory
+     * @param outputDirectory
      *            le repertoire cible
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 1.0
      */
-    public void decompress(CompressionTypeEnum pMode, File pInputFile, File pOutputDirectory)
+    public void decompress(CompressionTypeEnum compressionMode, File inputFile, File outputDirectory)
             throws CompressionException {
-        decompress(pMode, pInputFile, pOutputDirectory, null);
+        decompress(compressionMode, inputFile, outputDirectory, null);
     }
 
     /**
@@ -331,76 +311,71 @@ public class CompressionFacade {
      * 
      * Cette méthode permet de determiner le type d'encodage des caractères lors de la decompression.
      * 
-     * @param pMode
+     * @param compressionMode
      *            le type de compression (ZIP, GZIP, TAR, ...)
-     * @param pInputFile
+     * @param inputFile
      *            le fichier a décompresser
-     * @param pOutputDirectory
+     * @param outputDirectory
      *            le repertoire cible
      * 
-     * @param pCharset
+     * @param aCharset
      *            Type d'encodage des caracteres utilisé lors de la decompression.
      * 
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 5.3
-     * @DM SIPNG-DM-0121-CN : Gestion du format d'encodage des caracteres lors de la compression et decompression des
-     *     archives
      */
-    public void decompress(CompressionTypeEnum pMode, File pInputFile, File pOutputDirectory, Charset pCharset)
+    public void decompress(CompressionTypeEnum compressionMode, File inputFile, File outputDirectory, Charset aCharset)
             throws CompressionException {
 
-        if (!pInputFile.isFile()) {
+        if (!inputFile.isFile()) {
             throw new FileAlreadyExistException(
-                    String.format("'%s' must be a file (not a directory)", pInputFile.getName()));
+                    String.format("'%s' must be a file (not a directory)", inputFile.getName()));
         }
 
-        strategy_.setCompressedFile(pInputFile);
+        strategy.setCompressedFile(inputFile);
 
-        strategy_.setCharSet(pCharset);
+        strategy.setCharSet(aCharset);
 
         // Checking directory existance
-        validateFile(pOutputDirectory);
-        if (!pOutputDirectory.isDirectory()) {
+        validateFile(outputDirectory);
+        if (!outputDirectory.isDirectory()) {
             throw new FileAlreadyExistException(
-                    String.format("'%s' must be a directory (not a file)", pOutputDirectory.getName()));
+                    String.format("'%s' must be a directory (not a file)", outputDirectory.getName()));
         }
 
         // initialise concrete compression
-        initCompression(pMode);
+        initCompression(compressionMode);
 
         // Checking file existance
-        validateFile(pInputFile);
+        validateFile(inputFile);
 
-        strategy_.setOutputDir(pOutputDirectory);
+        strategy.setOutputDir(outputDirectory);
 
-        strategy_.doUncompress();
+        strategy.doUncompress();
 
     }
 
     /**
      * Permet de factoriser l'initialisation de la strategie concrete de compression
      * 
-     * @param pMode
+     * @param compressionMode
      *            le type de compression (ZIP, GZIP, TAR, ...)
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 1.0 DM-ID : SIPNG-DM-0060-CN : ajout du type Z.
      */
-    private void initCompression(CompressionTypeEnum pMode) throws CompressionException {
-        if (pMode.equals(CompressionTypeEnum.ZIP)) {
-            strategy_.setCompression(new ZipCompression());
+    private void initCompression(CompressionTypeEnum compressionMode) throws CompressionException {
+        if (compressionMode.equals(CompressionTypeEnum.ZIP)) {
+            strategy.setCompression(new ZipCompression());
         }
-        // TODO CMZ : à compléter
         //        else if (pMode.equals(CompressionTypeEnum.GZIP)) {
-        //            strategy_.setCompression(new GZipCompression());
+        //            strategy.setCompression(new GZipCompression());
         //        } else if (pMode.equals(CompressionTypeEnum.TAR)) {
-        //            strategy_.setCompression(new TarCompression());
+        //            strategy.setCompression(new TarCompression());
         //        } else if (pMode.equals(CompressionTypeEnum.Z)) {
-        //            strategy_.setCompression(new ZCompression());
+        //            strategy.setCompression(new ZCompression());
         //        }
         else {
-            throw new CompressionException(String.format("The compression mode %s is not defined", pMode.toString()));
+            throw new CompressionException(String.format("The compression mode %s is not defined", compressionMode.toString()));
         }
     }
 
@@ -408,24 +383,23 @@ public class CompressionFacade {
      * Permet de verifier la validitée de la liste de fichiers ou du repertoire a compresser Crée une liste de fichiers
      * valides a partir d'une liste ou d'un repertoire
      * 
-     * @param pFileList
+     * @param fileList
      *            une liste contenant des instances de File
-     * @param pInputDirectory
+     * @param inputDirectory
      *            le repertoire dans lesquels sont les fichiers
      * @return la liste de fichiers a compresser
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 1.0
      */
-    private List<File> validateFilesForCompress(List<File> pFileList, File pInputDirectory)
+    private List<File> validateFilesForCompress(List<File> fileList, File inputDirectory)
             throws CompressionException {
 
         List<File> retour = new ArrayList<>();
 
-        if (pFileList == null || pFileList.isEmpty()) {
-            retour = validateDirectoryForCompress(pInputDirectory);
+        if (fileList == null || fileList.isEmpty()) {
+            retour = validateDirectoryForCompress(inputDirectory);
         } else {
-            for (File tmpFile : pFileList) {
+            for (File tmpFile : fileList) {
 
                 validateFile(tmpFile);
 
@@ -445,33 +419,32 @@ public class CompressionFacade {
      * 
      * @param pFileList
      *            une liste contenant des instances de File
-     * @param pInputDirectory
+     * @param inputDirectory
      *            le repertoire dans lesquels sont les fichiers
      * @return la liste de fichiers a compresser
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 4.4
      */
-    private List<File> validateDirectoryForCompress(File pInputDirectory) throws CompressionException {
+    private List<File> validateDirectoryForCompress(File inputDirectory) throws CompressionException {
 
         List<File> retour = new ArrayList<>();
 
-        if (pInputDirectory == null || pInputDirectory.equals("")) {
+        if (inputDirectory == null || inputDirectory.equals("")) {
             throw new CompressionException(String.format("No file or directory are specified"));
         }
 
         // If pFileList is null or empty, then all files in directory are compressed
-        validateFile(pInputDirectory);
+        validateFile(inputDirectory);
 
-        if (!pInputDirectory.isDirectory()) {
+        if (!inputDirectory.isDirectory()) {
             throw new FileAlreadyExistException(
-                    String.format("'%s' must be a directory (not a file)", pInputDirectory.getName()));
+                    String.format("'%s' must be a directory (not a file)", inputDirectory.getName()));
         }
 
-        File[] tabFile = pInputDirectory.listFiles();
+        File[] tabFile = inputDirectory.listFiles();
         // If the current directory is empty, then add the directory to the list of file to compress
         if (tabFile.length == 0) {
-            retour.add(pInputDirectory);
+            retour.add(inputDirectory);
         } else {
 
             for (File file : tabFile) {
@@ -490,24 +463,23 @@ public class CompressionFacade {
     /**
      * Vérifie qu'un fichier existe et est lisible
      * 
-     * @param pFile
+     * @param file
      *            le fichier a vérivier
      * @throws CompressionException
      *             si l'un des paramètres n'est pas correct
-     * @since 1.0
      */
-    private void validateFile(File pFile) throws CompressionException {
-        if (pFile == null) {
+    private void validateFile(File file) throws CompressionException {
+        if (file == null) {
             throw new CompressionException(String.format("File parameter is null"));
         }
 
-        if (!pFile.exists()) {
-            throw new CompressionException(String.format("The file or directory '%s' does not exist", pFile.getName()));
+        if (!file.exists()) {
+            throw new CompressionException(String.format("The file or directory '%s' does not exist", file.getName()));
         }
 
-        if (!pFile.canRead()) {
+        if (!file.canRead()) {
             throw new CompressionException(
-                    String.format("The file or directory '%s' is not readable", pFile.getName()));
+                    String.format("The file or directory '%s' is not readable", file.getName()));
         }
     }
 
@@ -518,15 +490,13 @@ public class CompressionFacade {
      *            le fichier a vérifier
      * 
      * @return vrai si le fichier est de taille inferieure a MAX_SIZE_ARCHIVE
-     * 
-     * @since 4.4
      */
     public boolean isTooLargeFile(File pfile) {
-        return pfile.length() / BYTES_IN_KILOBYTE > maxArchiveSize_;
+        return pfile.length() / BYTES_IN_KILOBYTE > maxArchiveSize;
     }
 
-    public void setMaxArchiveSize(long pMaxArchiveSize_) {
-        this.maxArchiveSize_ = pMaxArchiveSize_;
+    public void setMaxArchiveSize(long archiveSize) {
+        this.maxArchiveSize = archiveSize;
     }
 
 }

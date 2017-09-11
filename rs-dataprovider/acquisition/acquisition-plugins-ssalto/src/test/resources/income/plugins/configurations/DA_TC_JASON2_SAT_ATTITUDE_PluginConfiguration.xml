@@ -1,22 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
- $Id$
-
- HISTORIQUE
-
- VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
- 
-
- VERSION : 5.3 : DM : SIPNG-DM-0126-CN : 09/07/2013 : report de la 5.1.1
-
- VERSION : 2013/01/30 : 5.1.1 : CNES
- DM-ID : SIPNG-DM-0120-CN : 2013/01/30 : maj fichiers de conf
- 
- VERSION : 2009/02/13 : 1.2 : CS
- DM-ID : SIPNG-DM-0047-CN : 2009/02/13 : creation
-
- FIN-HISTORIQUE
--->
 <PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
     <fileNamePattern>spa_satatt_jason2.txt</fileNamePattern>
     <compositeAttribute>

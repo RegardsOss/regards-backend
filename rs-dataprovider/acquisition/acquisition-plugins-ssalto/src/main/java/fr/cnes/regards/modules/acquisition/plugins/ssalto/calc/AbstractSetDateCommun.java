@@ -33,7 +33,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
  *
  */
 public abstract class AbstractSetDateCommun implements ICalculationClass {
-// TODO CMZ à revoir
     public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
 
         boolean status = false;

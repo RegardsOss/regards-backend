@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
- $Id$
-
- HISTORIQUE
- 
- VERSION : 5.5 : DM : SIPNG-DM-152-CN : 20/11/2014 : Deplacement des fichiers de configuration des plugins
- 
- VERSION : 2011/07/13 : 1.6 : CS
- DM-ID : SIPNG-DM-0070-CN : 2011/06/13 : Amelioration des perf. Plus de mots reserves Oracle comme nom d'attributs. Changer OPTION par PRODUCT_OPTION
- 
-  VERSION : 2009/07/01 : 1.3 : CS
- DM-ID : SIPNG-DM-0060-CN : 2009/07/01 : creation
-
- FIN-HISTORIQUE
--->
 <PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
 	<fileNamePattern>(EN1_ION_AX)([VP]{1})(CNE)([0-9]{8}_[0-9]{6})(_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6}))</fileNamePattern>
 	<compositeAttribute>

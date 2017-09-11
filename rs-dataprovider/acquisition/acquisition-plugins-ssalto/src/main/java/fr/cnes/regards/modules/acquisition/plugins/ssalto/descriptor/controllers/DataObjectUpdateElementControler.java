@@ -67,7 +67,7 @@ public class DataObjectUpdateElementControler extends DataObjectElementControler
 
             doDescriptorElement = pNewDoc
                     .createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
-            // TODO CMZ à confirmer
+            // TODO CMZ à confirmer DATA_OBJECT_DESCRIPTION_SSALTO ne devrait pas etre en dur
 //                    .createElement(DescConfiguration.getInstance().getProperties().getDataObjectUpdateNode());
             doDescriptorElement.setAttribute(ENTITY_TYPE, ENTITY_TYPE_VALUE);
             buildUpdateElement(dataObjectUpdateElement, doDescriptorElement, pNewDoc);

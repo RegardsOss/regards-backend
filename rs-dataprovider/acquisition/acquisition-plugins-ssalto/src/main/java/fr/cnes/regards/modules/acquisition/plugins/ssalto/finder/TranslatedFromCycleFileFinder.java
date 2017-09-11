@@ -205,13 +205,12 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg);
         }
-        
+
         return processedValue;
     }
 
     /**
-     * Retourne la date correspondant à la premiere ligne contenant l'occurence du cycle pCycleOccurence dans le fichier
-     * ORF.
+     * Retourne la date correspondant à la premiere ligne contenant l'occurence du cycle pCycleOccurence dans le fichier ORF.
      *
      * @param cycleOccurence
      *            l'occurence du cycle
@@ -439,8 +438,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 // Si la date trouvee est anterieure on stocke l'occurence sinon
                 // c'est la fin
 
-                // TODO CMZ : à confirmer le  toLocalDateTime
-                if (cycleDateTime.isBefore(startDate.toLocalDateTime())) {
+                if (OffsetDateTime.of(cycleDateTime, ZoneOffset.UTC).isBefore(startDate)) {
                     // sauvegarde l'occurence
                     cycleOccurence = new Integer(matcher.group(ORF_CYCLE_GROUP));
                 } else {

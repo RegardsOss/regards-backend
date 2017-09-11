@@ -31,7 +31,6 @@ import org.xml.sax.EntityResolver;
  * 
  * @author Christophe Mertz
  */
-// TODO CMZ : confirmer suppression de extends BasePoolableObjectFactory
 public class XMLValidatorFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XMLValidation.class);

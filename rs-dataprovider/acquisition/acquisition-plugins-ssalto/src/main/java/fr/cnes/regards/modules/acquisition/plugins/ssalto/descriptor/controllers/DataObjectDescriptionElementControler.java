@@ -51,7 +51,7 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
 
         //        try {
         doDescriptorElement = pNewDoc.createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
-        // TODO CMZ à confirmer
+        // TODO CMZ à confirmer DATA_OBJECT_DESCRIPTION_SSALTO ne devrait pas être en dur
         //                .createElement(DescConfiguration.getInstance().getProperties().getDataObjectDescriptionNode());
         doDescriptorElement.setAttribute(ENTITY_TYPE, "DATA_OBJECT_DESCRIPTION");
         //                .setAttribute(ENTITY_TYPE,
