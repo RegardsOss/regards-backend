@@ -44,7 +44,7 @@ public class STAFRetrieveListener implements IClientCollectListener {
     public void fileRetreived(URL pSTAFFileUrl, Path pLocalFilePathRetrieved) {
 
         for (DataFile file : wokingSubset.getDataFiles()) {
-            if (file.getOriginUrl().equals(pSTAFFileUrl)) {
+            if (file.getUrl().equals(pSTAFFileUrl)) {
                 progressManager.restoreSucceed(file, pLocalFilePathRetrieved);
             }
         }
@@ -54,7 +54,7 @@ public class STAFRetrieveListener implements IClientCollectListener {
     @Override
     public void fileRetrieveError(URL pSTAFFileUrl) {
         for (DataFile file : wokingSubset.getDataFiles()) {
-            if (file.getOriginUrl().equals(pSTAFFileUrl)) {
+            if (file.getUrl().equals(pSTAFFileUrl)) {
                 progressManager.restoreFailed(file);
             }
         }

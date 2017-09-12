@@ -198,8 +198,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         pFilesToStore.stream().forEach(fileToStore -> {
             boolean fileArchived = false;
             for (Entry<Path, URL> rawFile : rawArchivedFiles.entrySet()) {
-                if ((rawFile.getKey() != null)
-                        && fileToStore.getUrl().getPath().equals(rawFile.getKey().toString())) {
+                if ((rawFile.getKey() != null) && fileToStore.getUrl().getPath().equals(rawFile.getKey().toString())) {
                     fileArchived = true;
                     // Raw file successfully stored
                     pProgressManager.storageSucceed(fileToStore, rawFile.getValue());
@@ -208,8 +207,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             }
             if (!fileArchived) {
                 // Raw file not stored
-                LOG.error("[STAF] File {} has not been stored into STAF System.",
-                          fileToStore.getUrl().toString());
+                LOG.error("[STAF] File {} has not been stored into STAF System.", fileToStore.getUrl().toString());
                 pProgressManager.storageFailed(fileToStore, "Error during file archive");
             }
         });
@@ -255,8 +253,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                     return olds;
                 });
             } catch (IOException e) {
-                LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getUrl().getPath(),
-                          e);
+                LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getUrl().getPath(), e);
             }
 
         });
@@ -303,12 +300,12 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 try {
                     LOG.info("[STAF PLUGIN] {} - Store - Retrieving file from {} to {}", stafArchive.getArchiveName(),
                              file.getUrl().toString(), destinationFilePath.toFile().getPath());
-                    DownloadUtils.downloadAndCheckChecksum(file.getUrl(), destinationFilePath,
-                                                           file.getAlgorithm(), file.getChecksum(), 100);
+                    DownloadUtils.downloadAndCheckChecksum(file.getUrl(), destinationFilePath, file.getAlgorithm(),
+                                                           file.getChecksum(), 100);
                     // File is now in our workspace, so change origine url
                 } catch (IOException | NoSuchAlgorithmException e) {
-                    String errorMsg = String.format("Error retrieving file from %s to %s",
-                                                    file.getUrl().getPath(), destinationFilePath.toString());
+                    String errorMsg = String.format("Error retrieving file from %s to %s", file.getUrl().getPath(),
+                                                    destinationFilePath.toString());
                     LOG.error(errorMsg, e);
                     throw new IOException(e);
                 }
@@ -336,7 +333,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, ProgressManager pProgressManager) {
         Set<URL> stafUrlsToRetrieve = Sets.newHashSet();
         for (DataFile fileToRetrieve : pWorkingSubset.getDataFiles()) {
-            URL stafUrl = fileToRetrieve.getOriginUrl();
+            URL stafUrl = fileToRetrieve.getUrl();
             if (STAFUrlFactory.STAF_URL_PROTOCOLE.equals(stafUrl.getProtocol())) {
                 stafUrlsToRetrieve.add(stafUrl);
             }
