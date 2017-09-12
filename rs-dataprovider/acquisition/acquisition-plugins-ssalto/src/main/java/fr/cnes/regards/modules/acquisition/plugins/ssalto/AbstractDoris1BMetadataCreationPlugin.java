@@ -39,36 +39,36 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
      * etre prefixe respectivement par MOE_CDDIS_, MOE_CDDIS_COM_ , POE_CDDIS_COM_
      */
     @Override
-    protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
-            String pDicoName, String pDataSetId) throws ModuleException {
+    protected DataStorageObjectDescriptionElement defineDataStorageElement(File acquisitionFile, String projectName,
+            String dicoName, String dataSetId) throws ModuleException {
 
         initPrefixMap();
 
         // Define storage object element
         DataStorageObjectDescriptionElement dataStorageObject = new DataStorageObjectDescriptionElement();
 
-        String dataObjectIdentifier = pSsaltoFile.getName();
+        String dataObjectIdentifier = acquisitionFile.getName();
 
         // DATA_STORAGE_OBJECT_IDENTIFIER
-        if ((prefixMap != null) && prefixMap.containsKey(pDataSetId)) {
-            String prefix = prefixMap.get(pDataSetId);
+        if ((prefixMap != null) && prefixMap.containsKey(dataSetId)) {
+            String prefix = prefixMap.get(dataSetId);
             dataObjectIdentifier = prefix + dataObjectIdentifier;
         } else {
-            throw new ModuleException("Prefix for " + pDataSetId + "does not exist!");
+            throw new ModuleException("Prefix for " + dataSetId + "does not exist!");
         }
 
         dataStorageObject.setDataStorageObjectIdentifier(dataObjectIdentifier);
         // FILE_SIZE
-        if (pSsaltoFile.length() < 1024) {
+        if (acquisitionFile.length() < 1024) {
             dataStorageObject.setFileSize(new Long(1));
         } else {
-            dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
+            dataStorageObject.setFileSize(new Long(acquisitionFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
         // TODO CMZ à confirmer : suppression de setOnlinePath et setTransformer
         //        setOnlinePath(dataStorageObject, pSsaltoFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
-        dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
+        dataStorageObject.setOnlineFileName(acquisitionFile.getName());
         //        // TRANSFORMATION_SO_DO
         //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
         return dataStorageObject;
@@ -76,14 +76,14 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
 
     /**
      * 
-     * @param pDatasetName
-     * @param pPrefix
+     * @param datasetName
+     * @param prefix
      */
-    protected void addDatasetNamePrexif(String pDatasetName, String pPrefix) {
+    protected void addDatasetNamePrexif(String datasetName, String prefix) {
         if (prefixMap == null) {
             prefixMap = new HashMap<>();
         }
-        prefixMap.put(pDatasetName, pPrefix);
+        prefixMap.put(datasetName, prefix);
     }
 
 }

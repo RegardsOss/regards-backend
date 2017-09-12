@@ -45,6 +45,8 @@ public class TranslatedFileNameFinder extends FileNameFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
 
+    private static final String PATH_PROPERTIES = "income/plugins/translations";
+
     /**
      * fichier de traduction
      */
@@ -62,30 +64,28 @@ public class TranslatedFileNameFinder extends FileNameFinder {
 
         try {
             // Get file from project configured directory
-         // TODO CMZ à revoir pour le moment pluginsRepositoryProperties est null
-            
-//            String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
-//            File translationFile = new File(translationDirectory, translationPropertiesFilePath);
-//            if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
-//                InputStream inStream = new FileInputStream(translationFile);
-//                translationProperties.load(inStream);
-//            } else {
-//                LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
-//                        + ". Checking in classpath ...");
-//                File ff = new File("income/plugins/translations" + translationPropertiesFilePath);
-//                InputStream inStream = new FileInputStream(ff);
-//                translationProperties.load(inStream);
-                
+            // TODO CMZ à revoir pour le moment pluginsRepositoryProperties est null
 
-                try (InputStream stream = TranslatedFileNameFinder.class.getClassLoader()
-                        .getResourceAsStream("income/plugins/translations" + translationPropertiesFilePath)) {
-                    translationProperties.load(stream);
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-                
-                
-//            }
+            //            String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
+            //            File translationFile = new File(translationDirectory, translationPropertiesFilePath);
+            //            if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
+            //                InputStream inStream = new FileInputStream(translationFile);
+            //                translationProperties.load(inStream);
+            //            } else {
+            //                LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
+            //                        + ". Checking in classpath ...");
+            //                File ff = new File("income/plugins/translations" + translationPropertiesFilePath);
+            //                InputStream inStream = new FileInputStream(ff);
+            //                translationProperties.load(inStream);
+
+            try (InputStream stream = getClass().getClassLoader()
+                    .getResourceAsStream(PATH_PROPERTIES + translationPropertiesFilePath)) {
+                translationProperties.load(stream);
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+
+            //            }
         } catch (Exception e) {
             String msg = "unable to load the translation properties file";
             LOGGER.error(msg, e);

@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.AttributeFinder;
 
-
 /**
  * 
  * @author Christophe Mertz
@@ -92,8 +91,7 @@ public class PluginConfigurationProperties {
     private void loadProperties() {
         pluginProperties = new Properties();
 
-        try (InputStream stream = PluginConfigurationProperties.class.getClassLoader()
-                .getResourceAsStream(URL_PROPERTIES)) {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(URL_PROPERTIES)) {
             pluginProperties.load(stream);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -117,7 +115,7 @@ public class PluginConfigurationProperties {
 
     public String[] getOrfFilepath() {
         String[] orfFilePath = new String[0];
-        
+
         if (project == null) {
             LOGGER.error(LOG_PROJECT_NOT_SET);
             return orfFilePath;

@@ -43,6 +43,11 @@ public class DescriptorFile {
     protected String projectName;
 
     /**
+     * le nom du fichier descripteur
+     */
+    private String fileName;
+
+    /**
      * Une {@link Map} contenant les elements du document.
      * Cette map est constituée de la manière suivante :
      * <li>en clef : une {@link String}
@@ -54,11 +59,6 @@ public class DescriptorFile {
 
     private final List<String> deleteElementList;
 
-    /**
-     * le nom du fichier descripteur
-     */
-    private String fileName;
-
     public DescriptorFile() {
         super();
         descElementMap = new HashMap<>();
@@ -66,13 +66,16 @@ public class DescriptorFile {
         deleteElementList = new ArrayList<>();
     }
 
-    public String getFileName() {
-        return fileName;
-    }
+    public DescriptorFile(String dicoName, String projectName) {
+        super();
+        this.dicoName = dicoName;
+        this.projectName = projectName;
+        this.fileName = null;
 
-    public void setFileName(String name) {
-        fileName = name;
-    }
+        descElementMap = new HashMap<>();
+        updateElementMap = new HashMap<>();
+        deleteElementList = new ArrayList<>();
+}
 
     public HashMap<String, List<EntityDescriptorElement>> getDescElementMap() {
         return descElementMap;
@@ -84,22 +87,6 @@ public class DescriptorFile {
 
     public List<String> getDeleteElementList() {
         return deleteElementList;
-    }
-
-    public void setProjectName(String name) {
-        projectName = name;
-    }
-
-    public void setDicoName(String name) {
-        dicoName = name;
-    }
-
-    public String getDicoName() {
-        return dicoName;
-    }
-
-    public String getProjectName() {
-        return projectName;
     }
 
     /**
@@ -174,5 +161,29 @@ public class DescriptorFile {
 
             LOGGER.info("***** Element added to delete element list : delete bloc id " + pElement.getEntityId());
         }
+    }
+
+    public void setDicoName(String name) {
+        dicoName = name;
+    }
+
+    public String getDicoName() {
+        return dicoName;
+    }
+
+    public void setProjectName(String name) {
+        projectName = name;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String name) {
+        fileName = name;
     }
 }

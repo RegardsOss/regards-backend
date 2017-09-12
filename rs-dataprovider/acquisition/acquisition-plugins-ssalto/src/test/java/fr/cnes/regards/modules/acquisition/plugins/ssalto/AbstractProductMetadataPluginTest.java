@@ -135,8 +135,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         properties = new Properties();
         propertyFilePath = getProjectProperties();
 
-        try (InputStream stream = AbstractProductMetadataPluginTest.class.getClassLoader()
-                .getResourceAsStream(propertyFilePath)) {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
             properties.load(stream);
         } catch (Exception e) {
             LOGGER.error("Unable to load file " + propertyFilePath, e);
@@ -406,7 +405,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             try {
                 // Get metadata
                 String xml = createMetaData(pluginTestDef, pluginGenerateSIP, fileMap);
-                
+
                 // Create the file descriptor
                 File descFile = new File(DESCRIPTOR_DIRECTORY, desc_product_ + pluginTestDef.getProductName() + ".xml");
                 writeDescOnDisk(xml, descFile);

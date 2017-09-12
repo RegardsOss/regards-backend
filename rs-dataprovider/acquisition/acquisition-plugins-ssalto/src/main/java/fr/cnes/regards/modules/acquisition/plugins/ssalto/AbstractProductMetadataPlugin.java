@@ -121,7 +121,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      */
     public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
         // Get the path to the digester rules file
-        URL ruleFile = AbstractProductMetadataPlugin.class.getClassLoader().getResource(RULE_FILE);
+        URL ruleFile = getClass().getClassLoader().getResource(RULE_FILE);
         if (ruleFile == null) {
             String msg = "unable to load the rule file " + RULE_FILE;
             LOGGER.error(msg);
@@ -173,8 +173,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
         // init the attributeOrderMap_ from the attributeOrderConfigurationFile
         attributeOrderProperties = new Properties();
-        try (InputStream stream = AbstractProductMetadataPlugin.class.getClassLoader()
-                .getResourceAsStream(ATTRIBUTE_ORDER_PROP_FILE)) {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(ATTRIBUTE_ORDER_PROP_FILE)) {
             attributeOrderProperties.load(stream);
         } catch (Exception e) {
             String message = "unable to load property file" + ATTRIBUTE_ORDER_PROP_FILE;

@@ -157,7 +157,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
 
     /**
      * Get the START_DATE
-     * @param pSsaltoFileList
+     * @param files
      * @return
      * @throws PluginAcquisitionException
      */

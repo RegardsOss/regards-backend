@@ -109,7 +109,7 @@ public class ZipCompression extends AbstractRunnableCompression {
         // in the list since ZIP does not accept
         List<File> listWithoutDouble = new ArrayList<>();
         for (File aFile : pFileList) {
-            if (containsFile(listWithoutDouble, aFile) == Boolean.FALSE) {
+            if (!containsFile(listWithoutDouble, aFile)) {
                 listWithoutDouble.add(aFile);
                 totalSize += aFile.length();
             }
@@ -241,16 +241,15 @@ public class ZipCompression extends AbstractRunnableCompression {
      * @param pFilesLst
      *            la liste de fichiers
      * @param pFile
-     *            le fichier.
-     * @return un objet <code>Boolean</code>
+     *            le fichier
+     * @return a {@link Boolean}
      */
-    private Boolean containsFile(List<File> pFilesLst, File pFile) {
-        Boolean contains = Boolean.FALSE;
+    private boolean containsFile(List<File> pFilesLst, File pFile) {
+        boolean contains = false;
 
         for (File file : pFilesLst) {
-
-            if (pFile.getPath().equals(file.getPath())) {
-                contains = Boolean.TRUE;
+            if (!contains && pFile.getPath().equals(file.getPath())) {
+                contains = true;
             }
         }
 

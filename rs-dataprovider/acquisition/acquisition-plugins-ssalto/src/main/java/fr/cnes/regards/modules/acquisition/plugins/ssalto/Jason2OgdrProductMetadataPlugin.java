@@ -69,17 +69,17 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
 
     /**
      *
-     * @param pFileMap
-     * @param pAttributeMap
+     * @param fileMap
+     * @param attributeMap
      * @throws PluginAcquisitionException
      */
-    private void registerOptionAttribute(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    private void registerOptionAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + PRODUCT_OPTION);
         Attribute optionAttribute;
         try {
             optionAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_STRING, PRODUCT_OPTION,
-                                                               getOptionValue(pFileMap.keySet()));
+                                                               getOptionValue(fileMap.keySet()));
             attributeValueMap.put(PRODUCT_OPTION, optionAttribute.getValueList());
 
         } catch (final DomainModelException e) {
@@ -87,19 +87,19 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
         }
-        registerAttribute(PRODUCT_OPTION, pAttributeMap, optionAttribute);
+        registerAttribute(PRODUCT_OPTION, attributeMap, optionAttribute);
         LOGGER.info("END building attribute " + PRODUCT_OPTION);
     }
 
     /**
      *
-     * @param pSsaltoFileList
+     * @param acquisitionFileList
      * @return
      * @throws PluginAcquisitionException
      */
-    protected List<String> getOptionValue(Collection<File> pSsaltoFileList) throws PluginAcquisitionException {
+    protected List<String> getOptionValue(Collection<File> acquisitionFileList) throws PluginAcquisitionException {
         String value = null;
-        for (final File file : pSsaltoFileList) {
+        for (final File file : acquisitionFileList) {
             final Matcher fileNameMatcher = fileNamePattern.matcher(file.getName());
             final NetCdfFileHelper helper = new NetCdfFileHelper(file);
             final String producer = helper.getGlobalAttributeStringValue("institution", null);

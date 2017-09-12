@@ -47,22 +47,19 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
      * Cree les metadata niveau produit
      */
     @Override
-    public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
-            String pDicoName, String pProjectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, Map<File, ?> pFileMap, String datasetName,
+            String dicoName, String projectName) throws ModuleException {
 
         // return pProductName;
         String xmlString = null;
 
         // Init descriptor
-        DescriptorFile descriptorFile = new DescriptorFile();
-        descriptorFile.setDicoName(pDicoName);
-        descriptorFile.setFileName(null);
-        descriptorFile.setProjectName(pProjectName);
+        DescriptorFile descriptorFile = new DescriptorFile(datasetName, productName);
 
         // Define object element
         DataObjectDescriptionElement dataObject = new DataObjectDescriptionElement();
-        dataObject.setAscendingNode(pDatasetName);
-        dataObject.setDataObjectIdentifier(pProductName);
+        dataObject.setAscendingNode(datasetName);
+        dataObject.setDataObjectIdentifier(productName);
         // Add other tags
         dataObject.setCycleNumber("0");
         dataObject.setFileCreationDate("2007-10-10T00:00:00");
@@ -88,7 +85,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
         try {
             xmlString = writeXmlToString(descriptorFile);
         } catch (IOException e) {
-            LOGGER.error("Cannot create xml descriptor string for product " + pProductName,e);
+            LOGGER.error("Cannot create xml descriptor string for product " + productName, e);
             throw new ModuleException(e.getMessage());
         }
 

@@ -77,25 +77,25 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     /**
      * Methode definissant un element xml de type DataStorageElement
      */
-    protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
-            String pDicoName, String pDataSetId) throws ModuleException {
+    protected DataStorageObjectDescriptionElement defineDataStorageElement(File acquisitionFile, String projectName,
+            String dicoName, String dataSetId) throws ModuleException {
 
         // Define storage object element
         DataStorageObjectDescriptionElement dataStorageObject = new DataStorageObjectDescriptionElement();
         // DATA_STORAGE_OBJECT_IDENTIFIER
-        dataStorageObject.setDataStorageObjectIdentifier(pSsaltoFile.getName());
+        dataStorageObject.setDataStorageObjectIdentifier(acquisitionFile.getName());
         // FILE_SIZE
-        if (pSsaltoFile.length() < 1024) {
+        if (acquisitionFile.length() < 1024) {
             dataStorageObject.setFileSize(new Long(1));
         } else {
-            dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
+            dataStorageObject.setFileSize(new Long(acquisitionFile.length() / 1024));
         }
 
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
         // TODO CMZ à confirmer
-        //        setOnlinePath(dataStorageObject, pSsaltoFile);
+        //        setOnlinePath(dataStorageObject, acquisitionFile);
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
-        dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
+        dataStorageObject.setOnlineFileName(acquisitionFile.getName());
 
         // TRANSFORMATION_SO_DO
         // TODO CMZ à confirmer
@@ -127,8 +127,8 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //        pDataStorageObject.setOnlinePath(relativeOnlinePath);
     //    }
 
-    public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
-            String pDicoName, String pProjectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName,
+            String dicoName, String projectName) throws ModuleException {
         return null;
     }
 

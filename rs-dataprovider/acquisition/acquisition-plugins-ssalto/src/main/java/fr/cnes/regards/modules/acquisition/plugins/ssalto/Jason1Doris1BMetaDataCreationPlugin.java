@@ -44,36 +44,36 @@ public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin 
      * etre prefixe respectivement par MOE_CDDIS_, MOE_CDDIS_COM_ , POE_CDDIS_COM_
      */
     @Override
-    protected DataStorageObjectDescriptionElement defineDataStorageElement(File pSsaltoFile, String pProjectName,
-            String pDicoName, String pDataSetId) throws ModuleException {
+    protected DataStorageObjectDescriptionElement defineDataStorageElement(File acquisitionFile, String projectName,
+            String dicoName, String dataSetId) throws ModuleException {
 
         // Define storage object element
         DataStorageObjectDescriptionElement dataStorageObject = new DataStorageObjectDescriptionElement();
 
-        String dataObjectIdentifier = pSsaltoFile.getName();
+        String dataObjectIdentifier = acquisitionFile.getName();
 
         // DATA_STORAGE_OBJECT_IDENTIFIER
-        if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS)) {
+        if (dataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS)) {
             dataObjectIdentifier = PREFIX_MOE_CDDIS + dataObjectIdentifier;
-        } else if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM)) {
+        } else if (dataSetId.equals(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM)) {
             dataObjectIdentifier = PREFIX_MOE_CDDIS_COM + dataObjectIdentifier;
-        } else if (pDataSetId.equals(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM)) {
+        } else if (dataSetId.equals(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM)) {
             dataObjectIdentifier = PREFIX_POE_CDDIS_COM + dataObjectIdentifier;
         }
 
         dataStorageObject.setDataStorageObjectIdentifier(dataObjectIdentifier);
         // FILE_SIZE
-        if (pSsaltoFile.length() < 1024) {
+        if (acquisitionFile.length() < 1024) {
             dataStorageObject.setFileSize(new Long(1));
         } else {
-            dataStorageObject.setFileSize(new Long(pSsaltoFile.length() / 1024));
+            dataStorageObject.setFileSize(new Long(acquisitionFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
         // TODO CMZ à confirmer : suppression de setOnlinePath et setTransformer
-        //        setOnlinePath(dataStorageObject, pSsaltoFile);
+        //        setOnlinePath(dataStorageObject, acquisitionFile);
 
         // STORAGE > STORAGE_ON_LINE > ONLINE_OBJECT_NAME
-        dataStorageObject.setOnlineFileName(pSsaltoFile.getName());
+        dataStorageObject.setOnlineFileName(acquisitionFile.getName());
 
         // TRANSFORMATION_SO_DO
         //        dataStorageObject.setTransformer((TransformerTypeEnum) null);
