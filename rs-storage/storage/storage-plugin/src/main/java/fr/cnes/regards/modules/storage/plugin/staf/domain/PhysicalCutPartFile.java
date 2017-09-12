@@ -21,7 +21,7 @@ public class PhysicalCutPartFile extends AbstractPhysicalFile {
     /**
      * Local cuted part file to store
      */
-    private final Path localFilePath;
+    private Path localFilePath;
 
     /**
      * AbstractPhysicalFile type CUT including all cuted part of the original file.
@@ -53,6 +53,11 @@ public class PhysicalCutPartFile extends AbstractPhysicalFile {
     @Override
     public Path getLocalFilePath() {
         return localFilePath;
+    }
+
+    @Override
+    public void setLocalFilePath(Path pLocalFilePath) {
+        localFilePath = pLocalFilePath;
     }
 
     @Override

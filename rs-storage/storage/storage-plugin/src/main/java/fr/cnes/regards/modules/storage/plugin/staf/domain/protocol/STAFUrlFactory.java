@@ -18,6 +18,7 @@ import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.STAFException;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.AbstractPhysicalFile;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.PhysicalCutFile;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.PhysicalCutPartFile;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.PhysicalNormalFile;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.PhysicalTARFile;
@@ -74,7 +75,6 @@ public class STAFUrlFactory {
      * @throws STAFUrlException Error during URL mapping.
      */
     public static Map<Path, URL> getSTAFFullURLs(AbstractPhysicalFile pSTAFStoredFile) throws STAFUrlException {
-
         Map<Path, URL> urls = Maps.newHashMap();
         Optional<Path> firstRawFile = pSTAFStoredFile.getRawAssociatedFiles().stream().findFirst();
         if (firstRawFile.isPresent()) {
@@ -82,7 +82,8 @@ public class STAFUrlFactory {
                 // Add file access
                 switch (pSTAFStoredFile.getArchiveMode()) {
                     case CUT_PART:
-                        urls.put(firstRawFile.get(), getCutPartFileSTAFUrl((PhysicalCutPartFile) pSTAFStoredFile));
+                        PhysicalCutPartFile partFile = (PhysicalCutPartFile) pSTAFStoredFile;
+                        urls.put(firstRawFile.get(), getCutFileSTAFUrl(partFile.getIncludingCutFile()));
                         break;
                     case TAR:
                         urls.putAll(getTARFilesSTAFUrl((PhysicalTARFile) pSTAFStoredFile));
@@ -111,10 +112,27 @@ public class STAFUrlFactory {
             String urlInitialPath = String
                     .format(STANDARD_URL_STRING_FORMAT,
                             Paths.get(pCutPartFile.getStafArchiveName(), pCutPartFile.getStafNode()));
-            String fileNamePath = pCutPartFile.getIncludingCutFile().getSTAFFilePath().toString();
+            String fileNamePath = pCutPartFile.getSTAFFilePath().getFileName().toString();
+            return new URL(String.format("%s/%s", urlInitialPath, fileNamePath));
+        } catch (MalformedURLException | STAFException e) {
+            throw new STAFUrlException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Create the STAF Protocol URL for the given {@link PhysicalCutFile}
+     * @param pCutFile {@link PhysicalCutFile} file to retrieive STAF Protocol URL.
+     * @return {@link URL}
+     * @throws STAFUrlException Error during URL construction.
+     */
+    public static URL getCutFileSTAFUrl(PhysicalCutFile pCutFile) throws STAFUrlException {
+        try {
+            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
+                                                  Paths.get(pCutFile.getStafArchiveName(), pCutFile.getStafNode()));
+            String fileNamePath = pCutFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s?%s=%d", urlInitialPath, fileNamePath,
                                          STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName(),
-                                         pCutPartFile.getIncludingCutFile().getCutedFileParts().size()));
+                                         pCutFile.getCutedFileParts().size()));
         } catch (MalformedURLException | STAFException e) {
             throw new STAFUrlException(e.getMessage(), e);
         }
@@ -251,7 +269,7 @@ public class STAFUrlFactory {
         if (m.matches()) {
             String filePath = m.group(3);
             if (!filePath.isEmpty()) {
-                int index = filePath.indexOf("=");
+                int index = filePath.indexOf('=');
                 if ((index >= 0) && filePath.contains(STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName())) {
                     parameters.put(STAFUrlParameter.CUT_PARTS_PARAMETER, filePath.substring(index + 1));
                 } else if ((index >= 0)

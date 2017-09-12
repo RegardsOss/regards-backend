@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -290,21 +291,42 @@ public class STAFController {
         return this.getAllPreparedFilesToArchive();
     }
 
+    private Set<AbstractPhysicalFile> prepareFilesToRestore(Set<URL> pSTAFFilesToRestore, Path pDestinationPath) {
+        Set<AbstractPhysicalFile> physicalFiles = Sets.newHashSet();
+        //1. Create STAF File from given urls
+        for (URL stafURL : pSTAFFilesToRestore) {
+            try {
+                AbstractPhysicalFile physicalFile = getSTAFPhysicalFile(stafURL, pDestinationPath, physicalFiles,
+                                                                        PhysicalFileStatusEnum.TO_RETRIEVE);
+
+                switch (physicalFile.getArchiveMode()) {
+                    case CUT:
+                        PhysicalCutFile cutFile = (PhysicalCutFile) physicalFile;
+                        physicalFiles.addAll(cutFile.getCutedFileParts());
+                        break;
+                    case CUT_PART:
+                    case NORMAL:
+                    case TAR:
+                    default:
+                        physicalFiles.add(physicalFile);
+                        break;
+                }
+            } catch (STAFException e) {
+                LOG.error("[STAF] Error retreiving file {}", stafURL.toString(), e);
+            }
+        }
+        return physicalFiles;
+    }
+
     /**
      * Restore the files from the given STAF {@link URL}
      * @param pSTAFFilesToRestore {@link Set}<{@link URL}> STAF URL of files to retrieve.
      * @param pDestinationPath {@link Path} Directory where to put restored files.
      */
-    public void restoreFiles(Set<URL> pSTAFFilesToRestore, Path pDestinationPath) {
-        Set<AbstractPhysicalFile> physicalFiles = Sets.newHashSet();
-        //1. Create STAF File from given urls
-        pSTAFFilesToRestore.forEach(stafURL -> {
-            try {
-                physicalFiles.add(getSTAFPhysicalFile(stafURL, pDestinationPath));
-            } catch (STAFException e) {
-                LOG.error("[STAF] Error retreiving file {}", stafURL.toString(), e);
-            }
-        });
+    public void restoreFiles(Set<URL> pSTAFFilesToRestore, Path pDestinationPath, IClientCollectListener pListener) {
+
+        Set<AbstractPhysicalFile> physicalFiles = prepareFilesToRestore(pSTAFFilesToRestore, pDestinationPath);
+        stafService.setCollectListener(new STAFCollectListener(physicalFiles, pDestinationPath, pListener));
 
         //2. Retrieve staf files path to retrieve
         Set<Path> stafFilePathsToRetrieive = Sets.newHashSet();
@@ -322,7 +344,6 @@ public class STAFController {
             stafService.restoreAllFiles(stafFilePathsToRetrieive, pDestinationPath.toString());
             stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
         } catch (STAFException e) {
-            // TODO Handle exception
             LOG.error("[STAF] Error during STAF Restoration", e.getMessage(), e);
         }
     }
@@ -366,7 +387,9 @@ public class STAFController {
      * @return created {@link AbstractPhysicalFile}
      * @throws STAFException
      */
-    private AbstractPhysicalFile getSTAFPhysicalFile(URL pUrl, Path destinationDirectory) throws STAFException {
+    private AbstractPhysicalFile getSTAFPhysicalFile(URL pUrl, Path destinationDirectory,
+            Set<AbstractPhysicalFile> pAlreadyPreparedPhysicalFiles, PhysicalFileStatusEnum pStatus)
+            throws STAFException {
 
         String stafArchive = STAFUrlFactory.getSTAFArchiveFromURL(pUrl);
         String stafNode = STAFUrlFactory.getSTAFNodeFromURL(pUrl);
@@ -383,22 +406,37 @@ public class STAFController {
                 if (parameters.get(STAFUrlParameter.CUT_PARTS_PARAMETER) != null) {
                     Integer numberOfParts = Integer.parseInt(parameters.get(STAFUrlParameter.CUT_PARTS_PARAMETER));
                     for (int i = 0; i < numberOfParts; i++) {
-                        cutFile.addCutedPartFile(new PhysicalCutPartFile(null, cutFile, i, stafArchive, stafNode));
+                        PhysicalCutPartFile partFile = new PhysicalCutPartFile(null, cutFile, i, stafArchive, stafNode);
+                        partFile.setStatus(pStatus);
+                        cutFile.addCutedPartFile(partFile);
                     }
                 }
 
                 return cutFile;
             case NORMAL:
                 PhysicalNormalFile physicalFile = new PhysicalNormalFile(localFilePath, null, stafArchive, stafNode);
+                physicalFile.setStatus(pStatus);
                 physicalFile.setStafFileName(stafFileName);
                 return physicalFile;
             case TAR:
-                PhysicalTARFile tar = new PhysicalTARFile(stafArchive, stafNode);
-                tar.setStafFileName(stafFileName);
-                tar.setLocalTarFile(localFilePath);
+                // Check if tar is already prepared
+                Optional<AbstractPhysicalFile> existingTar = pAlreadyPreparedPhysicalFiles.stream()
+                        .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode())).filter(f -> {
+                            PhysicalTARFile t = (PhysicalTARFile) f;
+                            return stafFileName.equals(t.getStafFileName()) && stafNode.equals(t.getStafNode())
+                                    && stafArchive.equals(t.getStafArchiveName());
+                        }).findFirst();
+                PhysicalTARFile tar;
+                if (existingTar.isPresent()) {
+                    tar = (PhysicalTARFile) existingTar.get();
+                } else {
+                    tar = new PhysicalTARFile(stafArchive, stafNode);
+                    tar.setStafFileName(stafFileName);
+                    tar.setLocalTarFile(localFilePath);
+                }
+                tar.setStatus(pStatus);
                 if (parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER) != null) {
-                    Path FileInTar = Paths.get(parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER));
-                    tar.addFileInTar(FileInTar, null);
+                    tar.addFileInTar(Paths.get(parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER)), null);
                 }
                 return tar;
             default:

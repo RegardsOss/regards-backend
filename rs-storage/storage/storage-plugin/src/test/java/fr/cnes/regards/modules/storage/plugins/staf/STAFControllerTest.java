@@ -25,7 +25,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -39,6 +41,7 @@ import fr.cnes.regards.framework.staf.STAFManager;
 import fr.cnes.regards.framework.staf.STAFService;
 import fr.cnes.regards.framework.staf.STAFSession;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.AbstractPhysicalFile;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.IClientCollectListener;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.PhysicalFileStatusEnum;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.STAFController;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.TARController;
@@ -162,6 +165,7 @@ public class STAFControllerTest {
         stafService = new STAFService(stafManagerMock, stafArchive);
 
         controller = new STAFController(configuration, STAF_WORKSPACE_PATH, stafService);
+        controller.initializeWorkspaceDirectories();
 
     }
 
@@ -636,10 +640,18 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH);
+        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH, Mockito.mock(IClientCollectListener.class));
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // Check event sent after staf retreive.
+        /*ArgumentCaptor<CollectEvent> argument = ArgumentCaptor.forClass(CollectEvent.class);
+        Mockito.verify(collectListenerMock, Mockito.times(1)).collectEnded(argument.capture());
+        Assert.assertEquals(1, argument.getValue().getRestoredFilePaths().size());
+        Assert.assertEquals(stafService, argument.getValue().getSource());
+        Assert.assertEquals(Paths.get(STAF_TEST_NODE, "file.txt"),
+                            argument.getValue().getRestoredFilePaths().stream().findFirst().get());*/
 
     }
 
@@ -658,31 +670,52 @@ public class STAFControllerTest {
     @Test
     public void testRestoreCutedFiles() throws MalformedURLException, STAFException {
 
+        // Set special configuration to force use of only one staf session.
+        // Set the maximum number of sessions
+        configuration.setMaxSessionsRestitutionMode(10);
+        // Set the maximum number of stream per sesssion
+        configuration.setMaxSessionStreamsRestitutionMode(10);
+        // Set the maximum number of files per stream
+        configuration.setMaxStreamFilesRestitutionMode(10);
+
+        String cutfileName = "big_file_test_1.txt";
         Set<URL> stafUrls = Sets.newHashSet();
         Map<String, String> restoreParameters = Maps.newHashMap();
 
-        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
-                Paths.get(STAF_TEST_NODE,
-                          "cuted_file.txt?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=3")
-                        .toString());
+        int numberOfParts = 9;
+        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     cutfileName + "?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
+                .toString());
         stafUrls.add(stafCutUrl);
-        restoreParameters.put(stafCutUrl.getPath().toString() + "_00",
-                              Paths.get(STAF_WORKSPACE_PATH.toString(), "cuted_file.txt_00").toString());
-        restoreParameters.put(stafCutUrl.getPath().toString() + "_01",
-                              Paths.get(STAF_WORKSPACE_PATH.toString(), "cuted_file.txt_01").toString());
-        restoreParameters.put(stafCutUrl.getPath().toString() + "_02",
-                              Paths.get(STAF_WORKSPACE_PATH.toString(), "cuted_file.txt_02").toString());
+        for (int i = 0; i < numberOfParts; i++) {
+            restoreParameters.put(stafCutUrl.getPath().toString() + "_0" + i,
+                                  Paths.get(STAF_WORKSPACE_PATH.toString(), cutfileName + "_0" + i).toString());
+        }
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieveBuffered(Mockito.any());
+
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
 
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH);
+        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
 
-        // TODO : Check concatenation of 3 restored files into 1.
-
+        // Check event sent after staf retreive.
+        Path resultFile = Paths.get(STAF_WORKSPACE_PATH.toString(), cutfileName);
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        Assert.assertEquals(true, argumentURL.getValue().equals(stafCutUrl));
+        Assert.assertEquals(true,
+                            argumentPath.getValue().equals(Paths.get(STAF_WORKSPACE_PATH.toString(), cutfileName)));
+        Assert.assertTrue("Cut file restoration error. File does not exits !", resultFile.toFile().exists());
     }
 
     /**
@@ -729,13 +762,41 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH);
+        controller.restoreFiles(stafUrls, STAF_WORKSPACE_PATH, Mockito.mock(IClientCollectListener.class));
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
 
-        // TODO : Check extraction of wanted file.
+        // Check event sent after staf retreive.
+        /*ArgumentCaptor<CollectEvent> argument = ArgumentCaptor.forClass(CollectEvent.class);
+        Mockito.verify(collectListenerMock, Mockito.times(1)).collectEnded(argument.capture());
+        Assert.assertEquals(2, argument.getValue().getRestoredFilePaths().size());
+        Assert.assertEquals(stafService, argument.getValue().getSource());
+        Assert.assertEquals(true,
+                            argument.getValue().getRestoredFilePaths().contains(Paths.get(STAF_TEST_NODE, "file.tar")));
+        Assert.assertEquals(true, argument.getValue().getRestoredFilePaths()
+                .contains(Paths.get(STAF_TEST_NODE, "file2.tar")));*/
 
+        // TODO : Check extraction of wanted file.
+    }
+
+    /**
+     * Mock to simulate STAF files restoration.
+     * @param invocation
+     * @return
+     */
+    private Void mockRestoration(InvocationOnMock invocation) {
+        Object[] args = invocation.getArguments();
+        @SuppressWarnings("unchecked")
+        Map<String, String> files = (Map<String, String>) args[0];
+        files.forEach((source, destination) -> {
+            try {
+                Files.createFile(Paths.get(destination));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return null;
     }
 
 }

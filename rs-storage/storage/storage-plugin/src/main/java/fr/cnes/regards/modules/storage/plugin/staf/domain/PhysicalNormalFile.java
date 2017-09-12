@@ -21,7 +21,7 @@ public class PhysicalNormalFile extends AbstractPhysicalFile {
     /**
      * {@link Path} to the local file to store.
      */
-    private final Path localFile;
+    private Path localFile;
 
     /**
      * Constructor
@@ -56,4 +56,8 @@ public class PhysicalNormalFile extends AbstractPhysicalFile {
         }
     }
 
+    @Override
+    public void setLocalFilePath(Path pLocalFilePath) {
+        localFile = pLocalFilePath;
+    }
 }

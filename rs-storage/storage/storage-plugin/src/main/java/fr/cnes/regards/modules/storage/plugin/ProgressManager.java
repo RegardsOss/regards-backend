@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Set;
 
@@ -58,6 +59,14 @@ public class ProgressManager {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.SUCCESSFUL);
         // publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+    }
+
+    public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
+
+    }
+
+    public void restoreFailed(DataFile dataFile) {
+
     }
 
     public Set<String> getFailureCauses() {

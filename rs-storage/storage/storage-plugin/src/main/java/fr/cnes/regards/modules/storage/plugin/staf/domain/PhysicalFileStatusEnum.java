@@ -31,6 +31,16 @@ public enum PhysicalFileStatusEnum {
     LOCALY_STORED,
 
     /**
+     * File has to be retrieve from STAF System.
+     */
+    TO_RETRIEVE,
+
+    /**
+     * File has been successfully retrieved from STAF System.
+     */
+    RETRIEVED,
+
+    /**
      * STAF store error.
      */
     ERROR;

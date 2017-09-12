@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.Set;
+import java.util.SortedSet;
 
 import com.google.common.collect.Sets;
 
@@ -27,12 +27,12 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
     /**
      * {@link Path} of the local uncuted file to store.
      */
-    private final Path localFile;
+    private Path localFile;
 
     /**
-     * {@link Set} of {@link PhysicalCutPartFile} corresponding of the local part files to store.
+     * {@link SortedSet} of {@link PhysicalCutPartFile} corresponding of the local part files to store.
      */
-    private final Set<PhysicalCutPartFile> cutFileParts = Sets.newHashSet();
+    private final SortedSet<PhysicalCutPartFile> cutFileParts = Sets.newTreeSet(this::physicalCutPartFileComparator);
 
     /**
      * Constructor
@@ -51,6 +51,11 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
     }
 
     @Override
+    public void setLocalFilePath(Path pLocalFilePath) {
+        localFile = pLocalFilePath;
+    }
+
+    @Override
     public Path calculateSTAFFilePath() {
         try (FileInputStream is = new FileInputStream(localFile.toFile())) {
             return Paths.get(super.getStafNode(), ChecksumUtils.computeHexChecksum(is, "md5"));
@@ -60,16 +65,28 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
         }
     }
 
-    public Path getLocalFile() {
-        return localFile;
-    }
-
-    public Set<PhysicalCutPartFile> getCutedFileParts() {
+    public SortedSet<PhysicalCutPartFile> getCutedFileParts() {
         return cutFileParts;
     }
 
     public void addCutedPartFile(PhysicalCutPartFile pCutPartFile) {
         cutFileParts.add(pCutPartFile);
+    }
+
+    /**
+     * Comparator for the {@link SortedSet} of the physical cut parts.
+     * @param pF1 {@link PhysicalCutPartFile}
+     * @param pF2 {@link PhysicalCutPartFile}
+     * @return 0 if equals. -1 if pF1 < pF2. 1 if pF1 > pF2.
+     */
+    public int physicalCutPartFileComparator(PhysicalCutPartFile pF1, PhysicalCutPartFile pF2) {
+        if (pF1.getPartIndex() < pF2.getPartIndex()) {
+            return -1;
+        }
+        if (pF1.getPartIndex() > pF2.getPartIndex()) {
+            return 1;
+        }
+        return 0;
     }
 
 }

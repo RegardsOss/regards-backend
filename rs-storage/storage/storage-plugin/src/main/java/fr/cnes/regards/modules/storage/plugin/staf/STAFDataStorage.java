@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 import fr.cnes.regards.modules.storage.plugin.staf.domain.STAFController;
+import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFUrlFactory;
 
 /**
  * Storage plugin to store plugin in CNES STAF System.<br/>
@@ -332,9 +333,17 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void retrieve(STAFWorkingSubset pWorkingSubset, ProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
+    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, ProgressManager pProgressManager) {
+        Set<URL> stafUrlsToRetrieve = Sets.newHashSet();
+        for (DataFile fileToRetrieve : pWorkingSubset.getDataFiles()) {
+            URL stafUrl = fileToRetrieve.getOriginUrl();
+            if (STAFUrlFactory.STAF_URL_PROTOCOLE.equals(stafUrl.getProtocol())) {
+                stafUrlsToRetrieve.add(stafUrl);
+            }
+        }
 
+        stafController.restoreFiles(stafUrlsToRetrieve, pDestinationPath,
+                                    new STAFRetrieveListener(pProgressManager, pWorkingSubset));
     }
 
     @Override

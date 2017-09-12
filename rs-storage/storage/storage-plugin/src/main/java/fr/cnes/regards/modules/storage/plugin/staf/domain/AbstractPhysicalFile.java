@@ -80,6 +80,11 @@ public abstract class AbstractPhysicalFile {
     public abstract Path getLocalFilePath();
 
     /**
+     * Allow to update the local file path for restored files.
+     */
+    public abstract void setLocalFilePath(Path pLocalFilePath);
+
+    /**
      * Calculate the STAF File path for a new file to store.
      * @return {@link Path} STAF file path
      * @throws STAFException

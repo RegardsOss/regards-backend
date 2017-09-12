@@ -109,6 +109,11 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
     }
 
     @Override
+    public void setLocalFilePath(Path pLocalFilePath) {
+        localTarFile = pLocalFilePath;
+    }
+
+    @Override
     public Path calculateSTAFFilePath() throws STAFException {
         if (localTarFile != null) {
             return Paths.get(super.getStafNode(), localTarFile.getFileName().toString());
