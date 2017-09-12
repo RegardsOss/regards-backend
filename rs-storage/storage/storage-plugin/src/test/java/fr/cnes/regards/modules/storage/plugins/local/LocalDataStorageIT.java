@@ -161,14 +161,14 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         // valid file to get a call to progressManager.storageSucceed
         DataFile validDF = new DataFile(
                 new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
-                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip);
+                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data.txt");
         // file that does not exist to get a call to progressManager.storageFailed
         DataFile ghostDF = new DataFile(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt"),
-                                          "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip);
+                                          "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data_do_not_exist.txt");
         // invalid checksum to check call to progressManager.storageFailed
         DataFile invalidDF = new DataFile(
                 new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
-                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip);
+                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data.txt");
         Set<DataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);

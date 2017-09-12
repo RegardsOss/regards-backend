@@ -130,7 +130,7 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         aip.getHistory()
                 .add(new Event("submission into our beautiful system", OffsetDateTime.now(), EventType.SUBMISSION));
         df = new DataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                          new MimeType("text", "plain"), aip);
+                          new MimeType("text", "plain"), aip, "data.txt");
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets create the job
         parameters = Sets.newHashSet();

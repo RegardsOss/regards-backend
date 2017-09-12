@@ -69,9 +69,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         try {
             fullPathToFile = getStorageLocation(data);
             //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
-            if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getOriginUrl().getPath()))) {
+            if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getUrl().getPath()))) {
                 //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
-                progressManager.storageSucceed(data, data.getOriginUrl());
+                progressManager.storageSucceed(data, data.getUrl());
                 return;
             }
         } catch (IOException ioe) {
@@ -84,7 +84,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         }
         try {
             boolean downloadOk = DownloadUtils
-                    .downloadAndCheckChecksum(data.getOriginUrl(), Paths.get(fullPathToFile), data.getAlgorithm(),
+                    .downloadAndCheckChecksum(data.getUrl(), Paths.get(fullPathToFile), data.getAlgorithm(),
                                               data.getChecksum());
             if (!downloadOk) {
                 String failureCause = String
@@ -118,7 +118,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             Files.createDirectories(Paths.get(storageLocation));
         }
         // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url
-        String fullPathToFile = storageLocation + "/" + checksum + getExtension(data.getOriginUrl());
+        String fullPathToFile = storageLocation + "/" + checksum + getExtension(data.getUrl());
         return fullPathToFile;
     }
 

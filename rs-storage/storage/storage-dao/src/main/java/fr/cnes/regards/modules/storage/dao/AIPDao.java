@@ -7,10 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Strings;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
@@ -47,7 +44,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Page<AIP> findAllByState(AIPState state, Pageable pageable) {
-        Page<AIPDataBase> fromDb = repo.findAllByState(state, pageable);
+        Page<AIPDataBase> fromDb = repo.findAllByStateIn(state, pageable);
         return fromDb.map(this::reconstructAip);
 
     }
@@ -96,7 +93,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Set<AIP> findAllByStateService(AIPState state) {
-        return repo.findAllByState(state).stream().map(this::reconstructAip).collect(Collectors.toSet());
+        return repo.findAllByStateIn(state).stream().map(this::reconstructAip).collect(Collectors.toSet());
     }
 
     @Override
@@ -107,6 +104,11 @@ public class AIPDao implements IAIPDao {
     @Override
     public void deleteAll() {
         repo.deleteAll();
+    }
+
+    @Override
+    public Set<AIP> findAllByStateInService(AIPState... states) {
+        return repo.findAllByStateIn(states).stream().map(this::reconstructAip).collect(Collectors.toSet());
     }
 
 }

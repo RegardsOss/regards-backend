@@ -23,6 +23,8 @@ public class DataObject implements Serializable {
     @NotNull
     private URL url;
 
+    private String name;
+
     public DataObject() {
     }
 
@@ -45,6 +47,14 @@ public class DataObject implements Serializable {
 
     public void setUrl(URL pUri) {
         url = pUri;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public DataObject generate() throws MalformedURLException {

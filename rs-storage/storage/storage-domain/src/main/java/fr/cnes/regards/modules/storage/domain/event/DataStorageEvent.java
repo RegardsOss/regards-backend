@@ -29,7 +29,7 @@ public class DataStorageEvent implements ISubscribable {
 
     public DataStorageEvent(DataFile dataFile, StorageAction storageAction, StorageEventType type) {
         this.dataFileId = dataFile.getId();
-        this.newUrl=dataFile.getOriginUrl();
+        this.newUrl=dataFile.getUrl();
         this.storageAction = storageAction;
         this.type = type;
     }

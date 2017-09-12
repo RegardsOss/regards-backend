@@ -29,7 +29,7 @@ public class ProgressManager {
     }
 
     public void storageSucceed(DataFile dataFile, URL storedUrl) {
-        dataFile.setOriginUrl(storedUrl);
+        dataFile.setUrl(storedUrl);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.SUCCESSFUL);
         //hell yeah this is not the usual publish method, but i know what i'm doing to trust me!
