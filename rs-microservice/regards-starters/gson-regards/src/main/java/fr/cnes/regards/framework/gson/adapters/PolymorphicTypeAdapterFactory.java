@@ -19,7 +19,8 @@
 // CHECKSTYLE:OFF
 /**
  *
- * Code inspired from https://github.com/google/gson/blob/master/extras/src/main/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactory.java
+ * Code inspired from
+ * https://github.com/google/gson/blob/master/extras/src/main/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactory.java
  */
 // CHECKSTYLE:ON
 package fr.cnes.regards.framework.gson.adapters;
@@ -44,6 +45,7 @@ import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 
 /**
@@ -97,6 +99,11 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
      * Whether to refresh mapping after factory creation at runtime
      */
     protected boolean refreshMapping = false;
+
+    /**
+     * Map to identify types serialized even if null value
+     */
+    protected final ConcurrentMap<Class<?>, Boolean> subtypeSerializeNulls = new ConcurrentHashMap<>();
 
     /**
      *
@@ -182,46 +189,70 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Register a mapping between a field value and an explicit type
      *
-     * @param pType
+     * @param type
      *            type
-     * @param pDiscriminatorFieldValue
+     * @param discriminatorFieldValue
      *            field value
-     *
+     * @param serializeNulls Enable null serialization for current type.<br/>
+     *            Warning: this action disables a global null serialization configuration! Do not call this method if
+     *            such
+     *            configuration is set globally.
      */
-    public void registerSubtype(Class<?> pType, String pDiscriminatorFieldValue) {
+    public void registerSubtype(Class<?> type, String discriminatorFieldValue, boolean serializeNulls) {
         refreshMapping = true;
-        GSONUtils.assertNotNull(pType, "Sub type is required.");
-        GSONUtils.assertNotNull(pDiscriminatorFieldValue, "Discriminator field value is required.");
+        GSONUtils.assertNotNull(type, "Sub type is required.");
+        GSONUtils.assertNotNull(discriminatorFieldValue, "Discriminator field value is required.");
 
         // Check inheritance dynamically
-        if (!baseType.isAssignableFrom(pType)) {
-            final String errorMessage = String.format("Type %s not a subtype of %s.", pType, baseType);
+        if (!baseType.isAssignableFrom(type)) {
+            final String errorMessage = String.format("Type %s not a subtype of %s.", type, baseType);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
 
-        LOGGER.debug("Subtype \"{}\" mapped to \"{}\" value", pType, pDiscriminatorFieldValue);
+        LOGGER.debug("Subtype \"{}\" mapped to \"{}\" value", type, discriminatorFieldValue);
 
         // Check if map not already contains value with a different mapping
-        if (discriminatorToSubtype.containsKey(pDiscriminatorFieldValue)
-                && (pType != discriminatorToSubtype.get(pDiscriminatorFieldValue))) {
+        if (discriminatorToSubtype.containsKey(discriminatorFieldValue)
+                && (type != discriminatorToSubtype.get(discriminatorFieldValue))) {
 
             final String errorMessage = String.format("Discrimator field value %s must be unique",
-                                                      pDiscriminatorFieldValue);
+                                                      discriminatorFieldValue);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
-        discriminatorToSubtype.put(pDiscriminatorFieldValue, pType);
+        discriminatorToSubtype.put(discriminatorFieldValue, type);
+        subtypeSerializeNulls.put(type, serializeNulls);
 
         // Reverse conversion only useful when injecting data
         if (injectField) {
-            if (subtypeToDiscriminator.containsKey(pType)) {
-                final String errorMessage = String.format("Type %s must be unique", pType);
+            if (subtypeToDiscriminator.containsKey(type)) {
+                final String errorMessage = String.format("Type %s must be unique", type);
                 LOGGER.error(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
-            subtypeToDiscriminator.put(pType, pDiscriminatorFieldValue);
+            subtypeToDiscriminator.put(type, discriminatorFieldValue);
         }
+    }
+
+    public void registerSubtype(Class<?> type, String discriminatorFieldValue) {
+        registerSubtype(type, discriminatorFieldValue, false);
+    }
+
+    public void registerSubtype(Class<?> pType, Enum<?> pEnum, boolean serializeNulls) {
+        registerSubtype(pType, pEnum.toString(), serializeNulls);
+    }
+
+    public void registerSubtype(Class<?> pType, Enum<?> pEnum) {
+        registerSubtype(pType, pEnum.toString());
+    }
+
+    public void registerSubtype(Class<?> pType) {
+        registerSubtype(pType, pType.getCanonicalName());
+    }
+
+    public void registerSubtype(Class<?> pType, boolean serializeNulls) {
+        registerSubtype(pType, pType.getCanonicalName(), serializeNulls);
     }
 
     /**
@@ -244,22 +275,6 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         if (injectField) {
             subtypeToDiscriminator.remove(pType);
         }
-    }
-
-    /**
-     * Register a mapping between an enumeration and an explicit type.
-     *
-     * @param pType
-     *            type
-     * @param pEnum
-     *            enum value
-     */
-    public void registerSubtype(Class<?> pType, Enum<?> pEnum) {
-        registerSubtype(pType, pEnum.toString());
-    }
-
-    public void registerSubtype(Class<?> pType) {
-        registerSubtype(pType, pType.getCanonicalName());
     }
 
     /**
@@ -416,7 +431,14 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
                 // Raw JSON object
                 JsonElement rawJson = delegate.toJsonTree(pValue);
+
+                if (subtypeSerializeNulls.get(srcType)) {
+                    pOut.setSerializeNulls(true);
+                }
                 Streams.write(beforeWrite(rawJson, srcType), pOut);
+                if (subtypeSerializeNulls.get(srcType)) {
+                    pOut.setSerializeNulls(false);
+                }
             }
 
             /**

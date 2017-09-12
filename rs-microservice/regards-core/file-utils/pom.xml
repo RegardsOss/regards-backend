@@ -34,6 +34,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        <!-- for validation purpose -->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
         <!-- TEST dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

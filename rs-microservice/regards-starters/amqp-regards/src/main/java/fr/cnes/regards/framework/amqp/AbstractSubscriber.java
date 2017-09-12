@@ -143,6 +143,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param pTarget
      *            communication scope
      */
+    @Override
     public <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pHandler, final WorkerMode pWorkerMode,
             final Target pTarget) {
 
