@@ -75,7 +75,7 @@ public class JobInfo {
     /**
      * Date when the job should be expired
      */
-    @Column(name = "expirationDate")
+    @Column(name = "expire_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
@@ -131,19 +131,19 @@ public class JobInfo {
         super();
     }
 
-    public JobInfo(Integer priority, Set<JobParameter> parameters, String owner, String className,
-            JobStatusInfo status) {
+    public JobInfo(Integer priority, Set<JobParameter> parameters, String owner, String className) {
         this.priority = priority;
         this.parameters = parameters;
         this.owner = owner;
         this.className = className;
-        this.status = status;
     }
 
     public void updateStatus(JobStatus status) {
         this.status.setStatus(status);
         switch (status) {
             case PENDING:
+            case QUEUED:
+            case TO_BE_RUN:
                 this.status.setPercentCompleted(0);
                 break;
             case RUNNING:
@@ -231,13 +231,6 @@ public class JobInfo {
      */
     public void setClassName(String pClassName) {
         className = pClassName;
-    }
-
-    /**
-     * @param pStatus the status to set
-     */
-    public void setStatus(JobStatusInfo pStatus) {
-        status = pStatus;
     }
 
     public void setPriority(Integer priority) {

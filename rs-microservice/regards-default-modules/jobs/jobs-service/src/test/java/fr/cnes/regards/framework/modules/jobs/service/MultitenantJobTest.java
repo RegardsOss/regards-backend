@@ -174,7 +174,7 @@ public class MultitenantJobTest {
         waitJobInfo1.setDescription("Job that wait 500ms");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
-        waitJobInfo1 = jobInfoService.create(waitJobInfo1);
+        waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo();
@@ -183,7 +183,7 @@ public class MultitenantJobTest {
         waitJobInfo2.setDescription("Job that wait 500ms");
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
-        waitJobInfo2 = jobInfoService.create(waitJobInfo2);
+        waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
 
         int cpt = 0;
         tenantResolver.forceTenant(TENANT1);
@@ -226,12 +226,12 @@ public class MultitenantJobTest {
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT1);
-        waitJobInfo1 = jobInfoService.create(waitJobInfo1);
+        waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
         jobInfoService.stopJob(waitJobInfo1.getId());
         LOGGER.info("ASK for " + waitJobInfo1.getId() + " TO BE STOPPED");
 
         tenantResolver.forceTenant(TENANT2);
-        waitJobInfo2 = jobInfoService.create(waitJobInfo2);
+        waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
         jobInfoService.stopJob(waitJobInfo2.getId());
         LOGGER.info("ASK for " + waitJobInfo2.getId() + " TO BE STOPPED");
 
@@ -260,9 +260,9 @@ public class MultitenantJobTest {
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
-        waitJobInfo2 = jobInfoService.create(waitJobInfo2);
+        waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
         tenantResolver.forceTenant(TENANT1);
-        waitJobInfo1 = jobInfoService.create(waitJobInfo1);
+        waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
 
         Thread.sleep(2_000);
         LOGGER.info("ASK for " + waitJobInfo1.getId() + " TO BE STOPPED");
@@ -287,14 +287,14 @@ public class MultitenantJobTest {
         failedJobInfo1.setPriority(10);
         failedJobInfo1.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo1.setDescription("Job that failed after 1s");
-        failedJobInfo1 = jobInfoService.create(failedJobInfo1);
+        failedJobInfo1 = jobInfoService.createAsQueued(failedJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo failedJobInfo2 = new JobInfo();
         failedJobInfo2.setPriority(10);
         failedJobInfo2.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo2.setDescription("Job that failed after 1s");
-        failedJobInfo2 = jobInfoService.create(failedJobInfo2);
+        failedJobInfo2 = jobInfoService.createAsQueued(failedJobInfo2);
 
         LOGGER.info("Failed job : {}", failedJobInfo1.getId());
         LOGGER.info("Failed job : {}", failedJobInfo2.getId());
@@ -332,12 +332,12 @@ public class MultitenantJobTest {
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         tenantResolver.forceTenant(TENANT1);
-        for (int i = 0; i < (jobInfos.length / 2); i++) {
-            jobInfos[i] = jobInfoService.create(jobInfos[i]);
+        for (int i = 0; i < jobInfos.length / 2; i++) {
+            jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
         }
         tenantResolver.forceTenant(TENANT2);
         for (int i = jobInfos.length / 2; i < jobInfos.length; i++) {
-            jobInfos[i] = jobInfoService.create(jobInfos[i]);
+            jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
         }
         try {
             // Wait to be sure jobs are treated by pool
@@ -367,7 +367,7 @@ public class MultitenantJobTest {
         springJobInfo.setClassName(SpringJob.class.getName());
         springJobInfo.setDescription("Job with spring beans");
 
-        jobInfoService.create(springJobInfo);
+        jobInfoService.createAsQueued(springJobInfo);
 
         // Wait for job to terminate
         while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < 1) {

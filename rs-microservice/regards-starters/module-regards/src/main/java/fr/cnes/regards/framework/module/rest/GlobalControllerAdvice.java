@@ -97,7 +97,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmptyBasketException.class)
     public ResponseEntity<ServerErrorResponse> handleModelException(final EmptyBasketException ebe) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(new ServerErrorResponse(ebe.getMessage()));
     }
 

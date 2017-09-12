@@ -46,8 +46,8 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     // Do not use entity graph it makes max computation into memory
     JobInfo findFirstByStatusStatusOrderByPriorityDesc(JobStatus status);
 
-    default JobInfo findHighestPriorityPending() {
-        return findFirstByStatusStatusOrderByPriorityDesc(JobStatus.PENDING);
+    default JobInfo findHighestPriorityQueued() {
+        return findFirstByStatusStatusOrderByPriorityDesc(JobStatus.QUEUED);
     }
 
     @EntityGraph(attributePaths = { "parameters" })

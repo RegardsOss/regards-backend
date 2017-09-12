@@ -4,7 +4,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  * A job that failed after 1 s
  * @author oroussel
  */
-public class FailedAfter1sJob extends AbstractJob<Void> {
+public class FailedAfter1sJob extends AbstractNoParamJob<Void> {
 
     public FailedAfter1sJob() {
     }

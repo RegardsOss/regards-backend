@@ -1,4 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.modules.jobs.service.JobInitializer, \
-fr.cnes.regards.framework.modules.jobs.service.JobInfoService, \
-fr.cnes.regards.framework.modules.jobs.service.JobService

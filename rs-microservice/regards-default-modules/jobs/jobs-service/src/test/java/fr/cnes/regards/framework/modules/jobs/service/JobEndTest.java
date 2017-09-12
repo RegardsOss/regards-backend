@@ -70,7 +70,7 @@ public class JobEndTest {
         longJob.setDescription("A long job updating its completion");
         longJob.setClassName(LongJob.class.getName());
         longJob.setPriority(100);
-        longJob = jobInfoService.create(longJob);
+        longJob = jobInfoService.createAsQueued(longJob);
 
         // wait a bisto denas half job time (which is 10 s)
         Thread.sleep(5_000);
@@ -94,7 +94,7 @@ public class JobEndTest {
         JobInfo blowJob = new JobInfo();
         blowJob.setDescription("A job that set a random float as result");
         blowJob.setClassName(BlowJob.class.getName());
-        blowJob = jobInfoService.create(blowJob);
+        blowJob = jobInfoService.createAsQueued(blowJob);
 
         Thread.sleep(1_000);
         // Look at jobInfo from database
@@ -114,7 +114,7 @@ public class JobEndTest {
         JobInfo handJob = new JobInfo();
         handJob.setDescription("A job that set a complex object result");
         handJob.setClassName(HandJob.class.getName());
-        handJob = jobInfoService.create(handJob);
+        handJob = jobInfoService.createAsQueued(handJob);
 
         Thread.sleep(1_000);
         // Look at jobInfo from database
@@ -140,7 +140,7 @@ public class JobEndTest {
         JobInfo footJob = new JobInfo();
         footJob.setDescription("A job that set a complex object result");
         footJob.setClassName(FootJob.class.getName());
-        footJob = jobInfoService.create(footJob);
+        footJob = jobInfoService.createAsQueued(footJob);
 
         Thread.sleep(1_000);
         // Look at jobInfo from database
