@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class TranslatedFileNameFinder extends FileNameFinder {
     public void setTranslationProperties(String translationPropertiesFilePath) throws PluginAcquisitionException {
         translationProperties = new Properties();
 
-        try {
+//        try {
             // Get file from project configured directory
             // TODO CMZ à revoir pour le moment pluginsRepositoryProperties est null
 
@@ -81,16 +82,18 @@ public class TranslatedFileNameFinder extends FileNameFinder {
             try (InputStream stream = getClass().getClassLoader()
                     .getResourceAsStream(PATH_PROPERTIES + translationPropertiesFilePath)) {
                 translationProperties.load(stream);
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+            } catch (IOException e) {
+                String msg = "unable to load the translation properties file";
+                LOGGER.error(msg, e);
+                throw new PluginAcquisitionException(msg, e);
             }
 
             //            }
-        } catch (Exception e) {
-            String msg = "unable to load the translation properties file";
-            LOGGER.error(msg, e);
-            throw new PluginAcquisitionException(msg, e);
-        }
+        //        } catch (Exception e) {
+        //            String msg = "unable to load the translation properties file";
+        //            LOGGER.error(msg, e);
+        //            throw new PluginAcquisitionException(msg, e);
+        //        }
     }
 
     @Override

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.properties;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,7 +94,7 @@ public class PluginConfigurationProperties {
 
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(URL_PROPERTIES)) {
             pluginProperties.load(stream);
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }

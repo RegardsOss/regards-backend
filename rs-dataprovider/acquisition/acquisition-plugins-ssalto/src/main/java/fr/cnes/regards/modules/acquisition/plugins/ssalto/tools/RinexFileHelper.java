@@ -143,7 +143,7 @@ public class RinexFileHelper {
             }
 
             LOGGER.info("value : " + value + " found at line " + lineNumber + " and column " + catchGroup);
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new PluginAcquisitionException(e);
         }
@@ -236,7 +236,7 @@ public class RinexFileHelper {
                 line = reader.readLine();
             }
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("unable to get date interval from file " + currentFile.getPath(),e);
         }
         return interval;

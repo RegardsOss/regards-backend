@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * Cette classe permet de creer des objets de la classe <code>XMLValidation</code>.
@@ -71,9 +73,13 @@ public class XMLValidatorFactory {
     public Object makeObject() throws XMLValidationException {
 
         // use the already instantiated
-        XMLValidation validator = new XMLValidation(xmlSchema, resolver, isValidationLoggerEnabled);
-
-        validator.reset();
+        XMLValidation validator;
+        try {
+            validator = new XMLValidation(xmlSchema, resolver, isValidationLoggerEnabled);
+            validator.reset();
+        } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
+            throw new XMLValidationException(e);
+        }
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("New XML validator built");

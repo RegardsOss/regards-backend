@@ -226,19 +226,12 @@ public abstract class AttributeFinder {
      * permet de traduire la valeur lue du format formatRead dans le format formatInXml_ pour pouvoir inserer la valeur
      * dans la classe Attribute la traduction se fait essentiellement entre les valeur de type DATE
      */
-    protected String changeFormat(Object value) throws PluginAcquisitionException {
+    protected String changeFormat(Object value) {
         String returnValue = value.toString();
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE) || valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
-            // the format must be externally synchronized
-            try {
-                Date date = (Date) value;
-                DateFormat outputFormat = new SimpleDateFormat(formatInXML);
-                returnValue = outputFormat.format(date);
-            } catch (Exception e) {
-                String msg = "unable to parse attribute " + getName() + " value " + value + " in format " + formatRead;
-                LOGGER.error(msg, e);
-                throw new PluginAcquisitionException(msg, e);
-            }
+            Date date = (Date) value;
+            DateFormat outputFormat = new SimpleDateFormat(formatInXML);
+            returnValue = outputFormat.format(date);
         } else if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
             returnValue = value.toString();
         } else if (valueType.equals(AttributeTypeEnum.TYPE_REAL)) {
@@ -259,10 +252,10 @@ public abstract class AttributeFinder {
         Object parsedValue = null;
         if (valueType.equals(AttributeTypeEnum.TYPE_DATE_TIME) || valueType.equals(AttributeTypeEnum.TYPE_DATE)) {
             boolean isOnlyDate = false;
-            
+
             DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder().parseCaseInsensitive()
                     .appendPattern(formatRead).toFormatter().withLocale(Locale.US);
-            
+
             try {
                 LocalDateTime ldt = LocalDateTime.parse(value, dateTimeFormatter);
                 parsedValue = OffsetDateTime.of(ldt, ZoneOffset.UTC);
@@ -430,14 +423,8 @@ public abstract class AttributeFinder {
         name = newName;
     }
 
-    public void setValueType(String type) throws Exception {
-        try {
-            valueType = AttributeTypeEnum.parse(type);
-        } catch (Exception e) {
-            String msg = "unable to parse valueType " + type;
-            LOGGER.error(msg,e);
-            throw e;
-        }
+    public void setValueType(String type) {
+        valueType = AttributeTypeEnum.parse(type);
     }
 
     public void setOrder(String newOrder) {

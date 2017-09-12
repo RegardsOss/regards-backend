@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -70,7 +72,7 @@ public class XMLValidation extends DefaultHandler {
      *             Quand une erreur d'initialisation du validateur est levee
      */
     protected XMLValidation(String xmlSchema, EntityResolver resolver, boolean isValidationLoggerEnabled)
-            throws XMLValidationException {
+            throws XMLValidationException, SAXNotRecognizedException, SAXNotSupportedException {
 
         xsdFile = xmlSchema;
         xmlErrorManager = new XMLErrorManager(isValidationLoggerEnabled);
@@ -99,15 +101,12 @@ public class XMLValidation extends DefaultHandler {
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
 
             // Set the namespace schema location if there is a specified schema
-            //
             if (xsdFile != null) {
                 setNamespaceSchemaLocation(parser, xsdFile);
             }
 
             parser.setContentHandler(this);
-        }
-
-        catch (Exception e) {
+        } catch (SAXException e) {
             LOGGER.error("Error while initializing the validation parser", e);
             throw new XMLValidationException("Error while initializing the validation parser", e);
         }
@@ -139,8 +138,8 @@ public class XMLValidation extends DefaultHandler {
                     LOGGER.error(String.format("The document is not valid with regards to the XML Schema '%s'",
                                                xsdFile));
 
-                    throw new XMLValidationException(
-                            String.format("Error(s) while parsing document:\n%s", fileToValidate.getAbsoluteFile().getName()));
+                    throw new XMLValidationException(String.format("Error(s) while parsing document:\n%s",
+                                                                   fileToValidate.getAbsoluteFile().getName()));
                 }
             }
         } catch (XMLValidationException e) {

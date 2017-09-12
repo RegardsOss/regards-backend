@@ -39,6 +39,7 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
@@ -165,7 +166,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             // Process the input file.
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
             pluginConfProperties.setProject(getProjectName());
-        } catch (Exception e) {
+        } catch (IOException | SAXException e) {
             String msg = "unable to parse file " + dataSetName + CONFIG_FILE_SUFFIX + " using rule file " + RULE_FILE;
             LOGGER.error(msg, e);
             throw new ModuleException(e);
@@ -175,7 +176,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         attributeOrderProperties = new Properties();
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(ATTRIBUTE_ORDER_PROP_FILE)) {
             attributeOrderProperties.load(stream);
-        } catch (Exception e) {
+        } catch (IOException e) {
             String message = "unable to load property file" + ATTRIBUTE_ORDER_PROP_FILE;
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);

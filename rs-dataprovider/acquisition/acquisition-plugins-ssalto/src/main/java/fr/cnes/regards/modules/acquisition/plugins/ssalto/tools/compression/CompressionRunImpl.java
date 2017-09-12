@@ -22,6 +22,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.exception.CompressionException;
 
 /**
@@ -34,6 +37,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.exce
  * @since 5.4
  */
 public class CompressionRunImpl implements Runnable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionRunImpl.class);
 
     private AbstractRunnableCompression compression_ = null;
 
@@ -71,10 +76,8 @@ public class CompressionRunImpl implements Runnable {
             compressManager_.setThread(Thread.currentThread());
             compression_.runCompress(fileList_, compressedFile_, rootDirectory_, flatArchive_, charset_,
                                      compressManager_);
-        }
-        catch (CompressionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (CompressionException e) {
+            LOGGER.error(e.getMessage(), e);
         }
 
     }
