@@ -18,22 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
+
 /**
+ * SIP collection representation based on GeoJson standard structure
  *
- * TODO Description
- *
- * @author TODO
+ * @author Marc Sordi
  *
  */
-public class Greeting {
+public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
-    private final String content_;
+    private final IngestMetadata metadata;
 
-    public Greeting(String pName) {
-        this.content_ = "Hello " + pName;
+    public SIPCollection() {
+        metadata = new IngestMetadata();
     }
 
-    public String getContent() {
-        return content_;
+    public IngestMetadata getMetadata() {
+        return metadata;
     }
 }
