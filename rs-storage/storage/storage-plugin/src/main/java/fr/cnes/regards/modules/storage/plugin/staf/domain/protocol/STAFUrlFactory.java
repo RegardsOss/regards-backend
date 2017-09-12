@@ -54,7 +54,8 @@ public class STAFUrlFactory {
      * </li>.
      * </ul>
      */
-    public static final Pattern STAF_URL_REGEXP = Pattern.compile("^staf://([^/]*)(/[^?]*)?{0,1}(.*)$");
+    public static final Pattern STAF_URL_REGEXP = Pattern
+            .compile("^" + STAF_URL_PROTOCOLE + "://([^/]*)(/[^?]*)?{0,1}(.*)$");
 
     /**
      * String format to generate a STAF URL for a given file path.
@@ -181,7 +182,7 @@ public class STAFUrlFactory {
         try {
             Optional<URL> url = Optional.empty();
             // Construct standard staf://<ARCHIVE>/<NODE> path
-            String urlInitialPath = String.format("%s:/%s", STAF_URL_PROTOCOLE,
+            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
                                                   Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
                 if (pRawFile == fileInTar.getKey()) {
@@ -206,7 +207,7 @@ public class STAFUrlFactory {
     public static URL getNormalFileSTAFUrl(PhysicalNormalFile pFile) throws STAFUrlException {
         try {
             // Construct standard staf:/<ARCHIVE>/<NODE> path
-            String urlInitialPath = String.format("%s:/%s", STAF_URL_PROTOCOLE,
+            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
                                                   Paths.get(pFile.getStafArchiveName(), pFile.getStafNode()));
             String fileNamePath = pFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s", urlInitialPath, fileNamePath));

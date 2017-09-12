@@ -5,18 +5,24 @@ package fr.cnes.regards.modules.storage.plugin.staf.domain;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.file.utils.CommonFileUtils;
 import fr.cnes.regards.framework.file.utils.CutFileUtils;
+import fr.cnes.regards.framework.file.utils.compression.CompressionException;
 import fr.cnes.regards.framework.file.utils.compression.CompressionFacade;
+import fr.cnes.regards.framework.file.utils.compression.CompressionTypeEnum;
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.STAFException;
 import fr.cnes.regards.framework.staf.event.CollectEvent;
@@ -99,7 +105,6 @@ public class STAFCollectListener implements ICollectListener {
         // Update the local physical file path of the restored file.
         pFileRestored.setLocalFilePath(restoredFilePath);
         pFileRestored.setStatus(PhysicalFileStatusEnum.RETRIEVED);
-
         switch (pFileRestored.getArchiveMode()) {
             case CUT_PART:
                 handleCutPartFileRestored((PhysicalCutPartFile) pFileRestored);
@@ -108,7 +113,7 @@ public class STAFCollectListener implements ICollectListener {
                 handleNormaleFileRestored((PhysicalNormalFile) pFileRestored);
                 break;
             case TAR:
-                handTARFileRestored((PhysicalTARFile) pFileRestored);
+                handleTARFileRestored((PhysicalTARFile) pFileRestored);
                 break;
             case CUT:
             default:
@@ -119,16 +124,23 @@ public class STAFCollectListener implements ICollectListener {
 
     /**
      * Handle a NORMAL Mode ({@link STAFArchiveModeEnum}) file restoration.<br/>
-     * Directly inform the {@link IClientCollectListener} thaht the asked file is available.
+     * DNotify the {@link IClientCollectListener} that the asked file is available.
      * @param pNormalFileRestore {@link PhysicalNormalFile} file restored.
      */
     private void handleNormaleFileRestored(PhysicalNormalFile pNormalFileRestore) {
-        LOG.info("[SEB] File retrieived {}", pNormalFileRestore.getLocalFilePath());
+        try {
+            // Notify client that the asked file is available
+            URL url = STAFUrlFactory.getNormalFileSTAFUrl(pNormalFileRestore);
+            Path path = pNormalFileRestore.getLocalFilePath();
+            clientListener.fileRetreived(url, path);
+        } catch (STAFUrlException e) {
+            LOG.error("Invalid file restored", e);
+        }
     }
 
     /**
      * Handle a CUT Mode ({@link STAFArchiveModeEnum}) file restoration.<br/>
-     * Inform the {@link IClientCollectListener} that the asked file is available only when all parts are restored.
+     * Notify the {@link IClientCollectListener} that the asked file is available only when all parts are restored.
      * @param pCutPartFileRestored {@link PhysicalCutPartFile} file restored.
      */
     private void handleCutPartFileRestored(PhysicalCutPartFile pCutPartFileRestored) {
@@ -141,31 +153,108 @@ public class STAFCollectListener implements ICollectListener {
             SortedSet<Path> partFiles = Sets.newTreeSet();
             allCutParts.forEach(f -> partFiles.add(f.getLocalFilePath()));
             try {
-                CutFileUtils.rebuildCutedfile(includingCutFile.getLocalFilePath(), partFiles);
-                includingCutFile.setStatus(PhysicalFileStatusEnum.RETRIEVED);
-                // Inform client that the asked file is available
                 URL url = STAFUrlFactory.getCutFileSTAFUrl(includingCutFile);
                 Path path = includingCutFile.getLocalFilePath();
-                clientListener.fileRetreived(url, path);
-            } catch (IOException | STAFUrlException e) {
-                LOG.error(e.getMessage(), e);
-                includingCutFile.setStatus(PhysicalFileStatusEnum.ERROR);
+                try {
+                    CutFileUtils.rebuildCutedfile(includingCutFile.getLocalFilePath(), partFiles);
+                    includingCutFile.setStatus(PhysicalFileStatusEnum.RETRIEVED);
+                    // Notify client that the asked file is available
+                    clientListener.fileRetreived(url, path);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                    includingCutFile.setStatus(PhysicalFileStatusEnum.ERROR);
+                    clientListener.fileRetrieveError(url);
+                }
+            } catch (STAFUrlException e1) {
+                LOG.error("Invalid file restored", e1);
+            } finally {
+                // Delete all part files
+                for (PhysicalCutPartFile part : allCutParts) {
+                    if (!part.getLocalFilePath().toFile().delete()) {
+                        LOG.error("Error deleting cut part file restored from STAF {}",
+                                  part.getLocalFilePath().toString());
+                    }
+                }
             }
         }
     }
 
     /**
      * Handle a TAR Mode ({@link STAFArchiveModeEnum}) file restoration.<br/>
-     * Directly inform the {@link IClientCollectListener} all asked files in the restored TAR are availables.
+     * Directly Notify the {@link IClientCollectListener} for all asked files in the restored TAR are availables.
      * @param pTARFileRestored {@link PhysicalTARFile} file restored.
      */
-    private void handTARFileRestored(PhysicalTARFile pTARFileRestored) {
-        LOG.info("[SEB] File retrieived {}", pTARFileRestored.getLocalFilePath());
-        pTARFileRestored.getFilesInTar()
-                .forEach((tf, raw) -> LOG.info("[SEB] File retrieived in tar {}", tf.toString()));
-        // TODO Extract files
-        CompressionFacade facade = new CompressionFacade();
-        // facade.decompress(CompressionTypeEnum.TAR, pTARFileRestored.getLocalFilePath().toFile(), pOutputDirectory);
+    private void handleTARFileRestored(PhysicalTARFile pTARFileRestored) {
+        Path tarExtractionPath = Paths.get(restorationDirectoryPath.toString(),
+                                           "." + pTARFileRestored.getLocalFilePath().getFileName().toString());
+        try {
+            Map<Path, URL> urls = STAFUrlFactory.getTARFilesSTAFUrl(pTARFileRestored);
+            if (!tarExtractionPath.toFile().exists()) {
+                try {
+                    // Extract files from TAR
+                    Files.createDirectories(tarExtractionPath);
+                    CompressionFacade facade = new CompressionFacade();
+                    facade.decompress(CompressionTypeEnum.TAR, pTARFileRestored.getLocalFilePath().toFile(),
+                                      tarExtractionPath.toFile());
+                } catch (CompressionException | IOException e) {
+                    LOG.error("Error during TAR restoration decompression {}", pTARFileRestored.getLocalFilePath(), e);
+                    urls.forEach((localPath, url) -> clientListener.fileRetrieveError(url));
+                }
+            }
+            // Check files existance and notify client if files are well restored.
+            pTARFileRestored.getFilesInTar().forEach((fileInTarPath,
+                    rawPath) -> handleTARInFileRestored(tarExtractionPath, fileInTarPath, urls.get(rawPath)));
+        } catch (STAFUrlException e1) {
+            LOG.error("Invalid file restored", e1);
+        } finally {
+            // Always delete TAR after all files are restored from it.
+            if (!pTARFileRestored.getLocalFilePath().toFile().delete()) {
+                LOG.error("Error deleting tar file {} restored from STAF",
+                          pTARFileRestored.getLocalFilePath().toString());
+            }
+            // Always delete extraction directory after all files retrieved.
+            try {
+                if (tarExtractionPath.toFile().exists()) {
+                    FileUtils.deleteDirectory(tarExtractionPath.toFile());
+                }
+            } catch (IOException e) {
+                LOG.error("Error deleting TMP TAR Extraction directory", e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Handle restoration for one file from a restored TAR File.
+     * Send notification to the {@link IClientCollectListener} for the given restored file.
+     * @param pTARExtractionPath {@link Path} to the TAR restored extraction directory.
+     * @param pFileRestoredFromTAR {@link Path} of the file in TAR restored.
+     * @param pFileRestoredSTAFURL origine {@link URL} of the STAF file asked for restoration
+     */
+    private void handleTARInFileRestored(Path pTARExtractionPath, Path pFileRestoredFromTAR, URL pFileRestoredSTAFURL) {
+        Path extractedfilePath = Paths.get(pTARExtractionPath.toString(),
+                                           pFileRestoredFromTAR.getFileName().toString());
+        if (extractedfilePath.toFile().exists()) {
+            // File found into the tar files.
+            try {
+                String uniqueFileName = CommonFileUtils
+                        .getAvailableFileName(restorationDirectoryPath, extractedfilePath.getFileName().toString());
+                Path finalDestinationPath = Paths.get(restorationDirectoryPath.toString(), uniqueFileName);
+                if (!finalDestinationPath.toFile().exists()) {
+                    // Move file to final destination
+                    Files.move(extractedfilePath, finalDestinationPath);
+                    clientListener.fileRetreived(pFileRestoredSTAFURL, finalDestinationPath);
+                } else {
+                    clientListener.fileRetrieveError(pFileRestoredSTAFURL);
+                }
+
+            } catch (IOException e) {
+                LOG.error("Error moving file from temporary tar extraction directory {} to restoration directory {}",
+                          pTARExtractionPath.toString(), restorationDirectoryPath.toString(), e.getMessage(), e);
+                clientListener.fileRetrieveError(pFileRestoredSTAFURL);
+            }
+        } else {
+            clientListener.fileRetrieveError(pFileRestoredSTAFURL);
+        }
     }
 
 }

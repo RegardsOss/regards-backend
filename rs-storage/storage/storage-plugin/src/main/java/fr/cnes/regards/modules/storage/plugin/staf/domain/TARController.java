@@ -212,14 +212,14 @@ public class TARController {
      * @throws STAFTarException Error during TAR Compression.
      */
     private void createTAR(PhysicalTARFile pTARToCreate) throws STAFTarException {
-        LOG.debug("[STAF] Creating TAR file {}", pTARToCreate.getLocalTarFile());
+        LOG.debug("[STAF] Creating TAR file {}", pTARToCreate.getLocalFilePath());
         CompressionFacade facade = new CompressionFacade();
         try {
             List<File> filesToTar = Files.walk(pTARToCreate.getLocalTarDirectory()).filter(f -> f.toFile().isFile())
                     .filter(f -> !LOCK_FILE_NAME.equals(f.toFile().getName())).map(f -> f.toFile())
                     .collect(Collectors.toList());
             facade.compress(CompressionTypeEnum.TAR, pTARToCreate.getLocalTarDirectory().toFile(), filesToTar,
-                            getFileWithoutExtension(pTARToCreate.getLocalTarFile()),
+                            getFileWithoutExtension(pTARToCreate.getLocalFilePath()),
                             pTARToCreate.getLocalTarDirectory().toFile(), true, false);
             // Delete curent directory and all associated files
             FileUtils.deleteDirectory(pTARToCreate.getLocalTarDirectory().toFile());
@@ -229,7 +229,7 @@ public class TARController {
         }
         // Set TAR Status to "TO_STORE"
         pTARToCreate.setStatus(PhysicalFileStatusEnum.TO_STORE);
-        LOG.info("[STAF] TAR FILE created and ready to send to STAF System : {}", pTARToCreate.getLocalTarFile());
+        LOG.info("[STAF] TAR FILE created and ready to send to STAF System : {}", pTARToCreate.getLocalFilePath());
     }
 
     /**
@@ -278,7 +278,8 @@ public class TARController {
             // Set TAR directory path
             pendingTarFile.setLocalTarDirectory(pDirectory);
             // Set futur TAR file path
-            pendingTarFile.setLocalTarFile(Paths.get(pDirectory.getParent().toString(), getLocalTarFileName(dateTime)));
+            pendingTarFile
+                    .setLocalFilePath(Paths.get(pDirectory.getParent().toString(), getLocalTarFileName(dateTime)));
             pendingTarFile.setLocalTarDirectoryCreationDate(dateTime);
             return pendingTarFile;
         } catch (ParseException e) {
@@ -322,7 +323,7 @@ public class TARController {
                 String tarName = date.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT));
                 Path newTarDirectory = Paths.get(tarPath.toString(), tarName + "_current");
                 Files.createDirectories(newTarDirectory);
-                workingTar.setLocalTarFile(Paths.get(tarPath.toString(), getLocalTarFileName(date)));
+                workingTar.setLocalFilePath(Paths.get(tarPath.toString(), getLocalTarFileName(date)));
                 workingTar.setLocalTarDirectory(newTarDirectory);
                 workingTar.setLocalTarDirectoryCreationDate(date);
             }

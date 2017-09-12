@@ -432,11 +432,12 @@ public class STAFController {
                 } else {
                     tar = new PhysicalTARFile(stafArchive, stafNode);
                     tar.setStafFileName(stafFileName);
-                    tar.setLocalTarFile(localFilePath);
+                    tar.setLocalFilePath(localFilePath);
                 }
                 tar.setStatus(pStatus);
-                if (parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER) != null) {
-                    tar.addFileInTar(Paths.get(parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER)), null);
+                Path fileName = Paths.get(parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER));
+                if (fileName != null) {
+                    tar.addFileInTar(fileName, fileName);
                 }
                 return tar;
             default:

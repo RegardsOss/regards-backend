@@ -67,14 +67,6 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
         return filesInTar;
     }
 
-    public Path getLocalTarFile() {
-        return localTarFile;
-    }
-
-    public void setLocalTarFile(Path pLocalTarFile) {
-        localTarFile = pLocalTarFile;
-    }
-
     public void addFileInTar(Path pFileInTar, Path pRawFile) {
         filesInTar.put(pFileInTar, pRawFile);
     }
