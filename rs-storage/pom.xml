@@ -39,8 +39,6 @@
         <relativePath/>
     </parent>
 
-    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-
     <modules>
         <module>bootstrap-storage</module>
         <module>storage</module>
