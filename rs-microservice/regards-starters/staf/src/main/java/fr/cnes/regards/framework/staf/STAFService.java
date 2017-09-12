@@ -65,6 +65,7 @@ package fr.cnes.regards.framework.staf;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,7 +81,6 @@ import org.apache.log4j.NDC;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.event.CollectEvent;
-import fr.cnes.regards.framework.staf.event.CollectEventOffLine;
 import fr.cnes.regards.framework.staf.event.ICollectListener;
 
 /**
@@ -129,12 +129,12 @@ public class STAFService {
      *
      * @since 4.1
      */
-    public static int CLASS_SERVICE_MAX_SIZE = 50000000;
+    private static int CLASS_SERVICE_MAX_SIZE = 50000000;
 
     /**
      * Listener utilise des qu'un fichier eest collecte
      */
-    private ICollectListener collectListener_;
+    private ICollectListener collectListener;
 
     /**
      * Archive STAF sur laquelle le service opère.
@@ -231,6 +231,7 @@ public class STAFService {
      */
     public void restoreAllFiles(Set<Path> pStafFilePathList, String pDestination) throws STAFException {
 
+        STAFConfiguration conf = stafManager.getConfiguration();
         if ((pStafFilePathList != null) && !pStafFilePathList.isEmpty()) {
             // Iterateur sur les fichiers a restituer
             final Iterator<Path> files = pStafFilePathList.iterator();
@@ -248,11 +249,12 @@ public class STAFService {
                 // Index de decompte des fichiers d'un flot
                 int fileIndex;
 
+                int maxFilesPerSession = conf.getMaxStreamFilesRestitutionMode()
+                        * conf.getMaxSessionStreamsRestitutionMode();
                 // Calcule le nombre de sessions a utiliser pour la restitution.
                 // Ce nombre ne correspond pas directement au nombre de sessions
                 // supplementaires a ouvrir puisque le service dispose d'une session dediee.
-                sessionNb = pStafFilePathList.size()
-                        / stafManager.getConfiguration().getMaxSessionsRestitutionMode().intValue();
+                sessionNb = (int) Math.ceil(pStafFilePathList.size() / (double) maxFilesPerSession);
                 if (sessionNb > 0) {
                     sessionsIdentifiers = stafManager.getReservations(sessionNb - 1, false,
                                                                       ArchiveAccessModeEnum.RESTITUTION_MODE);
@@ -284,7 +286,7 @@ public class STAFService {
 
                 // SIPNG-DM-0035-CN : liste des fichiers traites
                 final List<String> fileList = new ArrayList<>();
-                final List<String> alreadyRestoredFile = new ArrayList<>();
+                final Set<Path> alreadyRestoredFile = Sets.newHashSet();
 
                 while ((streamIndex < stafManager.getConfiguration().getMaxSessionStreamsRestitutionMode().intValue())
                         && files.hasNext()) {
@@ -305,7 +307,7 @@ public class STAFService {
                             if (!targetFile.exists()) {
                                 currentMap.put(currentFile.toString(), targetFileName);
                             } else {
-                                alreadyRestoredFile.add(currentFile.toString());
+                                alreadyRestoredFile.add(currentFile);
                             }
                             // Add the file to the list
                             // event if the targetFile exists
@@ -322,8 +324,8 @@ public class STAFService {
                 }
                 // Send an event to the collect listener
                 if ((getCollectListener() != null) && !alreadyRestoredFile.isEmpty()) {
-                    final CollectEvent collectEnd = new CollectEventOffLine(this);
-                    collectEnd.setFiles(alreadyRestoredFile);
+                    final CollectEvent collectEnd = new CollectEvent(this);
+                    collectEnd.setRestoredFilePaths(alreadyRestoredFile);
                     getCollectListener().collectEnded(collectEnd);
                 }
                 // Lance la restitution des lots calcules
@@ -438,15 +440,16 @@ public class STAFService {
             mainSession.staffilRetrieveBuffered(files);
             // Send an event to the collect listener
             if (getCollectListener() != null) {
-                final CollectEvent collectEnd = new CollectEventOffLine(this);
-                final List<String> fileNames = new ArrayList<>();
+                final CollectEvent collectEnd = new CollectEvent(this);
+                final Set<Path> filePaths = Sets.newHashSet();
                 for (final String fileName : files.keySet()) {
-                    fileNames.add(fileName);
+                    filePaths.add(Paths.get(fileName));
                 }
-                collectEnd.setFiles(fileNames);
+                collectEnd.setRestoredFilePaths(filePaths);
                 getCollectListener().collectEnded(collectEnd);
             }
         } catch (final STAFException e) {
+            logger.error(e.getMessage(), e);
             error = true;
         }
 
@@ -772,16 +775,16 @@ public class STAFService {
         return mainSession.stafstat();
     }
 
-    public void setCollectListener(ICollectListener collectListener) {
-        this.collectListener_ = collectListener;
-    }
-
-    protected ICollectListener getCollectListener() {
-        return collectListener_;
-    }
-
     public STAFArchive getStafArchive() {
         return stafArchive;
+    }
+
+    public ICollectListener getCollectListener() {
+        return collectListener;
+    }
+
+    public void setCollectListener(ICollectListener pCollectListener) {
+        collectListener = pCollectListener;
     }
 
 }

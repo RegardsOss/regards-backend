@@ -7,7 +7,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -55,7 +59,7 @@ public class CutFileUtils {
             do {
                 // New cut file to write
                 String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
-                LOG.info("creating new cut File " + pFileToCut.getName() + "_" + strFileCount);
+                LOG.debug("creating new cut File " + pFileToCut.getName() + "_" + strFileCount);
                 File cutFile = new File(pTargetDirectory, pFileToCut.getName() + "_" + strFileCount);
                 continueCutFile = writeInFile(inputStream, cutFile, pCutfilesMaxSize);
                 cutFiles.add(cutFile);
@@ -98,6 +102,51 @@ public class CutFileUtils {
             outputStream.flush();
         }
         return charRead > 0;
+    }
+
+    /**
+     * Rebuild a cuted file by concatenation of the part files
+     * @param pFilePathToRebuild {@link Path} to the result file
+     * @param pOrderedPartFilePaths {@link SortedSet} of {@link Path}s of part files. <br/>
+     * The set have to be ordered from the first part of the result file to the last one.
+     * @throws IOException
+     */
+    public static void rebuildCutedfile(Path pFilePathToRebuild, SortedSet<Path> pOrderedPartFilePaths)
+            throws IOException {
+
+        // 1. Check if result file already exists
+        if (Files.exists(pFilePathToRebuild)) {
+            throw new FileAlreadyExistsException(
+                    String.format("Error rebuilding cuted file. Destination file %s already exists",
+                                  pFilePathToRebuild.toString()));
+        }
+        Files.createFile(pFilePathToRebuild);
+        try (FileOutputStream os = new FileOutputStream(pFilePathToRebuild.toFile(), true)) {
+            for (Path partFilePath : pOrderedPartFilePaths) {
+                LOG.debug("Adding part file {} into {}", partFilePath.toString(), pFilePathToRebuild.toString());
+                writeFile(os, partFilePath);
+            }
+            os.flush();
+        }
+    }
+
+    /**
+     * Read and write the given {@link Path} file to the given {@link FileOutputStream}
+     * @param pOutputStream {@link FileOutputStream} of the result.
+     * @param filePathToWrite {@link Path} of the file to read and write.
+     * @throws IOException
+     */
+    private static void writeFile(FileOutputStream pOutputStream, Path filePathToWrite) throws IOException {
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int charRead = 0;
+        try (FileInputStream is = new FileInputStream(filePathToWrite.toFile())) {
+            do {
+                charRead = is.read(buffer);
+                if (charRead >= 0) {
+                    pOutputStream.write(buffer, 0, charRead);
+                }
+            } while (charRead >= 0);
+        }
     }
 
 }

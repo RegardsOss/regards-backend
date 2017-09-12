@@ -1,11 +1,13 @@
 package fr.cnes.regards.framework.staf;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.event.CollectEvent;
-import fr.cnes.regards.framework.staf.event.CollectEventOffLine;
 import fr.cnes.regards.framework.staf.event.ICollectListener;
 
 /**
@@ -78,12 +80,12 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
         // Retrieve files by bufferisation (by flow)
         session.staffilRetrieveBuffered(files_);
         if (listener_ != null) {
-            CollectEvent collectEnd = new CollectEventOffLine(this);
-            List<String> fileNames = new ArrayList<>();
-            for (String fileName : files_.keySet()) {
-                fileNames.add(fileName);
+            CollectEvent collectEnd = new CollectEvent(this);
+            Set<Path> filePaths = Sets.newHashSet();
+            for (String filePath : files_.keySet()) {
+                filePaths.add(Paths.get(filePath));
             }
-            collectEnd.setFiles(fileNames);
+            collectEnd.setRestoredFilePaths(filePaths);
             listener_.collectEnded(collectEnd);
         }
     }
