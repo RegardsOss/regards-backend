@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.urn.validator.RegardsOaisUrn;
 
 /**
  * allow us to create URN with the following format:
- * URN:OAISIdentifier:entityType:tenant:UUID(entityId):version[,order][:REVrevision]
+ * URN:OAISIdentifier:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]
  *
  * <br/>
  * Example:
