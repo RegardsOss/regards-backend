@@ -18,37 +18,15 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
- * RFC 7946 -August 2016<br/>
- * GeoJson feature collection representation
  *
- * @param <ID> is an optional Feature identifier of type {@link String} or {@link Number}
+ * This class represents a default GeoJson feature collection containing default {@link Feature}
+ * identifier.<br/>
+ * You can define your own extending {@link AbstractFeatureCollection}.
  *
  * @author Marc Sordi
  *
  */
-public class FeatureCollection<ID extends Serializable> extends AbstractGeoJsonObject {
+public class FeatureCollection extends AbstractFeatureCollection<Feature> {
 
-    private final List<Feature<ID>> features = new ArrayList<>();
-
-    public FeatureCollection() {
-        super(GeoJsonType.FEATURE_COLLECTION);
-    }
-
-    public List<Feature<ID>> getFeatures() {
-        return features;
-    }
-
-    public void addAll(Collection<Feature<ID>> features) {
-        this.features.addAll(features);
-    }
-
-    public void add(Feature<ID> feature) {
-        this.features.add(feature);
-    }
 }

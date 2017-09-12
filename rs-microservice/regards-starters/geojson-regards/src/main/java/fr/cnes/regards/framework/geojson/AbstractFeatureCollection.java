@@ -18,37 +18,38 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * RFC 7946 -August 2016<br/>
- * GeoJsonObject common model
+ * GeoJson base feature collection representation
+ *
+ * This is the base class for implementing GeoJson feature collection. Extend it to create your own.
+ *
+ * @param <F> represents feature type
  *
  * @author Marc Sordi
  *
  */
-public abstract class AbstractGeoJsonObject {
+public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>> extends AbstractGeoJsonObject {
 
-    protected GeoJsonType type;
+    private final List<F> features = new ArrayList<>();
 
-    /**
-     * Optional bounding box
-     */
-    protected Double[] bbox;
-
-    public AbstractGeoJsonObject(GeoJsonType type) {
-        this.type = type;
+    public AbstractFeatureCollection() {
+        super(GeoJsonType.FEATURE_COLLECTION);
     }
 
-    public GeoJsonType getType() {
-        return type;
+    public List<F> getFeatures() {
+        return features;
     }
 
-    public Optional<Double[]> getBbox() {
-        return Optional.ofNullable(bbox);
+    public void addAll(Collection<F> features) {
+        this.features.addAll(features);
     }
 
-    public void setBbox(Double[] bbox) {
-        this.bbox = bbox;
+    public void add(F feature) {
+        this.features.add(feature);
     }
 }

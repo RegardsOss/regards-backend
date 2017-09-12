@@ -49,13 +49,13 @@ public class FeatureTest {
     @Test
     public void createFeatureCollection() {
 
-        Feature<String> feature1 = new Feature<>();
+        Feature feature1 = new Feature();
         feature1.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
 
-        Feature<String> feature2 = new Feature<>();
+        Feature feature2 = new Feature();
         feature2.setGeometry(IGeometry.multiPoint(IGeometry.position(5.0, 5.0), IGeometry.position(25.0, 25.0)));
 
-        FeatureCollection<String> collection = new FeatureCollection<>();
+        FeatureCollection collection = new FeatureCollection();
         collection.add(feature1);
         collection.add(feature2);
 
@@ -63,8 +63,9 @@ public class FeatureTest {
         LOGGER.debug(collectionString);
 
         // Read
-        FeatureCollection<String> readCollection = gson.fromJson(collectionString, FeatureCollection.class);
+        FeatureCollection readCollection = gson.fromJson(collectionString, FeatureCollection.class);
         Assert.assertNotNull(readCollection.getFeatures());
         Assert.assertTrue(readCollection.getFeatures().size() == 2);
+        Assert.assertTrue(readCollection.getFeatures().get(0) instanceof Feature);
     }
 }

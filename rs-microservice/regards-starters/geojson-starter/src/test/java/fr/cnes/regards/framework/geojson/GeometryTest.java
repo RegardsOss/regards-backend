@@ -71,7 +71,7 @@ public class GeometryTest {
         String id = "myId";
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
         feature.setId(id);
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -79,7 +79,7 @@ public class GeometryTest {
         Assert.assertTrue(jsonObject.get(GEOMETRY).isJsonNull());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getId().equals(id));
         Assert.assertTrue(readFeature.getGeometry() instanceof Unlocated);
     }
@@ -90,7 +90,7 @@ public class GeometryTest {
         Double latitude = 20.0;
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
         feature.setGeometry(IGeometry.point(IGeometry.position(longitude, latitude)));
 
         JsonElement jsonElement = gson.toJsonTree(feature);
@@ -111,7 +111,7 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof Point);
     }
 
@@ -119,7 +119,7 @@ public class GeometryTest {
     public void multipoint() {
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
 
         MultiPoint geometry = IGeometry.multiPoint(IGeometry.position(-170.0, 25.25), IGeometry.position(70.0, 10.10));
         feature.setGeometry(geometry);
@@ -142,7 +142,7 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof MultiPoint);
     }
 
@@ -150,7 +150,7 @@ public class GeometryTest {
     public void linestring() {
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
 
         Positions lineStringCoordinates = IGeometry.toLineStringCoordinates(IGeometry.position(-170.0, 25.25),
                                                                             IGeometry.position(70.0, 10.10));
@@ -175,7 +175,7 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof LineString);
     }
 
@@ -183,7 +183,7 @@ public class GeometryTest {
     public void multilinestring() {
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
 
         Positions lineStringCoordinates1 = IGeometry.toLineStringCoordinates(IGeometry.position(-170.0, 25.25),
                                                                              IGeometry.position(70.0, 10.10));
@@ -213,7 +213,7 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof MultiLineString);
     }
 
@@ -221,7 +221,7 @@ public class GeometryTest {
     public void polygon() {
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
 
         Positions exteriorRing = IGeometry
                 .toLinearRingCoordinates(IGeometry.position(-170.0, 20.0), IGeometry.position(-170.0, 10.0),
@@ -255,7 +255,7 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof Polygon);
     }
 
@@ -263,7 +263,7 @@ public class GeometryTest {
     public void multiPolygon() {
 
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
 
         Positions exteriorRing = IGeometry
                 .toLinearRingCoordinates(IGeometry.position(-170.0, 20.0), IGeometry.position(-170.0, 10.0),
@@ -298,14 +298,15 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof MultiPolygon);
     }
 
     @Test
     public void geometryCollection() {
+
         // Write
-        Feature<String> feature = new Feature<>();
+        Feature feature = new Feature();
 
         GeometryCollection geometry = IGeometry
                 .geometryCollection(IGeometry.point(IGeometry.position(0.0, 10.0)), IGeometry.lineString(IGeometry
@@ -340,7 +341,7 @@ public class GeometryTest {
         LOGGER.debug(jsonElement.toString());
 
         // Read
-        Feature<?> readFeature = gson.fromJson(jsonElement, Feature.class);
+        Feature readFeature = gson.fromJson(jsonElement, Feature.class);
         Assert.assertTrue(readFeature.getGeometry() instanceof GeometryCollection);
     }
 }

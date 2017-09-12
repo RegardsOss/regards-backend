@@ -27,13 +27,13 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import fr.cnes.regards.framework.geojson.Feature;
+import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
  *
- * Gson adapter factory for {@link Feature}
+ * Gson adapter factory for {@link AbstractFeature}
  *
  * @author Marc Sordi
  *
@@ -46,7 +46,7 @@ public class FeatureTypeAdapterFactory implements TypeAdapterFactory {
 
         // This factory is only useful for Feature
         Class<? super T> requestedType = type.getRawType();
-        if (!Feature.class.isAssignableFrom(requestedType)) {
+        if (!AbstractFeature.class.isAssignableFrom(requestedType)) {
             return null;
         }
 
@@ -63,7 +63,7 @@ public class FeatureTypeAdapterFactory implements TypeAdapterFactory {
             @Override
             public T read(JsonReader in) throws IOException {
                 @SuppressWarnings("rawtypes")
-                Feature feature = (Feature) delegate.read(in);
+                AbstractFeature feature = (AbstractFeature) delegate.read(in);
                 // Set feature unlocated if geometry is null
                 if (feature.getGeometry() == null) {
                     feature.setGeometry(IGeometry.unlocated());
