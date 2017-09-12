@@ -17,11 +17,7 @@ import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +28,6 @@ import org.springframework.util.MimeTypeUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.staf.STAFArchive;
@@ -86,53 +81,65 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void init() throws IOException {
 
         if (workspace.toFile().exists()) {
-            Files.setPosixFilePermissions(workspace,
-                                          Sets.newHashSet(PosixFilePermission.OWNER_READ,
-                                                          PosixFilePermission.OWNER_WRITE,
-                                                          PosixFilePermission.OWNER_EXECUTE));
+            Files.setPosixFilePermissions(workspace, Sets.newHashSet(PosixFilePermission.OWNER_READ,
+                                                                     PosixFilePermission.OWNER_WRITE,
+                                                                     PosixFilePermission.OWNER_EXECUTE));
             FileUtils.deleteDirectory(workspace.toFile());
         }
 
         AIP aip = new AIP(EntityType.DATA);
         aip.getHistory().add(new Event("testEvent", OffsetDateTime.now(), EventType.SUBMISSION));
         aip.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1)
-                .toString());
+                            .toString());
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA,
+                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_1.txt"));
 
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt"),
-                "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                        "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA,
+                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_2.txt"));
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt"),
-                "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                        "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA,
+                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_3.txt"));
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt"),
-                "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                        "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA,
+                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_4.txt"));
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt"),
-                "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveWithoutInvalides.add(new DataFile(
-                new URL("http", "172.26.47.107", 9020, "/conf/staticConfiguration.js"),
-                "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                        "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA,
+                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_5.txt"));
+        filesToArchiveWithoutInvalides
+                .add(new DataFile(new URL("http", "172.26.47.107", 9020, "/conf/staticConfiguration.js"),
+                                  "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L,
+                                  MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
         filesToArchive.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchive.add(new DataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                        "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L,
+                                        MimeTypeUtils.TEXT_PLAIN, aip, "invalid_test_file.txt"));
+        filesToArchive
+                .add(new DataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"), "eadcc622739d58e8a78170b67c6ff9f1",
+                                  "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file.txt"));
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
         filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                     "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA,
+                                                     29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_1.txt"));
         filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                     "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA,
+                                                     29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_2.txt"));
         filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip));
+                                                     "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA,
+                                                     29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_3.txt"));
 
-        filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
-        filesToArchiveMultiplesMode.add(new DataFile(
-                new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt"),
-                "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip));
+        filesToArchiveMultiplesMode
+                .add(new DataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt"),
+                                  "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L,
+                                  MimeTypeUtils.TEXT_PLAIN, aip, "normal_file_test_1.txt"));
+        filesToArchiveMultiplesMode
+                .add(new DataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt"),
+                                  "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L,
+                                  MimeTypeUtils.TEXT_PLAIN, aip, "normal_file_test_2.txt"));
     }
 
     @Test
@@ -291,10 +298,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     @AfterClass
     public static void postTest() throws IOException {
         if (workspace.toFile().exists()) {
-            Files.setPosixFilePermissions(workspace,
-                                          Sets.newHashSet(PosixFilePermission.OWNER_READ,
-                                                          PosixFilePermission.OWNER_WRITE,
-                                                          PosixFilePermission.OWNER_EXECUTE));
+            Files.setPosixFilePermissions(workspace, Sets.newHashSet(PosixFilePermission.OWNER_READ,
+                                                                     PosixFilePermission.OWNER_WRITE,
+                                                                     PosixFilePermission.OWNER_EXECUTE));
         }
     }
 

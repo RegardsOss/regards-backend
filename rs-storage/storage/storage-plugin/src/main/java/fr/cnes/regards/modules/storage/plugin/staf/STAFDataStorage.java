@@ -143,7 +143,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         // Check if files are already stored
         dispatchAlreadyStoredFiles(pSubset.getDataFiles(), alreadyStoredFiles, filesToStore);
         // Files already stored in STAF. Only send stored event to listeners
-        alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getOriginUrl()));
+        alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getUrl()));
         // Files need to be stored
         doStore(filesToStore, pSubset.getMode(), replaceMode, progressManager);
         LOG.info("[STAF] {} - Store action - End.", stafArchive.getArchiveName());
@@ -175,7 +175,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 filePaths.add(filePath);
                 filesToPrepare.put(stafNode, filePaths);
             } catch (IOException e) {
-                LOG.error("[STAF] Error preparing file {}", file.getOriginUrl().toString(), e.getMessage(), e);
+                LOG.error("[STAF] Error preparing file {}", file.getUrl().toString(), e.getMessage(), e);
             }
         }
 
@@ -199,7 +199,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             boolean fileArchived = false;
             for (Entry<Path, URL> rawFile : rawArchivedFiles.entrySet()) {
                 if ((rawFile.getKey() != null)
-                        && fileToStore.getOriginUrl().getPath().equals(rawFile.getKey().toString())) {
+                        && fileToStore.getUrl().getPath().equals(rawFile.getKey().toString())) {
                     fileArchived = true;
                     // Raw file successfully stored
                     pProgressManager.storageSucceed(fileToStore, rawFile.getValue());
@@ -209,7 +209,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             if (!fileArchived) {
                 // Raw file not stored
                 LOG.error("[STAF] File {} has not been stored into STAF System.",
-                          fileToStore.getOriginUrl().toString());
+                          fileToStore.getUrl().toString());
                 pProgressManager.storageFailed(fileToStore, "Error during file archive");
             }
         });
@@ -231,7 +231,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     private void dispatchAlreadyStoredFiles(Collection<DataFile> pDataFiles, Set<DataFile> pAlreadyStoredFiles,
             Set<DataFile> pFilesToStore) {
         pDataFiles.forEach(file -> {
-            if (STAFController.STAF_PROTOCOLE.equals(file.getOriginUrl().getProtocol())) {
+            if (STAFController.STAF_PROTOCOLE.equals(file.getUrl().getProtocol())) {
                 pAlreadyStoredFiles.add(file);
             } else {
                 pFilesToStore.add(file);
@@ -255,7 +255,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                     return olds;
                 });
             } catch (IOException e) {
-                LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getOriginUrl().getPath(),
+                LOG.error("STAF PLUGIN] {} - Prepare - Error getting size for file %s", file.getUrl().getPath(),
                           e);
             }
 
@@ -272,17 +272,17 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @throws IOException If the origineUrl of the given {@link DataFile} is not available.
      */
     private Long getDataFileSize(DataFile file) throws IOException {
-        Long contentLenght = DownloadUtils.getContentLength(file.getOriginUrl(), 1000).longValue();
+        Long contentLenght = DownloadUtils.getContentLength(file.getUrl(), 1000).longValue();
         if (contentLenght == -1) {
             LOG.info("[STAF PLUGIN] {} - Prepare - Unknown length for file {}. Retrieving file ...",
-                     file.getOriginUrl().getPath());
+                     file.getUrl().getPath());
             // Size undefined, we have to donwload file to know his size
             File pysicalFile = getPhysicalFile(file);
             contentLenght = pysicalFile.length();
             LOG.info("[STAF PLUGIN] {} - Prepare - Unknown length for file {}. File retrieved {}.",
-                     file.getOriginUrl().getPath(), pysicalFile.getPath());
+                     file.getUrl().getPath(), pysicalFile.getPath());
             if (contentLenght == -1) {
-                LOG.error("[STAF PLUGIN] {} - Prepare - Error retrieving file {}", file.getOriginUrl().getPath());
+                LOG.error("[STAF PLUGIN] {} - Prepare - Error retrieving file {}", file.getUrl().getPath());
             }
         }
         return contentLenght;
@@ -295,38 +295,38 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      */
     private File getPhysicalFile(DataFile file) throws IOException {
         File physicalFile;
-        if (!FILE_PROTOCOLE.equals(file.getOriginUrl().getProtocol())) {
+        if (!FILE_PROTOCOLE.equals(file.getUrl().getProtocol())) {
             // File to transfert locally is temporarelly named with the file checksum to ensure unicity
             Path destinationFilePath = Paths.get(stafController.getWorkspaceTmpDirectory().toString(),
                                                  file.getChecksum());
             if (!destinationFilePath.toFile().exists()) {
                 try {
                     LOG.info("[STAF PLUGIN] {} - Store - Retrieving file from {} to {}", stafArchive.getArchiveName(),
-                             file.getOriginUrl().toString(), destinationFilePath.toFile().getPath());
-                    DownloadUtils.downloadAndCheckChecksum(file.getOriginUrl(), destinationFilePath,
+                             file.getUrl().toString(), destinationFilePath.toFile().getPath());
+                    DownloadUtils.downloadAndCheckChecksum(file.getUrl(), destinationFilePath,
                                                            file.getAlgorithm(), file.getChecksum(), 100);
                     // File is now in our workspace, so change origine url
                 } catch (IOException | NoSuchAlgorithmException e) {
                     String errorMsg = String.format("Error retrieving file from %s to %s",
-                                                    file.getOriginUrl().getPath(), destinationFilePath.toString());
+                                                    file.getUrl().getPath(), destinationFilePath.toString());
                     LOG.error(errorMsg, e);
                     throw new IOException(e);
                 }
             }
             physicalFile = destinationFilePath.toFile();
             if (!physicalFile.exists()) {
-                String errorMsg = String.format("Error retrieving file from %s to %s", file.getOriginUrl().getPath(),
+                String errorMsg = String.format("Error retrieving file from %s to %s", file.getUrl().getPath(),
                                                 destinationFilePath.toString());
                 throw new IOException(errorMsg);
             }
-            file.setOriginUrl(new URL(FILE_PROTOCOLE, null, destinationFilePath.toString()));
+            file.setUrl(new URL(FILE_PROTOCOLE, null, destinationFilePath.toString()));
         } else {
             try {
-                URI uri = file.getOriginUrl().toURI();
+                URI uri = file.getUrl().toURI();
                 physicalFile = new File(uri.getPath());
             } catch (URISyntaxException e) {
                 LOG.debug(e.getMessage(), e);
-                physicalFile = new File(file.getOriginUrl().getPath());
+                physicalFile = new File(file.getUrl().getPath());
             }
         }
         return physicalFile;

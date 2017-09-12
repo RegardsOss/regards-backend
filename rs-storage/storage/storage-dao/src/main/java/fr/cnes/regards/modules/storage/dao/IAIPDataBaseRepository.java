@@ -33,7 +33,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Strin
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllByState(AIPState pState, Pageable pPageable);
+    Page<AIPDataBase> findAllByStateIn(AIPState pState, Pageable pPageable);
 
     /**
      * @param pState
@@ -97,7 +97,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Strin
     Set<AIPDataBase> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);
 
     @EntityGraph("graph.aip.tags")
-    Set<AIPDataBase> findAllByState(AIPState state);
+    Set<AIPDataBase> findAllByStateIn(AIPState... states);
 
     @EntityGraph("graph.aip.tags")
     AIPDataBase findOneByIpId(String ipId);

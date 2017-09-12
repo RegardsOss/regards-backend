@@ -10,9 +10,12 @@ import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
+import fr.cnes.regards.modules.storage.domain.validation.HandledMessageDigestAlgorithm;
+
 public class FixityInformation implements Serializable {
 
     @NotNull
+    @HandledMessageDigestAlgorithm
     private String algorithm;
 
     @NotNull

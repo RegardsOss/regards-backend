@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -70,7 +71,7 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
 
-    private boolean failed = false;
+    private boolean failed;
 
     @Configuration
     static class Config {
@@ -111,12 +112,14 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
 
     private AIP aip;
 
-    private Set<UUID> succeeded = Sets.newConcurrentHashSet();
+    private Set<UUID> succeeded;
 
     private URL baseStorageLocation;
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
+        failed = false;
+        succeeded = Sets.newConcurrentHashSet();
         subscriber.subscribeTo(JobEvent.class, new JobEventHandler());
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
@@ -148,18 +151,77 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    public void createTest() throws ModuleException, InterruptedException {
+    public void createSuccessTest() throws ModuleException, InterruptedException {
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
         while (!succeeded.containsAll(jobIds) && !failed) {
             //lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
         }
+        Assert.assertFalse("The job failed while it should not have", failed);
         // lets wait two minutes so the metadata has been stored and check that everything is good
         Thread.sleep(2 * 60 * 1000);
         AIP result = aipDao.findOneByIpId(aip.getIpId());
         Assert.assertEquals(AIPState.STORED, result.getState());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
         Assert.assertEquals(2, dataFiles.size());
+    }
+
+    @Test
+    public void createFailOnDataTest() throws MalformedURLException, ModuleException, InterruptedException {
+        //first lets change the data location to be sure it fails
+        aip.getInformationObjects().get(0).getContentInformation().getDataObject().setUrl(new URL("file", "",
+                                                                                                  System.getProperty(
+                                                                                                          "user.dir")
+                                                                                                          + "/src/test/resources/data_that_does_not_exists.txt"));
+        Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
+        while (!succeeded.containsAll(jobIds) && !failed) {
+            //lets wait for 1 sec before checking again if all our jobs has been done or not
+            Thread.sleep(1000);
+        }
+        Assert.assertTrue("The job succeeded while it should not have", failed);
+        // lets wait two minutes to be sure that metadata storage method was executed and check state of metadata
+        Thread.sleep(2 * 60 * 1000);
+        AIP result = aipDao.findOneByIpId(aip.getIpId());
+        Assert.assertEquals(AIPState.STORAGE_ERROR, result.getState());
+        Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
+        Assert.assertEquals(1, dataFiles.size());
+    }
+
+    @Test
+    public void createSuccessAfterFailOnDataTest() throws InterruptedException, ModuleException, MalformedURLException {
+        // lets not rewrite code
+        createFailOnDataTest();
+        //now lets correct what we did so we can store the metadata
+        aip.getInformationObjects().get(0).getContentInformation().getDataObject()
+                .setUrl(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"));
+        //reset the fail indicator
+        failed = false;
+        createSuccessTest();
+    }
+
+    @Test
+    public void createFailOnMetadataTest() throws ModuleException, InterruptedException, IOException {
+        // to make the process fail just on metadata storage, lets remove permissions from the workspace
+        Path workspacePath = Paths.get(workspace, DEFAULT_TENANT);
+        Set<PosixFilePermission> oldPermissions = Files.getPosixFilePermissions(workspacePath);
+        Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
+        try {
+            Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
+            while (!succeeded.containsAll(jobIds) && !failed) {
+                //lets wait for 1 sec before checking again if all our jobs has been done or not
+                Thread.sleep(1000);
+            }
+            Assert.assertFalse("The job failed while it should not have", failed);
+            // lets wait two minutes to be sure that metadata storage method was executed and check state of metadata
+            Thread.sleep(2 * 60 * 1000);
+            AIP result = aipDao.findOneByIpId(aip.getIpId());
+            Assert.assertEquals(AIPState.STORAGE_ERROR, result.getState());
+            Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+            Assert.assertEquals(1, dataFiles.size());
+        } finally {
+            // to avoid issues with following tests, lets set back the permissions
+            Files.setPosixFilePermissions(workspacePath, oldPermissions);
+        }
     }
 
     private class JobEventHandler implements IHandler<JobEvent> {
@@ -206,10 +268,12 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         pluginRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
-        Files.walk(Paths.get(workspace)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
-                File::delete);
-        Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
-                File::delete);
+        Path defaultTenantWorkspace = Paths.get(workspace, DEFAULT_TENANT);
+        // in other word, remove everything inside defaultTenantWorkspace but the directory defaultTenantWorkspace, service is not created on each test so workspace is not either
+        Files.walk(defaultTenantWorkspace).sorted(Comparator.reverseOrder()).map(Path::toFile).filter(f -> !f.equals(defaultTenantWorkspace.toFile()))
+                .forEach(File::delete);
+        Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                .forEach(File::delete);
     }
 
 }

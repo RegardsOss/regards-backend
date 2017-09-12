@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.util.MimeType;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -13,6 +14,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.DataObject;
 import fr.cnes.regards.modules.storage.domain.InformationObject;
+import sun.net.util.URLUtil;
 
 /**
  *
@@ -29,7 +31,10 @@ public class DataFile {
     private Long id;
 
     @Column
-    private URL originUrl;
+    private URL url;
+
+    @Column
+    private String name;
 
     @Column(length = AIPDataBase.CHECKSUM_MAX_LENGTH, nullable = false)
     private String checksum;
@@ -68,18 +73,32 @@ public class DataFile {
     }
 
     public DataFile(DataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
-        this(file.getUrl(), checksum, algorithm, file.getType(), fileSize, mimeType, aip);
+        this(file.getUrl(), checksum, algorithm, file.getType(), fileSize, mimeType, aip, null);
+        String name=file.getName();
+        if(Strings.isNullOrEmpty(name)) {
+            String[] pathParts = file.getUrl().getPath().split("/");
+            name = pathParts[pathParts.length-1];
+        }
+        setName(name);
     }
 
-    public DataFile(URL originUrl, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
-            AIP aip) {
-        this.originUrl = originUrl;
+    public DataFile(URL url, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
+            AIP aip, String name) {
+        this.url = url;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.type = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
         this.aipDataBase = new AIPDataBase(aip);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getId() {
@@ -90,12 +109,12 @@ public class DataFile {
         this.id = id;
     }
 
-    public URL getOriginUrl() {
-        return originUrl;
+    public URL getUrl() {
+        return url;
     }
 
-    public void setOriginUrl(URL originUrl) {
-        this.originUrl = originUrl;
+    public void setUrl(URL url) {
+        this.url = url;
     }
 
     public String getChecksum() {

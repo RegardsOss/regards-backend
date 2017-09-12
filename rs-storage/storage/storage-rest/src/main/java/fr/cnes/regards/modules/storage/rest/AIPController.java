@@ -3,18 +3,15 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.validation.Valid;
+import java.io.InputStreamReader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,11 +25,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.file.utils.ChecksumUtils;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -54,7 +52,7 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
 @RequestMapping(AIPController.AIP_PATH)
 public class AIPController implements IResourceController<AIP> {
 
-    public static final String AIP_PATH = "/aip";
+    public static final String AIP_PATH = "/aips";
 
     public static final String ID_PATH = AIP_PATH + "/{ipId}";
 
@@ -68,7 +66,7 @@ public class AIPController implements IResourceController<AIP> {
 
     public static final String TAG_PATH = ID_PATH + "/tags";
 
-    public static final String TAG = TAG_PATH + "{tag}";
+    public static final String TAG = TAG_PATH + "/{tag}";
 
     public static final String QUICK_LOOK = ID_PATH + "/quicklook";
 
@@ -86,6 +84,9 @@ public class AIPController implements IResourceController<AIP> {
     @Autowired
     private IAIPService aipService;
 
+    @Autowired
+    private Gson gson;
+
     @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of all aips")
@@ -101,12 +102,8 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "validate and create the specified AIP")
-    public HttpEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips) throws ModuleException {
-        //first lets check the checksum to eliminate network corruption
-//        DigestInputStream dis=new DigestInputStream(body, MessageDigest.getInstance("MD5"));
-//        while(dis.read()!=-1) {}
-//        ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
-        //FIXME: should take the stream of the body and not the AIPs, checksum given into the header will be calculated acoording to the bytes sent!
+    public HttpEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips)
+            throws ModuleException, NoSuchAlgorithmException {
         Set<UUID> jobIds = aipService.create(aips);
         return new ResponseEntity<>(jobIds, HttpStatus.SEE_OTHER);
     }

@@ -75,4 +75,5 @@ public interface IAIPService {
 
     Set<DataFile> prepareNotFullyStored(String tenantWorkspace);
 
+    void updateAlreadyStoredMetadata();
 }
