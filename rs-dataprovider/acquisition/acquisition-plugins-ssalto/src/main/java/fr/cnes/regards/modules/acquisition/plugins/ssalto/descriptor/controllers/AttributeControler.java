@@ -23,8 +23,8 @@ import org.jdom.Namespace;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
+import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.DescriptorException;
 
 /**
  * Actions des attributs

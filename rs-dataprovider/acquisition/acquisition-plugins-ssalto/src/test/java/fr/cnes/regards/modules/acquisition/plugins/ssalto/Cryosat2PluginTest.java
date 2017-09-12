@@ -225,6 +225,11 @@ public class Cryosat2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
+        List<String> fileList = new ArrayList<>(2);
+        fileList.add("CS_OPER_AUX_SUNACT_19910101T000000_20110201T000000_0001.DBL");
+        fileList.add("CS_OPER_AUX_SUNACT_19910101T000000_20110201T000000_0001.HDR");
+        addPluginTestDef("DA_TC_CRYOSAT2_HISTO_SOLEIL", "COMMUN/SOLEIL/HISTORIQUE", fileList,
+                         "CS_OPER_AUX_SUNACT_19910101T000000_20110201T000000_0001");
     }
 
     @Override

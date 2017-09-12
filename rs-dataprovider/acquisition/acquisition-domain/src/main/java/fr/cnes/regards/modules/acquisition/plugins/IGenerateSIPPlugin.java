@@ -32,8 +32,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 public interface IGenerateSIPPlugin {
 
     // TODO CMZ : à confirmer mais je pense pas que ça retourne une String
-    public String createMetadataPlugin(String pProductName, Map<File, ?> pFileMap, String pDatasetName,
-            String pDicoName, String pProjectName) throws ModuleException;
-
+    public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName, String dicoName,
+            String projectName) throws ModuleException;
 
 }

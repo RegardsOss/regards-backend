@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.finder;
 
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 public class PluginConfigurationProperties_mock extends PluginConfigurationProperties {
 

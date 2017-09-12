@@ -24,9 +24,10 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.TranslatedFromCycleFileFinder;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
+import fr.cnes.regards.modules.acquisition.finder.TranslatedFromCycleFileFinder;
+import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
  * Classe permettant de calculer le cycle associee a une date donnee au format specific lu dans les

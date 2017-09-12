@@ -101,6 +101,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
      *            Objet descripteur
      * @throws IOException
      */
+    @SuppressWarnings("deprecation")
     private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
 
         String xmlString = null;

@@ -23,7 +23,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
  * 

@@ -22,9 +22,10 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.CNESJulianDate;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
+import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.tools.CNESJulianDate;
+import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
  * Prends une date en jour julien pour la mettre au format SIPAD.

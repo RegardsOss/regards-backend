@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3CheckingFilePlugin;
 
 /**
  *

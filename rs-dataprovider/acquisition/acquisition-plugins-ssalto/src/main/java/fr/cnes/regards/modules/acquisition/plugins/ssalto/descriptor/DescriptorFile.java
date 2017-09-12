@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.DescriptorException;
+import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
 
 /**
  * represente un fichier descripteur

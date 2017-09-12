@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSIP;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.finder.MultipleFileNameFinder;
 
 /**
  * Class PostAcquisitionPluginImpl

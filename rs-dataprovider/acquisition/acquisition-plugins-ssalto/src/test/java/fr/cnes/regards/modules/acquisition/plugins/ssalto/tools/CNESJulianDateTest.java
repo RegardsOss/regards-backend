@@ -25,6 +25,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.modules.acquisition.tools.CNESJulianDate;
+import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
+
 /**
  * 
  * @author Christophe Mertz

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.model.DateAttribute;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.DescriptorException;
+import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
 
 /**
  * Cette classe specialise la classe DateAttribute du paquetage sipad.domain.model pour mettre a jour les valeurs de la

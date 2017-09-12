@@ -23,9 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.CNESJulianDate;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.DateFormatter;
+import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.tools.CNESJulianDate;
+import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
  * This classe calculates a date according to the input value.<br>

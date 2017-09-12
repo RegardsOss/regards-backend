@@ -53,11 +53,11 @@ import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.SsaltoFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.SupplyDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginsRepositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.IngestXsdResolver;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidation;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidatorFactory;
+import fr.cnes.regards.modules.acquisition.tools.xsd.IngestXsdResolver;
+import fr.cnes.regards.modules.acquisition.tools.xsd.XMLValidation;
+import fr.cnes.regards.modules.acquisition.tools.xsd.XMLValidatorFactory;
 
 /**
  * Cette classe permet de simplifier la creation des tests sur les plugins.<br>

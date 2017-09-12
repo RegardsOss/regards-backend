@@ -40,10 +40,12 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.properties.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.CalculusTypeEnum;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.compression.CompressionTypeEnum;
+import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
+import fr.cnes.regards.modules.acquisition.finder.FileNameFinder;
+import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
+import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
+import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
+import fr.cnes.regards.modules.acquisition.tools.compression.CompressionTypeEnum;
 
 /**
  * 
