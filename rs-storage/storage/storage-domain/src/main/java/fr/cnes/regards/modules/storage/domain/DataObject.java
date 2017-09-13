@@ -4,11 +4,12 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import javax.validation.constraints.NotNull;
+
+import fr.cnes.regards.framework.oais.urn.DataType;
+
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import fr.cnes.regards.framework.urn.DataType;
 
 /**
  *
