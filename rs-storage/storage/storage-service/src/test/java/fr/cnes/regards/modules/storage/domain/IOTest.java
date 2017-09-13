@@ -39,9 +39,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
