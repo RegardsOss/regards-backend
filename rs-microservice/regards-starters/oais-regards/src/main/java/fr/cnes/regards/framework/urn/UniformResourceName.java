@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.urn.validator.RegardsOaisUrn;
 @RegardsOaisUrn
 @Convert(converter = UrnConverter.class)
 public class UniformResourceName {
+    public static final int MAX_SIZE = 128;
 
     public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:V\\d{1,3}(,\\d+)?(:REV.+)?";
 
