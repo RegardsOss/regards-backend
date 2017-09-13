@@ -3,6 +3,9 @@ package fr.cnes.regards.modules.order.domain;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
@@ -20,6 +23,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
 @Entity
 @Table(name = "t_dataset_task")
 @PrimaryKeyJoinColumn(foreignKey = @ForeignKey(name = "fk_task_id"))
+@NamedEntityGraph(name = "graph.complete", attributeNodes = @NamedAttributeNode(value = "reliantTasks"))
 public class DatasetTask extends AbstractReliantTask<FilesTask> implements Comparable<DatasetTask> {
 
     /**

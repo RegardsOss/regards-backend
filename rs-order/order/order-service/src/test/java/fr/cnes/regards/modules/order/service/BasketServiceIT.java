@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import static fr.cnes.regards.modules.order.test.CatalogClientMock.*;
 
@@ -31,6 +32,9 @@ public class BasketServiceIT {
 
     @Autowired
     private IBasketRepository basketRepository;
+
+    @Autowired
+    private IOrderService orderService;
 
     private static final String USER_EMAIL = "marc.sordi@baltringue.fr";
 
@@ -128,6 +132,8 @@ public class BasketServiceIT {
                 Assert.fail("Unknown Dataset !!!");
             }
         }
+
+        Order order = orderService.createOrder(basket);
 
     }
 }

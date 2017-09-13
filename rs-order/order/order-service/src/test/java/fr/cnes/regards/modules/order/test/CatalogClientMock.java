@@ -7,6 +7,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -256,5 +259,11 @@ public class CatalogClientMock implements ICatalogClient {
         String reqDateStr = matcher.group(1);
         OffsetDateTime reqDate = OffsetDateTimeAdapter.parse(reqDateStr);
         return -Arrays.binarySearch(dates, reqDate) - 1;
+    }
+
+    @Override
+    public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(Map<String, String> allParams,
+            Pageable pPageable) {
+        return null;
     }
 }

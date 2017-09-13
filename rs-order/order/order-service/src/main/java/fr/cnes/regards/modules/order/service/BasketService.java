@@ -54,7 +54,6 @@ public class BasketService implements IBasketService {
         return basket;
     }
 
-
     @Override
     public void deleteIfExists(String user) {
         Basket basket = repos.findByEmail(user);
@@ -62,7 +61,6 @@ public class BasketService implements IBasketService {
             repos.delete(basket.getId());
         }
     }
-
 
     @Override
     public Basket load(Long id) {
@@ -103,7 +101,7 @@ public class BasketService implements IBasketService {
                 basket.getDatasetSelections().add(datasetSelection);
             } else { // update dataset opensearch request
                 datasetSelection.setOpenSearchRequest(
-                        datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + ")");
+                        "(" + datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + "))");
             }
             // Create dated items selection
             BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, entry.getValue());
@@ -133,7 +131,8 @@ public class BasketService implements IBasketService {
     public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
         for (BasketDatasetSelection dsSelection : basket.getDatasetSelections()) {
             if (dsSelection.getId().equals(datasetId)) {
-                for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i.hasNext(); ) {
+                for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i
+                        .hasNext(); ) {
                     if (i.next().getDate().equals(itemsSelectionDate)) {
                         i.remove();
                         break;
