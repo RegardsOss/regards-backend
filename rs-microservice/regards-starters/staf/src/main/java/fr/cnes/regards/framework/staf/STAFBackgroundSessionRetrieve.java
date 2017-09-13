@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import java.nio.file.Path;
@@ -23,25 +26,18 @@ import fr.cnes.regards.framework.staf.event.ICollectListener;
  * Cette classe etend AbstractSTAFBackgroundSession.
  *
  * @author CS
- * @version $Revision: 1.7 $
- * @since 4.1
- * @DM SIPNG-DM-0044-CN : renomme STAFBackgroundSession en STAFBackgroundSessionRetrieve
  */
 public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession {
 
     /**
      * Ensemble des fichiers a restituer ou a archiver
-     *
-     * @since 4.1
      */
-    protected Map<String, String> files_;
+    protected Map<String, String> files;
 
     /**
      * indique le listener a notifier en fin de traitement de la session
-     *
-     * @since 4.4
      */
-    protected ICollectListener listener_;
+    protected ICollectListener listener;
 
     /**
      * Constructeur
@@ -56,37 +52,45 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
      *            Indique si le projet STAF est un GF (Gros Fichiers)
      * @param pFiles
      *            Ensemble des fichiers a restituer
-     * @since 4.1
      */
     public STAFBackgroundSessionRetrieve(Integer pSessionId, String pProject, String pPassword,
             Map<String, String> pFiles, STAFConfiguration pConfiguration, ICollectListener pListener) {
         // Call super
         super(pSessionId, pProject, pPassword, null, pConfiguration);
-        listener_ = pListener;
+        listener = pListener;
         // Files to retrieve
-        files_ = pFiles;
+        files = pFiles;
     }
 
     /**
      * Methode surchargee
      *
      * Restitue les fichiers de maniere bufferisee (par flots)
-     *
-     * @see sipad.externalSystems.archiving.staf.AbstractSTAFBackgroundSession#doProcess()
-     * @since 4.1
      */
     @Override
     public void doProcess() throws STAFException {
         // Retrieve files by bufferisation (by flow)
-        session.staffilRetrieveBuffered(files_);
-        if (listener_ != null) {
-            CollectEvent collectEnd = new CollectEvent(this);
-            Set<Path> filePaths = Sets.newHashSet();
-            for (String filePath : files_.keySet()) {
-                filePaths.add(Paths.get(filePath));
+        try {
+            session.staffilRetrieveBuffered(files);
+        } finally {
+            // Send notification for all files error or succeed.
+            if (listener != null) {
+                CollectEvent collectEnd = new CollectEvent(this);
+                Set<Path> filePaths = Sets.newHashSet();
+                final Set<Path> errorFilePaths = Sets.newHashSet();
+                for (final String fileName : files.keySet()) {
+                    Path restoredFile = Paths.get(files.get(fileName));
+                    if (restoredFile.toFile().exists()) {
+                        filePaths.add(Paths.get(fileName));
+                    } else {
+                        errorFilePaths.add(Paths.get(fileName));
+                    }
+                }
+                collectEnd.setRestoredFilePaths(filePaths);
+                collectEnd.setNotRestoredFilePaths(errorFilePaths);
+                collectEnd.setRestoredFilePaths(filePaths);
+                listener.collectEnded(collectEnd);
             }
-            collectEnd.setRestoredFilePaths(filePaths);
-            listener_.collectEnded(collectEnd);
         }
     }
 
@@ -94,9 +98,6 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
      * Methode surchargee
      *
      * Liberation de la ressource occupee par la session
-     *
-     * @see sipad.externalSystems.archiving.staf.AbstractSTAFBackgroundSession#freeReservation()
-     * @since 4.1
      */
     @Override
     public void freeReservation() throws STAFException {

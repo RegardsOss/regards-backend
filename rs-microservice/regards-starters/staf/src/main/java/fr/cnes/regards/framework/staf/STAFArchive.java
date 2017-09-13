@@ -1,7 +1,10 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 /**
- * Cette classe regroupe les parametres regissant les acces du SIPAD-NG au STAF
+ * Cette classe regroupe les parametres regissant les acces au STAF
  * pour un projet STAF donne. Les informations de cette classe sont issues du
  * fichier de parametrage STAF.
  * Les informations sont les suivantes :

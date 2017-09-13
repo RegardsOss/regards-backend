@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import java.io.BufferedReader;
@@ -24,6 +27,7 @@ import org.apache.log4j.Logger;
  * encapsule le lancement d'un shell de pilotage permettant de passer les commandes STAF et de recuperer et d'analyser
  * les reponses correspondantes. Ce shell est lance sur appel de la methode stafconOpen et est arrete sur appel de la
  * methode stafconClose.
+ * @author CS
  */
 public class STAFSession {
 
@@ -267,8 +271,6 @@ public class STAFSession {
 
     /**
      * Constructeur.
-     *
-     * @since 2.0
      */
     public STAFSession(STAFConfiguration pConfiguration) {
         shellProcess = null;
@@ -326,7 +328,6 @@ public class STAFSession {
      *            Indique si le projet STAF est un GF (Gros Fichiers)
      * @throws STAFException
      *             Erreur de connexion au STAF
-     * @since 2.0
      */
     protected void execStafconOpen(String pProject, String pPassword) throws STAFException {
         // Prepare la commande STAF
@@ -668,10 +669,6 @@ public class STAFSession {
      * @return une HashMap contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
      * @throws STAFException
      *             si la commande a echouee ou si le parametre pFiles est invalide.
-     * @since 4.1
-     * @DM SIPNG-DM-0044-CN : creation
-     * @DM SIPNG-DM-0044-2-CN : ajout de pReplace
-     * @FA SIPNG-FA-0410-CN : amelioration de la creation des repertoires lors de l'archivage
      */
     public List<String> staffilArchive(Map<String, String> pFiles, String pServiceClass, boolean pReplace)
             throws STAFException {
@@ -959,8 +956,6 @@ public class STAFSession {
      *            le repertoire a valider
      * @return true si le repertoire est accessible, false sinon
      * @throws STAFException
-     * @since 4.1
-     * @DM SIPNg-DM-0044-CN : creation
      */
     private boolean checkDirectory(String stafDirectory) throws STAFException {
         final MessageFormat staffilArchive = new MessageFormat(STAFNODE_LOCATE);
@@ -1132,8 +1127,6 @@ public class STAFSession {
      *            exemple : /NOEUD1/NOEUD2/FICHIER1
      * @return une List contenant les noms de fichiers qui n'ont pas ete supprimes.
      * @throws STAFException
-     * @since 4.2
-     * @DM SIPNG-DM-0044-2-CN
      */
     public List<String> staffilDelete(Set<String> pFileList) throws STAFException {
         final List<String> notDeletedFiles = new ArrayList<>();
@@ -1331,7 +1324,6 @@ public class STAFSession {
      * @param response
      *            Reponse du STAF
      * @return Le message d'erreur, null si le parametre n'est pas une reponse d'erreur
-     * @since 2.0
      * @throws STAFException
      *             en cas d'erreur systeme
      */
@@ -1380,7 +1372,6 @@ public class STAFSession {
      * @param response
      *            Reponse du STAF
      * @return Le message d'erreur, null si le parametre n'est pas une reponse d'erreur
-     * @since 2.0
      * @throws STAFException
      *             en cas d'erreur systeme
      */
@@ -1477,8 +1468,6 @@ public class STAFSession {
      * @param response
      *            Reponse du STAF
      * @return La taille si elle a ete lue, null si le parametre n'est pas une reponse specifiant une taille
-     * @since 2.0
-     * @FA SIPNG-FA-0065-CS prise en compte remarques qualite
      */
     protected Integer checkSizeInMessage(String pResponse) {
 
@@ -1514,8 +1503,6 @@ public class STAFSession {
      *
      * @param pResponse
      * @return pResponse si le message est bien du bon type, null sinon
-     * @since 1.0
-     * @FA SIPNG-FA-0311-CN : creation
      */
     protected String checkOngoingCommunicationMessage(String pResponse) {
         String messageString = null;

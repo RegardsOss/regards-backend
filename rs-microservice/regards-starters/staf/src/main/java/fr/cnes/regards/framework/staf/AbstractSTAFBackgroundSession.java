@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import java.util.Stack;
@@ -64,7 +67,6 @@ public abstract class AbstractSTAFBackgroundSession extends Thread {
      * @param pPassword Mot de passe STAF permettant de se connecter
      * @param pGFAccount Indique si le projet STAF est un GF (Gros Fichiers)
      * @param pDirectory Repertoire du STAF dans lequel les fichiers seront archives
-     * @since 4.1
      */
     public AbstractSTAFBackgroundSession(Integer pSessionId, String pProject, String pPassword, String pDirectory,
             STAFConfiguration pConfiguration) {
@@ -78,8 +80,6 @@ public abstract class AbstractSTAFBackgroundSession extends Thread {
 
     /**
      * Lancement de la session et execution de la restitution ou l archivage
-     *
-     * @since 4.1
      */
     @Override
     public void run() {
@@ -117,7 +117,6 @@ public abstract class AbstractSTAFBackgroundSession extends Thread {
      * Cette methode permet de verifier si une erreur a ete rencontree lors du
      * deroulement de la session.
      * @return Indique si la session s'est terminee en erreur
-     * @since 4.1
      */
     public boolean isInError() {
         return error != null;

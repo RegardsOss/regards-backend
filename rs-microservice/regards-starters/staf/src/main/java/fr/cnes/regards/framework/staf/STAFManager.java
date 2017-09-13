@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import java.util.ArrayList;
@@ -9,6 +12,7 @@ import org.apache.log4j.Logger;
  * Le gestionnaire STAF est une classe qui permet de centraliser les informations communes necessaires au traitement des
  * requetes. Cette classe assure principalement la gestion de la charge imposee au STAF en limitant le nombre de
  * sessions ouvertes en parallele. Cette limitation s'appuie sur un systeme de reservations de ressources.
+ * @author sbinda CS
  */
 public class STAFManager {
 
@@ -182,9 +186,6 @@ public class STAFManager {
      * @param pMode
      *            mode de restitution ou d archivage (constante de STAFService)
      * @return Indique s'il existe des sessions disponibles selon le mode
-     * @since 4.1
-     * @DM SIPNG-DM-0044-CN : changement de signature de methode (parametre supplementaire pour determiner si c est pour
-     *     une restitution ou un archivage)
      */
     private boolean hasFreeSessions(ArchiveAccessModeEnum pMode) {
         boolean freeSession = false;
@@ -204,7 +205,6 @@ public class STAFManager {
      * cours.
      *
      * @return Le nouvel identificateur
-     * @since 2.0
      */
     private Integer getReservationIdentifier() {
 
@@ -227,9 +227,6 @@ public class STAFManager {
      * @param pMode
      *            mode de restitution ou d archivage (constante de STAFService)
      * @return vrai si la reservation est autorisee, faux sinon
-     * @since 4.1
-     * @DM SIPNG-DM-0044-CN : changement de signature de methode (parametre supplementaire pour determiner si c est pour
-     *     une restitution ou un archivage)
      */
     private synchronized boolean isReservationAuthorized(Integer pReservation, ArchiveAccessModeEnum pMode) {
         int reservationIndex = reservations.indexOf(pReservation);
@@ -252,7 +249,6 @@ public class STAFManager {
      * Get method.
      *
      * @return the reservations
-     * @since 5.3
      */
     public List<Integer> getReservations() {
         return reservations;
@@ -263,7 +259,6 @@ public class STAFManager {
      *
      * @param pReservations
      *            the reservations to set
-     * @since 5.3
      */
     public void setReservations(List<Integer> pReservations) {
         reservations = pReservations;
@@ -273,7 +268,6 @@ public class STAFManager {
      * Get method.
      *
      * @return the configuration
-     * @since 5.3
      */
     public STAFConfiguration getConfiguration() {
         return configuration;
@@ -284,7 +278,6 @@ public class STAFManager {
      *
      * @param pConfiguration
      *            the configuration to set
-     * @since 5.3
      */
     public void setConfiguration(STAFConfiguration pConfiguration) {
         configuration = pConfiguration;

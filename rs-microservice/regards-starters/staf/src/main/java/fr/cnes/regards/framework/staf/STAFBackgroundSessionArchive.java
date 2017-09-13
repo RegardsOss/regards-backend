@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import java.util.Iterator;
@@ -16,9 +19,6 @@ import java.util.List;
  * Cette classe etend AbstractSTAFBackgroundSession.
  *
  * @author CS
- * @version $Revision: 1.9 $
- * @since 4.1
- * @DM SIPNG-DM-0044-CN : utilisation d une classe abstraite utilisee pour la restitution et l archivage
  */
 public class STAFBackgroundSessionArchive extends AbstractSTAFBackgroundSession {
 
@@ -68,12 +68,6 @@ public class STAFBackgroundSessionArchive extends AbstractSTAFBackgroundSession 
      *
      * Archive les fichiers de maniere bufferisee (par flots) L ensemble de fichiers sont deja dispaches par flow :
      * sessionFlowList_ On boucle sur sessionFlowList_ pour lancer l archivage bufferise
-     *
-     *
-     * @see sipad.externalSystems.archiving.staf.AbstractSTAFBackgroundSession#doProcess(java.util.HashMap,
-     *      java.lang.String)
-     * @since 4.1
-     * @DM SIPNG-DM-0044-2-CN : modification de code
      */
     @Override
     public void doProcess() throws STAFException {
@@ -89,9 +83,6 @@ public class STAFBackgroundSessionArchive extends AbstractSTAFBackgroundSession 
      * Methode surchargee
      *
      * Liberation de la ressource occupee par la session
-     *
-     * @see sipad.externalSystems.archiving.staf.AbstractSTAFBackgroundSession#freeReservation()
-     * @since 4.1
      */
     @Override
     public void freeReservation() throws STAFException {

@@ -1,16 +1,16 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf.event;
 
 /**
- * The listener interface for receiving a data object collect evnet.
- *
- * @since 4.4
+ * The listener interface for receiving a data object collect event.
+ * @author Sébastien Binda
  */
 public interface ICollectListener {
 
     /**
-     * Invoked when a step has finished
-     *
-     * @since 4.4
+     * Invoked when a STAF restore stream is finished.
      */
     void collectEnded(CollectEvent pEvent);
 }

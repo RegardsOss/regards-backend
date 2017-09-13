@@ -1,11 +1,27 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
+/**
+ * Informations about a file stored in STAF System.
+ * @author CS
+ */
 public class STAFFile {
 
+    /**
+     * STAF File path
+     */
     private String filePath;
 
+    /**
+     * STAF File size
+     */
     private Integer fileSize;
 
+    /**
+     * STAF Archive
+     */
     private STAFArchive stafArchive;
 
     public String getFilePath() {

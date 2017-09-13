@@ -1,9 +1,12 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Cette classe regroupe les parametres regissant les acces du SIPAD-NG au STAF. Les informations de cette classe sont
+ * Cette classe regroupe les parametres regissant les acces au STAF. Les informations de cette classe sont
  * issues du fichier de parametrage STAF. L'emplacement de ce fichier est indique par une variable d'environnement. Les
  * informations du fichier de conf sont les suivantes :
  * <ul>

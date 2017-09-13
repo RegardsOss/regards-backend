@@ -1,67 +1,7 @@
-package fr.cnes.regards.framework.staf;
-
 /*
- * $Id$
- *
- * HISTORIQUE
- *
- * VERSION : 5.6 : FA : SIPNG-FA-1177-CN : 05/01/2015 : Correction archivage au STAF avec des caracteres invalides
- * VERSION : 5.5 : DM : SIPNG-DM-142-CN : 12/09/2014 : Interface CDPP/AMDA
- * VERSION : 5.3.1 : FA : SIPNG-FA-0953-CN : 31/10/2013 : blocage restauration STAF en cas de commandes simultanées utilisant toutes les sessions
- * VERSION : 5.3.1 : FA : SIPNG-FA-0945-CN : 21/10/2013 : blocage restauration STAF; mauvais nommage batchSessionsIt
- * VERSION : 5.3 : FA : SIPNG-FA-0932-CN : 24/07/2013 : typage de l'attribut files_
- *
- * VERSION : 2011/09/05 : 5.0 : CS
- * DM-ID : SIPNG-DM-0099-CN : 2011/09/05 : Conversion en UTF-8
- *
- * VERSION : 2011/05/05 : 4.7 : CS
- * DM-ID : SIPNG-DM-0071-CN : 2011/05/05 : ajout de getStatistics.
- *
- * VERSION : 2009/06/11 : 4.4 : CS
- * FA-ID : V44-FA-VR-FC-SSALTO-ARCH-010-01 : 2010/01/20 : commande de fichiers decoupes
- * FA-ID : V44-FA-VR-FC-CMDS-200-02 : 2010/01/06 : correction du nom du fichier STAF
- * DM-ID : SIPNG-DM-0035-CN : 2009/06/11 : ajout de collectListener_
- * FA-ID : SIPNG-FA-0476-CN : 2009/05/26 : la liste de fichiers a supprimer devient une Collection
- *
- * VERSION : 2009/01/15 : 4.3 : CS
- * DM-ID : SIPNG-DM-0049-CN : 29/12/2008 : Adaptation du code a la montee de version du staf Gerer plusieurs versions
- * star Passer qqes constantes a protected Passer qqes methodes a protected
- *
- * VERSION : 2008/10/31 : 4.2 : CS
- * FA-ID : SIPNG-FA-0351-CN : 2008/10/02 : bouclage archivage
- * DM-ID : SIPNG-DM-0044-2-CN : 2008/09/05 : ajout de deletFiles et modif de archiveFiles
- *
- * VERSION : 2008/06/01 : 4.1 : CS
- * DM-ID : SIPNG-DM-0044-CN : 05/03/2008 : Module d acquisistion et d archivage
- *
- * VERSION : 2007/11/16 : 4.0 : CS
- * FA-ID : SIPNG-FA-0272-CN : 2007/11/16 : ajout d'informations de log dans les threads
- *
- * VERSION : 2007/05/03 : 3.3 : CS
- * FA-ID : SIPNG-FA-0247-CS : 2007/07/03 : correction pour eviter de retenir une connexion ouverte quand une erreur
- * survient lors de la connexion.
- * DM-ID : SIPNG-DM-0032-CN : 2007/05/03 : ajout de setConfiguration dans l'interface
- *
- * VERSION : 2006/10/05 : 3.2 : CS
- * FA-ID : SIPNG-FA-0190-CS : 2006/10/05 : correction de restoreAllFiles pour ne pas recuperer les fichiers existant en
- * local
- *
- * VERSION : 2006/03/23 : 3.0 : CS
- * FA-ID : SIPNG-FA-0136-CS : 2006/04/12 : Correction javadoc
- * DM-ID : SIPNG-DM-0004-CN : 2006/03/23 : ajout de restoreDirectory
- *
- * VERSION : 2005/07/05 : 2.0 : CS
- * DM-ID : COMPLEMENT_V2 : 2005/11/14 : Correction des commentaire + ajout de logs
- * FA-ID : SIPNG-FA-0001-CS : 2005/10/24 : Prise en compte des remarques qualites
- * DM-ID : COMPLEMENT_V2 : 05/07/2005 : Conception detaillee du STAF Implementation des methodes de
- * l'interface. Remplacement des attributs existants par de nouveaux attributs
- * correspondant aux elements de conceptions lies a l'introduction de la classe
- * STAFSession.
- *
- * VERSION : 2004/06/02 : 1.0 : CS Creation
- *
- * FIN-HISTORIQUE
+ * LICENSE_PLACEHOLDER
  */
+package fr.cnes.regards.framework.staf;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -98,14 +38,13 @@ import fr.cnes.regards.framework.staf.event.ICollectListener;
  * recherchee permet de garantir un nombre minimal de commandes et une parallelisation maximale. <strong>Important
  * !</strong> Cette "optimisation" ne porte que sur les fichiers d'une seule commande. Si plusieurs commandes demandent
  * a restaurer les memes fichiers, les ordres de restauration au STAF seront "dupliques" entre chaque commande.
+ * @author CS
  */
 
 public class STAFService {
 
     /**
      * Attribut permettant la journalisation
-     *
-     * @since 2.0
      */
     private static Logger logger = Logger.getLogger(STAFService.class);
 
@@ -126,8 +65,6 @@ public class STAFService {
 
     /**
      * Maximum size (in Mo) for service classe : 50Mo
-     *
-     * @since 4.1
      */
     private static int CLASS_SERVICE_MAX_SIZE = 50000000;
 
@@ -207,13 +144,12 @@ public class STAFService {
      * @param pDestination
      *            Emplacement ou restituer le fichier
      * @throws ArchiveException
-     * @since 1.0
      */
-    public void restoreFile(IRestoreFile pFileName, String pDestination) throws STAFException {
+    public void restoreFile(Path pSTAFFilePath, String pDestination) throws STAFException {
         // Prepare la liste des fichiers a restituer, liste ne contenant qu'un
         // seul fichier.
         final HashMap<String, String> files = new HashMap<>();
-        files.put(pFileName.getPath(), computeTargetFilename(pFileName.getPath(), pDestination));
+        files.put(pSTAFFilePath.toString(), computeTargetFilename(pSTAFFilePath.toString(), pDestination));
         // Pour la restitution d'un fichier unique on utilise la session
         // principale
         mainSession.staffilRetrieve(files);
@@ -433,24 +369,32 @@ public class STAFService {
             session.start();
         }
 
+        final HashMap<String, String> files = pSessionsFiles.remove(0);
         try {
             // Lance la restitution du dernier lot via la session principale. La
             // restitution est bufferisee (par flots).
-            final HashMap<String, String> files = pSessionsFiles.remove(0);
             mainSession.staffilRetrieveBuffered(files);
+        } catch (final STAFException e) {
+            logger.error(e.getMessage(), e);
+            error = true;
+        } finally {
             // Send an event to the collect listener
             if (getCollectListener() != null) {
                 final CollectEvent collectEnd = new CollectEvent(this);
                 final Set<Path> filePaths = Sets.newHashSet();
+                final Set<Path> errorFilePaths = Sets.newHashSet();
                 for (final String fileName : files.keySet()) {
-                    filePaths.add(Paths.get(fileName));
+                    Path restoredFile = Paths.get(files.get(fileName));
+                    if (restoredFile.toFile().exists()) {
+                        filePaths.add(Paths.get(fileName));
+                    } else {
+                        errorFilePaths.add(Paths.get(fileName));
+                    }
                 }
                 collectEnd.setRestoredFilePaths(filePaths);
+                collectEnd.setNotRestoredFilePaths(errorFilePaths);
                 getCollectListener().collectEnded(collectEnd);
             }
-        } catch (final STAFException e) {
-            logger.error(e.getMessage(), e);
-            error = true;
         }
 
         // Attend la fin des sessions batch
@@ -577,8 +521,6 @@ public class STAFService {
      * @param pArchivedFilesList
      * @param pReplace
      * @return
-     * @since 4.3
-     * @DM SIPNG-DM-0049-CN : creation
      */
     protected STAFBackgroundSessionArchive getBackgroundSessionArchive(Integer pSessionId, String pProject,
             String pPassword, List<STAFArchivingFlow> pFilesFlow, String pDirectory, List<String> pArchivedFilesList,
@@ -597,7 +539,6 @@ public class STAFService {
      * @param pGFAccount
      * @param pFiles
      * @return
-     * @since 4.3 SIPNG-DM-0049-CN : creation
      */
     protected STAFBackgroundSessionRetrieve getBackgroundSessionRetrieve(Integer pSessionId, String pProject,
             String pPassword, boolean pGFAccount, HashMap<String, String> pFiles) {
