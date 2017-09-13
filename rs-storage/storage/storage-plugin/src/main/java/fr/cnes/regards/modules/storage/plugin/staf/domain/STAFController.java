@@ -112,25 +112,12 @@ public class STAFController {
     }
 
     /**
-     * Allow to clear prepared files to handle a new preparation.
-     */
-    public void clearPreparedFiles() {
-        // Clear already calculated files to archive
-        filesToArchive.clear();
-        tarsToArchive.clear();
-    }
-
-    /**
-     * Store given pFilesToArchiveMap in STAF.<br/>
-     * For each element of pFilesToArchiveMap :<br/>
-     *  - key : is the local path of the file to archive<br/>
-     *  - value : is the staf file path to store.<br/>
-     * @param pFilesToArchiveMap files to store
+     * Store the prepared {@link AbstractPhysicalFile} into STAF.<br/>
      * @param pReplaceMode replace file in STAF if already exists ?
-     * @return list of successfuly stored local file path.
-     * @throws STAFException staf store error
+     * @return Set of successfuly stored {@link AbstractPhysicalFile}.
+     * @throws STAFException STAF store error
      */
-    public Set<AbstractPhysicalFile> doArchivePreparedFiles(boolean pReplaceMode) throws STAFException {
+    public Set<AbstractPhysicalFile> archivePreparedFiles(boolean pReplaceMode) throws STAFException {
         Set<String> archivedFiles;
         // Create map bewteen localFile to archive and destination file path into STAF
         Map<String, String> localFileToArchiveMap = Maps.newHashMap();
@@ -196,6 +183,44 @@ public class STAFController {
     }
 
     /**
+     * Allow to clear prepared files to handle a new preparation.
+     */
+    public void clearPreparedFiles() {
+        // Clear already calculated files to archive
+        filesToArchive.clear();
+        tarsToArchive.clear();
+    }
+
+    /**
+     * Delete all {@link AbstractPhysicalFile} from STAF System.
+     * After each deletion success or error, a notification is sent
+     * @param pPhysicalFilesToDelete
+     */
+    public void deletePreparedFiles(Set<AbstractPhysicalFile> pPhysicalFilesToDelete) {
+
+        for (AbstractPhysicalFile physicalFileToDelete : pPhysicalFilesToDelete) {
+            switch (physicalFileToDelete.getArchiveMode()) {
+                case CUT:
+                    // TODO : Delete each part
+                    break;
+                case CUT_PART:
+                case NORMAL:
+                    // TODO : Delete file
+                    break;
+                case TAR:
+                    // TODO : Case of file deletion into TAR :
+                    // 1. Retrieve TAR from STAF
+                    // 2. extract TAR
+                    // 3. Reconstruct TAR without the delete file
+                    // 4. Archive file
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /**
      * Return all {@link AbstractPhysicalFile} prepared for storage into STAF System.
      * @return {@link AbstractPhysicalFile}s
      */
@@ -257,6 +282,37 @@ public class STAFController {
             return STAFArchiveModeEnum.CUT;
         }
         return STAFArchiveModeEnum.NORMAL;
+    }
+
+    /**
+     * Initialize needed directories fot the current controller.
+     * @throws IOException Directories are not accessible.
+     */
+    public void initializeWorkspaceDirectories() throws IOException {
+        if (!Files.exists(localWorkspace)) {
+            Files.createDirectories(localWorkspace);
+        }
+        if (!Files.isReadable(localWorkspace)) {
+            throw new IOException(
+                    String.format("[STAF] Local workspace %s is not readable", localWorkspace.toString()));
+        }
+        if (!Files.isWritable(localWorkspace)) {
+            throw new IOException(
+                    String.format("[STAF] Local workspace %s is not writable", localWorkspace.toString()));
+        }
+        // Initialize TMP Directory
+        Path tmpWorkspaceDir = getWorkspaceTmpDirectory();
+        if (!Files.exists(tmpWorkspaceDir)) {
+            Files.createDirectories(tmpWorkspaceDir);
+        }
+        if (!Files.isReadable(tmpWorkspaceDir)) {
+            throw new IOException(
+                    String.format("[STAF] workspace TMP directory %s is not readable", tmpWorkspaceDir.toString()));
+        }
+        if (!Files.isWritable(tmpWorkspaceDir)) {
+            throw new IOException(
+                    String.format("[STAF] workspace TMP directory %s is not writable", tmpWorkspaceDir.toString()));
+        }
     }
 
     /**
@@ -349,6 +405,123 @@ public class STAFController {
                 stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
             } catch (STAFException e) {
                 LOG.error("Error during STAF deconnection.", e);
+            }
+        }
+    }
+
+    /**
+     * Cut a file which is too big to be archive in one part into STAF System.
+     * @param pPhysicalFileToArchive {@link Path} file to cut in parts
+     * @param pStafNode {@link String} STAF Node where to archive the given File
+     * @return {@link PhysicalCutFile} containing {@link PhysicalCutPartFile}s for each part of the cuted file
+     * @throws IOException Error during file cut.
+     */
+    private PhysicalCutFile cutFile(Path pPhysicalFileToArchive, String pSTAFNode) throws IOException {
+        // 1. Create cut temporary directory into workspace
+        Path tmpCutDirectory = Paths.get(getWorkspaceTmpDirectory().toString(),
+                                         pPhysicalFileToArchive.getFileName().toString());
+        if (!tmpCutDirectory.toFile().exists()) {
+            tmpCutDirectory.toFile().mkdirs();
+        }
+        // 2. Do cut files
+        Set<File> cutedLocalFiles = CutFileUtils.cutFile(pPhysicalFileToArchive.toFile(), tmpCutDirectory.toString(),
+                                                         stafConfiguration.getMaxFileSize());
+        LOG.info("[STAF] Number of cuted files : {} for file {}", cutedLocalFiles.size(),
+                 pPhysicalFileToArchive.toString());
+
+        // 3. Create cut Physical file object to return
+        PhysicalCutFile physicalCutFile = new PhysicalCutFile(pPhysicalFileToArchive,
+                stafService.getStafArchive().getArchiveName(), pSTAFNode);
+        physicalCutFile.addRawAssociatedFile(pPhysicalFileToArchive);
+        int partIndex = 0;
+        for (File cutedFile : cutedLocalFiles) {
+            Path cutedFilePath = Paths.get(cutedFile.getPath());
+            PhysicalCutPartFile cutFilePart = new PhysicalCutPartFile(cutedFilePath, physicalCutFile, partIndex,
+                    stafService.getStafArchive().getArchiveName(), pSTAFNode);
+            physicalCutFile.addCutedPartFile(cutFilePart);
+            partIndex++;
+        }
+        return physicalCutFile;
+    }
+
+    /**
+     * Delete temporary files associated to the given {@link AbstractPhysicalFile}
+     * @param pFile {@link AbstractPhysicalFile}
+     */
+    private void deleteTemporaryFiles(AbstractPhysicalFile pFile) {
+        switch (pFile.getArchiveMode()) {
+            case CUT_PART:
+                deleteTemporaryFile((PhysicalCutPartFile) pFile);
+                break;
+            case NORMAL:
+                deleteTemporaryFile((PhysicalNormalFile) pFile);
+                break;
+            case TAR:
+                deleteTemporaryFile((PhysicalTARFile) pFile);
+                break;
+            case CUT:
+            default:
+                deleteTemporaryFile((PhysicalCutFile) pFile);
+                break;
+        }
+    }
+
+    /**
+     * Delete temporary files for the given {@link PhysicalCutPartFile}
+     * @param pFile {@link PhysicalCutPartFile}
+     */
+    private void deleteTemporaryFile(PhysicalCutPartFile pCutPartFile) {
+        if (pCutPartFile.getLocalFilePath().getParent().toFile().exists()) {
+            try {
+                Files.walk(pCutPartFile.getLocalFilePath().getParent()).map(Path::toFile)
+                        .sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (CUT MODE", e);
+            }
+        }
+    }
+
+    /**
+     * Delete temporary file for the given {@link PhysicalNormalFile}
+     * @param pFile {@link PhysicalNormalFile}
+     */
+    private void deleteTemporaryFile(PhysicalNormalFile pFile) {
+        // Only delete local file if the file is in the STAF workspace.
+        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
+            try {
+                Files.delete(pFile.getLocalFilePath());
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
+            }
+        }
+    }
+
+    /**
+     * Delete temporary file for the given {@link PhysicalTARFile}
+     * @param pFile {@link PhysicalTARFile}
+     */
+    private void deleteTemporaryFile(PhysicalTARFile pFile) {
+        // Only delete local file if the file is in the STAF workspace.
+        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
+            try {
+                Files.delete(pFile.getLocalFilePath());
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (TAR MODE", e);
+            }
+        }
+    }
+
+    /**
+     * Delete temporary file for the given {@link PhysicalCutFile}
+     * @param pFile {@link PhysicalCutFile}
+     */
+    private void deleteTemporaryFile(PhysicalCutFile pFile) {
+        // Only delete local file if the file is in the STAF workspace.
+        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
+            try {
+                Files.delete(pFile.getLocalFilePath());
+            } catch (IOException e) {
+                LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
             }
         }
     }
@@ -480,154 +653,6 @@ public class STAFController {
             }
         } catch (IOException | STAFTarException e) {
             LOG.error("[STAF] Error preparing file {}", pFileToArchive, e);
-        }
-    }
-
-    /**
-     * Cur a file which is too big to be archive in one part into STAF System.
-     * @param pPhysicalFileToArchive {@link Path} file to cut in parts
-     * @param pStafNode {@link String} STAF Node where to archive the given File
-     * @return {@link PhysicalCutFile} containing {@link PhysicalCutPartFile}s for each part of the cuted file
-     * @throws IOException Error during file cut.
-     */
-    private PhysicalCutFile cutFile(Path pPhysicalFileToArchive, String pSTAFNode) throws IOException {
-        // 1. Create cut temporary directory into workspace
-        Path tmpCutDirectory = Paths.get(getWorkspaceTmpDirectory().toString(),
-                                         pPhysicalFileToArchive.getFileName().toString());
-        if (!tmpCutDirectory.toFile().exists()) {
-            tmpCutDirectory.toFile().mkdirs();
-        }
-        // 2. Do cut files
-        Set<File> cutedLocalFiles = CutFileUtils.cutFile(pPhysicalFileToArchive.toFile(), tmpCutDirectory.toString(),
-                                                         stafConfiguration.getMaxFileSize());
-        LOG.info("[STAF] Number of cuted files : {} for file {}", cutedLocalFiles.size(),
-                 pPhysicalFileToArchive.toString());
-
-        // 3. Create cut Physical file object to return
-        PhysicalCutFile physicalCutFile = new PhysicalCutFile(pPhysicalFileToArchive,
-                stafService.getStafArchive().getArchiveName(), pSTAFNode);
-        physicalCutFile.addRawAssociatedFile(pPhysicalFileToArchive);
-        int partIndex = 0;
-        for (File cutedFile : cutedLocalFiles) {
-            Path cutedFilePath = Paths.get(cutedFile.getPath());
-            PhysicalCutPartFile cutFilePart = new PhysicalCutPartFile(cutedFilePath, physicalCutFile, partIndex,
-                    stafService.getStafArchive().getArchiveName(), pSTAFNode);
-            physicalCutFile.addCutedPartFile(cutFilePart);
-            partIndex++;
-        }
-        return physicalCutFile;
-    }
-
-    /**
-     * Delete temporary files associated to the given {@link AbstractPhysicalFile}
-     * @param pFile {@link AbstractPhysicalFile}
-     */
-    private void deleteTemporaryFiles(AbstractPhysicalFile pFile) {
-        switch (pFile.getArchiveMode()) {
-            case CUT_PART:
-                deleteTemporaryFile((PhysicalCutPartFile) pFile);
-                break;
-            case NORMAL:
-                deleteTemporaryFile((PhysicalNormalFile) pFile);
-                break;
-            case TAR:
-                deleteTemporaryFile((PhysicalTARFile) pFile);
-                break;
-            case CUT:
-            default:
-                deleteTemporaryFile((PhysicalCutFile) pFile);
-                break;
-        }
-    }
-
-    /**
-     * Delete temporary files for the given {@link PhysicalCutPartFile}
-     * @param pFile {@link PhysicalCutPartFile}
-     */
-    private void deleteTemporaryFile(PhysicalCutPartFile pCutPartFile) {
-        if (pCutPartFile.getLocalFilePath().getParent().toFile().exists()) {
-            try {
-                Files.walk(pCutPartFile.getLocalFilePath().getParent()).map(Path::toFile)
-                        .sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
-            } catch (IOException e) {
-                LOG.error("[STAF] Error deleting file (CUT MODE", e);
-            }
-        }
-    }
-
-    /**
-     * Delete temporary file for the given {@link PhysicalNormalFile}
-     * @param pFile {@link PhysicalNormalFile}
-     */
-    private void deleteTemporaryFile(PhysicalNormalFile pFile) {
-        // Only delete local file if the file is in the STAF workspace.
-        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
-            try {
-                Files.delete(pFile.getLocalFilePath());
-            } catch (IOException e) {
-                LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
-            }
-        }
-    }
-
-    /**
-     * Delete temporary file for the given {@link PhysicalTARFile}
-     * @param pFile {@link PhysicalTARFile}
-     */
-    private void deleteTemporaryFile(PhysicalTARFile pFile) {
-        // Only delete local file if the file is in the STAF workspace.
-        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
-            try {
-                Files.delete(pFile.getLocalFilePath());
-            } catch (IOException e) {
-                LOG.error("[STAF] Error deleting file (TAR MODE", e);
-            }
-        }
-    }
-
-    /**
-     * Delete temporary file for the given {@link PhysicalCutFile}
-     * @param pFile {@link PhysicalCutFile}
-     */
-    private void deleteTemporaryFile(PhysicalCutFile pFile) {
-        // Only delete local file if the file is in the STAF workspace.
-        if (pFile.getLocalFilePath().toFile().exists() && pFile.getLocalFilePath().startsWith(localWorkspace)) {
-            try {
-                Files.delete(pFile.getLocalFilePath());
-            } catch (IOException e) {
-                LOG.error("[STAF] Error deleting file (NORMAL MODE", e);
-            }
-        }
-    }
-
-    /**
-     * Initialize needed directories fot the current controller.
-     * @throws IOException Directories are not accessible.
-     */
-    public void initializeWorkspaceDirectories() throws IOException {
-        if (!Files.exists(localWorkspace)) {
-            Files.createDirectories(localWorkspace);
-        }
-        if (!Files.isReadable(localWorkspace)) {
-            throw new IOException(
-                    String.format("[STAF] Local workspace %s is not readable", localWorkspace.toString()));
-        }
-        if (!Files.isWritable(localWorkspace)) {
-            throw new IOException(
-                    String.format("[STAF] Local workspace %s is not writable", localWorkspace.toString()));
-        }
-        // Initialize TMP Directory
-        Path tmpWorkspaceDir = getWorkspaceTmpDirectory();
-        if (!Files.exists(tmpWorkspaceDir)) {
-            Files.createDirectories(tmpWorkspaceDir);
-        }
-        if (!Files.isReadable(tmpWorkspaceDir)) {
-            throw new IOException(
-                    String.format("[STAF] workspace TMP directory %s is not readable", tmpWorkspaceDir.toString()));
-        }
-        if (!Files.isWritable(tmpWorkspaceDir)) {
-            throw new IOException(
-                    String.format("[STAF] workspace TMP directory %s is not writable", tmpWorkspaceDir.toString()));
         }
     }
 }

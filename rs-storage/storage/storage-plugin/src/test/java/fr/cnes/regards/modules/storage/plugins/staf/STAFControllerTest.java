@@ -156,6 +156,7 @@ public class STAFControllerTest {
         // Simulate archive is ok for all files.
         Mockito.when(stafSessionMock.staffilArchive(Mockito.any(), Mockito.any(), Mockito.anyBoolean()))
                 .thenAnswer(pInvocation -> {
+                    @SuppressWarnings("unchecked")
                     Map<String, String> files = pInvocation.getArgumentAt(0, Map.class);
                     return Lists.newArrayList(files.keySet());
                 });
@@ -214,7 +215,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.doArchivePreparedFiles(false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -286,7 +287,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.doArchivePreparedFiles(false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -364,7 +365,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.doArchivePreparedFiles(false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -449,7 +450,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.doArchivePreparedFiles(false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -534,7 +535,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.doArchivePreparedFiles(false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(false);
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -591,7 +592,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.doArchivePreparedFiles(false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         // 20 files to archive. Max number of files per archive session = 10 -> 2xarchive command
         Mockito.verify(stafSessionMock, Mockito.times(2)).staffilArchive(Mockito.anyMapOf(String.class, String.class),

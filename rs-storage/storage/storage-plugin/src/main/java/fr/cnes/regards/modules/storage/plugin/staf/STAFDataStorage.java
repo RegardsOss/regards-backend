@@ -181,6 +181,34 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         }
     }
 
+    @Override
+    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, ProgressManager pProgressManager) {
+        STAFRetrieveWorkingSubset ws = (STAFRetrieveWorkingSubset) pWorkingSubset;
+        if (ws != null) {
+            stafController.restoreFiles(ws.getFilesToRestore(), pDestinationPath,
+                                        new STAFRetrieveListener(pProgressManager, ws));
+        } else {
+            LOG.error("[STAFDataStorage Plugin] {} - Invalid workingsubset of Store type used for retrieve action.",
+                      stafArchive.getArchiveName());
+        }
+    }
+
+    @Override
+    public Set<DataStorageInfo> getMonitoringInfos() {
+        // TODO
+        return Sets.newHashSet();
+    }
+
+    @Override
+    public void delete(Set<DataFile> pDataFiles, ProgressManager pProgressManager) {
+        // 1. Prepare files
+        Set<URL> urls = pDataFiles.stream().map(df -> df.getUrl()).collect(Collectors.toSet());
+        Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToRestore(urls);
+        // 2. Delete prepared files
+        stafController.deletePreparedFiles(filesToDelete);
+        // TODO : Handle progress manager
+    }
+
     /**
      * Do the store action for the given {@link DataFile}s
      * @param pFilesToStore
@@ -217,7 +245,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
         try {
             // 3. Do store all prepared files
-            stafController.doArchivePreparedFiles(pReplaceMode);
+            stafController.archivePreparedFiles(pReplaceMode);
         } catch (STAFException e) {
             LOG.error("[STAFDataStorage Plugin] Error during file preparation", e);
         }
@@ -364,30 +392,6 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             }
         }
         return physicalFile;
-    }
-
-    @Override
-    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, ProgressManager pProgressManager) {
-        STAFRetrieveWorkingSubset ws = (STAFRetrieveWorkingSubset) pWorkingSubset;
-        if (ws != null) {
-            stafController.restoreFiles(ws.getFilesToRestore(), pDestinationPath,
-                                        new STAFRetrieveListener(pProgressManager, ws));
-        } else {
-            LOG.error("[STAFDataStorage Plugin] {} - Invalid workingsubset of Store type used for retrieve action.",
-                      stafArchive.getArchiveName());
-        }
-    }
-
-    @Override
-    public Set<DataStorageInfo> getMonitoringInfos() {
-        // TODO Auto-generated method stub
-        return Sets.newHashSet();
-    }
-
-    @Override
-    public void delete(Set<DataFile> pDataFiles, ProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
-
     }
 
 }
