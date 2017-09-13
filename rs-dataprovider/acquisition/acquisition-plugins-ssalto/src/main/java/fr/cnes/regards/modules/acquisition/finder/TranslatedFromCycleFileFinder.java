@@ -34,8 +34,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -176,6 +174,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
             // Check if cycle file exists
             final String cycleFilePath = confProperties.getCycleFileFilepath();
+            
+            LOGGER.debug("cycle file path = "+cycleFilePath);
 
             boolean computeOrfFile = true;
             if ((cycleFilePath != null) && (cycleFilePath.length() > 0)) {
@@ -225,10 +225,14 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // occurence du cycle
         final NumberFormat numberFormat = new DecimalFormat("000");
         cycleAsString = numberFormat.format(cycleOccurence.intValue());
+        LOGGER.debug("cycleAsString = " + cycleAsString);
 
         // recupere le ou les fichiers depuis le disk
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
         while ((cycleStartDate == null) && (increment <= (getOrfFilePath.length - 1))) {
+            
+            LOGGER.debug("getOrfFilePath : " + getOrfFilePath[increment]);
+            
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
 
             // parcours le fichier ligne par ligne
@@ -237,6 +241,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 if (cycleAsString.equals(matcher.group(ORF_CYCLE_GROUP))) {
                     LocalDateTime ldt = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
                     cycleStartDate = OffsetDateTime.of(ldt, ZoneOffset.UTC);
+                    LOGGER.debug("cycleStartDate = " + cycleStartDate);
                 }
             }
         }
@@ -266,12 +271,16 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // occurence du cycle +1
         final NumberFormat numberFormat = new DecimalFormat("000");
         cycleAsString = numberFormat.format(cycleOccurence.intValue());
+        
+        LOGGER.debug("cycleAsString = " + cycleAsString);
 
         // recupere le ou les fichiers depuis le disk
         // DM SIPNG-DM-0060-CN : Prise en compte de x fichiers ORF
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
         while ((cycleStopDate == null) && (increment <= (getOrfFilePath.length - 1))) {
 
+            LOGGER.debug("getOrfFilePath : " + getOrfFilePath[increment]);
+            
             // recupere le fichier depuis le disk
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
 
@@ -281,7 +290,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 if (cycleAsString.equals(matcher.group(ORF_CYCLE_GROUP))) {
                     LocalDateTime ldt = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
                     cycleStopDate = OffsetDateTime.of(ldt, ZoneOffset.UTC);
-                    ;
+                    LOGGER.debug("cycleStopDate = " + cycleStopDate);
                 }
             }
         }
@@ -295,7 +304,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     }
 
     /**
-     * Le nom des fichiers ORF evolue en fonction des mises a jours. On ne selectionne que le dernier modifie
+     * Le nom des fichiers ORF evolue en fonction des mises a jours. </br>
+     * On ne selectionne que le dernier modifie
      *
      * @param orfFilePathPattern
      *            de preference en chemin absolu
@@ -369,6 +379,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 // alors affiner la recherche en cherchant parmi les
                 // fichiers ORF ( cas des cycles 000 pour jason ou 998 et 999 pour jason2 )
                 final String startDateString = matcher.group(CYCLE_START_GROUP);
+                
+                LOGGER.debug("startDateString=" + startDateString);
 
                 firstStartDate = 1;
 
@@ -406,6 +418,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 }
             }
         }
+        
+        LOGGER.debug("cycleOccurence = " + cycleOccurence);
 
         return cycleOccurence;
     }
@@ -426,7 +440,10 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // recupere le fichier depuis le disk
         // DM-0060 : Prise en compte de plusieurs fichiers ORF
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
+        
         while ((!cycleFound) && (increment <= (getOrfFilePath.length - 1))) {
+            
+            LOGGER.debug("getOrfFilePath : " + getOrfFilePath[increment]);
 
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
             // parcours le fichier ligne par ligne
@@ -434,6 +451,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             while (matcher.find() && !cycleFound) {
 
                 LocalDateTime cycleDateTime = LocalDateTime.parse(matcher.group(ORF_TIME_GROUP), ORF_DATE_TIME_FORMAT);
+                
+                LOGGER.debug("cycleDateTime = " + cycleDateTime.toString());
 
                 // Si la date trouvee est anterieure on stocke l'occurence sinon
                 // c'est la fin
@@ -452,6 +471,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 }
             }
         }
+        
+        LOGGER.debug("cycleOccurence = " + cycleOccurence);
+        
         return cycleOccurence;
     }
 

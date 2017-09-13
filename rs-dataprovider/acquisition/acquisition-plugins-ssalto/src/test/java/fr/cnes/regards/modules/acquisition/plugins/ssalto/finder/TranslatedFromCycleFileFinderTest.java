@@ -270,7 +270,7 @@ public class TranslatedFromCycleFileFinderTest {
 
     // Cycle inclu dans le deuxieme fichier
     @Test
-    public void jason2GetDateFromCycleSecondFile() throws Exception {
+    public void jason2GetDateFromCycleSecondFile() {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
         translatedFromCycleFileFinder.setAttributProperties(jason2InitConfProperties());
         translatedFromCycleFileFinder.setName(START_DATE);
@@ -284,17 +284,25 @@ public class TranslatedFromCycleFileFinderTest {
         attValueList.add(new Integer(28));
         attributMap.put(ATT_NAME, attValueList);
 
-        List<Object> resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-        Assert.assertEquals(1, resultList.size());
-
         LocalDateTime expectedLdt = LocalDateTime.of(2009, 4, 5, 18, 40, 19, 209000000);
+
+        List<Object> resultList = null;
+        try {
+            resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        } catch (PluginAcquisitionException e) {
+            Assert.fail(e.getMessage());
+        }
+        Assert.assertEquals(1, resultList.size());
         Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
 
-        translatedFromCycleFileFinder.setName(STOP_DATE);
-        resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
-        Assert.assertEquals(1, resultList.size());
-
         expectedLdt = LocalDateTime.of(2009, 4, 15, 16, 10, 43, 594000000);
+        translatedFromCycleFileFinder.setName(STOP_DATE);
+        try {
+            resultList = translatedFromCycleFileFinder.getValueList(null, attributMap);
+        } catch (PluginAcquisitionException e) {
+            Assert.fail(e.getMessage());
+        }
+        Assert.assertEquals(1, resultList.size());
         Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
