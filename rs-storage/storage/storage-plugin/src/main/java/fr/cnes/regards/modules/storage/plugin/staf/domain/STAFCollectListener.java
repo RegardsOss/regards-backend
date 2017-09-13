@@ -94,6 +94,46 @@ public class STAFCollectListener implements ICollectListener {
                 }
             }).forEach(physicalFile -> handleFileRestored(physicalFile, restoredFilePath));
         }
+
+        for (Path stafFilePathNotRestored : pEvent.getNotRestoredFilePaths()) {
+            allFilesToRestore.stream().filter(fileToRestore -> {
+                try {
+                    return stafFilePathNotRestored.equals(fileToRestore.getSTAFFilePath());
+                } catch (STAFException e) {
+                    LOG.error("[STAF] Error getting STAF File path", e);
+                    return false;
+                }
+            }).forEach(this::handleRestorError);
+        }
+    }
+
+    /**
+     * Handle an error during file retrieve to notify listener.
+     * @param pFileNotRestored {@link AbstractPhysicalFile} not successfully restored from STAF System.
+     */
+    private void handleRestorError(AbstractPhysicalFile pFileNotRestored) {
+        // Set error status to the given file.
+        pFileNotRestored.setStatus(PhysicalFileStatusEnum.ERROR);
+        try {
+            // Special case for CUT PART files.
+            // the client waits for an error event on the orginial asked file so the including full file.
+            if (STAFArchiveModeEnum.CUT_PART.equals(pFileNotRestored.getArchiveMode())) {
+                PhysicalCutPartFile partNotRestored = (PhysicalCutPartFile) pFileNotRestored;
+                // If the including cut file is already in error status, so the event has already be sent.
+                if (!PhysicalFileStatusEnum.ERROR.equals(partNotRestored.getIncludingCutFile().getStatus())) {
+                    partNotRestored.getIncludingCutFile().setStatus(PhysicalFileStatusEnum.ERROR);
+                    sendFileRetrieveErrorNotification(STAFUrlFactory
+                            .getCutFileSTAFUrl(partNotRestored.getIncludingCutFile()));
+                }
+
+            } else {
+                // For other case TAR and NORMAL notify listener for the files in error.
+                Set<URL> urls = STAFUrlFactory.getSTAFURLs(pFileNotRestored);
+                urls.forEach(this::sendFileRetrieveErrorNotification);
+            }
+        } catch (STAFUrlException e) {
+            LOG.error("[STAF] Invalid file to handle restore error", e);
+        }
     }
 
     /**
@@ -132,9 +172,9 @@ public class STAFCollectListener implements ICollectListener {
             // Notify client that the asked file is available
             URL url = STAFUrlFactory.getNormalFileSTAFUrl(pNormalFileRestore);
             Path path = pNormalFileRestore.getLocalFilePath();
-            clientListener.fileRetreived(url, path);
+            sendFileRetrievedNotification(url, path);
         } catch (STAFUrlException e) {
-            LOG.error("Invalid file restored", e);
+            LOG.error("[STAF] Invalid file restored", e);
         }
     }
 
@@ -148,6 +188,12 @@ public class STAFCollectListener implements ICollectListener {
         // Check if all part are restored
         PhysicalCutFile includingCutFile = pCutPartFileRestored.getIncludingCutFile();
         SortedSet<PhysicalCutPartFile> allCutParts = pCutPartFileRestored.getIncludingCutFile().getCutedFileParts();
+
+        // If the including cuted full file is in ERROR status, so do not handle other retrieved files.
+        if (PhysicalFileStatusEnum.ERROR.equals(includingCutFile.getStatus())) {
+            deleteAllCutPartFilesRetrieved(includingCutFile);
+        }
+
         // If all parts are retrieved, reconstruct gobal file
         if (!allCutParts.stream().anyMatch(part -> !PhysicalFileStatusEnum.RETRIEVED.equals(part.getStatus()))) {
             SortedSet<Path> partFiles = Sets.newTreeSet();
@@ -159,22 +205,17 @@ public class STAFCollectListener implements ICollectListener {
                     CutFileUtils.rebuildCutedfile(includingCutFile.getLocalFilePath(), partFiles);
                     includingCutFile.setStatus(PhysicalFileStatusEnum.RETRIEVED);
                     // Notify client that the asked file is available
-                    clientListener.fileRetreived(url, path);
+                    sendFileRetrievedNotification(url, path);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                     includingCutFile.setStatus(PhysicalFileStatusEnum.ERROR);
-                    clientListener.fileRetrieveError(url);
+                    sendFileRetrieveErrorNotification(url);
                 }
             } catch (STAFUrlException e1) {
-                LOG.error("Invalid file restored", e1);
+                LOG.error("[STAF] Invalid file restored", e1);
             } finally {
                 // Delete all part files
-                for (PhysicalCutPartFile part : allCutParts) {
-                    if (!part.getLocalFilePath().toFile().delete()) {
-                        LOG.error("Error deleting cut part file restored from STAF {}",
-                                  part.getLocalFilePath().toString());
-                    }
-                }
+                deleteAllCutPartFilesRetrieved(includingCutFile);
             }
         }
     }
@@ -197,19 +238,19 @@ public class STAFCollectListener implements ICollectListener {
                     facade.decompress(CompressionTypeEnum.TAR, pTARFileRestored.getLocalFilePath().toFile(),
                                       tarExtractionPath.toFile());
                 } catch (CompressionException | IOException e) {
-                    LOG.error("Error during TAR restoration decompression {}", pTARFileRestored.getLocalFilePath(), e);
-                    urls.forEach((localPath, url) -> clientListener.fileRetrieveError(url));
+                    LOG.error("[STAF] Error during TAR decompression {}", pTARFileRestored.getLocalFilePath(), e);
+                    urls.forEach((localPath, url) -> sendFileRetrieveErrorNotification(url));
                 }
             }
             // Check files existance and notify client if files are well restored.
             pTARFileRestored.getFilesInTar().forEach((fileInTarPath,
                     rawPath) -> handleTARInFileRestored(tarExtractionPath, fileInTarPath, urls.get(rawPath)));
         } catch (STAFUrlException e1) {
-            LOG.error("Invalid file restored", e1);
+            LOG.error("[STAF] Invalid file restored", e1);
         } finally {
             // Always delete TAR after all files are restored from it.
             if (!pTARFileRestored.getLocalFilePath().toFile().delete()) {
-                LOG.error("Error deleting tar file {} restored from STAF",
+                LOG.error("[STAF] Error deleting tar file {} restored from STAF",
                           pTARFileRestored.getLocalFilePath().toString());
             }
             // Always delete extraction directory after all files retrieved.
@@ -218,7 +259,7 @@ public class STAFCollectListener implements ICollectListener {
                     FileUtils.deleteDirectory(tarExtractionPath.toFile());
                 }
             } catch (IOException e) {
-                LOG.error("Error deleting TMP TAR Extraction directory", e.getMessage(), e);
+                LOG.error("[STAF] Error deleting temporary TAR Extraction directory", e.getMessage(), e);
             }
         }
     }
@@ -242,19 +283,48 @@ public class STAFCollectListener implements ICollectListener {
                 if (!finalDestinationPath.toFile().exists()) {
                     // Move file to final destination
                     Files.move(extractedfilePath, finalDestinationPath);
-                    clientListener.fileRetreived(pFileRestoredSTAFURL, finalDestinationPath);
+                    sendFileRetrievedNotification(pFileRestoredSTAFURL, finalDestinationPath);
                 } else {
-                    clientListener.fileRetrieveError(pFileRestoredSTAFURL);
+                    sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);
                 }
 
             } catch (IOException e) {
                 LOG.error("Error moving file from temporary tar extraction directory {} to restoration directory {}",
                           pTARExtractionPath.toString(), restorationDirectoryPath.toString(), e.getMessage(), e);
-                clientListener.fileRetrieveError(pFileRestoredSTAFURL);
+                sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);
             }
         } else {
-            clientListener.fileRetrieveError(pFileRestoredSTAFURL);
+            LOG.error("[STAF] File {} is not found in the {} TAR file restored from STAF System.",
+                      extractedfilePath.getFileName().toString(), pFileRestoredSTAFURL.toString());
+            sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);
         }
+    }
+
+    /**
+     * Delete all restored part files from the given {@link PhysicalCutFile}
+     * @param pCutFile {@link PhysicalCutFile}
+     */
+    private void deleteAllCutPartFilesRetrieved(PhysicalCutFile pCutFile) {
+        if ((pCutFile != null) && (pCutFile.getCutedFileParts() != null)) {
+            pCutFile.getCutedFileParts().stream()
+                    .filter(part -> PhysicalFileStatusEnum.RETRIEVED.equals(part.getStatus())).forEach(restoredPart -> {
+                        if (restoredPart.getLocalFilePath().toFile().exists()
+                                && !restoredPart.getLocalFilePath().toFile().delete()) {
+                            LOG.error("[STAF] Error deleting cut file part {}", restoredPart.toString());
+                        }
+                    });
+        }
+    }
+
+    private void sendFileRetrievedNotification(URL pSTAFURL, Path pLocalFilePathRestored) {
+        LOG.info("[STAF collect-listener] Sending notification for STAF File {} retrieved in {}", pSTAFURL.toString(),
+                 pLocalFilePathRestored.toString());
+        clientListener.fileRetreived(pSTAFURL, pLocalFilePathRestored);
+    }
+
+    private void sendFileRetrieveErrorNotification(URL pSTAFURL) {
+        LOG.error("[STAF collect-listener] Sending notification for STAF File {} retrieve error", pSTAFURL.toString());
+        clientListener.fileRetrieveError(pSTAFURL);
     }
 
 }

@@ -346,7 +346,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     @Override
     public Set<DataStorageInfo> getMonitoringInfos() {
         // TODO Auto-generated method stub
-        return null;
+        return Sets.newHashSet();
     }
 
     @Override

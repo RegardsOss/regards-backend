@@ -224,7 +224,7 @@ public class STAFController {
                 // TAR : 1 File stored -> X URL (one per file in TAR)
                 // CUT : X Files stored -> 1 URL
                 try {
-                    Map<Path, URL> urls = STAFUrlFactory.getSTAFFullURLs(file);
+                    Map<Path, URL> urls = STAFUrlFactory.getSTAFURLsPerRAWFileToArchive(file);
                     rawFilesStored.putAll(urls);
                 } catch (STAFException e) {
                     // Error creating file URL
@@ -342,9 +342,14 @@ public class STAFController {
         try {
             stafService.connectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
             stafService.restoreAllFiles(stafFilePathsToRetrieive, pDestinationPath.toString());
-            stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
         } catch (STAFException e) {
             LOG.error("[STAF] Error during STAF Restoration", e.getMessage(), e);
+        } finally {
+            try {
+                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
+            } catch (STAFException e) {
+                LOG.error("Error during STAF deconnection.", e);
+            }
         }
     }
 

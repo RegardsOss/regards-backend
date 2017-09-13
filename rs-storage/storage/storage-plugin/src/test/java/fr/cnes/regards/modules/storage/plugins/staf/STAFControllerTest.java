@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -660,6 +661,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(1)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
         Assert.assertEquals(true, argumentURL.getValue().equals(stafUrl));
         Assert.assertEquals(true, argumentPath.getValue()
                 .equals(Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore)));
@@ -724,6 +726,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(1)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
         Assert.assertEquals(true, argumentURL.getValue().equals(stafCutUrl));
         Assert.assertEquals(true,
                             argumentPath.getValue().equals(Paths.get(RESTORE_DIRECTORY_PATH.toString(), cutfileName)));
@@ -795,6 +798,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(3)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
         for (URL url : stafUrls) {
             Assert.assertEquals(true, argumentURL.getAllValues().contains(url));
         }
@@ -812,44 +816,246 @@ public class STAFControllerTest {
         }
     }
 
+    /**
+     * If files are not present in STAF, the STAFController have to send an error notification for each file.
+     * @throws MalformedURLException
+     * @throws STAFException
+     */
     @Test
-    public void testRestoreMultiTypes() {
-        // TODO
+    public void testRestoreWithFileNotFound() throws MalformedURLException, STAFException {
+
+        String fileNameToRestore = "file.txt";
+        Set<URL> stafUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        // Add a normal file to retrieve
+        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.txt").toString());
+        stafUrls.add(stafUrl);
+        restoreParameters.put(stafUrl.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore).toString());
+
+        // Add a file into a TAR to retrieve
+        String fileName = "fileInTar.txt";
+        URL stafTarUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE,
+                          "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
+                        .toString());
+        restoreParameters.put(stafTarUrl.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file.tar").toString());
+        stafUrls.add(stafTarUrl);
+
+        // Aadd a cuted file to retrieve
+        int numberOfParts = 9;
+        String cutfileName = "big_file_test_1.txt";
+        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     cutfileName + "?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
+                .toString());
+        stafUrls.add(stafCutUrl);
+        for (int i = 0; i < numberOfParts; i++) {
+            restoreParameters.put(stafCutUrl.getPath().toString() + "_0" + i,
+                                  Paths.get(RESTORE_DIRECTORY_PATH.toString(), cutfileName + "_0" + i).toString());
+        }
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> {
+            throw new STAFException("STAF Error simulation");
+        }).when(stafSessionMock).staffilRetrieveBuffered(Mockito.any());
+
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // Check event sent after staf retreive.
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetreived(Mockito.any(), Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(3)).fileRetrieveError(argumentURL.capture());
+        Assert.assertEquals(true, argumentURL.getAllValues().contains(stafUrl));
+        Assert.assertEquals(true, argumentURL.getAllValues().contains(stafTarUrl));
+        Assert.assertEquals(true, argumentURL.getAllValues().contains(stafCutUrl));
     }
 
+    /**
+     * Test restoring files with the 3 archive mode {@link STAFArchiveModeEnum} in the same STAF session.
+     * @throws MalformedURLException
+     * @throws STAFException
+     */
     @Test
-    public void testRestoreWithAccessDeniedToRestoreDirectory() {
-        // TODO
+    public void testRestoreMultiTypes() throws MalformedURLException, STAFException {
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Set<URL> expectedRestoredSTAFUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        // Add a normal file to retrieve
+        String fileName = "file.txt";
+        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, fileName).toString());
+        stafUrls.add(stafUrl);
+        expectedRestoredSTAFUrls.add(stafUrl);
+        restoreParameters.put(stafUrl.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName).toString());
+        Path expectedNormalFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName);
+
+        // Add two file into a TAR to retrieve. One exists, the other one is not present in the TAR.
+        String fileNotInTarName = "fileInTar.txt";
+        URL stafTarUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileNotInTarName)
+                .toString());
+        restoreParameters.put(stafTarUrl.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file.tar").toString());
+        stafUrls.add(stafTarUrl);
+        String fileInTarName = "file2.txt";
+        URL stafTarUrl2 = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileInTarName)
+                .toString());
+        restoreParameters.put(stafTarUrl2.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file.tar").toString());
+        stafUrls.add(stafTarUrl2);
+        expectedRestoredSTAFUrls.add(stafTarUrl2);
+        Path expectedFileInTar = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileInTarName);
+
+        // Aadd a cuted file to retrieve
+        int numberOfParts = 9;
+        String cutfileName = "big_file_test_1.txt";
+        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     cutfileName + "?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
+                .toString());
+        stafUrls.add(stafCutUrl);
+        expectedRestoredSTAFUrls.add(stafCutUrl);
+        for (int i = 0; i < numberOfParts; i++) {
+            restoreParameters.put(stafCutUrl.getPath().toString() + "_0" + i,
+                                  Paths.get(RESTORE_DIRECTORY_PATH.toString(), cutfileName + "_0" + i).toString());
+        }
+        Path expectedCutFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), cutfileName);
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieveBuffered(Mockito.any());
+
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        ArgumentCaptor<URL> argumentURLNotFound = ArgumentCaptor.forClass(URL.class);
+        ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURLNotFound.capture());
+        Mockito.verify(listenerMock, Mockito.times(3)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        for (URL url : expectedRestoredSTAFUrls) {
+            Assert.assertEquals(String.format("Missing a notification on the listener for URL %s", url.toString()),
+                                true, argumentURL.getAllValues().contains(url));
+        }
+        Assert.assertEquals("As the file fileInTar.txt is not in the mocked TAR, the fileRetrieveError of the listener should be called with the URL of the missing file",
+                            true, argumentURLNotFound.getValue().equals(stafTarUrl));
+        Assert.assertTrue(String.format("Event for Normal file %s successfully retrieved not sent", expectedNormalFile),
+                          argumentPath.getAllValues().contains(expectedNormalFile));
+        Assert.assertTrue(String.format("Event for file in TAR %s successfully retrieved not sent", expectedFileInTar),
+                          argumentPath.getAllValues().contains(expectedFileInTar));
+        Assert.assertTrue(String.format("Event for Cuted file %s successfully retrieved not sent", expectedCutFile),
+                          argumentPath.getAllValues().contains(expectedCutFile));
+
+        // Check files extracted and restore are available
+        for (Path resultFile : argumentPath.getAllValues()) {
+            Assert.assertTrue(String.format("Error restored file does not exists %s", resultFile.toString()),
+                              resultFile.toFile().exists());
+        }
     }
 
+    /**
+     * If the restoration directory is not accessible, the STAFController ave to send a error notification.
+     * @throws IOException
+     * @throws STAFException
+     */
     @Test
-    public void testRestoreWithConcurentAccessToRestoreDirectory() {
-        // TODO
+    public void testRestoreWithAccessDeniedToRestoreDirectory() throws IOException, STAFException {
+
+        // Simulate access denied to restore directory
+        if (Files.exists(RESTORE_DIRECTORY_PATH)) {
+            Files.setPosixFilePermissions(RESTORE_DIRECTORY_PATH,
+                                          Sets.newHashSet(PosixFilePermission.OWNER_EXECUTE,
+                                                          PosixFilePermission.OWNER_READ,
+                                                          PosixFilePermission.OWNER_WRITE));
+            FileUtils.deleteDirectory(RESTORE_DIRECTORY_PATH.toFile());
+        }
+        Files.createDirectories(RESTORE_DIRECTORY_PATH);
+        Files.setPosixFilePermissions(RESTORE_DIRECTORY_PATH, Sets.newHashSet());
+
+        String fileNameToRestore = "file.txt";
+        Set<URL> stafUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.txt").toString());
+        stafUrls.add(stafUrl);
+        restoreParameters.put(stafUrl.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore).toString());
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieveBuffered(Mockito.any());
+
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // Check event sent after staf retreive.
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetreived(Mockito.any(), Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURL.capture());
+        Assert.assertEquals("As the restoration directory is not available, there should be an error notification sent for the STAF URL",
+                            true, argumentURL.getValue().equals(stafUrl));
     }
 
     /**
      * Mock to simulate STAF files restoration.
      * @param invocation
      * @return
+     * @throws STAFException
      */
-    private Void mockRestoration(InvocationOnMock invocation) {
+    private Void mockRestoration(InvocationOnMock invocation) throws STAFException {
         Object[] args = invocation.getArguments();
         @SuppressWarnings("unchecked")
         Map<String, String> files = (Map<String, String>) args[0];
-        files.forEach((source, destination) -> {
+        for (Entry<String, String> file : files.entrySet()) {
             try {
-                String fileName = Paths.get(destination).getFileName().toString();
+                String fileName = Paths.get(file.getValue()).getFileName().toString();
+                if (fileName.contains("error")) {
+                    throw new STAFException("STAF Error simulation");
+                }
                 Path mockedFilePath = Paths.get("src/test/resources/staf/mock", fileName);
                 // If file exists in mock copy it into destination
                 if (mockedFilePath.toFile().exists()) {
-                    Files.copy(mockedFilePath, Paths.get(destination));
+                    Files.copy(mockedFilePath, Paths.get(file.getValue()));
                 } else {
-                    Files.createFile(Paths.get(destination));
+                    Files.createFile(Paths.get(file.getValue()));
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new STAFException(e);
             }
-        });
+        }
         return null;
     }
 

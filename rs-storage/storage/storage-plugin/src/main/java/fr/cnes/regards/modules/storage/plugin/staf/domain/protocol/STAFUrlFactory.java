@@ -10,10 +10,12 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.STAFException;
@@ -75,7 +77,8 @@ public class STAFUrlFactory {
      * @return {@link Map}<@link Path},{@link URL}>
      * @throws STAFUrlException Error during URL mapping.
      */
-    public static Map<Path, URL> getSTAFFullURLs(AbstractPhysicalFile pSTAFStoredFile) throws STAFUrlException {
+    public static Map<Path, URL> getSTAFURLsPerRAWFileToArchive(AbstractPhysicalFile pSTAFStoredFile)
+            throws STAFUrlException {
         Map<Path, URL> urls = Maps.newHashMap();
         Optional<Path> firstRawFile = pSTAFStoredFile.getRawAssociatedFiles().stream().findFirst();
         if (firstRawFile.isPresent()) {
@@ -97,6 +100,36 @@ public class STAFUrlFactory {
             } catch (STAFException e) {
                 throw new STAFUrlException(e.getMessage(), e);
             }
+        }
+        return urls;
+    }
+
+    /**
+     * Return all STAF URLs associated to given {@link AbstractPhysicalFile}
+     * @param pPhysicalFile {@link AbstractPhysicalFile}
+     * @return {@link Set}<{@link URL}> of each file in STAF associated to the given {@link AbstractPhysicalFile}
+     * @throws STAFUrlException Error during URL creation.
+     */
+    public static Set<URL> getSTAFURLs(AbstractPhysicalFile pPhysicalFile) throws STAFUrlException {
+        Set<URL> urls = Sets.newHashSet();
+        // Add file access
+        switch (pPhysicalFile.getArchiveMode()) {
+            case CUT_PART:
+                PhysicalCutPartFile partFile = (PhysicalCutPartFile) pPhysicalFile;
+                urls.add(getCutFileSTAFUrl(partFile.getIncludingCutFile()));
+                break;
+            case TAR:
+                urls.addAll(getTARFilesSTAFURLs((PhysicalTARFile) pPhysicalFile));
+                break;
+            case NORMAL:
+                urls.add(getNormalFileSTAFUrl((PhysicalNormalFile) pPhysicalFile));
+                break;
+            case CUT:
+                urls.add(getCutFileSTAFUrl((PhysicalCutFile) pPhysicalFile));
+                break;
+            default:
+                // Nothing to do.
+                break;
         }
         return urls;
     }
@@ -193,6 +226,30 @@ public class STAFUrlFactory {
                 }
             }
             return url;
+        } catch (MalformedURLException | STAFException e) {
+            throw new STAFUrlException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Return all STAF URLs
+     * @param pTarFile
+     * @return
+     * @throws STAFUrlException
+     */
+    public static Set<URL> getTARFilesSTAFURLs(PhysicalTARFile pTarFile) throws STAFUrlException {
+        try {
+            Set<URL> urls = Sets.newHashSet();
+            // Construct standard staf://<ARCHIVE>/<NODE> path
+            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
+                                                  Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode()));
+            for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
+                urls.add(new URL(String.format("%s/%s?%s=%s", urlInitialPath,
+                                               pTarFile.getSTAFFilePath().getFileName().toString(),
+                                               STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName(),
+                                               fileInTar.getValue().getFileName().toString())));
+            }
+            return urls;
         } catch (MalformedURLException | STAFException e) {
             throw new STAFUrlException(e.getMessage(), e);
         }
