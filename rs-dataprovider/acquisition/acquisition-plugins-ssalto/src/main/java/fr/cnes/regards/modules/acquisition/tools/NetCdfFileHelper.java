@@ -124,7 +124,7 @@ public class NetCdfFileHelper {
                     valueList.add(value);
                 }
             }
-        } catch (Throwable e) {
+        } catch (IOException e) {
             LOGGER.error("", e);
         }
         return valueList;

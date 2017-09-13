@@ -88,16 +88,18 @@ public class FileNameFinder extends AttributeFinder {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
             LOGGER.debug("testing file " + fileToProceed.getName());
             if (matcher.matches()) {
+                StringBuffer value = new StringBuffer();
 
-                String value = "";
                 // la valeur finale peut etre compose de plusieurs groupes
                 for (Object element : groupNumberList) {
                     Integer groupNumber = (Integer) element;
-                    value = value + matcher.group(groupNumber.intValue());
+                    value.append(matcher.group(groupNumber.intValue()));
                 }
+                parsedValue = valueOf(value.toString());
 
-                parsedValue = valueOf(value);
-                LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                if (parsedValue != null) {
+                    LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                }
             }
         }
         if (parsedValue != null) {

@@ -64,18 +64,19 @@ public class MultipleFileNameFinder extends FileNameFinder {
         for (File fileToProceed : fileToProceedList) {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
             if (matcher.matches()) {
-
-                String value = "";
+                StringBuffer value = new StringBuffer();
+                
                 // la valeur finale peut etre composée de plusieurs groupes
                 for (Integer groupNumber : groupNumberList) {
-                    value = value + matcher.group(groupNumber.intValue());
+                    value.append(matcher.group(groupNumber.intValue()));
                 }
-
-                parsedValue = valueOf(value);
-                LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                parsedValue = valueOf(value.toString());
+                
                 if (parsedValue != null) {
                     valueList.add(parsedValue);
+                    LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
                 }
+                
             }
         }
 

@@ -50,7 +50,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
-import fr.cnes.regards.modules.acquisition.domain.SsaltoFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.SupplyDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
@@ -341,7 +341,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         acqInfos.setAcquisitionDirectory(aFile.getParent());
 
         ssaltoFile.setAcquisitionInformations(acqInfos);
-        ssaltoFile.setStatus(SsaltoFileStatus.VALID);
+        ssaltoFile.setStatus(AcquisitionFileStatus.VALID);
 
         // TODO CMZ à confirmer
         // archivingDirectory
@@ -353,7 +353,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         //        physLoc.setPhysicalFile(physFile);
         //        archInfos.setLocalPhysicalLocation(physLoc);
         //        ssaltoFile.setArchivingInformations(archInfos);
-        //        ssaltoFile.setStatus(SsaltoFileStatus.VALID);
+        //        ssaltoFile.setStatus(AcquisitionFileStatus.VALID);
         //        LocalArchiveAdapter adapter = new LocalArchiveAdapter();
         //        adapter.setProcessWorkingDirectory(System.getProperty("user.dir") + File.separator);
         //        adapter.setDataFolder(System.getProperty("user.dir") + File.separator);
@@ -381,18 +381,18 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             OffsetDateTime odt = OffsetDateTime.of(2009, 11, 9, 16, 59, 41, 0, ZoneOffset.UTC);
             originalFile.setLastModified(1000 * odt.toEpochSecond());
 
-            if (acqFile.getStatus().equals(SsaltoFileStatus.VALID)) {
+            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
                 File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
                         acqFile.getFileName());
                 fileMap.put(newFile, originalFile);
             }
 
             // TODO CMZ à confirmer que la condition du if est toujours VRAI
-            //            else if ((ssaltoFile.getStatus().equals(SsaltoFileStatus.ACQUIRED))
-            //                    || (ssaltoFile.getStatus().equals(SsaltoFileStatus.TO_ARCHIVE))
-            //                    || (ssaltoFile.getStatus().equals(SsaltoFileStatus.ARCHIVED))
-            //                    || (ssaltoFile.getStatus().equals(SsaltoFileStatus.TAR_CURRENT))
-            //                    || (ssaltoFile.getStatus().equals(SsaltoFileStatus.IN_CATALOGUE))) {
+            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
             //                File newFile = new File(
             //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
             //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),

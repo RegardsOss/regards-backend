@@ -386,7 +386,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 final String stopDateString = matcher.group(CYCLE_STOP_GROUP);
 
                 // cas du dernier cycle
-                if (stopDateString.equals("-")) {
+                if ("-".equals(stopDateString)) {
                     cycleOccurence = new Integer(matcher.group(CYCLE_GROUP));
                 } else if (stopDateString.equals(stringpStartDate)) {
                     // Les dates sont egales sans la precision des heures

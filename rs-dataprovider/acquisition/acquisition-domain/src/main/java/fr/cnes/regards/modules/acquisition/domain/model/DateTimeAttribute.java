@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.model;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Date;
 
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
@@ -48,8 +46,6 @@ public class DateTimeAttribute extends Attribute {
      *            La nouvelle valeur de l'attribut
      */
     public void addValue(Long value) {
-        // TODO CMZ : à voir si OK sans utiliser Date
-        //        LocalDateTime.ofEpochSecond(value, 0, ZoneOffset.UTC);
         Date date = new Date(value);
         super.addValue(OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")));
     }

@@ -429,7 +429,7 @@ public class CompressionFacade {
 
         List<File> retour = new ArrayList<>();
 
-        if (inputDirectory == null || inputDirectory.equals("")) {
+        if (inputDirectory == null || inputDirectory.getName().equals("")) {
             throw new CompressionException(String.format("No file or directory are specified"));
         }
 

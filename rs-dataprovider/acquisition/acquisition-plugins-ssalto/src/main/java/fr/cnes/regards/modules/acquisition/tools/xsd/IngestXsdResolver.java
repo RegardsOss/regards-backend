@@ -52,17 +52,13 @@ public class IngestXsdResolver implements EntityResolver {
      * 
      * Cet objet est cree lors de la creation du premier objet XsdResolver.
      */
-    protected static Map<String, File> xsdMap = null;
+    protected static Map<String, File> xsdMap = new HashMap<>();
 
     /**
      * Constructeur par defaut
      */
     public IngestXsdResolver() {
         super();
-
-        if (xsdMap == null) {
-            xsdMap = new HashMap<>();
-        }
     }
 
     /**

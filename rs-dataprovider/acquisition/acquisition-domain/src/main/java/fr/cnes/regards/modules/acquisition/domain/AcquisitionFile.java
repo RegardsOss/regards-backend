@@ -60,7 +60,7 @@ public class AcquisitionFile {
     /**
      * statut du fichier
      */
-    protected SsaltoFileStatus status_;
+    protected AcquisitionFileStatus status_;
 
     /**
      * produit auquel est rattache le fichier
@@ -141,7 +141,7 @@ public class AcquisitionFile {
      */
     public boolean isDuplicate() {
         boolean result = false;
-        if (status_.equals(SsaltoFileStatus.DUPLICATE)) {
+        if (status_.equals(AcquisitionFileStatus.DUPLICATE)) {
             result = true;
         }
         return result;
@@ -160,10 +160,10 @@ public class AcquisitionFile {
 
     public boolean isADoublon(AcquisitionFile pFile) {
         boolean isADoublon = false;
-        if (pFile.getStatus().equals(SsaltoFileStatus.TO_ARCHIVE) || pFile.getStatus().equals(SsaltoFileStatus.ARCHIVED)
-                || pFile.getStatus().equals(SsaltoFileStatus.IN_CATALOGUE)
-                || pFile.getStatus().equals(SsaltoFileStatus.TAR_CURRENT)
-                || pFile.getStatus().equals(SsaltoFileStatus.ACQUIRED)) {
+        if (pFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE) || pFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED)
+                || pFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE)
+                || pFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT)
+                || pFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED)) {
             if (pFile.getFileName().equals(fileName_) && (pFile.getVersion() == version_)
                     && (!pFile.getStatus().equals(status_))) {
                 isADoublon = true;
@@ -189,10 +189,7 @@ public class AcquisitionFile {
 
     /**
      * permet de dupliquer l'objet
-     * 
-     * @see java.lang.Object#clone()
      */
-    @Override
     public Object clone() {
         AcquisitionFile file = new AcquisitionFile();
         file.setVersion(version_);
@@ -237,7 +234,7 @@ public class AcquisitionFile {
      */
     public boolean isInCurrentTar() {
         boolean result = false;
-        //        if (status_.equals(SsaltoFileStatus.TAR_CURRENT)) {
+        //        if (status_.equals(AcquisitionFileStatus.TAR_CURRENT)) {
         //            result = true;
         //        }
         return result;
@@ -280,7 +277,7 @@ public class AcquisitionFile {
         return size_;
     }
 
-    public SsaltoFileStatus getStatus() {
+    public AcquisitionFileStatus getStatus() {
         return status_;
     }
 
@@ -308,7 +305,7 @@ public class AcquisitionFile {
         size_ = pSize;
     }
 
-    public void setStatus(SsaltoFileStatus pStatus) {
+    public void setStatus(AcquisitionFileStatus pStatus) {
         status_ = pStatus;
     }
 

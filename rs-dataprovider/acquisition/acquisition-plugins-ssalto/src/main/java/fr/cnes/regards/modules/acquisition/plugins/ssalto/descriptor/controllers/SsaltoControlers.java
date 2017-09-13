@@ -294,7 +294,7 @@ public class SsaltoControlers {
     //        if (pAbstractDomainObject instanceof STAFProject) {
     //            return sTAFProjectControler_;
     //        }
-    //        if (pAbstractDomainObject instanceof Supply) {
+    //        if (pAbstractDomainObject instanceof ChainGeneration) {
     //            return supplyControler_;
     //        }
     //        if (pAbstractDomainObject instanceof SupplyDirectory) {
@@ -318,7 +318,7 @@ public class SsaltoControlers {
     //        if (pAbstractDomainObject instanceof Product) {
     //            return productControler_;
     //        }
-    //        if (pAbstractDomainObject instanceof SsaltoFileStatus) {
+    //        if (pAbstractDomainObject instanceof AcquisitionFileStatus) {
     //            return ssaltoFileStatusControler_;
     //        }
     //        return null;
@@ -468,8 +468,8 @@ public class SsaltoControlers {
     //            }
     //            return null;
     //        }
-    //    public static SsaltoFileStatusControler getControler(SsaltoFileStatus pSsaltoFileStatus) {
-    //        if (pSsaltoFileStatus instanceof SsaltoFileStatus) {
+    //    public static SsaltoFileStatusControler getControler(AcquisitionFileStatus pSsaltoFileStatus) {
+    //        if (pSsaltoFileStatus instanceof AcquisitionFileStatus) {
     //            return ssaltoFileStatusControler_;
     //        }
     //        return null;

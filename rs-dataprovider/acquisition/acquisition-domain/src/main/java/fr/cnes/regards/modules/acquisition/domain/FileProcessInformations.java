@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * contient les informations sur un process specifique a un fichier
@@ -31,19 +31,19 @@ public abstract class FileProcessInformations {
     /**
      * Date a laquelle le process a traite le fichier
      */
-    protected LocalDateTime date;
+    protected OffsetDateTime date;
 
     /**
      * erreur rencontree lors du traitement du fichier par le process
      */
     protected ErrorType error;
 
-    public LocalDateTime getDate() {
+    public OffsetDateTime getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
-        this.date = date;
+    public void setDate(OffsetDateTime newDate) {
+        this.date = newDate;
     }
 
     public ErrorType getError() {

@@ -208,7 +208,7 @@ public class RinexFileHelper {
         }
 
         // If empty : throws a plugin exception
-        if (line.length()==0) {
+        if (line == null || line.isEmpty()) {
             String message = "No value found at this line (" + lineNumber + ")";
             throw new PluginAcquisitionException(message);
         }
@@ -237,7 +237,7 @@ public class RinexFileHelper {
             }
 
         } catch (IOException e) {
-            LOGGER.error("unable to get date interval from file " + currentFile.getPath(),e);
+            LOGGER.error("unable to get date interval from file " + currentFile.getPath(), e);
         }
         return interval;
     }

@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 
-
 /**
  * Classe pour creer les differents type d'attributs.
  * 
@@ -131,7 +130,10 @@ public class AttributeFactory {
 
         // According to the type, create either a real, string, date or integer attribute
         Attribute attribute = createAttribute(pType, pLabel, null, 0);
-        attribute.setValueList(pValueList);
+
+        if (attribute != null) {
+            attribute.setValueList(pValueList);
+        }
 
         return attribute;
     }
@@ -159,7 +161,10 @@ public class AttributeFactory {
 
         // According to the type, create either a real, string, date or integer attribute
         Attribute attribute = createAttribute(pType, pLabel, pCompositeAttributeName, pBlockId);
-        attribute.addValue(pValue);
+
+        if (attribute != null) {
+            attribute.addValue(pValue);
+        }
 
         return attribute;
     }
