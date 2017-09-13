@@ -91,4 +91,50 @@ public abstract class AbstractFeature<P, ID extends Serializable> extends Abstra
     public void setProperties(P properties) {
         this.properties = properties;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = (prime * result) + ((geometry == null) ? 0 : geometry.hashCode());
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        result = (prime * result) + ((properties == null) ? 0 : properties.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        AbstractFeature other = (AbstractFeature) obj;
+        if (geometry == null) {
+            if (other.geometry != null) {
+                return false;
+            }
+        } else if (!geometry.equals(other.geometry)) {
+            return false;
+        }
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
+        if (properties == null) {
+            if (other.properties != null) {
+                return false;
+            }
+        } else if (!properties.equals(other.properties)) {
+            return false;
+        }
+        return true;
+    }
 }
