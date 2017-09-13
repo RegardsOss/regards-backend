@@ -20,4 +20,4 @@
  * @author Sylvain Vissiere-Guerinet
  *
  */
-package fr.cnes.regards.framework.urn.validator;
+package fr.cnes.regards.framework.oais.urn;

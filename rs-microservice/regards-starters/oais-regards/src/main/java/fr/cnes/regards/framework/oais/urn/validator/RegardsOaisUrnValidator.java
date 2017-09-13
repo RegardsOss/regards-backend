@@ -16,34 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.urn.converters;
+package fr.cnes.regards.framework.oais.urn.validator;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
- * Converter used by Hibernate (see AbstractEntity)
  * @author Sylvain Vissiere-Guerinet
+ *
  */
-@Converter(autoApply = true)
-public class UrnConverter implements AttributeConverter<UniformResourceName, String> {
+public class RegardsOaisUrnValidator implements ConstraintValidator<RegardsOaisUrn, UniformResourceName> {
 
     @Override
-    public String convertToDatabaseColumn(UniformResourceName pAttribute) {
-        if (pAttribute == null) {
-            return null;
-        }
-        return pAttribute.toString();
+    public void initialize(RegardsOaisUrn pConstraintAnnotation) {
+        // nothing to initialize for now
     }
 
     @Override
-    public UniformResourceName convertToEntityAttribute(String pDbData) {
-        if (pDbData == null) {
-            return new UniformResourceName();
-        }
-        return UniformResourceName.fromString(pDbData);
+    public boolean isValid(UniformResourceName pValue, ConstraintValidatorContext pContext) {
+        return (pValue == null) || !(pValue.getOaisIdentifier().equals(OAISIdentifier.SIP)
+                && ((pValue.getOrder() != null) || (pValue.getRevision() != null)));
     }
 
 }

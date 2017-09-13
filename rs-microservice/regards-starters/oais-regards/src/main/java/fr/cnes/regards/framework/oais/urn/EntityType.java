@@ -16,8 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.framework.oais.urn;
+
 /**
- * @author Sylvain Vissiere-Guerinet
+ *
+ * List of available entity types
+ *
+ * @author msordi
  *
  */
-package fr.cnes.regards.framework.urn;
+public enum EntityType {
+
+    /**
+     * Possible model type
+     */
+    COLLECTION, DOCUMENT, DATA, DATASET
+}

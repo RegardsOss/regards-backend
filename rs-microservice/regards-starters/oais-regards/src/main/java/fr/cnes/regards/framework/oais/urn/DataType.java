@@ -16,9 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.framework.oais.urn;
+
 /**
- * This package contains Gson converters for specific types
+ * {@link AbstractEntity} types
  *
- * @author Sylvain Vissiere-Guerinet
+ * @author lmieulet
+ *
  */
-package fr.cnes.regards.framework.urn.converters;
+public enum DataType {
+
+    /**
+     * Available data types
+     */
+    RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP;
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
+}

@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.urn.validator;
+package fr.cnes.regards.framework.oais.urn.validator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -6,7 +6,7 @@ import javax.validation.ConstraintValidatorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  *

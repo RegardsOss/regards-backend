@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.urn.autoconfiguration.OaisAutoConfiguration
+fr.cnes.regards.framework.oais.autoconfiguration.OaisAutoConfiguration
