@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.plugin;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -22,9 +21,10 @@ public interface IDataStorage<T extends IWorkingSubset> {
     /**
      * Allow plugins to prepare data before actually doing the storage action
      * @param dataFiles {@link DataFile}s to transfer
+     * @param {@link DataStorageAccessModeEnum} STORE or RESTORE
      * @return {@link Set} of Workingset containing plugin information needed for each file to transfert
      */
-    Set<T> prepare(Collection<DataFile> dataFiles);
+    Set<T> prepare(Collection<DataFile> dataFiles, DataStorageAccessModeEnum mode);
 
     /**
      * Do the delete action for the given {@link T} working subset.

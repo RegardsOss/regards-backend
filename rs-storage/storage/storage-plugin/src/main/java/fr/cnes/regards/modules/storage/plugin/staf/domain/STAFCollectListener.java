@@ -171,8 +171,7 @@ public class STAFCollectListener implements ICollectListener {
         try {
             // Notify client that the asked file is available
             URL url = STAFUrlFactory.getNormalFileSTAFUrl(pNormalFileRestore);
-            Path path = pNormalFileRestore.getLocalFilePath();
-            sendFileRetrievedNotification(url, path);
+            sendFileRetrievedNotification(url, pNormalFileRestore.getLocalFilePath());
         } catch (STAFUrlException e) {
             LOG.error("[STAF] Invalid file restored", e);
         }
@@ -200,12 +199,13 @@ public class STAFCollectListener implements ICollectListener {
             allCutParts.forEach(f -> partFiles.add(f.getLocalFilePath()));
             try {
                 URL url = STAFUrlFactory.getCutFileSTAFUrl(includingCutFile);
-                Path path = includingCutFile.getLocalFilePath();
                 try {
-                    CutFileUtils.rebuildCutedfile(includingCutFile.getLocalFilePath(), partFiles);
+                    Path fullFile = Paths.get(pCutPartFileRestored.getLocalFilePath().getParent().toString(),
+                                              includingCutFile.getStafFileName());
+                    CutFileUtils.rebuildCutedfile(fullFile, partFiles);
                     includingCutFile.setStatus(PhysicalFileStatusEnum.RETRIEVED);
                     // Notify client that the asked file is available
-                    sendFileRetrievedNotification(url, path);
+                    sendFileRetrievedNotification(url, fullFile);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                     includingCutFile.setStatus(PhysicalFileStatusEnum.ERROR);

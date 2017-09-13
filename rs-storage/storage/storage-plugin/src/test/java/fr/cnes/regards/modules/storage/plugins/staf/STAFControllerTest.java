@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -643,7 +641,7 @@ public class STAFControllerTest {
                               Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore).toString());
 
         // Simulate STAF Files restitution
-        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+        Mockito.doAnswer(invocation -> STAFDataStorageConfiguration.mockRestoration(invocation)).when(stafSessionMock)
                 .staffilRetrieveBuffered(Mockito.any());
 
         IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
@@ -651,7 +649,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        controller.restoreFiles(controller.prepareFilesToRestore(stafUrls), RESTORE_DIRECTORY_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -708,7 +706,7 @@ public class STAFControllerTest {
         }
 
         // Simulate STAF Files restitution
-        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+        Mockito.doAnswer(invocation -> STAFDataStorageConfiguration.mockRestoration(invocation)).when(stafSessionMock)
                 .staffilRetrieveBuffered(Mockito.any());
 
         IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
@@ -716,7 +714,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        controller.restoreFiles(controller.prepareFilesToRestore(stafUrls), RESTORE_DIRECTORY_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -781,7 +779,7 @@ public class STAFControllerTest {
                               Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file2.tar").toString());
 
         // Simulate STAF Files restitution
-        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+        Mockito.doAnswer(invocation -> STAFDataStorageConfiguration.mockRestoration(invocation)).when(stafSessionMock)
                 .staffilRetrieveBuffered(Mockito.any());
 
         IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
@@ -789,7 +787,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        controller.restoreFiles(controller.prepareFilesToRestore(stafUrls), RESTORE_DIRECTORY_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -868,7 +866,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        controller.restoreFiles(controller.prepareFilesToRestore(stafUrls), RESTORE_DIRECTORY_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -940,7 +938,7 @@ public class STAFControllerTest {
         Path expectedCutFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), cutfileName);
 
         // Simulate STAF Files restitution
-        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+        Mockito.doAnswer(invocation -> STAFDataStorageConfiguration.mockRestoration(invocation)).when(stafSessionMock)
                 .staffilRetrieveBuffered(Mockito.any());
 
         IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
@@ -948,7 +946,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        controller.restoreFiles(controller.prepareFilesToRestore(stafUrls), RESTORE_DIRECTORY_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -1008,7 +1006,7 @@ public class STAFControllerTest {
                               Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore).toString());
 
         // Simulate STAF Files restitution
-        Mockito.doAnswer(invocation -> mockRestoration(invocation)).when(stafSessionMock)
+        Mockito.doAnswer(invocation -> STAFDataStorageConfiguration.mockRestoration(invocation)).when(stafSessionMock)
                 .staffilRetrieveBuffered(Mockito.any());
 
         IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
@@ -1016,7 +1014,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        controller.restoreFiles(stafUrls, RESTORE_DIRECTORY_PATH, listenerMock);
+        controller.restoreFiles(controller.prepareFilesToRestore(stafUrls), RESTORE_DIRECTORY_PATH, listenerMock);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -1027,36 +1025,6 @@ public class STAFControllerTest {
         Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURL.capture());
         Assert.assertEquals("As the restoration directory is not available, there should be an error notification sent for the STAF URL",
                             true, argumentURL.getValue().equals(stafUrl));
-    }
-
-    /**
-     * Mock to simulate STAF files restoration.
-     * @param invocation
-     * @return
-     * @throws STAFException
-     */
-    private Void mockRestoration(InvocationOnMock invocation) throws STAFException {
-        Object[] args = invocation.getArguments();
-        @SuppressWarnings("unchecked")
-        Map<String, String> files = (Map<String, String>) args[0];
-        for (Entry<String, String> file : files.entrySet()) {
-            try {
-                String fileName = Paths.get(file.getValue()).getFileName().toString();
-                if (fileName.contains("error")) {
-                    throw new STAFException("STAF Error simulation");
-                }
-                Path mockedFilePath = Paths.get("src/test/resources/staf/mock", fileName);
-                // If file exists in mock copy it into destination
-                if (mockedFilePath.toFile().exists()) {
-                    Files.copy(mockedFilePath, Paths.get(file.getValue()));
-                } else {
-                    Files.createFile(Paths.get(file.getValue()));
-                }
-            } catch (IOException e) {
-                throw new STAFException(e);
-            }
-        }
-        return null;
     }
 
 }

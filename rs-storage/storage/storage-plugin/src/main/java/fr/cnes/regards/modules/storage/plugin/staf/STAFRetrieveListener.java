@@ -27,14 +27,14 @@ public class STAFRetrieveListener implements IClientCollectListener {
     /**
      * Current {@link IWorkingSubset}
      */
-    private final STAFWorkingSubset wokingSubset;
+    private final STAFRetrieveWorkingSubset wokingSubset;
 
     /**
      * Constructor
      * @param pProgressManager Storage {@link ProgressManager}
      * @param pWorkingSubset Current {@link IWorkingSubset}
      */
-    public STAFRetrieveListener(ProgressManager pProgressManager, STAFWorkingSubset pWorkingSubset) {
+    public STAFRetrieveListener(ProgressManager pProgressManager, STAFRetrieveWorkingSubset pWorkingSubset) {
         super();
         progressManager = pProgressManager;
         wokingSubset = pWorkingSubset;

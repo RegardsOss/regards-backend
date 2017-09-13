@@ -291,12 +291,12 @@ public class STAFController {
         return this.getAllPreparedFilesToArchive();
     }
 
-    private Set<AbstractPhysicalFile> prepareFilesToRestore(Set<URL> pSTAFFilesToRestore, Path pDestinationPath) {
+    public Set<AbstractPhysicalFile> prepareFilesToRestore(Set<URL> pSTAFFilesToRestore) {
         Set<AbstractPhysicalFile> physicalFiles = Sets.newHashSet();
         //1. Create STAF File from given urls
         for (URL stafURL : pSTAFFilesToRestore) {
             try {
-                AbstractPhysicalFile physicalFile = getSTAFPhysicalFile(stafURL, pDestinationPath, physicalFiles,
+                AbstractPhysicalFile physicalFile = getSTAFPhysicalFile(stafURL, physicalFiles,
                                                                         PhysicalFileStatusEnum.TO_RETRIEVE);
 
                 switch (physicalFile.getArchiveMode()) {
@@ -323,14 +323,14 @@ public class STAFController {
      * @param pSTAFFilesToRestore {@link Set}<{@link URL}> STAF URL of files to retrieve.
      * @param pDestinationPath {@link Path} Directory where to put restored files.
      */
-    public void restoreFiles(Set<URL> pSTAFFilesToRestore, Path pDestinationPath, IClientCollectListener pListener) {
+    public void restoreFiles(Set<AbstractPhysicalFile> pPhysicalFiles, Path pDestinationPath,
+            IClientCollectListener pListener) {
 
-        Set<AbstractPhysicalFile> physicalFiles = prepareFilesToRestore(pSTAFFilesToRestore, pDestinationPath);
-        stafService.setCollectListener(new STAFCollectListener(physicalFiles, pDestinationPath, pListener));
+        stafService.setCollectListener(new STAFCollectListener(pPhysicalFiles, pDestinationPath, pListener));
 
         //2. Retrieve staf files path to retrieve
         Set<Path> stafFilePathsToRetrieive = Sets.newHashSet();
-        for (AbstractPhysicalFile physicalFile : physicalFiles) {
+        for (AbstractPhysicalFile physicalFile : pPhysicalFiles) {
             try {
                 stafFilePathsToRetrieive.addAll(getSTAFFilePaths(physicalFile));
             } catch (STAFException e) {
@@ -388,13 +388,11 @@ public class STAFController {
     /**
      * Create an object {@link AbstractPhysicalFile} from a given STAF {@link URL}
      * @param pUrl STAF {@link URL}
-     * @param destinationDirectory {@link Path} local files directory for retrieve actions.
      * @return created {@link AbstractPhysicalFile}
      * @throws STAFException
      */
-    private AbstractPhysicalFile getSTAFPhysicalFile(URL pUrl, Path destinationDirectory,
-            Set<AbstractPhysicalFile> pAlreadyPreparedPhysicalFiles, PhysicalFileStatusEnum pStatus)
-            throws STAFException {
+    private AbstractPhysicalFile getSTAFPhysicalFile(URL pUrl, Set<AbstractPhysicalFile> pAlreadyPreparedPhysicalFiles,
+            PhysicalFileStatusEnum pStatus) throws STAFException {
 
         String stafArchive = STAFUrlFactory.getSTAFArchiveFromURL(pUrl);
         String stafNode = STAFUrlFactory.getSTAFNodeFromURL(pUrl);
@@ -402,11 +400,9 @@ public class STAFController {
         STAFArchiveModeEnum mode = STAFUrlFactory.getSTAFArchiveModeFromURL(pUrl);
         Map<STAFUrlParameter, String> parameters = STAFUrlFactory.getSTAFURLParameters(pUrl);
 
-        Path localFilePath = Paths.get(destinationDirectory.toString(), stafFileName);
-
         switch (mode) {
             case CUT:
-                PhysicalCutFile cutFile = new PhysicalCutFile(localFilePath, stafArchive, stafNode);
+                PhysicalCutFile cutFile = new PhysicalCutFile(null, stafArchive, stafNode);
                 cutFile.setStafFileName(stafFileName);
                 if (parameters.get(STAFUrlParameter.CUT_PARTS_PARAMETER) != null) {
                     Integer numberOfParts = Integer.parseInt(parameters.get(STAFUrlParameter.CUT_PARTS_PARAMETER));
@@ -419,7 +415,7 @@ public class STAFController {
 
                 return cutFile;
             case NORMAL:
-                PhysicalNormalFile physicalFile = new PhysicalNormalFile(localFilePath, null, stafArchive, stafNode);
+                PhysicalNormalFile physicalFile = new PhysicalNormalFile(null, null, stafArchive, stafNode);
                 physicalFile.setStatus(pStatus);
                 physicalFile.setStafFileName(stafFileName);
                 return physicalFile;
@@ -437,7 +433,6 @@ public class STAFController {
                 } else {
                     tar = new PhysicalTARFile(stafArchive, stafNode);
                     tar.setStafFileName(stafFileName);
-                    tar.setLocalFilePath(localFilePath);
                 }
                 tar.setStatus(pStatus);
                 Path fileName = Paths.get(parameters.get(STAFUrlParameter.TAR_FILENAME_PARAMETER));
