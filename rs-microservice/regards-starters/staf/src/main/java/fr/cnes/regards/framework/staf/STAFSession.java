@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -1128,7 +1129,7 @@ public class STAFSession {
      * @return une List contenant les noms de fichiers qui n'ont pas ete supprimes.
      * @throws STAFException
      */
-    public List<String> staffilDelete(Set<String> pFileList) throws STAFException {
+    public List<String> staffilDelete(Set<Path> pSTAFFilePaths) throws STAFException {
         final List<String> notDeletedFiles = new ArrayList<>();
         String command = null;
         final MessageFormat staffilDelete = new MessageFormat(STAFFIL_FILE_DELETE);
@@ -1136,10 +1137,10 @@ public class STAFSession {
         final StringBuilder builder = new StringBuilder();
         boolean validity = true;
 
-        for (final Iterator<String> iter = pFileList.iterator(); iter.hasNext() && validity;) {
-            final String stafFile = iter.next();
+        for (final Iterator<Path> iter = pSTAFFilePaths.iterator(); iter.hasNext() && validity;) {
+            final Path stafFile = iter.next();
             builder.append(stafFile);
-            if (!checkLongFilename(stafFile)) {
+            if (!checkLongFilename(stafFile.toString())) {
                 validity = false;
             }
             builder.append(" ");
@@ -1153,7 +1154,7 @@ public class STAFSession {
             // Analyse STAF answer
             int nbSuccess = 0;
             int nbFail = 0;
-            while ((nbSuccess + nbFail) < pFileList.size()) {
+            while ((nbSuccess + nbFail) < pSTAFFilePaths.size()) {
 
                 // Decode current line
                 final String response = readSTAFLine();

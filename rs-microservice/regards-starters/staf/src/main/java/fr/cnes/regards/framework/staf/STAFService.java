@@ -557,14 +557,13 @@ public class STAFService {
      *            le repertoire dans lequel ajouter les fichiers.
      * @return une HashMap contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
      */
-    public Set<String> archiveFiles(Map<String, String> pFileMap, String pDirectory, boolean pReplace)
-            throws STAFException {
+    public Set<String> archiveFiles(Map<Path, Path> pFileMap, Path pDirectory, boolean pReplace) throws STAFException {
 
         // List of files really archived
         final Set<String> archivedFilesList = Sets.newHashSet();
         // Iterateur sur les fichiers a archiver
-        final Set<String> fileLocalList = pFileMap.keySet();
-        final Iterator<String> files = fileLocalList.iterator();
+        final Set<Path> fileLocalList = pFileMap.keySet();
+        final Iterator<Path> files = fileLocalList.iterator();
 
         // Map of files in function of Service Class (CS1, CS3, CS5)
         // Class service little files : size<=50Mo
@@ -578,9 +577,9 @@ public class STAFService {
         // Dispacth all files in function Service Class in 3 Map
         while (files.hasNext()) {
             // Current file
-            final String currentFile = files.next();
-            final String destinationCurrentFile = pFileMap.get(currentFile);
-            final File currentFilePath = new File(currentFile);
+            final Path currentFile = files.next();
+            final Path destinationCurrentFile = pFileMap.get(currentFile);
+            final File currentFilePath = currentFile.toFile();
 
             // Compare current file size with limit file size to dispatch file
             // in appropriated class service
@@ -591,19 +590,19 @@ public class STAFService {
                 // Class service CS1 : size<=50Mo
                 // ******************************
                 if (fileSize <= CLASS_SERVICE_MAX_SIZE) {
-                    littleFileServiceClassMap.put(currentFile, destinationCurrentFile);
+                    littleFileServiceClassMap.put(currentFile.toString(), destinationCurrentFile.toString());
                 }
                 // Class service CS3 or CS5 : size>50Mo
                 else {
                     // CS5 : GF Account STAF (big file) : size>50Mo
                     // ********************************************
                     if (stafArchive.isGFAccount()) {
-                        biggerFileGFServiceClassMap.put(currentFile, destinationCurrentFile);
+                        biggerFileGFServiceClassMap.put(currentFile.toString(), destinationCurrentFile.toString());
                     }
                     // CS3 : generalist STAF : size>50Mo
                     // *********************************
                     else {
-                        biggerFileGenServiceClassMap.put(currentFile, destinationCurrentFile);
+                        biggerFileGenServiceClassMap.put(currentFile.toString(), destinationCurrentFile.toString());
                     }
                 }
             }
@@ -651,14 +650,15 @@ public class STAFService {
             }
 
             // Launch the archiving of computed lots
-            archivedFilesList.addAll(runSessionsStaffilArchive(sessionsIdentifiers, flowList, pDirectory, pReplace));
+            archivedFilesList
+                    .addAll(runSessionsStaffilArchive(sessionsIdentifiers, flowList, pDirectory.toString(), pReplace));
         }
         return archivedFilesList;
     }
 
-    public List<File> deleteFiles(Set<String> pFileList) throws STAFException {
+    public Set<File> deleteFiles(Set<Path> pFileList) throws STAFException {
         final List<String> filePaths = mainSession.staffilDelete(pFileList);
-        final List<File> files = new ArrayList<>();
+        final Set<File> files = Sets.newHashSet();
         if (filePaths != null) {
             for (final String path : filePaths) {
                 files.add(new File(path));
