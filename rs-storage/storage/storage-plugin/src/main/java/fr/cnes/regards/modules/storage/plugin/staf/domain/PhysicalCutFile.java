@@ -40,7 +40,7 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
      * @param pSTAFArchiveName {@link String} Name of the STAF Archive where to store the file.
      * @param pSTAFNode {@link String} STAF Node where to store the file.
      */
-    public PhysicalCutFile(Path pLocalFile, String pSTAFArchiveName, String pSTAFNode) {
+    public PhysicalCutFile(Path pLocalFile, String pSTAFArchiveName, Path pSTAFNode) {
         super(STAFArchiveModeEnum.CUT, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.PENDING);
         localFile = pLocalFile;
     }
@@ -58,7 +58,7 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
     @Override
     public Path calculateSTAFFilePath() {
         try (FileInputStream is = new FileInputStream(localFile.toFile())) {
-            return Paths.get(super.getStafNode(), ChecksumUtils.computeHexChecksum(is, "md5"));
+            return Paths.get(super.getStafNode().toString(), ChecksumUtils.computeHexChecksum(is, "md5"));
         } catch (IOException | NoSuchAlgorithmException e) {
             LOG.error("Error calculating file checksum {}", localFile.toString(), e);
             return null;

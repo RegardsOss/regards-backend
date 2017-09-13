@@ -113,20 +113,20 @@ public class STAFController {
 
     /**
      * Store the prepared {@link AbstractPhysicalFile} into STAF.<br/>
+     * @param {@link Path} into STAF where to archive prepared files.
      * @param pReplaceMode replace file in STAF if already exists ?
      * @return Set of successfuly stored {@link AbstractPhysicalFile}.
      * @throws STAFException STAF store error
      */
-    public Set<AbstractPhysicalFile> archivePreparedFiles(boolean pReplaceMode) throws STAFException {
+    public Set<AbstractPhysicalFile> archivePreparedFiles(Path pSTAFNode, boolean pReplaceMode) throws STAFException {
         Set<String> archivedFiles;
         // Create map bewteen localFile to archive and destination file path into STAF
-        Map<String, String> localFileToArchiveMap = Maps.newHashMap();
+        Map<Path, Path> localFileToArchiveMap = Maps.newHashMap();
         this.getAllPreparedFilesToArchive().forEach(stafFile -> {
             if (PhysicalFileStatusEnum.TO_STORE.equals(stafFile.getStatus())) {
                 try {
                     if ((stafFile.getLocalFilePath() != null) && (stafFile.calculateSTAFFilePath() != null)) {
-                        localFileToArchiveMap.put(stafFile.getLocalFilePath().toString(),
-                                                  stafFile.calculateSTAFFilePath().toString());
+                        localFileToArchiveMap.put(stafFile.getLocalFilePath(), stafFile.calculateSTAFFilePath());
                     } else {
                         stafFile.setStatus(PhysicalFileStatusEnum.ERROR);
                         LOG.warn("Undefined file to archive for origine(local)={} and destination(STAF)={}",
@@ -142,7 +142,7 @@ public class STAFController {
         if (!localFileToArchiveMap.isEmpty()) {
             stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
             try {
-                archivedFiles = stafService.archiveFiles(localFileToArchiveMap, "/", pReplaceMode);
+                archivedFiles = stafService.archiveFiles(localFileToArchiveMap, pSTAFNode, pReplaceMode);
                 archivedFiles.forEach(archivedFile ->
                 // For each file to store, check if the file has really been stored and set the status to STORED.
                 // @formatter:off
@@ -198,24 +198,61 @@ public class STAFController {
      */
     public void deletePreparedFiles(Set<AbstractPhysicalFile> pPhysicalFilesToDelete) {
 
+        // List of staf file path (key : local file to replace with, value : staf file path to replace)
+        // to replace per staf node.
+        Map<Path, Map<Path, Path>> filesToReplace = Maps.newHashMap();
+
+        // List of STAF file path to delete
+        Set<Path> stafFilePathsToDelete = Sets.newHashSet();
+
         for (AbstractPhysicalFile physicalFileToDelete : pPhysicalFilesToDelete) {
-            switch (physicalFileToDelete.getArchiveMode()) {
-                case CUT:
-                    // TODO : Delete each part
-                    break;
-                case CUT_PART:
-                case NORMAL:
-                    // TODO : Delete file
-                    break;
-                case TAR:
-                    // TODO : Case of file deletion into TAR :
-                    // 1. Retrieve TAR from STAF
-                    // 2. extract TAR
-                    // 3. Reconstruct TAR without the delete file
-                    // 4. Archive file
-                    break;
-                default:
-                    break;
+            try {
+                switch (physicalFileToDelete.getArchiveMode()) {
+                    case CUT:
+                        // Add each part to delete
+                        PhysicalCutFile cutFile = (PhysicalCutFile) physicalFileToDelete;
+                        for (PhysicalCutPartFile part : cutFile.getCutedFileParts()) {
+                            stafFilePathsToDelete.add(part.getSTAFFilePath());
+                        }
+                        break;
+                    case CUT_PART:
+                    case NORMAL:
+                        // Add file to delete
+                        stafFilePathsToDelete.add(physicalFileToDelete.getSTAFFilePath());
+                        break;
+                    case TAR:
+                        // TODO : Case of file deletion into TAR :
+                        // 1. Retrieve TAR from STAF
+                        // 2. extract TAR
+                        // 3. Reconstruct TAR without the delete file
+                        // 4. Archive file
+                        break;
+                    default:
+                        break;
+                }
+            } catch (STAFException e) {
+                LOG.error("[STAF] Unable to delete file from STAF", physicalFileToDelete.getStafFileName());
+                // TODO : Notify listener
+            }
+        }
+
+        try {
+            stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+
+            // run files deletion
+            stafService.deleteFiles(stafFilePathsToDelete);
+
+            // run file replace
+            for (Entry<Path, Map<Path, Path>> entry : filesToReplace.entrySet()) {
+                stafService.archiveFiles(entry.getValue(), entry.getKey(), true);
+            }
+        } catch (STAFException e) {
+            LOG.error("[STAF] Error during STAF Deletion", e.getMessage(), e);
+        } finally {
+            try {
+                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+            } catch (STAFException e) {
+                LOG.error("Error during STAF deconnection.", e);
             }
         }
     }
@@ -325,13 +362,12 @@ public class STAFController {
      * @param pMode {@link STAFArchiveModeEnum} Archiving mode.
      * @return {@link Set}<{@link AbstractPhysicalFile}> prepared files to archive with STAF recomandations.
      */
-    public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<String, Set<Path>> pFileToArchivePerStafNode,
-            STAFArchiveModeEnum pMode) {
+    public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<Path, Set<Path>> pFileToArchivePerStafNode) {
         clearPreparedFiles();
-        for (Entry<String, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
+        for (Entry<Path, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
             for (Path fileToArchive : stafNode.getValue()) {
                 try {
-                    prepareFileToArchive(fileToArchive, stafNode.getKey(), pMode);
+                    prepareFileToArchive(fileToArchive, stafNode.getKey());
                 } catch (STAFException e) {
                     LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
                     LOG.debug(e.getMessage(), e);
@@ -416,7 +452,7 @@ public class STAFController {
      * @return {@link PhysicalCutFile} containing {@link PhysicalCutPartFile}s for each part of the cuted file
      * @throws IOException Error during file cut.
      */
-    private PhysicalCutFile cutFile(Path pPhysicalFileToArchive, String pSTAFNode) throws IOException {
+    private PhysicalCutFile cutFile(Path pPhysicalFileToArchive, Path pSTAFNode) throws IOException {
         // 1. Create cut temporary directory into workspace
         Path tmpCutDirectory = Paths.get(getWorkspaceTmpDirectory().toString(),
                                          pPhysicalFileToArchive.getFileName().toString());
@@ -568,7 +604,7 @@ public class STAFController {
             PhysicalFileStatusEnum pStatus) throws STAFException {
 
         String stafArchive = STAFUrlFactory.getSTAFArchiveFromURL(pUrl);
-        String stafNode = STAFUrlFactory.getSTAFNodeFromURL(pUrl);
+        Path stafNode = STAFUrlFactory.getSTAFNodeFromURL(pUrl);
         String stafFileName = STAFUrlFactory.getSTAFFileNameFromURL(pUrl);
         STAFArchiveModeEnum mode = STAFUrlFactory.getSTAFArchiveModeFromURL(pUrl);
         Map<STAFUrlParameter, String> parameters = STAFUrlFactory.getSTAFURLParameters(pUrl);
@@ -625,8 +661,7 @@ public class STAFController {
      * @param pMode {@link STAFArchiveModeEnum} Archiving mode
      * @throws STAFException Error during file preparation. File is not available for store.
      */
-    private void prepareFileToArchive(Path pFileToArchive, String pSTAFNode, STAFArchiveModeEnum pMode)
-            throws STAFException {
+    private void prepareFileToArchive(Path pFileToArchive, Path pSTAFNode) throws STAFException {
         try {
             // 1. Check file existance
             if (!Files.exists(pFileToArchive) || !Files.isReadable(pFileToArchive)) {
@@ -635,8 +670,10 @@ public class STAFController {
                 LOG.error(message);
                 throw new STAFException(message);
             }
+            //2. Get archiving mode
+            STAFArchiveModeEnum mode = getFileArchiveMode(pFileToArchive.toFile().length());
             // 2. Manage file transformation if needed before staf storage
-            switch (pMode) {
+            switch (mode) {
                 case CUT:
                     filesToArchive.addAll(cutFile(pFileToArchive, pSTAFNode).getCutedFileParts());
                     break;
@@ -649,7 +686,7 @@ public class STAFController {
                             stafService.getStafArchive().getArchiveName(), pSTAFNode));
                     break;
                 default:
-                    throw new STAFException(String.format("Unhandle Archive mode %s", pMode.toString()));
+                    throw new STAFException(String.format("Unhandle Archive mode %s", mode.toString()));
             }
         } catch (IOException | STAFTarException e) {
             LOG.error("[STAF] Error preparing file {}", pFileToArchive, e);

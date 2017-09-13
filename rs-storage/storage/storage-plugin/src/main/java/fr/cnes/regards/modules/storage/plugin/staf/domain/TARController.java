@@ -102,7 +102,7 @@ public class TARController {
      * @throws STAFTarException : Unable to add file to current TAR.
      */
     public void addFileToTar(Path pPhysicalFileToArchive, Set<PhysicalTARFile> pTarFiles, String pSTAFArciveName,
-            String pStafNode) throws STAFTarException {
+            Path pStafNode) throws STAFTarException {
 
         // 1. Initialize lock on the tar current directory of the specified node
         Path localTarDirectory = getWorkingTarPath(pSTAFArciveName, pStafNode);
@@ -236,11 +236,11 @@ public class TARController {
      * Retrieve, if exists, the current pending tar as a {@link PhysicalTARFile}.
      * @param pWorkspaceTarPath {@link Path} of the TAR Workspace.
      * @param pSTAFArchiveName {@link String} Name of the STAF Archive.
-     * @param pSTAFNode {@link String} STAF Node.
+     * @param pSTAFNode {@link Path} STAF Node.
      * @return {@link Optional}<{@link PhysicalTARFile}
      */
     private Optional<PhysicalTARFile> findPendingTarDirectory(Path pWorkspaceTarPath, String pSTAFArchiveName,
-            String pSTAFNode) {
+            Path pSTAFNode) {
         Optional<PhysicalTARFile> tarFile = Optional.empty();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(pWorkspaceTarPath,
                                                                      path -> path.toFile().isDirectory())) {
@@ -264,11 +264,11 @@ public class TARController {
      * Create a {@link PhysicalTARFile} associated to the given current TAR pending directory.
      * @param pDirectory {@link Path} to current pending TAR directory.
      * @param pSTAFArchiveName {@link String} STAF Archive name.
-     * @param pSTAFNode {@link String} STAF Node
+     * @param pSTAFNode {@link Path} STAF Node
      * @param pDateStr {@link String} Creation date of the directory with TAR_FILE_NAME_DATA_FORMAT format.
      * @return {@link PhysicalTARFile} of the current pending TAR directory.
      */
-    private PhysicalTARFile createPendingTarFromDirectory(Path pDirectory, String pSTAFArchiveName, String pSTAFNode,
+    private PhysicalTARFile createPendingTarFromDirectory(Path pDirectory, String pSTAFArchiveName, Path pSTAFNode,
             String pDateStr) {
         try {
             PhysicalTARFile pendingTarFile = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode);
@@ -301,7 +301,7 @@ public class TARController {
      * @throws IOException If an error occured during TAR working directory management.
      */
     private PhysicalTARFile getCurrentTarPhysicalFile(Set<PhysicalTARFile> pTarFiles, String pSTAFArchiveName,
-            String pSTAFNode) throws IOException {
+            Path pSTAFNode) throws IOException {
 
         // If the current TAR file is already present in the given list do not calculate it.
         Optional<PhysicalTARFile> tar = pTarFiles.stream()
@@ -369,8 +369,8 @@ public class TARController {
      * @param pStafNode {@link String} STAF Node
      * @return {@link Path} to the TAR working directory
      */
-    private Path getWorkingTarPath(String pSTAFArciveName, String pStafNode) {
-        return Paths.get(workspaceDirectory.toString(), pSTAFArciveName, TAR_DIRECTORY, pStafNode);
+    private Path getWorkingTarPath(String pSTAFArciveName, Path pStafNode) {
+        return Paths.get(workspaceDirectory.toString(), pSTAFArciveName, TAR_DIRECTORY, pStafNode.toString());
     }
 
 }

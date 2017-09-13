@@ -50,9 +50,9 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
     /**
      * Constructor
      * @param pSTAFArchiveName {@link String} STAF Archive name where the tar is stored
-     * @param pSTAFNode {@link String} STAF Node where the tar is stored.
+     * @param pSTAFNode {@link Path} STAF Node where the tar is stored.
      */
-    public PhysicalTARFile(String pSTAFArchiveName, String pSTAFNode) {
+    public PhysicalTARFile(String pSTAFArchiveName, Path pSTAFNode) {
         super(STAFArchiveModeEnum.TAR, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.PENDING);
     }
 
@@ -107,8 +107,8 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
 
     @Override
     public Path calculateSTAFFilePath() throws STAFException {
-        if (localTarFile != null) {
-            return Paths.get(super.getStafNode(), localTarFile.getFileName().toString());
+        if ((localTarFile != null) && (super.getStafNode() != null)) {
+            return Paths.get(super.getStafNode().toString(), localTarFile.getFileName().toString());
         } else {
             throw new STAFException("[STAF] Error during STAF PATH creation");
         }

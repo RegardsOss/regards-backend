@@ -42,7 +42,7 @@ public class PhysicalCutPartFile extends AbstractPhysicalFile {
      * @param pSTAFNode {@link String} STAF Node where the part is stored.
      */
     public PhysicalCutPartFile(Path pLocalFile, PhysicalCutFile pIncludingCutFile, int pPartIndex,
-            String pSTAFArchiveName, String pSTAFNode) {
+            String pSTAFArchiveName, Path pSTAFNode) {
         super(STAFArchiveModeEnum.CUT_PART, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.TO_STORE);
         localFilePath = pLocalFile;
         includingCutFile = pIncludingCutFile;

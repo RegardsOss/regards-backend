@@ -35,7 +35,7 @@ public abstract class AbstractPhysicalFile {
     /**
      * STAF Node is the path into the STAF Archive where to store the current file.
      */
-    private final String stafNode;
+    private final Path stafNode;
 
     /**
      * Name of the STAF Archive where the file is stored.
@@ -64,7 +64,7 @@ public abstract class AbstractPhysicalFile {
      * @param pSTAFNode {@link String} Path into the STAF Archive where to store the current file.
      * @param pIsReadyForSTAFTransfer {@link Boolean} Does this file is ready to be transfer to STAF ?
      */
-    public AbstractPhysicalFile(STAFArchiveModeEnum pArchiveMode, String pSTAFArchiveName, String pSTAFNode,
+    public AbstractPhysicalFile(STAFArchiveModeEnum pArchiveMode, String pSTAFArchiveName, Path pSTAFNode,
             PhysicalFileStatusEnum pStatus) {
         super();
         archiveMode = pArchiveMode;
@@ -98,7 +98,7 @@ public abstract class AbstractPhysicalFile {
      */
     public Path getSTAFFilePath() throws STAFException {
         if ((stafNode != null) && (stafFileName != null)) {
-            return Paths.get(stafNode, stafFileName);
+            return Paths.get(stafNode.toString(), stafFileName);
         } else {
             Path path = calculateSTAFFilePath();
             stafFileName = path.getFileName().toString();
@@ -110,7 +110,7 @@ public abstract class AbstractPhysicalFile {
         return archiveMode;
     }
 
-    public String getStafNode() {
+    public Path getStafNode() {
         return stafNode;
     }
 

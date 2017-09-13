@@ -128,7 +128,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                 "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 "file_test_5.txt"));
         filesToArchiveWithoutInvalides
-                .add(new DataFile(new URL("http", "172.26.47.107", 9020, "/conf/staticConfiguration.js"),
+                .add(new DataFile(new URL("http", "172.26.47.52", 9020, "/conf/staticConfiguration.js"),
                         "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
                         aip, "staticConfiguration.js"));
 
@@ -163,52 +163,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     }
 
     /**
-     * Store file in single NORMAL Arching mode.
-     */
-    @Test
-    public void storeSingleModeTest() {
-
-        // Add plugin package
-        List<String> packages = Lists.newArrayList();
-        packages.add("fr.cnes.regards.modules.storage.plugin.staf");
-
-        // Mock the progress manager to verify the number of call for succeed and failted files.
-        ProgressManager pm = Mockito.mock(ProgressManager.class);
-        Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
-
-        // Init STAF archive parameters for plugin
-        STAFArchive archive = new STAFArchive();
-        archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
-        archive.setPassword(STAF_ARCHIVE_PASSWORD);
-        Gson gson = new Gson();
-
-        // Init plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
-
-        // Get plugin
-        STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
-
-        // prepare files
-        Set<STAFWorkingSubset> subsets = plugin.prepare(filesToArchive, DataStorageAccessModeEnum.STORE_MODE);
-
-        Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
-
-        // Store each subset prepared
-        subsets.forEach(subset -> {
-            plugin.store(subset, false, pm);
-        });
-
-        // One file is on error (file does not exists)
-        Mockito.verify(pm, Mockito.times(1)).storageFailed(Mockito.any(), Mockito.any());
-        // 6 Files are stored.
-        Mockito.verify(pm, Mockito.times(6)).storageSucceed(Mockito.any(), Mockito.any());
-    }
-
-    /**
      * Store files in the 3 existing modes TAR, CUT and NORMAL
      */
     @Test
@@ -237,38 +191,25 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<STAFWorkingSubset> subsets = plugin.prepare(filesToArchiveMultiplesMode,
                                                         DataStorageAccessModeEnum.STORE_MODE);
 
-        Assert.assertEquals("There should be 3 subsets created", 3, subsets.size());
+        Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 
         // Store each subset prepared
         subsets.forEach(subset -> {
             STAFStoreWorkingSubset ws = (STAFStoreWorkingSubset) subset;
+            Assert.assertEquals(ws.getStafNode(), STAFDataStorage.getStafNode(null));
             // Mock the progress manager to verify the number of call for succeed and failted files.
             ProgressManager pm = Mockito.mock(ProgressManager.class);
             Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
             Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
             plugin.store(subset, false, pm);
-
-            switch (ws.getMode()) {
-                case CUT:
-                    // 3 files should have been stored in CUT MODE
-                    Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-                    Mockito.verify(pm, Mockito.times(3)).storageSucceed(Mockito.any(), Mockito.any());
-                    break;
-                case NORMAL:
-                    // 2 files should have been stored in NORMAL MODE
-                    Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-                    Mockito.verify(pm, Mockito.times(2)).storageSucceed(Mockito.any(), Mockito.any());
-                    break;
-                case TAR:
-                    // 6 files should have been stored in TAR MODE. 1 failed.
-                    Mockito.verify(pm, Mockito.times(1)).storageFailed(Mockito.any(), Mockito.any());
-                    Mockito.verify(pm, Mockito.times(6)).storageSucceed(Mockito.any(), Mockito.any());
-                    break;
-                default:
-                    break;
-
-            }
+            // 3 files should have been stored in CUT MODE
+            // 2 files should have been stored in NORMAL MODE
+            // 6 files should have been stored in TAR MODE.
+            // 2 files should not been stored. files does not exists
+            Mockito.verify(pm, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
+            Mockito.verify(pm, Mockito.times(11)).storageSucceed(Mockito.any(), Mockito.any());
         });
+
     }
 
     /**
@@ -317,8 +258,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         });
 
         // All files are on error. Workspace is not accessible.
-        Mockito.verify(pm, Mockito.times(7)).storageFailed(Mockito.any(), Mockito.any());
-        // 6 Files are stored.
+        Mockito.verify(pm, Mockito.times(8)).storageFailed(Mockito.any(), Mockito.any());
+        // 0 Files are stored.
         Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
     }
 

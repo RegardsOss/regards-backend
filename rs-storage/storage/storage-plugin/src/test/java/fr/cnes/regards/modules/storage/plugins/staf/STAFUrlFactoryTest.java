@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.storage.plugins.staf;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -21,7 +23,7 @@ public class STAFUrlFactoryTest {
 
     private final static String STAF_ARCHIVE = "ARCHIVE_TEST";
 
-    private final static String STAF_NODE = "/node/test";
+    private final static Path STAF_NODE = Paths.get("/node/test");
 
     private final static String STAF_FILE_NAME = "file.txt";
 

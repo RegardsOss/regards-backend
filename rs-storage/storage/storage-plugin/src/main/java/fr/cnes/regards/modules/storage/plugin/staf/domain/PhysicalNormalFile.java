@@ -31,7 +31,7 @@ public class PhysicalNormalFile extends AbstractPhysicalFile {
      * @param pSTAFArchiveName {@link String} STAF Archive name where the part is stored.
      * @param pSTAFNode {@link String} STAF Node where the part is stored.
      */
-    public PhysicalNormalFile(Path pLocalFile, Path pRawFilePath, String pSTAFArchiveName, String pSTAFNode) {
+    public PhysicalNormalFile(Path pLocalFile, Path pRawFilePath, String pSTAFArchiveName, Path pSTAFNode) {
         super(STAFArchiveModeEnum.NORMAL, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.TO_STORE);
         localFile = pLocalFile;
         if (pRawFilePath != null) {
@@ -51,7 +51,7 @@ public class PhysicalNormalFile extends AbstractPhysicalFile {
     @Override
     public Path calculateSTAFFilePath() {
         try (FileInputStream is = new FileInputStream(localFile.toFile())) {
-            return Paths.get(super.getStafNode(), ChecksumUtils.computeHexChecksum(is, "md5"));
+            return Paths.get(super.getStafNode().toString(), ChecksumUtils.computeHexChecksum(is, "md5"));
         } catch (IOException | NoSuchAlgorithmException e) {
             LOG.error("Error calculating file checksum {}", localFile.toString(), e);
             return null;

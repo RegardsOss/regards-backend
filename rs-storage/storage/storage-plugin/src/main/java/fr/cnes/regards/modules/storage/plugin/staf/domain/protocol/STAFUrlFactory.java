@@ -145,7 +145,7 @@ public class STAFUrlFactory {
             // Construct standard staf://<ARCHIVE>/<NODE> path
             String urlInitialPath = String
                     .format(STANDARD_URL_STRING_FORMAT,
-                            Paths.get(pCutPartFile.getStafArchiveName(), pCutPartFile.getStafNode()));
+                            Paths.get(pCutPartFile.getStafArchiveName(), pCutPartFile.getStafNode().toString()));
             String fileNamePath = pCutPartFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s", urlInitialPath, fileNamePath));
         } catch (MalformedURLException | STAFException e) {
@@ -161,8 +161,9 @@ public class STAFUrlFactory {
      */
     public static URL getCutFileSTAFUrl(PhysicalCutFile pCutFile) throws STAFUrlException {
         try {
-            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
-                                                  Paths.get(pCutFile.getStafArchiveName(), pCutFile.getStafNode()));
+            String urlInitialPath = String
+                    .format(STANDARD_URL_STRING_FORMAT,
+                            Paths.get(pCutFile.getStafArchiveName(), pCutFile.getStafNode().toString()));
             String fileNamePath = pCutFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s?%s=%d", urlInitialPath, fileNamePath,
                                          STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName(),
@@ -183,8 +184,9 @@ public class STAFUrlFactory {
         try {
             Map<Path, URL> urls = Maps.newHashMap();
             // Construct standard staf://<ARCHIVE>/<NODE> path
-            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
-                                                  Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode()));
+            String urlInitialPath = String
+                    .format(STANDARD_URL_STRING_FORMAT,
+                            Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
                 Path localFilePath = fileInTar.getValue();
                 Path stafFilePath = pTarFile.getSTAFFilePath();
@@ -215,8 +217,9 @@ public class STAFUrlFactory {
         try {
             Optional<URL> url = Optional.empty();
             // Construct standard staf://<ARCHIVE>/<NODE> path
-            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
-                                                  Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode()));
+            String urlInitialPath = String
+                    .format(STANDARD_URL_STRING_FORMAT,
+                            Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
                 if (pRawFile == fileInTar.getKey()) {
                     url = Optional.of(new URL(String.format("%s/%s?%s=%s", urlInitialPath,
@@ -241,8 +244,9 @@ public class STAFUrlFactory {
         try {
             Set<URL> urls = Sets.newHashSet();
             // Construct standard staf://<ARCHIVE>/<NODE> path
-            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
-                                                  Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode()));
+            String urlInitialPath = String
+                    .format(STANDARD_URL_STRING_FORMAT,
+                            Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
                 urls.add(new URL(String.format("%s/%s?%s=%s", urlInitialPath,
                                                pTarFile.getSTAFFilePath().getFileName().toString(),
@@ -264,8 +268,9 @@ public class STAFUrlFactory {
     public static URL getNormalFileSTAFUrl(PhysicalNormalFile pFile) throws STAFUrlException {
         try {
             // Construct standard staf:/<ARCHIVE>/<NODE> path
-            String urlInitialPath = String.format(STANDARD_URL_STRING_FORMAT,
-                                                  Paths.get(pFile.getStafArchiveName(), pFile.getStafNode()));
+            String urlInitialPath = String
+                    .format(STANDARD_URL_STRING_FORMAT,
+                            Paths.get(pFile.getStafArchiveName(), pFile.getStafNode().toString()));
             String fileNamePath = pFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s", urlInitialPath, fileNamePath));
         } catch (MalformedURLException | STAFException e) {
@@ -276,18 +281,18 @@ public class STAFUrlFactory {
     /**
      * Return the complete STAF Node of the given {@link URL}
      * @param pUrl {@link URL}
-     * @return {@link String}
+     * @return {@link Path}
      * @throws STAFUrlException Given {@link URL} is not a STAF URL.
      */
-    public static String getSTAFNodeFromURL(URL pUrl) throws STAFUrlException {
+    public static Path getSTAFNodeFromURL(URL pUrl) throws STAFUrlException {
         Matcher m = STAF_URL_REGEXP.matcher(pUrl.toString());
         if (m.matches()) {
             String filePath = m.group(2);
             int index = filePath.lastIndexOf('/');
             if (index >= 0) {
-                return filePath.substring(0, index);
+                return Paths.get(filePath.substring(0, index));
             } else {
-                return filePath;
+                return Paths.get(filePath);
             }
         } else {
             throw new STAFUrlException(String.format("Invalid URL %s", pUrl.toString()));

@@ -3,9 +3,9 @@
  */
 package fr.cnes.regards.modules.storage.plugin.staf;
 
+import java.nio.file.Path;
 import java.util.Set;
 
-import fr.cnes.regards.framework.staf.STAFArchiveModeEnum;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
@@ -16,26 +16,27 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
  */
 public class STAFStoreWorkingSubset extends STAFWorkingSubset {
 
-    private STAFArchiveModeEnum mode = STAFArchiveModeEnum.NORMAL;
-
     private boolean filesAleadyStored = false;
 
-    public STAFStoreWorkingSubset(Set<DataFile> pDatafiles, STAFArchiveModeEnum pMode) {
+    private final Path stafNode;
+
+    public STAFStoreWorkingSubset(Set<DataFile> pDatafiles, Path pSTAFNode) {
         super(pDatafiles);
-        mode = pMode;
+        stafNode = pSTAFNode;
     }
 
-    public STAFStoreWorkingSubset(Set<DataFile> pDatafiles, boolean pFilesAlreadyStored) {
+    public STAFStoreWorkingSubset(Set<DataFile> pDatafiles, Path pSTAFNode, boolean pFilesAlreadyStored) {
         super(pDatafiles);
         filesAleadyStored = pFilesAlreadyStored;
-    }
-
-    public STAFArchiveModeEnum getMode() {
-        return mode;
+        stafNode = pSTAFNode;
     }
 
     public boolean isFilesAleadyStored() {
         return filesAleadyStored;
+    }
+
+    public Path getStafNode() {
+        return stafNode;
     }
 
 }
