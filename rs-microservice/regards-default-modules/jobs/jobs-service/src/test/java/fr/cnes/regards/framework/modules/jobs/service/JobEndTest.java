@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 import org.junit.After;
@@ -161,5 +162,20 @@ public class JobEndTest {
         Assert.assertEquals(titi, ((Toto)footJob.getResult()).getList().get(0));
 
         Thread.sleep(5_000);
+    }
+
+    @Test
+    public void testExpirationDate() throws InterruptedException {
+        JobInfo jobSnow = new JobInfo();
+        jobSnow.setExpirationDate(OffsetDateTime.now());
+        jobSnow = jobInfoService.createAsQueued(jobSnow);
+        Thread.sleep(1_000);
+        // Look at jobInfo from database
+        do {
+            jobSnow = jobInfoRepos.findOne(jobSnow.getId());
+        } while ((jobSnow.getStatus().getStatus() != JobStatus.SUCCEEDED) && (jobSnow.getStatus().getStatus()
+                != JobStatus.FAILED));
+        Assert.assertEquals(JobStatus.FAILED, jobSnow.getStatus().getStatus());
+        Assert.assertEquals("Expiration date reached", jobSnow.getStatus().getStackTrace());
     }
 }

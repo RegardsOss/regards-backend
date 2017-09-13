@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -165,6 +166,15 @@ public class JobService implements IJobService {
 
     public void execute(JobInfo jobInfo) {
         try {
+            // Case expiration date reached
+            if ((jobInfo.getExpirationDate() != null) && jobInfo.getExpirationDate().isBefore(OffsetDateTime.now())) {
+                runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                jobInfo.updateStatus(JobStatus.FAILED);
+                jobInfo.getStatus().setStackTrace("Expiration date reached");
+                jobInfoService.save(jobInfo);
+                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+                return;
+            }
             // Case job aborted before its execution
             if (abortedBeforeStartedJobs.contains(jobInfo.getId())) {
                 runtimeTenantResolver.forceTenant(jobInfo.getTenant());

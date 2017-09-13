@@ -8,7 +8,8 @@ import org.hibernate.annotations.Type;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 
 /**
- * Job parameter ie a name/value pair
+ * Job parameter ie a name/value pair.
+ * Value must not be a parametered type !!
  * @author oroussel
  */
 @Embeddable
@@ -47,12 +48,15 @@ public class JobParameter {
         }
     }
 
+    /**
+     * Set value. Because this value is gsonified, it must not be a parametered type.
+     * If yout want one, feel free to create a specific class inheriting parametered type
+     */
     public <T> void setValue(T value) {
         if (value != null) {
             this.className = value.getClass().getName();
         }
         this.value = GsonUtil.toString(value);
-
     }
 
     @Override
