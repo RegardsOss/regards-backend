@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  * This class represents a file reference

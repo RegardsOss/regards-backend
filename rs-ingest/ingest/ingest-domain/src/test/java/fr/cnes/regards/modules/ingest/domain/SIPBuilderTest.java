@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  * Test building, serializing and deserializing SIP feature.

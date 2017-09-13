@@ -18,15 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.ingest.domain.Greeting;
 
 /**
  *
@@ -46,9 +41,9 @@ public interface IGreetingsClient {
      * @param name
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/greeting")
-    @ResponseBody
-    public HttpEntity<Resource<Greeting>> greeting(String pName);
+    // @RequestMapping(method = RequestMethod.GET, value = "/greeting")
+    // @ResponseBody
+    // public HttpEntity<Resource<Greeting>> greeting(String pName);
 
     /**
      * Rest resource /api/me/{name} Method GET
@@ -56,8 +51,8 @@ public interface IGreetingsClient {
      * @param name
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/me")
-    @ResponseBody
-    public HttpEntity<Resource<Greeting>> me(String pName);
+    // @RequestMapping(method = RequestMethod.GET, value = "/me")
+    // @ResponseBody
+    // public HttpEntity<Resource<Greeting>> me(String pName);
 
 }

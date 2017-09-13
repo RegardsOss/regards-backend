@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  * Builder for {@link SIP}
