@@ -70,6 +70,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             fullPathToFile = getStorageLocation(data);
             //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
             if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getUrl().getPath()))) {
+                data.setFileSize(Paths.get(fullPathToFile).toFile().length());
                 //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
                 progressManager.storageSucceed(data, data.getUrl());
                 return;
@@ -93,6 +94,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
             } else {
+                data.setFileSize(Paths.get(fullPathToFile).toFile().length());
                 progressManager.storageSucceed(data, new URL("file", "", fullPathToFile));
             }
         } catch (NoSuchAlgorithmException e) {
