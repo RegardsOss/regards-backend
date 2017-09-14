@@ -57,7 +57,7 @@ public class STAFService {
     /**
      * Gestionnaire centrale de connexions au STAF.
      */
-    private final STAFManager stafManager;
+    private final STAFSessionManager stafManager;
 
     /**
      * Session principale du service
@@ -87,7 +87,7 @@ public class STAFService {
     /**
      * Constructeur.
      */
-    public STAFService(STAFManager pStafManager, STAFArchive pStafArchive) {
+    public STAFService(STAFSessionManager pStafManager, STAFArchive pStafArchive) {
         mainSession = pStafManager.getNewSession();
         stafManager = pStafManager;
         stafArchive = pStafArchive;

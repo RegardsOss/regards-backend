@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.staf;
+package fr.cnes.regards.framework.staf.mock;
 
 import java.io.IOException;
 import java.nio.file.Files;

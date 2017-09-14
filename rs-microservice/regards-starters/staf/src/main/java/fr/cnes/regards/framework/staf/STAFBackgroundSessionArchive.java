@@ -92,7 +92,7 @@ public class STAFBackgroundSessionArchive extends AbstractSTAFBackgroundSession 
     @Override
     public void freeReservation() throws STAFException {
         // Frees ressource used by the session
-        STAFManager.getInstance(configuration).freeReservation(sessionId, ArchiveAccessModeEnum.ARCHIVE_MODE);
+        STAFSessionManager.getInstance(configuration).freeReservation(sessionId, ArchiveAccessModeEnum.ARCHIVE_MODE);
     }
 
     public List<String> getArchivedFilesList() {

@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.framework.staf.exception.STAFException;
-import fr.cnes.regards.framework.staf.protocol.STAFURLStreamHandlerFactory;
+import fr.cnes.regards.framework.staf.mock.STAFMock;
 import fr.cnes.regards.framework.staf.protocol.STAFUrlFactory;
 import fr.cnes.regards.framework.staf.protocol.STAFUrlParameter;
 
@@ -70,14 +70,7 @@ public class STAFControllerTest {
 
     @BeforeClass
     public static void initAll() throws IOException {
-
-        // TODO Add in STAF starter !!!
-        try {
-            URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
-        } catch (Error e) {
-            // Nothing to do.
-        }
-
+        STAFUrlFactory.initSTAFURLProtocol();
         if (Files.exists(STAF_WORKSPACE_PATH)) {
             Files.setPosixFilePermissions(STAF_WORKSPACE_PATH,
                                           Sets.newHashSet(PosixFilePermission.OWNER_EXECUTE,
@@ -144,7 +137,7 @@ public class STAFControllerTest {
         stafArchive.setPassword(STAF_ARCHIVE_PASSWORD);
 
         stafSessionMock = Mockito.mock(STAFSession.class);
-        STAFManager stafManagerMock = Mockito.mock(STAFManager.class);
+        STAFSessionManager stafManagerMock = Mockito.mock(STAFSessionManager.class);
 
         Mockito.when(stafManagerMock.getConfiguration()).thenReturn(configuration);
         Mockito.when(stafManagerMock.getReservation(Mockito.any())).thenReturn(0);

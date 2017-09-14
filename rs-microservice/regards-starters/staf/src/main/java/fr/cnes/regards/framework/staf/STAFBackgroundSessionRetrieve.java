@@ -105,7 +105,7 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
     @Override
     public void freeReservation() throws STAFException {
         // Frees ressource used by the session
-        STAFManager.getInstance(configuration).freeReservation(sessionId, ArchiveAccessModeEnum.RESTITUTION_MODE);
+        STAFSessionManager.getInstance(configuration).freeReservation(sessionId, ArchiveAccessModeEnum.RESTITUTION_MODE);
     }
 
 }

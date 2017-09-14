@@ -19,14 +19,14 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  * sessions ouvertes en parallele. Cette limitation s'appuie sur un systeme de reservations de ressources.
  * @author sbinda CS
  */
-public class STAFManager {
+public class STAFSessionManager {
 
-    private static Logger logger = Logger.getLogger(STAFManager.class);
+    private static Logger logger = Logger.getLogger(STAFSessionManager.class);
 
     /**
      * Instance unique du gestionnaire STAF (design pattern singleton)
      */
-    private static STAFManager instance = null;
+    private static STAFSessionManager instance = null;
 
     /**
      * Configuration du service STAF
@@ -43,13 +43,13 @@ public class STAFManager {
      */
     private List<Integer> reservations;
 
-    private STAFManager(STAFConfiguration pConfiguration) throws STAFException {
+    private STAFSessionManager(STAFConfiguration pConfiguration) throws STAFException {
         lastIdentifier = 0;
         reservations = new ArrayList<>();
         configuration = pConfiguration;
     }
 
-    private STAFManager() {
+    private STAFSessionManager() {
 
     }
 
@@ -64,9 +64,9 @@ public class STAFManager {
      * @throws STAFException
      *             si le manager ne peut pas etre instancie.
      */
-    public static synchronized STAFManager getInstance(STAFConfiguration pConfiguration) throws STAFException {
+    public static synchronized STAFSessionManager getInstance(STAFConfiguration pConfiguration) throws STAFException {
         if (instance == null) {
-            instance = new STAFManager(pConfiguration);
+            instance = new STAFSessionManager(pConfiguration);
         }
         return instance;
     }

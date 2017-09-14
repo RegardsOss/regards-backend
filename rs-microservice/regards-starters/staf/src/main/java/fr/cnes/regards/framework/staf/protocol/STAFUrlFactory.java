@@ -70,6 +70,14 @@ public class STAFUrlFactory {
     private STAFUrlFactory() {
     }
 
+    public static void initSTAFURLProtocol() {
+        try {
+            URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
+        } catch (Error e) {
+            // Factory already defined. Nothing to do.
+        }
+    }
+
     /**
      * Create a mapping between the Path of the RAW files stored and the STAF URLs.
      *
