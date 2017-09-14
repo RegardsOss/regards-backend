@@ -259,7 +259,8 @@ public class STAFController {
             Set<Path> notDeletedPaths = stafService.deleteFiles(stafFilePathsToDelete.keySet());
             for (Entry<Path, AbstractPhysicalFile> stafFileToDelete : stafFilePathsToDelete.entrySet()) {
                 if (!notDeletedPaths.contains(stafFileToDelete.getKey())) {
-                    LOG.info("SEB FILE deleted from STAF {}", stafFileToDelete.getKey());
+                    LOG.info("[STAF] {} - FILE deleted from STAF {}", stafFileToDelete.getKey(),
+                             stafService.getStafArchive().getArchiveName());
                     // Retrieve original file associted to this deleted path
                     stafFileToDelete.getValue().setStatus(PhysicalFileStatusEnum.DELETED);
                 }
@@ -339,10 +340,11 @@ public class STAFController {
         Path localTARFilePath = Paths.get(getWorkspaceTmpDirectory().toString(),
                                           pFileToRetrieve.getStafFileName().toString());
         if (localTARFilePath.toFile().exists()) {
-            LOG.debug("[STAF] File {} retrieved to {}.", pFileToRetrieve.getStafFileName(), localTARFilePath);
+            LOG.debug("[STAF] TAR File {} retrieved to {}.", pFileToRetrieve.getStafFileName(), localTARFilePath);
             pFileToRetrieve.setLocalFilePath(localTARFilePath);
         } else {
-            throw new STAFException(String.format("[STAF] File restored does not exists %s", localTARFilePath));
+            throw new STAFException(
+                    String.format("[STAF] TAR File is not retrieved from STAF %s", pFileToRetrieve.getSTAFFilePath()));
         }
         return localTARFilePath;
     }
