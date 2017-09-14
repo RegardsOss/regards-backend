@@ -31,8 +31,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.staf.STAFController;
-import fr.cnes.regards.framework.staf.STAFSessionManager;
 import fr.cnes.regards.framework.staf.STAFService;
+import fr.cnes.regards.framework.staf.STAFSessionManager;
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
@@ -204,7 +204,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         Set<URL> urls = pDataFiles.stream().map(df -> df.getUrl()).collect(Collectors.toSet());
         Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToRestore(urls);
         // 2. Delete prepared files
-        stafController.deletePreparedFiles(filesToDelete);
+        stafController.deleteFiles(filesToDelete);
         // TODO : Handle progress manager
     }
 
@@ -238,16 +238,16 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         }
 
         // 2. Perpare files to store
-        stafController.prepareFilesToArchive(filesToPrepare);
+        Set<AbstractPhysicalFile> preparedFiles = stafController.prepareFilesToArchive(filesToPrepare);
 
         try {
             // 3. Do store all prepared files
-            stafController.archivePreparedFiles(pSTAFNode, pReplaceMode);
+            stafController.archiveFiles(preparedFiles, pSTAFNode, pReplaceMode);
         } catch (STAFException e) {
             LOG.error("[STAFDataStorage Plugin] Error during file preparation", e);
         }
 
-        Map<Path, URL> rawArchivedFiles = stafController.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = stafController.getRawFilesArchived(preparedFiles);
 
         // 4. Log files stored.
         rawArchivedFiles
