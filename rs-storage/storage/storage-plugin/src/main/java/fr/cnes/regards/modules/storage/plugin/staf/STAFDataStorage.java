@@ -201,11 +201,18 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     @Override
     public void delete(Set<DataFile> pDataFiles, ProgressManager pProgressManager) {
         // 1. Prepare files
-        Set<URL> urls = pDataFiles.stream().map(df -> df.getUrl()).collect(Collectors.toSet());
-        Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToRestore(urls);
+        Map<URL, DataFile> urls = Maps.newHashMap();
+        pDataFiles.stream().forEach(f -> urls.put(f.getUrl(), f));
+        Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToDelete(urls.keySet());
         // 2. Delete prepared files
-        stafController.deleteFiles(filesToDelete);
-        // TODO : Handle progress manager
+        Set<URL> deletedSTAFFiles = stafController.deleteFiles(filesToDelete);
+        urls.forEach((url, dataFile) -> {
+            if (deletedSTAFFiles.contains(url)) {
+                pProgressManager.deletionSucceed(dataFile);
+            } else {
+                pProgressManager.deletionFailed(dataFile, "STAF Error");
+            }
+        });
     }
 
     /**
@@ -237,7 +244,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             }
         }
 
-        // 2. Perpare files to store
+        // 2. Prepare files to store
         Set<AbstractPhysicalFile> preparedFiles = stafController.prepareFilesToArchive(filesToPrepare);
 
         try {
@@ -314,31 +321,6 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
         });
         return dispatchedFiles;
-    }
-
-    /**
-     * Calculate physical file size for file {@link DataFile}.
-     * If the file is not accessible, this method retrieve the file from is origineUrl in order to calculate his size.
-     * If the file is retrieved, then the {@link DataFile} is updated to set the new origineUrl to the transfered file.
-     * @param file {@link DataFile}
-     * @return length of the physical file.
-     * @throws IOException If the origineUrl of the given {@link DataFile} is not available.
-     */
-    private Long getDataFileSize(DataFile file) throws IOException {
-        Long contentLenght = DownloadUtils.getContentLength(file.getUrl(), 1000).longValue();
-        if (contentLenght == -1) {
-            LOG.info("[STAFDataStorage Plugin] {} - Prepare - Unknown length for file {}. Retrieving file ...",
-                     file.getUrl().getPath());
-            // Size undefined, we have to donwload file to know his size
-            File pysicalFile = getPhysicalFile(file);
-            contentLenght = pysicalFile.length();
-            LOG.info("[STAFDataStorage Plugin] {} - Prepare - Unknown length for file {}. File retrieved {}.",
-                     file.getUrl().getPath(), pysicalFile.getPath());
-            if (contentLenght == -1) {
-                LOG.error("[STAFDataStorage Plugin] {} - Prepare - Error retrieving file {}", file.getUrl().getPath());
-            }
-        }
-        return contentLenght;
     }
 
     /**
