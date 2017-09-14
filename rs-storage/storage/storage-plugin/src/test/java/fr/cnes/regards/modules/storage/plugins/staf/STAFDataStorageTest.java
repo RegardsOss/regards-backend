@@ -21,7 +21,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.staf.STAFArchive;
+import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.Event;
@@ -51,7 +50,6 @@ import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFDataStorage;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFStoreWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFWorkingSubset;
-import fr.cnes.regards.modules.storage.plugin.staf.domain.protocol.STAFURLStreamHandlerFactory;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
 @ContextConfiguration(classes = { STAFDataStorageConfiguration.class, MockingResourceServiceConfiguration.class })
@@ -76,16 +74,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private static String incomTestSourcesDir = new File("src/test/resources/staf/income/file_test_1.txt")
             .getAbsoluteFile().getParent();
-
-    @BeforeClass
-    public static void initAll() throws IOException {
-        // TODO Add in STAF starter !!!
-        try {
-            URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
-        } catch (Error e) {
-            // Factory already defined. Nothing to do.
-        }
-    }
 
     @Before
     public void init() throws IOException {
@@ -163,7 +151,14 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     }
 
     /**
-     * Store files in the 3 existing modes TAR, CUT and NORMAL
+     * Store files in the 3 existing modes TAR, CUT and NORMAL.
+     * <ul>
+     * <li> 11 files available for storage</li>
+     * <li> 3 files should be stored in CUT mode</li>
+     * <li> 2 files should be stored in NORMAL mode</li>
+     * <li> 6 files should be stored in TAR mode</li>
+     * <li> 2 files unavaiable for storage</li>
+     * </ul>
      */
     @Test
     public void storeMultipleModesTest() {

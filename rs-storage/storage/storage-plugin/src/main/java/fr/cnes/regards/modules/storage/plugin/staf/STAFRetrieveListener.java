@@ -6,10 +6,10 @@ package fr.cnes.regards.modules.storage.plugin.staf;
 import java.net.URL;
 import java.nio.file.Path;
 
+import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.ProgressManager;
-import fr.cnes.regards.modules.storage.plugin.staf.domain.IClientCollectListener;
 
 /**
  * Implementation of {@link IClientCollectListener} for {@link STAFDataStorage}.<br/>

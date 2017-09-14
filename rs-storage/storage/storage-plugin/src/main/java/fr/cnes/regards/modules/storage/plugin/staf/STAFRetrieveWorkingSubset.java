@@ -7,8 +7,8 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.staf.domain.AbstractPhysicalFile;
 
 /**
  * STAF set of files to handle for next store action.
