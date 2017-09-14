@@ -182,11 +182,11 @@ public class STAFControllerTest {
         Map<Path, Set<Path>> filesToArchivePerNode = Maps.newHashMap();
         filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
 
-        controller.prepareFilesToArchive(filesToArchivePerNode);
-        Assert.assertEquals(5, controller.getAllPreparedFilesToArchive().size());
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
+        Assert.assertEquals(5, preparedFiles.size());
 
         // All files are ready for transfer
-        Set<AbstractPhysicalFile> tarToSendToStaf = controller.getAllPreparedFilesToArchive().stream()
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals(5, tarToSendToStaf.size());
 
@@ -207,7 +207,8 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(Paths.get(STAF_TEST_NODE), false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
+                                                                          false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -215,7 +216,7 @@ public class STAFControllerTest {
         Assert.assertEquals(5, archivedFiles.size());
 
         // Check that STAF Controller return all raw files has archived.
-        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
         rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
         Assert.assertEquals(5, rawArchivedFiles.size());
         filesToArchiveWithoutInvalides
@@ -263,14 +264,13 @@ public class STAFControllerTest {
         filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
 
         // Run STAF file preparation
-        controller.prepareFilesToArchive(filesToArchivePerNode);
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
 
         // 3 Tars should have been created created
-        Assert.assertEquals("3 Tars should have been created created", 3,
-                            controller.getAllPreparedFilesToArchive().size());
+        Assert.assertEquals("3 Tars should have been created created", 3, preparedFiles.size());
 
         // Only 2 ready to send to staf.
-        Set<AbstractPhysicalFile> tarToSendToStaf = controller.getAllPreparedFilesToArchive().stream()
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals("2 Tars should be ready to send to STAF. Last one is not big enougth.", 2,
                             tarToSendToStaf.size());
@@ -279,7 +279,8 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(Paths.get(STAF_TEST_NODE), false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
+                                                                          false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -289,7 +290,7 @@ public class STAFControllerTest {
         Assert.assertEquals("2 Tars should have beed stored into STAF System.", 2, archivedFiles.size());
 
         // Check that STAF Controller return all raw files has archived.
-        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
         rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
         Assert.assertEquals("The 5 raw files to archive should have been stored in STAF system.", 5,
                             rawArchivedFiles.size());
@@ -341,14 +342,13 @@ public class STAFControllerTest {
         filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
 
         // Run STAF file preparation
-        controller.prepareFilesToArchive(filesToArchivePerNode);
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
 
         // 3 Tars should have been created created
-        Assert.assertEquals("3 Tars should have been created created", 3,
-                            controller.getAllPreparedFilesToArchive().size());
+        Assert.assertEquals("3 Tars should have been created created", 3, preparedFiles.size());
 
         // 3 Tars should be send to STAF
-        Set<AbstractPhysicalFile> tarToSendToStaf = controller.getAllPreparedFilesToArchive().stream()
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals("3 Tars shloud be ready to send to STAF. No remaining current TAR.", 3,
                             tarToSendToStaf.size());
@@ -357,7 +357,8 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(Paths.get(STAF_TEST_NODE), false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
+                                                                          false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -367,7 +368,7 @@ public class STAFControllerTest {
         Assert.assertEquals("3 Tars should have been stored into STAF System.", 3, archivedFiles.size());
 
         // Check that STAF Controller return all raw files has archived.
-        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
         rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
         Assert.assertEquals("The 5 raw files to archive should have been stored in STAF system.", 5,
                             rawArchivedFiles.size());
@@ -427,13 +428,13 @@ public class STAFControllerTest {
         filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
 
         // Run STAF file preparation
-        controller.prepareFilesToArchive(filesToArchivePerNode);
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
 
         // 1 Tars should have been preapred
-        Assert.assertEquals("1 Tar should have been created", 1, controller.getAllPreparedFilesToArchive().size());
+        Assert.assertEquals("1 Tar should have been created", 1, preparedFiles.size());
 
         // 1 Tar should be send to STAF. The STAF is old enought to be sent to STAF.
-        Set<AbstractPhysicalFile> tarToSendToStaf = controller.getAllPreparedFilesToArchive().stream()
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals("1 Tar should be ready to send to STAF. No remaining current TAR.", 1,
                             tarToSendToStaf.size());
@@ -442,7 +443,8 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(Paths.get(STAF_TEST_NODE), false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
+                                                                          false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -452,7 +454,7 @@ public class STAFControllerTest {
         Assert.assertEquals("1 Tar should have been stored into STAF System.", 1, archivedFiles.size());
 
         // Check that STAF Controller return all raw files has archived.
-        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
         rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
         Assert.assertEquals("The 5 raw files to archive should have been stored in STAF system.", 5,
                             rawArchivedFiles.size());
@@ -512,13 +514,13 @@ public class STAFControllerTest {
         filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
 
         // Run STAF file preparation
-        controller.prepareFilesToArchive(filesToArchivePerNode);
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
 
         // 1 Tars should have been prepared
-        Assert.assertEquals("One Tar should have been created", 1, controller.getAllPreparedFilesToArchive().size());
+        Assert.assertEquals("One Tar should have been created", 1, preparedFiles.size());
 
         // No Tar should be send to STAF. The TAR is not old enought and not big enought
-        Set<AbstractPhysicalFile> tarToSendToStaf = controller.getAllPreparedFilesToArchive().stream()
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals("No Tar should be ready to send to STAF. One remaining current TAR.", 0,
                             tarToSendToStaf.size());
@@ -527,7 +529,8 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(Paths.get(STAF_TEST_NODE), false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
+                                                                          false);
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -537,7 +540,7 @@ public class STAFControllerTest {
         Assert.assertEquals("No Tar should have been stored into STAF System.", 0, archivedFiles.size());
 
         // Check that STAF Controller return all raw files has archived.
-        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
         rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
         Assert.assertEquals("The 5 raw files to archive should have been stored in STAF system.", 5,
                             rawArchivedFiles.size());
@@ -575,11 +578,11 @@ public class STAFControllerTest {
         Map<Path, Set<Path>> filesToArchivePerNode = Maps.newHashMap();
         filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
 
-        controller.prepareFilesToArchive(filesToArchivePerNode);
-        Assert.assertEquals(20, controller.getAllPreparedFilesToArchive().size());
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
+        Assert.assertEquals(20, preparedFiles.size());
 
         // All files are ready for transfer
-        Set<AbstractPhysicalFile> tarToSendToStaf = controller.getAllPreparedFilesToArchive().stream()
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals(20, tarToSendToStaf.size());
 
@@ -587,7 +590,8 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archivePreparedFiles(Paths.get(STAF_TEST_NODE), false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
+                                                                          false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         // 20 files to archive. Max number of files per archive session = 10 -> 2xarchive command
         Mockito.verify(stafSessionMock, Mockito.times(2)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
@@ -598,7 +602,7 @@ public class STAFControllerTest {
         Assert.assertEquals(20, archivedFiles.size());
 
         // Check that STAF Controller return all raw files has archived.
-        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived();
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
         rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
         Assert.assertEquals(5, rawArchivedFiles.size());
         filesToArchiveWithoutInvalides
