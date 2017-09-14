@@ -16,6 +16,12 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 @Event(target = Target.MICROSERVICE)
 public class DataStorageEvent implements ISubscribable {
 
+    private Long fileSize;
+
+    private String checksum;
+
+    private Long storageConfId;
+
     private Long dataFileId;
 
     private StorageAction storageAction;
@@ -32,6 +38,9 @@ public class DataStorageEvent implements ISubscribable {
         this.newUrl=dataFile.getUrl();
         this.storageAction = storageAction;
         this.type = type;
+        this.storageConfId = dataFile.getDataStorageUsed().getId();
+        this.fileSize = dataFile.getFileSize();
+        this.checksum = dataFile.getChecksum();
     }
 
     public StorageAction getStorageAction() {
@@ -64,6 +73,30 @@ public class DataStorageEvent implements ISubscribable {
 
     public void setNewUrl(URL newUrl) {
         this.newUrl = newUrl;
+    }
+
+    public Long getStorageConfId() {
+        return storageConfId;
+    }
+
+    public void setStorageConfId(Long storageConfId) {
+        this.storageConfId = storageConfId;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
     }
 
     @Override

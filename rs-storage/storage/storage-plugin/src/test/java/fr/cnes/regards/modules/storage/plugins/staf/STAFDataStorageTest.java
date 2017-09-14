@@ -36,12 +36,12 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.staf.STAFArchive;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.OAISIdentifier;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.Event;
 import fr.cnes.regards.modules.storage.domain.EventType;

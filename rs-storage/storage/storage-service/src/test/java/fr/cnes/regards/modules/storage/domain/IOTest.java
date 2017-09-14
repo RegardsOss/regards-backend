@@ -26,9 +26,12 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -36,14 +39,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@ContextConfiguration(classes = { IOTestConfiguration.class, MockingResourceServiceConfiguration.class })
+@ContextConfiguration(classes = { IOTestConfiguration.class })
 @TestPropertySource(locations = { "classpath:test.properties" })
 public class IOTest extends AbstractRegardsServiceIT {
 
@@ -53,6 +57,16 @@ public class IOTest extends AbstractRegardsServiceIT {
     private Gson gson;
 
     private Map<String, Object> fakeAip;
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public IResourceService resourceService() {
+            return Mockito.mock(IResourceService.class);
+        }
+
+    }
 
     @Before
     public void init() throws MalformedURLException {

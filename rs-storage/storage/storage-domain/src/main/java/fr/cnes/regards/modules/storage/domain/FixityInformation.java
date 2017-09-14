@@ -10,7 +10,9 @@ import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
-import fr.cnes.regards.modules.storage.domain.validation.HandledMessageDigestAlgorithm;
+import org.hibernate.validator.constraints.NotBlank;
+
+import fr.cnes.regards.framework.file.utils.validation.HandledMessageDigestAlgorithm;
 
 public class FixityInformation implements Serializable {
 
@@ -18,7 +20,7 @@ public class FixityInformation implements Serializable {
     @HandledMessageDigestAlgorithm
     private String algorithm;
 
-    @NotNull
+    @NotBlank
     private String checksum;
 
     private Long fileSize;

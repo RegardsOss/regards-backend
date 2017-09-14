@@ -56,9 +56,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.*;
@@ -175,11 +175,25 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             switch (type) {
                 case SUCCESSFUL:
                     // update data status
+                    PluginConfiguration dataStorageUsed = null;
+                    try {
+                        dataStorageUsed = pluginService.getPluginConfiguration(event.getStorageConfId());
+                    } catch (ModuleException e) {
+                        LOG.error(
+                                "You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
+                                e);
+                        throw new RuntimeException(e);
+                    }
+                    data.setChecksum(event.getChecksum());
+                    data.setFileSize(event.getFileSize());
+                    data.setDataStorageUsed(dataStorageUsed);
                     data.setState(DataFileState.STORED);
                     dataFileDao.save(data);
                     if (data.getType() == DataType.AIP) {
                         // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
-                        // if we just stored the AIP, there is nothing to do but changing AIP state
+                        // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the workspace!
+                        Paths.get(workspace, runtimeTenantResolver.getTenant(), data.getChecksum() + ".json").toFile()
+                                .delete();
                         AIP aip = data.getAip();
                         aip.setState(AIPState.STORED);
                         dao.save(aip);
@@ -290,12 +304,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                                                oldOneCorrespondingToWorkingSubset));
+                                                oldOneCorrespondingToWorkingSubset.toArray(
+                                                        new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
                 jobsToSchedule.add(new JobInfo(0, parameters, getOwner(), UpdateDataFilesJob.class.getName()));
             }
         }
         // scheduleJob for files just give to the job the AIP ipId or id
-        Set<UUID> jobIds = null;
+        Set<UUID> jobIds = Sets.newHashSet();
         for (JobInfo job : jobsToSchedule) {
             jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
@@ -454,6 +469,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             if (meta != null) {
                 // now if we have a meta to store, lets add it
                 DataFile oldOne = dataFileDao.findByAipAndType(aip, DataType.AIP);
+                meta.setId(oldOne.getId());
                 result.add(new History(oldOne, meta));
             } else {
                 // if we don't have a meta to store that means a problem happened and we set the aip to STORAGE_ERROR
@@ -641,7 +657,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void updateAlreadyStoredMetadata() {
-        // Then lets get AIP that should be restored after an update
+        // Then lets get AIP that should be stored again after an update
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             String tenantWorkspace = workspace + "/" + tenant;

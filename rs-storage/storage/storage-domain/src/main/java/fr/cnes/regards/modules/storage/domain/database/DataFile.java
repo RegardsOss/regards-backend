@@ -10,11 +10,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.DataObject;
 import fr.cnes.regards.modules.storage.domain.InformationObject;
-import sun.net.util.URLUtil;
 
 /**
  *
@@ -22,7 +21,12 @@ import sun.net.util.URLUtil;
  */
 @Entity
 @Table(name = "t_data_file")
-@NamedEntityGraph(name = "graph.datafile.aip", attributeNodes = @NamedAttributeNode("aipDataBase"))
+@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipDataBase"),
+        @NamedAttributeNode(value = "dataStorageUsed", subgraph = "graph.datafile.dataStorageUsed") }, subgraphs = {
+        @NamedSubgraph(name = "graph.datafile.dataStorageUsed", attributeNodes = {
+                @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorageUsed.parameters") }),
+        @NamedSubgraph(name = "graph.datafile.dataStorageUsed.parameters",
+                attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
 public class DataFile {
 
     @Id
@@ -74,10 +78,10 @@ public class DataFile {
 
     public DataFile(DataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
         this(file.getUrl(), checksum, algorithm, file.getType(), fileSize, mimeType, aip, null);
-        String name=file.getName();
-        if(Strings.isNullOrEmpty(name)) {
+        String name = file.getName();
+        if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrl().getPath().split("/");
-            name = pathParts[pathParts.length-1];
+            name = pathParts[pathParts.length - 1];
         }
         setName(name);
     }

@@ -68,7 +68,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         if (((pluginToUse = parametersMap.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null) || !(pluginToUse
                 .getValue() instanceof PluginConfiguration)) {
             JobParameterMissingException e = new JobParameterMissingException(
-                    String.format(PARAMETER_MISSING, this.getClass().getName(), URL.class.getName(),
+                    String.format(PARAMETER_MISSING, this.getClass().getName(), PluginConfiguration.class.getName(),
                                   PLUGIN_TO_USE_PARAMETER_NAME));
             LOG.error(e.getMessage(), e);
             throw e;

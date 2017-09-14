@@ -44,11 +44,11 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.OAISIdentifier;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.*;
@@ -224,6 +224,23 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         }
     }
 
+    @Test
+    public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
+        //first lets create the aip
+        createSuccessTest();
+        //now that it is correctly created, lets say it has been updated and add a tag
+        DataFile oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
+        aip = aipDao.findOneByIpId(aip.getIpId());
+        aip.getTags().add("Exemple Tag For Fun");
+        aip.setState(AIPState.UPDATED);
+        aipDao.save(aip);
+        //now lets launch the method without scheduling
+        aipService.updateAlreadyStoredMetadata();
+        Thread.sleep(40000);
+        Assert.assertFalse("the old data file should not exists anymore!",
+                           Files.exists(Paths.get(oldDataFile.getUrl().toURI())));
+    }
+
     private class JobEventHandler implements IHandler<JobEvent> {
 
         @Override
@@ -270,8 +287,8 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         aipDao.deleteAll();
         Path defaultTenantWorkspace = Paths.get(workspace, DEFAULT_TENANT);
         // in other word, remove everything inside defaultTenantWorkspace but the directory defaultTenantWorkspace, service is not created on each test so workspace is not either
-        Files.walk(defaultTenantWorkspace).sorted(Comparator.reverseOrder()).map(Path::toFile).filter(f -> !f.equals(defaultTenantWorkspace.toFile()))
-                .forEach(File::delete);
+        Files.walk(defaultTenantWorkspace).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                .filter(f -> !f.equals(defaultTenantWorkspace.toFile())).forEach(File::delete);
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                 .forEach(File::delete);
     }
