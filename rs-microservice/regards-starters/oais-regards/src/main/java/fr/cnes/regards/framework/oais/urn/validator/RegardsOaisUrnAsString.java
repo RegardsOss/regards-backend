@@ -1,9 +1,10 @@
-package fr.cnes.regards.framework.urn.validator;
+package fr.cnes.regards.framework.oais.urn.validator;
 
 import javax.validation.Constraint;
-import java.lang.annotation.*;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+
+import java.lang.annotation.*;
 
 /**
  * Annotation allowing to certifate that a String is a {@link UniformResourceName} thanks to {@link RegardsOaisUrnAsStringValidator}

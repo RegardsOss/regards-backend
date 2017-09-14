@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -34,7 +35,7 @@ public abstract class AbstractGeoJsonObject {
     /**
      * Optional bounding box
      */
-    private Double[] bbox;
+    protected Double[] bbox;
 
     public AbstractGeoJsonObject(GeoJsonType type) {
         this.type = type;
@@ -50,5 +51,35 @@ public abstract class AbstractGeoJsonObject {
 
     public void setBbox(Double[] bbox) {
         this.bbox = bbox;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + Arrays.hashCode(bbox);
+        result = (prime * result) + ((type == null) ? 0 : type.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        AbstractGeoJsonObject other = (AbstractGeoJsonObject) obj;
+        if (!Arrays.equals(bbox, other.bbox)) {
+            return false;
+        }
+        if (type != other.type) {
+            return false;
+        }
+        return true;
     }
 }

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.urn;
+package fr.cnes.regards.framework.oais.urn;
 
 import javax.persistence.Convert;
 import javax.validation.constraints.Max;
@@ -26,8 +26,8 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import fr.cnes.regards.framework.urn.converters.UrnConverter;
-import fr.cnes.regards.framework.urn.validator.RegardsOaisUrn;
+import fr.cnes.regards.framework.oais.urn.converters.UrnConverter;
+import fr.cnes.regards.framework.oais.urn.validator.RegardsOaisUrn;
 
 /**
  * allow us to create URN with the following format:
@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.urn.validator.RegardsOaisUrn;
 @RegardsOaisUrn
 @Convert(converter = UrnConverter.class)
 public class UniformResourceName {
+    public static final int MAX_SIZE = 128;
 
     public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:V\\d{1,3}(,\\d+)?(:REV.+)?";
 

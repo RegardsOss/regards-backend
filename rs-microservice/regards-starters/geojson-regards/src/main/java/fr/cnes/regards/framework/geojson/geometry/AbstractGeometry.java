@@ -43,4 +43,34 @@ public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implemen
     public void setCoordinates(T coordinates) {
         this.coordinates = coordinates;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = (prime * result) + ((coordinates == null) ? 0 : coordinates.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        AbstractGeometry other = (AbstractGeometry) obj;
+        if (coordinates == null) {
+            if (other.coordinates != null) {
+                return false;
+            }
+        } else if (!coordinates.equals(other.coordinates)) {
+            return false;
+        }
+        return true;
+    }
 }

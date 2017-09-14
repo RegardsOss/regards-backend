@@ -18,25 +18,38 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
+ * RFC 7946 -August 2016<br/>
+ * GeoJson base feature collection representation
  *
- * This class represents a default GeoJson feature with properties as {@link Map} and an optional {@link String}
- * identifier.<br/>
- * You can define your own extending {@link AbstractFeature}.
+ * This is the base class for implementing GeoJson feature collection. Extend it to create your own.
+ *
+ * @param <F> represents feature type
  *
  * @author Marc Sordi
  *
  */
-public class Feature extends AbstractFeature<Map<String, Object>, String> {
+public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>> extends AbstractGeoJsonObject {
 
-    public Feature() {
-        properties = new HashMap<>();
+    private final List<F> features = new ArrayList<>();
+
+    public AbstractFeatureCollection() {
+        super(GeoJsonType.FEATURE_COLLECTION);
     }
 
-    public void addProperty(String key, Object value) {
-        properties.put(key, value);
+    public List<F> getFeatures() {
+        return features;
+    }
+
+    public void addAll(Collection<F> features) {
+        this.features.addAll(features);
+    }
+
+    public void add(F feature) {
+        this.features.add(feature);
     }
 }
