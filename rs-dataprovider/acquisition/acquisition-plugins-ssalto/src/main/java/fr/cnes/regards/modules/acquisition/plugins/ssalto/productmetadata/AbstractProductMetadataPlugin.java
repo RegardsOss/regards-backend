@@ -135,17 +135,15 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         File pluginConfFile = new File(pluginConfDirectory, dataSetName + CONFIG_FILE_SUFFIX);
         URL confFile = null;
 
-        // If conf file doesn't exists in the project configuration directory, check in the classpath
-        if ((pluginConfFile == null) || !pluginConfFile.exists() || !pluginConfFile.canRead()) {
+        if (!pluginConfFile.exists() || !pluginConfFile.canRead()) {
+            // If conf file doesn't exists in the project configuration directory, check in the classpath
 
-            if (pluginConfFile != null) {
-                String msg = "unable to load the conf file " + pluginConfFile.getPath() + ", checking in classpath ...";
-                LOGGER.warn(msg);
-            }
+            String msg = "unable to load the conf file " + pluginConfFile.getPath() + ", checking in classpath ...";
+            LOGGER.warn(msg);
 
             confFile = getClass().getResource("tools/" + dataSetName + CONFIG_FILE_SUFFIX);
             if (confFile == null) {
-                String msg = "unable to load the conf file " + "tools/" + dataSetName + CONFIG_FILE_SUFFIX;
+                msg = "unable to load the conf file " + "tools/" + dataSetName + CONFIG_FILE_SUFFIX;
                 LOGGER.error(msg);
                 throw new ModuleException(msg);
             }

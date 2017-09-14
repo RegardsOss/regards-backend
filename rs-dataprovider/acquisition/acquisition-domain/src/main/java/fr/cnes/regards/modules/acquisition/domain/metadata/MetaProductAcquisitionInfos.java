@@ -22,6 +22,8 @@ package fr.cnes.regards.modules.acquisition.domain.metadata;
  * Cette classe regroupe les informations d'acquisisiton communes à la fourniture
  *  
  * @author Christophe Mertz
+ * 
+ * TODO CMZ util ?
  *
  */
 public class MetaProductAcquisitionInfos {

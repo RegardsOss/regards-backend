@@ -18,9 +18,24 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.util.HashSet;
-import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotBlank;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
@@ -28,48 +43,71 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  * @author Christophe Mertz
  *
  */
-public class Product {
+@Entity
+@Table(name = "t_product")
+public class Product implements IIdentifiable<Long> {
 
     /**
-     * Prefixe d'identification des fichiers descripteurs de fichier
+     * A constant used to define a {@link String} constraint with length 64
      */
-    public static final String IDENT_PRODUCT_PREFIX = "PRODUCT_";
+    private static final int MAX_STRING_LENGTH = 64;
 
     /**
-     * status du produit
+     * Maximum enum size constraint with length 16
      */
-    private ProductStatus status_;
+    private static final int MAX_ENUM_LENGTH = 16;
+
+    //    /**
+    //     * TODO CMZ à virer
+    //     * Prefixe d'identification des fichiers descripteurs de fichier
+    //     */
+    //    public static final String IDENT_PRODUCT_PREFIX = "PRODUCT_";
 
     /**
-     * nom du produit
+     * Unique id
      */
+    @Id
+    @SequenceGenerator(name = "ProductSequence", initialValue = 1, sequenceName = "seq_product")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ProductSequence")
+    protected Long id;
+
+    /**
+     * The {@link Product} status
+     */
+    @Column(name = "status", length = MAX_ENUM_LENGTH)
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;
+
+    /**
+     * The product name
+     */
+    @NotBlank
+    @Column(name = "product_name", length = MAX_STRING_LENGTH)
     private String productName;
 
     /**
-     * identifiant interne du produit<br>
-     * null si le produit n'existe pas en base
+     * The {@link MetaProduct}
      */
-    private Integer productId = null;
-
-    /**
-     * type de produit
-     */
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_file_id"), updatable = false)
     private MetaProduct metaProduct;
 
-    /**
-     * numero de version du produit
-     */
-    private int version;
+    //    /**
+    //     * numero de version du produit
+    //     */
+    //    private int version;
 
     //    /**
     //     * nom du fichier de meta donnee du produit
     //     */
     //    private DescriptorFile metaDataFileName_;
 
-    /**
-     * Liste des fichiers composant les produit
-     */
-    private Set<AcquisitionFile> fileList = new HashSet<>();
+    //    /**
+    //     * Liste des fichiers composants les produit
+    //     * TODO CMZ util ?
+    //     */
+    //    private Set<AcquisitionFile> fileList = new HashSet<>();
 
     /**
      * Default constructor
@@ -77,88 +115,53 @@ public class Product {
     public Product() {
     }
 
-    /**
-     * @return Boolean
-     */
-    public Boolean isStoreInStaff() {
-        return null;
-    }
-
-    /**
-     * Ajoute un fichier a la liste.
-     * 
-     * @param pFile
-     *            : un fichier
-     * @since 1.0
-     */
-    public void addFileToProduct(AcquisitionFile pFile) {
-
-        fileList.add(pFile);
-    }
-
-    /**
-     * 
-     * Methode surchargee<br>
-     * Deux produits ayant des identifiants identiques sont consideres comme egaux.
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     * @since 1.0
-     */
     @Override
-    public boolean equals(Object obj) {
-        Product aProduct = (Product) obj;
-        return productId.equals(aProduct.getProductId());
+    public Long getId() {
+        return id;
     }
 
-    public Set<AcquisitionFile> getAcquisitionFile() {
-        return fileList;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void addAcquisitionFile(AcquisitionFile acquisitionFile) {
-        fileList.add(acquisitionFile);
+    public ProductStatus getStatus() {
+        return status;
     }
 
-    public void setAcquisitionFile(Set<AcquisitionFile> acquisitionFiles) {
-        fileList = acquisitionFiles;
-    }
-
-    public MetaProduct getMetaProduct() {
-        return metaProduct;
+    public void setStatus(ProductStatus status) {
+        this.status = status;
     }
 
     public String getProductName() {
         return productName;
     }
 
-    public ProductStatus getStatus() {
-        return status_;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
-    public int getVersion() {
-        return version;
+    public MetaProduct getMetaProduct() {
+        return metaProduct;
     }
 
-    public void setMetaProduct(MetaProduct pMetaProduct) {
-        metaProduct = pMetaProduct;
+    public void setMetaProduct(MetaProduct metaProduct) {
+        this.metaProduct = metaProduct;
     }
 
-    public void setProductName(String pProductName) {
-        productName = pProductName;
-    }
+    //    public void addFileToProduct(AcquisitionFile pFile) {
+    //        fileList.add(pFile);
+    //    }
 
-    public void setStatus(ProductStatus pStatus) {
-        status_ = pStatus;
-    }
+    //    public Set<AcquisitionFile> getAcquisitionFile() {
+    //        return fileList;
+    //    }
+    //
+    //    public void addAcquisitionFile(AcquisitionFile acquisitionFile) {
+    //        fileList.add(acquisitionFile);
+    //    }
+    //
+    //    public void setAcquisitionFile(Set<AcquisitionFile> acquisitionFiles) {
+    //        fileList = acquisitionFiles;
+    //    }
 
-    public void setVersion(int pVersion) {
-        version = pVersion;
-    }
-
-    public Integer getProductId() {
-        return productId;
-    }
-
-    public void setProductId(Integer pProductId) {
-        productId = pProductId;
-    }
 }

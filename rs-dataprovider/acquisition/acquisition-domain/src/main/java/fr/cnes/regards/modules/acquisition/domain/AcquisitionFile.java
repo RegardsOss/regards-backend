@@ -18,104 +18,171 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotBlank;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 
 /**
- * instance d'un MetaFile. Un enregistrement de File est créé dés que l'on détecte l'arrivée d'un fichier sur un des
- * repertoires d'acquisition. Ensuite les informations sont renseignees au fur et a mesure de l'application des
- * traitements sur ce fichier.
+ * This class represents a {@link MetaFile} instance.<br>
+ * A data file is detected by a plugin {@link IAcquisitionScanPlugin}. 
  * 
  * @author Christophe Mertz
  *
  */
-public class AcquisitionFile {
+@Entity
+@Table(name = "t_acquisition_file")
+public class AcquisitionFile implements IIdentifiable<Long> {
 
     /**
-     * longueur maximum d'un nom de fichier
+     * Maximum file name size constraint with length 255
      */
-    public static int MAX_FILE_NAME_LENGTH = 126;
+    private static final int MAX_FILE_NAME_LENGTH = 255;
 
     /**
-     * nom du fichier (max 63 chars)
+     * Maximum enum size constraint with length 16
      */
-    protected String fileName_;
+    private static final int MAX_ENUM_LENGTH = 16;
 
     /**
-     * identifiant dans le catalogue de diffusion
+     * Unique id
      */
-    protected String nodeIdentifier_;
+    @Id
+    @SequenceGenerator(name = "ChainSequence", initialValue = 1, sequenceName = "seq_chain")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChainSequence")
+    protected Long id;
 
     /**
-     * identifiant interne du fichier
+     * The data file name
      */
-    protected Integer fileId_;
+    @NotBlank
+    @Column(name = "label", length = MAX_FILE_NAME_LENGTH, nullable = false)
+    protected String fileName;
+
+    //    /**
+    //     * identifiant dans le catalogue de diffusion
+    //     * TODO CMZ util ?
+    //     */
+    //    protected String nodeIdentifier_;
 
     /**
-     * taille du fichier en octets
+     * The data file's size in octets
      */
-    protected Long size_;
+    @Column(name = "file_size")
+    protected Long size;
 
     /**
-     * statut du fichier
+     * The data file's status
      */
-    protected AcquisitionFileStatus status_;
+    @Column(name = "status", length = MAX_ENUM_LENGTH)
+    @Enumerated(EnumType.STRING)
+    protected AcquisitionFileStatus status;
+
+    // TODO CMZ util ?
+    //    protected Product product;
 
     /**
-     * produit auquel est rattache le fichier
+     * The {@link MetaFile}
      */
-    protected Product product_;
+    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "meta_file_id", foreignKey = @ForeignKey(name = "fk_meta_file_id"), nullable = true,
+            updatable = false)
+    protected MetaFile metaFile;
 
-    /**
-     * type de fichier
-     */
-    protected MetaFile metaFile_;
-
-    /**
-     * numero de version du fichier
-     */
-    protected int version_;
+    //    /**
+    //     * numero de version du fichier
+    //     */
+    //    protected int version_;
 
     /**
      * informations sur l'acquisition de ce fichier
      */
-    protected FileAcquisitionInformations acquisitionInformations_;
+    @Embedded
+    protected FileAcquisitionInformations acquisitionInformations;
+
+    //    /**
+    //     * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
+    //     */
+    //    protected int catalogueUpdateProcessList_;
 
     /**
-     * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
+     * Processing state of the data file
      */
-    protected int catalogueUpdateProcessList_;
+    @Column(name = "error", length = MAX_ENUM_LENGTH)
+    @Enumerated(EnumType.STRING)
+    protected ErrorType error;
 
     /**
-     * etat du traitement du fichier
+     * Data file asquisition date
      */
-    protected ErrorType errorType_;
+    @Column(name = "acquisition_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    protected OffsetDateTime acqDate;
 
     /**
-     * Date a laquelle le process a traite le fichier
+     * Data file checksum
      */
-    protected Date dateTraitement_;
+    @Column(name = "check_sum")
+    protected String checkSum = null;
 
     /**
-     * Signature MD5 du fichier
+     * Algorithm used to calculate data file checksum
      */
-    protected String fileMD5Signature_ = null;
+    @Column(name = "check_sum_algo")
+    protected String checkSumAlgo = null;
 
     /**
-     * constructeur par defaut, il est necessaire pour pouvoir l'instancier dans le digester
-     * 
-     * @since 1.0
+     * Default constructor
      */
     public AcquisitionFile() {
         super();
+    }
+
+    /**
+     * permet de dupliquer l'objet
+     * TODO CMZ : util ?
+     */
+    public Object clone() {
+        AcquisitionFile file = new AcquisitionFile();
+        file.setAcqDate(acqDate);
+        file.setError(error);
+        file.setId(id);
+        file.setFileName(fileName);
+        // TODO CMZ : bof pas terrible ce clone avec le même metaFile
+        file.setMetaFile(metaFile);
+        file.setSize(size);
+        file.setCheckSum(checkSum);
+        file.setCheckSumAlgo(checkSumAlgo);
+        return file;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fileId_ == null) ? 0 : fileId_.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
@@ -128,237 +195,183 @@ public class AcquisitionFile {
         if (getClass() != obj.getClass())
             return false;
         AcquisitionFile other = (AcquisitionFile) obj;
-        if (fileId_ == null) {
-            if (other.fileId_ != null)
+        if (id == null) {
+            if (other.id != null)
                 return false;
-        } else if (!fileId_.equals(other.fileId_))
+        } else if (!id.equals(other.id))
             return false;
         return true;
     }
 
-    /**
-     * indique si le fichier est un doublon grace au status du fichier
-     */
-    public boolean isDuplicate() {
-        boolean result = false;
-        if (status_.equals(AcquisitionFileStatus.DUPLICATE)) {
-            result = true;
-        }
-        return result;
+    @Override
+    public Long getId() {
+        return id;
     }
 
-    /**
-     * Methode verifiant si le fichier passe en parametre et le fichier courant sont des doublons.<br>
-     * Un fichier ne peut etre un doublon que s'il est dans un etat stable : <li>TO_ARCHIVE <li>ARCHIVED <li>
-     * IN_CATALOGUE <li>TAR_CURRENT <li>ACQUIRED
-     * 
-     * @param pFile
-     *            le fichier doublon suppose
-     * @return
-     * @since 1.0
-     */
-
-    public boolean isADoublon(AcquisitionFile pFile) {
-        boolean isADoublon = false;
-        if (pFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE) || pFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED)
-                || pFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE)
-                || pFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT)
-                || pFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED)) {
-            if (pFile.getFileName().equals(fileName_) && (pFile.getVersion() == version_)
-                    && (!pFile.getStatus().equals(status_))) {
-                isADoublon = true;
-            } else {
-                isADoublon = false;
-            }
-        } else {
-            isADoublon = false;
-        }
-        return isADoublon;
-    }
-
-    /**
-     * Methode comparant les nom
-     * 
-     * @param pFile
-     * @return
-     * @since 1.0
-     */
-    public boolean isSameFile(AcquisitionFile pFile) {
-        return (pFile.getFileName().equals(fileName_));
-    }
-
-    /**
-     * permet de dupliquer l'objet
-     */
-    public Object clone() {
-        AcquisitionFile file = new AcquisitionFile();
-        file.setVersion(version_);
-        file.setDateTraitement(dateTraitement_);
-        file.setErrorType(errorType_);
-        file.setFileId(fileId_);
-        file.setFileName(fileName_);
-        file.setProduct(product_);
-        file.setMetaFile(metaFile_);
-        file.setProduct(product_);
-        file.setSize(size_);
-        file.setNodeIdentifier(nodeIdentifier_);
-        file.setFileMD5Signature(fileMD5Signature_);
-        return file;
-    }
-
-    /**
-     * Indique si le fichier doit etre supprime de l'archive locale.
-     */
-    public boolean isDeletedFromLocalArchive() {
-        return false;
-        //        return (ARCHIVE_TYPE_BOTH.equalsIgnoreCase(archiveType_))
-        //                || (ARCHIVE_TYPE_LOCAL.equalsIgnoreCase(archiveType_));
-    }
-
-    /**
-     * Indique si le fichier doit etre supprime du STAF
-     */
-    public boolean isDeletedFromStafArchive() {
-        return false;
-    }
-
-    /**
-     * Indique si le fichier est archive au STAF
-     */
-    public boolean isStoredInStafArchive() {
-        return false;
-    }
-
-    /**
-     * indique si le ssaltoFile se trouve dans un tar courant ou non.
-     */
-    public boolean isInCurrentTar() {
-        boolean result = false;
-        //        if (status_.equals(AcquisitionFileStatus.TAR_CURRENT)) {
-        //            result = true;
-        //        }
-        return result;
-    }
-
-    /**
-     * Enregistre une anomalie sur le fichier
-     * 
-     * @param pError
-     */
-    public void setAcqErrorForProcess() {
-        getAcquisitionInformations().setError(ErrorType.ERROR);
-    }
-
-    public FileAcquisitionInformations getAcquisitionInformations() {
-        return acquisitionInformations_;
-    }
-
-    public void setAcquisitionInformations(FileAcquisitionInformations pAcquisitionInformations) {
-        acquisitionInformations_ = pAcquisitionInformations;
-    }
-
-    public int getCatalogueUpdateProcessList() {
-        return catalogueUpdateProcessList_;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFileName() {
-        return fileName_;
+        return fileName;
     }
 
-    public MetaFile getMetaFile() {
-        return metaFile_;
-    }
-
-    public Product getProduct() {
-        return product_;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public Long getSize() {
-        return size_;
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
     }
 
     public AcquisitionFileStatus getStatus() {
-        return status_;
+        return status;
     }
 
-    public int getVersion() {
-        return version_;
+    public void setStatus(AcquisitionFileStatus status) {
+        this.status = status;
     }
 
-    public void setCatalogueUpdateProcessList(int pCatalogueUpdateProcessList) {
-        catalogueUpdateProcessList_ = pCatalogueUpdateProcessList;
+    //    /**
+    //     * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
+    //     */
+    //    protected int catalogueUpdateProcessList_;
+
+    public MetaFile getMetaFile() {
+        return metaFile;
     }
 
-    public void setFileName(String pFileName) {
-        fileName_ = pFileName;
+    public void setMetaFile(MetaFile metaFile) {
+        this.metaFile = metaFile;
     }
 
-    public void setMetaFile(MetaFile pMetaFile) {
-        metaFile_ = pMetaFile;
+    public ErrorType getError() {
+        return error;
     }
 
-    public void setProduct(Product pProduct) {
-        product_ = pProduct;
+    public void setError(ErrorType error) {
+        this.error = error;
     }
 
-    public void setSize(Long pSize) {
-        size_ = pSize;
+    public OffsetDateTime getAcqDate() {
+        return acqDate;
     }
 
-    public void setStatus(AcquisitionFileStatus pStatus) {
-        status_ = pStatus;
+    public void setAcqDate(OffsetDateTime acqDate) {
+        this.acqDate = acqDate;
     }
 
-    public void setVersion(int pVersion) {
-        version_ = pVersion;
+    public String getCheckSum() {
+        return checkSum;
     }
 
-    public Integer getFileId() {
-        return fileId_;
+    public void setCheckSum(String checkSum) {
+        this.checkSum = checkSum;
     }
 
-    public void setFileId(Integer pFileId) {
-        fileId_ = pFileId;
+    public String getCheckSumAlgo() {
+        return checkSumAlgo;
     }
 
-    //    public DescriptorFile getMetaDataFileName() {
-    //        return metaDataFileName;
+    public void setCheckSumAlgo(String chackSumAlgo) {
+        this.checkSumAlgo = chackSumAlgo;
+    }
+
+    public FileAcquisitionInformations getAcquisitionInformations() {
+        return acquisitionInformations;
+    }
+
+    public void setAcquisitionInformations(FileAcquisitionInformations acquisitionInformations) {
+        this.acquisitionInformations = acquisitionInformations;
+    }
+
+    //    /**
+    //     * indique si le fichier est un doublon grace au status du fichier
+    //     */
+    //    public boolean isDuplicate() {
+    //        boolean result = false;
+    //        if (status.equals(AcquisitionFileStatus.DUPLICATE)) {
+    //            result = true;
+    //        }
+    //        return result;
     //    }
     //
-    //    public void setMetaDataFileName(DescriptorFile pMetaDataFileName) {
-    //        metaDataFileName_ = pMetaDataFileName;
+    //    /**
+    //     * Methode verifiant si le fichier passe en parametre et le fichier courant sont des doublons.<br>
+    //     * Un fichier ne peut etre un doublon que s'il est dans un etat stable : <li>TO_ARCHIVE <li>ARCHIVED <li>
+    //     * IN_CATALOGUE <li>TAR_CURRENT <li>ACQUIRED
+    //     * 
+    //     * @param pFile
+    //     *            le fichier doublon suppose
+    //     * @return
+    //     * @since 1.0
+    //     */
+    //
+    //    public boolean isADoublon(AcquisitionFile pFile) {
+    //        boolean isADoublon = false;
+    //        if (pFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE) || pFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED)
+    //                || pFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE)
+    //                || pFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT)
+    //                || pFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED)) {
+    //            if (pFile.getFileName().equals(fileName) && (pFile.getVersion() == version_)
+    //                    && (!pFile.getStatus().equals(status))) {
+    //                isADoublon = true;
+    //            } else {
+    //                isADoublon = false;
+    //            }
+    //        } else {
+    //            isADoublon = false;
+    //        }
+    //        return isADoublon;
     //    }
-
-    public ErrorType getErrorType() {
-        return errorType_;
-    }
-
-    public void setErrorType(ErrorType pErrorType) {
-        errorType_ = pErrorType;
-    }
-
-    public Date getDateTraitement() {
-        return dateTraitement_;
-    }
-
-    public void setDateTraitement(Date pDateTraitement) {
-        dateTraitement_ = pDateTraitement;
-    }
-
-    public String getNodeIdentifier() {
-        return nodeIdentifier_;
-    }
-
-    public void setNodeIdentifier(String pEntityId) {
-        nodeIdentifier_ = pEntityId;
-    }
-
-    public String getFileMD5Signature() {
-        return fileMD5Signature_;
-    }
-
-    public void setFileMD5Signature(String fileMD5Signature) {
-        fileMD5Signature_ = fileMD5Signature;
-    }
+    //
+    //    /**
+    //     * Methode comparant les nom
+    //     * 
+    //     * @param pFile
+    //     * @return
+    //     * @since 1.0
+    //     */
+    //    public boolean isSameFile(AcquisitionFile pFile) {
+    //        return (pFile.getFileName().equals(fileName));
+    //    }
+    //
+    //    /**
+    //     * Indique si le fichier doit etre supprime de l'archive locale.
+    //     */
+    //    public boolean isDeletedFromLocalArchive() {
+    //        return false;
+    //        //        return (ARCHIVE_TYPE_BOTH.equalsIgnoreCase(archiveType_))
+    //        //                || (ARCHIVE_TYPE_LOCAL.equalsIgnoreCase(archiveType_));
+    //    }
+    //
+    //    /**
+    //     * Indique si le fichier doit etre supprime du STAF
+    //     */
+    //    public boolean isDeletedFromStafArchive() {
+    //        return false;
+    //    }
+    //
+    //    /**
+    //     * Indique si le fichier est archive au STAF
+    //     */
+    //    public boolean isStoredInStafArchive() {
+    //        return false;
+    //    }
+    //
+    //    /**
+    //     * indique si le ssaltoFile se trouve dans un tar courant ou non.
+    //     */
+    //    public boolean isInCurrentTar() {
+    //        boolean result = false;
+    //        //        if (status.equals(AcquisitionFileStatus.TAR_CURRENT)) {
+    //        //            result = true;
+    //        //        }
+    //        return result;
+    //    }
 
 }

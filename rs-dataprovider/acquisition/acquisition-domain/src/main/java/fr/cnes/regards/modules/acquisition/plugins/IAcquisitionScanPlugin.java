@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
+import java.util.Set;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 
 /**
  * @author Christophe Mertz
@@ -27,4 +30,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 @PluginInterface(description = "Plugin to detect file to acquire")
 public interface IAcquisitionScanPlugin {
 
+    public Set<AcquisitionFile> getAcquisitionFiles();
+    
 }

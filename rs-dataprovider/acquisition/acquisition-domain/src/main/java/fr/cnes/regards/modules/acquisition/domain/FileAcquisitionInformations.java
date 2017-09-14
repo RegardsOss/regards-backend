@@ -18,97 +18,74 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.SupplyDirectory;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
 /**
  * 
  * @author Christophe Mertz
  * 
  */
-
+@Embeddable
 public class FileAcquisitionInformations extends FileProcessInformations {
 
     /**
      * Repertoire d'acquisition du fichier
-     * 
-     * @since 1.0
      */
-    private String acquisitionDirectory_ = null;
+    @Column(name="acquisition_directory")
+    private String acquisitionDirectory = null;
 
-    /**
-     * Supply directory utilise pour acquerir le fichier. Cet attribut n'est utilise que pour l'acquisition de fichiers
-     * afin de mettre a jour le supply dir utilise pour l'acquisition du fichier. Afin de recuperer le repertoire
-     * d'acquisition du fichier, utiliser l'attribut acquisitionDirectory_.
-     */
-    private SupplyDirectory supplyDirectory_ = null;
+    //    /**
+    //     * ChainGeneration directory utilise pour acquerir le fichier. Cet attribut n'est utilise que pour l'acquisition de fichiers
+    //     * afin de mettre a jour le supply dir utilise pour l'acquisition du fichier. Afin de recuperer le repertoire
+    //     * d'acquisition du fichier, utiliser l'attribut acquisitionDirectory_.
+    //     * TODO CMZ util ?
+    //     */
+    //    private ScanDirectory supplyDirectory = null;
 
     /**
      * Nom du repertoire de travail contenant le fichier associe<br>
      * Ce repertoire de travail est initialise lors de la detection d'un nouveau fichier.
-     * 
-     * @since 1.3
+     * TODO CMZ util ?
      */
-    private String workingDirectory_ = null;
+    @Column(name="working_directory")
+    private String workingDirectory = null;
+
+    //    /**
+    //     * informations sur le processus qui a acquis le fichier
+    //     */
+    //    private AcquisitionProcessInformations processInformations_ = null;
 
     /**
-     * informations sur le processus qui a acquis le fichier
-     */
-//    private AcquisitionProcessInformations processInformations_ = null;
-
-    /**
-     * constructeur par defaut
-     * 
-     * @since 1.0
+     * Default constructor
      * 
      */
     public FileAcquisitionInformations() {
         super();
     }
 
-    // GETTERS AND SETTERS
-
-    public String getWorkingDirectory() {
-        return workingDirectory_;
-    }
-
-    /**
-     * Initialise le repertoire de travail du fichier<br>
-     * 
-     * @return Repertoire de travail contenant le fichier
-     * @since 1.3
-     */
-    public void setWorkingDirectory(String pWorkingDir) {
-        workingDirectory_ = pWorkingDir;
-    }
-
     public String getAcquisitionDirectory() {
-        return acquisitionDirectory_;
+        return acquisitionDirectory;
     }
 
-    //    public AcquisitionProcessInformations getProcessInformations() {
-    //        return processInformations_;
+    public void setAcquisitionDirectory(String acquisitionDirectory) {
+        this.acquisitionDirectory = acquisitionDirectory;
+    }
+
+    //    public ScanDirectory getSupplyDirectory() {
+    //        return supplyDirectory;
+    //    }
+    //
+    //    public void setSupplyDirectory(ScanDirectory supplyDirectory) {
+    //        this.supplyDirectory = supplyDirectory;
     //    }
 
-    public void setAcquisitionDirectory(String pAcquisitiondirectory) {
-        acquisitionDirectory_ = pAcquisitiondirectory;
+    public String getWorkingDirectory() {
+        return workingDirectory;
     }
 
-//    public void setProcessInformations(AcquisitionProcessInformations pProcessInformations) {
-//        processInformations_ = pProcessInformations;
-//    }
-
-    /**
-     * Cet attribut n'est utilise que pour l'acquisition de fichiers afin de mettre a jour le supply dir utilise pour
-     * l'acquisition du fichier. Afin de recuperer le repertoire d'acquisition du fichier, utiliser l'attribut
-     * acquisitionDirectory_.
-     * 
-     * @return
-     */
-    public SupplyDirectory getSupplyDirectory() {
-        return supplyDirectory_;
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
     }
 
-    public void setSupplyDirectory(SupplyDirectory supplyDirectory) {
-        supplyDirectory_ = supplyDirectory;
-    }
 }

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.domain.metamodel;
 
 /**
- * Cette classe modelise les enumeres definissant les types d'entite.
+ * Cette classe modelise les enumeres definissant les types d'entite
  * 
  * @author Christophe Mertz
  *

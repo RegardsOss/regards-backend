@@ -49,9 +49,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.SupplyDirectory;
+import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
@@ -332,11 +332,10 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         AcquisitionFile ssaltoFile = new AcquisitionFile();
         ssaltoFile.setFileName(aFile.getName());
 
-        SupplyDirectory dir = new SupplyDirectory();
-        dir.setSupplyDir(aFile.getParent());
+        ScanDirectory dir = new ScanDirectory();
+        dir.setScanDir(aFile.getParent());
 
         FileAcquisitionInformations acqInfos = new FileAcquisitionInformations();
-        acqInfos.setSupplyDirectory(dir);
         acqInfos.setWorkingDirectory(aFile.getParent());
         acqInfos.setAcquisitionDirectory(aFile.getParent());
 

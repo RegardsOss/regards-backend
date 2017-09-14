@@ -43,9 +43,9 @@ public class SetCryosat2Doris1bPoeCddisCycle implements ICalculationClass {
         String cycle = "";
         SetCryosat2Doris1bPoeCddisDate calculationDate = new SetCryosat2Doris1bPoeCddisDate();
         Date date = calculationDate.calculate(value, type);
-        OffsetDateTime odt = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
-
+        
         if (date != null) {
+            OffsetDateTime odt = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
             TranslatedFromCycleFileFinder finder = new TranslatedFromCycleFileFinder();
             finder.setAttributProperties(properties);
 

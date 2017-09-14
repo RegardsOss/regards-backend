@@ -24,8 +24,26 @@ package fr.cnes.regards.modules.acquisition.domain;
  *
  */
 public enum ProductStatus {
-    INIT, // The product's is scanned
-    COMPLETED, // The product's check is OK 
-    ACQUIRING, // The product is currently acquiring
-    ERROR // The product is in error 
+    /**
+     * The {@link Product} is scanned
+     */
+    INIT,
+    /**
+     * The {@link Product} check is OK
+     * TODO CMZ util ?
+     */
+    COMPLETED,
+    /**
+     * The {@link Product} is currently acquiring
+     */
+    ACQUIRING,
+    /**
+     * The {@link Product} is in error
+     */
+    ERROR;
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
 }

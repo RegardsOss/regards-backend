@@ -18,120 +18,125 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * classe qui enumere les etat d'erreur pour les fichiers traites par les processus.
  * 
  * @author Christophe Mertz
  * 
+ * 
  */
 
-public class ErrorType {
+public enum ErrorType {
 
     /**
-     * valeur de l'erreur, cette valeur correspond a la valeur en base
-     * 
-     * @since 1.0
+     * process OK
      */
-    private int value_;
-
+    OK,
     /**
-     * chaine de caractere explicitant la valeur
-     * 
-     * @since 1.0
+     * process warning
      */
-    private final String meaning_;
-
-    private static Map<Integer, ErrorType> hashMap_;
-
-    public static final ErrorType OK = new ErrorType(1, "OK");
-
-    public static final ErrorType WARNING = new ErrorType(2, "WARNING");
-
-    public static final ErrorType ERROR = new ErrorType(3, "ERROR");
-
+    WARNING,
     /**
-     * constructeur prive
-     * 
-     * @param pValue
-     * @param pMeaning
-     * @since 1.0
-     * 
+     * process error
      */
-    private ErrorType(int pValue, String pMeaning) {
-        value_ = pValue;
-        meaning_ = pMeaning;
-        if (hashMap_ == null) {
-            hashMap_ = new HashMap<Integer, ErrorType>();
-        }
-        hashMap_.put(new Integer(pValue), this);
-    }
-
-    /**
-     * Parse
-     * 
-     * @param pValue
-     * @return ErrorType
-     * @since 1.1
-     */
-    public static ErrorType parse(Integer pValue) {
-        return hashMap_.get(pValue);
-    }
-
-    /**
-     * Constructeur public
-     * 
-     * @param meaning_
-     * @since 1.1
-     */
-    public ErrorType(String pMeaning) {
-        meaning_ = pMeaning;
-        if ("OK".equals(meaning_)) {
-            value_ = OK.value_;
-        } else if ("WARNING".equals(meaning_)) {
-            value_ = WARNING.value_;
-        } else if ("ERROR".equals(meaning_)) {
-            value_ = ERROR.value_;
-        } else {
-            value_ = 0;
-        }
-    }
+    ERROR;
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((meaning_ == null) ? 0 : meaning_.hashCode());
-        result = prime * result + value_;
-        return result;
+    public String toString() {
+        return this.name();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ErrorType other = (ErrorType) obj;
-        if (meaning_ == null) {
-            if (other.meaning_ != null)
-                return false;
-        } else if (!meaning_.equals(other.meaning_))
-            return false;
-        if (value_ != other.value_)
-            return false;
-        return true;
-    }
-
-    public String getMeaning() {
-        return meaning_;
-    }
-
-    public int getValue() {
-        return value_;
-    }
+    //    /**
+    //     * valeur de l'erreur, cette valeur correspond a la valeur en base
+    //     */
+    //    private int value;
+    //
+    //    /**
+    //     * chaine de caractere explicitant la valeur
+    //     */
+    //    private final String meaning;
+    //
+    //    private static Map<Integer, ErrorType> hashMap = new HashMap<Integer, ErrorType>();
+    //
+    //    public static final ErrorType OK = new ErrorType(1, "OK");
+    //
+    //    public static final ErrorType WARNING = new ErrorType(2, "WARNING");
+    //
+    //    public static final ErrorType ERROR = new ErrorType(3, "ERROR");
+    //
+    //    /**
+    //     * constructeur prive
+    //     * 
+    //     * @param newValue
+    //     * @param newMeaning
+    //     * 
+    //     */
+    //    private ErrorType(int newValue, String newMeaning) {
+    //        value = newValue;
+    //        meaning = newMeaning;
+    //        hashMap.put(new Integer(newValue), this);
+    //    }
+    //
+    //    /**
+    //     * Parse
+    //     * 
+    //     * @param newValue
+    //     * @return ErrorType
+    //     */
+    //    public static ErrorType parse(Integer newValue) {
+    //        return hashMap.get(newValue);
+    //    }
+    //
+    //    /**
+    //     * Constructeur public
+    //     * 
+    //     * @param newMeaning
+    //     */
+    //    public ErrorType(String newMeaning) {
+    //        meaning = newMeaning;
+    //        if ("OK".equals(meaning)) {
+    //            value = OK.value;
+    //        } else if ("WARNING".equals(meaning)) {
+    //            value = WARNING.value;
+    //        } else if ("ERROR".equals(meaning)) {
+    //            value = ERROR.value;
+    //        } else {
+    //            value = 0;
+    //        }
+    //    }
+    //
+    //    @Override
+    //    public int hashCode() {
+    //        final int prime = 31;
+    //        int result = 1;
+    //        result = prime * result + ((meaning == null) ? 0 : meaning.hashCode());
+    //        result = prime * result + value;
+    //        return result;
+    //    }
+    //
+    //    @Override
+    //    public boolean equals(Object obj) {
+    //        if (this == obj)
+    //            return true;
+    //        if (obj == null)
+    //            return false;
+    //        if (getClass() != obj.getClass())
+    //            return false;
+    //        ErrorType other = (ErrorType) obj;
+    //        if (meaning == null) {
+    //            if (other.meaning != null)
+    //                return false;
+    //        } else if (!meaning.equals(other.meaning))
+    //            return false;
+    //        if (value != other.value)
+    //            return false;
+    //        return true;
+    //    }
+    //
+    //    public String getMeaning() {
+    //        return meaning;
+    //    }
+    //
+    //    public int getValue() {
+    //        return value;
+    //    }
 }

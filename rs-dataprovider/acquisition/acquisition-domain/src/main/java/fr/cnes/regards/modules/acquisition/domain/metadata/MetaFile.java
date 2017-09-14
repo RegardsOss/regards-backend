@@ -18,69 +18,105 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 
 /**
- * This class represents a file type.
+ * This class represents a data file feature
  * 
  * @author Christophe Mertz
  *
  */
 @Entity
-public class MetaFile {
+@Table(name = "t_meta_file")
+public class MetaFile implements IIdentifiable<Long> {
 
     /**
-     * indique si c'est un fichier obligatoire (true)
+     * Maximum file size name constraint with length 255
      */
+    private static final int MAX_FILE_NAME_LENGTH = 255;
+
+    @Id
+    @SequenceGenerator(name = "MetaFileSequence", initialValue = 1, sequenceName = "seq_meta_file")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MetaFileSequence")
+    protected Long id;
+
+    /**
+     * <code>true</code> if the data file is mandatory, <code>false</code> otherwise
+     */
+    @NotNull
+    @Column(name = "mandatory")
     private Boolean mandatory;
 
     /**
-     * identifiant interne du type de fichier
+     * Represents the data file name pattern 
      */
-    private Integer metaFileId;
-
-    /**
-     * pattern permettant d'identifier les fichiers de ce type de fichier. (max 100 chars)
-     */
+    @NotBlank
+    @Column(name = "pattern")
     private String fileNamePattern;
 
     /**
-     * La liste des repertoire à scanner pour ce type de fichiers (max 250 chars)
+     * A {@link Set} of {@link ScanDirectory} to scan and search data files corresponding to the file name pattern
+     * max chars 250
      */
-    private SupplyDirectory[] scanDirectories;
+    @OneToMany
+    @JoinColumn(name = "directory_id", foreignKey = @ForeignKey(name = "fk_acq_directory"))
+    private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**
-     * nom du type de fichier (max chars 100)
+     * The data file name found
+     * max chars 100
+     *  TODO CMZ util ? le nom du fichier est dans {@link AcquisitionFile}
      */
-    private String name_;
+    @Column(name = "file_name", length = MAX_FILE_NAME_LENGTH)
+    private String fileName;
 
     /**
-     * repertoire dans lequel on depose les fichiers invalides pour ce type de fichiers
+     * A folder used to move invalid data file
      */
+    @Column(name = "invalid_folder_name", length = MAX_FILE_NAME_LENGTH)
     private String invalidFolder;
 
-    /**
-     * Le metaProduct auquel il est lié
-     */
-    private MetaProduct metaProduct;
+    //    /**
+    //     * The {@link MetaProduct} 
+    //     */
+    //    private MetaProduct metaProduct;
 
     /**
-     * une chaine de caractere informative sur le type( extension surtour) des fichiers represente par ce MetaFile (
-     * exemple image, jpeg, ascii, binaire, exec...)
+     * A {@link String} corresponding to the data file mime-type
      */
+    @Column(name = "file_type", length = 16)
     private String fileType;
 
     /**
-     * commentaire ajoutes lors de la definition de la fourniture
+     * A comment 
      */
-    private String comments;
+    @Column(name = "comment")
+    @Type(type = "text")
+    private String comment;
 
-    /**
-     * Version
-     */
-    private Integer version;
+    //    /**
+    //     * Version
+    //     */
+    //    private Integer version;
 
     /**
      * Default constructor
@@ -90,16 +126,15 @@ public class MetaFile {
     }
 
     /**
-     * Recupere le repertoire de scan correspondant au type de fichier passe en parametre.
-     * 
-     * @param pMFileId
-     * @return
+     * Get a {@link ScanDirectory}
+     * @param supplyDirId the {@link ScanDirectory} identifier 
+     * @return a {@link ScanDirectory}
      */
-    public SupplyDirectory getSupplyDirectory(Integer pMSupplyDirId) {
-        SupplyDirectory supplyDir = null;
-        if (pMSupplyDirId != null) {
-            for (SupplyDirectory element : scanDirectories) {
-                if (pMSupplyDirId.equals(element.getMSupplyDirId())) {
+    public ScanDirectory getSupplyDirectory(Integer supplyDirId) {
+        ScanDirectory supplyDir = null;
+        if (supplyDirId != null) {
+            for (ScanDirectory element : scanDirectories) {
+                if (supplyDirId.equals(element.getId())) {
                     supplyDir = element;
                     break;
                 }
@@ -108,125 +143,104 @@ public class MetaFile {
         return supplyDir;
     }
 
-    /**
-     * Compare 2 types de fichier
-     * 
-     * @param pMetaFile
-     * @return
-     */
-    public boolean equals(Object pObject) {
-        boolean result = false;
-        if (pObject != null) {
-            result = metaFileId.intValue() == ((MetaFile) pObject).getMetaFileId().intValue();
-        }
-        return result;
+    @Override
+    public Long getId() {
+        return id;
     }
 
-    public int hashCode() {
-        return metaFileId.hashCode();
-    }
-
-    /**
-     * 
-     * Methode surchargee afin d'eviter d'utiliser la methode par defaut qui utilise la methode hashCode qui peut lever
-     * une exception en cas de metaFileId_ null.<br>
-     * Exemple d'utilisation : requete addSupply avec commons.Digester en DEBUG
-     * 
-     * @see java.lang.Object#toString()
-     */
-    public String toString() {
-        return fileNamePattern;
-    }
-
-    // GETTERS AND SETTERS
-    public String getFileNamePattern() {
-        return fileNamePattern;
-    }
-
-    public String getInvalidFolder() {
-        return invalidFolder;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Boolean getMandatory() {
         return mandatory;
     }
 
-    public Integer getMetaFileId() {
-        return metaFileId;
+    public void setMandatory(Boolean mandatory) {
+        this.mandatory = mandatory;
     }
 
-    public MetaProduct getMetaProduct() {
-        return metaProduct;
+    public String getFileNamePattern() {
+        return fileNamePattern;
     }
 
-    public String getName() {
-        return name_;
+    public void setFileNamePattern(String fileNamePattern) {
+        this.fileNamePattern = fileNamePattern;
     }
 
-    public SupplyDirectory[] getScanDirectories() {
+    public Set<ScanDirectory> getScanDirectories() {
         return scanDirectories;
     }
 
-    public void setFileNamePattern(String pFileNamePattern) {
-        fileNamePattern = pFileNamePattern;
+    public void setScanDirectories(Set<ScanDirectory> scanDirectories) {
+        this.scanDirectories = scanDirectories;
     }
 
-    public void setInvalidFolder(String pInvalidFolder) {
-        invalidFolder = pInvalidFolder;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setMandatory(Boolean pMandatory) {
-        mandatory = pMandatory;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
-    public void setMetaFileId(Integer pMetaFileId) {
-        metaFileId = pMetaFileId;
+    public String getInvalidFolder() {
+        return invalidFolder;
     }
 
-    public void setMetaProduct(MetaProduct pMetaProduct) {
-        metaProduct = pMetaProduct;
-    }
-
-    public void setName(String pName) {
-        name_ = pName;
-    }
-
-    public void setScanDirectories(SupplyDirectory[] pScanDirectories) {
-        scanDirectories = pScanDirectories;
-    }
-
-    public String getComments() {
-        return comments;
+    public void setInvalidFolder(String invalidFolder) {
+        this.invalidFolder = invalidFolder;
     }
 
     public String getFileType() {
         return fileType;
     }
 
-    public void setComments(String pComments) {
-        comments = pComments;
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
     }
 
-    public void setFileType(String pFileType) {
-        fileType = pFileType;
+    public String getComment() {
+        return comment;
     }
 
-    public void setSupplyDirList(List<SupplyDirectory> pSupplyDirList) {
-        int i = 0;
-        if (pSupplyDirList != null) {
-            scanDirectories = new SupplyDirectory[pSupplyDirList.size()];
-            for (SupplyDirectory supplyDirectory : pSupplyDirList) {
-                scanDirectories[i] = supplyDirectory;
-                i++;
-            }
-        }
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
-    public Integer getVersion() {
-        return version;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
     }
 
-    public void setVersion(Integer pVersion) {
-        version = pVersion;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MetaFile other = (MetaFile) obj;
+        if (fileNamePattern == null) {
+            if (other.fileNamePattern != null)
+                return false;
+        } else if (!fileNamePattern.equals(other.fileNamePattern))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
     }
+
+    public String toString() {
+        return fileNamePattern;
+    }
+
 }
