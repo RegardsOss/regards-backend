@@ -46,7 +46,9 @@
 		<module>feign-regards-starter</module>
 		<module>security-config</module>
 		<module>oais-starter</module>
-		<module>oais-regards</module>
+        <module>oais-regards</module>
+    	<module>staf</module>
+    	<module>staf-starter</module>
 		<module>geojson-starter</module>
 		<module>geojson-regards</module>
 	</modules>
