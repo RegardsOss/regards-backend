@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -237,6 +238,81 @@ public class TARController {
     }
 
     /**
+     * Delete the files into the given {@link PhysicalTARFile}.<br/>
+     * Files to delete are the filesInTar properties of the {@link PhysicalTARFile}.</br>
+     * If there is no remaining files in the TAR, then this method return true. Else this method return false.
+     * @param pTARFile {@link PhysicalTARFile}
+     * @return Does the all TAR file is deleted ?
+     * @throws STAFTarException
+     */
+    public boolean deleteFilesFromTAR(PhysicalTARFile pTARFile) throws STAFTarException {
+
+        boolean tarFullDeletion = false;
+        //1. Init tmp decompression directory
+        Path decompressDir = Paths
+                .get(getWorkingTarPath(pTARFile.getStafArchiveName(), pTARFile.getStafNode()).toString(),
+                     "." + pTARFile.getLocalFilePath().getFileName().toString());
+        if (!decompressDir.toFile().exists()) {
+            try {
+                Files.createDirectories(decompressDir);
+            } catch (IOException e) {
+                throw new STAFTarException(e);
+            }
+        }
+
+        //2. Check file existance
+        if (!pTARFile.getLocalFilePath().toFile().exists()) {
+            throw new STAFTarException(
+                    String.format("[STAF] Decompression - TAR file %s does not exists", pTARFile.getLocalFilePath()));
+        }
+        //3. Decompress TAR
+        CompressionFacade facade = new CompressionFacade();
+        try {
+            facade.decompress(CompressionTypeEnum.TAR, pTARFile.getLocalFilePath().toFile(), decompressDir.toFile());
+        } catch (CompressionException e) {
+            throw new STAFTarException(String.format("[STAF] Decompression - Error during TAR decompression %s",
+                                                     pTARFile.getLocalFilePath()),
+                    e);
+        }
+
+        // 4. delete files into tar decompress directory
+        for (Entry<Path, Path> fileInTar : pTARFile.getFilesInTar().entrySet()) {
+            try {
+                Path fileToDelete = Paths.get(decompressDir.toString(), fileInTar.getKey().getFileName().toString());
+                if (fileToDelete.toFile().exists()) {
+                    Files.delete(Paths.get(decompressDir.toString(), fileInTar.getKey().getFileName().toString()));
+                }
+            } catch (IOException e) {
+                throw new STAFTarException(e);
+            }
+        }
+
+        // 5. Delete original TAR file
+        try {
+            Files.delete(pTARFile.getLocalFilePath());
+        } catch (IOException e) {
+            throw new STAFTarException(e);
+        }
+
+        // 6. If there is still files in the decompression directory, reconstruct it.
+        try {
+            Set<Path> remainingFiles = Files.walk(decompressDir).filter(f -> f.toFile().isFile()).map(Path::getFileName)
+                    .collect(Collectors.toSet());
+            if (remainingFiles.isEmpty()) {
+                // No remaining files, delete all TAR from STAF.
+                tarFullDeletion = true;
+            } else {
+                // Add remaining files into the replacement TAR to STAF.
+                facade.compress(CompressionTypeEnum.TAR, decompressDir.toFile(), null,
+                                pTARFile.getLocalFilePath().toFile(), null, true, false);
+            }
+        } catch (IOException | CompressionException e) {
+            throw new STAFTarException(e);
+        }
+        return tarFullDeletion;
+    }
+
+    /**
      * Retrieve, if exists, the current pending tar as a {@link PhysicalTARFile}.
      * @param pWorkspaceTarPath {@link Path} of the TAR Workspace.
      * @param pSTAFArchiveName {@link String} Name of the STAF Archive.
@@ -275,10 +351,11 @@ public class TARController {
     private PhysicalTARFile createPendingTarFromDirectory(Path pDirectory, String pSTAFArchiveName, Path pSTAFNode,
             String pDateStr) {
         try {
-            PhysicalTARFile pendingTarFile = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode);
             Date date = DateUtils.parseDate(pDateStr, new String[] { TAR_FILE_NAME_DATA_FORMAT });
             LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
                                                              ZoneId.systemDefault());
+            PhysicalTARFile pendingTarFile = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode,
+                    getLocalTarFileName(dateTime));
             // Set TAR directory path
             pendingTarFile.setLocalTarDirectory(pDirectory);
             // Set futur TAR file path
@@ -322,10 +399,10 @@ public class TARController {
             if (existingPendingTar.isPresent()) {
                 workingTar = existingPendingTar.get();
             } else {
-                workingTar = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode);
                 LocalDateTime date = LocalDateTime.now();
                 String tarName = date.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT));
                 Path newTarDirectory = Paths.get(tarPath.toString(), tarName + "_current");
+                workingTar = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode, getLocalTarFileName(date));
                 Files.createDirectories(newTarDirectory);
                 workingTar.setLocalFilePath(Paths.get(tarPath.toString(), getLocalTarFileName(date)));
                 workingTar.setLocalTarDirectory(newTarDirectory);
@@ -373,8 +450,8 @@ public class TARController {
      * @param pStafNode {@link String} STAF Node
      * @return {@link Path} to the TAR working directory
      */
-    private Path getWorkingTarPath(String pSTAFArciveName, Path pStafNode) {
-        return Paths.get(workspaceDirectory.toString(), pSTAFArciveName, TAR_DIRECTORY, pStafNode.toString());
+    private Path getWorkingTarPath(String pSTAFArchiveName, Path pStafNode) {
+        return Paths.get(workspaceDirectory.toString(), pSTAFArchiveName, TAR_DIRECTORY, pStafNode.toString());
     }
 
 }

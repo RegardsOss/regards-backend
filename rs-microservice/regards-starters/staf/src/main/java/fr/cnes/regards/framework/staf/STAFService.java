@@ -151,11 +151,11 @@ public class STAFService {
      *            Emplacement ou restituer le fichier
      * @throws ArchiveException
      */
-    public void restoreFile(Path pSTAFFilePath, String pDestination) throws STAFException {
+    public void restoreFile(Path pSTAFFilePath, Path pDestination) throws STAFException {
         // Prepare la liste des fichiers a restituer, liste ne contenant qu'un
         // seul fichier.
         final HashMap<String, String> files = new HashMap<>();
-        files.put(pSTAFFilePath.toString(), computeTargetFilename(pSTAFFilePath.toString(), pDestination));
+        files.put(pSTAFFilePath.toString(), computeTargetFilename(pSTAFFilePath.toString(), pDestination.toString()));
         // Pour la restitution d'un fichier unique on utilise la session
         // principale
         mainSession.staffilRetrieve(files);
@@ -561,7 +561,7 @@ public class STAFService {
      *            Cette map ne doit pas etre null
      * @param pDirectory
      *            le repertoire dans lequel ajouter les fichiers.
-     * @return une HashMap contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
+     * @return une liste contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
      */
     public Set<String> archiveFiles(Map<Path, Path> pFileMap, Path pDirectory, boolean pReplace) throws STAFException {
 
@@ -662,12 +662,18 @@ public class STAFService {
         return archivedFilesList;
     }
 
-    public Set<File> deleteFiles(Set<Path> pFileList) throws STAFException {
+    /**
+     * delete ginve {@link Path} files into STAF system.
+     * @param pFileList list {@link Path} of files to delete
+     * @return list of {@link Path} not deleted files.
+     * @throws STAFException
+     */
+    public Set<Path> deleteFiles(Set<Path> pFileList) throws STAFException {
         final List<String> filePaths = mainSession.staffilDelete(pFileList);
-        final Set<File> files = Sets.newHashSet();
+        final Set<Path> files = Sets.newHashSet();
         if (filePaths != null) {
             for (final String path : filePaths) {
-                files.add(new File(path));
+                files.add(Paths.get(path));
             }
         }
         return files;

@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.staf.protocol;
 
-public enum STAFUrlParameter {
+public enum STAFURLParameter {
 
     /**
      * filename parameter of the url to indicate the name of the file associated to the URL into the given TAR.
@@ -16,7 +16,7 @@ public enum STAFUrlParameter {
 
     private String parameterName;
 
-    private STAFUrlParameter(String pParameterName) {
+    private STAFURLParameter(String pParameterName) {
         parameterName = pParameterName;
     }
 

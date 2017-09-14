@@ -45,7 +45,7 @@ public abstract class AbstractPhysicalFile {
     /**
      * STAF File name.
      */
-    private String stafFileName;
+    private final String stafFileName;
 
     /**
      * file status
@@ -65,11 +65,12 @@ public abstract class AbstractPhysicalFile {
      * @param pIsReadyForSTAFTransfer {@link Boolean} Does this file is ready to be transfer to STAF ?
      */
     public AbstractPhysicalFile(STAFArchiveModeEnum pArchiveMode, String pSTAFArchiveName, Path pSTAFNode,
-            PhysicalFileStatusEnum pStatus) {
+            String pSTAFFileName, PhysicalFileStatusEnum pStatus) {
         super();
         archiveMode = pArchiveMode;
         stafArchiveName = pSTAFArchiveName;
         stafNode = pSTAFNode;
+        stafFileName = pSTAFFileName;
         status = pStatus;
     }
 
@@ -85,25 +86,12 @@ public abstract class AbstractPhysicalFile {
     public abstract void setLocalFilePath(Path pLocalFilePath);
 
     /**
-     * Calculate the STAF File path for a new file to store.
-     * @return {@link Path} STAF file path
-     * @throws STAFException
-     */
-    public abstract Path calculateSTAFFilePath() throws STAFException;
-
-    /**
      * Return the STAF Path where to transfer file when ready.
      * @return {@link Path} STAF File path
      * @throws STAFException Error during STAF Path creation.
      */
-    public Path getSTAFFilePath() throws STAFException {
-        if ((stafNode != null) && (stafFileName != null)) {
-            return Paths.get(stafNode.toString(), stafFileName);
-        } else {
-            Path path = calculateSTAFFilePath();
-            stafFileName = path.getFileName().toString();
-            return path;
-        }
+    public Path getSTAFFilePath() {
+        return Paths.get(stafNode.toString(), stafFileName);
     }
 
     public STAFArchiveModeEnum getArchiveMode() {
@@ -140,10 +128,6 @@ public abstract class AbstractPhysicalFile {
 
     public String getStafFileName() {
         return stafFileName;
-    }
-
-    public void setStafFileName(String pStafFileName) {
-        stafFileName = pStafFileName;
     }
 
 }

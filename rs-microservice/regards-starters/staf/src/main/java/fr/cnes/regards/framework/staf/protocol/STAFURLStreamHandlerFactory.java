@@ -15,7 +15,7 @@ public class STAFURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     @Override
     public URLStreamHandler createURLStreamHandler(String pProtocol) {
-        if (STAFUrlFactory.STAF_URL_PROTOCOLE.equals(pProtocol)) {
+        if (STAFURLFactory.STAF_URL_PROTOCOLE.equals(pProtocol)) {
             return new STAFStreamHandler();
         }
 

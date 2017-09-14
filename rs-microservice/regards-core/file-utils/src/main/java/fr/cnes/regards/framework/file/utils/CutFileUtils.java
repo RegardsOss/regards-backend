@@ -45,12 +45,13 @@ public class CutFileUtils {
      * Cut the give {@link File} pFile into parts of maximum pCutfilesMaxSize into pTargetDirectory
      * @param pFileToCut {@link File} to cut
      * @param pTargetDirectory Target directory to create cut files.
+     * @param pCutFileNamesPrefix cut file are named with this prefix and "_<part index>".
      * @param pCutfilesMaxSize Max size of each cuted file.
      * @return {@link Set} of cut {@link File}
      * @throws IOException I/O exception during file cuting.
      */
-    public static Set<File> cutFile(File pFileToCut, String pTargetDirectory, long pCutfilesMaxSize)
-            throws IOException {
+    public static Set<File> cutFile(File pFileToCut, String pTargetDirectory, String pCutFileNamesPrefix,
+            long pCutfilesMaxSize) throws IOException {
 
         Set<File> cutFiles = Sets.newHashSet();
         try (FileInputStream inputStream = new FileInputStream(pFileToCut)) {
@@ -59,8 +60,8 @@ public class CutFileUtils {
             do {
                 // New cut file to write
                 String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
-                LOG.debug("creating new cut File " + pFileToCut.getName() + "_" + strFileCount);
-                File cutFile = new File(pTargetDirectory, pFileToCut.getName() + "_" + strFileCount);
+                LOG.debug("creating new cut File " + pCutFileNamesPrefix + "_" + strFileCount);
+                File cutFile = new File(pTargetDirectory, pCutFileNamesPrefix + "_" + strFileCount);
                 continueCutFile = writeInFile(inputStream, cutFile, pCutfilesMaxSize);
                 cutFiles.add(cutFile);
                 fileCount++;

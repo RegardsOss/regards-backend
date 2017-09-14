@@ -33,9 +33,8 @@ import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.event.CollectEvent;
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.framework.staf.event.ICollectListener;
-import fr.cnes.regards.framework.staf.exception.STAFException;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlException;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlFactory;
+import fr.cnes.regards.framework.staf.protocol.STAFURLException;
+import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 
 /**
  * STAF Service listener for retreiving process.<br/>
@@ -93,24 +92,14 @@ public class STAFCollectListener implements ICollectListener {
             Path restoredFilePath = Paths.get(restorationDirectoryPath.toString(),
                                               stafFilePathRestored.getFileName().toString());
             allFilesToRestore.stream().filter(fileToRestore -> {
-                try {
-                    return stafFilePathRestored.equals(fileToRestore.getSTAFFilePath());
-                } catch (STAFException e) {
-                    LOG.error("[STAF] Error getting STAF File path", e);
-                    return false;
-                }
+                return stafFilePathRestored.equals(fileToRestore.getSTAFFilePath());
             }).forEach(physicalFile -> handleFileRestored(physicalFile, restoredFilePath));
         }
 
         for (Path stafFilePathNotRestored : pEvent.getNotRestoredFilePaths()) {
-            allFilesToRestore.stream().filter(fileToRestore -> {
-                try {
-                    return stafFilePathNotRestored.equals(fileToRestore.getSTAFFilePath());
-                } catch (STAFException e) {
-                    LOG.error("[STAF] Error getting STAF File path", e);
-                    return false;
-                }
-            }).forEach(this::handleRestorError);
+            allFilesToRestore.stream()
+                    .filter(fileToRestore -> stafFilePathNotRestored.equals(fileToRestore.getSTAFFilePath()))
+                    .forEach(this::handleRestorError);
         }
     }
 
@@ -129,16 +118,16 @@ public class STAFCollectListener implements ICollectListener {
                 // If the including cut file is already in error status, so the event has already be sent.
                 if (!PhysicalFileStatusEnum.ERROR.equals(partNotRestored.getIncludingCutFile().getStatus())) {
                     partNotRestored.getIncludingCutFile().setStatus(PhysicalFileStatusEnum.ERROR);
-                    sendFileRetrieveErrorNotification(STAFUrlFactory
+                    sendFileRetrieveErrorNotification(STAFURLFactory
                             .getCutFileSTAFUrl(partNotRestored.getIncludingCutFile()));
                 }
 
             } else {
                 // For other case TAR and NORMAL notify listener for the files in error.
-                Set<URL> urls = STAFUrlFactory.getSTAFURLs(pFileNotRestored);
+                Set<URL> urls = STAFURLFactory.getSTAFURLs(pFileNotRestored);
                 urls.forEach(this::sendFileRetrieveErrorNotification);
             }
-        } catch (STAFUrlException e) {
+        } catch (STAFURLException e) {
             LOG.error("[STAF] Invalid file to handle restore error", e);
         }
     }
@@ -177,9 +166,9 @@ public class STAFCollectListener implements ICollectListener {
     private void handleNormaleFileRestored(PhysicalNormalFile pNormalFileRestore) {
         try {
             // Notify client that the asked file is available
-            URL url = STAFUrlFactory.getNormalFileSTAFUrl(pNormalFileRestore);
+            URL url = STAFURLFactory.getNormalFileSTAFUrl(pNormalFileRestore);
             sendFileRetrievedNotification(url, pNormalFileRestore.getLocalFilePath());
-        } catch (STAFUrlException e) {
+        } catch (STAFURLException e) {
             LOG.error("[STAF] Invalid file restored", e);
         }
     }
@@ -205,7 +194,7 @@ public class STAFCollectListener implements ICollectListener {
             SortedSet<Path> partFiles = Sets.newTreeSet();
             allCutParts.forEach(f -> partFiles.add(f.getLocalFilePath()));
             try {
-                URL url = STAFUrlFactory.getCutFileSTAFUrl(includingCutFile);
+                URL url = STAFURLFactory.getCutFileSTAFUrl(includingCutFile);
                 try {
                     Path fullFile = Paths.get(pCutPartFileRestored.getLocalFilePath().getParent().toString(),
                                               includingCutFile.getStafFileName());
@@ -218,7 +207,7 @@ public class STAFCollectListener implements ICollectListener {
                     includingCutFile.setStatus(PhysicalFileStatusEnum.ERROR);
                     sendFileRetrieveErrorNotification(url);
                 }
-            } catch (STAFUrlException e1) {
+            } catch (STAFURLException e1) {
                 LOG.error("[STAF] Invalid file restored", e1);
             } finally {
                 // Delete all part files
@@ -236,7 +225,7 @@ public class STAFCollectListener implements ICollectListener {
         Path tarExtractionPath = Paths.get(restorationDirectoryPath.toString(),
                                            "." + pTARFileRestored.getLocalFilePath().getFileName().toString());
         try {
-            Map<Path, URL> urls = STAFUrlFactory.getTARFilesSTAFUrl(pTARFileRestored);
+            Map<Path, URL> urls = STAFURLFactory.getTARFilesSTAFUrl(pTARFileRestored);
             if (!tarExtractionPath.toFile().exists()) {
                 try {
                     // Extract files from TAR
@@ -252,7 +241,7 @@ public class STAFCollectListener implements ICollectListener {
             // Check files existance and notify client if files are well restored.
             pTARFileRestored.getFilesInTar().forEach((fileInTarPath,
                     rawPath) -> handleTARInFileRestored(tarExtractionPath, fileInTarPath, urls.get(rawPath)));
-        } catch (STAFUrlException e1) {
+        } catch (STAFURLException e1) {
             LOG.error("[STAF] Invalid file restored", e1);
         } finally {
             // Always delete TAR after all files are restored from it.

@@ -14,9 +14,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlException;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlFactory;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlParameter;
+import fr.cnes.regards.framework.staf.protocol.STAFURLException;
+import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
+import fr.cnes.regards.framework.staf.protocol.STAFURLParameter;
 
 public class STAFUrlFactoryTest {
 
@@ -30,103 +30,103 @@ public class STAFUrlFactoryTest {
 
     private final static String STAF_CUT_NUMBER_OF_PARTS = "12";
 
-    private final static String STAF_URL_NORMAL_TEST = String.format("%s://%s%s/%s", STAFUrlFactory.STAF_URL_PROTOCOLE,
+    private final static String STAF_URL_NORMAL_TEST = String.format("%s://%s%s/%s", STAFURLFactory.STAF_URL_PROTOCOLE,
                                                                      STAF_ARCHIVE, STAF_NODE, STAF_FILE_NAME);
 
     private final static String STAF_URL_TAR_TEST = String
-            .format("%s://%s%s/%s?%s=%s", STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_TAR_NAME,
-                    STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName(), STAF_FILE_NAME);
+            .format("%s://%s%s/%s?%s=%s", STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_TAR_NAME,
+                    STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName(), STAF_FILE_NAME);
 
     private final static String STAF_URL_CUT_TEST = String
-            .format("%s://%s%s/%s?%s=%s", STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_FILE_NAME,
-                    STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName(), STAF_CUT_NUMBER_OF_PARTS);
+            .format("%s://%s%s/%s?%s=%s", STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE, STAF_NODE, STAF_FILE_NAME,
+                    STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName(), STAF_CUT_NUMBER_OF_PARTS);
 
     @BeforeClass
     public static void initAll() {
-        STAFUrlFactory.initSTAFURLProtocol();
+        STAFURLFactory.initSTAFURLProtocol();
     }
 
     @Test
-    public void testExtractFromNormalFileInSTAF() throws MalformedURLException, STAFUrlException {
+    public void testExtractFromNormalFileInSTAF() throws MalformedURLException, STAFURLException {
 
         Assert.assertEquals("Error extracting STAF Archive name from STAF URL", STAF_ARCHIVE,
-                            STAFUrlFactory.getSTAFArchiveFromURL(new URL(STAF_URL_NORMAL_TEST)));
+                            STAFURLFactory.getSTAFArchiveFromURL(new URL(STAF_URL_NORMAL_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAF_NODE,
-                            STAFUrlFactory.getSTAFNodeFromURL(new URL(STAF_URL_NORMAL_TEST)));
+                            STAFURLFactory.getSTAFNodeFromURL(new URL(STAF_URL_NORMAL_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAF_FILE_NAME,
-                            STAFUrlFactory.getSTAFFileNameFromURL(new URL(STAF_URL_NORMAL_TEST)));
+                            STAFURLFactory.getSTAFFileNameFromURL(new URL(STAF_URL_NORMAL_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAFArchiveModeEnum.NORMAL,
-                            STAFUrlFactory.getSTAFArchiveModeFromURL(new URL(STAF_URL_NORMAL_TEST)));
+                            STAFURLFactory.getSTAFArchiveModeFromURL(new URL(STAF_URL_NORMAL_TEST)));
 
     }
 
     @Test
-    public void testExtractFromTARFileInSTAF() throws MalformedURLException, STAFUrlException {
+    public void testExtractFromTARFileInSTAF() throws MalformedURLException, STAFURLException {
 
         Assert.assertEquals("Error extracting STAF Archive name from STAF URL", STAF_ARCHIVE,
-                            STAFUrlFactory.getSTAFArchiveFromURL(new URL(STAF_URL_TAR_TEST)));
+                            STAFURLFactory.getSTAFArchiveFromURL(new URL(STAF_URL_TAR_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAF_NODE,
-                            STAFUrlFactory.getSTAFNodeFromURL(new URL(STAF_URL_TAR_TEST)));
+                            STAFURLFactory.getSTAFNodeFromURL(new URL(STAF_URL_TAR_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAF_TAR_NAME,
-                            STAFUrlFactory.getSTAFFileNameFromURL(new URL(STAF_URL_TAR_TEST)));
+                            STAFURLFactory.getSTAFFileNameFromURL(new URL(STAF_URL_TAR_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAFArchiveModeEnum.TAR,
-                            STAFUrlFactory.getSTAFArchiveModeFromURL(new URL(STAF_URL_TAR_TEST)));
+                            STAFURLFactory.getSTAFArchiveModeFromURL(new URL(STAF_URL_TAR_TEST)));
 
-        Map<STAFUrlParameter, String> paramers = STAFUrlFactory.getSTAFURLParameters(new URL(STAF_URL_TAR_TEST));
+        Map<STAFURLParameter, String> paramers = STAFURLFactory.getSTAFURLParameters(new URL(STAF_URL_TAR_TEST));
         Assert.assertEquals("Error extracting STAF parameters from STAF URL", 1, paramers.size());
 
         Assert.assertEquals("Error extracting STAF parameters from STAF URL", STAF_FILE_NAME,
-                            paramers.get(STAFUrlParameter.TAR_FILENAME_PARAMETER));
+                            paramers.get(STAFURLParameter.TAR_FILENAME_PARAMETER));
 
     }
 
     @Test
-    public void testExtractFromCutFileInSTAF() throws MalformedURLException, STAFUrlException {
+    public void testExtractFromCutFileInSTAF() throws MalformedURLException, STAFURLException {
 
         Assert.assertEquals("Error extracting STAF Archive name from STAF URL", STAF_ARCHIVE,
-                            STAFUrlFactory.getSTAFArchiveFromURL(new URL(STAF_URL_CUT_TEST)));
+                            STAFURLFactory.getSTAFArchiveFromURL(new URL(STAF_URL_CUT_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAF_NODE,
-                            STAFUrlFactory.getSTAFNodeFromURL(new URL(STAF_URL_CUT_TEST)));
+                            STAFURLFactory.getSTAFNodeFromURL(new URL(STAF_URL_CUT_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAF_FILE_NAME,
-                            STAFUrlFactory.getSTAFFileNameFromURL(new URL(STAF_URL_CUT_TEST)));
+                            STAFURLFactory.getSTAFFileNameFromURL(new URL(STAF_URL_CUT_TEST)));
 
         Assert.assertEquals("Error extracting STAF Node from STAF URL", STAFArchiveModeEnum.CUT,
-                            STAFUrlFactory.getSTAFArchiveModeFromURL(new URL(STAF_URL_CUT_TEST)));
+                            STAFURLFactory.getSTAFArchiveModeFromURL(new URL(STAF_URL_CUT_TEST)));
 
-        Map<STAFUrlParameter, String> paramers = STAFUrlFactory.getSTAFURLParameters(new URL(STAF_URL_CUT_TEST));
+        Map<STAFURLParameter, String> paramers = STAFURLFactory.getSTAFURLParameters(new URL(STAF_URL_CUT_TEST));
         Assert.assertEquals("Error extracting STAF parameters from STAF URL", 1, paramers.size());
 
         Assert.assertEquals("Error extracting STAF parameters from STAF URL", STAF_CUT_NUMBER_OF_PARTS,
-                            paramers.get(STAFUrlParameter.CUT_PARTS_PARAMETER));
+                            paramers.get(STAFURLParameter.CUT_PARTS_PARAMETER));
 
     }
 
-    @Test(expected = STAFUrlException.class)
-    public void testInvalidURL() throws STAFUrlException, MalformedURLException {
-        STAFUrlFactory.getSTAFArchiveFromURL(new URL("file:/test/node/file.txt"));
+    @Test(expected = STAFURLException.class)
+    public void testInvalidURL() throws STAFURLException, MalformedURLException {
+        STAFURLFactory.getSTAFArchiveFromURL(new URL("file:/test/node/file.txt"));
     }
 
-    @Test(expected = STAFUrlException.class)
-    public void testInvalidURL2() throws STAFUrlException, MalformedURLException {
-        STAFUrlFactory.getSTAFNodeFromURL(new URL("file:/test/node/file.txt"));
+    @Test(expected = STAFURLException.class)
+    public void testInvalidURL2() throws STAFURLException, MalformedURLException {
+        STAFURLFactory.getSTAFNodeFromURL(new URL("file:/test/node/file.txt"));
     }
 
-    @Test(expected = STAFUrlException.class)
-    public void testInvalidURL3() throws STAFUrlException, MalformedURLException {
-        STAFUrlFactory.getSTAFArchiveModeFromURL(new URL("file:/test/node/file.txt"));
+    @Test(expected = STAFURLException.class)
+    public void testInvalidURL3() throws STAFURLException, MalformedURLException {
+        STAFURLFactory.getSTAFArchiveModeFromURL(new URL("file:/test/node/file.txt"));
     }
 
-    @Test(expected = STAFUrlException.class)
-    public void testInvalidURL4() throws STAFUrlException, MalformedURLException {
-        STAFUrlFactory.getSTAFFileNameFromURL(new URL("file:/test/node/file.txt"));
+    @Test(expected = STAFURLException.class)
+    public void testInvalidURL4() throws STAFURLException, MalformedURLException {
+        STAFURLFactory.getSTAFFileNameFromURL(new URL("file:/test/node/file.txt"));
     }
 
 }

@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  * @author Sébastien Binda
  *
  */
-public class STAFUrlFactory {
+public class STAFURLFactory {
 
     /**
      * Protocole name
@@ -60,6 +60,11 @@ public class STAFUrlFactory {
             .compile("^" + STAF_URL_PROTOCOLE + "://([^/]*)(/[^?]*)?{0,1}(.*)$");
 
     /**
+     * String format of the STAF url with parameters pattern.
+     */
+    public static final String STAF_PARAMETERIZED_URL_PATTERN = "%s/%s?%s=%s";
+
+    /**
      * String format to generate a STAF URL for a given file path.
      */
     private static final String STANDARD_URL_STRING_FORMAT = STAF_URL_PROTOCOLE + "://%s";
@@ -67,7 +72,7 @@ public class STAFUrlFactory {
     /**
      * PRivate constructor. Only static methods.
      */
-    private STAFUrlFactory() {
+    private STAFURLFactory() {
     }
 
     public static void initSTAFURLProtocol() {
@@ -83,10 +88,10 @@ public class STAFUrlFactory {
      *
      * @param pSTAFStoredFile {@link AbstractPhysicalFile} stored.
      * @return {@link Map}<@link Path},{@link URL}>
-     * @throws STAFUrlException Error during URL mapping.
+     * @throws STAFURLException Error during URL mapping.
      */
     public static Map<Path, URL> getSTAFURLsPerRAWFileToArchive(AbstractPhysicalFile pSTAFStoredFile)
-            throws STAFUrlException {
+            throws STAFURLException {
         Map<Path, URL> urls = Maps.newHashMap();
         Optional<Path> firstRawFile = pSTAFStoredFile.getRawAssociatedFiles().stream().findFirst();
         if (firstRawFile.isPresent()) {
@@ -106,7 +111,7 @@ public class STAFUrlFactory {
                         break;
                 }
             } catch (STAFException e) {
-                throw new STAFUrlException(e.getMessage(), e);
+                throw new STAFURLException(e.getMessage(), e);
             }
         }
         return urls;
@@ -116,9 +121,9 @@ public class STAFUrlFactory {
      * Return all STAF URLs associated to given {@link AbstractPhysicalFile}
      * @param pPhysicalFile {@link AbstractPhysicalFile}
      * @return {@link Set}<{@link URL}> of each file in STAF associated to the given {@link AbstractPhysicalFile}
-     * @throws STAFUrlException Error during URL creation.
+     * @throws STAFURLException Error during URL creation.
      */
-    public static Set<URL> getSTAFURLs(AbstractPhysicalFile pPhysicalFile) throws STAFUrlException {
+    public static Set<URL> getSTAFURLs(AbstractPhysicalFile pPhysicalFile) throws STAFURLException {
         Set<URL> urls = Sets.newHashSet();
         // Add file access
         switch (pPhysicalFile.getArchiveMode()) {
@@ -146,9 +151,9 @@ public class STAFUrlFactory {
      * Create the STAF Protocol URL for the given {@link PhysicalCutPartFile}
      * @param pCurPartFile {@link PhysicalCutPartFile} file to retrieive STAF Protocol URL.
      * @return {@link URL}
-     * @throws STAFUrlException Error during URL construction.
+     * @throws STAFURLException Error during URL construction.
      */
-    public static URL getCutPartFileSTAFUrl(PhysicalCutPartFile pCutPartFile) throws STAFUrlException {
+    public static URL getCutPartFileSTAFUrl(PhysicalCutPartFile pCutPartFile) throws STAFURLException {
         try {
             // Construct standard staf://<ARCHIVE>/<NODE> path
             String urlInitialPath = String
@@ -156,8 +161,8 @@ public class STAFUrlFactory {
                             Paths.get(pCutPartFile.getStafArchiveName(), pCutPartFile.getStafNode().toString()));
             String fileNamePath = pCutPartFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s", urlInitialPath, fileNamePath));
-        } catch (MalformedURLException | STAFException e) {
-            throw new STAFUrlException(e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new STAFURLException(e.getMessage(), e);
         }
     }
 
@@ -165,19 +170,18 @@ public class STAFUrlFactory {
      * Create the STAF Protocol URL for the given {@link PhysicalCutFile}
      * @param pCutFile {@link PhysicalCutFile} file to retrieive STAF Protocol URL.
      * @return {@link URL}
-     * @throws STAFUrlException Error during URL construction.
+     * @throws STAFURLException Error during URL construction.
      */
-    public static URL getCutFileSTAFUrl(PhysicalCutFile pCutFile) throws STAFUrlException {
+    public static URL getCutFileSTAFUrl(PhysicalCutFile pCutFile) throws STAFURLException {
         try {
             String urlInitialPath = String
                     .format(STANDARD_URL_STRING_FORMAT,
                             Paths.get(pCutFile.getStafArchiveName(), pCutFile.getStafNode().toString()));
-            String fileNamePath = pCutFile.getSTAFFilePath().getFileName().toString();
-            return new URL(String.format("%s/%s?%s=%d", urlInitialPath, fileNamePath,
-                                         STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName(),
+            return new URL(String.format("%s/%s?%s=%d", urlInitialPath, pCutFile.getStafFileName(),
+                                         STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName(),
                                          pCutFile.getCutedFileParts().size()));
-        } catch (MalformedURLException | STAFException e) {
-            throw new STAFUrlException(e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new STAFURLException(e.getMessage(), e);
         }
     }
 
@@ -186,9 +190,9 @@ public class STAFUrlFactory {
      *
      * @param pTarFile {@link PhysicalTARFile} TAR File stored.
      * @return {@link Map}<@link Path},{@link URL}>
-     * @throws STAFUrlException Error creating STAF URLs
+     * @throws STAFURLException Error creating STAF URLs
      */
-    public static Map<Path, URL> getTARFilesSTAFUrl(PhysicalTARFile pTarFile) throws STAFUrlException {
+    public static Map<Path, URL> getTARFilesSTAFUrl(PhysicalTARFile pTarFile) throws STAFURLException {
         try {
             Map<Path, URL> urls = Maps.newHashMap();
             // Construct standard staf://<ARCHIVE>/<NODE> path
@@ -197,18 +201,16 @@ public class STAFUrlFactory {
                             Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
                 Path localFilePath = fileInTar.getValue();
-                Path stafFilePath = pTarFile.getSTAFFilePath();
-                if ((stafFilePath != null) && (localFilePath != null)) {
-                    URL url = new URL(
-                            String.format("%s/%s?%s=%s", urlInitialPath, stafFilePath.getFileName().toString(),
-                                          STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName(),
-                                          localFilePath.getFileName().toString()));
+                if (localFilePath != null) {
+                    URL url = new URL(String.format("%s/%s?%s=%s", urlInitialPath, pTarFile.getStafFileName(),
+                                                    STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName(),
+                                                    localFilePath.getFileName().toString()));
                     urls.put(fileInTar.getValue(), url);
                 }
             }
             return urls;
-        } catch (MalformedURLException | STAFException e) {
-            throw new STAFUrlException(e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new STAFURLException(e.getMessage(), e);
         }
     }
 
@@ -219,9 +221,9 @@ public class STAFUrlFactory {
      * @param pRawfile {@link Path} The file to get STAF URL for.
      * @param pTarFile {@link PhysicalTARFile} file to retrieive STAF Protocol URL.
      * @return {@link URL}
-     * @throws STAFUrlException Error during URL construction.
+     * @throws STAFURLException Error during URL construction.
      */
-    public static Optional<URL> getTARFileSTAFUrl(PhysicalTARFile pTarFile, Path pRawFile) throws STAFUrlException {
+    public static Optional<URL> getTARFileSTAFUrl(PhysicalTARFile pTarFile, Path pRawFile) throws STAFURLException {
         try {
             Optional<URL> url = Optional.empty();
             // Construct standard staf://<ARCHIVE>/<NODE> path
@@ -230,15 +232,15 @@ public class STAFUrlFactory {
                             Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
                 if (pRawFile == fileInTar.getKey()) {
-                    url = Optional.of(new URL(String.format("%s/%s?%s=%s", urlInitialPath,
+                    url = Optional.of(new URL(String.format(STAF_PARAMETERIZED_URL_PATTERN, urlInitialPath,
                                                             pTarFile.getSTAFFilePath().getFileName().toString(),
-                                                            STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName(),
+                                                            STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName(),
                                                             fileInTar.getValue().getFileName().toString())));
                 }
             }
             return url;
-        } catch (MalformedURLException | STAFException e) {
-            throw new STAFUrlException(e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new STAFURLException(e.getMessage(), e);
         }
     }
 
@@ -246,9 +248,9 @@ public class STAFUrlFactory {
      * Return all STAF URLs
      * @param pTarFile
      * @return
-     * @throws STAFUrlException
+     * @throws STAFURLException
      */
-    public static Set<URL> getTARFilesSTAFURLs(PhysicalTARFile pTarFile) throws STAFUrlException {
+    public static Set<URL> getTARFilesSTAFURLs(PhysicalTARFile pTarFile) throws STAFURLException {
         try {
             Set<URL> urls = Sets.newHashSet();
             // Construct standard staf://<ARCHIVE>/<NODE> path
@@ -256,14 +258,14 @@ public class STAFUrlFactory {
                     .format(STANDARD_URL_STRING_FORMAT,
                             Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
-                urls.add(new URL(String.format("%s/%s?%s=%s", urlInitialPath,
-                                               pTarFile.getSTAFFilePath().getFileName().toString(),
-                                               STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName(),
-                                               fileInTar.getValue().getFileName().toString())));
+                urls.add(new URL(
+                        String.format(STAF_PARAMETERIZED_URL_PATTERN, urlInitialPath, pTarFile.getStafFileName(),
+                                      STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName(),
+                                      fileInTar.getValue().getFileName().toString())));
             }
             return urls;
-        } catch (MalformedURLException | STAFException e) {
-            throw new STAFUrlException(e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new STAFURLException(e.getMessage(), e);
         }
     }
 
@@ -271,9 +273,9 @@ public class STAFUrlFactory {
      * Create the STAF Protocol URL for the given {@link PhysicalNormalFile}
      * @param pFile {@link PhysicalNormalFile} file to retrieive STAF Protocol URL.
      * @return {@link URL}
-     * @throws STAFUrlException Error during URL construction.
+     * @throws STAFURLException Error during URL construction.
      */
-    public static URL getNormalFileSTAFUrl(PhysicalNormalFile pFile) throws STAFUrlException {
+    public static URL getNormalFileSTAFUrl(PhysicalNormalFile pFile) throws STAFURLException {
         try {
             // Construct standard staf:/<ARCHIVE>/<NODE> path
             String urlInitialPath = String
@@ -281,8 +283,8 @@ public class STAFUrlFactory {
                             Paths.get(pFile.getStafArchiveName(), pFile.getStafNode().toString()));
             String fileNamePath = pFile.getSTAFFilePath().getFileName().toString();
             return new URL(String.format("%s/%s", urlInitialPath, fileNamePath));
-        } catch (MalformedURLException | STAFException e) {
-            throw new STAFUrlException(e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new STAFURLException(e.getMessage(), e);
         }
     }
 
@@ -290,9 +292,9 @@ public class STAFUrlFactory {
      * Return the complete STAF Node of the given {@link URL}
      * @param pUrl {@link URL}
      * @return {@link Path}
-     * @throws STAFUrlException Given {@link URL} is not a STAF URL.
+     * @throws STAFURLException Given {@link URL} is not a STAF URL.
      */
-    public static Path getSTAFNodeFromURL(URL pUrl) throws STAFUrlException {
+    public static Path getSTAFNodeFromURL(URL pUrl) throws STAFURLException {
         Matcher m = STAF_URL_REGEXP.matcher(pUrl.toString());
         if (m.matches()) {
             String filePath = m.group(2);
@@ -303,7 +305,7 @@ public class STAFUrlFactory {
                 return Paths.get(filePath);
             }
         } else {
-            throw new STAFUrlException(String.format("Invalid URL %s", pUrl.toString()));
+            throw new STAFURLException(String.format("Invalid URL %s", pUrl.toString()));
         }
     }
 
@@ -311,46 +313,46 @@ public class STAFUrlFactory {
      * Return the {@link STAFArchiveModeEnum} of the given {@link URL}
      * @param pUrl {@link URL}
      * @return {@link STAFArchiveModeEnum}
-     * @throws STAFUrlException Given {@link URL} is not a STAF URL.
+     * @throws STAFURLException Given {@link URL} is not a STAF URL.
      */
-    public static STAFArchiveModeEnum getSTAFArchiveModeFromURL(URL pUrl) throws STAFUrlException {
+    public static STAFArchiveModeEnum getSTAFArchiveModeFromURL(URL pUrl) throws STAFURLException {
         Matcher m = STAF_URL_REGEXP.matcher(pUrl.toString());
         if (m.matches()) {
-            if (pUrl.toString().contains(STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName())) {
+            if (pUrl.toString().contains(STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName())) {
                 return STAFArchiveModeEnum.TAR;
             }
-            if (pUrl.toString().contains(STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName())) {
+            if (pUrl.toString().contains(STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName())) {
                 return STAFArchiveModeEnum.CUT;
             }
             return STAFArchiveModeEnum.NORMAL;
         } else {
-            throw new STAFUrlException(String.format("Invalid URL %s", pUrl.toString()));
+            throw new STAFURLException(String.format("Invalid URL %s", pUrl.toString()));
         }
     }
 
     /**
-     * Return the {@link STAFUrlParameter} values of the given {@link URL}
+     * Return the {@link STAFURLParameter} values of the given {@link URL}
      * @param pUrl {@link URL}
-     * @return {@link STAFUrlParameter}
-     * @throws STAFUrlException Given {@link URL} is not a STAF URL.
+     * @return {@link STAFURLParameter}
+     * @throws STAFURLException Given {@link URL} is not a STAF URL.
      */
-    public static Map<STAFUrlParameter, String> getSTAFURLParameters(URL pUrl) throws STAFUrlException {
-        Map<STAFUrlParameter, String> parameters = Maps.newHashMap();
+    public static Map<STAFURLParameter, String> getSTAFURLParameters(URL pUrl) throws STAFURLException {
+        Map<STAFURLParameter, String> parameters = Maps.newHashMap();
         Matcher m = STAF_URL_REGEXP.matcher(pUrl.toString());
         if (m.matches()) {
             String filePath = m.group(3);
             if (!filePath.isEmpty()) {
                 int index = filePath.indexOf('=');
-                if ((index >= 0) && filePath.contains(STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName())) {
-                    parameters.put(STAFUrlParameter.CUT_PARTS_PARAMETER, filePath.substring(index + 1));
+                if ((index >= 0) && filePath.contains(STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName())) {
+                    parameters.put(STAFURLParameter.CUT_PARTS_PARAMETER, filePath.substring(index + 1));
                 } else if ((index >= 0)
-                        && filePath.contains(STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName())) {
-                    parameters.put(STAFUrlParameter.TAR_FILENAME_PARAMETER, filePath.substring(index + 1));
+                        && filePath.contains(STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName())) {
+                    parameters.put(STAFURLParameter.TAR_FILENAME_PARAMETER, filePath.substring(index + 1));
                 }
             }
             return parameters;
         } else {
-            throw new STAFUrlException(String.format("Invalid URL %s", pUrl.toString()));
+            throw new STAFURLException(String.format("Invalid URL %s", pUrl.toString()));
         }
     }
 
@@ -358,14 +360,14 @@ public class STAFUrlFactory {
      * Return the STAF Archive name of the given {@link URL}
      * @param pUrl {@link URL}
      * @return {@link String}
-     * @throws STAFUrlException Given {@link URL} is not a STAF URL.
+     * @throws STAFURLException Given {@link URL} is not a STAF URL.
      */
-    public static String getSTAFArchiveFromURL(URL pUrl) throws STAFUrlException {
+    public static String getSTAFArchiveFromURL(URL pUrl) throws STAFURLException {
         Matcher m = STAF_URL_REGEXP.matcher(pUrl.toString());
         if (m.matches()) {
             return m.group(1);
         } else {
-            throw new STAFUrlException(String.format("Invalid URL %s", pUrl.toString()));
+            throw new STAFURLException(String.format("Invalid URL %s", pUrl.toString()));
         }
     }
 
@@ -373,9 +375,9 @@ public class STAFUrlFactory {
      * Return the STAF File name of the given {@link URL}
      * @param pUrl {@link URL}
      * @return {@link String}
-     * @throws STAFUrlException Given {@link URL} is not a STAF URL.
+     * @throws STAFURLException Given {@link URL} is not a STAF URL.
      */
-    public static String getSTAFFileNameFromURL(URL pUrl) throws STAFUrlException {
+    public static String getSTAFFileNameFromURL(URL pUrl) throws STAFURLException {
         Matcher m = STAF_URL_REGEXP.matcher(pUrl.toString());
         if (m.matches()) {
             String filePath = m.group(2);
@@ -386,7 +388,7 @@ public class STAFUrlFactory {
                 return filePath;
             }
         } else {
-            throw new STAFUrlException(String.format("Invalid URL %s", pUrl.toString()));
+            throw new STAFURLException(String.format("Invalid URL %s", pUrl.toString()));
         }
     }
 

@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.framework.staf.exception;
 
-import fr.cnes.regards.framework.staf.exception.STAFException;
-
 /**
  * Exception for errors that occurs during tar files preparation.
  * @author Sébastien Binda
@@ -19,6 +17,10 @@ public class STAFTarException extends STAFException {
 
     public STAFTarException(String pMessage) {
         super(pMessage);
+    }
+
+    public STAFTarException(String pMessage, Exception pE) {
+        super(pMessage, pE);
     }
 
 }
