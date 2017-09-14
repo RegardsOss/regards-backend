@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.staf;
+package fr.cnes.regards.framework.staf.exception;
 
 /**
  * Classe d'exception pour le paquetage de communication avec le STAF.

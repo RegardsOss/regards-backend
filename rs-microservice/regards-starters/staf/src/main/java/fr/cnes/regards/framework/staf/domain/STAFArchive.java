@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.staf;
+package fr.cnes.regards.framework.staf.domain;
 
 /**
  * Cette classe regroupe les parametres regissant les acces au STAF

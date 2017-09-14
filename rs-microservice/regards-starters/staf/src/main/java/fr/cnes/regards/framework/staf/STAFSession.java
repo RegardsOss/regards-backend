@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
+import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
+import fr.cnes.regards.framework.staf.exception.STAFException;
+
 /**
  * Cette classe represente une session de communication avec le STAF. Pour manipuler cette session, cette classe
  * encapsule le lancement d'un shell de pilotage permettant de passer les commandes STAF et de recuperer et d'analyser

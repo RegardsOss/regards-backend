@@ -8,6 +8,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
+import fr.cnes.regards.framework.staf.domain.STAFArchive;
+import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
+import fr.cnes.regards.framework.staf.exception.STAFException;
+
 /**
  * Le gestionnaire STAF est une classe qui permet de centraliser les informations communes necessaires au traitement des
  * requetes. Cette classe assure principalement la gestion de la charge imposee au STAF en limitant le nombre de

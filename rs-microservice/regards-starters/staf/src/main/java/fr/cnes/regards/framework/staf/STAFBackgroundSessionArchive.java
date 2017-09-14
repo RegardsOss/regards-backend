@@ -6,6 +6,11 @@ package fr.cnes.regards.framework.staf;
 import java.util.Iterator;
 import java.util.List;
 
+import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
+import fr.cnes.regards.framework.staf.domain.STAFArchivingFlow;
+import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
+import fr.cnes.regards.framework.staf.exception.STAFException;
+
 /**
  * <p>
  * Cette classe represente une session de communication avec le STAF qui peut etre lancee en arriere plan. Cette

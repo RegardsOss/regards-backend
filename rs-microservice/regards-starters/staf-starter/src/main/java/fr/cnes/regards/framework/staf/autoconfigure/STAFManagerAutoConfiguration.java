@@ -6,9 +6,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.staf.STAFConfiguration;
-import fr.cnes.regards.framework.staf.STAFException;
 import fr.cnes.regards.framework.staf.STAFManager;
+import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
+import fr.cnes.regards.framework.staf.exception.STAFException;
 
 @Configuration
 @EnableConfigurationProperties(STAFConfiguration.class)

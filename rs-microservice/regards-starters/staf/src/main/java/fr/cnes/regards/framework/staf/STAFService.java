@@ -20,8 +20,14 @@ import org.apache.log4j.NDC;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
+import fr.cnes.regards.framework.staf.domain.STAFArchive;
+import fr.cnes.regards.framework.staf.domain.STAFArchivingFlow;
+import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
+import fr.cnes.regards.framework.staf.domain.STAFFile;
 import fr.cnes.regards.framework.staf.event.CollectEvent;
 import fr.cnes.regards.framework.staf.event.ICollectListener;
+import fr.cnes.regards.framework.staf.exception.STAFException;
 
 /**
  * Cette classe permet d'acceder aux services proposes par le STAF. Les fonctions utilisees sont celles de :

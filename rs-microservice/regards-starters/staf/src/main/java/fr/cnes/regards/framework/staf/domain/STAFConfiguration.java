@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.staf;
+package fr.cnes.regards.framework.staf.domain;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

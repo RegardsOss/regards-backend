@@ -8,6 +8,9 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 
+import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
+import fr.cnes.regards.framework.staf.exception.STAFException;
+
 /**
  * <p>Cette classe abstraite represente une session de communication avec le STAF qui peut
  * etre lancee en arriere plan. Cette commande, necessairement non interactive
