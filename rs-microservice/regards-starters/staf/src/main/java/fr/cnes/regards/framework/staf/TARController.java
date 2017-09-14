@@ -93,23 +93,24 @@ public class TARController {
     }
 
     /**
-     * Add a given file to the existing tar current file or if not to new tar file.
+     * Add a given file to the existing tar current file or if not to a new tar file.
      *
      * @param pPhysicalFileToArchive {@link File} to add into the TAR.
      * @param pFile {@link DataFile} associated to the {@link File} to add.
      * @param pStafNode Path into the staf archive where to store TAR.
-     * @param pTarFiles {@link Set} of {@link PhysicalTARFile} to archive.
+     * @param pAlreadyPreparedTARFiles {@link Set} of {@link PhysicalTARFile} to archive.
+     * @return {@link PhysicalTARFile} TAR file with the new added file in it.
      * @throws IOException : Unable to create new TAR current directory
      * @throws STAFTarException : Unable to add file to current TAR.
      */
-    public void addFileToTar(Path pPhysicalFileToArchive, Set<PhysicalTARFile> pTarFiles, String pSTAFArciveName,
-            Path pStafNode) throws STAFTarException {
+    public PhysicalTARFile addFileToTar(Path pPhysicalFileToArchive, Set<PhysicalTARFile> pAlreadyPreparedTARFiles,
+            String pSTAFArciveName, Path pStafNode) throws STAFTarException {
 
         // 1. Initialize lock on the tar current directory of the specified node
         Path localTarDirectory = getWorkingTarPath(pSTAFArciveName, pStafNode);
         Path lockFile = Paths.get(localTarDirectory.toString(), LOCK_FILE_NAME);
 
-        // If TAR directory for the given doesn't exists, create it before lock
+        // If TAR directory for the given node doesn't exists, create it before lock
         try {
             Files.createDirectories(localTarDirectory);
         } catch (IOException e) {
@@ -128,7 +129,8 @@ public class TARController {
             LOG.debug("[STAF] Directory {} locked", lockFile.toString());
 
             // 3. Get the current creating tar file
-            PhysicalTARFile workingTarPhysicalFile = getCurrentTarPhysicalFile(pTarFiles, pSTAFArciveName, pStafNode);
+            PhysicalTARFile workingTarPhysicalFile = getCurrentTarPhysicalFile(pAlreadyPreparedTARFiles,
+                                                                               pSTAFArciveName, pStafNode);
             // 4. Move file in the tar directory
             Path destinationFile = copyFileIntoTarCurrentDirectory(pPhysicalFileToArchive, workingTarPhysicalFile);
             // Add originale associated file
@@ -142,6 +144,7 @@ public class TARController {
                           workingTarPhysicalFile.getTarSize(), stafConfiguration.getMaxTarSize());
                 createTAR(workingTarPhysicalFile);
             }
+            return workingTarPhysicalFile;
         } catch (IOException e1) {
             throw new STAFTarException(e1);
         } finally {

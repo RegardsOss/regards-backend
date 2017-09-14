@@ -86,16 +86,6 @@ public class STAFController {
     private final Path localWorkspace;
 
     /**
-     * List of prepared files to store into STAF System.
-     */
-    private final Set<AbstractPhysicalFile> filesToArchive = Sets.newHashSet();
-
-    /**
-     * List of prepared tar to store into STAF System.
-     */
-    private final Set<PhysicalTARFile> tarsToArchive = Sets.newHashSet();
-
-    /**
      * Controller to handle TAR files.
      */
     private final TARController tarController;
@@ -118,17 +108,19 @@ public class STAFController {
     }
 
     /**
-     * Store the prepared {@link AbstractPhysicalFile} into STAF.<br/>
+     * Store the given {@link AbstractPhysicalFile} into STAF.<br/>
+     * @param {@link Set}<{@link AbstractPhysicalFile}> files to archive/
      * @param {@link Path} into STAF where to archive prepared files.
      * @param pReplaceMode replace file in STAF if already exists ?
      * @return Set of successfuly stored {@link AbstractPhysicalFile}.
      * @throws STAFException STAF store error
      */
-    public Set<AbstractPhysicalFile> archivePreparedFiles(Path pSTAFNode, boolean pReplaceMode) throws STAFException {
+    public Set<AbstractPhysicalFile> archiveFiles(Set<AbstractPhysicalFile> pFilesToArchive, Path pSTAFNode,
+            boolean pReplaceMode) throws STAFException {
         Set<String> archivedFiles;
         // Create map bewteen localFile to archive and destination file path into STAF
         Map<Path, Path> localFileToArchiveMap = Maps.newHashMap();
-        this.getAllPreparedFilesToArchive().forEach(stafFile -> {
+        pFilesToArchive.forEach(stafFile -> {
             if (PhysicalFileStatusEnum.TO_STORE.equals(stafFile.getStatus())) {
                 try {
                     if ((stafFile.getLocalFilePath() != null) && (stafFile.calculateSTAFFilePath() != null)) {
@@ -152,7 +144,7 @@ public class STAFController {
                 archivedFiles.forEach(archivedFile ->
                 // For each file to store, check if the file has really been stored and set the status to STORED.
                 // @formatter:off
-                this.getAllPreparedFilesToArchive()
+                pFilesToArchive
                     .stream()
                     .filter(f -> PhysicalFileStatusEnum.TO_STORE.equals(f.getStatus()))
                     .filter(f -> archivedFile.equals(f.getLocalFilePath().toString()))
@@ -171,30 +163,23 @@ public class STAFController {
 
         // handle special case of TAR PENDING. Status is not STORED but LOCALY_STORED.
         // @formatter:off
-        tarsToArchive
+        pFilesToArchive
             .stream()
+            .filter(physicalFile -> STAFArchiveModeEnum.TAR.equals(physicalFile.getArchiveMode()))
             .filter(tar -> PhysicalFileStatusEnum.PENDING.equals(tar.getStatus()))
             .forEach(tar -> {
-                LOG.info("[STAF] Current TAR {} not big enought for transfert to STAF System. This TAR is localy stored waiting for new files.",tar.getLocalTarDirectory());
+                LOG.info("[STAF] Current TAR {} not big enought for transfert to STAF System. This TAR is localy stored waiting for new files.",
+                         ((PhysicalTARFile)tar).getLocalTarDirectory());
                 tar.setStatus(PhysicalFileStatusEnum.LOCALY_STORED);
             });
         // @formatter:on
 
         // Return all Physical file stored
         // @formatter:off
-        return this.getAllPreparedFilesToArchive().stream()
+        return pFilesToArchive.stream()
                 .filter(file -> PhysicalFileStatusEnum.STORED.equals(file.getStatus()))
                 .collect(Collectors.toSet());
         // @formatter:on
-    }
-
-    /**
-     * Allow to clear prepared files to handle a new preparation.
-     */
-    public void clearPreparedFiles() {
-        // Clear already calculated files to archive
-        filesToArchive.clear();
-        tarsToArchive.clear();
     }
 
     /**
@@ -202,7 +187,7 @@ public class STAFController {
      * After each deletion success or error, a notification is sent
      * @param pPhysicalFilesToDelete
      */
-    public void deletePreparedFiles(Set<AbstractPhysicalFile> pPhysicalFilesToDelete) {
+    public void deleteFiles(Set<AbstractPhysicalFile> pPhysicalFilesToDelete) {
 
         // List of staf file path (key : local file to replace with, value : staf file path to replace)
         // to replace per staf node.
@@ -264,24 +249,14 @@ public class STAFController {
     }
 
     /**
-     * Return all {@link AbstractPhysicalFile} prepared for storage into STAF System.
-     * @return {@link AbstractPhysicalFile}s
-     */
-    public Set<AbstractPhysicalFile> getAllPreparedFilesToArchive() {
-        Set<AbstractPhysicalFile> allFilesToArchive = Sets.newHashSet();
-        allFilesToArchive.addAll(filesToArchive);
-        allFilesToArchive.addAll(tarsToArchive);
-        return allFilesToArchive;
-    }
-
-    /**
-     * Return a mapping between raw files given by the preparation step and STAF URL of archived files by the sotre step.
+     * Return a mapping between raw files and STAF URLs.
+     * @param pFiles {@link AbstractPhysicalFile} files to calculate the mapping.
      * @return {@link Map}<{@link Path}, {@link URL}> (key : Path of the raw file to archive, value : URL of STAF file)
      */
-    public Map<Path, URL> getRawFilesArchived() {
-        Map<Path, URL> rawFilesStored = Maps.newHashMap();
+    public Map<Path, URL> getRawFilesArchived(Set<AbstractPhysicalFile> pFiles) {
+        Map<Path, URL> rawFilesArchived = Maps.newHashMap();
         // @formatter:off
-        this.getAllPreparedFilesToArchive()
+        pFiles
             .stream()
             .filter(f ->
                 PhysicalFileStatusEnum.STORED.equals(f.getStatus()) ||
@@ -293,14 +268,14 @@ public class STAFController {
                 // CUT : X Files stored -> 1 URL
                 try {
                     Map<Path, URL> urls = STAFUrlFactory.getSTAFURLsPerRAWFileToArchive(file);
-                    rawFilesStored.putAll(urls);
+                    rawFilesArchived.putAll(urls);
                 } catch (STAFException e) {
                     // Error creating file URL
                     LOG.error("Error during STAF URL creation for staf file {}",file.getLocalFilePath(),e);
                 }
             });
         // @formatter:on
-        return rawFilesStored;
+        return rawFilesArchived;
     }
 
     /**
@@ -369,11 +344,11 @@ public class STAFController {
      * @return {@link Set}<{@link AbstractPhysicalFile}> prepared files to archive with STAF recomandations.
      */
     public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<Path, Set<Path>> pFileToArchivePerStafNode) {
-        clearPreparedFiles();
+        Set<AbstractPhysicalFile> preparedFiles = Sets.newHashSet();
         for (Entry<Path, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
             for (Path fileToArchive : stafNode.getValue()) {
                 try {
-                    prepareFileToArchive(fileToArchive, stafNode.getKey());
+                    preparedFiles.addAll(prepareFileToArchive(fileToArchive, stafNode.getKey(), preparedFiles));
                 } catch (STAFException e) {
                     LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
                     LOG.debug(e.getMessage(), e);
@@ -382,11 +357,11 @@ public class STAFController {
         }
         // After all files added, check if TAR files are in TO_STORE state in order to create associated TAR.
         try {
-            tarController.createPreparedTAR(tarsToArchive);
+            tarController.createPreparedTAR(getPhysicalTARFilesFromAbstractPhysicalFiles(preparedFiles));
         } catch (STAFTarException e) {
             LOG.error("[STAF] Error creating TAR File", e);
         }
-        return this.getAllPreparedFilesToArchive();
+        return preparedFiles;
     }
 
     public Set<AbstractPhysicalFile> prepareFilesToRestore(Set<URL> pSTAFFilesToRestore) {
@@ -600,6 +575,11 @@ public class STAFController {
         return stafFilePaths;
     }
 
+    private Set<PhysicalTARFile> getPhysicalTARFilesFromAbstractPhysicalFiles(Set<AbstractPhysicalFile> pFiles) {
+        return pFiles.stream().filter(physicalFile -> STAFArchiveModeEnum.TAR.equals(physicalFile.getArchiveMode()))
+                .map(physicalFile -> (PhysicalTARFile) physicalFile).collect(Collectors.toSet());
+    }
+
     /**
      * Create an object {@link AbstractPhysicalFile} from a given STAF {@link URL}
      * @param pUrl STAF {@link URL}
@@ -661,13 +641,14 @@ public class STAFController {
     }
 
     /**
-     * Prepare the given file to archive into the staf.
+     * Create all {@link AbstractPhysicalFile} associated to the given local file to archive.
      * @param pFileToArchivePerStafNode {@lnik Path} File to prepare.
      * @param pSTAFNode {@link String} STAF Node where to store file.
-     * @param pMode {@link STAFArchiveModeEnum} Archiving mode
+     * @param pAlreadyPreparedFiles {@link Set}<{@link AbstractPhysicalFile}> All files already prepared to archive.
      * @throws STAFException Error during file preparation. File is not available for store.
      */
-    private void prepareFileToArchive(Path pFileToArchive, Path pSTAFNode) throws STAFException {
+    private Set<AbstractPhysicalFile> prepareFileToArchive(Path pFileToArchive, Path pSTAFNode,
+            Set<AbstractPhysicalFile> pAlreadyPreparedFiles) throws STAFException {
         try {
             // 1. Check file existance
             if (!Files.exists(pFileToArchive) || !Files.isReadable(pFileToArchive)) {
@@ -676,19 +657,21 @@ public class STAFController {
                 LOG.error(message);
                 throw new STAFException(message);
             }
-            //2. Get archiving mode
+            // 2. Get file archiving mode
             STAFArchiveModeEnum mode = getFileArchiveMode(pFileToArchive.toFile().length());
-            // 2. Manage file transformation if needed before staf storage
+            // 3. Manage file transformation if needed before staf storage
             switch (mode) {
                 case CUT:
-                    filesToArchive.addAll(cutFile(pFileToArchive, pSTAFNode).getCutedFileParts());
+                    pAlreadyPreparedFiles.addAll(cutFile(pFileToArchive, pSTAFNode).getCutedFileParts());
                     break;
                 case TAR:
-                    tarController.addFileToTar(pFileToArchive, tarsToArchive,
-                                               stafService.getStafArchive().getArchiveName(), pSTAFNode);
+                    pAlreadyPreparedFiles
+                            .add(tarController.addFileToTar(pFileToArchive,
+                                                            getPhysicalTARFilesFromAbstractPhysicalFiles(pAlreadyPreparedFiles),
+                                                            stafService.getStafArchive().getArchiveName(), pSTAFNode));
                     break;
                 case NORMAL:
-                    filesToArchive.add(new PhysicalNormalFile(pFileToArchive, pFileToArchive,
+                    pAlreadyPreparedFiles.add(new PhysicalNormalFile(pFileToArchive, pFileToArchive,
                             stafService.getStafArchive().getArchiveName(), pSTAFNode));
                     break;
                 default:
@@ -697,5 +680,6 @@ public class STAFController {
         } catch (IOException | STAFTarException e) {
             LOG.error("[STAF] Error preparing file {}", pFileToArchive, e);
         }
+        return pAlreadyPreparedFiles;
     }
 }
