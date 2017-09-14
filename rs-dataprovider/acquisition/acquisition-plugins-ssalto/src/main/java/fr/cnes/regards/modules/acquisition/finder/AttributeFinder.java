@@ -440,7 +440,7 @@ public abstract class AttributeFinder {
     }
 
     public void setMultiValues(String newMultiValues) {
-        multiValues = new Boolean(newMultiValues);
+        multiValues = Boolean.valueOf(newMultiValues);
     }
 
     public String getFormatInXML() {

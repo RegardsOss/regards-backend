@@ -233,7 +233,7 @@ public class DateFormatter {
         try {
             checkValid(date, formatId);
             isValid = true;
-        } catch (DateUtilException e) {
+        } catch (DateUtilException e) { // NOSONAR
             LOGGER.warn(e.getMessage());
             // DateUtilException has been thrown because the date is invalid
             isValid = false;

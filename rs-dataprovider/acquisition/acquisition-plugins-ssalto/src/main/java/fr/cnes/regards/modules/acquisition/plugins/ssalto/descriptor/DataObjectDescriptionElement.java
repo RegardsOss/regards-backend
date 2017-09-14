@@ -65,29 +65,40 @@ public class DataObjectDescriptionElement extends DataObjectElement {
         attributeLst = new ArrayList<>();
     }
 
-    /**
-     * 
-     * renvoie true si pObj est de type DataObjectDescriptionElement et que le dataObjectIdentifier est le meme
-     */
     @Override
-    public boolean equals(Object pObj) {
-        boolean result = false;
-        if (pObj instanceof DataObjectDescriptionElement) {
-            DataObjectDescriptionElement obj1 = (DataObjectDescriptionElement) pObj;
-            result = getDataObjectIdentifier().equals(obj1.getDataObjectIdentifier());
-        }
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((getDataObjectIdentifier() == null) ? 0 : getDataObjectIdentifier().hashCode());
         return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DataObjectDescriptionElement other = (DataObjectDescriptionElement) obj;
+        if (getDataObjectIdentifier() == null) {
+            if (other.getDataObjectIdentifier() != null)
+                return false;
+        } else if (!getDataObjectIdentifier().equals(other.getDataObjectIdentifier()))
+            return false;
+        return true;
     }
 
     /**
      * Cette methode permet d'ajouter un attribut a la liste d'attributs non standard de l'entite.
      * 
-     * @param pAttribute
+     * @param attribute
      *            l'attribut a ajouter
      */
-    public void addAttribute(Attribute pAttribute) {
+    public void addAttribute(Attribute attribute) {
 
-        attributeLst.add(pAttribute);
+        attributeLst.add(attribute);
     }
 
     /**

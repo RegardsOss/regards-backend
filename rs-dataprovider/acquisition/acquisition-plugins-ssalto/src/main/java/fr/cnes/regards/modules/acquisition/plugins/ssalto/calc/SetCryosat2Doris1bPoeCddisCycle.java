@@ -63,7 +63,7 @@ public class SetCryosat2Doris1bPoeCddisCycle implements ICalculationClass {
                 }
 
                 cycle = intCycle.toString();
-            } catch (PluginAcquisitionException e) {
+            } catch (PluginAcquisitionException e) { // NOSONAR
                 cycle = "";
             }
         }

@@ -28,19 +28,6 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 public class DataObjectUpdateElement extends DataObjectElement {
 
     /**
-     * retourne true si les identfiants sont les memes
-     */
-    @Override
-    public boolean equals(Object pObj) {
-        boolean result = false;
-        if (pObj instanceof DataObjectUpdateElement) {
-            DataObjectUpdateElement obj1 = (DataObjectUpdateElement) pObj;
-            result = getDataObjectIdentifier().equals(obj1.getDataObjectIdentifier());
-        }
-        return result;
-    }
-
-    /**
      * renvoie UPDATE_ELEMENT_TYPE
      */
     @Override
@@ -54,5 +41,30 @@ public class DataObjectUpdateElement extends DataObjectElement {
     @Override
     protected int getOrder() {
         return 4;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((getDataObjectIdentifier() == null) ? 0 : getDataObjectIdentifier().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DataObjectUpdateElement other = (DataObjectUpdateElement) obj;
+        if (getDataObjectIdentifier() == null) {
+            if (other.getDataObjectIdentifier() != null)
+                return false;
+        } else if (!getDataObjectIdentifier().equals(other.getDataObjectIdentifier()))
+            return false;
+        return true;
     }
 }

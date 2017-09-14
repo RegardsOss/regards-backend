@@ -34,20 +34,6 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
     }
 
     /**
-     * renvoie true si pObj est de type DataStorageObjectDescriptionElement et que les dataStorageObjectIdentifier sont
-     * identiques
-     */
-    @Override
-    public boolean equals(Object obj) {
-        boolean result = false;
-        if (obj instanceof DataStorageObjectDescriptionElement) {
-            DataStorageObjectDescriptionElement obj1 = (DataStorageObjectDescriptionElement) obj;
-            result = getDataStorageObjectIdentifier().equals(obj1.getDataStorageObjectIdentifier());
-        }
-        return result;
-    }
-
-    /**
      * renvoie DESC_ELEMENT_TYPE
      */
     @Override
@@ -61,5 +47,31 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
     @Override
     protected int getOrder() {
         return 1;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((getDataStorageObjectIdentifier() == null) ? 0 : getDataStorageObjectIdentifier().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DataStorageObjectDescriptionElement other = (DataStorageObjectDescriptionElement) obj;
+        if (getDataStorageObjectIdentifier() == null) {
+            if (other.getDataStorageObjectIdentifier() != null)
+                return false;
+        } else if (!getDataStorageObjectIdentifier().equals(other.getDataStorageObjectIdentifier()))
+            return false;
+        return true;
     }
 }

@@ -49,12 +49,12 @@ public class AsciiFileFinder extends DataFileFinder {
     /**
      * liste de groupe de capture a recupere dans la ligne pour construire la valeur de l'attribut
      */
-    public List<Integer> groupNumberList;
+    private List<Integer> groupNumberList = new ArrayList<>();
 
     /**
      * Attribut renseigne lorsqu'on a besoin de traiter un seul fichier pour un produit contenant plusieurs fichiers.
      */
-    public String filterPattern = null;
+    private String filterPattern = null;
 
     @Override
     public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
@@ -66,7 +66,7 @@ public class AsciiFileFinder extends DataFileFinder {
             StringBuffer value = new StringBuffer();
             for (Object element : groupNumberList) {
                 Integer groupNumber = (Integer) element;
-                value .append(helper.getValue(lineNumber, pattern, groupNumber.intValue()));
+                value.append(helper.getValue(lineNumber, pattern, groupNumber.intValue()));
             }
             valueList.add(valueOf(value.toString()));
         }
@@ -118,9 +118,6 @@ public class AsciiFileFinder extends DataFileFinder {
     }
 
     public void addGroupNumber(String groupNumber) {
-        if (groupNumberList == null) {
-            groupNumberList = new ArrayList<>();
-        }
         groupNumberList.add(new Integer(groupNumber));
     }
 
