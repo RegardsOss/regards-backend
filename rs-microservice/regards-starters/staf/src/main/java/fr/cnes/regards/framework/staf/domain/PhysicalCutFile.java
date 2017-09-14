@@ -3,17 +3,10 @@
  */
 package fr.cnes.regards.framework.staf.domain;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.SortedSet;
 
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.file.utils.ChecksumUtils;
-import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 
 /**
  * Class to represent a file stored in STAF in multiple parts.
@@ -38,10 +31,11 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
      * Constructor
      * @param pLocalFile {@link Pat} of the local uncuted file to store.
      * @param pSTAFArchiveName {@link String} Name of the STAF Archive where to store the file.
-     * @param pSTAFNode {@link String} STAF Node where to store the file.
+     * @param pSTAFNode {@link Path} STAF Node where to store the file.
+     * @param pSTAFFileName {@link String} STAF File name
      */
-    public PhysicalCutFile(Path pLocalFile, String pSTAFArchiveName, Path pSTAFNode) {
-        super(STAFArchiveModeEnum.CUT, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.PENDING);
+    public PhysicalCutFile(Path pLocalFile, String pSTAFArchiveName, Path pSTAFNode, String pSTAFFileName) {
+        super(STAFArchiveModeEnum.CUT, pSTAFArchiveName, pSTAFNode, pSTAFFileName, PhysicalFileStatusEnum.PENDING);
         localFile = pLocalFile;
     }
 
@@ -53,16 +47,6 @@ public class PhysicalCutFile extends AbstractPhysicalFile {
     @Override
     public void setLocalFilePath(Path pLocalFilePath) {
         localFile = pLocalFilePath;
-    }
-
-    @Override
-    public Path calculateSTAFFilePath() {
-        try (FileInputStream is = new FileInputStream(localFile.toFile())) {
-            return Paths.get(super.getStafNode().toString(), ChecksumUtils.computeHexChecksum(is, "md5"));
-        } catch (IOException | NoSuchAlgorithmException e) {
-            LOG.error("Error calculating file checksum {}", localFile.toString(), e);
-            return null;
-        }
     }
 
     public SortedSet<PhysicalCutPartFile> getCutedFileParts() {

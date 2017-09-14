@@ -36,8 +36,8 @@ import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.framework.staf.exception.STAFException;
 import fr.cnes.regards.framework.staf.mock.STAFMock;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlFactory;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlParameter;
+import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
+import fr.cnes.regards.framework.staf.protocol.STAFURLParameter;
 
 public class STAFControllerTest {
 
@@ -67,7 +67,7 @@ public class STAFControllerTest {
 
     @BeforeClass
     public static void initAll() throws IOException {
-        STAFUrlFactory.initSTAFURLProtocol();
+        STAFURLFactory.initSTAFURLProtocol();
         if (Files.exists(STAF_WORKSPACE_PATH)) {
             Files.setPosixFilePermissions(STAF_WORKSPACE_PATH,
                                           Sets.newHashSet(PosixFilePermission.OWNER_EXECUTE,
@@ -204,8 +204,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
-                                                                          false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
@@ -276,8 +275,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
-                                                                          false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -354,8 +352,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
-                                                                          false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -440,8 +437,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
-                                                                          false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -526,8 +522,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
-                                                                          false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
@@ -587,8 +582,7 @@ public class STAFControllerTest {
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
         Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, Paths.get(STAF_TEST_NODE),
-                                                                          false);
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         // 20 files to archive. Max number of files per archive session = 10 -> 2xarchive command
         Mockito.verify(stafSessionMock, Mockito.times(2)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
@@ -631,7 +625,7 @@ public class STAFControllerTest {
         Set<URL> stafUrls = Sets.newHashSet();
         Map<String, String> restoreParameters = Maps.newHashMap();
 
-        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE, "file.txt").toString());
         stafUrls.add(stafUrl);
         restoreParameters.put(stafUrl.getPath().toString(),
@@ -692,9 +686,9 @@ public class STAFControllerTest {
         Map<String, String> restoreParameters = Maps.newHashMap();
 
         int numberOfParts = 9;
-        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+        URL stafCutUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
                 .get(STAF_TEST_NODE,
-                     cutfileName + "?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
+                     cutfileName + "?" + STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
                 .toString());
         stafUrls.add(stafCutUrl);
         for (int i = 0; i < numberOfParts; i++) {
@@ -748,23 +742,23 @@ public class STAFControllerTest {
 
         // Three STAF Url , two from the same file TAR but for two differents files in it and one from an other TAR file.
         String fileName = "file.txt";
-        URL stafTarUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE,
-                          "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
+                          "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
                         .toString());
         Path exptectedFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName);
         stafUrls.add(stafTarUrl);
 
         String fileName2 = "file2.txt";
-        URL stafTarUrl2 = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE,
-                          "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
+                          "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
                         .toString());
         Path exptectedFile2 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName2);
         stafUrls.add(stafTarUrl2);
-        URL stafTarUrl3 = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafTarUrl3 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE,
-                          "file2.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
+                          "file2.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
                         .toString());
         Path exptectedFile3 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file2_1.txt");
         stafUrls.add(stafTarUrl3);
@@ -824,7 +818,7 @@ public class STAFControllerTest {
         Map<String, String> restoreParameters = Maps.newHashMap();
 
         // Add a normal file to retrieve
-        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE, "file.txt").toString());
         stafUrls.add(stafUrl);
         restoreParameters.put(stafUrl.getPath().toString(),
@@ -832,9 +826,9 @@ public class STAFControllerTest {
 
         // Add a file into a TAR to retrieve
         String fileName = "fileInTar.txt";
-        URL stafTarUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE,
-                          "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
+                          "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
                         .toString());
         restoreParameters.put(stafTarUrl.getPath().toString(),
                               Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file.tar").toString());
@@ -843,9 +837,9 @@ public class STAFControllerTest {
         // Aadd a cuted file to retrieve
         int numberOfParts = 9;
         String cutfileName = "big_file_test_1.txt";
-        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+        URL stafCutUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
                 .get(STAF_TEST_NODE,
-                     cutfileName + "?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
+                     cutfileName + "?" + STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
                 .toString());
         stafUrls.add(stafCutUrl);
         for (int i = 0; i < numberOfParts; i++) {
@@ -891,7 +885,7 @@ public class STAFControllerTest {
 
         // Add a normal file to retrieve
         String fileName = "file.txt";
-        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE, fileName).toString());
         stafUrls.add(stafUrl);
         expectedRestoredSTAFUrls.add(stafUrl);
@@ -901,17 +895,17 @@ public class STAFControllerTest {
 
         // Add two file into a TAR to retrieve. One exists, the other one is not present in the TAR.
         String fileNotInTarName = "fileInTar.txt";
-        URL stafTarUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
                 .get(STAF_TEST_NODE,
-                     "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileNotInTarName)
+                     "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileNotInTarName)
                 .toString());
         restoreParameters.put(stafTarUrl.getPath().toString(),
                               Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file.tar").toString());
         stafUrls.add(stafTarUrl);
         String fileInTarName = "file2.txt";
-        URL stafTarUrl2 = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
                 .get(STAF_TEST_NODE,
-                     "file.tar?" + STAFUrlParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileInTarName)
+                     "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileInTarName)
                 .toString());
         restoreParameters.put(stafTarUrl2.getPath().toString(),
                               Paths.get(RESTORE_DIRECTORY_PATH.toString(), "file.tar").toString());
@@ -922,9 +916,9 @@ public class STAFControllerTest {
         // Aadd a cuted file to retrieve
         int numberOfParts = 9;
         String cutfileName = "big_file_test_1.txt";
-        URL stafCutUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+        URL stafCutUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
                 .get(STAF_TEST_NODE,
-                     cutfileName + "?" + STAFUrlParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
+                     cutfileName + "?" + STAFURLParameter.CUT_PARTS_PARAMETER.getParameterName() + "=" + numberOfParts)
                 .toString());
         stafUrls.add(stafCutUrl);
         expectedRestoredSTAFUrls.add(stafCutUrl);
@@ -997,7 +991,7 @@ public class STAFControllerTest {
         Set<URL> stafUrls = Sets.newHashSet();
         Map<String, String> restoreParameters = Maps.newHashMap();
 
-        URL stafUrl = new URL(STAFUrlFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
                 Paths.get(STAF_TEST_NODE, "file.txt").toString());
         stafUrls.add(stafUrl);
         restoreParameters.put(stafUrl.getPath().toString(),
@@ -1023,6 +1017,93 @@ public class STAFControllerTest {
         Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURL.capture());
         Assert.assertEquals("As the restoration directory is not available, there should be an error notification sent for the STAF URL",
                             true, argumentURL.getValue().equals(stafUrl));
+    }
+
+    public void restoreTestWithInvalidUrl() {
+        //TODO : Test to restore a file://
+    }
+
+    @Test
+    public void deleteTestWithTARFullDeletion() throws MalformedURLException, STAFException {
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieve(Mockito.any());
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.txt").toString());
+        stafUrls.add(stafUrl);
+
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.tar?filename=file.txt").toString());
+        stafUrls.add(stafTarUrl);
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.tar?filename=file2.txt").toString());
+        stafUrls.add(stafTarUrl2);
+
+        URL stafCutUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "big_file.txt?parts=5").toString());
+        stafUrls.add(stafCutUrl);
+
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToDelete(stafUrls);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieve(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilDelete(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.any(), Mockito.any(),
+                                                                         Mockito.anyBoolean());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<URL> deletedFiles = controller.deleteFiles(preparedFiles);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieve(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilDelete(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.any(), Mockito.any(),
+                                                                         Mockito.anyBoolean());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        Assert.assertEquals("There should be 4 files deleted from STAF System", 4, deletedFiles.size());
+
+    }
+
+    @Test
+    public void deleteTestWithTARReplacement() throws MalformedURLException, STAFException {
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieve(Mockito.any());
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.txt").toString());
+        stafUrls.add(stafUrl);
+
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "file.tar?filename=file.txt").toString());
+        stafUrls.add(stafTarUrl);
+
+        URL stafCutUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, "big_file.txt?parts=5").toString());
+        stafUrls.add(stafCutUrl);
+
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToDelete(stafUrls);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieve(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilDelete(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.any(), Mockito.any(),
+                                                                         Mockito.anyBoolean());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<URL> deletedFiles = controller.deleteFiles(preparedFiles);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieve(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilDelete(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.any(), Mockito.any(),
+                                                                         Mockito.anyBoolean());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        Assert.assertEquals("There should be 3 files deleted from STAF System", 3, deletedFiles.size());
+
     }
 
 }

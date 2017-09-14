@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.staf.STAFSessionManager;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.exception.STAFException;
-import fr.cnes.regards.framework.staf.protocol.STAFUrlFactory;
+import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 
 @Configuration
 @EnableConfigurationProperties(STAFConfiguration.class)
@@ -30,7 +30,7 @@ public class STAFManagerAutoConfiguration {
     @PostConstruct
     public static void init() {
         LOGGER.info("URL staf protocol initialized.");
-        STAFUrlFactory.initSTAFURLProtocol();
+        STAFURLFactory.initSTAFURLProtocol();
     }
 
     @Bean

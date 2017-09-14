@@ -4,14 +4,10 @@
 package fr.cnes.regards.framework.staf.domain;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
-
-import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
-import fr.cnes.regards.framework.staf.exception.STAFException;
 
 /**
  * Class to represent a list of files stored in the same STAF file into a tar file.
@@ -51,9 +47,10 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
      * Constructor
      * @param pSTAFArchiveName {@link String} STAF Archive name where the tar is stored
      * @param pSTAFNode {@link Path} STAF Node where the tar is stored.
+     * @param pSTAFFileName {@link String} STAF File name
      */
-    public PhysicalTARFile(String pSTAFArchiveName, Path pSTAFNode) {
-        super(STAFArchiveModeEnum.TAR, pSTAFArchiveName, pSTAFNode, PhysicalFileStatusEnum.PENDING);
+    public PhysicalTARFile(String pSTAFArchiveName, Path pSTAFNode, String pSTAFFileName) {
+        super(STAFArchiveModeEnum.TAR, pSTAFArchiveName, pSTAFNode, pSTAFFileName, PhysicalFileStatusEnum.PENDING);
     }
 
     /**
@@ -103,15 +100,6 @@ public class PhysicalTARFile extends AbstractPhysicalFile {
     @Override
     public void setLocalFilePath(Path pLocalFilePath) {
         localTarFile = pLocalFilePath;
-    }
-
-    @Override
-    public Path calculateSTAFFilePath() throws STAFException {
-        if ((localTarFile != null) && (super.getStafNode() != null)) {
-            return Paths.get(super.getStafNode().toString(), localTarFile.getFileName().toString());
-        } else {
-            throw new STAFException("[STAF] Error during STAF PATH creation");
-        }
     }
 
 }

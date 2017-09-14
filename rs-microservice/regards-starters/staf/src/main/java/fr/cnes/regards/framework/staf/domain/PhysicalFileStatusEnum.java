@@ -41,6 +41,16 @@ public enum PhysicalFileStatusEnum {
     RETRIEVED,
 
     /**
+     * File is ready to be deleted from STAF System.
+     */
+    TO_DELETE,
+
+    /**
+     * File has been deleted from STAF System.
+     */
+    DELETED,
+
+    /**
      * STAF store error.
      */
     ERROR;
