@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Configuration;
 import com.google.common.collect.Lists;
 import com.netflix.governator.annotations.binding.Primary;
 
-import fr.cnes.regards.framework.staf.STAFSessionManager;
 import fr.cnes.regards.framework.staf.STAFSession;
+import fr.cnes.regards.framework.staf.STAFSessionManager;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.exception.STAFException;
 import fr.cnes.regards.framework.staf.mock.STAFMock;
@@ -58,6 +58,9 @@ public class STAFDataStorageConfiguration {
         // Simulate STAF Files restitution
         Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
                 .staffilRetrieveBuffered(Mockito.any());
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieve(Mockito.any());
         List<Integer> sessions = Lists.newArrayList();
         sessions.add(0);
         Mockito.when(stafManagerMock.getReservations()).thenReturn(sessions);

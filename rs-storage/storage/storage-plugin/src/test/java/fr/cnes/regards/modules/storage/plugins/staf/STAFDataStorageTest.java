@@ -490,6 +490,67 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                            Paths.get(RESTORATION_PATH.toString(), tarFileName).toFile().exists());
     }
 
+    /**
+     * Restore files stored in STAF in the 3 Archiving mode TAR, CUT and NORMAL.
+     * @throws MalformedURLException
+     */
+    @Test
+    public void delete() throws MalformedURLException {
+
+        // Mock the progress manager to verify the number of call for succeed and failted files.
+        ProgressManager pm = Mockito.mock(ProgressManager.class);
+        Mockito.verify(pm, Mockito.times(0)).deletionFailed(Mockito.any(), Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).deletionSucceed(Mockito.any());
+
+        // Add plugin package
+        List<String> packages = Lists.newArrayList();
+        packages.add("fr.cnes.regards.modules.storage.plugin.staf");
+
+        // Init STAF archive parameters for plugin
+        STAFArchive archive = new STAFArchive();
+        archive.setArchiveName(STAF_ARCHIVE_NAME);
+        archive.setGFAccount(false);
+        archive.setPassword(STAF_ARCHIVE_PASSWORD);
+        Gson gson = new Gson();
+
+        // Init plugin parameters
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter("workspaceDirectory", WORKSPACE.toString())
+                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+
+        // Init Files to restore
+        String fileName = "file.txt";
+        String cutFileName = "cut_file.txt";
+        String tarFileName = "file2.txt";
+        Set<DataFile> dataFilesToDelete = Sets.newHashSet();
+        AIP aip = new AIP(EntityType.DATA);
+        aip.getHistory().add(new Event("testEvent", OffsetDateTime.now(), EventType.SUBMISSION));
+        aip.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1)
+                .toString());
+        dataFilesToDelete.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName));
+        dataFilesToDelete.add(new DataFile(
+                new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
+                "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                tarFileName));
+        dataFilesToDelete.add(new DataFile(
+                new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12"),
+                "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                cutFileName));
+
+        // Get plugin
+        STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
+
+        // Delete files
+        plugin.delete(dataFilesToDelete, pm);
+
+        // No restoration error
+        Mockito.verify(pm, Mockito.times(0)).deletionFailed(Mockito.any(), Mockito.any());
+        // 1 Datafile restored
+        Mockito.verify(pm, Mockito.times(3)).deletionSucceed(Mockito.any());
+    }
+
     @Override
     protected Logger getLogger() {
         return LOG;
