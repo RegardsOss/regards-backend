@@ -18,7 +18,8 @@ import java.util.zip.CheckedOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.file.utils.compression.AbstractRunnableCompression;
 import fr.cnes.regards.framework.file.utils.compression.CompressManager;
@@ -65,7 +66,7 @@ public class GZipCompression extends AbstractRunnableCompression {
     /**
      * Cette variable est utilisée pour logger les messages
      */
-    private static Logger logger_ = Logger.getLogger(GZipCompression.class);
+    private static Logger logger = LoggerFactory.getLogger(GZipCompression.class);
 
     /**
      * Tampon d'ecriture
@@ -183,8 +184,8 @@ public class GZipCompression extends AbstractRunnableCompression {
     private File compressOneFile(File pFileToCompress, File pCompressedFile, CompressManager pCompressManager)
             throws CompressionException {
 
-        if (logger_.isDebugEnabled()) {
-            logger_.debug("Add " + pFileToCompress.getName() + " to GZIP file.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Add " + pFileToCompress.getName() + " to GZIP file.");
         }
 
         long totalSize = pFileToCompress.length();
@@ -234,7 +235,7 @@ public class GZipCompression extends AbstractRunnableCompression {
                 out.close();
             }
         } catch (IOException ioE) {
-            logger_.error(ioE);
+            logger.error(ioE.getMessage(), ioE);
             throw new CompressionException(String.format("IO error during %s compression", CompressionTypeEnum.GZIP),
                     ioE);
         }
@@ -257,7 +258,7 @@ public class GZipCompression extends AbstractRunnableCompression {
         // pCompressedFile must have .gz extension
         if (!pCompressedFile.getName().toLowerCase().endsWith(GZIP_EXTENSION)) {
             String msg = String.format("Extension must be %s", GZIP_EXTENSION);
-            logger_.error(msg);
+            logger.error(msg);
             throw new CompressionException(msg);
         }
 
@@ -266,7 +267,7 @@ public class GZipCompression extends AbstractRunnableCompression {
                 pCompressedFile.getName().substring(0, pCompressedFile.getName().length() - GZIP_EXTENSION_LENGTH));
         if (returnedFile.exists()) {
             String msg = String.format("File %s already exist", returnedFile.getName());
-            logger_.error(msg);
+            logger.error(msg);
             throw new FileAlreadyExistException(msg);
         }
 

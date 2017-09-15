@@ -51,18 +51,19 @@ import fr.cnes.regards.framework.staf.protocol.STAFURLParameter;
  * <br/>
  * To archive files :
  * <ul>
- * <li> 1. prepare files with prepareFilesToArchive method.</li>
- * <li> 2. do archive prepared files with archiveFiles method.</li>
- * <li> 3. Retrieve link between raw files and archived files with the getRawFilesArchived method.</li>
+ * <li> 1. prepare files with {@link #prepareFilesToArchive} method.</li>
+ * <li> 2. do archive prepared files with {@link #archiveFiles} method.</li>
+ * <li> 3. Retrieve link between raw files and archived files with the {@link #getRawFilesArchived} method.</li>
  * </ul>
  * To retrieve files :
  * <ul>
- * <li> 1. prepare files with parepareFilesToRestore method. </li>
- * <li> 2. do restore prepared files with restoreFiles method. All files are restored in the given directory.</li>
+ * <li> 1. prepare files with {@link #prepareFilesToRestore} method. </li>
+ * <li> 2. do restore prepared files with {@link #restoreFiles} method. All files are restored in the given directory.</li>
  * </ul>
  * To delete files :
  * <ul>
- * TODO ...
+ * <li>1. prepare files with {@link #prepareFilesToDelete} method. </li>
+ * <li>2. do delete files with {@link #deleteFiles} method. </li>
  * </ul>
  *
  * @author Sébastien Binda
@@ -197,7 +198,7 @@ public class STAFController {
      * Delete all {@link AbstractPhysicalFile} from STAF System.
      * After each deletion success or error, a notification is sent
      * @param pPhysicalFilesToDelete
-     * @return
+     * @return {@link Set}<{@link URL}> STAF URLs of successfully deleted files
      */
     public Set<URL> deleteFiles(Set<AbstractPhysicalFile> pPhysicalFilesToDelete) {
 
@@ -224,7 +225,13 @@ public class STAFController {
                         stafFilePathsToDelete.put(physicalFileToDelete.getSTAFFilePath(), physicalFileToDelete);
                         break;
                     case TAR:
-                        stafTARToRetrieve.add((PhysicalTARFile) physicalFileToDelete);
+                        // If TAR is locally store, delete files in local dir
+                        PhysicalTARFile tar = (PhysicalTARFile) physicalFileToDelete;
+                        if (tar.getLocalTarDirectory() != null) {
+                            tarController.deleteFilesFromLocalTAR(tar);
+                        } else {
+                            stafTARToRetrieve.add(tar);
+                        }
                         break;
                     default:
                         break;
@@ -232,62 +239,64 @@ public class STAFController {
             }
         }
 
-        try {
-            stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
-        } catch (STAFException e) {
-            LOG.error("[STAF] Error connecting to STAF Archive", e);
-            return Sets.newHashSet();
-        }
-
-        // 2. Prepare TAR Files for delation or replacement (replacement if only a part of the files in the TAR are to delete)
-        for (PhysicalTARFile tar : stafTARToRetrieve) {
+        if (!stafTARToRetrieve.isEmpty() || !stafFilePathsToDelete.isEmpty()) {
             try {
-                retrieveFileFromSTAF(tar);
-                if (tarController.deleteFilesFromTAR(tar)) {
-                    stafFilePathsToDelete.put(tar.getSTAFFilePath(), tar);
-                } else {
-                    filesToReplace.put(tar.getLocalFilePath(), tar.getSTAFFilePath());
+                stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+            } catch (STAFException e) {
+                LOG.error("[STAF] Error connecting to STAF Archive", e);
+                return Sets.newHashSet();
+            }
+
+            // 2. Prepare TAR Files for delation or replacement (replacement if only a part of the files in the TAR are to delete)
+            for (PhysicalTARFile tar : stafTARToRetrieve) {
+                try {
+                    retrieveFileFromSTAF(tar);
+                    if (tarController.deleteFilesFromTAR(tar)) {
+                        stafFilePathsToDelete.put(tar.getSTAFFilePath(), tar);
+                    } else {
+                        filesToReplace.put(tar.getLocalFilePath(), tar.getSTAFFilePath());
+                    }
+                } catch (STAFException e) {
+                    LOG.error("[STAF] Error deleting files from local TAR {}", tar.getLocalFilePath(), e);
+                    tar.setStatus(PhysicalFileStatusEnum.ERROR);
+                }
+            }
+
+            // 3. run files deletions
+            try {
+                Set<Path> notDeletedPaths = stafService.deleteFiles(stafFilePathsToDelete.keySet());
+                for (Entry<Path, AbstractPhysicalFile> stafFileToDelete : stafFilePathsToDelete.entrySet()) {
+                    if (!notDeletedPaths.contains(stafFileToDelete.getKey())) {
+                        LOG.info("[STAF] {} - FILE deleted from STAF {}", stafFileToDelete.getKey(),
+                                 stafService.getStafArchive().getArchiveName());
+                        // Retrieve original file associted to this deleted path
+                        stafFileToDelete.getValue().setStatus(PhysicalFileStatusEnum.DELETED);
+                    }
                 }
             } catch (STAFException e) {
-                LOG.error("[STAF] Error deleting files from local TAR {}", tar.getLocalFilePath(), e);
-                tar.setStatus(PhysicalFileStatusEnum.ERROR);
+                LOG.error("[STAF] Error during STAF Deletion", e.getMessage(), e);
             }
-        }
 
-        // 3. run files deletions
-        try {
-            Set<Path> notDeletedPaths = stafService.deleteFiles(stafFilePathsToDelete.keySet());
-            for (Entry<Path, AbstractPhysicalFile> stafFileToDelete : stafFilePathsToDelete.entrySet()) {
-                if (!notDeletedPaths.contains(stafFileToDelete.getKey())) {
-                    LOG.info("[STAF] {} - FILE deleted from STAF {}", stafFileToDelete.getKey(),
-                             stafService.getStafArchive().getArchiveName());
-                    // Retrieve original file associted to this deleted path
-                    stafFileToDelete.getValue().setStatus(PhysicalFileStatusEnum.DELETED);
+            // 4. run TAR replacements
+            try {
+                Set<String> replacedFiles = stafService.archiveFiles(filesToReplace, Paths.get("/"), true);
+                for (PhysicalTARFile tar : stafTARToRetrieve) {
+                    // If tar is not in error status and is present in the replaced files so the files in TAR are well DELETED.
+                    if (!PhysicalFileStatusEnum.ERROR.equals(tar.getStatus())
+                            && replacedFiles.contains(tar.getLocalFilePath().toString())) {
+                        LOG.info("[STAF] TAR File replaced {}", tar.getSTAFFilePath());
+                        tar.setStatus(PhysicalFileStatusEnum.DELETED);
+                    }
                 }
+            } catch (STAFException e) {
+                LOG.error("[STAF] Error during STAF Deletion", e.getMessage(), e);
             }
-        } catch (STAFException e) {
-            LOG.error("[STAF] Error during STAF Deletion", e.getMessage(), e);
-        }
 
-        // 4. run TAR replacements
-        try {
-            Set<String> replacedFiles = stafService.archiveFiles(filesToReplace, Paths.get("/"), true);
-            for (PhysicalTARFile tar : stafTARToRetrieve) {
-                // If tar is not in error status and is present in the replaced files so the files in TAR are well DELETED.
-                if (!PhysicalFileStatusEnum.ERROR.equals(tar.getStatus())
-                        && replacedFiles.contains(tar.getLocalFilePath().toString())) {
-                    LOG.info("[STAF] TAR File replaced {}", tar.getSTAFFilePath());
-                    tar.setStatus(PhysicalFileStatusEnum.DELETED);
-                }
+            try {
+                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+            } catch (STAFException e) {
+                LOG.error("Error during STAF deconnection.", e);
             }
-        } catch (STAFException e) {
-            LOG.error("[STAF] Error during STAF Deletion", e.getMessage(), e);
-        }
-
-        try {
-            stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
-        } catch (STAFException e) {
-            LOG.error("Error during STAF deconnection.", e);
         }
 
         // 5. return URLs of STAF Files deleted.
@@ -527,30 +536,46 @@ public class STAFController {
     public void restoreFiles(Set<AbstractPhysicalFile> pPhysicalFiles, Path pDestinationPath,
             IClientCollectListener pListener) {
 
-        stafService.setCollectListener(new STAFCollectListener(pPhysicalFiles, pDestinationPath, pListener));
+        // 1. Set the collector listener for notification when a file is restored from STAF system.
+        STAFCollectListener listener = new STAFCollectListener(pPhysicalFiles, pDestinationPath, pListener);
+        stafService.setCollectListener(listener);
 
-        //2. Retrieve staf files path to retrieve
+        // 2. generate staf file paths
         Set<Path> stafFilePathsToRetrieive = Sets.newHashSet();
         for (AbstractPhysicalFile physicalFile : pPhysicalFiles) {
             try {
-                stafFilePathsToRetrieive.addAll(getSTAFFilePaths(physicalFile));
+                boolean isLocallyStored = false;
+                // Try to retrieve from local temporary storage (TAR file case)
+                if (STAFArchiveModeEnum.TAR.equals(physicalFile.getArchiveMode())) {
+                    isLocallyStored = tarController.retrieveLocallyStoredTARFiles((PhysicalTARFile) physicalFile,
+                                                                                  listener);
+                }
+                // If no local retrieve, then generate remote staf paths to retrieve.
+                if (!isLocallyStored) {
+                    stafFilePathsToRetrieive.addAll(getSTAFFilePaths(physicalFile));
+                }
             } catch (STAFException e) {
                 physicalFile.setStatus(PhysicalFileStatusEnum.ERROR);
                 LOG.error("[STAF] Error creating STAF file path for file {}", physicalFile.getLocalFilePath(), e);
             }
         }
-        //2. Do the STAF Restitution for each physicalFile
-        try {
-            stafService.connectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
-            stafService.restoreAllFiles(stafFilePathsToRetrieive, pDestinationPath.toString());
-        } catch (STAFException e) {
-            LOG.error("[STAF] Error during STAF Restoration", e.getMessage(), e);
-        } finally {
+
+        // 3. Do the STAF Restitution for each physicalFile
+        if (!stafFilePathsToRetrieive.isEmpty()) {
             try {
-                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
+                stafService.connectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
+                stafService.restoreAllFiles(stafFilePathsToRetrieive, pDestinationPath.toString());
             } catch (STAFException e) {
-                LOG.error("Error during STAF deconnection.", e);
+                LOG.error("[STAF] Error during STAF Restoration", e.getMessage(), e);
+            } finally {
+                try {
+                    stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.RESTITUTION_MODE);
+                } catch (STAFException e) {
+                    LOG.error("Error during STAF deconnection.", e);
+                }
             }
+        } else {
+            // Send fail error for all files needed to be restored.
         }
     }
 
@@ -742,17 +767,23 @@ public class STAFController {
                 return physicalFile;
             case TAR:
                 // Check if tar is already prepared
-                Optional<AbstractPhysicalFile> existingTar = pAlreadyPreparedPhysicalFiles.stream()
-                        .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode())).filter(f -> {
+                // @formatter:off
+                Optional<AbstractPhysicalFile> existingTar = pAlreadyPreparedPhysicalFiles
+                    .stream()
+                    .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode()))
+                    .filter(f -> {
                             PhysicalTARFile t = (PhysicalTARFile) f;
                             return stafFileName.equals(t.getStafFileName()) && stafNode.equals(t.getStafNode())
                                     && stafArchive.equals(t.getStafArchiveName());
-                        }).findFirst();
+                        })
+                    .findFirst();
+                // @formatter:on
                 PhysicalTARFile tar;
                 if (existingTar.isPresent()) {
                     tar = (PhysicalTARFile) existingTar.get();
                 } else {
                     tar = new PhysicalTARFile(stafArchive, stafNode, stafFileName);
+                    tarController.getLocalInformations(tar);
                 }
                 tar.setStatus(pStatus);
                 Path fileName = Paths.get(parameters.get(STAFURLParameter.TAR_FILENAME_PARAMETER));

@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.file.utils.compression.gzip.GZipCompression;
 import fr.cnes.regards.framework.file.utils.compression.tar.TarCompression;
@@ -48,7 +49,7 @@ public class CompressionFacade {
     /**
      * Attribut permettant la journalisation.
      */
-    static private Logger logger_ = Logger.getLogger(CompressionFacade.class);
+    static private Logger logger = LoggerFactory.getLogger(CompressionFacade.class);
 
     /**
      * Taille max des fichiers compresses en ko : 2Go valeur par défaut
@@ -189,12 +190,12 @@ public class CompressionFacade {
                 sizeTotal += tmpFile.length() / BYTES_IN_KILOBYTE;
             } else {
                 listFile2Big.add(tmpFile);
-                if (logger_.isInfoEnabled()) {
+                if (logger.isInfoEnabled()) {
                     Long size = new Long(tmpFile.length() / BYTES_IN_KILOBYTE);
                     final String msg = String.format(
                                                      "The size of the file %s is %d ko, it exceeds the maximum size for the compression.",
                                                      tmpFile.getAbsoluteFile(), size);
-                    logger_.info(msg);
+                    logger.info(msg);
                 }
             }
         }
@@ -206,22 +207,22 @@ public class CompressionFacade {
             if (listFile2Compress.size() > 0) {
                 compressManagers.add(this.compress(listFile2Compress, pZipFile));
             } else {
-                if (logger_.isInfoEnabled()) {
-                    logger_.info("No file to compress");
+                if (logger.isInfoEnabled()) {
+                    logger.info("No file to compress");
                 }
             }
         } else {
-            if (logger_.isInfoEnabled()) {
-                logger_.info(String.format(
-                                           "The size of data is %d ko, it exceeds the maximum size %d ko for the compression, the compression is splitted in a multiple file.",
-                                           sizeTotal, maxArchiveSize_));
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format(
+                                          "The size of data is %d ko, it exceeds the maximum size %d ko for the compression, the compression is splitted in a multiple file.",
+                                          sizeTotal, maxArchiveSize_));
             }
             /*
              * The total size exceed the max, split it in several files
              */
             if (pRunInThread) {
                 strategy_.setRunInThread(false);
-                logger_.warn("The size of data exceeds the maximum size, synchrone compression mode is used.");
+                logger.warn("The size of data exceeds the maximum size, synchrone compression mode is used.");
             }
 
             List<File> listFileOneArchive = new ArrayList<>();

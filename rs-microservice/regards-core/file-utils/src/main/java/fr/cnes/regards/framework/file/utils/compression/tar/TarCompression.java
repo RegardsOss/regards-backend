@@ -19,7 +19,8 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.file.utils.compression.AbstractRunnableCompression;
 import fr.cnes.regards.framework.file.utils.compression.CompressManager;
@@ -47,7 +48,7 @@ public class TarCompression extends AbstractRunnableCompression {
     /**
      * Cette variable est utilisée pour logger les messages
      */
-    private static Logger logger_ = Logger.getLogger(TarCompression.class);
+    private static Logger logger = LoggerFactory.getLogger(TarCompression.class);
 
     /**
      * Tampon d'ecriture
@@ -110,9 +111,9 @@ public class TarCompression extends AbstractRunnableCompression {
                 os.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
                 for (final File fileNow : pFileList) {
-                    if (logger_.isDebugEnabled()) {
-                        logger_.debug(String.format("Adding %s file to %s file.", fileNow.getName(),
-                                                    CompressionTypeEnum.TAR.toString()));
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("Adding %s file to %s file.", fileNow.getName(),
+                                                   CompressionTypeEnum.TAR.toString()));
                     }
 
                     TarArchiveEntry entry;
@@ -142,13 +143,13 @@ public class TarCompression extends AbstractRunnableCompression {
 
                 }
 
-                if (logger_.isDebugEnabled()) {
-                    logger_.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
                 }
             }
         } catch (final IOException | ArchiveException ioE) {
             compressedFile.delete();
-            logger_.error(ioE);
+            logger.error(ioE.getMessage(), ioE);
             throw new CompressionException(String.format("IO error during %s compression", CompressionTypeEnum.TAR),
                     ioE);
         }
@@ -267,9 +268,9 @@ public class TarCompression extends AbstractRunnableCompression {
                 }
             }
 
-            if (logger_.isDebugEnabled()) {
-                logger_.debug(String.format("The file %s is uncompressed to %s", pCompressedFile.getName(),
-                                            pOutputDir.getName()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("The file %s is uncompressed to %s", pCompressedFile.getName(),
+                                           pOutputDir.getName()));
             }
 
         } catch (final IOException ioE) {
