@@ -23,7 +23,7 @@ import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -69,6 +69,8 @@ public class OrderService implements IOrderService {
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
         order.setEmail(basket.getEmail());
+        // To generate orderId
+        order = repos.save(order);
 
         // Dataset selections
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
@@ -86,7 +88,7 @@ public class OrderService implements IOrderService {
                     Multimap<DataType, DataFile> filesMultimap = object.getFiles();
                     for (DataType dataType : DATA_TYPES) {
                         for (DataFile file : filesMultimap.get(dataType)) {
-                            bucketFiles.add(new OrderDataFile(file, object.getIpId()));
+                            bucketFiles.add(new OrderDataFile(file, object.getIpId(), order.getId()));
                         }
                     }
                     // If sum of files size > bucketSize, add a new bucket
@@ -161,7 +163,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public Page<Order> findAll(Pageable pageRequest) {
-        return repos.findAllOrderByCreationDateDesc(pageRequest);
+        return repos.findAllByOrderByCreationDateDesc(pageRequest);
     }
 
     @Override

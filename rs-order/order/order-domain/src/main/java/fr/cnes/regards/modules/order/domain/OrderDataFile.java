@@ -3,15 +3,22 @@ package fr.cnes.regards.modules.order.domain;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
 import java.net.URI;
-import java.nio.file.FileSystems;
+import java.net.URISyntaxException;
 
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.framework.urn.converters.UrnConverter;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 
 /**
@@ -19,10 +26,18 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_data_file")
-public class OrderDataFile extends DataFile {
+@Table(name = "t_data_file", indexes = @Index(name = "checksum_idx", columnList = "checksum"))
+public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
+
+    private Long id;
 
     private FileState state;
+
+    /**
+     * Mandatory orderId to know whose data file belongs to BUT without managing a ManyToOne relation (which will be a
+     * mess you don't even want to understand, believe me)
+     */
+    private Long orderId;
 
     /**
      * DataObject IP_ID
@@ -33,10 +48,10 @@ public class OrderDataFile extends DataFile {
         this.state = state;
     }
 
-    public OrderDataFile() {
+    private OrderDataFile() {
     }
 
-    public OrderDataFile(DataFile dataFile, UniformResourceName ipId) {
+    public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
         setName(dataFile.getName());
         setSize(dataFile.getSize());
         setUri(dataFile.getUri());
@@ -46,22 +61,36 @@ public class OrderDataFile extends DataFile {
         setState(FileState.PENDING);
         setOnline(dataFile.getOnline());
         setIpId(ipId);
+        setOrderId(orderId);
     }
 
-    @Column(name = "data_objects_ip_id", )
+    @Override
+    @Id
+    @SequenceGenerator(name = "DataFileSequence", initialValue = 1, sequenceName = "seq_data_file")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DataFileSequence")
+    public Long getId() {
+        return id;
+    }
+
+    @Column(name = "data_objects_ip_id", length = UniformResourceName.MAX_SIZE)
     @Convert(converter = UrnConverter.class)
     public UniformResourceName getIpId() {
         return ipId;
     }
 
+    @Column(name = "state", length = 16)
+    @Enumerated(EnumType.STRING)
     public FileState getState() {
         return state;
     }
 
-    @Override
-    @Column(name = "uri", columnDefinition = "text")
-    public URI getUri() {
-        return super.getUri();
+    @Column(name = "url", columnDefinition = "text")
+    public String getUrl() {
+        return super.getUri().toString();
+    }
+
+    public void setUrl(String url) throws URISyntaxException {
+        super.setUri(new URI(url));
     }
 
     @Override
@@ -100,6 +129,18 @@ public class OrderDataFile extends DataFile {
         return super.getOnline();
     }
 
+    @Column(name = "order_id") // No foreign key
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public void setIpId(UniformResourceName ipId) {
         this.ipId = ipId;

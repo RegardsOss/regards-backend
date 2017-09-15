@@ -42,7 +42,7 @@ public interface IOrderService {
     Page<Order> findAll(Pageable pageRequest);
 
     default Page<Order> findAll(int pageSize) {
-        return findAll(new PageRequest(1, pageSize));
+        return findAll(new PageRequest(0, pageSize));
     }
 
     /**
@@ -53,7 +53,7 @@ public interface IOrderService {
     Page<Order> findAll(String user, Pageable pageRequest);
 
     default Page<Order> findAll(String user, int pageSize) {
-        return findAll(user, new PageRequest(1, pageSize));
+        return findAll(user, new PageRequest(0, pageSize));
     }
 
 }

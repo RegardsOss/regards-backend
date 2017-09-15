@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +34,10 @@ import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -56,6 +61,9 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @Autowired
     private IOrderService orderService;
+
+    @Autowired
+    private IOrderDataFileRepository dataFileRepository;
 
     @Autowired
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
@@ -105,17 +113,17 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/download")
-    public StreamingResponseBody downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response) {
+    public StreamingResponseBody downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
+            HttpServletResponse response) {
 
-        Order order = orderService.loadSimple()
-        Optional<OrderDataFile> dataFileOpt = dsTask.getReliantTasks().stream().flatMap(ft -> ft.getFiles().stream())
-                .filter(f -> f.getChecksum().equals(checksum)).findFirst();
-        if (!dataFileOpt.isPresent()) {
-            throw new NoSuchElementException();
-        }
-        OrderDataFile dataFile = dataFileOpt.get();
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
+        Order order = orderService.loadComplete(orderId);
+        Set<Long> fileTaskIds = order.getDatasetTasks().stream().flatMap(ds -> ds.getReliantTasks().stream())
+                .map(FilesTask::getId).collect(Collectors.toSet());
+
+        List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailableAndOnline(fileTaskIds);
+
+        response.addHeader("Content-disposition", "attachment;filename=order.zip");
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
         return os -> {
             // En théorie, le retour du storage service client est de ce type là :
@@ -133,6 +141,11 @@ public class OrderController implements IResourceController<OrderDto> {
                 os.flush();
                 os.close();
             }
+
+            for (OrderDataFile dataFile : dataFiles) {
+                dataFile.setState(FileState.DOWNLOADED);
+            }
+            dataFileRepository.save(dataFiles);
         };
 
     }

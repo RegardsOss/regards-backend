@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.order.domain;
 
+import javax.persistence.AssociationOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -33,11 +34,11 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  */
 @Entity
 @Table(name = "t_order")
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.complete",
-        attributeNodes = @NamedAttributeNode(value = "datasetTasks", subgraph = "graph.complete.datasetTasks"),
-        subgraphs = @NamedSubgraph(name = "graph.complete.datasetTasks",
-                attributeNodes = @NamedAttributeNode(value = "reliantTasks"))),
-        @NamedEntityGraph(name = "graph.simple", attributeNodes = @NamedAttributeNode(value = "datasetTasks")) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.order.complete",
+        attributeNodes = @NamedAttributeNode(value = "datasetTasks", subgraph = "graph.order.complete.datasetTasks"),
+        subgraphs = { @NamedSubgraph(name = "graph.order.complete.datasetTasks",
+                                     attributeNodes = @NamedAttributeNode(value = "reliantTasks"))} ),
+        @NamedEntityGraph(name = "graph.order.simple", attributeNodes = @NamedAttributeNode(value = "datasetTasks")) })
 public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     @Id
@@ -54,7 +55,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "uid")
     private UUID uid = UUID.randomUUID();
 
-    @Column(nullable = false)
+    @Column(name = "creation_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime creationDate;
 

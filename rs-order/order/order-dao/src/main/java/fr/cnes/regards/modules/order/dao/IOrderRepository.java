@@ -16,18 +16,18 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
     /**
      * Load Order with all lazy relations
      */
-    @EntityGraph("graph.complete")
+    @EntityGraph("graph.order.complete")
     Order findCompleteById(Long id);
 
     /**
      * Load Order one level lazy relations (ie. only dataTasks)
      */
-    @EntityGraph("graph.simple")
+    @EntityGraph("graph.order.simple")
     Order findSimpleById(Long id);
 
-    @EntityGraph("graph.simple")
-    Page<Order> findAllOrderByCreationDateDesc(Pageable pageRequest);
+    @EntityGraph("graph.order.simple")
+    Page<Order> findAllByOrderByCreationDateDesc(Pageable pageRequest);
 
-    @EntityGraph("graph.simple")
+    @EntityGraph("graph.order.simple")
     Page<Order> findAllByEmailOrderByCreationDateDesc(String email, Pageable pageRequest);
 }

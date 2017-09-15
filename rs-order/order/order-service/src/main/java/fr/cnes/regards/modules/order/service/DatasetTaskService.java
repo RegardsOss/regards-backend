@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -8,6 +9,7 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
 /**
  * @author oroussel
  */
+@Service
 public class DatasetTaskService implements IDatasetTaskService {
     @Autowired
     private IDatasetTaskRepository repos;

@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
 @Entity
 @Table(name = "t_dataset_task")
 @PrimaryKeyJoinColumn(foreignKey = @ForeignKey(name = "fk_task_id"))
-@NamedEntityGraph(name = "graph.complete", attributeNodes = @NamedAttributeNode(value = "reliantTasks"))
+@NamedEntityGraph(name = "graph.datasetTask.complete", attributeNodes = @NamedAttributeNode(value = "reliantTasks"))
 public class DatasetTask extends AbstractReliantTask<FilesTask> implements Comparable<DatasetTask> {
 
     /**

@@ -5,12 +5,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,16 +26,17 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.OAISIdentifier;
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.StorageFilesJobParameter;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
@@ -44,6 +50,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles("test")
 @Transactional
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OrderServiceIT {
 
     @Autowired
@@ -51,6 +58,9 @@ public class OrderServiceIT {
 
     @Autowired
     private IOrderRepository orderRepository;
+
+    @Autowired
+    private IOrderDataFileRepository dataFileRepository;
 
     @Autowired
     private IBasketRepository basketRepository;
@@ -67,6 +77,9 @@ public class OrderServiceIT {
                                                                                 "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                "ORDER", UUID.randomUUID(), 1);
+
+    public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
                                                                                 "ORDER", UUID.randomUUID(), 1);
 
     @Before
@@ -132,12 +145,19 @@ public class OrderServiceIT {
 
         // DS1 files sub order tasks
         FilesTask ds1SubOrder1Task = new FilesTask();
-        DataFile dataFile = new DataFile();
-        dataFile.setUri(new URI("staff://toto/titi/tutu"));
-        dataFile.setOnline(true);
-        dataFile.setSize(1_000_000l);
-        dataFile.setName("tutu");
-        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile, DO1_IP_ID));
+        DataFile dataFile1 = new DataFile();
+        dataFile1.setUri(new URI("staff://toto/titi/tutu"));
+        dataFile1.setOnline(true);
+        dataFile1.setSize(1_000_000l);
+        dataFile1.setName("tutu");
+        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile1, DO1_IP_ID));
+
+        DataFile dataFile2 = new DataFile();
+        dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
+        dataFile2.setOnline(false);
+        dataFile2.setSize(1l);
+        dataFile2.setName("tutu2");
+        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile2, DO2_IP_ID));
 
         JobInfo storageJobInfo = new JobInfo();
         storageJobInfo.setClassName("...");
@@ -145,11 +165,9 @@ public class OrderServiceIT {
         storageJobInfo.setOwner(USER_EMAIL);
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
-        //        Multimap<UniformResourceName, DataFile> filesMultimap = HashMultimap.create();
-        //        filesMultimap.put(DO1_IP_ID, dataFile);
-        storageJobInfo.setParameters(
-                new StorageFilesJobParameter(new OrderDataFile[] { new OrderDataFile(dataFile, DO1_IP_ID) }));
-        //        storageJobInfo.setParameters(new JobParameter("files", filesMultimap));
+        storageJobInfo.setParameters(new StorageFilesJobParameter(
+                new OrderDataFile[] { new OrderDataFile(dataFile1, DO1_IP_ID),
+                                      new OrderDataFile(dataFile2, DO2_IP_ID) }));
 
         storageJobInfo = jobInfoRepository.save(storageJobInfo);
 
@@ -163,8 +181,18 @@ public class OrderServiceIT {
         System.out.println("-----------------------------------------------");
         System.out.println(orderFromDb);
         orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next().getReliantTasks();
-        OrderDataFile[] datafiles = orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next().getJobInfo().getParameters().iterator().next().getValue();
+        System.out.println(
+                orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next().getFiles()
+                        .iterator().next().getName());
+        OrderDataFile[] datafiles = orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next()
+                .getJobInfo().getParameters().iterator().next().getValue();
         System.out.println(datafiles);
         System.out.println("-----------------------------------------------");
+
+        Set<Long> fileTaskIds = orderFromDb.getDatasetTasks().stream().flatMap(ds -> ds.getReliantTasks().stream())
+                .map(FilesTask::getId).collect(Collectors.toSet());
+        List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailableAndOnline(fileTaskIds);
+        Assert.assertEquals(1, dataFiles.size());
     }
+
 }

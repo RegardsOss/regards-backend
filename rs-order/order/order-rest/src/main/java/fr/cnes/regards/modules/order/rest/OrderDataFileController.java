@@ -34,9 +34,11 @@ import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IDatasetTaskService;
+import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 
 /**
  * @author oroussel
@@ -50,6 +52,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @Autowired
     private IDatasetTaskService datasetTaskService;
+
+    @Autowired
+    private IOrderDataFileService dataFileService;
 
     @Value("${regards.order.files.displayable.maximum:5000}")
     private int maximumDisplayableDataFiles;
@@ -78,38 +83,13 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @ResourceAccess(description = "Download file", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = "/orders/{orderId}/dataset/{datasetId}/files/{checksum}")
+    @RequestMapping(method = RequestMethod.GET,
+            path = "/orders/{orderId}/dataset/{datasetId}/aips/{aipId}/files/{checksum}")
     @ResponseBody
     public StreamingResponseBody downloadFile(@PathVariable("orderId") Long orderId,
-            @PathVariable("datasetId") Long datasetId, @PathVariable("checksum") String checksum,
-            HttpServletResponse response) throws NoSuchElementException {
-        DatasetTask dsTask = datasetTaskService.loadComplete(datasetId);
-        Optional<OrderDataFile> dataFileOpt = dsTask.getReliantTasks().stream().flatMap(ft -> ft.getFiles().stream())
-                .filter(f -> f.getChecksum().equals(checksum)).findFirst();
-        if (!dataFileOpt.isPresent()) {
-            throw new NoSuchElementException();
-        }
-        OrderDataFile dataFile = dataFileOpt.get();
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
+            @PathVariable("datasetId") Long datasetId, @PathVariable("aipId") String aipId,
+            @PathVariable("checksum") String checksum, HttpServletResponse response) throws NoSuchElementException {
 
-        return os -> {
-            // En théorie, le retour du storage service client est de ce type là :
-            ResponseEntity<InputStreamResource> re = ResponseEntity.ok(new InputStreamResource(new InputStream() {
-
-                @Override
-                public int read() throws IOException {
-                    return 0;
-                }
-            }));
-
-            // Reading / Writing
-            try (InputStream is = re.getBody().getInputStream()) {
-                ByteStreams.copy(is, os);
-                os.flush();
-                os.close();
-            }
-        };
     }
 
     @Override

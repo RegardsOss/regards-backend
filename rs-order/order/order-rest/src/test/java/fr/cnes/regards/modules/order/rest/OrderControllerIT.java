@@ -23,9 +23,6 @@ import fr.cnes.regards.modules.search.client.ICatalogClient;
  * @author oroussel
  */
 public class OrderControllerIT extends AbstractRegardsIT {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrderControllerIT.class);
-
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
@@ -39,11 +36,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
         public ICatalogClient catalogClient() {
             return Mockito.mock(ICatalogClient.class);
         }
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
     }
 
     @Before
@@ -69,4 +61,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Test POST without argument
         performDefaultPost("/orders", null, Lists.newArrayList(MockMvcResultMatchers.status().isNotFound()), "error");
     }
+
+
 }
