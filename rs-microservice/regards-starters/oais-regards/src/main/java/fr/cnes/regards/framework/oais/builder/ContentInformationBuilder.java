@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.oais.builder;
 
 import java.net.URL;
 
+import javax.annotation.Nullable;
+
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -51,7 +53,10 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param url reference to the physical file
      * @param filename optional filename (may be null)
      */
-    public void setDataObject(DataType dataType, URL url, String filename) {
+    public void setDataObject(DataType dataType, URL url, @Nullable String filename) {
+        Assert.notNull(dataType, "Data type is required");
+        Assert.notNull(url, "URL is required");
+
         DataObject dataObject = new DataObject();
         dataObject.setFilename(filename);
         dataObject.setDataType(dataType);
@@ -75,9 +80,9 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param mimeType MIME type
      */
     public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
-        Assert.notNull(mimeName, "Mime name cannot be null.");
-        Assert.notNull(mimeDescription, "Mime description cannot be null");
-        Assert.notNull(mimeType, "Mime type cannot be null");
+        Assert.hasLength(mimeName, "Mime name cannot be null.");
+        Assert.hasLength(mimeDescription, "Mime description cannot be null");
+        Assert.hasLength(mimeType, "Mime type cannot be null");
 
         Syntax syntax = new Syntax();
         syntax.setName(mimeName);
@@ -99,6 +104,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
             String semanticDescription) {
         setSyntax(mimeName, mimeDescription, mimeType);
 
+        Assert.hasLength(semanticDescription, "Semantic description cannot be null. Use alternative method otherwise.");
         Semantic semantic = new Semantic();
         semantic.setDescription(semanticDescription);
 

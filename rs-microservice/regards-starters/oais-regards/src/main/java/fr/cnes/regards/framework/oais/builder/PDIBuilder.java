@@ -22,6 +22,8 @@ import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.Event;
@@ -67,7 +69,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * @param facility required facility
      * @param additional optional additional information (may be null)
      */
-    public void setProvenanceInformation(String facility, Map<String, Object> additional) {
+    public void setProvenanceInformation(String facility, @Nullable Map<String, Object> additional) {
         Assert.hasLength(facility, "Facility is required");
         pdi.getProvenanceInformation().setFacility(facility);
 
@@ -103,13 +105,12 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * @param comment event comment
      * @param date event date
      */
-    public void addProvenanceInformationEvent(String type, String comment, OffsetDateTime date) {
-        Assert.hasLength(comment, "Event comment is required");
-        Assert.notNull(date, "Event date is required");
+    public void addProvenanceInformationEvent(@Nullable String type, String comment, OffsetDateTime date) {
         Event event = new Event();
         event.setType(type);
         event.setComment(comment);
         event.setDate(date);
+        addProvenanceInformationEvents(event);
     }
 
     /**
@@ -161,8 +162,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * @param publicReleaseDate optional public release date (may be null)
      */
     public void setAccessRightInformation(String publisherDID, String publisherID, String dataRights,
-            OffsetDateTime publicReleaseDate) {
-        Assert.hasLength(publisherDID, "publisher DID is required");
+            @Nullable OffsetDateTime publicReleaseDate) {
+        Assert.hasLength(publisherDID, "Publisher DID is required");
         Assert.hasLength(publisherID, "Publisher ID is required");
         Assert.hasLength(dataRights, "Data rights is required");
         pdi.getAccesRightInformation().setPublisherDID(publisherDID);

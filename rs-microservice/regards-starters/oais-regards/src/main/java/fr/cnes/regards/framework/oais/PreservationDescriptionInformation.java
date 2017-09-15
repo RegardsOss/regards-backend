@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,13 +36,13 @@ public class PreservationDescriptionInformation {
     private Map<String, Object> contextInformation;
 
     @NotNull
-    private ProvenanceInformation provenanceInformation = new ProvenanceInformation();
+    private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
 
     @NotNull
-    private FixityInformation fixityInformation = new FixityInformation();
+    private final FixityInformation fixityInformation = new FixityInformation();
 
     @NotNull
-    private AccessRightInformation accessRightInformation = new AccessRightInformation();
+    private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
     public void setContextInformation(Map<String, Object> pContextInformation) {
         contextInformation = pContextInformation;
@@ -68,23 +67,14 @@ public class PreservationDescriptionInformation {
         return accessRightInformation;
     }
 
-    // TODO delete
-    @Deprecated
-    public PreservationDescriptionInformation generate() throws NoSuchAlgorithmException {
-        accessRightInformation = new AccessRightInformation().generate();
-        fixityInformation = new FixityInformation().generate();
-        provenanceInformation = new ProvenanceInformation().generate();
-        return this;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((accessRightInformation == null) ? 0 : accessRightInformation.hashCode());
+        result = (prime * result) + accessRightInformation.hashCode();
         result = (prime * result) + ((contextInformation == null) ? 0 : contextInformation.hashCode());
-        result = (prime * result) + ((fixityInformation == null) ? 0 : fixityInformation.hashCode());
-        result = (prime * result) + ((provenanceInformation == null) ? 0 : provenanceInformation.hashCode());
+        result = (prime * result) + fixityInformation.hashCode();
+        result = (prime * result) + provenanceInformation.hashCode();
         return result;
     }
 
@@ -100,11 +90,7 @@ public class PreservationDescriptionInformation {
             return false;
         }
         PreservationDescriptionInformation other = (PreservationDescriptionInformation) obj;
-        if (accessRightInformation == null) {
-            if (other.accessRightInformation != null) {
-                return false;
-            }
-        } else if (!accessRightInformation.equals(other.accessRightInformation)) {
+        if (!accessRightInformation.equals(other.accessRightInformation)) {
             return false;
         }
         if (contextInformation == null) {
@@ -114,20 +100,13 @@ public class PreservationDescriptionInformation {
         } else if (!contextInformation.equals(other.contextInformation)) {
             return false;
         }
-        if (fixityInformation == null) {
-            if (other.fixityInformation != null) {
-                return false;
-            }
-        } else if (!fixityInformation.equals(other.fixityInformation)) {
+        if (!fixityInformation.equals(other.fixityInformation)) {
             return false;
         }
-        if (provenanceInformation == null) {
-            if (other.provenanceInformation != null) {
-                return false;
-            }
-        } else if (!provenanceInformation.equals(other.provenanceInformation)) {
+        if (!provenanceInformation.equals(other.provenanceInformation)) {
             return false;
         }
         return true;
     }
+
 }

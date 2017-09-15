@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.oais;
 
 import java.time.OffsetDateTime;
-import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
@@ -74,29 +73,6 @@ public class AccessRightInformation {
 
     public void setPublicReleaseDate(OffsetDateTime publicReleaseDate) {
         this.publicReleaseDate = publicReleaseDate;
-    }
-
-    // TODO remove
-    @Deprecated
-    public AccessRightInformation generate() {
-        Random random = new Random();
-        int maxStringLength = 20;
-        dataRights = String.valueOf(generateRandomString(random, maxStringLength));
-        publisherDID = String.valueOf(generateRandomString(random, maxStringLength));
-        publisherID = String.valueOf(generateRandomString(random, maxStringLength));
-        return this;
-    }
-
-    // TODO remove
-    @Deprecated
-    private char[] generateRandomString(Random random, int maxStringLength) {
-        String possibleLetters = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ";
-        int stringSize = random.nextInt(maxStringLength);
-        char[] string = new char[stringSize];
-        for (int j = 0; j < stringSize; j++) {
-            string[j] = possibleLetters.charAt(random.nextInt(possibleLetters.length()));
-        }
-        return string;
     }
 
     @Override

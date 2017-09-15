@@ -55,15 +55,6 @@ public class Syntax {
         name = pName;
     }
 
-    // TODO to remove
-    @Deprecated
-    public Syntax generate() {
-        description = "SYNTAX_DESCRIPTION";
-        mimeType = "application/name";
-        name = "NAME";
-        return this;
-    }
-
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof Syntax) && description.equals(((Syntax) pOther).description)

@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Random;
-
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -47,18 +43,6 @@ public class FixityInformation {
 
     private Long fileSize;
 
-    // TODO remove
-    @Deprecated
-    private String sha1(String input) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA1");
-        byte[] result = digest.digest(input.getBytes());
-        StringBuffer sb = new StringBuffer();
-        for (byte element : result) {
-            sb.append(Integer.toString((element & 0xff) + 0x100, 16).substring(1));
-        }
-        return sb.toString();
-    }
-
     public String getAlgorithm() {
         return algorithm;
     }
@@ -81,15 +65,6 @@ public class FixityInformation {
 
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
-    }
-
-    // TODO remove
-    @Deprecated
-    public FixityInformation generate() throws NoSuchAlgorithmException {
-        algorithm = "SHA1";
-        fileSize = new Long((new Random()).nextInt(10000000));
-        checksum = sha1("blahblah");
-        return this;
     }
 
     @Override

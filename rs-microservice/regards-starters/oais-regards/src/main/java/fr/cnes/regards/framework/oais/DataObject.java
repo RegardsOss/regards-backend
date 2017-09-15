@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.validation.constraints.NotNull;
@@ -65,14 +64,6 @@ public class DataObject {
 
     public void setUrl(URL url) {
         this.url = url;
-    }
-
-    // FIXME to remove
-    @Deprecated
-    public DataObject generate() throws MalformedURLException {
-        dataType = DataType.OTHER;
-        url = new URL("ftp://bla");
-        return this;
     }
 
     @Override

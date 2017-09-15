@@ -51,14 +51,6 @@ public class RepresentationInformation {
         this.semantic = semantic;
     }
 
-    // FIXME to remove
-    @Deprecated
-    public RepresentationInformation generate() {
-        semantic = new Semantic().generate();
-        syntax = new Syntax().generate();
-        return this;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;

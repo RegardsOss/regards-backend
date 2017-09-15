@@ -41,13 +41,6 @@ public class Semantic {
         description = pDescription;
     }
 
-    // TODO to remove
-    @Deprecated
-    public Semantic generate() {
-        description = "DESCRIPTION";
-        return this;
-    }
-
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof Semantic) && description.equals(((Semantic) pOther).description);

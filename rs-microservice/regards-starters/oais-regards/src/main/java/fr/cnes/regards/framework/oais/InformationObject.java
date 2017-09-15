@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.MalformedURLException;
-import java.security.NoSuchAlgorithmException;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -53,14 +50,6 @@ public class InformationObject {
 
     public void setPdi(PreservationDescriptionInformation pPdi) {
         pdi = pPdi;
-    }
-
-    // FIXME to remove
-    @Deprecated
-    public InformationObject generateRandomInformationObject() throws NoSuchAlgorithmException, MalformedURLException {
-        contentInformation = new ContentInformation().generate();
-        pdi = new PreservationDescriptionInformation().generate();
-        return this;
     }
 
     @Override

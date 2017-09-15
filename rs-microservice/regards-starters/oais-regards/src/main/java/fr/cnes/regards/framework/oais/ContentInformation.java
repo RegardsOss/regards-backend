@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.MalformedURLException;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -52,14 +50,6 @@ public class ContentInformation {
 
     public void setRepresentationInformation(RepresentationInformation pRepresentationInformation) {
         representationInformation = pRepresentationInformation;
-    }
-
-    // FIXME to remove
-    @Deprecated
-    public ContentInformation generate() throws MalformedURLException {
-        dataObject = new DataObject().generate();
-        representationInformation = new RepresentationInformation().generate();
-        return this;
     }
 
     @Override

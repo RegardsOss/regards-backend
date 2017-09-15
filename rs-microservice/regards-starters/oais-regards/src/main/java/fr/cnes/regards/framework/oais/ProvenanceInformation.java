@@ -38,7 +38,7 @@ public class ProvenanceInformation {
     private String facility;
 
     @NotNull
-    private List<Event> history = new ArrayList<>();
+    private final List<Event> history = new ArrayList<>();
 
     private Map<String, Object> additional;
 
@@ -61,21 +61,13 @@ public class ProvenanceInformation {
         return additional;
     }
 
-    // TODO remove
-    @Deprecated
-    public ProvenanceInformation generate() {
-        facility = "TestPerf";
-        history = new ArrayList<>();
-        return this;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + ((additional == null) ? 0 : additional.hashCode());
         result = (prime * result) + ((facility == null) ? 0 : facility.hashCode());
-        result = (prime * result) + ((history == null) ? 0 : history.hashCode());
+        result = (prime * result) + history.hashCode();
         return result;
     }
 
@@ -105,11 +97,7 @@ public class ProvenanceInformation {
         } else if (!facility.equals(other.facility)) {
             return false;
         }
-        if (history == null) {
-            if (other.history != null) {
-                return false;
-            }
-        } else if (!history.containsAll(other.history)) {
+        if (!history.containsAll(other.history)) {
             return false;
         }
         return true;

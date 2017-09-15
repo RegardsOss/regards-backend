@@ -19,9 +19,11 @@
 package fr.cnes.regards.framework.oais.builder;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.InformationObject;
@@ -33,35 +35,55 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * @author Marc Sordi
  *
  */
-public abstract class IPBuilder<T extends AbstractInformationPackage> {
+public abstract class IPBuilder<T extends AbstractInformationPackage> implements IOAISBuilder<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPBuilder.class);
 
-    private final T ip;
+    protected final T ip;
 
-    public IPBuilder(Class<T> clazz, EntityType type) throws ReflectiveOperationException {
+    public IPBuilder(Class<T> clazz, EntityType type) {
+        Assert.notNull(clazz, "Class is required");
+        Assert.notNull(type, "Entity type is required");
         try {
             ip = clazz.newInstance();
             ip.setType(type);
         } catch (InstantiationException | IllegalAccessException e) {
-            LOGGER.error("Cannot instanciate information package");
-            throw e;
+            String errorMessage = "Cannot instanciate information package";
+            LOGGER.error(errorMessage, e);
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 
+    @Override
     public T build() {
         return ip;
     }
 
+    /**
+     * Add tags to information package
+     * @param tags
+     */
     public void addTags(String... tags) {
-        if (tags != null) {
-            ip.getTags().addAll(Arrays.asList(tags));
-        }
+        Assert.notEmpty(tags, "Tags is required. Do not call method otherwise.");
+        ip.getTags().addAll(Arrays.asList(tags));
     }
 
+    public void addTags(Collection<String> tags) {
+        Assert.notNull(tags, "Tag collection cannot be null");
+        addTags(tags.toArray(new String[tags.size()]));
+    }
+
+    /**
+     * Add {@link InformationObject} to this information package
+     * @param informationObjects
+     */
     public void addInformationObjects(InformationObject... informationObjects) {
-        if (informationObjects != null) {
-            ip.getInformationObjects().addAll(Arrays.asList(informationObjects));
-        }
+        Assert.notEmpty(informationObjects, "Information object is required. Do not call method otherwise.");
+        ip.getInformationObjects().addAll(Arrays.asList(informationObjects));
+    }
+
+    public void addInformationObjects(Collection<InformationObject> informationObjects) {
+        Assert.notNull(informationObjects, "Information object collection cannot be null");
+        addInformationObjects(informationObjects.toArray(new InformationObject[informationObjects.size()]));
     }
 }
