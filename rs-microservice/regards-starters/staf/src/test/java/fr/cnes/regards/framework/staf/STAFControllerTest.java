@@ -20,7 +20,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -30,6 +34,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalFileStatusEnum;
+import fr.cnes.regards.framework.staf.domain.PhysicalTARFile;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
@@ -120,8 +125,9 @@ public class STAFControllerTest {
         configuration.setMaxTarArchivingHours(50L);
 
         configuration.setAttemptsBeforeFail(5);
-        configuration.setBiggerFileGenClass("CS1");
-        configuration.setBiggerFileGFClass("CS2");
+        configuration.setBiggerFileGenClass("CS2");
+        configuration.setBiggerFileGFClass("CS3");
+        configuration.setLittleFileClass("CS1");
         configuration.setMaxSessionsArchivingMode(10);
         configuration.setMaxSessionsRestitutionMode(10);
         configuration.setMaxSessionStreamsArchivingMode(10);
@@ -327,7 +333,7 @@ public class STAFControllerTest {
         Path newTarCurrentPath = Paths
                 .get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY, STAF_TEST_NODE,
                      String.format("%s_current", LocalDateTime.now()
-                             .format(DateTimeFormatter.ofPattern(TARController.TAR_FILE_NAME_DATA_FORMAT))));
+                             .format(DateTimeFormatter.ofPattern(TARController.TAR_FILE_NAME_DATE_FORMAT))));
         Files.createDirectories(newTarCurrentPath);
         // Add a file in it
         Files.copy(filesToArchiveWithoutInvalides.stream().findFirst().get(),
@@ -411,7 +417,7 @@ public class STAFControllerTest {
                 .get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY, STAF_TEST_NODE,
                      String.format("%s_current", LocalDateTime.now()
                              .minusHours(configuration.getMaxTarArchivingHours() + 1).format(DateTimeFormatter
-                                     .ofPattern(TARController.TAR_FILE_NAME_DATA_FORMAT))));
+                                     .ofPattern(TARController.TAR_FILE_NAME_DATE_FORMAT))));
         Files.createDirectories(newTarCurrentPath);
 
         // Add a file in it
@@ -496,7 +502,7 @@ public class STAFControllerTest {
                 .get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY, STAF_TEST_NODE,
                      String.format("%s_current", LocalDateTime.now()
                              .minusHours(configuration.getMaxTarArchivingHours() - 1).format(DateTimeFormatter
-                                     .ofPattern(TARController.TAR_FILE_NAME_DATA_FORMAT))));
+                                     .ofPattern(TARController.TAR_FILE_NAME_DATE_FORMAT))));
         Files.createDirectories(newTarCurrentPath);
 
         // Add a file in it
@@ -806,6 +812,250 @@ public class STAFControllerTest {
     }
 
     /**
+     * Testing restoration file with STAF Controller.
+     * <ul>
+     * <li> Restoring a file locally stored in STAF workspace with staf url : staf://ARCHIVE_TEST/node/test/20170505122201000.tar?filename=file.txt</li>
+     * </ul>
+     * Results exptected :
+     * <ul>
+     * <li>0 staff command stafreretrieve sent to the ARCHIVE_TEST archive with paths : node/test/file.tar</li>
+     * <li> 2 Files restored from local tar directory</li>
+     * <li> 1 File not found from local tar directory</li>
+     * </ul>
+     * @throws STAFException
+     * @throws IOException
+     */
+    @Test
+    public void testRestoreTARFilesLocallyStored() throws STAFException, IOException {
+
+        String localTarName = "20170505122201012.tar";
+        Path tarCurrentDirectoryName = Paths.get("20170505122201012" + TARController.TAR_CURRENT_PREFIX);
+
+        // Init worskapce TAR directory with the givne current tar
+        Path tarCurrentPath = Paths.get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY,
+                                        STAF_TEST_NODE, tarCurrentDirectoryName.toString());
+        Files.createDirectories(tarCurrentPath);
+        // Add files in it
+        String fileName = "file_test_1.txt";
+        String fileName2 = "file_test_2.txt";
+        String fileName3 = "file_test_3.txt";
+        String fileName4 = "file_test_4.txt";
+        String fileName5 = "file_test_5.txt";
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName),
+                   Paths.get(tarCurrentPath.toString(), fileName));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName2),
+                   Paths.get(tarCurrentPath.toString(), fileName2));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName4),
+                   Paths.get(tarCurrentPath.toString(), fileName4));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName5),
+                   Paths.get(tarCurrentPath.toString(), fileName5));
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Set<URL> stafUrlsExpectedToBeRestored = Sets.newHashSet();
+
+        // Three STAF Url , Three from a locale staf directory. But only 2 available.
+        // Simulate STAF URL for available file
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
+                .toString());
+        Path exptectedFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName);
+        stafUrlsExpectedToBeRestored.add(stafTarUrl);
+        // Simulate STAF URL for available file
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
+                .toString());
+        Path exptectedFile2 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName2);
+        stafUrlsExpectedToBeRestored.add(stafTarUrl2);
+        // Simulate STAF URL to unavaible file
+        URL stafTarUrl3 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName3)
+                .toString());
+        Path exptectedFile3 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName3);
+        stafUrls.addAll(stafUrlsExpectedToBeRestored);
+        stafUrls.add(stafTarUrl3);
+
+        // Mock collector listener
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToRestore(stafUrls);
+        // Check that there is & TAR to restsore from STAF.
+        Assert.assertEquals("There should be 1 TARs prepared to be restored.", 1, preparedFiles.size());
+        // @formatter:off
+        Set<AbstractPhysicalFile> localTars = preparedFiles
+            .stream()
+            .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode()))
+            .filter(f -> ((PhysicalTARFile) f).getLocalTarDirectory() != null)
+            .collect(Collectors.toSet());
+        // @formatter:on
+        // Check that one of the two TAR to restore is locally stored.
+        Assert.assertEquals("There should be 1 local TAR found.", 1, localTars.size());
+
+        // Do restore files
+        controller.restoreFiles(preparedFiles, RESTORE_DIRECTORY_PATH, listenerMock);
+        // No call to staf system all files are locally stored.
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+
+        // Check event sent after staf retreive.
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
+        Mockito.verify(listenerMock, Mockito.times(2)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(Mockito.any());
+        for (URL url : stafUrlsExpectedToBeRestored) {
+            Assert.assertEquals(true, argumentURL.getAllValues().contains(url));
+        }
+        Assert.assertTrue(String.format("Event for file %s successfully retrieved not sent", exptectedFile),
+                          argumentPath.getAllValues().contains(exptectedFile));
+        Assert.assertTrue(String.format("Event for file %s successfully retrieved not sent", exptectedFile2),
+                          argumentPath.getAllValues().contains(exptectedFile2));
+        Assert.assertFalse(String.format("Event for file %s successfully retrieved not sent", exptectedFile3),
+                           argumentPath.getAllValues().contains(exptectedFile3));
+
+        // Check files extracted and restore are available
+        for (Path resultFile : argumentPath.getAllValues()) {
+            Assert.assertTrue(String.format("Error restored file does not exists %s", resultFile.toString()),
+                              resultFile.toFile().exists());
+        }
+    }
+
+    /**
+     * Testing restoration file with STAF Controller.
+     * <ul>
+     * <li> Restoring a file locally stored in STAF workspace with staf url : staf://ARCHIVE_TEST/node/test/20170505122201000.tar?filename=file.txt</li>
+     * </ul>
+     * Results exptected :
+     * <ul>
+     * <li> 1 staff command stafreretrieve sent to the ARCHIVE_TEST archive with paths : node/test/file.tar</li>
+     * <li> 2 Files restored from local tar directory</li>
+     * <li> 1 File not found from local tar directory</li>
+     * <li> 1 Files restored from remote TAR</li>
+     * <li> 1 File not found from remote TAR</li>
+     * </ul>
+     * @throws STAFException
+     * @throws IOException
+     */
+    @Test
+    public void testRestoreTARFilesRemoteAndLocallyStored() throws STAFException, IOException {
+
+        // Init worskapce TAR directory with the givne current tar
+        String localTarName = "20180505122201012.tar";
+        Path tarCurrentDirectoryName = Paths.get("20180505122201012" + TARController.TAR_CURRENT_PREFIX);
+        Path tarCurrentPath = Paths.get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY,
+                                        STAF_TEST_NODE, tarCurrentDirectoryName.toString());
+        Files.createDirectories(tarCurrentPath);
+        // Add files in it
+        String fileName3 = "file_test_3.txt";
+        String fileName4 = "file_test_4.txt";
+        String fileName5 = "file_test_5.txt";
+        // Copy only 2 files into the tar current. The third one is not copy to simulate file a file not found
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName3),
+                   Paths.get(tarCurrentPath.toString(), fileName3));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName4),
+                   Paths.get(tarCurrentPath.toString(), fileName4));
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Set<URL> stafUrlsExpectedToBeRestored = Sets.newHashSet();
+
+        // Three STAF Url , Three from a locale staf directory. But only 2 available.
+        // Simulate STAF URL for available file
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName3)
+                .toString());
+        Path exptectedFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName3);
+        stafUrlsExpectedToBeRestored.add(stafTarUrl);
+        // Simulate STAF URL for available file
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName4)
+                .toString());
+        Path exptectedFile2 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName4);
+        stafUrlsExpectedToBeRestored.add(stafTarUrl2);
+        // Simulate STAF URl for available remote file
+        String remoteFileName = "file.txt";
+        URL stafTarRemoteUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + remoteFileName)
+                .toString());
+        Path exptectedFile3 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), remoteFileName);
+        stafUrlsExpectedToBeRestored.add(stafTarRemoteUrl);
+
+        stafUrls.addAll(stafUrlsExpectedToBeRestored);
+        // Simulate STAF URL to unavaible file
+        URL stafTarUrl3 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName5)
+                .toString());
+        stafUrls.add(stafTarUrl3);
+        String remoteFileName2 = "file3.txt";
+        URL stafTarRemoteUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     "file.tar?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + remoteFileName2)
+                .toString());
+        stafUrls.add(stafTarRemoteUrl2);
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieveBuffered(Mockito.any());
+
+        // Mock collector listener
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToRestore(stafUrls);
+        // Check that there is 2 TAR to restsore from STAF.
+        Assert.assertEquals("There should be 2 TARs prepared to be restored.", 2, preparedFiles.size());
+        // @formatter:off
+        Set<AbstractPhysicalFile> localTars = preparedFiles
+            .stream()
+            .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode()))
+            .filter(f -> ((PhysicalTARFile) f).getLocalTarDirectory() != null)
+            .collect(Collectors.toSet());
+        // @formatter:on
+        // Check that one of the two TAR to restore is locally stored.
+        Assert.assertEquals("There should be 1 local TAR found.", 1, localTars.size());
+        // Do restore.
+        controller.restoreFiles(preparedFiles, RESTORE_DIRECTORY_PATH, listenerMock);
+        // Call to staf system all files are locally stored.
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // Check event sent after staf retreive.
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
+        // 3 files restore succeed (2 from local, 1 from remote)
+        Mockito.verify(listenerMock, Mockito.times(3)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        // 2 files restore error (1 from local, 1 from remote)
+        Mockito.verify(listenerMock, Mockito.times(2)).fileRetrieveError(Mockito.any());
+        for (URL url : stafUrlsExpectedToBeRestored) {
+            Assert.assertEquals(String.format("URL not restored %s", url.toString()), true,
+                                argumentURL.getAllValues().contains(url));
+        }
+        Assert.assertTrue(String.format("Event for file %s successfully retrieved not sent", exptectedFile),
+                          argumentPath.getAllValues().contains(exptectedFile));
+        Assert.assertTrue(String.format("Event for file %s successfully retrieved not sent", exptectedFile2),
+                          argumentPath.getAllValues().contains(exptectedFile2));
+        Assert.assertTrue(String.format("Event for file %s successfully retrieved not sent", exptectedFile3),
+                          argumentPath.getAllValues().contains(exptectedFile3));
+
+        // Check files extracted and restore are available
+        for (Path resultFile : argumentPath.getAllValues()) {
+            Assert.assertTrue(String.format("Error restored file does not exists %s", resultFile.toString()),
+                              resultFile.toFile().exists());
+        }
+    }
+
+    /**
      * If files are not present in STAF, the STAFController have to send an error notification for each file.
      * @throws MalformedURLException
      * @throws STAFException
@@ -1019,12 +1269,123 @@ public class STAFControllerTest {
                             true, argumentURL.getValue().equals(stafUrl));
     }
 
-    public void restoreTestWithInvalidUrl() {
-        //TODO : Test to restore a file://
+    @Test
+    public void testRestoreMultiNode() throws MalformedURLException, STAFException {
+
+        String fileNameToRestore = "file.txt";
+        String otherFileNameToRestore = "file_other.txt";
+        Set<URL> stafUrls = Sets.newHashSet();
+        Map<String, String> restoreParameters = Maps.newHashMap();
+
+        URL stafUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get(STAF_TEST_NODE, fileNameToRestore).toString());
+        URL stafUrlOtherNode = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME,
+                Paths.get("/other/node", otherFileNameToRestore).toString());
+        stafUrls.add(stafUrl);
+        stafUrls.add(stafUrlOtherNode);
+        restoreParameters.put(stafUrl.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore).toString());
+        restoreParameters.put(stafUrlOtherNode.getPath().toString(),
+                              Paths.get(RESTORE_DIRECTORY_PATH.toString(), otherFileNameToRestore).toString());
+
+        // Simulate STAF Files restitution
+        Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
+                .staffilRetrieveBuffered(Mockito.any());
+
+        IClientCollectListener listenerMock = Mockito.mock(IClientCollectListener.class);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToRestore(stafUrls);
+        Assert.assertEquals("There should be 2 files to restore", 2, preparedFiles.size());
+        controller.restoreFiles(preparedFiles, RESTORE_DIRECTORY_PATH, listenerMock);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilRetrieveBuffered(restoreParameters);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        // Check event sent after staf retreive.
+        Path resultFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore);
+        ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
+        ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
+        Mockito.verify(listenerMock, Mockito.times(2)).fileRetreived(argumentURL.capture(), argumentPath.capture());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
+        Assert.assertEquals(true, argumentURL.getAllValues().contains(stafUrl));
+        Assert.assertEquals(true, argumentURL.getAllValues().contains(stafUrlOtherNode));
+        Assert.assertEquals(true, argumentPath.getAllValues()
+                .contains(Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore)));
+        Assert.assertEquals(true, argumentPath.getAllValues()
+                .contains(Paths.get(RESTORE_DIRECTORY_PATH.toString(), otherFileNameToRestore)));
+        Assert.assertTrue("Normal file restoration error. File does not exits !", resultFile.toFile().exists());
     }
 
     @Test
-    public void deleteTestWithTARFullDeletion() throws MalformedURLException, STAFException {
+    public void testStoreMultiNode() throws STAFException {
+        // Force use of store in normal mode by setting file max size limit low.
+        configuration.setMinFileSize(1000L);
+        configuration.setMaxFileSize(10000L);
+
+        String node1 = "/test/node1/";
+        String node2 = "/test/node2/";
+        Set<Path> filesToArchiveInNode1 = Sets.newHashSet();
+        filesToArchiveInNode1.add(Paths.get("src/test/resources/staf/income/file_test_1.txt"));
+        filesToArchiveInNode1.add(Paths.get("src/test/resources/staf/income/file_test_2.txt"));
+        Set<Path> filesToArchiveInNode2 = Sets.newHashSet();
+        filesToArchiveInNode2.add(Paths.get("src/test/resources/staf/income/file_test_3.txt"));
+        filesToArchiveInNode2.add(Paths.get("src/test/resources/staf/income/file_test_4.txt"));
+
+        Map<Path, Set<Path>> filesToArchivePerNode = Maps.newHashMap();
+        filesToArchivePerNode.put(Paths.get(node1), filesToArchiveInNode1);
+        filesToArchivePerNode.put(Paths.get(node2), filesToArchiveInNode2);
+
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
+        Assert.assertEquals(4, preparedFiles.size());
+
+        // All files are ready for transfer
+        Set<AbstractPhysicalFile> filesToStore = preparedFiles.stream()
+                .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
+        Assert.assertEquals(4, filesToStore.size());
+
+        // Construct map of files to archive to test staffFileArchive method call
+        Map<String, String> localFileToArchiveMap = Maps.newHashMap();
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_3.txt",
+                                  node2 + "1f4add9aecfc4c623cdda55771f4b984");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_4.txt",
+                                  node2 + "955fd5652aadd97329a50e029163f3a9");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_2.txt",
+                                  node1 + "8e3d5e32119c70881316a1a2b17a64d1");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_1.txt",
+                                  node1 + "eadcc622739d58e8a78170b67c6ff9f5");
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
+                                                                         Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        Assert.assertEquals(4, archivedFiles.size());
+
+        // Check that STAF Controller return all raw files has archived.
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
+        rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
+        Assert.assertEquals(4, rawArchivedFiles.size());
+        filesToArchiveInNode1
+                .forEach(file -> Assert.assertTrue("Node1 : Missing a stored file in STAFController raw files stored",
+                                                   rawArchivedFiles.keySet().contains(file)));
+        filesToArchiveInNode2
+                .forEach(file -> Assert.assertTrue("Node2 : Missing a stored file in STAFController raw files stored",
+                                                   rawArchivedFiles.keySet().contains(file)));
+
+        // Check that there is 5 file url for the 5 files stored.
+        Assert.assertEquals("There should be 4 files URL from STAF for the 4 raw files to archive", 4,
+                            rawArchivedFiles.values().stream().distinct().collect(Collectors.toSet()).size());
+    }
+
+    @Test
+    public void testDeleteWithTARFullDeletion() throws MalformedURLException, STAFException {
 
         // Simulate STAF Files restitution
         Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
@@ -1067,7 +1428,7 @@ public class STAFControllerTest {
     }
 
     @Test
-    public void deleteTestWithTARReplacement() throws MalformedURLException, STAFException {
+    public void testDeleteWithTARReplacement() throws MalformedURLException, STAFException {
 
         // Simulate STAF Files restitution
         Mockito.doAnswer(invocation -> STAFMock.mockRestoration(invocation)).when(stafSessionMock)
@@ -1104,6 +1465,166 @@ public class STAFControllerTest {
 
         Assert.assertEquals("There should be 3 files deleted from STAF System", 3, deletedFiles.size());
 
+    }
+
+    @Test
+    public void testDeleteFromLocallyStoredTAR() throws IOException, STAFException {
+        String localTarName = "20170505122201012.tar";
+        Path tarCurrentDirectoryName = Paths.get("20170505122201012" + TARController.TAR_CURRENT_PREFIX);
+
+        // Init worskapce TAR directory with the givne current tar
+        Path tarCurrentPath = Paths.get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY,
+                                        STAF_TEST_NODE, tarCurrentDirectoryName.toString());
+        Files.createDirectories(tarCurrentPath);
+        // Add files in it
+        String fileName = "file_test_1.txt";
+        String fileName2 = "file_test_2.txt";
+        String fileName3 = "file_test_3.txt";
+        String fileName4 = "file_test_4.txt";
+        String fileName5 = "file_test_5.txt";
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName),
+                   Paths.get(tarCurrentPath.toString(), fileName));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName2),
+                   Paths.get(tarCurrentPath.toString(), fileName2));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName4),
+                   Paths.get(tarCurrentPath.toString(), fileName4));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName5),
+                   Paths.get(tarCurrentPath.toString(), fileName5));
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Set<URL> stafUrlsExpectedToBeDeleted = Sets.newHashSet();
+
+        // Three STAF Url , Three from a locale staf directory. But only 2 available.
+        // Simulate STAF URL for available file
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
+                .toString());
+        Path exptectedFile = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName);
+        stafUrlsExpectedToBeDeleted.add(stafTarUrl);
+        // Simulate STAF URL for available file
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
+                .toString());
+        Path exptectedFile2 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName2);
+        stafUrlsExpectedToBeDeleted.add(stafTarUrl2);
+        // Simulate STAF URL to unavaible file
+        URL stafTarUrl3 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName3)
+                .toString());
+        Path exptectedFile3 = Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileName3);
+        stafUrls.addAll(stafUrlsExpectedToBeDeleted);
+        stafUrls.add(stafTarUrl3);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToDelete(stafUrls);
+        // Check that there is & TAR to restsore from STAF.
+        Assert.assertEquals("There should be 1 TARs prepared to be restored.", 1, preparedFiles.size());
+        // @formatter:off
+        Set<AbstractPhysicalFile> localTars = preparedFiles
+            .stream()
+            .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode()))
+            .filter(f -> ((PhysicalTARFile) f).getLocalTarDirectory() != null)
+            .collect(Collectors.toSet());
+        // @formatter:on
+        // Check that one of the two TAR to restore is locally stored.
+        Assert.assertEquals("There should be 1 local TAR found.", 1, localTars.size());
+
+        // Do restore files
+        Set<URL> deletedFiles = controller.deleteFiles(preparedFiles);
+        // No call to staf system all files are locally stored.
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+
+        stafUrlsExpectedToBeDeleted.forEach(url -> Assert
+                .assertTrue(String.format("File %s should have beend deleted", url), deletedFiles.contains(url)));
+
+        // Check files deleted and restore are available
+        Assert.assertTrue("File still present in dir",
+                          !Paths.get(tarCurrentPath.toString(), fileName).toFile().exists());
+        Assert.assertTrue("File still present in dir",
+                          !Paths.get(tarCurrentPath.toString(), fileName2).toFile().exists());
+        Assert.assertTrue("File should not be deleted",
+                          Paths.get(tarCurrentPath.toString(), fileName4).toFile().exists());
+        Assert.assertTrue("File should not be deleted",
+                          Paths.get(tarCurrentPath.toString(), fileName5).toFile().exists());
+    }
+
+    @Test
+    public void testDeleteFromLocallyStoredTAR2() throws IOException, STAFException {
+        String localTarName = "20170505122201012.tar";
+        Path tarCurrentDirectoryName = Paths.get("20170505122201012" + TARController.TAR_CURRENT_PREFIX);
+
+        // Init worskapce TAR directory with the givne current tar
+        Path tarCurrentPath = Paths.get(STAF_WORKSPACE_PATH.toString(), STAF_ARCHIVE_NAME, TARController.TAR_DIRECTORY,
+                                        STAF_TEST_NODE, tarCurrentDirectoryName.toString());
+        Files.createDirectories(tarCurrentPath);
+        // Add files in it
+        String fileName = "file_test_1.txt";
+        String fileName2 = "file_test_2.txt";
+        String fileName3 = "file_test_3.txt";
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName),
+                   Paths.get(tarCurrentPath.toString(), fileName));
+        Files.copy(Paths.get("src/test/resources/staf/income/" + fileName2),
+                   Paths.get(tarCurrentPath.toString(), fileName2));
+
+        Set<URL> stafUrls = Sets.newHashSet();
+        Set<URL> stafUrlsExpectedToBeDeleted = Sets.newHashSet();
+
+        // Three STAF Url , Three from a locale staf directory. But only 2 available.
+        // Simulate STAF URL for available file
+        URL stafTarUrl = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName)
+                .toString());
+        stafUrlsExpectedToBeDeleted.add(stafTarUrl);
+        // Simulate STAF URL for available file
+        URL stafTarUrl2 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName2)
+                .toString());
+        stafUrlsExpectedToBeDeleted.add(stafTarUrl2);
+        // Simulate STAF URL to unavaible file
+        URL stafTarUrl3 = new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, Paths
+                .get(STAF_TEST_NODE,
+                     localTarName + "?" + STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName() + "=" + fileName3)
+                .toString());
+        stafUrls.addAll(stafUrlsExpectedToBeDeleted);
+        stafUrls.add(stafTarUrl3);
+
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToDelete(stafUrls);
+        // Check that there is & TAR to restsore from STAF.
+        Assert.assertEquals("There should be 1 TARs prepared to be restored.", 1, preparedFiles.size());
+        // @formatter:off
+        Set<AbstractPhysicalFile> localTars = preparedFiles
+            .stream()
+            .filter(f -> STAFArchiveModeEnum.TAR.equals(f.getArchiveMode()))
+            .filter(f -> ((PhysicalTARFile) f).getLocalTarDirectory() != null)
+            .collect(Collectors.toSet());
+        // @formatter:on
+        // Check that one of the two TAR to restore is locally stored.
+        Assert.assertEquals("There should be 1 local TAR found.", 1, localTars.size());
+
+        // Do restore files
+        Set<URL> deletedFiles = controller.deleteFiles(preparedFiles);
+        // No call to staf system all files are locally stored.
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilRetrieveBuffered(Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+
+        stafUrlsExpectedToBeDeleted.forEach(url -> Assert
+                .assertTrue(String.format("File %s should have beend deleted", url), deletedFiles.contains(url)));
+
+        // Check directory is deleted.
+        Assert.assertTrue("Directory still present in dir", !tarCurrentPath.toFile().exists());
     }
 
 }

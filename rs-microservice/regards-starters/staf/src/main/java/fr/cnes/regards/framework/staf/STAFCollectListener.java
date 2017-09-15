@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -32,7 +33,6 @@ import fr.cnes.regards.framework.staf.domain.PhysicalTARFile;
 import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.event.CollectEvent;
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
-import fr.cnes.regards.framework.staf.event.ICollectListener;
 import fr.cnes.regards.framework.staf.protocol.STAFURLException;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 
@@ -48,7 +48,7 @@ import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
  * @author Sébastien Binda
  *
  */
-public class STAFCollectListener implements ICollectListener {
+public class STAFCollectListener {
 
     /**
      * Class logger
@@ -84,16 +84,15 @@ public class STAFCollectListener implements ICollectListener {
         clientListener = pClientListener;
     }
 
-    @Override
     public void collectEnded(CollectEvent pEvent) {
 
         // For each file restored from STAF System
         for (Path stafFilePathRestored : pEvent.getRestoredFilePaths()) {
             Path restoredFilePath = Paths.get(restorationDirectoryPath.toString(),
                                               stafFilePathRestored.getFileName().toString());
-            allFilesToRestore.stream().filter(fileToRestore -> {
-                return stafFilePathRestored.equals(fileToRestore.getSTAFFilePath());
-            }).forEach(physicalFile -> handleFileRestored(physicalFile, restoredFilePath));
+            allFilesToRestore.stream()
+                    .filter(fileToRestore -> stafFilePathRestored.equals(fileToRestore.getSTAFFilePath()))
+                    .forEach(physicalFile -> handleFileRestored(physicalFile, restoredFilePath));
         }
 
         for (Path stafFilePathNotRestored : pEvent.getNotRestoredFilePaths()) {
@@ -101,6 +100,18 @@ public class STAFCollectListener implements ICollectListener {
                     .filter(fileToRestore -> stafFilePathNotRestored.equals(fileToRestore.getSTAFFilePath()))
                     .forEach(this::handleRestorError);
         }
+    }
+
+    /**
+     * Handle restoration success for files in a TAR locally stored. (waiting to be store in STAF System).
+     * @param pRemoteSTAFTARPath {@link Path} of the STAF remote TAR file asked for restoration.
+     */
+    public void localTARCollectSucceed(Path pRemoteSTAFTARPath) {
+        // Find the PhysicalTarFile to restore associated to the given remote STAF Path
+        allFilesToRestore.stream()
+                .filter(fileToRestore -> STAFArchiveModeEnum.TAR.equals(fileToRestore.getArchiveMode()))
+                .filter(fileToRestore -> pRemoteSTAFTARPath.equals(fileToRestore.getSTAFFilePath()))
+                .forEach(physicalFile -> handleTarInFileLocallyRestored((PhysicalTARFile) physicalFile));
     }
 
     /**
@@ -121,11 +132,9 @@ public class STAFCollectListener implements ICollectListener {
                     sendFileRetrieveErrorNotification(STAFURLFactory
                             .getCutFileSTAFUrl(partNotRestored.getIncludingCutFile()));
                 }
-
             } else {
                 // For other case TAR and NORMAL notify listener for the files in error.
-                Set<URL> urls = STAFURLFactory.getSTAFURLs(pFileNotRestored);
-                urls.forEach(this::sendFileRetrieveErrorNotification);
+                STAFURLFactory.getSTAFURLs(pFileNotRestored).forEach(this::sendFileRetrieveErrorNotification);
             }
         } catch (STAFURLException e) {
             LOG.error("[STAF] Invalid file to handle restore error", e);
@@ -240,7 +249,7 @@ public class STAFCollectListener implements ICollectListener {
             }
             // Check files existance and notify client if files are well restored.
             pTARFileRestored.getFilesInTar().forEach((fileInTarPath,
-                    rawPath) -> handleTARInFileRestored(tarExtractionPath, fileInTarPath, urls.get(rawPath)));
+                    rawPath) -> handleTARInFileRestored(tarExtractionPath, fileInTarPath, urls.get(rawPath), false));
         } catch (STAFURLException e1) {
             LOG.error("[STAF] Invalid file restored", e1);
         } finally {
@@ -261,13 +270,37 @@ public class STAFCollectListener implements ICollectListener {
     }
 
     /**
+     * Handle restoration of each files in TAR for the given locally stored {@link pTarLocallyRestored}
+     * @param pTarLocallyRestored {@link PhysicalTARFile} locally stored TAR file from which restore files.
+     */
+    private void handleTarInFileLocallyRestored(PhysicalTARFile pTarLocallyRestored) {
+        if ((pTarLocallyRestored.getLocalTarDirectory() != null)
+                && !pTarLocallyRestored.getLocalTarDirectory().toFile().exists()) {
+            LOG.error("[STAF] Error trying to restore files from local tar {}. Local tar directory {} does not exists.",
+                      pTarLocallyRestored.getLocalFilePath(), pTarLocallyRestored.getLocalTarDirectory());
+        }
+        pTarLocallyRestored.getFilesInTar().forEach((fileInTarPath, rawPath) -> {
+            try {
+                Optional<URL> url = STAFURLFactory.getTARFileSTAFUrl(pTarLocallyRestored, fileInTarPath);
+                if (url.isPresent()) {
+                    handleTARInFileRestored(pTarLocallyRestored.getLocalTarDirectory(), fileInTarPath, url.get(), true);
+                }
+            } catch (STAFURLException e) {
+                LOG.error("[STAF] Invalid file to handle restore error", e);
+            }
+        });
+    }
+
+    /**
      * Handle restoration for one file from a restored TAR File.
      * Send notification to the {@link IClientCollectListener} for the given restored file.
      * @param pTARExtractionPath {@link Path} to the TAR restored extraction directory.
      * @param pFileRestoredFromTAR {@link Path} of the file in TAR restored.
      * @param pFileRestoredSTAFURL origine {@link URL} of the STAF file asked for restoration
+     * @param move or copy file from extraction directory to restoration path ?
      */
-    private void handleTARInFileRestored(Path pTARExtractionPath, Path pFileRestoredFromTAR, URL pFileRestoredSTAFURL) {
+    private void handleTARInFileRestored(Path pTARExtractionPath, Path pFileRestoredFromTAR, URL pFileRestoredSTAFURL,
+            boolean keepOriginalFile) {
         Path extractedfilePath = Paths.get(pTARExtractionPath.toString(),
                                            pFileRestoredFromTAR.getFileName().toString());
         if (extractedfilePath.toFile().exists()) {
@@ -277,8 +310,12 @@ public class STAFCollectListener implements ICollectListener {
                         .getAvailableFileName(restorationDirectoryPath, extractedfilePath.getFileName().toString());
                 Path finalDestinationPath = Paths.get(restorationDirectoryPath.toString(), uniqueFileName);
                 if (!finalDestinationPath.toFile().exists()) {
-                    // Move file to final destination
-                    Files.move(extractedfilePath, finalDestinationPath);
+                    // Move or cpy file to final destination
+                    if (keepOriginalFile) {
+                        Files.copy(extractedfilePath, finalDestinationPath);
+                    } else {
+                        Files.move(extractedfilePath, finalDestinationPath);
+                    }
                     sendFileRetrievedNotification(pFileRestoredSTAFURL, finalDestinationPath);
                 } else {
                     sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);

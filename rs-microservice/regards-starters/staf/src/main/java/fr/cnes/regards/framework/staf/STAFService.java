@@ -15,8 +15,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -26,7 +27,6 @@ import fr.cnes.regards.framework.staf.domain.STAFArchivingFlow;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.domain.STAFFile;
 import fr.cnes.regards.framework.staf.event.CollectEvent;
-import fr.cnes.regards.framework.staf.event.ICollectListener;
 import fr.cnes.regards.framework.staf.exception.STAFException;
 
 /**
@@ -50,9 +50,9 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
 public class STAFService {
 
     /**
-     * Attribut permettant la journalisation
+     * Class logger
      */
-    private static Logger logger = Logger.getLogger(STAFService.class);
+    private static final Logger logger = LoggerFactory.getLogger(STAFService.class);
 
     /**
      * Gestionnaire centrale de connexions au STAF.
@@ -77,7 +77,7 @@ public class STAFService {
     /**
      * Listener utilise des qu'un fichier eest collecte
      */
-    private ICollectListener collectListener;
+    private STAFCollectListener collectListener;
 
     /**
      * Archive STAF sur laquelle le service opère.
@@ -115,7 +115,7 @@ public class STAFService {
             mainSession.stafconOpen(stafArchive.getArchiveName(), stafArchive.getPassword());
             logger.debug("Connection to STAF Ok.");
         } catch (final STAFException e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
 
             try {
                 // SIPNG-FA-0247-CS
@@ -138,8 +138,10 @@ public class STAFService {
      */
     public void disconnectArchiveSystem(ArchiveAccessModeEnum pMode) throws STAFException {
         // Ferme la connexion et libere la reservation
+        logger.debug("Disconnecting from STAF ...");
         mainSession.stafconClose();
         stafManager.freeReservation(mainSessionId, pMode);
+        logger.debug("Disconnected from STAF.");
     }
 
     /**
@@ -732,11 +734,11 @@ public class STAFService {
         return stafArchive;
     }
 
-    public ICollectListener getCollectListener() {
+    public STAFCollectListener getCollectListener() {
         return collectListener;
     }
 
-    public void setCollectListener(ICollectListener pCollectListener) {
+    public void setCollectListener(STAFCollectListener pCollectListener) {
         collectListener = pCollectListener;
     }
 

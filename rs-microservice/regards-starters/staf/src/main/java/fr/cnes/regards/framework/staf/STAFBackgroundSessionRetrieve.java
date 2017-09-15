@@ -13,7 +13,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.event.CollectEvent;
-import fr.cnes.regards.framework.staf.event.ICollectListener;
 import fr.cnes.regards.framework.staf.exception.STAFException;
 
 /**
@@ -40,7 +39,7 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
     /**
      * indique le listener a notifier en fin de traitement de la session
      */
-    protected ICollectListener listener;
+    protected STAFCollectListener listener;
 
     /**
      * Constructeur
@@ -57,7 +56,7 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
      *            Ensemble des fichiers a restituer
      */
     public STAFBackgroundSessionRetrieve(Integer pSessionId, String pProject, String pPassword,
-            Map<String, String> pFiles, STAFConfiguration pConfiguration, ICollectListener pListener) {
+            Map<String, String> pFiles, STAFConfiguration pConfiguration, STAFCollectListener pListener) {
         // Call super
         super(pSessionId, pProject, pPassword, null, pConfiguration);
         listener = pListener;
@@ -105,7 +104,8 @@ public class STAFBackgroundSessionRetrieve extends AbstractSTAFBackgroundSession
     @Override
     public void freeReservation() throws STAFException {
         // Frees ressource used by the session
-        STAFSessionManager.getInstance(configuration).freeReservation(sessionId, ArchiveAccessModeEnum.RESTITUTION_MODE);
+        STAFSessionManager.getInstance(configuration).freeReservation(sessionId,
+                                                                      ArchiveAccessModeEnum.RESTITUTION_MODE);
     }
 
 }

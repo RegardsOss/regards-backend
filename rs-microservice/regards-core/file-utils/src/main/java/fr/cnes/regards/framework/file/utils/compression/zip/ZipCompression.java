@@ -24,7 +24,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.file.utils.compression.AbstractRunnableCompression;
 import fr.cnes.regards.framework.file.utils.compression.CompressManager;
@@ -58,7 +59,7 @@ public class ZipCompression extends AbstractRunnableCompression {
     /**
      * Cette variable est utilisée pour logger les messages
      */
-    private static Logger logger_ = Logger.getLogger(ZipCompression.class);
+    private static Logger logger = LoggerFactory.getLogger(ZipCompression.class);
 
     /**
      * Tampon d'ecriture
@@ -116,10 +117,9 @@ public class ZipCompression extends AbstractRunnableCompression {
 
                 // List Files in list pFilesList and add them
                 for (File fileNow : listWithoutDouble) {
-                    if (logger_.isDebugEnabled()) {
-                        logger_.debug(String.format("Adding %s file to %s file.",
-                                                    pathToRootDir(fileNow, pRootDirectory),
-                                                    compressedFile.getAbsoluteFile()));
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("Adding %s file to %s file.", pathToRootDir(fileNow, pRootDirectory),
+                                                   compressedFile.getAbsoluteFile()));
                     }
 
                     ZipArchiveEntry entry;
@@ -149,7 +149,7 @@ public class ZipCompression extends AbstractRunnableCompression {
                                 pCompressManager.setPercentage(percentage);
                             }
                         } catch (IOException e) {
-                            logger_.error("Error copying file " + fileNow.getPath() + "to zip file "
+                            logger.error("Error copying file " + fileNow.getPath() + "to zip file "
                                     + compressedFile.getPath());
                             throw e;
                         }
@@ -165,13 +165,13 @@ public class ZipCompression extends AbstractRunnableCompression {
                 }
             }
         } catch (IOException ioE) {
-            logger_.error(ioE);
+            logger.error(ioE.getMessage(), ioE);
             throw new CompressionException(String.format("IO error during %s compression", CompressionTypeEnum.ZIP),
                     ioE);
         }
 
-        if (logger_.isDebugEnabled()) {
-            logger_.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
         }
 
         pCompressManager.setCompressedFile(compressedFile);

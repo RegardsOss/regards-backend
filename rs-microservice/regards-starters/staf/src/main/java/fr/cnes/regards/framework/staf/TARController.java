@@ -68,9 +68,15 @@ public class TARController {
     public static final String TAR_DIRECTORY = "tar";
 
     /**
+     * Temporary current prefix for TAR working directories.
+     */
+    public static final String TAR_CURRENT_PREFIX = "_current";
+
+    /**
      * Pattern of the directory containg the current pending TAR.
      */
-    private static final Pattern TAR_CURRENT_DIRECTORY_PATTERN = Pattern.compile("^([0-9]{17})_current$");
+    private static final Pattern TAR_CURRENT_DIRECTORY_PATTERN = Pattern
+            .compile("^([0-9]{17})" + TAR_CURRENT_PREFIX + "$");
 
     /**
      * Name of the file used to create a lock on the pending TAR.
@@ -80,7 +86,12 @@ public class TARController {
     /**
      * Date time format.
      */
-    public static final String TAR_FILE_NAME_DATA_FORMAT = "yyyyMMddHHmmssSSS";
+    public static final String TAR_FILE_NAME_DATE_FORMAT = "yyyyMMddHHmmssSSS";
+
+    /**
+     * Pattern for well formed TAR archived using the staf library.
+     */
+    public static final Pattern TAR_FILE_NAME_DATE_PATTERN = Pattern.compile("^([0-9]{17}).tar$");
 
     /**
      * Constructor
@@ -94,20 +105,15 @@ public class TARController {
     }
 
     /**
-     * Add a given file to the existing tar current file or if not to a new tar file.
-     *
-     * @param pPhysicalFileToArchive {@link File} to add into the TAR.
-     * @param pStafNode Path into the staf archive where to store TAR.
-     * @param pAlreadyPreparedTARFiles {@link Set} of {@link PhysicalTARFile} to archive.
-     * @return {@link PhysicalTARFile} TAR file with the new added file in it.
-     * @throws IOException : Unable to create new TAR current directory
-     * @throws STAFTarException : Unable to add file to current TAR.
+     * Get a system physical lock on the workspace TAR directory associated to the given STAF Archive and STAF Node.
+     * @param pSTAFArchiveName
+     * @param pStafNode
+     * @return {@link FileLock}. Need to be released with the {@link fr.cnes.regards.framework.staf.TARController#releaseLock} method
+     * @throws STAFTarException
      */
-    public PhysicalTARFile addFileToTar(Path pPhysicalFileToArchive, Set<PhysicalTARFile> pAlreadyPreparedTARFiles,
-            String pSTAFArciveName, Path pStafNode) throws STAFTarException {
-
+    public FileLock getDirectoryLock(String pSTAFArchiveName, Path pStafNode) throws STAFTarException {
         // 1. Initialize lock on the tar current directory of the specified node
-        Path localTarDirectory = getWorkingTarPath(pSTAFArciveName, pStafNode);
+        Path localTarDirectory = getWorkingTarPath(pSTAFArchiveName, pStafNode);
         Path lockFile = Paths.get(localTarDirectory.toString(), LOCK_FILE_NAME);
 
         // If TAR directory for the given node doesn't exists, create it before lock
@@ -119,23 +125,77 @@ public class TARController {
                     String.format("[STAF] Error creating temporary tar directoty %s", localTarDirectory.toString()));
         }
 
-        // 2. Get lock
+        LOG.debug("[STAF] Getting lock for directory {}", lockFile.toString());
         FileLock lock = null;
-        try (FileChannel fileChannel = FileChannel
-                .open(lockFile,
-                      EnumSet.of(StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE))) {
-            LOG.debug("[STAF] Getting lock for directory {}", lockFile.toString());
+        FileChannel fileChannel = null;
+        try {
+            fileChannel = FileChannel
+                    .open(lockFile,
+                          EnumSet.of(StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE));
             lock = fileChannel.lock();
-            LOG.debug("[STAF] Directory {} locked", lockFile.toString());
+        } catch (IOException e) {
+            if (fileChannel != null) {
+                try {
+                    fileChannel.close();
+                } catch (IOException e1) {
+                    LOG.error(e1.getMessage(), e1);
+                }
+            }
+            LOG.error(e.getMessage(), e);
+            throw new STAFTarException(String.format("[STAF] Error getting lock on %s", lockFile.toString()));
+        }
+        LOG.debug("[STAF] Directory {} locked", lockFile.toString());
 
-            // 3. Get the current creating tar file
+        return lock;
+    }
+
+    /**
+     * Release a system physical lock
+     * @param pLock
+     */
+    public void releaseLock(FileLock pLock) {
+        if (pLock != null) {
+            if (pLock.isValid()) {
+                try {
+                    pLock.release();
+                } catch (IOException e) {
+                    LOG.error("[STAF] Error releasing lock on file {}", pLock.toString(), e);
+                }
+            }
+            if (pLock.channel() != null) {
+                try {
+                    pLock.channel().close();
+                } catch (IOException e) {
+                    LOG.error("[STAF] Error releasing lock on file {}", pLock.toString(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a given file to the existing tar current file or if not to a new tar file.
+     *
+     * @param pPhysicalFileToArchive {@link File} to add into the TAR.
+     * @param pFile {@link DataFile} associated to the {@link File} to add.
+     * @param pStafNode Path into the staf archive where to store TAR.
+     * @param pAlreadyPreparedTARFiles {@link Set} of {@link PhysicalTARFile} to archive.
+     * @return {@link PhysicalTARFile} TAR file with the new added file in it.
+     * @throws IOException : Unable to create new TAR current directory
+     * @throws STAFTarException : Unable to add file to current TAR.
+     */
+    public PhysicalTARFile addFileToTar(Path pPhysicalFileToArchive, Set<PhysicalTARFile> pAlreadyPreparedTARFiles,
+            String pSTAFArchiveName, Path pStafNode) throws STAFTarException {
+
+        // 1. Get lock
+        FileLock lock = getDirectoryLock(pSTAFArchiveName, pStafNode);
+        try {
+            // 2. Get the current creating tar file
             PhysicalTARFile workingTarPhysicalFile = getCurrentTarPhysicalFile(pAlreadyPreparedTARFiles,
-                                                                               pSTAFArciveName, pStafNode);
-            // 4. Move file in the tar directory
+                                                                               pSTAFArchiveName, pStafNode);
+            // 3. Move file in the tar directory
             Path destinationFile = copyFileIntoTarCurrentDirectory(pPhysicalFileToArchive, workingTarPhysicalFile);
             // Add originale associated file
             workingTarPhysicalFile.addRawAssociatedFile(pPhysicalFileToArchive);
-
             LOG.debug("[STAF] File {} added to current TAR file (original file={})", destinationFile,
                       pPhysicalFileToArchive);
             if (workingTarPhysicalFile.getTarSize() > stafConfiguration.getMaxTarSize()) {
@@ -148,16 +208,71 @@ public class TARController {
         } catch (IOException e1) {
             throw new STAFTarException(e1);
         } finally {
-            if ((lock != null) && lock.isValid()) {
-                LOG.debug("[STAF] Releasing lock for directory {}", lockFile.toString());
-                try {
-                    lock.release();
-                } catch (IOException e1) {
-                    LOG.error("[STAF] Error releasing lock for directory {}", lockFile.toString(), e1);
+            releaseLock(lock);
+        }
+    }
+
+    /**
+     * Update the given {@link PhysicalTARFile} with the local tar informations.<br/>
+     * <ul>
+     * <li> Calculate tar creation date. </li>
+     * <li> Check if tar is locally stored. </li>
+     * </ul>
+     * @param pTARFile {@link PhysicalTARFile} to update
+     */
+    public void getLocalInformations(PhysicalTARFile pTARFile) {
+
+        //1. Check if STAF File name match the date format pattern
+        Matcher matcher = TAR_FILE_NAME_DATE_PATTERN.matcher(pTARFile.getStafFileName());
+        if (matcher.matches()) {
+            // File name matches
+            Date date;
+            try {
+                // Calculate associated local tar directory name
+                date = DateUtils.parseDate(matcher.group(1), new String[] { TAR_FILE_NAME_DATE_FORMAT });
+                LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
+                                                                 ZoneId.systemDefault());
+                // Update creation date information
+                pTARFile.setLocalTarDirectoryCreationDate(dateTime);
+                Path tarWorkingPath = getWorkingTarPath(pTARFile.getStafArchiveName(), pTARFile.getStafNode());
+                String localName = getLocalTarCurrentDirName(dateTime);
+                Path localTarPath = Paths.get(tarWorkingPath.toString(), localName);
+                // Check if local dir exists
+                if (localTarPath.toFile().exists() && localTarPath.toFile().isDirectory()) {
+                    // Given TAR is locally stored. Update informations
+                    pTARFile.setLocalTarDirectory(localTarPath);
                 }
-                LOG.debug("[STAF] Lock released for directory {}", lockFile.toString());
+            } catch (ParseException e) {
+                // Not a real error. The given TAR name does not match the library TAR names.
+                // Maybe this TAR file was archived by an other system.
             }
         }
+    }
+
+    /**
+     * Retrieve files from given {@link PhysicalTARFile} if the TAR is locally stored. Else do nothing.
+     * @param pTARFileToRestore {@link PhysicalTARFile} from wich to restore files.
+     * @return true if TAR files are locally restored.
+     * @throws STAFTarException Error accessing locally stored files.
+     */
+    public boolean retrieveLocallyStoredTARFiles(PhysicalTARFile pTARFileToRestore, STAFCollectListener pListener)
+            throws STAFTarException {
+        boolean locallyRestored = false;
+        // Check if TAR is locally stored
+        Path localTarDir = pTARFileToRestore.getLocalTarDirectory();
+        if ((localTarDir != null) && localTarDir.toFile().exists()) {
+            // 1. Get lock on directory
+            FileLock lock = null;
+            try {
+                lock = getDirectoryLock(pTARFileToRestore.getStafArchiveName(), pTARFileToRestore.getStafNode());
+                LOG.info("[STAF] Retrieve from locally stored TAR file {}", pTARFileToRestore.getLocalTarDirectory());
+                pListener.localTARCollectSucceed(pTARFileToRestore.getSTAFFilePath());
+                locallyRestored = true;
+            } finally {
+                releaseLock(lock);
+            }
+        }
+        return locallyRestored;
     }
 
     /**
@@ -200,7 +315,7 @@ public class TARController {
             if (LocalDateTime.now().isAfter(dateLimit) || (tarSize > stafConfiguration.getTarSizeThreshold())) {
                 // If TAR size is over the minimal limit or if TAR date creation is over the limite date, store TAR.
                 LOG.info("[STAF] Current TAR can be created (size={}, creation date={}). ", tarSize,
-                         tarCreationDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT)));
+                         tarCreationDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATE_FORMAT)));
                 createTAR(workingTarPhysicalFile);
             } else {
                 LOG.info("[STAF] Current TAR {} not big enougth to be stored in staf ({}octets < {}octets && {} < {})",
@@ -234,6 +349,44 @@ public class TARController {
         // Set TAR Status to "TO_STORE"
         pTARToCreate.setStatus(PhysicalFileStatusEnum.TO_STORE);
         LOG.info("[STAF] TAR FILE created and ready to send to STAF System : {}", pTARToCreate.getLocalFilePath());
+    }
+
+    /**
+     * Delete filesInTar from the given {@link PhysicalTARFile} into the local tar directory.
+     * This method is used to delete files from a tar locally stored.
+     * @param pTARFile {@link PhysicalTARFile}
+     */
+    public void deleteFilesFromLocalTAR(PhysicalTARFile pTARFile) {
+        FileLock lock = null;
+        try {
+            // 1. Check local tar exists
+            Path localTarDir = pTARFile.getLocalTarDirectory();
+            if (pTARFile.getStatus().equals(PhysicalFileStatusEnum.TO_DELETE) && (localTarDir != null)
+                    && localTarDir.toFile().exists()) {
+                //2. Get lock
+                lock = getDirectoryLock(pTARFile.getStafArchiveName(), pTARFile.getStafNode());
+                pTARFile.getFilesInTar().forEach((raw, path) -> {
+                    Path fileInTarPath = Paths.get(localTarDir.toString(), path.toString());
+                    if (fileInTarPath.toFile().exists()) {
+                        fileInTarPath.toFile().delete();
+                    }
+                });
+                // If there no files left, delete local directory
+                try {
+                    if (!Files.walk(localTarDir).filter(f -> f.toFile().isFile()).findFirst().isPresent()) {
+                        // Delete directory
+                        FileUtils.deleteDirectory(localTarDir.toFile());
+                    }
+                } catch (IOException e) {
+                    LOG.error("[STAF]Error getting files from TAR current directory {}", localTarDir.toString(), e);
+                }
+                pTARFile.setStatus(PhysicalFileStatusEnum.DELETED);
+            }
+        } catch (STAFTarException e) {
+            LOG.error("[STAF] Error deleting files form local tar. {}", e.getMessage(), e);
+        } finally {
+            releaseLock(lock);
+        }
     }
 
     /**
@@ -350,7 +503,7 @@ public class TARController {
     private PhysicalTARFile createPendingTarFromDirectory(Path pDirectory, String pSTAFArchiveName, Path pSTAFNode,
             String pDateStr) {
         try {
-            Date date = DateUtils.parseDate(pDateStr, new String[] { TAR_FILE_NAME_DATA_FORMAT });
+            Date date = DateUtils.parseDate(pDateStr, new String[] { TAR_FILE_NAME_DATE_FORMAT });
             LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
                                                              ZoneId.systemDefault());
             PhysicalTARFile pendingTarFile = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode,
@@ -399,7 +552,7 @@ public class TARController {
                 workingTar = existingPendingTar.get();
             } else {
                 LocalDateTime date = LocalDateTime.now();
-                String tarName = date.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT));
+                String tarName = date.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATE_FORMAT));
                 Path newTarDirectory = Paths.get(tarPath.toString(), tarName + "_current");
                 workingTar = new PhysicalTARFile(pSTAFArchiveName, pSTAFNode, getLocalTarFileName(date));
                 Files.createDirectories(newTarDirectory);
@@ -439,8 +592,18 @@ public class TARController {
      * @return {@link String} TAR file name.
      */
     private String getLocalTarFileName(LocalDateTime pDate) {
-        return String.format("%s.tar", pDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATA_FORMAT)));
+        return String.format("%s.tar", pDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATE_FORMAT)));
+    }
 
+    /**
+     * Calculate a TAR file name for the current working TAR.
+     *
+     * @param pDate {@link LocalDateTime} The TAR working directory creation date.
+     * @return {@link String} TAR file name.
+     */
+    private String getLocalTarCurrentDirName(LocalDateTime pDate) {
+        return String.format("%s%s", pDate.format(DateTimeFormatter.ofPattern(TAR_FILE_NAME_DATE_FORMAT)),
+                             TAR_CURRENT_PREFIX);
     }
 
     /**
