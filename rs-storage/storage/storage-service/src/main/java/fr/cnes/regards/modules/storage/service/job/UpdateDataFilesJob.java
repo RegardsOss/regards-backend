@@ -67,4 +67,17 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public int getCompletionCount() {
+        try {
+            Map<String, JobParameter> paramMap = checkParameters(parameters);
+            return ((IWorkingSubset) paramMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
+                    + ((DataFile[]) paramMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
+        } catch (JobParameterMissingException | JobParameterInvalidException e) {
+            //it should not happens here!
+            LOG.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
 }

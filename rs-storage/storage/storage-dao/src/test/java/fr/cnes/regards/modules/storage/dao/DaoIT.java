@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -76,7 +77,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         setSubmissionDate(aip1, OffsetDateTime.now().minusMinutes(10));
         aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
         aip1 = dao.save(aip1);
-        aip12 = new AIP(aip1);
+        aip12 = pseudoClone(aip1);
         UniformResourceName version2 = UniformResourceName.fromString(aip12.getIpId());
         version2.setVersion(2);
         aip12.setIpId(version2.toString());
@@ -340,4 +341,16 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.contains(aip4));
         Assert.assertFalse(aips.contains(aip5));
     }
+
+    public AIP pseudoClone(AIP src) {
+        AIP result = new AIP(src.getType());
+        result.setInformationObjects(Lists.newArrayList(src.getInformationObjects()));
+        result.setIpId(String.valueOf(src.getIpId()));
+        result.setSipId(String.valueOf(src.getSipId()));
+        result.setTags(Lists.newArrayList(src.getTags()));
+        result.setHistory(Lists.newArrayList(src.getHistory()));
+        result.setState(AIPState.valueOf(src.getState().toString()));
+        return result;
+    }
+
 }

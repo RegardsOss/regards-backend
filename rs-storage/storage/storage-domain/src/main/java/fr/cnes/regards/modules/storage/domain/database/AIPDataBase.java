@@ -19,9 +19,7 @@ import fr.cnes.regards.modules.storage.domain.Event;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_aip", indexes = {
-        //        @Index(name = "idx_aip_ip_id", columnList = "ip_id")
-})
+@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_ip_id", columnList = "ip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
 public class AIPDataBase {
@@ -33,16 +31,15 @@ public class AIPDataBase {
 
     private static final int MAX_URN_SIZE = 128;
 
-    //    @Id
-    //    @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
-    //    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
+    @Id
+    @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
     private Long id;
 
     /**
      * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
      * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
-    @Id
     @Column(name = "ip_id", length = MAX_URN_SIZE, unique = true)
     private String ipId;
 

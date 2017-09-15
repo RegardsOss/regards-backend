@@ -15,10 +15,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -62,14 +59,14 @@ import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.*;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
@@ -122,7 +119,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Value("${regards.storage.workspace}")
     private String workspace;
 
-    private long updateRate;
+    @Autowired
+    private ICachedFileService cachedFileService;
 
     public AIPService() {
     }
@@ -536,6 +534,36 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
         Set<AIP> versions = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
         return versions.stream().map(a -> a.getIpId()).collect(Collectors.toList());
+    }
+
+    @Override
+    public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) {
+        Set<String> requestedChecksums = availabilityRequest.getChecksums();
+        Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
+        Set<String> errors = Sets.newHashSet();
+        //first lets identify the files that we don't recognize
+        if(dataFiles.size() != requestedChecksums.size()) {
+            Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
+            errors.addAll(Sets.difference(requestedChecksums, dataFilesChecksums));
+        }
+        Set<DataFile> onlineFiles = Sets.newHashSet();
+        Set<DataFile> nearlineFiles = Sets.newHashSet();
+        // for each data file, lets see if it is online or not
+        for (DataFile df : dataFiles) {
+            if(df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+                onlineFiles.add(df);
+            } else {
+                nearlineFiles.add(df);
+            }
+        }
+        // now lets ask the cache service to handle nearline restoration and give us the already available ones
+        CoupleAvailableError nearlineAvailableAndError = cachedFileService.restore(nearlineFiles, availabilityRequest.getExpirationDate());
+        for(DataFile inError: nearlineAvailableAndError.getErrors()) {
+            errors.add(inError.getChecksum());
+        }
+        // lets constrcut the result
+        AvailabilityResponse availabilityResponse = new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
+        return availabilityResponse;
     }
 
     /**

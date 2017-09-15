@@ -19,6 +19,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.DataObject;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
@@ -63,6 +65,15 @@ public interface IAIPService {
      */
     List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
 
+    /**
+     * load files into the cache if necessary
+     * @param availabilityRequest
+     * @return checksums of files that are already available
+     */
+    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest);
+
+    void updateAlreadyStoredMetadata();
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +85,4 @@ public interface IAIPService {
     Set<AIPService.History> prepareUpdatedAIP(String tenantWorkspace);
 
     Set<DataFile> prepareNotFullyStored(String tenantWorkspace);
-
-    void updateAlreadyStoredMetadata();
 }

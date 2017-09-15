@@ -218,13 +218,16 @@ public class DataFile {
 
         if (checksum != null ? !checksum.equals(dataFile.checksum) : dataFile.checksum != null)
             return false;
-        return algorithm != null ? algorithm.equals(dataFile.algorithm) : dataFile.algorithm == null;
+        if (algorithm != null ? !algorithm.equals(dataFile.algorithm) : dataFile.algorithm != null)
+            return false;
+        return aipDataBase != null ? aipDataBase.equals(dataFile.aipDataBase) : dataFile.aipDataBase == null;
     }
 
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
         result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        result = 31 * result + (aipDataBase != null ? aipDataBase.hashCode() : 0);
         return result;
     }
 }

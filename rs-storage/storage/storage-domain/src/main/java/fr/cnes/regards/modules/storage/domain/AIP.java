@@ -178,16 +178,6 @@ public class AIP implements Serializable {
         this.history = history;
     }
 
-    public AIP(AIP src) {
-        informationObjects = Lists.newArrayList(src.informationObjects);
-        ipId = String.valueOf(src.ipId);
-        sipId = String.valueOf(src.sipId);
-        tags = Lists.newArrayList(src.tags);
-        type = src.type;
-        history = Lists.newArrayList(src.history);
-        state = AIPState.valueOf(src.state.toString());
-    }
-
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof AIP) && ipId.equals(((AIP) pOther).ipId);

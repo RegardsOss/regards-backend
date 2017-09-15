@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
@@ -58,11 +59,22 @@ public class DataFileDao implements IDataFileDao {
         return repository.findOneById(dataFileId);
     }
 
+    @Override
+    public Set<DataFile> findAllByChecksumIn(Set<String> checksums) {
+        return repository.findAllByChecksumIn(checksums);
+    }
+
     private AIPDataBase getAipDataBase(AIP aip) {
         return aipRepo.findOneByIpId(aip.getIpId());
     }
 
     public AIPDataBase getAipDataBase(DataFile dataFile) {
         return aipRepo.findOneByIpId(dataFile.getAipDataBase().getIpId());
+    }
+
+    public Set<AIPDataBase> getAipDataBases(DataFile dataFile) {
+        Set<AIPDataBase> aipDataBases = Sets.newHashSet();
+//        dataFile.getAipDataBase().forEach(aip->aipDataBases.add(aipRepo.findOneByIpId(aip.getIpId())));
+        return aipDataBases;
     }
 }
