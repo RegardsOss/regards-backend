@@ -5,7 +5,7 @@ package fr.cnes.regards.framework.staf.domain;
 
 import java.nio.file.Path;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import fr.cnes.regards.framework.staf.exception.STAFException;
 
