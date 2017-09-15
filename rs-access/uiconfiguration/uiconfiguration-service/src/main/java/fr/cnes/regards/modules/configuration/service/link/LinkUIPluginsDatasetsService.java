@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.configuration.service.link;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,6 @@ import fr.cnes.regards.modules.configuration.dao.ILinkUIPluginsDatasetsRepositor
 import fr.cnes.regards.modules.configuration.domain.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
