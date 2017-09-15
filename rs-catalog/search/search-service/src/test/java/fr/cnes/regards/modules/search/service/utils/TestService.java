@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.service.utils;
 
 import java.util.Set;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import org.assertj.core.util.Sets;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
