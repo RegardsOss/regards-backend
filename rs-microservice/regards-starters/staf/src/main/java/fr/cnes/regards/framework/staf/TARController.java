@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +97,6 @@ public class TARController {
      * Add a given file to the existing tar current file or if not to a new tar file.
      *
      * @param pPhysicalFileToArchive {@link File} to add into the TAR.
-     * @param pFile {@link DataFile} associated to the {@link File} to add.
      * @param pStafNode Path into the staf archive where to store TAR.
      * @param pAlreadyPreparedTARFiles {@link Set} of {@link PhysicalTARFile} to archive.
      * @return {@link PhysicalTARFile} TAR file with the new added file in it.
@@ -446,7 +445,7 @@ public class TARController {
 
     /**
      * Retrieve the workspace working directory to create new TAR for the given STAF Archive name and STAF Node.
-     * @param pSTAFArciveName {@link String} STAF Archive name
+     * @param pSTAFArchiveName {@link String} STAF Archive name
      * @param pStafNode {@link String} STAF Node
      * @return {@link Path} to the TAR working directory
      */

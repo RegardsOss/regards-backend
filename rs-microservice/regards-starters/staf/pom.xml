@@ -40,6 +40,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 		<!-- Tests dependenies (Not in test scope. Reason : Needed by Mock in source folder) -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
