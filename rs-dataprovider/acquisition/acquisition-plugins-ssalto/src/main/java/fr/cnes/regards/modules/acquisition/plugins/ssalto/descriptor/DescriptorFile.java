@@ -38,9 +38,9 @@ public class DescriptorFile {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DescriptorFile.class);
 
-    protected String dicoName;
+    private String dicoName;
 
-    protected String projectName;
+    private String projectName;
 
     /**
      * le nom du fichier descripteur

@@ -30,7 +30,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -69,7 +68,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     @NotBlank
     @Column(name = "label", length = MAX_STRING_LENGTH, nullable = false)
     private String label;
-    
+
     @NotNull
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
@@ -148,4 +147,25 @@ public class MetaProduct implements IIdentifiable<Long> {
     public Long getId() {
         return id;
     }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public Set<Product> getProducts() {
+        return products;
+    }
+
+    public void addProduct(Product product) {
+        this.products.add(product);
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
 }

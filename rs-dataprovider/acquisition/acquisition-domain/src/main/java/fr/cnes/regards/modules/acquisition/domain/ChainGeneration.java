@@ -102,13 +102,89 @@ public class ChainGeneration implements IIdentifiable<Long> {
     @Column
     private Boolean calculteMd5Signature;
 
-    public ChainGeneration() {
-        super();
-    }
-
     @Override
     public Long getId() {
         return id;
+    }
+
+    
+    public String getLabel() {
+        return label;
+    }
+
+    
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    
+    public Boolean getActive() {
+        return active;
+    }
+
+    
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    
+    public OffsetDateTime getLastDateActivation() {
+        return lastDateActivation;
+    }
+
+    
+    public void setLastDateActivation(OffsetDateTime lastDateActivation) {
+        this.lastDateActivation = lastDateActivation;
+    }
+
+    
+    public Long getPeriodicity() {
+        return periodicity;
+    }
+
+    
+    public void setPeriodicity(Long periodicity) {
+        this.periodicity = periodicity;
+    }
+
+    
+    public MetaProduct getMetaProduct() {
+        return metaProduct;
+    }
+
+    
+    public void setMetaProduct(MetaProduct metaProduct) {
+        this.metaProduct = metaProduct;
+    }
+
+    
+    public String getDataSet() {
+        return dataSet;
+    }
+
+    
+    public void setDataSet(String dataSet) {
+        this.dataSet = dataSet;
+    }
+
+    
+    public String getComment() {
+        return comment;
+    }
+
+    
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    
+    public Boolean getCalculteMd5Signature() {
+        return calculteMd5Signature;
+    }
+
+    
+    public void setCalculteMd5Signature(Boolean calculteMd5Signature) {
+        this.calculteMd5Signature = calculteMd5Signature;
     }
 
 }

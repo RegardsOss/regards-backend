@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
  */
 @Entity
 @Table(name = "t_acquisition_file")
-public class AcquisitionFile implements IIdentifiable<Long> {
+public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     /**
      * Maximum file name size constraint with length 255
@@ -71,14 +71,14 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     @Id
     @SequenceGenerator(name = "ChainSequence", initialValue = 1, sequenceName = "seq_chain")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChainSequence")
-    protected Long id;
+    private Long id;
 
     /**
      * The data file name
      */
     @NotBlank
     @Column(name = "label", length = MAX_FILE_NAME_LENGTH, nullable = false)
-    protected String fileName;
+    private String fileName;
 
     //    /**
     //     * identifiant dans le catalogue de diffusion
@@ -90,14 +90,14 @@ public class AcquisitionFile implements IIdentifiable<Long> {
      * The data file's size in octets
      */
     @Column(name = "file_size")
-    protected Long size;
+    private Long size;
 
     /**
      * The data file's status
      */
     @Column(name = "status", length = MAX_ENUM_LENGTH)
     @Enumerated(EnumType.STRING)
-    protected AcquisitionFileStatus status;
+    private AcquisitionFileStatus status;
 
     // TODO CMZ util ?
     //    protected Product product;
@@ -109,7 +109,7 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "meta_file_id", foreignKey = @ForeignKey(name = "fk_meta_file_id"), nullable = true,
             updatable = false)
-    protected MetaFile metaFile;
+    private MetaFile metaFile;
 
     //    /**
     //     * numero de version du fichier
@@ -120,7 +120,7 @@ public class AcquisitionFile implements IIdentifiable<Long> {
      * informations sur l'acquisition de ce fichier
      */
     @Embedded
-    protected FileAcquisitionInformations acquisitionInformations;
+    private FileAcquisitionInformations acquisitionInformations;
 
     //    /**
     //     * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
@@ -132,33 +132,26 @@ public class AcquisitionFile implements IIdentifiable<Long> {
      */
     @Column(name = "error", length = MAX_ENUM_LENGTH)
     @Enumerated(EnumType.STRING)
-    protected ErrorType error;
+    private ErrorType error;
 
     /**
      * Data file asquisition date
      */
     @Column(name = "acquisition_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    protected OffsetDateTime acqDate;
+    private OffsetDateTime acqDate;
 
     /**
      * Data file checksum
      */
     @Column(name = "check_sum")
-    protected String checkSum = null;
+    private String checkSum = null;
 
     /**
      * Algorithm used to calculate data file checksum
      */
     @Column(name = "check_sum_algo")
-    protected String checkSumAlgo = null;
-
-    /**
-     * Default constructor
-     */
-    public AcquisitionFile() {
-        super();
-    }
+    private String checkSumAlgo = null;
 
     /**
      * permet de dupliquer l'objet

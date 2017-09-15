@@ -130,7 +130,7 @@ public class MetaFile implements IIdentifiable<Long> {
      * @param supplyDirId the {@link ScanDirectory} identifier 
      * @return a {@link ScanDirectory}
      */
-    public ScanDirectory getSupplyDirectory(Integer supplyDirId) {
+    public ScanDirectory getSupplyDirectory(Long supplyDirId) {
         ScanDirectory supplyDir = null;
         if (supplyDirId != null) {
             for (ScanDirectory element : scanDirectories) {
@@ -172,8 +172,8 @@ public class MetaFile implements IIdentifiable<Long> {
         return scanDirectories;
     }
 
-    public void setScanDirectories(Set<ScanDirectory> scanDirectories) {
-        this.scanDirectories = scanDirectories;
+    public void addScanDirectory(ScanDirectory scanDirectory) {
+        this.scanDirectories.add(scanDirectory);
     }
 
     public String getFileName() {

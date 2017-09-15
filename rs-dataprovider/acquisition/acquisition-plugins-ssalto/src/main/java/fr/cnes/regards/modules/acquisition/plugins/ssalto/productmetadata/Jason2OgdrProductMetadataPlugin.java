@@ -115,7 +115,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
                 // Get file from project configured directory
                 final String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
                 final File translationFile = new File(translationDirectory, TRANSACTION_FILE);
-                if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
+                if (translationFile.exists() && translationFile.canRead()) {
                     translationProperties.load(new FileReader(translationFile));
                 } else {
                     LOGGER.warn("Unable to find translaction file " + translationFile.getPath()

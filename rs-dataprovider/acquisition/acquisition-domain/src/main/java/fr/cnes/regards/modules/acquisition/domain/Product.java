@@ -69,7 +69,7 @@ public class Product implements IIdentifiable<Long> {
     @Id
     @SequenceGenerator(name = "ProductSequence", initialValue = 1, sequenceName = "seq_product")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ProductSequence")
-    protected Long id;
+    private Long id;
 
     /**
      * The {@link Product} status
@@ -108,12 +108,6 @@ public class Product implements IIdentifiable<Long> {
     //     * TODO CMZ util ?
     //     */
     //    private Set<AcquisitionFile> fileList = new HashSet<>();
-
-    /**
-     * Default constructor
-     */
-    public Product() {
-    }
 
     @Override
     public Long getId() {
