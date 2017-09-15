@@ -3,16 +3,24 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.oais.AbstractInformationPackage;
+import fr.cnes.regards.framework.oais.Event;
+import fr.cnes.regards.framework.oais.InformationObject;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -22,9 +30,10 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  * Archival Information Package representation
  *
  * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  *
  */
-public class AIP implements Serializable {
+public class AIP extends AbstractInformationPackage {
 
     /**
      * SIP ID
@@ -37,22 +46,6 @@ public class AIP implements Serializable {
      */
     private String ipId;
 
-    /**
-     * Type of this AIP
-     */
-    private EntityType type;
-
-    /**
-     * Tag list
-     */
-    private List<String> tags;
-
-    /**
-     * List of Information Object
-     */
-    @NotNull
-    private List<InformationObject> informationObjects;
-
     private List<Event> history;
 
     /**
@@ -61,15 +54,12 @@ public class AIP implements Serializable {
     @GsonIgnore
     private AIPState state;
 
-    private AIP() {
+    public AIP() {
+        super();
     }
 
-    public AIP(EntityType pType) {
-        type = pType;
-        tags = new ArrayList<>();
-        informationObjects = new ArrayList<>();
-    }
-
+    // TODO remove
+    @Deprecated
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
         sipId = String.valueOf(generateRandomString(new Random(), 40));
         ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant", UUID.randomUUID(), 1)
@@ -77,10 +67,12 @@ public class AIP implements Serializable {
         tags = generateRandomTags();
         informationObjects = generateRandomInformationObjects();
         history = Lists.newArrayList(new Event("addition of this aip into our beautiful system!", OffsetDateTime.now(),
-                                               EventType.SUBMISSION));
+                EventType.SUBMISSION.name()));
         return this;
     }
 
+    // TODO remove
+    @Deprecated
     private List<InformationObject> generateRandomInformationObjects()
             throws NoSuchAlgorithmException, MalformedURLException {
         int listMaxSize = 5;
@@ -93,6 +85,8 @@ public class AIP implements Serializable {
         return informationObjects;
     }
 
+    // TODO remove
+    @Deprecated
     private List<String> generateRandomTags() {
         int listMaxSize = 15;
         int tagMaxSize = 10;
@@ -106,9 +100,8 @@ public class AIP implements Serializable {
         return tags;
     }
 
-    /**
-     * @return
-     */
+    // TODO remove
+    @Deprecated
     private char[] generateRandomString(Random random, int maxStringLength) {
         String possibleLetters = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ";
         int tagSize = random.nextInt(maxStringLength);
@@ -143,30 +136,6 @@ public class AIP implements Serializable {
         ipId = pIpId;
     }
 
-    public EntityType getType() {
-        return type;
-    }
-
-    public void setType(EntityType pType) {
-        type = pType;
-    }
-
-    public List<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<String> pTags) {
-        tags = pTags;
-    }
-
-    public List<InformationObject> getInformationObjects() {
-        return informationObjects;
-    }
-
-    public void setInformationObjects(List<InformationObject> pInformationObjects) {
-        informationObjects = pInformationObjects;
-    }
-
     public List<Event> getHistory() {
         if (history == null) {
             history = Lists.newArrayList();
@@ -176,16 +145,6 @@ public class AIP implements Serializable {
 
     public void setHistory(List<Event> history) {
         this.history = history;
-    }
-
-    public AIP(AIP src) {
-        informationObjects = Lists.newArrayList(src.informationObjects);
-        ipId = String.valueOf(src.ipId);
-        sipId = String.valueOf(src.sipId);
-        tags = Lists.newArrayList(src.tags);
-        type = src.type;
-        history = Lists.newArrayList(src.history);
-        state = AIPState.valueOf(src.state.toString());
     }
 
     @Override
@@ -202,10 +161,10 @@ public class AIP implements Serializable {
         // first lets get all the latest events, Optional in case there is no event for one of them: highly improbable
         for (InformationObject io : informationObjects) {
             latestEvents.add(io.getPdi().getProvenanceInformation().getHistory().stream()
-                                     .sorted(Comparator.comparing(Event::getDate).reversed()).findFirst());
+                    .sorted(Comparator.comparing(Event::getDate).reversed()).findFirst());
         }
         latestEvents.add(getHistory().stream().sorted(Comparator.comparing(Event::getDate).reversed()).findFirst());
-        //then we get the one we want, the latest of the latest
+        // then we get the one we want, the latest of the latest
         return latestEvents.stream().filter(Optional::isPresent).map(Optional::get)
                 .sorted(Comparator.comparing(Event::getDate).reversed()).findFirst().orElse(null);
     }

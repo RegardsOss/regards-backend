@@ -10,10 +10,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.InformationObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.DataObject;
-import fr.cnes.regards.modules.storage.domain.InformationObject;
 
 /**
  *

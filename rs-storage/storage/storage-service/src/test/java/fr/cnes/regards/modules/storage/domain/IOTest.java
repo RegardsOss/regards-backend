@@ -39,6 +39,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 
+import fr.cnes.regards.framework.oais.AccessRightInformation;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.Event;
+import fr.cnes.regards.framework.oais.FixityInformation;
+import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
+import fr.cnes.regards.framework.oais.ProvenanceInformation;
+import fr.cnes.regards.framework.oais.RepresentationInformation;
+import fr.cnes.regards.framework.oais.Semantic;
+import fr.cnes.regards.framework.oais.Syntax;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
