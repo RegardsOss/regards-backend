@@ -71,6 +71,7 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
+import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
@@ -352,7 +353,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             PluginConfiguration dataStorageConf) throws ModuleException {
         IDataStorage storage = pluginService.getPlugin(dataStorageConf);
         Collection<DataFile> dataFilesToSubSet = storageWorkingSetMap.get(dataStorageConf);
-        Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet);
+        Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         checkPrepareResult(dataFilesToSubSet, workingSubSets);
         return workingSubSets;
