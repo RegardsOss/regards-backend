@@ -35,7 +35,15 @@ public class DownloadUtils {
      */
     public static String download(URL source, Path destination, String checksumAlgorithm)
             throws IOException, NoSuchAlgorithmException {
-        return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY);
+        return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY, null);
+    }
+
+    /**
+     * works as {@link DownloadUtils#downloadThroughProxy} without proxy.
+     */
+    public static String download(URL source, Path destination, String checksumAlgorithm, Integer pConnectTimeout)
+            throws IOException, NoSuchAlgorithmException {
+        return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY, pConnectTimeout);
     }
 
     /**
@@ -51,10 +59,10 @@ public class DownloadUtils {
      * @throws IOException
      * @throws NoSuchAlgorithmException
      */
-    public static String downloadThroughProxy(URL source, Path destination, String checksumAlgorithm, Proxy proxy)
-            throws NoSuchAlgorithmException, IOException {
+    public static String downloadThroughProxy(URL source, Path destination, String checksumAlgorithm, Proxy proxy,
+            Integer pConnectTimeout) throws NoSuchAlgorithmException, IOException {
         OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
-        InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy);
+        InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy, pConnectTimeout);
         // lets compute the checksum during the copy!
         DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm));
         ByteStreams.copy(dis, os);
@@ -67,8 +75,17 @@ public class DownloadUtils {
      * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy)} with {@link Proxy#NO_PROXY} as proxy
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
+            String expectedChecksum, Integer pConnectionTimeout) throws IOException, NoSuchAlgorithmException {
+        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY,
+                                        pConnectionTimeout);
+    }
+
+    /**
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy)} with {@link Proxy#NO_PROXY} as proxy
+     */
+    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
             String expectedChecksum) throws IOException, NoSuchAlgorithmException {
-        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY);
+        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY, null);
     }
 
     /**
@@ -85,8 +102,9 @@ public class DownloadUtils {
      * @throws NoSuchAlgorithmException
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
-            String expectedChecksum, Proxy proxy) throws IOException, NoSuchAlgorithmException {
-        String checksum = downloadThroughProxy(source, destination, checksumAlgorithm, proxy);
+            String expectedChecksum, Proxy proxy, Integer pConnectionTimeout)
+            throws IOException, NoSuchAlgorithmException {
+        String checksum = downloadThroughProxy(source, destination, checksumAlgorithm, proxy, pConnectionTimeout);
         return checksum.equals(expectedChecksum);
     }
 
@@ -102,6 +120,31 @@ public class DownloadUtils {
         connection.setDoInput(true); //that's the default but lets set it explicitly for understanding
         connection.connect();
         return connection.getInputStream();
+    }
+
+    /**
+    *
+    * @param source
+    * @param proxy
+    * @param pConnectTimeout Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
+    * @return
+    * @throws IOException
+    */
+    public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy, Integer pConnectTimeout)
+            throws IOException {
+        URLConnection connection = source.openConnection(proxy);
+        connection.setDoInput(true); //that's the default but lets set it explicitly for understanding
+        if (pConnectTimeout != null) {
+            connection.setConnectTimeout(pConnectTimeout);
+        }
+        connection.connect();
+        return connection.getInputStream();
+    }
+
+    public static Integer getContentLength(URL source, Integer pConnectTimeout) throws IOException {
+        URLConnection connection = source.openConnection();
+        connection.setConnectTimeout(pConnectTimeout);
+        return connection.getContentLength();
     }
 
 }
