@@ -1,13 +1,32 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import javax.persistence.*;
 import java.net.URL;
 import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
+import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.DataObject;
@@ -21,12 +40,15 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 @Entity
 @Table(name = "t_data_file")
-@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipDataBase"),
-        @NamedAttributeNode(value = "dataStorageUsed", subgraph = "graph.datafile.dataStorageUsed") }, subgraphs = {
-        @NamedSubgraph(name = "graph.datafile.dataStorageUsed", attributeNodes = {
-                @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorageUsed.parameters") }),
-        @NamedSubgraph(name = "graph.datafile.dataStorageUsed.parameters",
-                attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+@NamedEntityGraph(name = "graph.datafile.full",
+        attributeNodes = { @NamedAttributeNode("aipDataBase"),
+                @NamedAttributeNode(value = "dataStorageUsed", subgraph = "graph.datafile.dataStorageUsed") },
+        subgraphs = {
+                @NamedSubgraph(name = "graph.datafile.dataStorageUsed",
+                        attributeNodes = { @NamedAttributeNode(value = "parameters",
+                                subgraph = "graph.datafile.dataStorageUsed.parameters") }),
+                @NamedSubgraph(name = "graph.datafile.dataStorageUsed.parameters",
+                        attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
 public class DataFile {
 
     @Id
@@ -48,7 +70,7 @@ public class DataFile {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private DataType type;
+    private DataType dataType;
 
     @Column
     private Long fileSize;
@@ -77,8 +99,8 @@ public class DataFile {
     }
 
     public DataFile(DataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
-        this(file.getUrl(), checksum, algorithm, file.getType(), fileSize, mimeType, aip, null);
-        String name = file.getName();
+        this(file.getUrl(), checksum, algorithm, file.getDataType(), fileSize, mimeType, aip, null);
+        String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrl().getPath().split("/");
             name = pathParts[pathParts.length - 1];
@@ -91,7 +113,7 @@ public class DataFile {
         this.url = url;
         this.checksum = checksum;
         this.algorithm = algorithm;
-        this.type = type;
+        this.dataType = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
         this.aipDataBase = new AIPDataBase(aip);
@@ -137,12 +159,12 @@ public class DataFile {
         this.algorithm = algorithm;
     }
 
-    public DataType getType() {
-        return type;
+    public DataType getDataType() {
+        return dataType;
     }
 
-    public void setType(DataType type) {
-        this.type = type;
+    public void setDataType(DataType type) {
+        this.dataType = type;
     }
 
     public Long getFileSize() {
@@ -209,22 +231,25 @@ public class DataFile {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
+        }
 
         DataFile dataFile = (DataFile) o;
 
-        if (checksum != null ? !checksum.equals(dataFile.checksum) : dataFile.checksum != null)
+        if (checksum != null ? !checksum.equals(dataFile.checksum) : dataFile.checksum != null) {
             return false;
+        }
         return algorithm != null ? algorithm.equals(dataFile.algorithm) : dataFile.algorithm == null;
     }
 
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
-        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
         return result;
     }
 }

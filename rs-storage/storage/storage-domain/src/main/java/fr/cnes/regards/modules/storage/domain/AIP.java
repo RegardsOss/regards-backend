@@ -3,16 +3,15 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.net.MalformedURLException;
-import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import org.hibernate.validator.constraints.NotBlank;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -21,9 +20,8 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationObject;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.validator.RegardsOaisUrnAsString;
 
 /**
  *
@@ -44,6 +42,8 @@ public class AIP extends AbstractInformationPackage {
      * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
      * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
+    @NotBlank
+    @RegardsOaisUrnAsString
     private String ipId;
 
     private List<Event> history;
@@ -58,60 +58,6 @@ public class AIP extends AbstractInformationPackage {
         super();
     }
 
-    // TODO remove
-    @Deprecated
-    public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
-        sipId = String.valueOf(generateRandomString(new Random(), 40));
-        ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant", UUID.randomUUID(), 1)
-                .toString();
-        tags = generateRandomTags();
-        informationObjects = generateRandomInformationObjects();
-        history = Lists.newArrayList(new Event("addition of this aip into our beautiful system!", OffsetDateTime.now(),
-                EventType.SUBMISSION.name()));
-        return this;
-    }
-
-    // TODO remove
-    @Deprecated
-    private List<InformationObject> generateRandomInformationObjects()
-            throws NoSuchAlgorithmException, MalformedURLException {
-        int listMaxSize = 5;
-        Random random = new Random();
-        int listSize = random.nextInt(listMaxSize) + 1;
-        List<InformationObject> informationObjects = new ArrayList<>(listSize);
-        for (int i = 0; i < listSize; i++) {
-            informationObjects.add((new InformationObject()).generateRandomInformationObject());
-        }
-        return informationObjects;
-    }
-
-    // TODO remove
-    @Deprecated
-    private List<String> generateRandomTags() {
-        int listMaxSize = 15;
-        int tagMaxSize = 10;
-        Random random = new Random();
-        int listSize = random.nextInt(listMaxSize);
-        List<String> tags = new ArrayList<>(listSize);
-        for (int i = 0; i < listSize; i++) {
-            char[] tag = generateRandomString(random, tagMaxSize);
-            tags.add(String.valueOf(tag));
-        }
-        return tags;
-    }
-
-    // TODO remove
-    @Deprecated
-    private char[] generateRandomString(Random random, int maxStringLength) {
-        String possibleLetters = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ";
-        int tagSize = random.nextInt(maxStringLength);
-        char[] tag = new char[tagSize];
-        for (int j = 0; j < tagSize; j++) {
-            tag[j] = possibleLetters.charAt(random.nextInt(possibleLetters.length()));
-        }
-        return tag;
-    }
-
     public AIPState getState() {
         return state;
     }
@@ -124,16 +70,16 @@ public class AIP extends AbstractInformationPackage {
         return sipId;
     }
 
-    public void setSipId(String pSipId) {
-        sipId = pSipId;
+    public void setSipId(String sipId) {
+        this.sipId = sipId;
     }
 
     public String getIpId() {
         return ipId;
     }
 
-    public void setIpId(String pIpId) {
-        ipId = pIpId;
+    public void setIpId(String ipId) {
+        this.ipId = ipId;
     }
 
     public List<Event> getHistory() {
@@ -170,10 +116,15 @@ public class AIP extends AbstractInformationPackage {
     }
 
     public Event getSubmissionEvent() {
-        return getHistory().stream().filter(e -> e.getType().equals(EventType.SUBMISSION)).findFirst().orElse(null);
+        return getHistory().stream().filter(e -> e.getType().equals(EventType.SUBMISSION.name())).findFirst()
+                .orElse(null);
     }
 
-    public void addEvent(Event event) {
+    public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
+        Event event = new Event();
+        event.setType(type);
+        event.setComment(comment);
+        event.setDate(date);
         getHistory().add(event);
     }
 }
