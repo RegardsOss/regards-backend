@@ -249,6 +249,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (AIP aip : aips) {
             aip.setState(AIPState.VALID);
             aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
+            if (dao.findOneByIpId(aip.getIpId()) != null) {
+                throw new EntityAlreadyExistsException(
+                        String.format("AIP with ip id %s already exists", aip.getIpId()));
+            }
             aipsInDb.add(dao.save(aip));
             Collection<DataFile> dataFiles = dataFileDao.save(DataFile.extractDataFiles(aip));
             dataFiles.forEach(df -> df.setState(DataFileState.PENDING));
@@ -257,11 +261,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
         LOG.trace("{} aips built {} data objects to store", aips.size(), dataFilesToStore.size());
         IAllocationStrategy allocationStrategy = getAllocationStrategy(); // FIXME: should probably set the tenant into
-                                                                          // maintenance in case of module exception
+        // maintenance in case of module exception
 
         // now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
-        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy", dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
+        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
+                  dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap);
         Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
@@ -333,6 +338,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (PluginConfiguration dataStorageConf : storageWorkingSetMap.keySet()) {
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(storageWorkingSetMap, dataStorageConf);
+            LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
                 // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for
@@ -359,9 +365,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     protected Set<IWorkingSubset> getWorkingSubsets(Multimap<PluginConfiguration, DataFile> storageWorkingSetMap,
             PluginConfiguration dataStorageConf) throws ModuleException {
+        LOG.trace("Getting working subsets for data storage {}", dataStorageConf.getLabel());
         IDataStorage storage = pluginService.getPlugin(dataStorageConf);
         Collection<DataFile> dataFilesToSubSet = storageWorkingSetMap.get(dataStorageConf);
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
+        LOG.trace("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
+                  workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         checkPrepareResult(dataFilesToSubSet, workingSubSets);
         return workingSubSets;
@@ -394,8 +403,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeAllocationStrategies.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of "
-                            + IAllocationStrategy.class.getName());
+                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
+                            .getName());
+            LOG.error(e.getMessage(), e);
             throw e;
         }
         return pluginService.getPlugin(activeAllocationStrategies.get(0));

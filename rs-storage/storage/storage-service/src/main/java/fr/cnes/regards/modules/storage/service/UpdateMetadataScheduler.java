@@ -19,6 +19,9 @@ import fr.cnes.regards.modules.storage.domain.parameter.StorageParameter;
 import fr.cnes.regards.modules.storage.service.parameter.IStorageParameterService;
 
 /**
+ *
+ * Scheduler allowing us to change during the runtime rate at which storage of metadata updates is done.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Configuration

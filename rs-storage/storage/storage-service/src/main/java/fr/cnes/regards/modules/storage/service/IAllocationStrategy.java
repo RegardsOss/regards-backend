@@ -18,8 +18,12 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
  *
  */
 @PluginInterface(description = "Interface for all AllocationStrategy plugin")
-@FunctionalInterface
 public interface IAllocationStrategy {
 
+    /**
+     * Given some DataFiles, dispatch them to the right DataStorage
+     * @param dataFilesToHandle
+     * @return Multimap associating DataFiles to their respecting IDataStorage
+     */
     Multimap<PluginConfiguration, DataFile> dispatch(Collection<DataFile> dataFilesToHandle);
 }

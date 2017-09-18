@@ -26,7 +26,12 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public AIP save(AIP toSave) {
-        AIPDataBase saved = repo.save(new AIPDataBase(toSave));
+        AIPDataBase toSaveInDb = new AIPDataBase(toSave);
+        AIPDataBase fromDb = repo.findOneByIpId(toSave.getIpId());
+        if( fromDb != null) {
+             toSaveInDb.setId(fromDb.getId());
+        }
+        AIPDataBase saved = repo.save(toSaveInDb);
         return reconstructAip(saved);
     }
 
@@ -36,6 +41,9 @@ public class AIPDao implements IAIPDao {
      * @return
      */
     private AIP reconstructAip(AIPDataBase fromDb) {
+        if(fromDb == null) {
+            return null;
+        }
         AIP aip=fromDb.getAip();
         // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as state
         aip.setState(fromDb.getState());
