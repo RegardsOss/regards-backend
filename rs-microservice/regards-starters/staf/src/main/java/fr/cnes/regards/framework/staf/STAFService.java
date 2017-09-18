@@ -370,8 +370,10 @@ public class STAFService {
             // Recupere un lot de fichiers pour la session batch
             final HashMap<String, String> files = pSessionsFiles.remove(0);
             // Cree puis execute la session batch
-            final STAFBackgroundSessionRetrieve session = getBackgroundSessionRetrieve(identifier, stafArchive
-                    .getArchiveName(), stafArchive.getPassword(), stafArchive.isGFAccount(), files);
+            final STAFBackgroundSessionRetrieve session = getBackgroundSessionRetrieve(identifier,
+                                                                                       stafArchive.getArchiveName(),
+                                                                                       stafArchive.getPassword(),
+                                                                                       files);
             session.setParentStack(NDC.cloneStack());
             batchSessions.add(session);
             session.start();
@@ -523,7 +525,6 @@ public class STAFService {
      * @param pSessionId
      * @param pProject
      * @param pPassword
-     * @param pGFAccount
      * @param pFilesFlow
      * @param pDirectory
      * @param pArchivedFilesList
@@ -544,12 +545,11 @@ public class STAFService {
      * @param pSessionId
      * @param pProject
      * @param pPassword
-     * @param pGFAccount
      * @param pFiles
      * @return
      */
     protected STAFBackgroundSessionRetrieve getBackgroundSessionRetrieve(Integer pSessionId, String pProject,
-            String pPassword, boolean pGFAccount, HashMap<String, String> pFiles) {
+            String pPassword, HashMap<String, String> pFiles) {
         final STAFBackgroundSessionRetrieve session = new STAFBackgroundSessionRetrieve(pSessionId, pProject, pPassword,
                 pFiles, stafManager.getConfiguration(), getCollectListener());
         return session;
@@ -578,9 +578,6 @@ public class STAFService {
         final Map<String, String> littleFileServiceClassMap = new HashMap<>();
         // Class service bigger files gen staf : size>50Mo [generalist STAF]
         final Map<String, String> biggerFileGenServiceClassMap = new HashMap<>();
-        // Class service bigger files GF staf : size>50Mo [GF Account STAF (big
-        // file)]
-        final Map<String, String> biggerFileGFServiceClassMap = new HashMap<>();
 
         // Dispacth all files in function Service Class in 3 Map
         while (files.hasNext()) {
@@ -602,16 +599,7 @@ public class STAFService {
                 }
                 // Class service CS3 or CS5 : size>50Mo
                 else {
-                    // CS5 : GF Account STAF (big file) : size>50Mo
-                    // ********************************************
-                    if (stafArchive.isGFAccount()) {
-                        biggerFileGFServiceClassMap.put(currentFile.toString(), destinationCurrentFile.toString());
-                    }
-                    // CS3 : generalist STAF : size>50Mo
-                    // *********************************
-                    else {
-                        biggerFileGenServiceClassMap.put(currentFile.toString(), destinationCurrentFile.toString());
-                    }
+                    biggerFileGenServiceClassMap.put(currentFile.toString(), destinationCurrentFile.toString());
                 }
             }
         }
@@ -632,13 +620,6 @@ public class STAFService {
         } else {
             flowList.addAll(dispatchFilesInSeveralFlow(biggerFileGenServiceClassMap, maxStreamFiles,
                                                        stafManager.getConfiguration().getBiggerFileGenClass()));
-        }
-        if (stafManager.getConfiguration().getBiggerFileGFClass() == null) {
-            logger.error("Service class 3 is not set in configuration, CS5 class is used as default");
-            flowList.addAll(dispatchFilesInSeveralFlow(biggerFileGFServiceClassMap, maxStreamFiles, "CS5"));
-        } else {
-            flowList.addAll(dispatchFilesInSeveralFlow(biggerFileGFServiceClassMap, maxStreamFiles,
-                                                       stafManager.getConfiguration().getBiggerFileGFClass()));
         }
 
         // Total flow
