@@ -169,7 +169,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
         archive.setPassword(STAF_ARCHIVE_PASSWORD);
         Gson gson = new Gson();
 
@@ -230,7 +229,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
         archive.setPassword(STAF_ARCHIVE_PASSWORD);
         Gson gson = new Gson();
 
@@ -277,7 +275,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
         archive.setPassword(STAF_ARCHIVE_PASSWORD);
         Gson gson = new Gson();
 
@@ -357,7 +354,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
         archive.setPassword(STAF_ARCHIVE_PASSWORD);
         Gson gson = new Gson();
 
@@ -439,7 +435,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
         archive.setPassword(STAF_ARCHIVE_PASSWORD);
         Gson gson = new Gson();
 
@@ -520,7 +515,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
-        archive.setGFAccount(false);
         archive.setPassword(STAF_ARCHIVE_PASSWORD);
         Gson gson = new Gson();
 
