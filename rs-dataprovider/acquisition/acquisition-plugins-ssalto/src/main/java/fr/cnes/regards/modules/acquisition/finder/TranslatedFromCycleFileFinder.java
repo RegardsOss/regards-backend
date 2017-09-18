@@ -35,6 +35,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,7 +325,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         final FileFilter fileFilter = new WildcardFileFilter(filePattern);
         final File[] files = dir.listFiles(fileFilter);
         // recupere le dernier fichier modifier
-        final SortedSet<File> fileSet = new TreeSet<>(LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
+        final SortedSet<File> fileSet = new TreeSet<>(Comparator.comparing(File::lastModified));
         // doit contenir au moins un fichier
         if (files == null) {
             final String msg = "No file found in dir " + dir.getAbsolutePath() + " for filePattern " + filePattern;
@@ -472,7 +472,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                         cycleOccurence = new Integer(matcher.group(ORF_CYCLE_GROUP));
                     }
                     cycleFound = true;
-                    
+
                     LOGGER.debug("cycleDateTime = " + cycleDateTime.toString());
                 }
             }
