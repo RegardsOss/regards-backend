@@ -9,9 +9,9 @@ import java.util.Map;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import com.google.common.collect.Lists;
-import com.netflix.governator.annotations.binding.Primary;
 
 import fr.cnes.regards.framework.staf.STAFSession;
 import fr.cnes.regards.framework.staf.STAFSessionManager;
