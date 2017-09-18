@@ -22,68 +22,68 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * </ul>
  *
  */
-@ConfigurationProperties(prefix = "regards.staf")
+@ConfigurationProperties(prefix = "staf")
 public class STAFConfiguration {
 
     /**
      * Nombre maximum de fichiers par flot pour le mode "Restitution"
      */
-    private Integer maxStreamFilesRestitutionMode = null;
+    private Integer maxStreamFilesRestitutionMode;
 
     /**
      * Nombre maximum de flots par session pour le mode "Restitution"
      */
-    private Integer maxSessionStreamsRestitutionMode = null;
+    private Integer maxSessionStreamsRestitutionMode;
 
     /**
      * Nombre maximum de sessions pour le mode "Restitution"
      */
-    private Integer maxSessionsRestitutionMode = null;
+    private Integer maxSessionsRestitutionMode;
 
     /**
      * Nombre maximum de fichiers par flot pour le mode "Archivage"
      */
-    private Integer maxStreamFilesArchivingMode = null;
+    private Integer maxStreamFilesArchivingMode;
 
     /**
      * Nombre maximum de flots par session pour le mode "Archivage"
      */
-    private Integer maxSessionStreamsArchivingMode = null;
+    private Integer maxSessionStreamsArchivingMode;
 
     /**
      * Nombre maximum de sessions pour le mode "Archivage"
      */
-    private Integer maxSessionsArchivingMode = null;
+    private Integer maxSessionsArchivingMode;
 
     /**
      * Nombre maximum de tentatives de connexion au STAF
      */
-    private Integer attemptsBeforeFail = null;
+    private Integer attemptsBeforeFail;
 
     /**
      * Taille minimal d'un fichier standard
      */
-    private Long minFileSize = null;
+    private Long minFileSize;
 
     /**
      * Taille maximale d'un fichier standard
      */
-    private Long maxFileSize = null;
+    private Long maxFileSize;
 
     /**
      * Taille maximale d'un TAR pour archive au STAF.
      */
-    private Long maxTarSize = null;
+    private Long maxTarSize;
 
     /**
      * Taille minimal d'un TAR pour archivage au STAF.
      */
-    private Long tarSizeThreshold = null;
+    private Long tarSizeThreshold;
 
     /**
      * Durée d'attente maximum avant l'archivage d'un TAR.
      */
-    private Long maxTarArchivingHours = null;
+    private Long maxTarArchivingHours;
 
     /**
      * classe de service petits fichiers ( STAF GF et generaliste ) (CS1 ou CS2) - Garantie de performance : le temps de
@@ -91,7 +91,7 @@ public class STAFConfiguration {
      * disponibles) - Disponibilité : le fichier est accessible 24 heures sur 24 et 7 jours sur 7 - Taille maximum du
      * fichier : 50 mégaoctets
      */
-    private String littleFileClass = null;
+    private String littleFileClass;
 
     /**
      * classe de service plus gros fichier ( STAF Generaliste ) (CS3 ou CS4) - Garantie de performance : le temps de
@@ -99,7 +99,7 @@ public class STAFConfiguration {
      * disponibles) - Disponibilité : le fichier est accessible 24 heures sur 24 et 7 jours sur 7 - Taille maximum du
      * fichier : 500 mégaoctets
      */
-    private String biggerFileGenClass = null;
+    private String biggerFileGenClass;
 
     /**
      * classe de service gros fichier ( STAF Gros fichiers ) (CS5 ou CS6) - Garantie de performance : le temps de
@@ -108,7 +108,17 @@ public class STAFConfiguration {
      * fichier limitée en STAF V2R12 à 1 gigaoctet
      */
 
-    private String biggerFileGFClass = null;
+    private String biggerFileGFClass;
+
+    /**
+     * Absolute path the the ksh executable.
+     */
+    private String kshExec = "/bin/ksh";
+
+    /**
+     * Initialize command to run bevore all STAF Connection.
+     */
+    private String initShellCommand;
 
     public Integer getMaxStreamFilesRestitutionMode() {
         return maxStreamFilesRestitutionMode;
@@ -228,6 +238,22 @@ public class STAFConfiguration {
 
     public void setMaxTarArchivingHours(Long pMaxTarArchivingHours) {
         maxTarArchivingHours = pMaxTarArchivingHours;
+    }
+
+    public String getKshExec() {
+        return kshExec;
+    }
+
+    public void setKshExec(String pKshExec) {
+        kshExec = pKshExec;
+    }
+
+    public String getInitShellCommand() {
+        return initShellCommand;
+    }
+
+    public void setInitShellCommand(String pInitShellCommand) {
+        initShellCommand = pInitShellCommand;
     }
 
 }

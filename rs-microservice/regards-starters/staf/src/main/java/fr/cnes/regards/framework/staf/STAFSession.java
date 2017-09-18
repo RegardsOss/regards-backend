@@ -38,11 +38,6 @@ public class STAFSession {
     protected static Logger logger = Logger.getLogger(STAFSession.class);
 
     /**
-     * Nom du shell utilise pour lancer la session STAF
-     */
-    private static final String SHELL = "/bin/ksh";
-
-    /**
      * Commande d'initialisation du client STAF
      */
     private static final String INIT_STAF = "module load staf";
@@ -348,6 +343,10 @@ public class STAFSession {
             // Initialise le client STAF et consomme le message correspondant
             // sur la sortie standard du shell.
             executeCommand(INIT_STAF);
+            // If any run the initialize command
+            if ((configuration.getInitShellCommand() != null) && !configuration.getInitShellCommand().isEmpty()) {
+                executeCommand(configuration.getInitShellCommand());
+            }
 
             // password to not show it in logs
             String commandToLog = null;
@@ -754,14 +753,13 @@ public class STAFSession {
                         final int errorLevel = getErrorMessageLevel(response);
                         if (errorLevel >= 6) {
                             // Failure of command
-                            final String msg = "Unable to archive all files";
+                            final String msg = "Unable to archive all files. " + response;
                             logger.error(msg);
                             throw new STAFException(msg);
                         }
                         // just a warning message
                         nbFail++;
                         logger.warn(errorMessage);
-
                     }
                 }
 
@@ -1198,12 +1196,13 @@ public class STAFSession {
         try {
             // Execute un shell de pilotage et encapsule l'acces aux
             // descripteurs IO
-            shellProcess = Runtime.getRuntime().exec(SHELL);
+            shellProcess = Runtime.getRuntime().exec(configuration.getKshExec());
             commands = new PrintWriter(shellProcess.getOutputStream());
             stafOutput = new BufferedReader(new InputStreamReader(shellProcess.getInputStream()));
         } catch (final IOException e) {
             // Erreur de lancement du shell de pilotage
-            final String msg = String.format("An error occured while creating a STAF session shell %s", SHELL);
+            final String msg = String.format("An error occured while creating a STAF session shell %s",
+                                             configuration.getKshExec());
             logger.error(msg, e);
             throw new STAFException(msg, e);
         }
