@@ -24,8 +24,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * 
@@ -34,30 +34,30 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
  */
 @MultitenantTransactional
 @Service
-public class ChaineGenerationService implements IChainGenerationService {
+public class MetaProductService implements IMetaProductService {
 
-    private final IChainGenerationRepository chainRepository;
+    private final IMetaProductRepository metaProductRepository;
 
-    public ChaineGenerationService(IChainGenerationRepository repository) {
+    public MetaProductService(IMetaProductRepository repository) {
         super();
-        this.chainRepository = repository;
+        this.metaProductRepository = repository;
     }
 
     @Override
-    public ChainGeneration save(ChainGeneration chain) {
-        return chainRepository.save(chain);
+    public MetaProduct save(MetaProduct chain) {
+        return metaProductRepository.save(chain);
     }
 
     @Override
-    public List<ChainGeneration> retrieveAll() {
-        final List<ChainGeneration> chains = new ArrayList<>();
-        chainRepository.findAll().forEach(c -> chains.add(c));
+    public MetaProduct retrieve(Long id) {
+        return metaProductRepository.findOne(id);
+    }
+
+    @Override
+    public List<MetaProduct> retrieveAll() {
+        final List<MetaProduct> chains = new ArrayList<>();
+        metaProductRepository.findAll().forEach(c -> chains.add(c));
         return chains;
-    }
-
-    @Override
-    public ChainGeneration retrieve(Long id) {
-        return chainRepository.findOne(id);
     }
 
 }

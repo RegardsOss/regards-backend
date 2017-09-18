@@ -34,7 +34,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -48,8 +47,8 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  *
  */
 @Entity
-@Table(name = "t_meta_product", indexes = { @Index(name = "idx_chain_label", columnList = "label") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_chain_label", columnNames = { "label" }))
+@Table(name = "t_meta_product", indexes = { @Index(name = "idx_meta_product_label", columnList = "label") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_meta_product_label", columnNames = { "label" }))
 public class MetaProduct implements IIdentifiable<Long> {
 
     /**
@@ -69,9 +68,8 @@ public class MetaProduct implements IIdentifiable<Long> {
     @Column(name = "label", length = MAX_STRING_LENGTH, nullable = false)
     private String label;
 
-    @NotNull
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
+    @OneToMany(fetch = FetchType.EAGER) // TODO CMZ remettre LAZY
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
     private Set<Product> products = new HashSet<Product>();
 
     //    /**
@@ -166,6 +164,15 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append(id);
+        strBuilder.append(" - ");
+        strBuilder.append(label);
+        return strBuilder.toString();
     }
 
 }

@@ -71,27 +71,42 @@ public class ChainGeneration implements IIdentifiable<Long> {
     @Column(name = "label", length = MAX_STRING_LENGTH, nullable = false)
     private String label;
 
+    /**
+     * <code>true</code> if the {@link ChainGeneration} is active, <code>false</code> otherwise
+     */
     @Column
     private Boolean active = false;
 
+    /**
+     * The last activation date when an acquisition were running 
+     */
     @Column(name = "last_date_activation")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastDateActivation;
 
     /**
-     * periodicity in seconds
+     * The periodicity in seconds between to acquisition
      */
     @Column(name = "period")
     private Long periodicity;
 
+    /**
+     * THe {@link MetaProduct} used for this {@link ChainGeneration}
+     */
     @OneToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "metaproduct_id", foreignKey = @ForeignKey(name = "fk_metaproduct_id"), nullable = true,
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_metaproduct_id"), nullable = true,
             updatable = true)
     private MetaProduct metaProduct;
 
-    @Column(length = MAX_STRING_LENGTH, nullable = false)
+    /**
+     * The dataset for which the acquired files are set  
+     */
+    @Column(length = MAX_STRING_LENGTH)
     private String dataSet;
 
+    /**
+     * A comment
+     */
     @Column(name = "comment")
     @Type(type = "text")
     private String comment;
@@ -107,84 +122,82 @@ public class ChainGeneration implements IIdentifiable<Long> {
         return id;
     }
 
-    
     public String getLabel() {
         return label;
     }
 
-    
     public void setLabel(String label) {
         this.label = label;
     }
 
-    
     public Boolean getActive() {
         return active;
     }
 
-    
     public void setActive(Boolean active) {
         this.active = active;
     }
 
-    
     public OffsetDateTime getLastDateActivation() {
         return lastDateActivation;
     }
 
-    
     public void setLastDateActivation(OffsetDateTime lastDateActivation) {
         this.lastDateActivation = lastDateActivation;
     }
 
-    
     public Long getPeriodicity() {
         return periodicity;
     }
 
-    
     public void setPeriodicity(Long periodicity) {
         this.periodicity = periodicity;
     }
 
-    
     public MetaProduct getMetaProduct() {
         return metaProduct;
     }
 
-    
     public void setMetaProduct(MetaProduct metaProduct) {
         this.metaProduct = metaProduct;
     }
 
-    
     public String getDataSet() {
         return dataSet;
     }
 
-    
     public void setDataSet(String dataSet) {
         this.dataSet = dataSet;
     }
 
-    
     public String getComment() {
         return comment;
     }
 
-    
     public void setComment(String comment) {
         this.comment = comment;
     }
 
-    
     public Boolean getCalculteMd5Signature() {
         return calculteMd5Signature;
     }
 
-    
     public void setCalculteMd5Signature(Boolean calculteMd5Signature) {
         this.calculteMd5Signature = calculteMd5Signature;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append(id);
+        strBuilder.append(" - ");
+        strBuilder.append(label);
+        strBuilder.append(" - ");
+        strBuilder.append(dataSet);
+        strBuilder.append(" - [");
+        strBuilder.append(metaProduct.toString());
+        strBuilder.append("]");
+        return strBuilder.toString();
     }
 
 }

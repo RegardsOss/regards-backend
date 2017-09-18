@@ -18,27 +18,23 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
-
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.Greeting;
 
 /**
  * 
- * @author Christophe Mertz
- * 
+ * TODO Description
+ * @author TODO
+ *
  */
-public interface IChainGenerationService {
-
-    ChainGeneration save(ChainGeneration chain);
+public interface IGreetingsService {
 
     /**
-     * Retrieve one specified {@link ChainGeneration}
-     * @param id {@link ChainGeneration}
+     *
+     * Get greetings
+     *
+     * @return {@link Greeting}
+     * @since 1.0.0
      */
-    ChainGeneration retrieve(Long id);
+    Greeting getGreeting(String pName);
 
-    /**
-     * @return all {@link ChainGeneration}
-     */
-    List<ChainGeneration> retrieveAll();
 }

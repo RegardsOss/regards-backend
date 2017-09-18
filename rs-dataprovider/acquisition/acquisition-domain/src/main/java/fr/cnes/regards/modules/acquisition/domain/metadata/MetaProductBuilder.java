@@ -53,7 +53,7 @@ public final class MetaProductBuilder {
         return metaProduct;
     }
 
-    public MetaProductBuilder addScanDirectory(Product product) {
+    public MetaProductBuilder addProduct(Product product) {
         metaProduct.addProduct(product);
         return this;
     }

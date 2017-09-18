@@ -18,27 +18,23 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
+import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.Greeting;
+
 
 /**
  * 
- * @author Christophe Mertz
- * 
+ * TODO Description
+ * @author TODO
+ *
  */
-public interface IChainGenerationService {
+@Service
+public class GreetingsService implements IGreetingsService {
 
-    ChainGeneration save(ChainGeneration chain);
+    @Override
+    public Greeting getGreeting(String pName) {
+        return new Greeting(pName);
+    }
 
-    /**
-     * Retrieve one specified {@link ChainGeneration}
-     * @param id {@link ChainGeneration}
-     */
-    ChainGeneration retrieve(Long id);
-
-    /**
-     * @return all {@link ChainGeneration}
-     */
-    List<ChainGeneration> retrieveAll();
 }

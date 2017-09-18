@@ -90,7 +90,7 @@ public class Product implements IIdentifiable<Long> {
      */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_file_id"), updatable = false)
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"), updatable = false)
     private MetaProduct metaProduct;
 
     //    /**
@@ -157,5 +157,30 @@ public class Product implements IIdentifiable<Long> {
     //    public void setAcquisitionFile(Set<AcquisitionFile> acquisitionFiles) {
     //        fileList = acquisitionFiles;
     //    }
+
+    //    public void addFileToProduct(AcquisitionFile pFile) {
+    //        fileList.add(pFile);
+    //    }
+
+    //    public Set<AcquisitionFile> getAcquisitionFile() {
+    //        return fileList;
+    //    }
+    //
+    //    public void addAcquisitionFile(AcquisitionFile acquisitionFile) {
+    //        fileList.add(acquisitionFile);
+    //    }
+    //
+    //    public void setAcquisitionFile(Set<AcquisitionFile> acquisitionFiles) {
+    //        fileList = acquisitionFiles;
+    //    }
+
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append(id);
+        strBuilder.append(" - ");
+        strBuilder.append(productName);
+        return strBuilder.toString();
+    }
 
 }

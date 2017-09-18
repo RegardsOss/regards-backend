@@ -78,7 +78,7 @@ public class MetaFile implements IIdentifiable<Long> {
      * max chars 250
      */
     @OneToMany
-    @JoinColumn(name = "directory_id", foreignKey = @ForeignKey(name = "fk_acq_directory"))
+    @JoinColumn(name = "id", foreignKey = @ForeignKey(name = "fk_acq_directory"))
     private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**

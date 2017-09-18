@@ -18,27 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+@Configuration
+@EnableAutoConfiguration
+@PropertySource(value = { "classpath:application-test.properties", "classpath:test_${user.name}.properties" },
+        ignoreResourceNotFound = true)
+public class AcquisitionServiceConfiguration {
 
-/**
- * 
- * @author Christophe Mertz
- * 
- */
-public interface IChainGenerationService {
-
-    ChainGeneration save(ChainGeneration chain);
-
-    /**
-     * Retrieve one specified {@link ChainGeneration}
-     * @param id {@link ChainGeneration}
-     */
-    ChainGeneration retrieve(Long id);
-
-    /**
-     * @return all {@link ChainGeneration}
-     */
-    List<ChainGeneration> retrieveAll();
 }

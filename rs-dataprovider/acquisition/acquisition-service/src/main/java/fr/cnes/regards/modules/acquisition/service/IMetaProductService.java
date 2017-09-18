@@ -20,25 +20,25 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * 
  * @author Christophe Mertz
  * 
  */
-public interface IChainGenerationService {
+public interface IMetaProductService {
 
-    ChainGeneration save(ChainGeneration chain);
-
-    /**
-     * Retrieve one specified {@link ChainGeneration}
-     * @param id {@link ChainGeneration}
-     */
-    ChainGeneration retrieve(Long id);
+    MetaProduct save(MetaProduct chain);
 
     /**
-     * @return all {@link ChainGeneration}
+     * @return all {@link MetaProduct}
      */
-    List<ChainGeneration> retrieveAll();
+    List<MetaProduct> retrieveAll();
+
+    /**
+     * Retrieve one specified {@link MetaProduct}
+     * @param id {@link MetaProduct}
+     */
+    MetaProduct retrieve(Long id);
 }

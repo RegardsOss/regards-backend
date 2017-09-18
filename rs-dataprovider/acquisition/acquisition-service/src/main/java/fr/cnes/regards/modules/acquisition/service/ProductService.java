@@ -24,8 +24,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
  * 
@@ -34,30 +34,35 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
  */
 @MultitenantTransactional
 @Service
-public class ChaineGenerationService implements IChainGenerationService {
+public class ProductService implements IProductService {
 
-    private final IChainGenerationRepository chainRepository;
+    private final IProductRepository productRepository;
 
-    public ChaineGenerationService(IChainGenerationRepository repository) {
+    public ProductService(IProductRepository repository) {
         super();
-        this.chainRepository = repository;
+        this.productRepository = repository;
     }
 
     @Override
-    public ChainGeneration save(ChainGeneration chain) {
-        return chainRepository.save(chain);
+    public Product save(Product chain) {
+        return productRepository.save(chain);
     }
 
     @Override
-    public List<ChainGeneration> retrieveAll() {
-        final List<ChainGeneration> chains = new ArrayList<>();
-        chainRepository.findAll().forEach(c -> chains.add(c));
+    public Product retrieve(Long id) {
+        return productRepository.findOne(id);
+    }
+
+    @Override
+    public List<Product> retrieveAll() {
+        final List<Product> chains = new ArrayList<>();
+        productRepository.findAll().forEach(c -> chains.add(c));
         return chains;
     }
 
     @Override
-    public ChainGeneration retrieve(Long id) {
-        return chainRepository.findOne(id);
+    public void delete(Long id) {
+        this.productRepository.delete(id);
     }
 
 }
