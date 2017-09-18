@@ -111,9 +111,12 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 Class<?> handlerClass = handleEvent.getKey();
                 // Retrieve listeners for current handler
                 Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClass);
-                // Stop listeners
-                for (SimpleMessageListenerContainer container : tenantContainers.values()) {
-                    container.stop();
+                // In case unsubscribeFrom has been called too late
+                if (tenantContainers != null) {
+                    // Stop listeners
+                    for (SimpleMessageListenerContainer container : tenantContainers.values()) {
+                        container.stop();
+                    }
                 }
             }
         }
@@ -140,6 +143,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param pTarget
      *            communication scope
      */
+    @Override
     public <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pHandler, final WorkerMode pWorkerMode,
             final Target pTarget) {
 
@@ -195,7 +199,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         try {
             virtualHostAdmin.bind(pTenant);
             Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pHandler.getType(), pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pEvt, pHandler.getType(), pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
         } finally {
             virtualHostAdmin.unbind();

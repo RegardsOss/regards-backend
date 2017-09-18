@@ -20,7 +20,9 @@
 package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -116,7 +118,7 @@ public class PluginParametersFactory {
      */
     public PluginParametersFactory addParameterDynamic(String pParameterName, String pParameterValue,
             List<String> pDynamicValues) {
-        final List<PluginDynamicValue> dyns = new ArrayList<>();
+        final Set<PluginDynamicValue> dyns = new HashSet<>();
         final PluginParameter aPluginParameter = new PluginParameter(pParameterName, pParameterValue);
         aPluginParameter.setIsDynamic(true);
 

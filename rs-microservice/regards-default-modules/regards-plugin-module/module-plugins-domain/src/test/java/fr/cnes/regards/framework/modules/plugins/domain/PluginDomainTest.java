@@ -2,7 +2,9 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -173,7 +175,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), 0);
 
         // test dynamics!=null && dynamics.isEmpty
-        final List<PluginDynamicValue> dynValues = new ArrayList<>();
+        final Set<PluginDynamicValue> dynValues = new HashSet<>();
         plgParam.setDynamicsValues(dynValues);
         Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
 

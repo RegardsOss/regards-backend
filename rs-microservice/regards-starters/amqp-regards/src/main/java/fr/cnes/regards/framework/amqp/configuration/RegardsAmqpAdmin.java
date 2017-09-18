@@ -24,21 +24,12 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import fr.cnes.regards.framework.amqp.event.*;
 
 /**
  * This class manage tenant AMQP administration. Each tenant is hosted in an AMQP virtual host.<br/>
@@ -192,15 +183,16 @@ public class RegardsAmqpAdmin {
      *
      * @param pTenant
      *            tenant
-     * @param pEventHandler
+     * @param pEvt
+     *@param pEventHandler
      *            event handler
      * @param pWorkerMode
      *            {@link WorkerMode} used for naming convention
      * @param pTarget
-     *            {@link Target} used for naming convention
-     * @return instance of queue
+     *            {@link Target} used for naming convention    @return instance of queue
      */
-    public Queue declareSubscribeQueue(String pTenant, Class<?> pEventHandler, WorkerMode pWorkerMode, Target pTarget) {
+    public Queue declareSubscribeQueue(String pTenant, Class<?> pEvt, Class<? extends IHandler> pEventHandler,
+            WorkerMode pWorkerMode, Target pTarget) {
 
         LOGGER.debug("Declaring queue for : tenant {} / handler {} / target {} / mode {}", pTenant,
                      pEventHandler.getName(), pTarget, pWorkerMode);
@@ -208,8 +200,21 @@ public class RegardsAmqpAdmin {
         // Create queue
         final Map<String, Object> args = new HashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
-        Queue queue = new Queue(getQueueName(pEventHandler, pWorkerMode, pTarget), true, false, false, args);
-
+        // sadly subscription logic is a bit complex on queue names:
+        String queueName;
+        switch (pWorkerMode) {
+            case ALL:
+                // if the event has to be sent to everyone who can handle it we have to name the queue after the handler name
+                queueName = getQueueName(pEventHandler, WorkerMode.ALL, pTarget);
+                break;
+            case SINGLE:
+                // but if the event has to be sent to only one instance that can handle it, we have to name the queue after the event name
+                queueName = getQueueName(pEvt, WorkerMode.SINGLE, pTarget);
+            break;
+            default:
+                throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
+        }
+        Queue queue = new Queue(queueName, true, false, false, args);
         rabbitAdmin.declareQueue(queue);
 
         return queue;
@@ -247,25 +252,26 @@ public class RegardsAmqpAdmin {
      */
     public <E extends ISubscribable, H extends IHandler<E>> void purgeQueue(Class<E> pEventType, Class<H> pHandlerType,
             boolean noWait) {
+
         rabbitAdmin
                 .purgeQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
                             noWait);
     }
 
     public <E extends IPollable> Properties getQueueProperties(Class<E> pEventType) {
-        return rabbitAdmin.getQueueProperties(getQueueName(pEventType, WorkerMode.SINGLE,
-                                                           EventUtils.getCommunicationTarget(pEventType)));
+        return rabbitAdmin.getQueueProperties(
+                getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)));
     }
 
     public <E extends ISubscribable, H extends IHandler<E>> Properties getQueueProperties(Class<E> pEventType,
             Class<H> pHandlerType) {
-        return rabbitAdmin.getQueueProperties(getQueueName(pHandlerType, WorkerMode.ALL,
-                                                           EventUtils.getCommunicationTarget(pEventType)));
+        return rabbitAdmin.getQueueProperties(
+                getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)));
     }
 
     public <E extends IPollable> void deleteQueue(Class<E> pEventType) {
-        rabbitAdmin.deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE,
-                                             EventUtils.getCommunicationTarget(pEventType)));
+        rabbitAdmin.deleteQueue(
+                getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)));
     }
 
     public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType,

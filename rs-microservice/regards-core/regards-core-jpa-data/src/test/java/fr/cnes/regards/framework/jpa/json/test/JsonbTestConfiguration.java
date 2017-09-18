@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.jpa.json.test;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,6 +38,9 @@ import fr.cnes.regards.framework.jpa.json.GsonUtil;
 @ComponentScan(basePackages = { "fr.cnes.regards.framework" })
 @PropertySource("classpath:tests.properties")
 public class JsonbTestConfiguration {
+
+    @Value("${spring.datasource.url}")
+    private String jdbcurl;
 
     @Bean
     public Void setGsonIntoGsonUtil(Gson pGson) {

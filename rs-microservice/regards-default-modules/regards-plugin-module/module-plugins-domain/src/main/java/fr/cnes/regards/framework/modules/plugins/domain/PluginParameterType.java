@@ -19,6 +19,9 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.util.ArrayList; 
+import java.util.List; 
+
 import com.google.common.base.Strings;
 
 /**
@@ -37,6 +40,12 @@ public class PluginParameterType {
      * The parameter's type Java
      */
     private String type;
+    
+    /** 
+     * Id the paramType is a PARAMETIRIZED_OBJECT then this properties contains the parameterized type. 
+     * For List<String>, parameterizedSubType=String and type=List 
+     */ 
+    private String parameterizedSubType; 
 
     /**
      * The parameters's type {@link ParamType}.
@@ -52,6 +61,11 @@ public class PluginParameterType {
      * Define if the parameter is optional or mandatory
      */
     private Boolean optional;
+    
+    /** 
+     * The parameters of the plugin 
+     */ 
+    private List<PluginParameterType> parameters = new ArrayList<>(); 
 
     /**
      * A constructor with the attribute
@@ -121,6 +135,22 @@ public class PluginParameterType {
     public void setOptional(Boolean optional) {
         this.optional = optional;
     }
+    
+    public List<PluginParameterType> getParameters() { 
+        return parameters; 
+    } 
+ 
+    public void setParameters(List<PluginParameterType> pParameters) { 
+        parameters = pParameters; 
+    } 
+ 
+    public String getParameterizedSubType() { 
+        return parameterizedSubType; 
+    } 
+ 
+    public void setParameterizedSubType(String pParamParameterizedSubType) { 
+        parameterizedSubType = pParamParameterizedSubType; 
+    }
 
     /**
      * An enumeration with PRIMITIVE and PLUGIN defaultValue
@@ -129,6 +159,14 @@ public class PluginParameterType {
      *
      */
     public enum ParamType {
+        /** 
+         * Object type with parameters 
+         */ 
+        PARAMETERIZED_OBJECT, 
+        /** 
+         * Object type 
+         */ 
+        OBJECT,
         /**
          * Parameter type primitif
          */

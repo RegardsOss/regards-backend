@@ -61,4 +61,22 @@ public class PluginDynamicValue {
         this.value = pValue;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        PluginDynamicValue that = (PluginDynamicValue) o;
+
+        return value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
 }

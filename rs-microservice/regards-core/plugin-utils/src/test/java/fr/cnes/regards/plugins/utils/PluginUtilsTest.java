@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.plugins.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -85,30 +89,47 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     @Test
     public void getSamplePlugin() {
         SamplePlugin samplePlugin = null;
+        String stringPojoParamValue = "value_test";
 
         LOGGER.debug(STARTING + toString());
 
+        List<String> values = new ArrayList<String>();
+        values.add("test1");
+        values.add("test2");
+        Date currentDate = new Date();
+        TestPojo pojoParam = new TestPojo();
+        pojoParam.setValue(stringPojoParamValue);
+        pojoParam.setValues(values);
+
+        pojoParam.setDate(currentDate);
+
+        Gson gson = new GsonBuilder().setDateFormat(PluginParameterUtils.DATE_TIME_FORMAT).create();;
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
+                .addParameter(SamplePlugin.POJO, gson.toJson(pojoParam)).addParameter(SamplePlugin.SUFFIXE, "chris_test_1")
+                .getParameters();
+
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
         /*
          * Use the plugin
          */
-        Assert.assertEquals(
-                Integer.parseInt(PluginUtilsTest.TROIS) * (Integer.parseInt(PluginUtilsTest.QUATRE) + Integer
-                        .parseInt(PluginUtilsTest.CINQ)),
-                samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE), Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertEquals(Integer.parseInt(PluginUtilsTest.TROIS)
+                * (Integer.parseInt(PluginUtilsTest.QUATRE) + Integer.parseInt(PluginUtilsTest.CINQ)),
+                            samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
+                                             Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
+        Assert.assertEquals(samplePlugin.getPojo().getValue(), stringPojoParamValue);
+        Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
+        Assert.assertEquals(samplePlugin.getPojo().getDate(), currentDate);
         LOGGER.debug(ENDING + toString());
     }
 
@@ -133,17 +154,16 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .getParameters().stream().findAny().get();
 
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>(),
-                           aDynamicPlgParam);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             new HashMap<>(), aDynamicPlgParam);
 
         Assert.assertNotNull(samplePlugin);
 
         /*
          * Use the plugin
          */
-        Assert.assertTrue(
-                0 > samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE), Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertTrue(0 > samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
+                                               Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         LOGGER.debug(ENDING + toString());
     }
@@ -162,16 +182,16 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameterDynamic(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.SUFFIXE, "a suffix").getParameters();
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
         /*
          * Use the plugin
          */
-        Assert.assertTrue(
-                0 < samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE), Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertTrue(0 < samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
+                                               Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         LOGGER.debug(ENDING + toString());
     }
@@ -188,8 +208,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays
-                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
 
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
@@ -200,9 +220,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.BLUE).getParameters().stream().findAny().get();
 
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>(),
-                           aDynamicPlgParam);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             new HashMap<>(), aDynamicPlgParam);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -225,15 +244,15 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays
-                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
                 .addParameterDynamic(SamplePlugin.SUFFIXE, PluginUtilsTest.RED, dynamicValues).getParameters();
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -254,8 +273,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays
-                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
@@ -285,9 +304,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.SUFFIXE, PluginUtilsTest.RED).getParameters();
 
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(SamplePlugin.class.getPackage().getName()),
-                           new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                             Arrays.asList(SamplePlugin.class.getPackage().getName()), new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -308,9 +326,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"),
-                           new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class,
+                                             Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"),
+                                             new HashMap<>());
 
         // Use the plugin
         Assert.assertNotNull(samplePlugin);
