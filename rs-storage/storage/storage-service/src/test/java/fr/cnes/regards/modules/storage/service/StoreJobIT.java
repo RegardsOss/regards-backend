@@ -9,7 +9,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -30,14 +29,13 @@ import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.IPublisher;
+
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -46,7 +44,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -117,8 +114,9 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> pluginParameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation)).getParameters();
-        //new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
+                              gson.toJson(baseStorageLocation))
+                .getParameters();
+        // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
                                       IDataStorage.class.getPackage().getName());
@@ -127,10 +125,9 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         // ... a working subset
         URL source = new URL("file", "", "src/test/resources/data.txt");
         AIP aip = getAipFromFile();
-        aip.getHistory()
-                .add(new Event("submission into our beautiful system", OffsetDateTime.now(), EventType.SUBMISSION));
+        aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
         df = new DataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                          new MimeType("text", "plain"), aip, "data.txt");
+                new MimeType("text", "plain"), aip, "data.txt");
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets create the job
         parameters = Sets.newHashSet();

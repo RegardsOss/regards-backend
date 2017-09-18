@@ -127,4 +127,8 @@ public class AIP extends AbstractInformationPackage {
         event.setDate(date);
         getHistory().add(event);
     }
+
+    public void addEvent(@Nullable String type, String comment) {
+        addEvent(type, comment, OffsetDateTime.now());
+    }
 }

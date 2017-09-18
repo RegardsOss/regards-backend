@@ -98,7 +98,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
      * Add AIP event
      * @param comment event comment
      */
-    public void addAIPEvent(String comment) {
+    public void addEvent(String comment) {
         addEvent(null, comment, OffsetDateTime.now());
     }
 }
