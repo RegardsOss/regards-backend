@@ -247,12 +247,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         // 2. Prepare files to store
         Set<AbstractPhysicalFile> preparedFiles = stafController.prepareFilesToArchive(filesToPrepare);
 
-        try {
-            // 3. Do store all prepared files
-            stafController.archiveFiles(preparedFiles, pReplaceMode);
-        } catch (STAFException e) {
-            LOG.error("[STAFDataStorage Plugin] Error during file preparation", e);
-        }
+        // 3. Do store all prepared files
+        stafController.archiveFiles(preparedFiles, pReplaceMode);
 
         Map<Path, URL> rawArchivedFiles = stafController.getRawFilesArchived(preparedFiles);
 
