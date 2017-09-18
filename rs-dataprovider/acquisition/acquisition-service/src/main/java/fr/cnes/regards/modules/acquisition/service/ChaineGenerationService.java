@@ -60,4 +60,9 @@ public class ChaineGenerationService implements IChainGenerationService {
         return chainRepository.findOne(id);
     }
 
+    @Override
+    public void delete(Long id) {
+        chainRepository.delete(id);
+    }
+
 }

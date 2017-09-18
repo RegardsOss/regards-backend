@@ -24,8 +24,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
  * 
@@ -34,35 +34,35 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  */
 @MultitenantTransactional
 @Service
-public class ProductService implements IProductService {
+public class MetaFileService implements IMetaFileService {
 
-    private final IProductRepository productRepository;
+    private final IMetaFileRepository metaFileRepository;
 
-    public ProductService(IProductRepository repository) {
+    public MetaFileService(IMetaFileRepository repository) {
         super();
-        this.productRepository = repository;
+        this.metaFileRepository = repository;
     }
 
     @Override
-    public Product save(Product product) {
-        return productRepository.save(product);
+    public MetaFile save(MetaFile metaFile) {
+        return metaFileRepository.save(metaFile);
     }
 
     @Override
-    public Product retrieve(Long id) {
-        return productRepository.findOne(id);
+    public MetaFile retrieve(Long id) {
+        return metaFileRepository.findOne(id);
     }
 
     @Override
-    public List<Product> retrieveAll() {
-        final List<Product> products = new ArrayList<>();
-        productRepository.findAll().forEach(c -> products.add(c));
-        return products;
+    public List<MetaFile> retrieveAll() {
+        final List<MetaFile> chains = new ArrayList<>();
+        metaFileRepository.findAll().forEach(c -> chains.add(c));
+        return chains;
     }
 
     @Override
     public void delete(Long id) {
-        this.productRepository.delete(id);
+        this.metaFileRepository.delete(id);
     }
 
 }

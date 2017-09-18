@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 public interface IProductService {
 
-    Product save(Product chain);
+    Product save(Product product);
 
     /**
      * @return all {@link Product}

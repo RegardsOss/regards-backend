@@ -56,14 +56,19 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransactionalIT {
 
-    //@MultitenantTransactional
-    //public class ChaineGenerationServiceIT {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaineGenerationServiceIT.class);
 
     private static final String TENANT = "PROJECT";
 
     private static final String CHAINE_LABEL = "chaine label";
+
+    private static final String DATASET_NAME = "dataset name";
+
+    private static final String META_PRODUCT_NAME = "meta product name";
+
+    private static final String PRODUCT_NAME_1 = "first product name";
+
+    private static final String PRODUCT_NAME_2 = "second product name";
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -90,30 +95,20 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         productService = new ProductService(productRepository);
 
         tenantResolver.forceTenant(TENANT);
-        
+
         cleanDb();
     }
 
-
-//    public void topDown() {
-//        cleanDb();
-//
-//    }
-
     @Test
     public void createChaine() {
-
-        final String datasetName = "dataset name";
-
         // Create a first generation chain
-        ChainGeneration chain = ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(datasetName).get();
-        chain = chainfoService.save(chain);
+        ChainGeneration chain = chainfoService
+                .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a meta product
-        MetaProduct metaProduct = MetaProductBuilder.build("meta product").get();
-        metaProduct = metaProductService.save(metaProduct);
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
         Assert.assertNotNull(metaProduct);
         Assert.assertNotNull(metaProduct.getId());
 
@@ -123,9 +118,8 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
-        Product aProduct = ProductBuilder.build("first product name").withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        aProduct = productService.save(aProduct);
+        Product aProduct = productService.save(ProductBuilder.build(PRODUCT_NAME_1)
+                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
         Assert.assertNotNull(aProduct);
 
         // Link Product <-> MetaProduct
@@ -142,23 +136,19 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertNotNull(chains);
         Assert.assertEquals(1, chains.size());
         Assert.assertEquals(CHAINE_LABEL, chains.get(0).getLabel());
-        Assert.assertEquals(datasetName, chains.get(0).getDataSet());
+        Assert.assertEquals(DATASET_NAME, chains.get(0).getDataSet());
     }
 
     @Test
     public void deleteAProduct() {
-
-        final String datasetName = "dataset name";
-
         // Create a first generation chain
-        ChainGeneration chain = ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(datasetName).get();
-        chain = chainfoService.save(chain);
+        ChainGeneration chain = chainfoService
+                .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a meta product
-        MetaProduct metaProduct = MetaProductBuilder.build("meta product").get();
-        metaProduct = metaProductService.save(metaProduct);
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
         Assert.assertNotNull(metaProduct);
         Assert.assertNotNull(metaProduct.getId());
 
@@ -168,9 +158,8 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
-        Product aProduct = ProductBuilder.build("first product name").withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        aProduct = productService.save(aProduct);
+        Product aProduct = productService.save(ProductBuilder.build(PRODUCT_NAME_1)
+                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
         Assert.assertNotNull(aProduct);
         Assert.assertNotNull(aProduct.getId());
         Assert.assertEquals(1, productService.retrieveAll().size());
@@ -186,9 +175,8 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertNotNull(aProduct.getId());
 
         // Create a second Product for the uniq MetaProduct
-        Product bProduct = ProductBuilder.build("second product name").withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        bProduct = productService.save(bProduct);
+        Product bProduct = productService.save(ProductBuilder.build(PRODUCT_NAME_2)
+                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
         Assert.assertNotNull(bProduct);
         Assert.assertNotNull(bProduct.getId());
         Assert.assertEquals(2, productService.retrieveAll().size());

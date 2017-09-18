@@ -18,43 +18,44 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
-import fr.cnes.regards.modules.acquisition.domain.Product;
+import java.time.OffsetDateTime;
 
 /**
  *
- * {@link MetaFile} builder
+ * {@link ScanDirectory} builder
  *
  * @author Christophe Mertz
  *
  */
-public final class MetaProductBuilder {
+public final class ScanDirectoryBuilder {
 
     /**
-     * Current {@link MetaProduct}
+     * Current {@link ScanDirectory}
      */
-    private final MetaProduct metaProduct;
+    private final ScanDirectory scanDirectory;
 
-    private MetaProductBuilder(MetaProduct metaProduct) {
-        this.metaProduct = metaProduct;
+    private ScanDirectoryBuilder(ScanDirectory scanDir) {
+        this.scanDirectory = scanDir;
     }
 
     /**
-     * Create a {@link MetaProduct}
-     * @param label 
+     * Create a {@link ScanDirectory}
+     * @param scan directory name 
      * @return
      */
-    public static MetaProductBuilder build(String label) {
-        final MetaProduct mp = new MetaProduct();
-        mp.setLabel(label);
-        return new MetaProductBuilder(mp);
+    public static ScanDirectoryBuilder build(String directory) {
+        final ScanDirectory sd = new ScanDirectory();
+        sd.setScanDir(directory);
+        return new ScanDirectoryBuilder(sd);
     }
 
-    public MetaProductBuilder addProduct(Product product) {
-        metaProduct.addProduct(product);
+    public ScanDirectoryBuilder withDateAcquisition(OffsetDateTime odt) {
+        scanDirectory.setLastAcqDate(odt);
         return this;
     }
 
-    public MetaProduct get() {
-        return metaProduct;
+    public ScanDirectory get() {
+        return scanDirectory;
     }
+
 }

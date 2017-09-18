@@ -44,8 +44,8 @@ public class MetaProductService implements IMetaProductService {
     }
 
     @Override
-    public MetaProduct save(MetaProduct chain) {
-        return metaProductRepository.save(chain);
+    public MetaProduct save(MetaProduct metaProduct) {
+        return metaProductRepository.save(metaProduct);
     }
 
     @Override
@@ -55,9 +55,14 @@ public class MetaProductService implements IMetaProductService {
 
     @Override
     public List<MetaProduct> retrieveAll() {
-        final List<MetaProduct> chains = new ArrayList<>();
-        metaProductRepository.findAll().forEach(c -> chains.add(c));
-        return chains;
+        final List<MetaProduct> metaProducts = new ArrayList<>();
+        metaProductRepository.findAll().forEach(c -> metaProducts.add(c));
+        return metaProducts;
+    }
+
+    @Override
+    public void delete(Long id) {
+        this.metaProductRepository.delete(id);
     }
 
 }

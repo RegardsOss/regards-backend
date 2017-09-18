@@ -20,27 +20,27 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
  * 
  * @author Christophe Mertz
  * 
  */
-public interface IMetaProductService {
+public interface IMetaFileService {
 
-    MetaProduct save(MetaProduct metaProduct);
-
-    /**
-     * @return all {@link MetaProduct}
-     */
-    List<MetaProduct> retrieveAll();
+    MetaFile save(MetaFile metaFile);
 
     /**
-     * Retrieve one specified {@link MetaProduct}
-     * @param id {@link MetaProduct}
+     * @return all {@link MetaFile}
      */
-    MetaProduct retrieve(Long id);
-    
+    List<MetaFile> retrieveAll();
+
+    /**
+     * Retrieve one specified {@link MetaFile}
+     * @param id {@link MetaFile}
+     */
+    MetaFile retrieve(Long id);
+
     void delete(Long id);
 }

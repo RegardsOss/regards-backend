@@ -20,27 +20,27 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
  * 
  * @author Christophe Mertz
  * 
  */
-public interface IMetaProductService {
+public interface IScanDirectoryService {
 
-    MetaProduct save(MetaProduct metaProduct);
-
-    /**
-     * @return all {@link MetaProduct}
-     */
-    List<MetaProduct> retrieveAll();
+    ScanDirectory save(ScanDirectory scanDir);
 
     /**
-     * Retrieve one specified {@link MetaProduct}
-     * @param id {@link MetaProduct}
+     * @return all {@link ScanDirectory}
      */
-    MetaProduct retrieve(Long id);
-    
+    List<ScanDirectory> retrieveAll();
+
+    /**
+     * Retrieve one specified {@link ScanDirectory}
+     * @param id {@link ScanDirectory}
+     */
+    ScanDirectory retrieve(Long id);
+
     void delete(Long id);
 }

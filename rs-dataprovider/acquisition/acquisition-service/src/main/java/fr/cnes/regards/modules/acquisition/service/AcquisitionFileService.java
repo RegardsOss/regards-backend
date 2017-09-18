@@ -24,8 +24,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 
 /**
  * 
@@ -34,35 +34,35 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  */
 @MultitenantTransactional
 @Service
-public class ProductService implements IProductService {
+public class AcquisitionFileService implements IAcquisitionFileService {
 
-    private final IProductRepository productRepository;
+    private final IAcquisitionFileRepository acqfileRepository;
 
-    public ProductService(IProductRepository repository) {
+    public AcquisitionFileService(IAcquisitionFileRepository repository) {
         super();
-        this.productRepository = repository;
+        this.acqfileRepository = repository;
     }
 
     @Override
-    public Product save(Product product) {
-        return productRepository.save(product);
+    public AcquisitionFile save(AcquisitionFile acqFile) {
+        return acqfileRepository.save(acqFile);
     }
 
     @Override
-    public Product retrieve(Long id) {
-        return productRepository.findOne(id);
+    public List<AcquisitionFile> retrieveAll() {
+        final List<AcquisitionFile> acqFiles = new ArrayList<>();
+        acqfileRepository.findAll().forEach(c -> acqFiles.add(c));
+        return acqFiles;
     }
 
     @Override
-    public List<Product> retrieveAll() {
-        final List<Product> products = new ArrayList<>();
-        productRepository.findAll().forEach(c -> products.add(c));
-        return products;
+    public AcquisitionFile retrieve(Long id) {
+        return acqfileRepository.findOne(id);
     }
 
     @Override
     public void delete(Long id) {
-        this.productRepository.delete(id);
+        acqfileRepository.delete(id);
     }
 
 }

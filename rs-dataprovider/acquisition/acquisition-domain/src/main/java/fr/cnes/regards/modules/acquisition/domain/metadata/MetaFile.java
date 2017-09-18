@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -77,8 +78,8 @@ public class MetaFile implements IIdentifiable<Long> {
      * A {@link Set} of {@link ScanDirectory} to scan and search data files corresponding to the file name pattern
      * max chars 250
      */
-    @OneToMany
-    @JoinColumn(name = "id", foreignKey = @ForeignKey(name = "fk_acq_directory"))
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "scan_directory_id", foreignKey = @ForeignKey(name = "fk_acq_directory"))
     private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**
@@ -127,14 +128,14 @@ public class MetaFile implements IIdentifiable<Long> {
 
     /**
      * Get a {@link ScanDirectory}
-     * @param supplyDirId the {@link ScanDirectory} identifier 
+     * @param scanDirId the {@link ScanDirectory} identifier 
      * @return a {@link ScanDirectory}
      */
-    public ScanDirectory getSupplyDirectory(Long supplyDirId) {
+    public ScanDirectory getScanDirectory(Long scanDirId) {
         ScanDirectory supplyDir = null;
-        if (supplyDirId != null) {
+        if (scanDirId != null) {
             for (ScanDirectory element : scanDirectories) {
-                if (supplyDirId.equals(element.getId())) {
+                if (scanDirId.equals(element.getId())) {
                     supplyDir = element;
                     break;
                 }
@@ -176,6 +177,10 @@ public class MetaFile implements IIdentifiable<Long> {
         this.scanDirectories.add(scanDirectory);
     }
 
+    public void removeScanDirectory(ScanDirectory scanDirectory) {
+        this.scanDirectories.remove(scanDirectory);
+    }
+
     public String getFileName() {
         return fileName;
     }
@@ -214,6 +219,8 @@ public class MetaFile implements IIdentifiable<Long> {
         int result = 1;
         result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode());
+        result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode());
         return result;
     }
 
@@ -235,6 +242,16 @@ public class MetaFile implements IIdentifiable<Long> {
             if (other.id != null)
                 return false;
         } else if (!id.equals(other.id))
+            return false;
+        if (invalidFolder == null) {
+            if (other.invalidFolder != null)
+                return false;
+        } else if (!invalidFolder.equals(other.invalidFolder))
+            return false;
+        if (mandatory == null) {
+            if (other.mandatory != null)
+                return false;
+        } else if (!mandatory.equals(other.mandatory))
             return false;
         return true;
     }

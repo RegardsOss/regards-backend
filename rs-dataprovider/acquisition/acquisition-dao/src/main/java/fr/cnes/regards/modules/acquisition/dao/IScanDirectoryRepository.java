@@ -16,31 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service;
+package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.List;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
- * 
+ * {@link ScanDirectory} repository
+ *
  * @author Christophe Mertz
- * 
  */
-public interface IMetaProductService {
+@Repository
+public interface IScanDirectoryRepository extends CrudRepository<ScanDirectory, Long> {
 
-    MetaProduct save(MetaProduct metaProduct);
-
-    /**
-     * @return all {@link MetaProduct}
-     */
-    List<MetaProduct> retrieveAll();
-
-    /**
-     * Retrieve one specified {@link MetaProduct}
-     * @param id {@link MetaProduct}
-     */
-    MetaProduct retrieve(Long id);
-    
-    void delete(Long id);
 }

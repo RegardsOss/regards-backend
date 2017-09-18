@@ -41,12 +41,12 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  *
  */
 @Entity
-@Table(name = "t_meta_file")
+@Table(name = "t_scan_directory")
 public class ScanDirectory implements IIdentifiable<Long> {
 
     @Id
-    @SequenceGenerator(name = "ScanMetaFile", initialValue = 1, sequenceName = "seq_meta_file")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ScanMetaFile")
+    @SequenceGenerator(name = "ScanDirSequence", initialValue = 1, sequenceName = "seq_scan_dir")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ScanDirSequence")
     protected Long id;
 
     /**
@@ -68,6 +68,43 @@ public class ScanDirectory implements IIdentifiable<Long> {
      */
     public ScanDirectory() {
         super();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((lastAcqDate == null) ? 0 : lastAcqDate.hashCode());
+        result = prime * result + ((scanDir == null) ? 0 : scanDir.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ScanDirectory other = (ScanDirectory) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (lastAcqDate == null) {
+            if (other.lastAcqDate != null)
+                return false;
+        } else if (!lastAcqDate.equals(other.lastAcqDate))
+            return false;
+        if (scanDir == null) {
+            if (other.scanDir != null)
+                return false;
+        } else if (!scanDir.equals(other.scanDir))
+            return false;
+        return true;
     }
 
     @Override
