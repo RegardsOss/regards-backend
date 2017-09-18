@@ -16,13 +16,17 @@ public class CachedFile {
 
     private OffsetDateTime expiration;
 
+    private CachedFileState state;
+
+    private String failureCause;
+
     public CachedFile() {
     }
 
-    public CachedFile(String checksum, URL location, OffsetDateTime expiration) {
-        this.checksum = checksum;
-        this.location = location;
+    public CachedFile(DataFile df, OffsetDateTime expiration) {
+        this.checksum = df.getChecksum();
         this.expiration = expiration;
+        this.state = CachedFileState.RESTORING;
     }
 
     public Long getId() {
@@ -55,5 +59,21 @@ public class CachedFile {
 
     public void setExpiration(OffsetDateTime expiration) {
         this.expiration = expiration;
+    }
+
+    public CachedFileState getState() {
+        return state;
+    }
+
+    public void setState(CachedFileState state) {
+        this.state = state;
+    }
+
+    public void setFailureCause(String failureCause) {
+        this.failureCause = failureCause;
+    }
+
+    public String getFailureCause() {
+        return failureCause;
     }
 }

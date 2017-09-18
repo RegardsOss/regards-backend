@@ -26,4 +26,6 @@ public interface IDataFileDao {
     DataFile findOneById(Long dataFileId);
 
     Set<DataFile> findAllByChecksumIn(Set<String> checksums);
+
+    void remove(DataFile data);
 }

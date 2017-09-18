@@ -15,7 +15,10 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -60,10 +63,7 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.*;
 import fr.cnes.regards.modules.storage.domain.database.*;
-import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
-import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.domain.event.StorageAction;
-import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
+import fr.cnes.regards.modules.storage.domain.event.*;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
@@ -148,21 +148,49 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 case DELETION:
                     handleDeletionAction(type, event);
                     break;
-                default:
+                case RESTORATION:
+                    handleRestorationAction(type, event);
                     break;
+                default:
+                    throw new EnumConstantNotPresentException(StorageAction.class, action.toString());
             }
             runtimeTenantResolver.clearTenant();
         }
 
-        private void handleDeletionAction(StorageEventType type, DataStorageEvent data) {
+        private void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
+            DataFile data = dataFileDao.findOneById(event.getDataFileId());
+            Path restorationPath = event.getRestorationPath();
             switch (type) {
                 case SUCCESSFUL:
-                    //update data status
-                    //                    dataFileDao.remove(data);
-                    //FIXME: what do we do on AIP here? change the meta or not? do we change meta on removal query?
+                    cachedFileService.handleRestorationSuccess(data, restorationPath);
+                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
                     break;
                 case FAILED:
-                    //update data status
+                    cachedFileService.handleRestorationFailure(data);
+                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
+            DataFile data = dataFileDao.findOneById(event.getDataFileId());
+            switch (type) {
+                case SUCCESSFUL:
+                    if (data.getChecksum().equals(event.getChecksum())) {
+                        AIP aip = dao.findOneByIpId(data.getAip().getIpId());
+                        Set<InformationObject> iosToRemove = aip.getInformationObjects().stream()
+                                .filter(io -> io.getPdi().getFixityInformation().getChecksum()
+                                        .equals(data.getChecksum())).collect(Collectors.toSet());
+                        aip.getInformationObjects().removeAll(iosToRemove);
+                        aip.setState(AIPState.UPDATED);
+                        dao.save(aip);
+                        dataFileDao.remove(data);
+                    }
+                    //otherwise we consider it comes from an update and the aip should not be set to updated
+                    break;
+                case FAILED:
                     //FIXME: what to do?
                     break;
             }
@@ -235,7 +263,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Override
     public Set<UUID> create(Set<AIP> aips) throws ModuleException {
         // save into DB as valid
-        // TODO: check with rs-ingest if ipIds are already set or not
         Set<AIP> aipsInDb = Sets.newHashSet();
         Set<DataFile> dataFilesToStore = Sets.newHashSet();
         for (AIP aip : aips) {
@@ -397,7 +424,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
             checkDispatch(metadataToStore, storageWorkingSetMap);
             Set<UUID> jobsToMonitor = scheduleStorage(storageWorkingSetMap, false);
-            //TODO: save those jobs uuid somewhere
             // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
             for (DataFile dataFile : metadataToStore) {
                 AIP aip = dataFile.getAip();
@@ -416,7 +442,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         try {
             // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
             Set<UUID> jobsToMonitor = scheduleUpdate(metadataToUpdate);
-            //TODO: save those jobs uuid somewhere
             //to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
             Set<AIP> aips = metadataToUpdate.stream().map(oldNew -> oldNew.getNewOne().getAip())
                     .collect(Collectors.toSet());
@@ -542,7 +567,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
         Set<String> errors = Sets.newHashSet();
         //first lets identify the files that we don't recognize
-        if(dataFiles.size() != requestedChecksums.size()) {
+        if (dataFiles.size() != requestedChecksums.size()) {
             Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
             errors.addAll(Sets.difference(requestedChecksums, dataFilesChecksums));
         }
@@ -550,19 +575,21 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<DataFile> nearlineFiles = Sets.newHashSet();
         // for each data file, lets see if it is online or not
         for (DataFile df : dataFiles) {
-            if(df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+            if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
                 onlineFiles.add(df);
             } else {
                 nearlineFiles.add(df);
             }
         }
         // now lets ask the cache service to handle nearline restoration and give us the already available ones
-        CoupleAvailableError nearlineAvailableAndError = cachedFileService.restore(nearlineFiles, availabilityRequest.getExpirationDate());
-        for(DataFile inError: nearlineAvailableAndError.getErrors()) {
+        CoupleAvailableError nearlineAvailableAndError = cachedFileService
+                .restore(nearlineFiles, availabilityRequest.getExpirationDate());
+        for (DataFile inError : nearlineAvailableAndError.getErrors()) {
             errors.add(inError.getChecksum());
         }
         // lets constrcut the result
-        AvailabilityResponse availabilityResponse = new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
+        AvailabilityResponse availabilityResponse = new AvailabilityResponse(errors, onlineFiles,
+                                                                             nearlineAvailableAndError.getAvailables());
         return availabilityResponse;
     }
 

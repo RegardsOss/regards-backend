@@ -13,9 +13,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.DataObject;
+import fr.cnes.regards.modules.storage.domain.FixityInformation;
+import fr.cnes.regards.modules.storage.domain.RepresentationInformation;
 import fr.cnes.regards.modules.storage.domain.InformationObject;
 
 /**
+ *
+ * contains useful, for the system, metadata of a file from an AIP.
+ * It mixes {@link DataObject}, {@link FixityInformation}, {@link RepresentationInformation} and add some information needed by the system not extracted from the AIP
  *
  * @author Sylvain VISSIERE-GUERINET
  */

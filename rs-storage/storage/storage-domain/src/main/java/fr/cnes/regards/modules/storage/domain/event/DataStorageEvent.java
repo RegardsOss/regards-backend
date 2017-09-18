@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.domain.event;
 
 import java.net.URL;
+import java.nio.file.Path;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -29,6 +30,8 @@ public class DataStorageEvent implements ISubscribable {
     private StorageEventType type;
 
     private URL newUrl;
+
+    private Path restorationPath;
 
     public DataStorageEvent() {
     }
@@ -97,6 +100,14 @@ public class DataStorageEvent implements ISubscribable {
 
     public void setChecksum(String checksum) {
         this.checksum = checksum;
+    }
+
+    public Path getRestorationPath() {
+        return restorationPath;
+    }
+
+    public void setRestorationPath(Path restorationPath) {
+        this.restorationPath = restorationPath;
     }
 
     @Override

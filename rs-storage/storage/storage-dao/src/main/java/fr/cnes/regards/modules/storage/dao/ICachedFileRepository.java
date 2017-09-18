@@ -12,4 +12,6 @@ import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 public interface ICachedFileRepository extends JpaRepository<CachedFile, Long>{
 
     Set<CachedFile> findAllByChecksumIn(Set<String> checksums);
+
+    CachedFile findOneByChecksum(String checksum);
 }

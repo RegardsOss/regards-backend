@@ -38,7 +38,7 @@ public class ProgressManager {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.SUCCESSFUL);
         job.advanceCompletion();
-        //hell yeah this is not the usual publish method, but i know what i'm doing to trust me!
+        //hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
@@ -72,11 +72,16 @@ public class ProgressManager {
     }
 
     public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
-
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.SUCCESSFUL);
+        dataStorageEvent.setRestorationPath(restoredFilePath);
+        job.advanceCompletion();
+        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
     public void restoreFailed(DataFile dataFile) {
-
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.FAILED);
+        job.advanceCompletion();
+        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
     public Set<String> getFailureCauses() {

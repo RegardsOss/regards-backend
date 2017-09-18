@@ -12,6 +12,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -64,17 +65,17 @@ public class DataFileDao implements IDataFileDao {
         return repository.findAllByChecksumIn(checksums);
     }
 
+    @Override
+    public void remove(DataFile data) {
+        data.setAipDataBase(getAipDataBase(data));
+        repository.delete(data);
+    }
+
     private AIPDataBase getAipDataBase(AIP aip) {
         return aipRepo.findOneByIpId(aip.getIpId());
     }
 
     public AIPDataBase getAipDataBase(DataFile dataFile) {
         return aipRepo.findOneByIpId(dataFile.getAipDataBase().getIpId());
-    }
-
-    public Set<AIPDataBase> getAipDataBases(DataFile dataFile) {
-        Set<AIPDataBase> aipDataBases = Sets.newHashSet();
-//        dataFile.getAipDataBase().forEach(aip->aipDataBases.add(aipRepo.findOneByIpId(aip.getIpId())));
-        return aipDataBases;
     }
 }
