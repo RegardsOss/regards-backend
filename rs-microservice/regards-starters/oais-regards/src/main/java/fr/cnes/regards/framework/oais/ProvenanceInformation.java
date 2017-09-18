@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -59,6 +61,18 @@ public class ProvenanceInformation {
             additional = new HashMap<>();
         }
         return additional;
+    }
+
+    public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
+        Event event = new Event();
+        event.setType(type);
+        event.setComment(comment);
+        event.setDate(date);
+        getHistory().add(event);
+    }
+
+    public void addEvent(@Nullable String type, String comment) {
+        addEvent(type, comment, OffsetDateTime.now());
     }
 
     @Override
