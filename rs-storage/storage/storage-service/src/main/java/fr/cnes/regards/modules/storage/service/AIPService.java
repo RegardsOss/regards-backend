@@ -242,8 +242,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     @Override
     public Set<UUID> create(Set<AIP> aips) throws ModuleException {
+        LOG.trace("Entering method create(Set<AIP>) with {} aips", aips.size());
         // save into DB as valid
-        // TODO: check with rs-ingest if ipIds are already set or not
         Set<AIP> aipsInDb = Sets.newHashSet();
         Set<DataFile> dataFilesToStore = Sets.newHashSet();
         for (AIP aip : aips) {
@@ -255,11 +255,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             dataFilesToStore.addAll(dataFiles);
             publisher.publish(new AIPEvent(aip));
         }
+        LOG.trace("{} aips built {} data objects to store", aips.size(), dataFilesToStore.size());
         IAllocationStrategy allocationStrategy = getAllocationStrategy(); // FIXME: should probably set the tenant into
                                                                           // maintenance in case of module exception
 
         // now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
+        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy", dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap);
         Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);

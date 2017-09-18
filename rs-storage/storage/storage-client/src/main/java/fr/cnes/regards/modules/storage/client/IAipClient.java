@@ -12,17 +12,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import static fr.cnes.regards.modules.storage.client.IAipClient.AIP_PATH;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.DataObject;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestClient(name = "rs-storage")
-@RequestMapping(value = AIP_PATH)
+@RequestMapping(value = IAipClient.AIP_PATH)
 public interface IAipClient {
 
     public static final String AIP_PATH = "/aips";
