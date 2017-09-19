@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.URL;
-
 import javax.validation.constraints.NotNull;
+import java.net.URL;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 
@@ -67,13 +66,26 @@ public class DataObject {
     }
 
     @Override
-    public boolean equals(Object pOther) {
-        return (pOther instanceof DataObject) && dataType.equals(((DataObject) pOther).dataType)
-                && url.toString().equals(((DataObject) pOther).url.toString());
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DataObject that = (DataObject) o;
+
+        if (dataType != that.dataType) {
+            return false;
+        }
+        return url.equals(that.url);
     }
 
     @Override
     public int hashCode() {
-        return url.toString().hashCode();
+        int result = dataType.hashCode();
+        result = 31 * result + url.hashCode();
+        return result;
     }
 }
