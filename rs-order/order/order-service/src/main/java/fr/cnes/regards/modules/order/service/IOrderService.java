@@ -1,9 +1,14 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -56,4 +61,6 @@ public interface IOrderService {
         return findAll(user, new PageRequest(0, pageSize));
     }
 
+    void downloadOrderCurrentZip(Long orderId, HttpServletResponse response)
+            throws NotYetAvailableException;
 }

@@ -132,6 +132,7 @@ public class OrderServiceIT {
         Order order = new Order();
         order.setEmail(USER_EMAIL);
         order.setCreationDate(OffsetDateTime.now());
+        order = orderRepository.save(order);
 
         // Dataset order tasks
         DatasetTask ds1OrderTask = new DatasetTask();
@@ -150,14 +151,14 @@ public class OrderServiceIT {
         dataFile1.setOnline(true);
         dataFile1.setSize(1_000_000l);
         dataFile1.setName("tutu");
-        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile1, DO1_IP_ID));
+        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile1, DO1_IP_ID, order.getId()));
 
         DataFile dataFile2 = new DataFile();
         dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
         dataFile2.setOnline(false);
         dataFile2.setSize(1l);
         dataFile2.setName("tutu2");
-        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile2, DO2_IP_ID));
+        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile2, DO2_IP_ID, order.getId()));
 
         JobInfo storageJobInfo = new JobInfo();
         storageJobInfo.setClassName("...");
@@ -166,8 +167,8 @@ public class OrderServiceIT {
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
         storageJobInfo.setParameters(new StorageFilesJobParameter(
-                new OrderDataFile[] { new OrderDataFile(dataFile1, DO1_IP_ID),
-                                      new OrderDataFile(dataFile2, DO2_IP_ID) }));
+                new OrderDataFile[] { new OrderDataFile(dataFile1, DO1_IP_ID, order.getId()),
+                                      new OrderDataFile(dataFile2, DO2_IP_ID, order.getId()) }));
 
         storageJobInfo = jobInfoRepository.save(storageJobInfo);
 
@@ -191,7 +192,7 @@ public class OrderServiceIT {
 
         Set<Long> fileTaskIds = orderFromDb.getDatasetTasks().stream().flatMap(ds -> ds.getReliantTasks().stream())
                 .map(FilesTask::getId).collect(Collectors.toSet());
-        List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailableAndOnline(fileTaskIds);
+        List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailables(order.getId());
         Assert.assertEquals(1, dataFiles.size());
     }
 

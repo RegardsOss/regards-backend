@@ -1,15 +1,21 @@
 package fr.cnes.regards.modules.order.rest;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -17,16 +23,20 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.DigestUtils;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.netflix.discovery.converters.Auto;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -42,6 +52,9 @@ import fr.cnes.regards.modules.storage.client.IAipClient;
  */
 @TestPropertySource(locations = "classpath:test.properties")
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
+
+    @Autowired
+    private JWTService jwtService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -90,11 +103,11 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Test
     public void testDownloadFile() throws URISyntaxException, IOException {
-        System.out.println(aipClient.downloadFile("", "FILE1"));
-
         Order order = new Order();
         order.setEmail(USER);
         order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order = orderRepository.save(order);
 
         // One dataset task
         DatasetTask ds1Task = new DatasetTask();
@@ -108,8 +121,41 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         dataFile1.setUrl("file:///test/files/file1.txt");
         dataFile1.setName("file1.txt");
         dataFile1.setIpId(DO1_IP_ID);
-        dataFile1.setState(FileState.ONLINE);
-        dataFile1.setChecksum("FILE1");
+        dataFile1.setOnline(true);
+        String checksum = "FILE1";
+        dataFile1.setChecksum(checksum);
+        dataFile1.setOrderId(order.getId());
+        dataFile1.setMimeType(MediaType.TEXT_PLAIN);
         files1Task.addFile(dataFile1);
+        ds1Task.addReliantTask(files1Task);
+
+        order = orderRepository.save(order);
+        ds1Task = order.getDatasetTasks().first();
+
+        List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+
+        ResultActions resultActions = performDefaultGet(
+                "/orders/{orderId}/dataset/{datasetId}/aips/{aipId}/files/{checksum}", expectations,
+                "Should return result", order.getId(), ds1Task.getId(), dataFile1.getIpId().toString(),
+                dataFile1.getChecksum());
+
+        assertMediaType(resultActions, MediaType.TEXT_PLAIN);
+        File resultFile = File.createTempFile("ORDER", "");
+        resultFile.deleteOnExit();
+        try (FileOutputStream fos = new FileOutputStream(resultFile)) {
+            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+            ByteStreams.copy(is, fos);
+            is.close();
+        }
+        Assert.assertTrue(Files.equal(new File("src/test/resources/files/file1.txt"), resultFile));
+
+        tenantResolver.forceTenant(DEFAULT_TENANT); // ?
+
+        Optional<OrderDataFile> dataFileOpt = dataFileRepository
+                .findFirstByChecksumAndIpIdAndOrderId(checksum, DO1_IP_ID, order.getId());
+        Assert.assertTrue(dataFileOpt.isPresent());
+        Assert.assertEquals(FileState.DOWNLOADED,
+                            dataFileOpt.get().getState());
     }
 }

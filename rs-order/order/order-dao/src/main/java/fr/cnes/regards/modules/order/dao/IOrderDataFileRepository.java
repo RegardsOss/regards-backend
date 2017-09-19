@@ -16,14 +16,16 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
  * @author oroussel
  */
 public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, Long> {
+    /**
+     * Find all available OrderDataFiles for an order.
+     * An OrderDataFile 'available' is an order with 'AVAILABLE' or 'ONLINE' state (not 'DOWNLOADED')
+     */
+    default List<OrderDataFile> findAllAvailables(Long orderId) {
+        return findByOrderIdAndStateIn(orderId, FileState.AVAILABLE, FileState.ONLINE);
+    }
 
-    @Modifying
-    @Query("update OrderDataFile o set o.state = ?1 where o.checksum = ?2 and o.ipId = ?2 and o.orderId = ?3")
-    int setStateForAipChecksumAndOrderId(FileState state, String checksum, UniformResourceName aipId, Long orderId);
-
-    @Query(nativeQuery = true,
-            value = "SELECT * FROM t_data_file f WHERE f.state IN ('AVAILABLE', 'ONLINE') AND f.files_task_id IN (?1)")
-    List<OrderDataFile> findAllAvailableAndOnline(Collection<Long> fileTaskIds);
+    List<OrderDataFile> findByOrderIdAndStateIn(Long orderId, FileState... states);
 
     Optional<OrderDataFile> findFirstByChecksumAndIpIdAndOrderId(String checksum, UniformResourceName aipId, Long orderId);
 }
+;

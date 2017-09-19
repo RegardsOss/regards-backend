@@ -4,6 +4,8 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -29,11 +31,15 @@ import fr.cnes.regards.modules.storage.client.IAipClient;
 @Service
 @MultitenantTransactional
 public class OrderDataFileService implements IOrderDataFileService {
+
     @Autowired
     private IOrderDataFileRepository repos;
 
     @Autowired
     private IAipClient aipClient;
+
+    @Autowired
+    private IOrderDataFileService self;
 
     @Override
     public OrderDataFile save(OrderDataFile dataFile) {
@@ -41,8 +47,18 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public StreamingResponseBody downloadFile(Long orderId, UniformResourceName aipId, String checksum,
-            HttpServletResponse response) {
+    public Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles) {
+        return repos.save(dataFiles);
+    }
+
+    @Override
+    public List<OrderDataFile> findAllAvailables(Long orderId) {
+        return repos.findAllAvailables(orderId);
+    }
+
+    @Override
+    public void downloadFile(Long orderId, UniformResourceName aipId, String checksum, HttpServletResponse response)
+            throws IOException {
         // Maybe this file is into an AIP that is asked several time for this Order (several Dataset for example)
         /// but we just need first one because its name is unique by AIP ID and checksum
         Optional<OrderDataFile> dataFileOpt = repos.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
@@ -53,14 +69,20 @@ public class OrderDataFileService implements IOrderDataFileService {
         response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
         response.setContentType(dataFile.getMimeType().toString());
 
-        return os -> {
-            // Reading / Writing
-            try (InputStream is = aipClient.downloadFile(aipId.toString(), checksum)) {
-                ByteStreams.copy(is, os);
-                os.flush();
-                os.close();
-            }
-            repos.setStateForAipChecksumAndOrderId(FileState.DOWNLOADED, checksum, aipId, orderId);
-        };
+        // Reading / Writing
+        OutputStream os = response.getOutputStream();
+        try (InputStream is = aipClient.downloadFile(aipId.toString(), checksum)) {
+            ByteStreams.copy(is, os);
+            os.close();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+        // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
+        try {
+            dataFile.setState(FileState.DOWNLOADED);
+            self.save(dataFile);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }

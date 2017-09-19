@@ -49,15 +49,13 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "email", length = 100, nullable = false)
     private String email;
 
-    /**
-     * Unique identifier generated when creating order
-     */
-    @Column(name = "uid")
-    private UUID uid = UUID.randomUUID();
-
     @Column(name = "creation_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime creationDate;
+
+    @Column(name = "expiration_date", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime expirationDate;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", foreignKey = @ForeignKey(name = "fk_order"))
@@ -84,14 +82,6 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
         this.email = email;
     }
 
-    public UUID getUid() {
-        return uid;
-    }
-
-    //    private void setUid(UUID uid) {
-    //        this.uid = uid;
-    //    }
-
     public OffsetDateTime getCreationDate() {
         return creationDate;
     }
@@ -106,6 +96,14 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public void addDatasetOrderTask(DatasetTask datasetTask) {
         this.datasetTasks.add(datasetTask);
+    }
+
+    public OffsetDateTime getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(OffsetDateTime expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
     @Override

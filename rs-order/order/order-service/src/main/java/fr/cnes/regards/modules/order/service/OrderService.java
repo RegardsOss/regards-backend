@@ -1,6 +1,10 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +12,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -16,18 +24,24 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.collect.Multimap;
+import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
@@ -36,6 +50,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * @author oroussel
@@ -43,9 +58,13 @@ import fr.cnes.regards.modules.search.client.ICatalogClient;
 @Service
 @MultitenantTransactional
 public class OrderService implements IOrderService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
     private IOrderRepository repos;
+
+    @Autowired
+    private IOrderDataFileService dataFileService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -53,8 +72,14 @@ public class OrderService implements IOrderService {
     @Autowired
     private ICatalogClient catalogClient;
 
+    @Autowired
+    private IAipClient aipClient;
+
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
+
+    @Value("${regards.order.validation.period.days:3}")
+    private int orderValidationPeriodDays;
 
     private long bucketSize = bucketSizeMb * 1024l * 1024l;
 
@@ -68,6 +93,7 @@ public class OrderService implements IOrderService {
     public Order createOrder(Basket basket) {
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
         order.setEmail(basket.getEmail());
         // To generate orderId
         order = repos.save(order);
@@ -169,5 +195,57 @@ public class OrderService implements IOrderService {
     @Override
     public Page<Order> findAll(String user, Pageable pageRequest) {
         return repos.findAllByEmailOrderByCreationDateDesc(user, pageRequest);
+    }
+
+    @Override
+    public void downloadOrderCurrentZip(Long orderId, HttpServletResponse response)
+            throws NotYetAvailableException {
+
+        List<OrderDataFile> availableFiles = dataFileService.findAllAvailables(orderId);
+        if (availableFiles.isEmpty()) {
+            throw new NotYetAvailableException();
+        }
+
+        response.addHeader("Content-disposition",
+                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".zip");
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+        OrderDataFile curDataFile = null;
+        String curAip = null;
+        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+
+            Set<String> aips = new HashSet<>();
+            for (OrderDataFile dataFile : availableFiles) {
+                String aip = dataFile.getIpId().toString();
+                curAip = aip;
+                curDataFile = dataFile;
+                try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum())) {
+                    if (is == null) {
+                        throw new FileNotFoundException(String.format("aip : %s, checksum : %s", aip, dataFile.getChecksum()));
+                    }
+                    // To avoid adding AIP entry several times
+                    if (!aips.contains(aip)) {
+                        zos.putNextEntry(new ZipEntry(aip + "/"));
+                        aips.add(aip);
+                        zos.closeEntry();
+                    }
+                    zos.putNextEntry(new ZipEntry(aip + "/" + dataFile.getName()));
+                    ByteStreams.copy(is, zos);
+                    zos.closeEntry();
+                }
+            }
+            zos.flush();
+            zos.finish();
+        } catch (Throwable t) {
+            LOGGER.error("File : " + curDataFile.getName() + ", aip : " + curAip);
+            t.printStackTrace();
+            throw new RuntimeException(t);
+        }
+        try {
+            availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
+            dataFileService.save(availableFiles);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }

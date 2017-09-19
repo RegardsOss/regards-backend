@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -75,6 +76,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
                                         MethodParamFactory.build(Long.class, orderId),
                                         MethodParamFactory.build(Long.class, datasetId),
+                                        MethodParamFactory.build(String.class, dataFile.getIpId().toString()),
                                         MethodParamFactory.build(String.class, dataFile.getChecksum()));
                 dataFiles.add(resource);
             }
@@ -85,11 +87,10 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @ResourceAccess(description = "Download file", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET,
             path = "/orders/{orderId}/dataset/{datasetId}/aips/{aipId}/files/{checksum}")
-    @ResponseBody
-    public StreamingResponseBody downloadFile(@PathVariable("orderId") Long orderId,
-            @PathVariable("datasetId") Long datasetId, @PathVariable("aipId") String aipId,
-            @PathVariable("checksum") String checksum, HttpServletResponse response) throws NoSuchElementException {
-
+    public void downloadFile(@PathVariable("orderId") Long orderId, @PathVariable("datasetId") Long datasetId,
+            @PathVariable("aipId") String aipId, @PathVariable("checksum") String checksum,
+            HttpServletResponse response) throws NoSuchElementException, IOException {
+        dataFileService.downloadFile(orderId, UniformResourceName.fromString(aipId), checksum, response);
     }
 
     @Override

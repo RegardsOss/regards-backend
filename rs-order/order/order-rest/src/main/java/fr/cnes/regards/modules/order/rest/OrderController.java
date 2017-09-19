@@ -4,8 +4,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,15 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.io.ByteStreams;
-import com.sun.org.apache.regexp.internal.RE;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
+import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -113,41 +110,10 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/download")
-    public StreamingResponseBody downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) {
+    public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
+            HttpServletResponse response) throws NotYetAvailableException {
 
-        Order order = orderService.loadComplete(orderId);
-        Set<Long> fileTaskIds = order.getDatasetTasks().stream().flatMap(ds -> ds.getReliantTasks().stream())
-                .map(FilesTask::getId).collect(Collectors.toSet());
-
-        List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailableAndOnline(fileTaskIds);
-
-        response.addHeader("Content-disposition", "attachment;filename=order.zip");
-        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-        return os -> {
-            // En théorie, le retour du storage service client est de ce type là :
-            ResponseEntity<InputStreamResource> re = ResponseEntity.ok(new InputStreamResource(new InputStream() {
-
-                @Override
-                public int read() throws IOException {
-                    return 0;
-                }
-            }));
-
-            // Reading / Writing
-            try (InputStream is = re.getBody().getInputStream()) {
-                ByteStreams.copy(is, os);
-                os.flush();
-                os.close();
-            }
-
-            for (OrderDataFile dataFile : dataFiles) {
-                dataFile.setState(FileState.DOWNLOADED);
-            }
-            dataFileRepository.save(dataFiles);
-        };
-
+        orderService.downloadOrderCurrentZip(orderId, response);
     }
 
     // TODO : add links

@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -17,6 +18,10 @@ public interface IOrderDataFileService {
 
     OrderDataFile save(OrderDataFile dataFile);
 
-    StreamingResponseBody downloadFile(Long orderId, UniformResourceName aipId, String checksum,
-            HttpServletResponse response);
+    Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
+
+    List<OrderDataFile> findAllAvailables(Long orderId);
+
+    void downloadFile(Long orderId, UniformResourceName aipId, String checksum, HttpServletResponse response)
+            throws IOException;
 }

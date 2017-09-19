@@ -17,6 +17,7 @@ import java.net.URISyntaxException;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.oais.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -26,7 +27,8 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_data_file", indexes = @Index(name = "checksum_idx", columnList = "checksum"))
+@Table(name = "t_data_file",
+        indexes = @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"))
 public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     private Long id;
@@ -48,7 +50,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         this.state = state;
     }
 
-    private OrderDataFile() {
+    public OrderDataFile() {
     }
 
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
@@ -86,7 +88,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Column(name = "url", columnDefinition = "text")
     public String getUrl() {
-        return super.getUri().toString();
+        return (super.getUri() != null) ? super.getUri().toString() : null;
     }
 
     public void setUrl(String url) throws URISyntaxException {
@@ -113,6 +115,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Override
     @Column(name = "mime_type", length = 64) // See RFC 6838
+    @Convert(converter = MimeTypeConverter.class)
     public MimeType getMimeType() {
         return super.getMimeType();
     }
@@ -149,7 +152,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     @Override
     public void setOnline(Boolean online) {
         super.setOnline(online);
-        if (online) {
+        if ((online != null) && online) {
             this.state = FileState.ONLINE;
         }
     }
