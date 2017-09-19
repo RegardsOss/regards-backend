@@ -60,7 +60,7 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
  * @author Sébastien Binda
  */
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
