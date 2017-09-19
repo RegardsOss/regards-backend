@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -25,6 +28,8 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 public interface IAipClient {
 
     public static final String AIP_PATH = "/aips";
+
+    public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     public static final String ID_PATH = AIP_PATH + "/{ipId}";
 
@@ -67,4 +72,7 @@ public interface IAipClient {
     public HttpEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
             @RequestParam("page") int pPage, @RequestParam("size") int pSize);
 
+    @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
+    public HttpEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
+    
 }
