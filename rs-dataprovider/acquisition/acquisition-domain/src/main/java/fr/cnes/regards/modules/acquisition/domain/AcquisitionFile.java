@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
@@ -56,9 +57,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     /**
-     * Maximum file name size constraint with length 255
+     * Maximum String size constraint with length 255
      */
-    private static final int MAX_FILE_NAME_LENGTH = 255;
+    private static final int MAX_STRING_NAME_LENGTH = 255;
 
     /**
      * Maximum enum size constraint with length 16
@@ -77,7 +78,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
      * The data file name
      */
     @NotBlank
-    @Column(name = "label", length = MAX_FILE_NAME_LENGTH, nullable = false)
+    @Column(name = "label", length = MAX_STRING_NAME_LENGTH, nullable = false)
     private String fileName;
 
     //    /**
@@ -144,14 +145,16 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     /**
      * Data file checksum
      */
-    @Column(name = "check_sum")
-    private String checkSum = null;
+    @Column(name = "checksum", length = MAX_STRING_NAME_LENGTH)
+    private String checksum;
 
     /**
-     * Algorithm used to calculate data file checksum
+     * Algorithm used to calculate the checksum.
+     * see {@link MessageDigest}
      */
-    @Column(name = "check_sum_algo")
-    private String checkSumAlgo = null;
+    @NotNull
+    @Column(name = "algorithm", length = 16)
+    private String algorithm;
 
     @Override
     public int hashCode() {
@@ -252,20 +255,20 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
         this.acqDate = acqDate;
     }
 
-    public String getCheckSum() {
-        return checkSum;
+    public String getChecksum() {
+        return checksum;
     }
 
-    public void setCheckSum(String checkSum) {
-        this.checkSum = checkSum;
+    public void setChecksum(String check) {
+        this.checksum = check;
     }
 
-    public String getCheckSumAlgo() {
-        return checkSumAlgo;
+    public String getAlgorithm() {
+        return algorithm;
     }
 
-    public void setCheckSumAlgo(String chackSumAlgo) {
-        this.checkSumAlgo = chackSumAlgo;
+    public void setAlgorithm(String algo) {
+        this.algorithm = algo;
     }
 
     public FileAcquisitionInformations getAcquisitionInformations() {

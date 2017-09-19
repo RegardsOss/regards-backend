@@ -54,6 +54,16 @@ public final class MetaProductBuilder {
         return this;
     }
 
+    public MetaProductBuilder withAlgorithm(String algo) {
+        metaProduct.setAlgorithm(algo);
+        return this;
+    }
+
+    public MetaProductBuilder withCleanOriginalFile(Boolean clean) {
+        metaProduct.setCleanOriginalFile(clean);
+        return this;
+    }
+
     public MetaProduct get() {
         return metaProduct;
     }

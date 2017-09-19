@@ -79,7 +79,8 @@ public class MetaFile implements IIdentifiable<Long> {
      * max chars 250
      */
     @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "scan_directory_id", foreignKey = @ForeignKey(name = "fk_acq_directory"))
+    @JoinColumn(name = "scan_directory_id", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "fk_acq_directory"))
     private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**

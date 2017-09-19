@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,6 +32,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -90,7 +94,8 @@ public class Product implements IIdentifiable<Long> {
      */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"), updatable = false)
+    @JoinColumn(name = "meta_product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"),
+            updatable = false)
     private MetaProduct metaProduct;
 
     //    /**
@@ -103,11 +108,13 @@ public class Product implements IIdentifiable<Long> {
     //     */
     //    private DescriptorFile metaDataFileName_;
 
-    //    /**
-    //     * Liste des fichiers composants les produit
-    //     * TODO CMZ util ?
-    //     */
-    //    private Set<AcquisitionFile> fileList = new HashSet<>();
+    /**
+     * Liste des fichiers composants les produits
+     */
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "acquisition_file_id", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "fk_acq_file"))
+    private Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
 
     @Override
     public Long getId() {
@@ -173,37 +180,17 @@ public class Product implements IIdentifiable<Long> {
         this.metaProduct = metaProduct;
     }
 
-    //    public void addFileToProduct(AcquisitionFile pFile) {
-    //        fileList.add(pFile);
-    //    }
+    public void addAcquisitionFile(AcquisitionFile acqFile) {
+        this.fileList.add(acqFile);
+    }
 
-    //    public Set<AcquisitionFile> getAcquisitionFile() {
-    //        return fileList;
-    //    }
-    //
-    //    public void addAcquisitionFile(AcquisitionFile acquisitionFile) {
-    //        fileList.add(acquisitionFile);
-    //    }
-    //
-    //    public void setAcquisitionFile(Set<AcquisitionFile> acquisitionFiles) {
-    //        fileList = acquisitionFiles;
-    //    }
+    public Set<AcquisitionFile> getAcquisitionFile() {
+        return this.fileList;
+    }
 
-    //    public void addFileToProduct(AcquisitionFile pFile) {
-    //        fileList.add(pFile);
-    //    }
-
-    //    public Set<AcquisitionFile> getAcquisitionFile() {
-    //        return fileList;
-    //    }
-    //
-    //    public void addAcquisitionFile(AcquisitionFile acquisitionFile) {
-    //        fileList.add(acquisitionFile);
-    //    }
-    //
-    //    public void setAcquisitionFile(Set<AcquisitionFile> acquisitionFiles) {
-    //        fileList = acquisitionFiles;
-    //    }
+    public void removeAcquisitionFile(AcquisitionFile acqFile) {
+        this.fileList.remove(acqFile);
+    }
 
     @Override
     public String toString() {

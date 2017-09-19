@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
+import java.security.MessageDigest;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +35,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -71,6 +73,21 @@ public class MetaProduct implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.EAGER) // TODO CMZ remettre LAZY
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
     private Set<Product> products = new HashSet<Product>();
+
+    /**
+     * Algorithm used to calculate the checksum
+     * see {@link MessageDigest}
+     */
+    @Column(name = "algorithm", length = 16)
+    private String algorithm;
+    
+
+    /**
+     * <code>true</code> clean the original file
+     */
+    @NotNull
+    @Column(name = "cleanOriginalFile")
+    private Boolean cleanOriginalFile = Boolean.TRUE;    
 
     //    /**
     //     * La liste des type de fichiers composant ce produit (liste de MetaFile)
@@ -177,12 +194,28 @@ public class MetaProduct implements IIdentifiable<Long> {
         return true;
     }
 
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(String algo) {
+        this.algorithm = algo;
+    }
+
     public String getLabel() {
         return label;
     }
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public Boolean getCleanOriginalFile() {
+        return cleanOriginalFile;
+    }
+    
+    public void setCleanOriginalFile(Boolean clean) {
+        this.cleanOriginalFile = clean;
     }
 
     public Set<Product> getProducts() {

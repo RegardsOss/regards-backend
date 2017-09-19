@@ -85,9 +85,4 @@ public final class ChainGenerationBuilder {
         return this;
     }
 
-    public ChainGenerationBuilder withCheckSumSignature() {
-        chain.setCalculteMd5Signature(Boolean.TRUE);
-        return this;
-    }
-
 }

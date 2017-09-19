@@ -111,18 +111,11 @@ public class ChainGeneration implements IIdentifiable<Long> {
     @Type(type = "text")
     private String comment;
 
-    /**
-     * MD5 Signature of file product have to be calculate or not
-     */
-    @Column
-    private Boolean calculteMd5Signature;
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((active == null) ? 0 : active.hashCode());
-        result = prime * result + ((calculteMd5Signature == null) ? 0 : calculteMd5Signature.hashCode());
         result = prime * result + ((dataSet == null) ? 0 : dataSet.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
@@ -142,11 +135,6 @@ public class ChainGeneration implements IIdentifiable<Long> {
             if (other.active != null)
                 return false;
         } else if (!active.equals(other.active))
-            return false;
-        if (calculteMd5Signature == null) {
-            if (other.calculteMd5Signature != null)
-                return false;
-        } else if (!calculteMd5Signature.equals(other.calculteMd5Signature))
             return false;
         if (dataSet == null) {
             if (other.dataSet != null)
@@ -225,14 +213,6 @@ public class ChainGeneration implements IIdentifiable<Long> {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public Boolean getCalculteMd5Signature() {
-        return calculteMd5Signature;
-    }
-
-    public void setCalculteMd5Signature(Boolean calculteMd5Signature) {
-        this.calculteMd5Signature = calculteMd5Signature;
     }
 
     @Override

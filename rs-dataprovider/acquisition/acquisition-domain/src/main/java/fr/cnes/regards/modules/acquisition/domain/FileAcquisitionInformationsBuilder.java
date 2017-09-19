@@ -42,10 +42,9 @@ public final class FileAcquisitionInformationsBuilder {
      * @return
      */
     public static FileAcquisitionInformationsBuilder build(String directory) {
-        final FileAcquisitionInformations cg = new FileAcquisitionInformations();
-        cg.setAcquisitionDirectory(directory);
-        ;
-        return new FileAcquisitionInformationsBuilder(cg);
+        final FileAcquisitionInformations fai = new FileAcquisitionInformations();
+        fai.setAcquisitionDirectory(directory);
+        return new FileAcquisitionInformationsBuilder(fai);
     }
 
     public FileAcquisitionInformations get() {

@@ -99,6 +99,16 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         cleanDb();
     }
 
+    private Product addProduct(MetaProduct metaProduct, String label) {
+        Product product = productService.save(ProductBuilder.build(label).withStatus(ProductStatus.INIT.toString())
+                .withMetaProduct(metaProduct).get());
+        // Link Product <-> MetaProduct
+        metaProduct.addProduct(product);
+        metaProduct = metaProductService.save(metaProduct);
+        product.setMetaProduct(metaProduct);
+        return productService.save(product);
+    }
+
     @Test
     public void createChaine() {
         // Create a first generation chain
@@ -118,17 +128,7 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
-        Product aProduct = productService.save(ProductBuilder.build(PRODUCT_NAME_1)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
-        Assert.assertNotNull(aProduct);
-
-        // Link Product <-> MetaProduct
-        metaProduct.addProduct(aProduct);
-        metaProduct = metaProductService.save(metaProduct);
-        Assert.assertNotNull(metaProduct);
-
-        aProduct.setMetaProduct(metaProduct);
-        aProduct = productService.save(aProduct);
+        Product aProduct = addProduct(metaProduct, PRODUCT_NAME_1);
         Assert.assertNotNull(aProduct);
 
         // Get the ChainGeneration
@@ -158,37 +158,15 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
-        Product aProduct = productService.save(ProductBuilder.build(PRODUCT_NAME_1)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
-        Assert.assertNotNull(aProduct);
-        Assert.assertNotNull(aProduct.getId());
+        Product aProduct = addProduct(metaProduct, PRODUCT_NAME_1);
         Assert.assertEquals(1, productService.retrieveAll().size());
-
-        // Link Product <-> MetaProduct
-        metaProduct.addProduct(aProduct);
-        metaProduct = metaProductService.save(metaProduct);
-        Assert.assertNotNull(metaProduct);
-
-        aProduct.setMetaProduct(metaProduct);
-        aProduct = productService.save(aProduct);
         Assert.assertNotNull(aProduct);
         Assert.assertNotNull(aProduct.getId());
 
         // Create a second Product for the uniq MetaProduct
-        Product bProduct = productService.save(ProductBuilder.build(PRODUCT_NAME_2)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
+        Product bProduct = addProduct(metaProduct, PRODUCT_NAME_2);
         Assert.assertNotNull(bProduct);
         Assert.assertNotNull(bProduct.getId());
-        Assert.assertEquals(2, productService.retrieveAll().size());
-
-        // Links Product <-> MetaProduct
-        metaProduct.addProduct(bProduct);
-        metaProduct = metaProductService.save(metaProduct);
-        Assert.assertNotNull(metaProduct);
-
-        bProduct.setMetaProduct(metaProduct);
-        bProduct = productService.save(bProduct);
-        Assert.assertNotNull(bProduct);
         Assert.assertEquals(2, productService.retrieveAll().size());
 
         // Control the number of products from the MetaProduct
