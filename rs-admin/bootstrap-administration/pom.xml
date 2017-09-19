@@ -37,15 +37,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- Spring dependencies -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-eureka</artifactId>
-		</dependency>
 		<!-- Framework Starters dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
