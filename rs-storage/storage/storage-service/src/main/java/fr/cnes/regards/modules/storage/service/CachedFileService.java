@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -33,6 +34,8 @@ import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
@@ -65,6 +68,9 @@ public class CachedFileService implements ICachedFileService {
 
     @Autowired
     private IJobInfoService jobService;
+
+    @Autowired
+    private IPublisher publisher;
 
     @Override
     public CoupleAvailableError restore(Set<DataFile> nearlineFiles, OffsetDateTime cacheExpirationDate) {
@@ -122,6 +128,7 @@ public class CachedFileService implements ICachedFileService {
             cf.setLocation(restorationPath.toUri().toURL());
             cf.setState(CachedFileState.RESTORED);
             cachedFileRepository.save(cf);
+            publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
         } catch (MalformedURLException e) {
             //this should not happens
             LOG.error(e.getMessage(), e);
@@ -136,6 +143,7 @@ public class CachedFileService implements ICachedFileService {
         cf.setState(CachedFileState.RESTORATION_FAILED);
         cf.setFailureCause("Restoration of this data file failed during job execution.");
         cachedFileRepository.save(cf);
+        publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
     }
 
     private void scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {

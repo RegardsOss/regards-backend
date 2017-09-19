@@ -8,7 +8,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Event(target = Target.ALL)
-public class DataFileEvent implements ISubscribable{
+public class DataFileEvent implements ISubscribable {
 
     private DataFileEventState state;
 
