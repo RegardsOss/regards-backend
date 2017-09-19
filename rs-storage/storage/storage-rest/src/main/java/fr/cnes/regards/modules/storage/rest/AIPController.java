@@ -108,7 +108,7 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "send the list of files of a specified aip")
+    @ResourceAccess(description = "send the list of files metadata of a specified aip")
     public HttpEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
             throws EntityNotFoundException {
         List<DataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));

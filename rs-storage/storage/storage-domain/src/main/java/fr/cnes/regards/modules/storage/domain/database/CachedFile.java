@@ -6,14 +6,27 @@ import java.time.OffsetDateTime;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+//TODO map to database
 public class CachedFile {
 
+    /**
+     * db id
+     */
     private Long id;
 
+    /**
+     * unique business id
+     */
     private String checksum;
 
+    /**
+     * location into the cache
+     */
     private URL location;
 
+    /**
+     * expiration date of the file into the cache
+     */
     private OffsetDateTime expiration;
 
     private CachedFileState state;

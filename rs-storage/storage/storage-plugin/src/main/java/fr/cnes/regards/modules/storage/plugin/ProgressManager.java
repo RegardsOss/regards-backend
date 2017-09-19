@@ -33,6 +33,7 @@ public class ProgressManager {
         this.job = job;
     }
 
+    //TODO required file size
     public void storageSucceed(DataFile dataFile, URL storedUrl) {
         dataFile.setUrl(storedUrl);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,

@@ -104,9 +104,12 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         // first lets check that all parameters are there and valid.
         Map<String, JobParameter> parameterMap = beforeRun();
         // then lets store the files
-        doRun(parameterMap);
-        // eventually, lets see if everything went as planned
-        afterRun();
+        try {
+            doRun(parameterMap);
+        } finally {
+            // eventually, lets see if everything went as planned
+            afterRun();
+        }
     }
 
     /**
@@ -137,6 +140,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             throw new StorageException(String.format(FAILURE_CAUSES, progressManager.getFailureCauses().stream()
                     .collect(Collectors.joining(", ", "[", " ]"))));
         }
+        //TODO getHandleDataFile from progressmanager and call storage failed on not handled ones
     }
 
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {

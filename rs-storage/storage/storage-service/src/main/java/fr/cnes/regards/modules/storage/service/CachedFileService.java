@@ -68,6 +68,7 @@ public class CachedFileService implements ICachedFileService {
 
     @Override
     public CoupleAvailableError restore(Set<DataFile> nearlineFiles, OffsetDateTime cacheExpirationDate) {
+        //TODO check space left
         //first of all, lets get the files that are already in cache
         Set<String> nearlineFileChecksums = nearlineFiles.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
@@ -148,6 +149,7 @@ public class CachedFileService implements ICachedFileService {
                     .createAsPending(new JobInfo(0, parameters, getOwner(), RestorationJob.class.getName()));
             Path destination = Paths.get(cachePath, runtimeTenantResolver.getTenant(), jobInfo.getId().toString());
             jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
+            //TODO handler job execution according to space left into cache
             jobInfo.updateStatus(JobStatus.QUEUED);
             jobService.save(jobInfo);
         }
