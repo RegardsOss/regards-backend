@@ -432,15 +432,4 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.contains(aip5));
     }
 
-    public AIP pseudoClone(AIP src) {
-        AIP result = new AIP(src.getType());
-        result.setInformationObjects(Lists.newArrayList(src.getInformationObjects()));
-        result.setIpId(String.valueOf(src.getIpId()));
-        result.setSipId(String.valueOf(src.getSipId()));
-        result.setTags(Lists.newArrayList(src.getTags()));
-        result.setHistory(Lists.newArrayList(src.getHistory()));
-        result.setState(AIPState.valueOf(src.getState().toString()));
-        return result;
-    }
-
 }
