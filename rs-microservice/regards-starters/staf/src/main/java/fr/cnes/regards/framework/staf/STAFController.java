@@ -131,8 +131,7 @@ public class STAFController {
      * @return Set of successfuly stored {@link AbstractPhysicalFile}.
      * @throws STAFException STAF store error
      */
-    public Set<AbstractPhysicalFile> archiveFiles(Set<AbstractPhysicalFile> pFilesToArchive, boolean pReplaceMode)
-            throws STAFException {
+    public Set<AbstractPhysicalFile> archiveFiles(Set<AbstractPhysicalFile> pFilesToArchive, boolean pReplaceMode) {
         Set<String> archivedFiles;
         // Create map bewteen localFile to archive and destination file path into STAF
         Map<Path, Path> localFileToArchiveMap = Maps.newHashMap();
@@ -149,12 +148,13 @@ public class STAFController {
         });
 
         // If there is files to store. Run STAF archive.
-        if (!localFileToArchiveMap.isEmpty()) {
-            stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
-            try {
-                archivedFiles = stafService.archiveFiles(localFileToArchiveMap, Paths.get("/"), pReplaceMode);
-                archivedFiles.forEach(archivedFile ->
-                // For each file to store, check if the file has really been stored and set the status to STORED.
+        try {
+            if (!localFileToArchiveMap.isEmpty()) {
+                stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+                try {
+                    archivedFiles = stafService.archiveFiles(localFileToArchiveMap, Paths.get("/"), pReplaceMode);
+                    archivedFiles.forEach(archivedFile ->
+                    // For each file to store, check if the file has really been stored and set the status to STORED.
                 // @formatter:off
                 pFilesToArchive
                     .stream()
@@ -167,24 +167,29 @@ public class STAFController {
                         deleteTemporaryFiles(f);
                     }));
                 // @formatter:on
-
-            } finally {
-                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+                } finally {
+                    stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+                }
             }
-        }
+        } catch (STAFException e) {
+            LOG.error(e.getMessage(), e);
+        } finally {
+            // delete temporary files created.
+            pFilesToArchive.stream().forEach(this::deleteTemporaryFiles);
 
-        // handle special case of TAR PENDING. Status is not STORED but LOCALY_STORED.
-        // @formatter:off
-        pFilesToArchive
-            .stream()
-            .filter(physicalFile -> STAFArchiveModeEnum.TAR.equals(physicalFile.getArchiveMode()))
-            .filter(tar -> PhysicalFileStatusEnum.PENDING.equals(tar.getStatus()))
-            .forEach(tar -> {
-                LOG.info("[STAF] Current TAR {} not big enought for transfert to STAF System. This TAR is localy stored waiting for new files.",
-                         ((PhysicalTARFile)tar).getLocalTarDirectory());
-                tar.setStatus(PhysicalFileStatusEnum.LOCALY_STORED);
-            });
-        // @formatter:on
+            // handle special case of TAR PENDING. Status is not STORED but LOCALY_STORED.
+            // @formatter:off
+            pFilesToArchive
+                .stream()
+                .filter(physicalFile -> STAFArchiveModeEnum.TAR.equals(physicalFile.getArchiveMode()))
+                .filter(tar -> PhysicalFileStatusEnum.PENDING.equals(tar.getStatus()))
+                .forEach(tar -> {
+                    LOG.info("[STAF] Current TAR {} not big enought for transfert to STAF System. This TAR is localy stored waiting for new files.",
+                             ((PhysicalTARFile)tar).getLocalTarDirectory());
+                    tar.setStatus(PhysicalFileStatusEnum.LOCALY_STORED);
+                });
+            // @formatter:on
+        }
 
         // Return all Physical file stored
         // @formatter:off
@@ -444,8 +449,8 @@ public class STAFController {
     }
 
     /**
-     * Create the list of {@link AbstractPhysicalFile} associated to the given list of {@link Path} file to archive.
-     * @param pFileToArchivePerStafNode {@link Map}<{@link String},{@link Set}<{@link Path}>> <br/>
+     * Create the list of {@link AbstractPhysicalFile} associated to the given list of {@link Path} file to archive per STAF node.
+     * @param pFileToArchivePerStafNode {@link Map}<{@link Path},{@link Set}<{@link Path}>> <br/>
      * <ul>
      * <li>key : STAF Node where to store the {@link Path}s in map value</li>
      * <li>value : {@link Path} Files to store for the given STAF Node.</li>
@@ -508,18 +513,22 @@ public class STAFController {
             try {
                 AbstractPhysicalFile physicalFile = getSTAFPhysicalFile(stafURL, physicalFiles,
                                                                         PhysicalFileStatusEnum.TO_RETRIEVE);
-
-                switch (physicalFile.getArchiveMode()) {
-                    case CUT:
-                        PhysicalCutFile cutFile = (PhysicalCutFile) physicalFile;
-                        physicalFiles.addAll(cutFile.getCutedFileParts());
-                        break;
-                    case CUT_PART:
-                    case NORMAL:
-                    case TAR:
-                    default:
-                        physicalFiles.add(physicalFile);
-                        break;
+                if (stafService.getStafArchive().getArchiveName().equals(physicalFile.getStafArchiveName())) {
+                    switch (physicalFile.getArchiveMode()) {
+                        case CUT:
+                            PhysicalCutFile cutFile = (PhysicalCutFile) physicalFile;
+                            physicalFiles.addAll(cutFile.getCutedFileParts());
+                            break;
+                        case CUT_PART:
+                        case NORMAL:
+                        case TAR:
+                        default:
+                            physicalFiles.add(physicalFile);
+                            break;
+                    }
+                } else {
+                    LOG.error("[STAF] Unable to retrieve a file from archive {}. The current configured archive is {}",
+                              physicalFile.getStafArchiveName(), stafService.getStafArchive().getArchiveName());
                 }
             } catch (STAFException e) {
                 LOG.error("[STAF] Error retreiving file {}", stafURL.toString(), e);

@@ -5,6 +5,7 @@ import javax.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.security.MessageDigest;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -12,7 +13,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Verify thanks to {@link HandledMessageDigestAlgorithmValidator} that the annotated field or parameter represents
- * a handled algorithm by the current jvm
+ * a handled algorithm by the current jvm.
+ * <br/>
+ * See for more information {@link MessageDigest}
  *
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -30,7 +33,8 @@ public @interface HandledMessageDigestAlgorithm {
     /**
      * @return error message key
      */
-    String message() default "{Validation annotation @" + CLASS_NAME + " validating %s: it is not an handled algorithm for checksum computation";
+    String message() default "{Validation annotation @" + CLASS_NAME
+            + " validating %s: it is not an handled algorithm for checksum computation";
 
     /**
      * @return validation groups
