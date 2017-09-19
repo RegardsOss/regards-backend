@@ -39,7 +39,7 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public DataFile findByAipAndType(AIP aip, DataType dataType) {
-        return repository.findByAipDataBaseAndType(getAipDataBase(aip), dataType);
+        return repository.findByAipDataBaseAndDataType(getAipDataBase(aip), dataType);
     }
 
     @Override

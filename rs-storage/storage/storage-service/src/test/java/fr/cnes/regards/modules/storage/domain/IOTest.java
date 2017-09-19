@@ -36,11 +36,24 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.oais.AccessRightInformation;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.FixityInformation;
+import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
+import fr.cnes.regards.framework.oais.ProvenanceInformation;
+import fr.cnes.regards.framework.oais.RepresentationInformation;
+import fr.cnes.regards.framework.oais.Semantic;
+import fr.cnes.regards.framework.oais.Syntax;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 
 /**
@@ -89,7 +102,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         ContentInformation contentInfo1 = new ContentInformation();
         // DataObject 1
         DataObject do1 = new DataObject();
-        do1.setType(DataType.valueOf("RAWDATA"));
+        do1.setDataType(DataType.RAWDATA);
         do1.setUrl(new URL("file:/tmp/example.fits"));
         contentInfo1.setDataObject(do1);
         // RepresentationInformation 1
@@ -225,45 +238,43 @@ public class IOTest extends AbstractRegardsServiceIT {
         pdi1.setContextInformation(contextInfo1);
         // END OF ContextInformation 1
         // ProvenanceInformation 1
-        ProvenanceInformation pi1 = new ProvenanceInformation();
-        Map<String, Object> additionnal = new LinkedTreeMap<>();
-        additionnal.put("instrument", "ACS");
-        additionnal.put("detector", "WFC");
-        additionnal.put("filter", "H");
-        additionnal.put("proposal", 857);
-        pi1.setAdditional(additionnal);
+        ProvenanceInformation pi1 = pdi1.getProvenanceInformation();
+        pi1.getAdditional().put("instrument", "ACS");
+        pi1.getAdditional().put("detector", "WFC");
+        pi1.getAdditional().put("filter", "H");
+        pi1.getAdditional().put("proposal", 857);
         pi1.setFacility("HST");
-        List<Event> history = new ArrayList<>();
-        history.add(new Event("acquisitionoftheobservation", OffsetDateTime.parse("2014-01-01T23:10:05Z")));
-        history.add(new Event("astrometrycalibration", OffsetDateTime.parse("2014-01-02T23:10:05Z")));
-        history.add(new Event("receivedinformationfromtheproducertothearchive",
-                OffsetDateTime.parse("2014-02-01T23:10:05Z")));
-        history.add(new Event("AIPiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z")));
-        history.add(new Event("AIPisstored", OffsetDateTime.parse("2014-02-02T23:10:05Z")));
-        history.add(new Event("AIPisarchived", OffsetDateTime.parse("2014-02-03T23:10:05Z")));
-        history.add(new Event("HSTMissionislinkedtoAIP", OffsetDateTime.parse("2014-02-08T23:10:05Z")));
-        history.add(new Event("HSTProposalislinkedtoAIP", OffsetDateTime.parse("2014-02-08T23:10:05Z")));
-        history.add(new Event("Informationaddedaboutfilter", OffsetDateTime.parse("2014-02-18T23:10:05Z")));
-        pi1.setHistory(history);
-        pdi1.setProvenanceInformation(pi1);
+        pi1.addEvent(null, "acquisitionoftheobservation", OffsetDateTime.parse("2014-01-01T23:10:05Z"));
+        pi1.addEvent(null, "astrometrycalibration", OffsetDateTime.parse("2014-01-02T23:10:05Z"));
+        pi1.addEvent(null, "receivedinformationfromtheproducertothearchive",
+                     OffsetDateTime.parse("2014-02-01T23:10:05Z"));
+        pi1.addEvent(null, "AIPiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z"));
+        pi1.addEvent(null, "AIPisstored", OffsetDateTime.parse("2014-02-02T23:10:05Z"));
+        pi1.addEvent(null, "AIPisarchived", OffsetDateTime.parse("2014-02-03T23:10:05Z"));
+        pi1.addEvent(null, "HSTMissionislinkedtoAIP", OffsetDateTime.parse("2014-02-08T23:10:05Z"));
+        pi1.addEvent(null, "HSTProposalislinkedtoAIP", OffsetDateTime.parse("2014-02-08T23:10:05Z"));
+        pi1.addEvent(null, "Informationaddedaboutfilter", OffsetDateTime.parse("2014-02-18T23:10:05Z"));
+
         // END OF ProvenanceInformation 1
         // fixityInformation 1
-        FixityInformation fi1 = new FixityInformation();
+        FixityInformation fi1 = pdi1.getFixityInformation();
         fi1.setChecksum("d6aa97d33d459ea3670056e737c99a3d");
         fi1.setAlgorithm("md5");
         fi1.setFileSize(1024L);
-        pdi1.setFixityInformation(fi1);
+
         // END OF ficityInformation 1
         // accessRightInformation 1
-        AccessRightInformation ari1 = new AccessRightInformation();
+        AccessRightInformation ari1 = pdi1.getAccesRightInformation();
         ari1.setDataRights("secure");
         ari1.setPublicReleaseDate(OffsetDateTime.parse("2017-01-01T01:00:00Z"));
         ari1.setPublisherDID("<regards_id>");
         ari1.setPublisherID("<sip_id>");
-        pdi1.setAccesRightInformation(ari1);
+
         // END OF accessRightsInformation 1
         // END OF PreservationDescriptionInformation 1
-        InformationObject io1 = new InformationObject(contentInfo1, pdi1);
+        InformationObject io1 = new InformationObject();
+        io1.setContentInformation(contentInfo1);
+        io1.setPdi(pdi1);
         ioList.add(io1);
         // END OF informationObject 1
         // InformationObject 2
@@ -271,7 +282,7 @@ public class IOTest extends AbstractRegardsServiceIT {
         ContentInformation contentInfo2 = new ContentInformation();
         // DataObject 2
         DataObject do2 = new DataObject();
-        do2.setType(DataType.valueOf("QUICKLOOK_HD"));
+        do2.setDataType(DataType.QUICKLOOK_HD);
         do2.setUrl(new URL("file:/tmp/example.png"));
         contentInfo2.setDataObject(do2);
         // RepresentationInformation 2
@@ -287,30 +298,27 @@ public class IOTest extends AbstractRegardsServiceIT {
         // PreservationDescriptionInformation 2
         PreservationDescriptionInformation pdi2 = new PreservationDescriptionInformation();
         // ProvenanceInformation 2
-        ProvenanceInformation pi2 = new ProvenanceInformation();
+        ProvenanceInformation pi2 = pdi2.getProvenanceInformation();
         pi2.setFacility("CNESarchive");
-        List<Event> history2 = new ArrayList<>();
-        history2.add(new Event("thequicklookiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z")));
-        history2.add(new Event("thequicklookisstored", OffsetDateTime.parse("2014-01-02T23:10:05Z")));
-        pi2.setHistory(history2);
-        pdi2.setProvenanceInformation(pi2);
+        pi2.addEvent(null, "thequicklookiscreated", OffsetDateTime.parse("2014-02-01T23:30:05Z"));
+        pi2.addEvent(null, "thequicklookisstored", OffsetDateTime.parse("2014-01-02T23:10:05Z"));
         // END OF ProvenanceInformation 2
         // fixityInformation 2
-        FixityInformation fi2 = new FixityInformation();
+        FixityInformation fi2 = pdi2.getFixityInformation();
         fi2.setChecksum("d6bbbbd33d459ea3670056e737c99a3d");
         fi2.setAlgorithm("md5");
-        pdi2.setFixityInformation(fi2);
         // END OF fixityInformation 2
         // accessRightInformation 2
-        AccessRightInformation ari2 = new AccessRightInformation();
+        AccessRightInformation ari2 = pdi2.getAccesRightInformation();
         ari2.setDataRights("public");
         ari2.setPublicReleaseDate(OffsetDateTime.parse("2014-01-02T23:10:05Z"));
         ari2.setPublisherDID("<regards_id>");
         ari2.setPublisherID("<regards_id>");
-        pdi2.setAccesRightInformation(ari2);
         // END OF accessRightsInformation 2
         // END OF PreservationDescriptionInformation 2
-        InformationObject io2 = new InformationObject(contentInfo2, pdi2);
+        InformationObject io2 = new InformationObject();
+        io2.setContentInformation(contentInfo2);
+        io2.setPdi(pdi2);
         ioList.add(io2);
         fakeAip.put("informationObjects", ioList);
     }
@@ -333,38 +341,38 @@ public class IOTest extends AbstractRegardsServiceIT {
     public void testChecksum() throws IOException, NoSuchAlgorithmException {
         // we want to test if calculating the checksum from a file or its json form is the same or not.
         // first lets get our favorite aip sample
-        FileReader fr = new FileReader("src/test/resources/aip_sample.json");
-        BufferedReader br = new BufferedReader(fr);
-        String fileLine = br.readLine();
-        AIP aip = gson.fromJson(fileLine, AIP.class);
-        br.close();
-        fr.close();
-        // now, lets put it into a stream to avoid issues from the serialization order of attributes
-        String aipJsonString = gson.toJson(aip);
-        FileOutputStream newFile = new FileOutputStream(new File("target/test_aip.json"));
-        newFile.write(aipJsonString.getBytes(StandardCharsets.UTF_8));
-        newFile.flush();
-        newFile.close();
-        InputStream is = Files.newInputStream(Paths.get("target/test_aip.json"));
-        DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
-        while (dis.read() != -1) {
-        }
-        byte[] fileChecksum = dis.getMessageDigest().digest();
-        dis.close();
-        is.close();
-        // now, lets see about checksums
-        byte[] aipAsByte = aipJsonString.getBytes(StandardCharsets.UTF_8);
-        byte[] aipChecksum = MessageDigest.getInstance("MD5").digest(aipAsByte);
-        Assert.assertEquals(aipChecksum.length, fileChecksum.length);
-        boolean differ = false;
-        int i = 0;
-        while (!differ && (i < aipChecksum.length)) {
-            if (aipChecksum[i] != fileChecksum[i]) {
-                differ = true;
+
+        try (JsonReader reader = new JsonReader(new FileReader("src/test/resources/aip_sample.json"))) {
+            JsonElement el = Streams.parse(reader);
+            String fileLine = el.toString();
+            AIP aip = gson.fromJson(fileLine, AIP.class);
+            // now, lets put it into a stream to avoid issues from the serialization order of attributes
+            String aipJsonString = gson.toJson(aip);
+            FileOutputStream newFile = new FileOutputStream(new File("target/test_aip.json"));
+            newFile.write(aipJsonString.getBytes(StandardCharsets.UTF_8));
+            newFile.flush();
+            newFile.close();
+            InputStream is = Files.newInputStream(Paths.get("target/test_aip.json"));
+            DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
+            while (dis.read() != -1) {
             }
-            i++;
+            byte[] fileChecksum = dis.getMessageDigest().digest();
+            dis.close();
+            is.close();
+            // now, lets see about checksums
+            byte[] aipAsByte = aipJsonString.getBytes(StandardCharsets.UTF_8);
+            byte[] aipChecksum = MessageDigest.getInstance("MD5").digest(aipAsByte);
+            Assert.assertEquals(aipChecksum.length, fileChecksum.length);
+            boolean differ = false;
+            int i = 0;
+            while (!differ && (i < aipChecksum.length)) {
+                if (aipChecksum[i] != fileChecksum[i]) {
+                    differ = true;
+                }
+                i++;
+            }
+            Assert.assertFalse("Checksum calculated from the file and from the json form differs", differ);
         }
-        Assert.assertFalse("Checksum calculated from the file and from the json form differs", differ);
     }
 
     @Override

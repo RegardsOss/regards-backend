@@ -10,10 +10,10 @@ import org.hibernate.annotations.TypeDefs;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.Event;
 
 /**
  * Metadata of an AIP.
@@ -22,7 +22,9 @@ import fr.cnes.regards.modules.storage.domain.Event;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_ip_id", columnList = "ip_id") })
+@Table(name = "t_aip", indexes = {
+                @Index(name = "idx_aip_ip_id", columnList = "ip_id")
+})
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
 public class AIPDataBase {
@@ -86,6 +88,14 @@ public class AIPDataBase {
         this.lastEvent = aip.getLastEvent();
         this.submissionDate = aip.getSubmissionEvent().getDate();
         this.aip = aip;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getIpId() {
