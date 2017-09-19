@@ -33,6 +33,7 @@ public interface IHandler<T> {
 
     public default void handleAndLog(TenantWrapper<T> wrapper) {
         LOGGER.info("Received {}, From {}", wrapper.getContent().getClass().getSimpleName(), wrapper.getTenant());
+        LOGGER.trace("Event received: {}", wrapper.getContent().toString());
         handle(wrapper);
     }
 
