@@ -34,6 +34,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>staf-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+			<artifactId>jobs-domain</artifactId>
+		</dependency>
 		<!-- TEST dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -45,5 +49,5 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>

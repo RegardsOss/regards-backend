@@ -39,7 +39,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -68,14 +67,11 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.EventType;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.domain.database.DataFileState;
-import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
-import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.domain.event.StorageAction;
-import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
+import fr.cnes.regards.modules.storage.domain.database.*;
+import fr.cnes.regards.modules.storage.domain.event.*;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
@@ -128,7 +124,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Value("${regards.storage.workspace}")
     private String workspace;
 
-    private long updateRate;
+    @Autowired
+    private ICachedFileService cachedFileService;
 
     public AIPService() {
     }
@@ -156,22 +153,53 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 case DELETION:
                     handleDeletionAction(type, event);
                     break;
-                default:
+                case RESTORATION:
+                    handleRestorationAction(type, event);
                     break;
+                default:
+                    throw new EnumConstantNotPresentException(StorageAction.class, action.toString());
             }
             runtimeTenantResolver.clearTenant();
         }
 
-        private void handleDeletionAction(StorageEventType type, DataStorageEvent data) {
+        private void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
+            DataFile data = dataFileDao.findOneById(event.getDataFileId());
+            Path restorationPath = event.getRestorationPath();
             switch (type) {
                 case SUCCESSFUL:
+                    cachedFileService.handleRestorationSuccess(data, restorationPath);
+                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
+                    break;
+                case FAILED:
+                    cachedFileService.handleRestorationFailure(data);
+                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
+            DataFile data = dataFileDao.findOneById(event.getDataFileId());
+            switch (type) {
+                case SUCCESSFUL:
+                    if (data.getChecksum().equals(event.getChecksum())) {
+                        AIP aip = dao.findOneByIpId(data.getAip().getIpId());
+                        Set<InformationObject> iosToRemove = aip.getInformationObjects().stream()
+                                .filter(io -> io.getPdi().getFixityInformation().getChecksum()
+                                        .equals(data.getChecksum())).collect(Collectors.toSet());
+                        aip.getInformationObjects().removeAll(iosToRemove);
+                        aip.setState(AIPState.UPDATED);
+                        dao.save(aip);
+                        dataFileDao.remove(data);
+                    }
+                    //otherwise we consider it comes from an update and the aip should not be set to updated
+                    break;
+                case FAILED:
+                    //FIXME: what to do?
                     // update data status
                     // dataFileDao.remove(data);
                     // FIXME: what do we do on AIP here? change the meta or not? do we change meta on removal query?
-                    break;
-                case FAILED:
-                    // update data status
-                    // FIXME: what to do?
                     break;
             }
         }
@@ -186,8 +214,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     try {
                         dataStorageUsed = pluginService.getPluginConfiguration(event.getStorageConfId());
                     } catch (ModuleException e) {
-                        LOG.error("You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
-                                  e);
+                        LOG.error(
+                                "You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
+                                e);
                         throw new RuntimeException(e);
                     }
                     data.setChecksum(event.getChecksum());
@@ -209,12 +238,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                         // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
                         // just let set the new information about this DataFile
                         AIP aip = dao.findOneByIpId(data.getAip().getIpId());
-                        InformationObject io = aip
-                                .getInformationObjects().stream().filter(informationObject -> informationObject.getPdi()
-                                        .getFixityInformation().getChecksum().equals(data.getChecksum()))
-                                .findFirst().get();
-                        io.getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
-                                                                        "File stored into REGARDS");
+                        InformationObject io = aip.getInformationObjects().stream()
+                                .filter(informationObject -> informationObject.getPdi().getFixityInformation()
+                                        .getChecksum().equals(data.getChecksum())).findFirst().get();
+                        io.getPdi().getProvenanceInformation()
+                                .addEvent(EventType.STORAGE.name(), "File stored into REGARDS");
                         io.getPdi().getFixityInformation().setFileSize(data.getFileSize());
                         io.getContentInformation().getDataObject().setUrl(data.getUrl());
                         io.getContentInformation().getDataObject().setFilename(data.getName());
@@ -321,8 +349,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                        oldOneCorrespondingToWorkingSubset
-                                .toArray(new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
+                                                oldOneCorrespondingToWorkingSubset.toArray(
+                                                        new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
                 jobsToSchedule.add(new JobInfo(0, parameters, getOwner(), UpdateDataFilesJob.class.getName()));
             }
         }
@@ -421,9 +449,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
             checkDispatch(metadataToStore, storageWorkingSetMap);
             Set<UUID> jobsToMonitor = scheduleStorage(storageWorkingSetMap, false);
-            // TODO: save those jobs uuid somewhere
-            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
-            // STORING_METADATA
+            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
             for (DataFile dataFile : metadataToStore) {
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
@@ -441,9 +467,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         try {
             // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
             Set<UUID> jobsToMonitor = scheduleUpdate(metadataToUpdate);
-            // TODO: save those jobs uuid somewhere
-            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
-            // STORING_METADATA
+            //to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
             Set<AIP> aips = metadataToUpdate.stream().map(oldNew -> oldNew.getNewOne().getAip())
                     .collect(Collectors.toSet());
             for (AIP aip : aips) {
@@ -514,7 +538,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * two {@link OffsetDateTime} are here considered equals to the second
      */
     @Override
-    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable) { // NOSONAR
+    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo,
+            Pageable pPageable) { // NOSONAR
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {
@@ -559,6 +584,38 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
         Set<AIP> versions = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
         return versions.stream().map(a -> a.getIpId()).collect(Collectors.toList());
+    }
+
+    @Override
+    public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) {
+        Set<String> requestedChecksums = availabilityRequest.getChecksums();
+        Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
+        Set<String> errors = Sets.newHashSet();
+        //first lets identify the files that we don't recognize
+        if (dataFiles.size() != requestedChecksums.size()) {
+            Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
+            errors.addAll(Sets.difference(requestedChecksums, dataFilesChecksums));
+        }
+        Set<DataFile> onlineFiles = Sets.newHashSet();
+        Set<DataFile> nearlineFiles = Sets.newHashSet();
+        // for each data file, lets see if it is online or not
+        for (DataFile df : dataFiles) {
+            if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+                onlineFiles.add(df);
+            } else {
+                nearlineFiles.add(df);
+            }
+        }
+        // now lets ask the cache service to handle nearline restoration and give us the already available ones
+        CoupleAvailableError nearlineAvailableAndError = cachedFileService
+                .restore(nearlineFiles, availabilityRequest.getExpirationDate());
+        for (DataFile inError : nearlineAvailableAndError.getErrors()) {
+            errors.add(inError.getChecksum());
+        }
+        // lets constrcut the result
+        AvailabilityResponse availabilityResponse = new AvailabilityResponse(errors, onlineFiles,
+                                                                             nearlineAvailableAndError.getAvailables());
+        return availabilityResponse;
     }
 
     /**
@@ -651,8 +708,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             if (!fileChecksum.equals(checksum)) {
                 // if checksum differs, remove the file from the workspace and just wait for the next try?
                 LOG.error(String.format(
-                                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                                        aip.getIpId(), tenantWorkspace));
+                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
+                        aip.getIpId(), tenantWorkspace));
                 metadataLocation.toFile().delete();
                 return null;
             } else {
@@ -660,14 +717,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 try {
                     URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
                     return new DataFile(urlToMetadata, checksum, md5.getAlgorithm(), DataType.AIP,
-                            urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"),
-                            aip, aip.getIpId() + ".json");
+                                        urlToMetadata.openConnection().getContentLengthLong(),
+                                        new MimeType("application", "json"), aip, aip.getIpId() + ".json");
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(
                             "url is malformed without help of the rest of the world, go spank your devs", e);
                 } catch (IOException e) {
                     throw new RuntimeException("we could not get the size of a file we just wrote, go spank your devs",
-                            e);
+                                               e);
                 }
             }
         } catch (IOException e) {

@@ -22,4 +22,7 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
 
     @EntityGraph(value = "graph.datafile.full")
     DataFile findOneById(Long dataFileId);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Set<DataFile> findAllByChecksumIn(Set<String> checksums);
 }
