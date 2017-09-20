@@ -39,7 +39,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
+			<artifactId>security-regards-starter</artifactId>
 		</dependency>
 		<!-- Starter feign -->
 		<dependency>

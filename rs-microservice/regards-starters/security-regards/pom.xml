@@ -40,6 +40,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-utils</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Security feature -->
 		<dependency>
