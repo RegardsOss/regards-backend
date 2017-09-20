@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
@@ -31,77 +32,69 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
  * @author Christophe Mertz
  *
  */
+@Plugin(description = "Jason2CheckingPlugin", id = "Jason2CheckingPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
-    // Attributes
-    private String productName_;
+    private String productName;
 
-    private int productVersion_;
+    private int productVersion;
 
-    private int fileVersion_;
+    private int fileVersion;
 
-    private String logFilePath_;
+    private String logFilePath;
 
-    /**
-     * @DM SIPNG-DM-0060-CN : creation
-     * @since 1.3
-     */
     private String nodeIdentifier_;
 
-    /**
-     * Constructeur de la classe
-     * 
-     * @since 1.2
-     * 
-     */
     public Jason2CheckingPlugin() {
         super();
     }
 
     public int getFileVersion() {
-        return fileVersion_;
+        return fileVersion;
     }
 
     public String getLogFile() {
-        return logFilePath_;
+        return logFilePath;
     }
 
     public String getProductName() {
-        return productName_;
+        return productName;
     }
 
     public int getProductVersion() {
-        return productVersion_;
+        return productVersion;
     }
 
     public String getNodeIdentifier() {
         return nodeIdentifier_;
     }
 
-    public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
+    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
 
         boolean result = false;
 
         // Check file exists
-        if (pFiletoCheck.exists() && pFiletoCheck.canRead()) {
+        if (filetoCheck.exists() && filetoCheck.canRead()) {
 
             // Delete extension if any
-            String name = pFiletoCheck.getName();
+            String name = filetoCheck.getName();
             // pFiletoCheck
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
-                productName_ = name.substring(0, PRODUCT_NAME_MAX_SIZE);
+                productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
             } else {
-                productName_ = name;
+                productName = name;
             }
-            nodeIdentifier_ = productName_;
-            productVersion_ = 1;
-            fileVersion_ = 1;
-            logFilePath_ = null; // TODO
+            nodeIdentifier_ = productName;
+            productVersion = 1;
+            fileVersion = 1;
+            logFilePath = null;
             result = true;
         } else {
-            throw new ReadFileException(pFiletoCheck.getAbsolutePath());
+            throw new ReadFileException(filetoCheck.getAbsolutePath());
         }
 
         return result;

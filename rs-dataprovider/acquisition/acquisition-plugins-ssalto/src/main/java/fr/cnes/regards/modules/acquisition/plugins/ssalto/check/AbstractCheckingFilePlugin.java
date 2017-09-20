@@ -33,10 +33,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
  * @author Christophe Mertz
  *
  */
-
 public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
 
-    /** Attribut de la classe */
     private String productName;
 
     private int productVersion;

@@ -35,76 +35,76 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.IDoris1BPlugin;
  */
 public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin, IDoris1BPlugin {
 
-    protected String productName_;
+    protected String productName;
 
-    protected int productVersion_;
+    protected int productVersion;
 
-    protected int fileVersion_;
+    protected int fileVersion;
 
-    protected String logFilePath_;
+    protected String logFilePath;
 
-    protected String nodeIdentifier_;
+    protected String nodeIdentifier;
 
     /**
      * Liste des correspondances DatasetName => Prexix
      */
-    protected Map<String, String> prefixMap_ = null;
+    protected Map<String, String> prefixMap = null;
 
     @Override
-    public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
         boolean result = false;
 
         initPrefixMap();
 
         // Check file exists
-        if (pFileToCheck.exists() && pFileToCheck.canRead()) {
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
             // DATA_STORAGE_OBJECT_IDENTIFIER
-            if ((prefixMap_ != null) && prefixMap_.containsKey(pDataSetId)) {
-                String prefix = prefixMap_.get(pDataSetId);
-                nodeIdentifier_ = prefix + pFileToCheck.getName();
+            if ((prefixMap != null) && prefixMap.containsKey(dataSetId)) {
+                String prefix = prefixMap.get(dataSetId);
+                nodeIdentifier = prefix + fileToCheck.getName();
             } else {
-                throw new ModuleException("Prefix for " + pDataSetId + "does not exist!");
+                throw new ModuleException("Prefix for " + dataSetId + "does not exist!");
             }
-            productName_ = nodeIdentifier_;
-            productVersion_ = 1;
-            fileVersion_ = 1;
-            logFilePath_ = null;
+            productName = nodeIdentifier;
+            productVersion = 1;
+            fileVersion = 1;
+            logFilePath = null;
             result = true;
         } else {
-            throw new ReadFileException(pFileToCheck.getAbsolutePath());
+            throw new ReadFileException(fileToCheck.getAbsolutePath());
         }
         return result;
     }
 
     @Override
     public int getFileVersion() {
-        return fileVersion_;
+        return fileVersion;
     }
 
     @Override
     public String getLogFile() {
-        return logFilePath_;
+        return logFilePath;
     }
 
     @Override
     public String getNodeIdentifier() {
-        return nodeIdentifier_;
+        return nodeIdentifier;
     }
 
     @Override
     public String getProductName() {
-        return productName_;
+        return productName;
     }
 
     @Override
     public int getProductVersion() {
-        return productVersion_;
+        return productVersion;
     }
 
-    protected void addDatasetNamePrexif(String pDatasetName, String pPrefix) {
-        if (prefixMap_ == null) {
-            prefixMap_ = new HashMap<>();
+    protected void addDatasetNamePrexif(String datasetName, String prefix) {
+        if (prefixMap == null) {
+            prefixMap = new HashMap<>();
         }
-        prefixMap_.put(pDatasetName, pPrefix);
+        prefixMap.put(datasetName, prefix);
     }
 }

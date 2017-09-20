@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
  * plugin de verification des fichiers. Ce plugin permet aussi d'indiquer le node_identifier qui doit etre utiliser pour
@@ -26,6 +27,9 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
  * @author Christophe Mertz
  *
  */
+@Plugin(description = "Jason1Doris1BCheckingFilePlugin", id = "Jason1Doris1BCheckingFilePlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason1Doris1BCheckingFilePlugin extends AbstractDoris1BCheckingPlugin {
 
     private static final String DATASETNAME_JASON1_DORIS1B_MOE_CDDIS = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
@@ -33,10 +37,10 @@ public class Jason1Doris1BCheckingFilePlugin extends AbstractDoris1BCheckingPlug
     private static final String DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM = "DA_TC_JASON1_DORIS1B_MOE_CDDIS_COM";
 
     private static final String DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM = "DA_TC_JASON1_DORIS1B_POE_CDDIS_COM";
-    
+
     public void initPrefixMap() {
         addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS, PREFIX_MOE_CDDIS);
         addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM, PREFIX_MOE_CDDIS_COM);
-        addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM, PREFIX_POE_CDDIS_COM);        
+        addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM, PREFIX_POE_CDDIS_COM);
     }
 }

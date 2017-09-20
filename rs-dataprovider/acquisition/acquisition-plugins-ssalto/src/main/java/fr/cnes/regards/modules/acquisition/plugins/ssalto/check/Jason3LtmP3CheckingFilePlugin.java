@@ -21,59 +21,57 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
-
 /**
- * Class Jason3LtmP3CheckingFilePlugin
- *
  * Plugin JASON3 pour les produits LTM
  *
  * @author Christophe Mertz
  *
  */
+@Plugin(description = "Jason3LtmP3CheckingFilePlugin", id = "Jason3LtmP3CheckingFilePlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
 
-    // Attributes
-    private String productName_;
+    private String productName;
 
-    private int productVersion_;
+    private int productVersion;
 
-    private int fileVersion_;
+    private int fileVersion;
 
-    private String logFilePath_;
+    private String logFilePath;
 
-    private String nodeIdentifier_;
+    private String nodeIdentifier;
 
     @Override
-    public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists
-        if (pFileToCheck.exists() && pFileToCheck.canRead()) {
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
 
             // Delete extension if any
-            String name = pFileToCheck.getName();
-            nodeIdentifier_ = name;
+            String name = fileToCheck.getName();
+            nodeIdentifier = name;
             // pFiletoCheck
             if (name.length() > 5) {
                 String partOne = name.substring(0, 4);
                 String partTwo = name.substring(5, name.length());
-                productName_ = partOne + partTwo;
-            }
-            else {
+                productName = partOne + partTwo;
+            } else {
                 throw new ModuleException("Invalid JSON3_LTM file " + name);
             }
 
-            productVersion_ = 1;
-            fileVersion_ = 1;
-            logFilePath_ = null;
+            productVersion = 1;
+            fileVersion = 1;
+            logFilePath = null;
 
             result = true;
-        }
-        else {
-            throw new ReadFileException(pFileToCheck.getAbsolutePath());
+        } else {
+            throw new ReadFileException(fileToCheck.getAbsolutePath());
         }
 
         return result;
@@ -81,27 +79,27 @@ public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
 
     @Override
     public String getLogFile() {
-        return logFilePath_;
+        return logFilePath;
     }
 
     @Override
     public String getProductName() {
-        return productName_;
+        return productName;
     }
 
     @Override
     public String getNodeIdentifier() {
-        return nodeIdentifier_;
+        return nodeIdentifier;
     }
 
     @Override
     public int getProductVersion() {
-        return productVersion_;
+        return productVersion;
     }
 
     @Override
     public int getFileVersion() {
-        return fileVersion_;
+        return fileVersion;
     }
 
 }

@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+
 /**
  * Plugin de validation des fichiers CRYOSAT2.<br>
  * L'identifiant du produit retourne correspond à l'identifiant du fichier sans l'extension.
@@ -26,6 +28,9 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
  * @author Christophe Mertz
  *
  */
+@Plugin(description = "Cryosat2ExtCheckingFilePlugin", id = "Cryosat2ExtCheckingFilePlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Cryosat2ExtCheckingFilePlugin extends AbstractCheckingFilePlugin {
 
     private static String EXTENSION_HDR = ".HDR";

@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
-
+@Plugin(description = "Spot4Doris1BCheckingPlugin", id = "Spot4Doris1BCheckingPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Spot4Doris1BCheckingPlugin extends AbstractDoris1BCheckingPlugin {
 
     public void initPrefixMap() {
         addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS);
-        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS_COM",PREFIX_MOE_CDDIS_COM);
-        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_POE_CDDIS_COM",PREFIX_POE_CDDIS_COM);
+        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);
+        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
     }
 }

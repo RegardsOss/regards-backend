@@ -21,43 +21,36 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
+@Plugin(description = "CheckInPluginFalse", id = "CheckInPluginFalse", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class CheckInPluginFalse implements ICheckFilePlugin {
 
-    // Attributes
     private String productName_;
 
-    private int productVersion_;
+    private int productVersion;
 
-    private int fileVersion_;
+    private int fileVersion;
 
-    private String logFilePath_;
+    private String logFilePath;
 
-    /**
-     * @DM SIPNG-DM-0060-CN : creation
-     * @since 1.3
-     */
-    private String nodeIdentifier_;
+    private String nodeIdentifier;
 
-    /**
-     * Constructeur de la classe
-     * 
-     * @since 1.2
-     * 
-     */
     public CheckInPluginFalse() {
         super();
     }
 
     @Override
     public int getFileVersion() {
-        return fileVersion_;
+        return fileVersion;
     }
 
     @Override
     public String getLogFile() {
-        return logFilePath_;
+        return logFilePath;
     }
 
     @Override
@@ -67,16 +60,16 @@ public class CheckInPluginFalse implements ICheckFilePlugin {
 
     @Override
     public int getProductVersion() {
-        return productVersion_;
+        return productVersion;
     }
 
     @Override
     public String getNodeIdentifier() {
-        return nodeIdentifier_;
+        return nodeIdentifier;
     }
 
     @Override
-    public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
+    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
 
         return false;
     }

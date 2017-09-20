@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+
 /**
  * Plugin de verification pour les donnees LOG_VOL_POS3 de JASON2.<br>
  * L'identifiant du produit retourne correspond a l'identifiant du fichier moins l'extention _HDR ou _BIN.
@@ -25,6 +27,9 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
  * @author Christophe Mertz
  *
  */
+@Plugin(description = "LogVolPos3CheckingFilePlugin", id = "LogVolPos3CheckingFilePlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
 
     private static String EXTENSION_BIN = "_BIN";

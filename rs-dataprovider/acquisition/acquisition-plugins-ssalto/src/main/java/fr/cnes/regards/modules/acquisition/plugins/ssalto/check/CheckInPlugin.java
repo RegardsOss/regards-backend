@@ -21,22 +21,25 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
+@Plugin(description = "CheckInPlugin", id = "CheckInPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class CheckInPlugin implements ICheckFilePlugin {
 
     protected static final int PRODUCT_NAME_MAX_SIZE = 128;
 
-    // Attributes
-    protected String productName_;
+    protected String productName;
 
-    protected int productVersion_;
+    protected int productVersion;
 
-    protected int fileVersion_;
+    protected int fileVersion;
 
-    protected String logFilePath_;
+    protected String logFilePath;
 
-    protected String nodeIdentifier_;
+    protected String nodeIdentifier;
 
     public CheckInPlugin() {
         super();
@@ -44,39 +47,39 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     @Override
     public int getFileVersion() {
-        return fileVersion_;
+        return fileVersion;
     }
 
     @Override
     public String getLogFile() {
-        return logFilePath_;
+        return logFilePath;
     }
 
     @Override
     public String getProductName() {
-        return productName_;
+        return productName;
     }
 
     @Override
     public String getNodeIdentifier() {
-        return nodeIdentifier_;
+        return nodeIdentifier;
     }
 
     @Override
     public int getProductVersion() {
-        return productVersion_;
+        return productVersion;
     }
 
     @Override
-    public boolean runPlugin(File pFiletoCheck, String pDataSetId) throws ModuleException {
+    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
 
         boolean result = false;
 
         // Check file exists
-        if (pFiletoCheck.exists() && pFiletoCheck.canRead()) {
-            nodeIdentifier_ = pFiletoCheck.getName();
+        if (filetoCheck.exists() && filetoCheck.canRead()) {
+            nodeIdentifier = filetoCheck.getName();
             // Delete extension if any
-            String name = pFiletoCheck.getName();
+            String name = filetoCheck.getName();
             int indexExtension = name.lastIndexOf('.');
             if (indexExtension > 0) {
                 name = name.substring(0, indexExtension);
@@ -84,16 +87,16 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
             // pFiletoCheck
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
-                productName_ = name.substring(0, PRODUCT_NAME_MAX_SIZE);
+                productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
             } else {
-                productName_ = name;
+                productName = name;
             }
-            productVersion_ = 1;
-            fileVersion_ = 1;
-            logFilePath_ = null; // TODO
+            productVersion = 1;
+            fileVersion = 1;
+            logFilePath = null; // TODO
             result = true;
         } else {
-            throw new ModuleException("Can't read file " + pFiletoCheck.getAbsolutePath());
+            throw new ModuleException("Can't read file " + filetoCheck.getAbsolutePath());
         }
 
         return result;
