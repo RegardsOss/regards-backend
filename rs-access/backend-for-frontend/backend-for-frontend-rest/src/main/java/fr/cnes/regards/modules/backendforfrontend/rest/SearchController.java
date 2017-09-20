@@ -233,7 +233,7 @@ public class SearchController {
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets);
         injectApplicableServices(entities);
-        LOGGER.debug(entities.toString());
+        LOGGER.info(entities.toString());
         return entities;
     }
 
