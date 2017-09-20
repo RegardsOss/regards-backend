@@ -115,12 +115,11 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
      * @throws IOException
      */
     private CharBuffer readFile(String filePath) throws IOException {
-        FileInputStream fis = null;
         FileChannel fc = null;
-        CharBuffer cb;
-        try {
-            // Open the file and then get a channel from the stream
-            fis = new FileInputStream(filePath);
+        CharBuffer cb = null;
+        
+        // Open the file and then get a channel from the stream
+        try (FileInputStream fis = new FileInputStream(filePath)) {
             fc = fis.getChannel();
 
             // Get the file's size and then map it into memory
@@ -130,13 +129,11 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
             // Decode the file into a char buffer
             cb = decoder.decode(bb);
 
-        } finally {
+        } catch (IOException e) {
             if (fc != null) {
                 fc.close();
             }
-            if (fis != null) {
-                fis.close();
-            }
+            throw e;
         }
 
         return cb;
