@@ -140,9 +140,9 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams)
             throws SearchException {
-        ResponseEntity<JsonObject> entities = searchAllClient.searchAll(allParams);
-        //        injectApplicableServices(entities);
-        return entities;
+        JsonObject entities = searchAllClient.searchAll(allParams).getBody();
+        injectApplicableServices(entities);
+        return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
@@ -164,9 +164,9 @@ public class SearchController {
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document. Injects applicable UI Services and Catalog Services.")
     public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
-        ResponseEntity<JsonObject> entities = searchAllWithFacetsClient.searchAll(allParams, pFacets);
-        //        injectApplicableServices(entities);
-        return entities;
+        JsonObject entities = searchAllWithFacetsClient.searchAll(allParams, pFacets).getBody();
+        injectApplicableServices(entities);
+        return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
@@ -186,9 +186,9 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams)
             throws SearchException {
-        ResponseEntity<JsonObject> entities = searchCollectionsClient.searchCollections(allParams);
-        //        injectApplicableServices(entities);
-        return entities;
+        JsonObject entities = searchCollectionsClient.searchCollections(allParams).getBody();
+        injectApplicableServices(entities);
+        return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
@@ -208,9 +208,9 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams)
             throws SearchException {
-        ResponseEntity<JsonObject> entities = searchDatasetsClient.searchDatasets(allParams);
-        //        injectApplicableServices(entities);
-        return entities;
+        JsonObject entities = searchDatasetsClient.searchDatasets(allParams).getBody();
+        injectApplicableServices(entities);
+        return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
@@ -236,7 +236,6 @@ public class SearchController {
         injectApplicableServices(entities);
         LOGGER.info(entities.toString());
         return new ResponseEntity<>(entities, HttpStatus.OK);
-        //        return entities;
     }
 
     /**
@@ -259,10 +258,10 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
-        ResponseEntity<JsonObject> entities = searchDataobjectsReturnDatasetsClient
-                .searchDataobjectsReturnDatasets(allParams, pFacets);
-        //        injectApplicableServices(entities);
-        return entities;
+        JsonObject entities = searchDataobjectsReturnDatasetsClient.searchDataobjectsReturnDatasets(allParams, pFacets)
+                .getBody();
+        injectApplicableServices(entities);
+        return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
@@ -282,9 +281,9 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams)
             throws SearchException {
-        ResponseEntity<JsonObject> entities = searchDocumentsClient.searchDocuments(allParams);
-        //        injectApplicableServices(entities);
-        return entities;
+        JsonObject entities = searchDocumentsClient.searchDocuments(allParams).getBody();
+        injectApplicableServices(entities);
+        return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
