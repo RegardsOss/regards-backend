@@ -21,38 +21,42 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>amqp-monitoring-regards-starter</artifactId>
-	<description>REGARDS AMQP monitoring starter</description>
+	<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+	<artifactId>plugins-service</artifactId>
+	<packaging>jar</packaging>
 
 	<parent>
-		<groupId>fr.cnes.regards.framework</groupId>
-		<artifactId>regards-starters</artifactId>
+		<groupId>fr.cnes.regards.framework.modules</groupId>
+		<artifactId>plugins</artifactId>
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
-		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>authentication-regards-starter</artifactId>
+			<artifactId>module-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>multitenant-regards-starter</artifactId>
+			<artifactId>amqp-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-regards-starter</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
-		<!-- Tests -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-test</artifactId>
 			<scope>test</scope>
+			<type>test-jar</type>
 		</dependency>
 		<dependency>
-			<groupId>org.logback-extensions</groupId>
-			<artifactId>logback-ext-spring</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-dao</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.utils</groupId>
+			<artifactId>plugin-utils</artifactId>
 		</dependency>
 	</dependencies>
 </project>

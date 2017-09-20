@@ -20,8 +20,6 @@ package fr.cnes.regards.framework.geojson.coordinates;
 
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry position representation
@@ -35,7 +33,6 @@ public class Position {
 
     private Double latitude;
 
-    @Nullable
     private Double altitude = null;
 
     public Position() {

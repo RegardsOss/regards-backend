@@ -44,7 +44,7 @@
 		<!-- Plugin module -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-rest</artifactId>
+			<artifactId>plugins-rest</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>
@@ -79,7 +79,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-client</artifactId>
+			<artifactId>plugins-client</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

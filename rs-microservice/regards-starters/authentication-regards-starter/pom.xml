@@ -21,8 +21,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>amqp-monitoring-regards-starter</artifactId>
-	<description>REGARDS AMQP monitoring starter</description>
+	<artifactId>authentication-regards-starter</artifactId>
+	<description>REGARDS authentication starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
@@ -31,28 +31,30 @@
 	</parent>
 
 	<dependencies>
-		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>authentication-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>multitenant-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-regards-starter</artifactId>
+			<artifactId>authentication-regards</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.logback-extensions</groupId>
-			<artifactId>logback-ext-spring</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test-reporting</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
