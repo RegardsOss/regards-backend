@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.geojson;
 import java.util.Arrays;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJsonObject common model
@@ -35,7 +37,15 @@ public abstract class AbstractGeoJsonObject {
     /**
      * Optional bounding box
      */
+    @Nullable
     protected Double[] bbox;
+
+    /**
+     * Optional coordinate reference system. If not specified, WGS84 is considered as the default CRS.<br/>
+     * CRS is not in RFC 7946 -August 2016.
+     */
+    @Nullable
+    protected String crs;
 
     public AbstractGeoJsonObject(GeoJsonType type) {
         this.type = type;
@@ -53,11 +63,20 @@ public abstract class AbstractGeoJsonObject {
         this.bbox = bbox;
     }
 
+    public Optional<String> getCrs() {
+        return Optional.ofNullable(crs);
+    }
+
+    public void setCrs(String crs) {
+        this.crs = crs;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + Arrays.hashCode(bbox);
+        result = (prime * result) + ((crs == null) ? 0 : crs.hashCode());
         result = (prime * result) + ((type == null) ? 0 : type.hashCode());
         return result;
     }
@@ -75,6 +94,13 @@ public abstract class AbstractGeoJsonObject {
         }
         AbstractGeoJsonObject other = (AbstractGeoJsonObject) obj;
         if (!Arrays.equals(bbox, other.bbox)) {
+            return false;
+        }
+        if (crs == null) {
+            if (other.crs != null) {
+                return false;
+            }
+        } else if (!crs.equals(other.crs)) {
             return false;
         }
         if (type != other.type) {
