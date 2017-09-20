@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -67,8 +65,6 @@ import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
         documentation = "http://test")
 @RequestMapping(path = SearchController.ROOT_PATH)
 public class SearchController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
 
     /**
      * Function converting a {@link JsonArray} into a {@link Stream}
@@ -234,7 +230,6 @@ public class SearchController {
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
         JsonObject entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets).getBody();
         injectApplicableServices(entities);
-        LOGGER.info(entities.toString());
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
