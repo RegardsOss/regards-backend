@@ -15,8 +15,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -46,7 +52,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -66,7 +72,9 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
 @ContextConfiguration(classes = { StoreJobIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
-public class AIPServiceIT extends AbstractRegardsServiceIT {
+public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
 
     private static final String ALLOCATION_CONF_LABEL = "AIPServiceIT_ALLOCATION";
 
@@ -119,6 +127,7 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
+
         failed = false;
         succeeded = Sets.newConcurrentHashSet();
         subscriber.subscribeTo(JobEvent.class, new JobEventHandler());
@@ -140,7 +149,7 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
                                                                       IOnlineDataStorage.class.getPackage().getName());
-        baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/AIPServiceIT");
+        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
@@ -155,15 +164,26 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
     @Test
     public void createSuccessTest() throws ModuleException, InterruptedException {
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
-        while (!succeeded.containsAll(jobIds) && !failed) {
+        jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
+        int wait = 0;
+        while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
+            wait = wait + 1000;
         }
+        LOG.info("All waiting JOB succeeded");
         Assert.assertFalse("The job failed while it should not have", failed);
-        // lets wait two minutes so the metadata has been stored and check that everything is good
-        Thread.sleep(2 * 60 * 1000);
-        AIP result = aipDao.findOneByIpId(aip.getIpId());
-        Assert.assertEquals(AIPState.STORED, result.getState());
+        AIP aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+        // Wait for AIP set STORED status
+        LOG.info("Waiting for AIP {} stored", aip.getIpId());
+        wait = 0;
+        while (!AIPState.STORED.equals(aipFromDB.getState()) && (wait < 10000)) {
+            aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            Thread.sleep(1000);
+            wait = wait + 1000;
+        }
+        Assert.assertEquals(AIPState.STORED, aipFromDB.getState());
+        LOG.info("AIP {} stored", aip.getIpId());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
         Assert.assertEquals(2, dataFiles.size());
     }
@@ -172,31 +192,27 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
     public void createFailOnDataTest() throws MalformedURLException, ModuleException, InterruptedException {
         // first lets change the data location to be sure it fails
         aip.getInformationObjects().get(0).getContentInformation().getDataObject().setUrl(new URL("file", "",
-                System.getProperty("user.dir") + "/src/test/resources/data_that_does_not_exists.txt"));
+                Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile().getAbsolutePath()));
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
-        while (!succeeded.containsAll(jobIds) && !failed) {
+        int wait = 0;
+        while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
+            wait = wait + 1000;
         }
         Assert.assertTrue("The job succeeded while it should not have", failed);
-        // lets wait two minutes to be sure that metadata storage method was executed and check state of metadata
-        Thread.sleep(2 * 60 * 1000);
-        AIP result = aipDao.findOneByIpId(aip.getIpId());
-        Assert.assertEquals(AIPState.STORAGE_ERROR, result.getState());
+        LOG.info("Waiting for AIP {} error ...", aip.getIpId());
+        AIP aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+        wait = 0;
+        while (!AIPState.STORAGE_ERROR.equals(aipFromDB.getState()) && (wait < 10000)) {
+            aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            Thread.sleep(1000);
+            wait = wait + 1000;
+        }
+        Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.getState());
+        LOG.info("AIP {} is in ERROR State", aip.getIpId());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
         Assert.assertEquals(1, dataFiles.size());
-    }
-
-    @Test
-    public void createSuccessAfterFailOnDataTest() throws InterruptedException, ModuleException, MalformedURLException {
-        // lets not rewrite code
-        createFailOnDataTest();
-        // now lets correct what we did so we can store the metadata
-        aip.getInformationObjects().get(0).getContentInformation().getDataObject()
-                .setUrl(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"));
-        // reset the fail indicator
-        failed = false;
-        createSuccessTest();
     }
 
     @Test
@@ -208,15 +224,22 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
         try {
             Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
-            while (!succeeded.containsAll(jobIds) && !failed) {
+            int wait = 0;
+            while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
                 // lets wait for 1 sec before checking again if all our jobs has been done or not
                 Thread.sleep(1000);
+                wait = wait + 1000;
             }
             Assert.assertFalse("The job failed while it should not have", failed);
-            // lets wait two minutes to be sure that metadata storage method was executed and check state of metadata
-            Thread.sleep(2 * 60 * 1000);
-            AIP result = aipDao.findOneByIpId(aip.getIpId());
-            Assert.assertEquals(AIPState.STORAGE_ERROR, result.getState());
+            LOG.info("Waiting for AIP {} error ...", aip.getIpId());
+            AIP aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            wait = 0;
+            while (!AIPState.STORAGE_ERROR.equals(aipFromDB.getState()) && (wait < 10000)) {
+                aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+                Thread.sleep(1000);
+                wait = wait + 1000;
+            }
+            Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.getState());
             Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
         } finally {
@@ -250,10 +273,12 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
             switch (event.getJobEventType()) {
                 case ABORTED:
                 case FAILED:
+
                     failed = true;
                     getLogger().error("Job " + event.getJobId() + " failed or was aborted");
                     break;
                 case SUCCEEDED:
+                    LOG.info("JOB succeeded {}", event.getJobId());
                     succeeded.add(event.getJobId());
                     break;
                 default:
@@ -297,8 +322,10 @@ public class AIPServiceIT extends AbstractRegardsServiceIT {
         // service is not created on each test so workspace is not either
         Files.walk(defaultTenantWorkspace).sorted(Comparator.reverseOrder()).map(Path::toFile)
                 .filter(f -> !f.equals(defaultTenantWorkspace.toFile())).forEach(File::delete);
-        Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
-                .forEach(File::delete);
+        if (baseStorageLocation != null) {
+            Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
 }

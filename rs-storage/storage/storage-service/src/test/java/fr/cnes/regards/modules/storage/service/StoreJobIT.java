@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +29,9 @@ import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -38,6 +41,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -99,6 +103,9 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private JobInfoService jobInfoService;
+
     private URL baseStorageLocation;
 
     @Autowired
@@ -156,6 +163,9 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
 
     protected IJob runJob(JobInfo jobInfo) {
         try {
+
+            /**JobInfo createJobInfo = jobInfoService.createAsQueued(jobInfo);
+            IJob job = createJobInfo.getJob();*/
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setId(jobInfo.getId());
@@ -164,6 +174,7 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
                 job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
             }
             jobInfo.setJob(job);
+            jobInfo.getStatus().setStartDate(OffsetDateTime.now());
             job.run();
             return job;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
@@ -180,13 +191,14 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
     }
 
     private AIP getAipFromFile() throws IOException {
-        FileReader fr = new FileReader("src/test/resources/aip_sample.json");
-        BufferedReader br = new BufferedReader(fr);
-        String fileLine = br.readLine();
-        AIP aip = gson.fromJson(fileLine, AIP.class);
-        br.close();
-        fr.close();
-        return aip;
+
+        try (JsonReader reader = new JsonReader(new FileReader("src/test/resources/aip_sample.json"))) {
+            JsonElement el = Streams.parse(reader);
+            String fileLine = el.toString();
+            AIP aip = gson.fromJson(fileLine, AIP.class);
+
+            return aip;
+        }
     }
 
     @After

@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.service;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,6 +8,8 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -30,6 +34,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
@@ -72,6 +77,17 @@ public class CachedFileService implements ICachedFileService {
     @Autowired
     private IPublisher publisher;
 
+    @PostConstruct
+    public void checkValidity() {
+        // Check that the given cache storage path is available.
+        File cachedPathFile = Paths.get(cachePath).toFile();
+        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
+                || !cachedPathFile.canWrite()) {
+            throw new StorageException(String
+                    .format("Error initializing storage cache directory. %s is not a valid directory", cachePath));
+        }
+    }
+
     @Override
     public CoupleAvailableError restore(Set<DataFile> nearlineFiles, OffsetDateTime cacheExpirationDate) {
         //TODO check space left
@@ -107,8 +123,8 @@ public class CachedFileService implements ICachedFileService {
                 errors.addAll(toRetrieveFiles);
                 //TODO: notify
             }
-            Set<IWorkingSubset> workingSubsets = storageToUse
-                    .prepare(toRetrieveFiles, DataStorageAccessModeEnum.RETRIEVE_MODE);
+            Set<IWorkingSubset> workingSubsets = storageToUse.prepare(toRetrieveFiles,
+                                                                      DataStorageAccessModeEnum.RETRIEVE_MODE);
             errors.addAll(checkPrepareResult(toRetrieveFiles, workingSubsets));
             // now lets build the restoration job for each working subset
             scheduleRestorationJob(workingSubsets, storageConf);
@@ -176,9 +192,11 @@ public class CachedFileService implements ICachedFileService {
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
             Set<DataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
-            notSubSetDataFiles.stream().peek(df -> LOG.error(String.format(
-                    "DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it!",
-                    df.getId(), df.getChecksum()))/*TODO: notify*/).forEach(df -> result.add(df));
+            notSubSetDataFiles.stream()
+                    .peek(df -> LOG.error(
+                                          String.format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it!",
+                                                        df.getId(), df.getChecksum()))/*TODO: notify*/)
+                    .forEach(df -> result.add(df));
         }
         return result;
     }
