@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -140,7 +141,7 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchAllClient.searchAll(allParams);
-        injectApplicableServices(entities);
+        //        injectApplicableServices(entities);
         return entities;
     }
 
@@ -164,7 +165,7 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchAllWithFacetsClient.searchAll(allParams, pFacets);
-        injectApplicableServices(entities);
+        //        injectApplicableServices(entities);
         return entities;
     }
 
@@ -186,7 +187,7 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchCollectionsClient.searchCollections(allParams);
-        injectApplicableServices(entities);
+        //        injectApplicableServices(entities);
         return entities;
     }
 
@@ -208,7 +209,7 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchDatasetsClient.searchDatasets(allParams);
-        injectApplicableServices(entities);
+        //        injectApplicableServices(entities);
         return entities;
     }
 
@@ -231,10 +232,11 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets) throws SearchException {
-        ResponseEntity<JsonObject> entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets);
+        JsonObject entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets).getBody();
         injectApplicableServices(entities);
         LOGGER.info(entities.toString());
-        return entities;
+        return new ResponseEntity<>(entities, HttpStatus.OK);
+        //        return entities;
     }
 
     /**
@@ -259,7 +261,7 @@ public class SearchController {
             @RequestParam(value = "facets", required = false) final String[] pFacets) throws SearchException {
         ResponseEntity<JsonObject> entities = searchDataobjectsReturnDatasetsClient
                 .searchDataobjectsReturnDatasets(allParams, pFacets);
-        injectApplicableServices(entities);
+        //        injectApplicableServices(entities);
         return entities;
     }
 
@@ -281,7 +283,7 @@ public class SearchController {
     public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams)
             throws SearchException {
         ResponseEntity<JsonObject> entities = searchDocumentsClient.searchDocuments(allParams);
-        injectApplicableServices(entities);
+        //        injectApplicableServices(entities);
         return entities;
     }
 
@@ -290,9 +292,8 @@ public class SearchController {
      *
      * @param pEntities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
      */
-    private void injectApplicableServices(ResponseEntity<JsonObject> pEntities) {
-        try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM
-                .apply(pEntities.getBody().get("content").getAsJsonArray())) {
+    private void injectApplicableServices(JsonObject pEntities) {
+        try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(pEntities.get("content").getAsJsonArray())) {
             // @formatter:off
             elements
                 .map(JsonElement::getAsJsonObject)
