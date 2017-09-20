@@ -29,6 +29,11 @@ import java.util.List;
  */
 public class SIPProperties {
 
+    /**
+     * Tag list
+     */
+    private List<String> tags = new ArrayList<>();
+
     private final List<SIPDataObject> dataObjects = new ArrayList<>();
 
     // TODO add extra properties
@@ -39,5 +44,17 @@ public class SIPProperties {
 
     public void addDataObject(SIPDataObject dataObject) {
         dataObjects.add(dataObject);
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(String tag) {
+        this.tags.add(tag);
     }
 }
