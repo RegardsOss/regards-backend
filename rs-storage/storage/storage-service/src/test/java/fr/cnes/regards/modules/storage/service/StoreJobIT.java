@@ -41,7 +41,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -102,9 +101,6 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
 
     @Autowired
     private IPluginService pluginService;
-
-    @Autowired
-    private JobInfoService jobInfoService;
 
     private URL baseStorageLocation;
 
