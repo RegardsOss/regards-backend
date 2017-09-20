@@ -63,7 +63,7 @@
 			<version>4.2.20</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
+			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
 		<dependency>

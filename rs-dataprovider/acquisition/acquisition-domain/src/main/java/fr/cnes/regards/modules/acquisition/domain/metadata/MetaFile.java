@@ -76,7 +76,6 @@ public class MetaFile implements IIdentifiable<Long> {
 
     /**
      * A {@link Set} of {@link ScanDirectory} to scan and search data files corresponding to the file name pattern
-     * max chars 250
      */
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "scan_directory_id", referencedColumnName = "ID",
@@ -85,7 +84,6 @@ public class MetaFile implements IIdentifiable<Long> {
 
     /**
      * The data file name found
-     * max chars 100
      *  TODO CMZ util ? le nom du fichier est dans {@link AcquisitionFile}
      */
     @Column(name = "file_name", length = MAX_FILE_NAME_LENGTH)

@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -50,7 +51,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
  * @author Christophe Mertz
  * 
  */
-
+@Plugin(description = "Jason1Gpsp10FlotProductMetadataPlugin", id = "Jason1Gpsp10FlotProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadataPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason1Gpsp10FlotProductMetadataPlugin.class);

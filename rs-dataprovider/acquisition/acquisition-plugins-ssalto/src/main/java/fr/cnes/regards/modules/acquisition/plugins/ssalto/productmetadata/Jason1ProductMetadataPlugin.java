@@ -20,8 +20,12 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
+@Plugin(description = "Jason1ProductMetadataPlugin", id = "Jason1ProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class Jason1ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "JASON";
