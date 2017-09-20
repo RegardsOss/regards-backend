@@ -45,7 +45,7 @@
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
+			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
 		<!-- Tests dependenies (Not in test scope. Reason : Needed by Mock in source folder) -->

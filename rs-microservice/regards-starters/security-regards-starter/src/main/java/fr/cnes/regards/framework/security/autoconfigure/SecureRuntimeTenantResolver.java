@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.apache.log4j.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
