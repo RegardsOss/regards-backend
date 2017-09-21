@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -97,8 +98,10 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IFacetConverter facetConverter;
 
     /**
-     * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
-     * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
+     * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
+     *            null.
+     * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by
+     *            Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
      * @param facetConverter manage facet conversion
      */
@@ -134,10 +137,10 @@ public class CatalogSearchService implements ICatalogSearchService {
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey) && (
-                    TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches
-                        .onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
+            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
+                    && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
+                searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(),
+                                                    Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Perform search
@@ -147,8 +150,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                 // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
                 // getting datasets on which user has no right
                 final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class) && (accessGroups
-                        != null)) { // accessGroups null means superuser
+                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
+                        && (accessGroups != null)) { // accessGroups null means superuser
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
                     return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
@@ -213,7 +216,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
             for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet().iterator(); i
-                    .hasNext(); ) {
+                    .hasNext();) {
                 Entry<String, DocFilesSubSummary> entry = i.next();
                 // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
                 // retrieved for current user

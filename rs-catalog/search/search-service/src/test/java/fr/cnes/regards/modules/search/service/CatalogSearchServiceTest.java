@@ -23,7 +23,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -114,7 +113,7 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                                                        facetConverter);
+                facetConverter);
     }
 
     /**
