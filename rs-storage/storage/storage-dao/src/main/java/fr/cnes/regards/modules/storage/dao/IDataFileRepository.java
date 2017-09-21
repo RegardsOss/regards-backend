@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFileState;
  */
 public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
 
+    @EntityGraph(value = "graph.datafile.full")
     Set<DataFile> findAllByStateAndAipDataBase(DataFileState stored, AIPDataBase aipDataBase);
 
     @EntityGraph(value = "graph.datafile.full")
@@ -22,4 +23,7 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
 
     @EntityGraph(value = "graph.datafile.full")
     DataFile findOneById(Long dataFileId);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Set<DataFile> findAllByChecksumIn(Set<String> checksums);
 }

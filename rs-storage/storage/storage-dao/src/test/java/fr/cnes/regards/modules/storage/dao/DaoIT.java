@@ -431,4 +431,5 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.contains(aip4));
         Assert.assertFalse(aips.contains(aip5));
     }
+
 }

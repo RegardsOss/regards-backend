@@ -58,6 +58,17 @@ public class DataFileDao implements IDataFileDao {
         return repository.findOneById(dataFileId);
     }
 
+    @Override
+    public Set<DataFile> findAllByChecksumIn(Set<String> checksums) {
+        return repository.findAllByChecksumIn(checksums);
+    }
+
+    @Override
+    public void remove(DataFile data) {
+        data.setAipDataBase(getAipDataBase(data));
+        repository.delete(data);
+    }
+
     private AIPDataBase getAipDataBase(AIP aip) {
         return aipRepo.findOneByIpId(aip.getIpId());
     }

@@ -4,9 +4,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import javax.validation.Valid;
-import java.io.InputStreamReader;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -20,14 +17,11 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.file.utils.ChecksumUtils;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -38,6 +32,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
@@ -53,6 +49,8 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
 public class AIPController implements IResourceController<AIP> {
 
     public static final String AIP_PATH = "/aips";
+
+    public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     public static final String ID_PATH = AIP_PATH + "/{ipId}";
 
@@ -110,11 +108,19 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "send the list of files of a specified aip")
-    public HttpEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid UniformResourceName pIpId)
+    @ResourceAccess(description = "send the list of files metadata of a specified aip")
+    public HttpEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
             throws EntityNotFoundException {
-        List<DataObject> files = aipService.retrieveAIPFiles(pIpId);
+        List<DataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));
         return new ResponseEntity<>(files, HttpStatus.OK);
+    }
+
+    @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
+    @ResponseBody
+    @ResourceAccess(
+            description = "allows to request that files are made available for downloading, return the list of file already available via their checksums")
+    public HttpEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest) {
+        return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
 
     // @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
@@ -140,4 +146,6 @@ public class AIPController implements IResourceController<AIP> {
         // TODO add hateoas links
         return resourceService.toResource(pElement);
     }
+
+
 }
