@@ -22,7 +22,7 @@
 	</properties>
 
 	<dependencies>
-	<!-- Spring dependencies -->
+		<!-- Spring dependencies -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
@@ -33,13 +33,11 @@
 		</dependency>
 		<!-- Core dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-core-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>
-				fr.cnes.regards.microservices.administration
-			</groupId>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
 			<artifactId>remote-tenant-resolver</artifactId>
 		</dependency>
 		<!-- Module dependencies -->

@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.file.utils.ChecksumUtils;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -62,7 +63,6 @@ import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.InformationObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -118,6 +118,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Autowired
     private Gson gson;
@@ -203,10 +206,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                         dao.save(aip);
                         dataFileDao.remove(data);
                     }
-                    //otherwise we consider it comes from an update and the aip should not be set to updated
+                    // otherwise we consider it comes from an update and the aip should not be set to updated
                     break;
                 case FAILED:
-                    //FIXME: what to do?
+                    // FIXME: what to do?
                     // update data status
                     // dataFileDao.remove(data);
                     // FIXME: what do we do on AIP here? change the meta or not? do we change meta on removal query?
@@ -463,7 +466,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
             checkDispatch(metadataToStore, storageWorkingSetMap);
             Set<UUID> jobsToMonitor = scheduleStorage(storageWorkingSetMap, false);
-            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
+            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
+            // STORING_METADATA
             for (DataFile dataFile : metadataToStore) {
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
@@ -481,7 +485,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         try {
             // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
             Set<UUID> jobsToMonitor = scheduleUpdate(metadataToUpdate);
-            //to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
+            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
+            // STORING_METADATA
             Set<AIP> aips = metadataToUpdate.stream().map(oldNew -> oldNew.getNewOne().getAip())
                     .collect(Collectors.toSet());
             for (AIP aip : aips) {
@@ -545,7 +550,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     private String getOwner() {
-        return SecurityUtils.getActualUser();
+        return authResolver.getUser();
     }
 
     /**
@@ -604,7 +609,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<String> requestedChecksums = availabilityRequest.getChecksums();
         Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
         Set<String> errors = Sets.newHashSet();
-        //first lets identify the files that we don't recognize
+        // first lets identify the files that we don't recognize
         if (dataFiles.size() != requestedChecksums.size()) {
             Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
             errors.addAll(Sets.difference(requestedChecksums, dataFilesChecksums));

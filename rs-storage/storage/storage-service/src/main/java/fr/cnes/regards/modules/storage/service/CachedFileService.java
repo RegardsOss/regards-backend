@@ -23,6 +23,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -31,7 +32,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.StorageException;
@@ -72,6 +72,9 @@ public class CachedFileService implements ICachedFileService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
     private IJobInfoService jobService;
 
     @Autowired
@@ -90,12 +93,12 @@ public class CachedFileService implements ICachedFileService {
 
     @Override
     public CoupleAvailableError restore(Set<DataFile> nearlineFiles, OffsetDateTime cacheExpirationDate) {
-        //TODO check space left
-        //first of all, lets get the files that are already in cache
+        // TODO check space left
+        // first of all, lets get the files that are already in cache
         Set<String> nearlineFileChecksums = nearlineFiles.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
         Set<CachedFile> alreadyAvailable = cachedFileRepository.findAllByChecksumIn(nearlineFileChecksums);
-        //now lets update the expiration date
+        // now lets update the expiration date
         for (CachedFile cachedFile : alreadyAvailable) {
             if (cachedFile.getExpiration().compareTo(cacheExpirationDate) > 0) {
                 cachedFile.setExpiration(cacheExpirationDate);
@@ -121,7 +124,7 @@ public class CachedFileService implements ICachedFileService {
             } catch (ModuleException | PluginUtilsRuntimeException e) {
                 LOG.error(e.getMessage(), e);
                 errors.addAll(toRetrieveFiles);
-                //TODO: notify
+                // TODO: notify
             }
             Set<IWorkingSubset> workingSubsets = storageToUse.prepare(toRetrieveFiles,
                                                                       DataStorageAccessModeEnum.RETRIEVE_MODE);
@@ -138,7 +141,7 @@ public class CachedFileService implements ICachedFileService {
 
     @Override
     public void handleRestorationSuccess(DataFile data, Path restorationPath) {
-        //lets set the restorationPath to the cached file and change its state
+        // lets set the restorationPath to the cached file and change its state
         CachedFile cf = cachedFileRepository.findOneByChecksum(data.getChecksum());
         try {
             cf.setLocation(restorationPath.toUri().toURL());
@@ -146,7 +149,7 @@ public class CachedFileService implements ICachedFileService {
             cachedFileRepository.save(cf);
             publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
         } catch (MalformedURLException e) {
-            //this should not happens
+            // this should not happens
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
@@ -154,7 +157,7 @@ public class CachedFileService implements ICachedFileService {
 
     @Override
     public void handleRestorationFailure(DataFile data) {
-        //lets set the restorationPath to the cached file and change its state
+        // lets set the restorationPath to the cached file and change its state
         CachedFile cf = cachedFileRepository.findOneByChecksum(data.getChecksum());
         cf.setState(CachedFileState.RESTORATION_FAILED);
         cf.setFailureCause("Restoration of this data file failed during job execution.");
@@ -163,9 +166,10 @@ public class CachedFileService implements ICachedFileService {
     }
 
     private void scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {
-        //lets instantiate every job for every DataStorage to use
+        // lets instantiate every job for every DataStorage to use
         for (IWorkingSubset workingSubset : workingSubsets) {
-            //for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for each of them
+            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for each
+            // of them
             Set<JobParameter> parameters = Sets.newHashSet();
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConf));
             parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
@@ -173,7 +177,7 @@ public class CachedFileService implements ICachedFileService {
                     .createAsPending(new JobInfo(0, parameters, getOwner(), RestorationJob.class.getName()));
             Path destination = Paths.get(cachePath, runtimeTenantResolver.getTenant(), jobInfo.getId().toString());
             jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
-            //TODO handler job execution according to space left into cache
+            // TODO handler job execution according to space left into cache
             jobInfo.updateStatus(JobStatus.QUEUED);
             jobService.save(jobInfo);
         }
@@ -195,14 +199,14 @@ public class CachedFileService implements ICachedFileService {
             notSubSetDataFiles.stream()
                     .peek(df -> LOG.error(
                                           String.format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it!",
-                                                        df.getId(), df.getChecksum()))/*TODO: notify*/)
+                                                        df.getId(), df.getChecksum()))/* TODO: notify */)
                     .forEach(df -> result.add(df));
         }
         return result;
     }
 
     private String getOwner() {
-        return SecurityUtils.getActualUser();
+        return authResolver.getUser();
     }
 
     @Scheduled(fixedRateString = "${regards.cache.cleanup.rate:86400000}")
