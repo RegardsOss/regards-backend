@@ -41,13 +41,13 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket findOrCreate(String user) {
-        Basket basket = repos.findByEmail(user);
+        Basket basket = repos.findByOwner(user);
         return (basket == null) ? repos.save(new Basket(user)) : basket;
     }
 
     @Override
-    public Basket find(String email) throws EmptyBasketException {
-        Basket basket = repos.findByEmail(email);
+    public Basket find(String user) throws EmptyBasketException {
+        Basket basket = repos.findByOwner(user);
         if (basket == null) {
             throw new EmptyBasketException();
         }
@@ -56,7 +56,7 @@ public class BasketService implements IBasketService {
 
     @Override
     public void deleteIfExists(String user) {
-        Basket basket = repos.findByEmail(user);
+        Basket basket = repos.findByOwner(user);
         if (basket != null) {
             repos.delete(basket.getId());
         }

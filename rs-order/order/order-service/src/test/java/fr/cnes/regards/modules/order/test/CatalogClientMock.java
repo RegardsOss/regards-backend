@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.order.test;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -264,6 +265,7 @@ public class CatalogClientMock implements ICatalogClient {
     @Override
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(Map<String, String> allParams,
             Pageable pPageable) {
-        return null;
+        return ResponseEntity
+                .ok(new PagedResources<>(Collections.emptyList(), new PagedResources.PageMetadata(0, 0, 0)));
     }
 }

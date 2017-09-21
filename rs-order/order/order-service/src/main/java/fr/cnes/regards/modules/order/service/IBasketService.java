@@ -13,7 +13,7 @@ public interface IBasketService {
 
     /**
      * Create an empty basket
-     * @param user user email
+     * @param user user
      * @return a basket, what else ?
      */
     Basket findOrCreate(String user);
@@ -25,11 +25,11 @@ public interface IBasketService {
 
     /**
      * Find user basket with all its relations
-     * @param email user email
+     * @param user user
      * @return its basket
      * @throws EmptyBasketException if basket doesn' exist
      */
-    Basket find(String email) throws EmptyBasketException;
+    Basket find(String user) throws EmptyBasketException;
 
     /**
      * Load basket with all its relations

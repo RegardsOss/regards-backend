@@ -2,11 +2,9 @@ package fr.cnes.regards.modules.order.rest;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -104,7 +102,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     @Test
     public void testDownloadFile() throws URISyntaxException, IOException {
         Order order = new Order();
-        order.setEmail(USER);
+        order.setOwner(USER);
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
         order = orderRepository.save(order);

@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.domain;
 
-import javax.persistence.AssociationOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -21,7 +20,6 @@ import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.UUID;
 
 import org.hibernate.annotations.SortNatural;
 
@@ -46,8 +44,8 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orderSequence")
     private Long id;
 
-    @Column(name = "email", length = 100, nullable = false)
-    private String email;
+    @Column(name = "owner", length = 100, nullable = false)
+    private String owner;
 
     @Column(name = "creation_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -74,12 +72,12 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
         this.id = id;
     }
 
-    public String getEmail() {
-        return email;
+    public String getOwner() {
+        return owner;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public OffsetDateTime getCreationDate() {
@@ -122,7 +120,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
         Order order = (Order) o;
 
-        if (!email.equals(order.email)) {
+        if (!owner.equals(order.owner)) {
             return false;
         }
         return creationDate.equals(order.creationDate);
@@ -130,7 +128,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     @Override
     public int hashCode() {
-        int result = email.hashCode();
+        int result = owner.hashCode();
         result = 31 * result + creationDate.hashCode();
         return result;
     }

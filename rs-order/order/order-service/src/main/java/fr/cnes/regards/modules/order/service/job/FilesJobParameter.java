@@ -1,15 +1,16 @@
-package fr.cnes.regards.modules.order.domain;
+package fr.cnes.regards.modules.order.service.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
- * JobParameter specific class to be used with StorageFilesJob
+ * JobParameter specific class to be used with StorageFilesJob, it contains the pair "files" : [ DataFiles ]
  * @author oroussel
  */
-public class StorageFilesJobParameter extends JobParameter {
+public class FilesJobParameter extends JobParameter {
     public static final String NAME = "files";
 
-    public StorageFilesJobParameter(OrderDataFile[] value) {
+    public FilesJobParameter(OrderDataFile[] value) {
         super(NAME, value);
     }
 

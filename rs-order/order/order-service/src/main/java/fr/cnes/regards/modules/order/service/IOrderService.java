@@ -53,7 +53,7 @@ public interface IOrderService {
     /**
      * Find all user orders sorted by descending date
      * Orders are simple loaded
-     * @param user user id (email)
+     * @param user user 
      */
     Page<Order> findAll(String user, Pageable pageRequest);
 
