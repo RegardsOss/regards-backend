@@ -22,6 +22,8 @@ import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
