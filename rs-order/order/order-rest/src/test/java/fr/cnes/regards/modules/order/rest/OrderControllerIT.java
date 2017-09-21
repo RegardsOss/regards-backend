@@ -10,21 +10,20 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.mockito.internal.stubbing.answers.Returns;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
@@ -32,9 +31,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
-import com.netflix.discovery.converters.Auto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -50,6 +48,10 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 
 /**
  * @author oroussel
@@ -109,6 +111,33 @@ public class OrderControllerIT extends AbstractRegardsIT {
                 public InputStream downloadFile(String aipId, String checksum) {
                     return getClass().getResourceAsStream("/files/" + checksum);
                 }
+
+                @Override
+                public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
+                        OffsetDateTime pTo, int pPage, int pSize) {
+                    return null;
+                }
+
+                @Override
+                public HttpEntity<Set<UUID>> createAIP(Set<AIP> aips) {
+                    return null;
+                }
+
+                @Override
+                public HttpEntity<List<DataObject>> retrieveAIPFiles(UniformResourceName pIpId) {
+                    return null;
+                }
+
+                @Override
+                public HttpEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
+                        int pSize) {
+                    return null;
+                }
+
+                @Override
+                public HttpEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
+                    return null;
+                }
             };
         }
     }
@@ -126,7 +155,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Test
     public void testCreate() {
         Basket basket = new Basket();
-        basket.setEmail(DEFAULT_USER_EMAIL);
+        basket.setOwner(DEFAULT_USER_EMAIL);
         basketRepos.save(basket);
 
         // Test POST without argument
@@ -145,7 +174,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Test
     public void testDownloadFile() throws URISyntaxException, IOException, InterruptedException {
         Order order = new Order();
-        order.setEmail(DEFAULT_USER_EMAIL);
+        order.setOwner(DEFAULT_USER_EMAIL);
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
         order = orderRepository.save(order);
@@ -195,7 +224,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
                                                         "Should return result", order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
-        //        resultFile.deleteOnExit();
+        resultFile.deleteOnExit();
         try (FileOutputStream fos = new FileOutputStream(resultFile)) {
             InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
             ByteStreams.copy(is, fos);

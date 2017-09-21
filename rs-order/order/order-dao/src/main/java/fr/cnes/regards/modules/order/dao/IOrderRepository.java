@@ -29,5 +29,5 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findAllByOrderByCreationDateDesc(Pageable pageRequest);
 
     @EntityGraph("graph.order.simple")
-    Page<Order> findAllByEmailOrderByCreationDateDesc(String email, Pageable pageRequest);
+    Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest);
 }

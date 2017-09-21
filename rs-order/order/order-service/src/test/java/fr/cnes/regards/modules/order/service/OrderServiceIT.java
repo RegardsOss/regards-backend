@@ -4,6 +4,7 @@ import javax.transaction.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -37,10 +38,10 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.StorageFilesJobParameter;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 
 /**
@@ -101,7 +102,7 @@ public class OrderServiceIT {
     @Test
     public void test1() throws Exception {
         Basket basket = new Basket();
-        basket.setEmail(USER_EMAIL);
+        basket.setOwner(USER_EMAIL);
 
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setOpenSearchRequest("someone:something");
@@ -130,8 +131,9 @@ public class OrderServiceIT {
     @Commit
     public void testMapping() throws URISyntaxException {
         Order order = new Order();
-        order.setEmail(USER_EMAIL);
+        order.setOwner(USER_EMAIL);
         order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
         order = orderRepository.save(order);
 
         // Dataset order tasks
@@ -166,7 +168,7 @@ public class OrderServiceIT {
         storageJobInfo.setOwner(USER_EMAIL);
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
-        storageJobInfo.setParameters(new StorageFilesJobParameter(
+        storageJobInfo.setParameters(new FilesJobParameter(
                 new OrderDataFile[] { new OrderDataFile(dataFile1, DO1_IP_ID, order.getId()),
                                       new OrderDataFile(dataFile2, DO2_IP_ID, order.getId()) }));
 
@@ -195,5 +197,6 @@ public class OrderServiceIT {
         List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailables(order.getId());
         Assert.assertEquals(1, dataFiles.size());
     }
+
 
 }

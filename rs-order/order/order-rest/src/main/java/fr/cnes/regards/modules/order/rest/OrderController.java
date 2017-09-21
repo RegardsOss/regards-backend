@@ -60,9 +60,6 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderService orderService;
 
     @Autowired
-    private IOrderDataFileRepository dataFileRepository;
-
-    @Autowired
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
 
     private static final String ADMIN_ROOT_PATH = "/orders";
@@ -112,7 +109,6 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/download")
     public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) throws NotYetAvailableException {
-
         orderService.downloadOrderCurrentZip(orderId, response);
     }
 
