@@ -42,4 +42,11 @@ public class ExpirationDateJobParameter extends JobParameter {
     public void setValue(OffsetDateTime value) {
         super.setValue(value);
     }
+
+    /**
+     * Check if given JobParameter is compatible with ExpirationDateJobParameter ie same name
+     */
+    public static boolean isCompatible(JobParameter param) {
+        return param.getName().equals(NAME);
+    }
 }
