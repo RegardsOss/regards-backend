@@ -344,6 +344,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
             multipartRequestBuilder.file(file);
         }
         addSecurityHeader(multipartRequestBuilder, pAuthToken);
+        multipartRequestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
+        multipartRequestBuilder.header(HttpConstants.ACCEPT, "application/json");
         return multipartRequestBuilder;
     }
 
