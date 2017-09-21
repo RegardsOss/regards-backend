@@ -79,7 +79,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-test</artifactId>
+			<artifactId>plugins-test</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

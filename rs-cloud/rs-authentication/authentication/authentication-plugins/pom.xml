@@ -33,10 +33,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.directory.api</groupId>
 			<artifactId>api-ldap-client-all</artifactId>
 			<version>1.0.0-M15</version>
