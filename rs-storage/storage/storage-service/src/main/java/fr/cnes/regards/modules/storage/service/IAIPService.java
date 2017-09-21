@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,8 +20,8 @@ import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
@@ -82,7 +83,7 @@ public interface IAIPService {
 
     void scheduleStorageMetadataUpdate(Set<AIPService.History> metadataToUpdate);
 
-    Set<AIPService.History> prepareUpdatedAIP(String tenantWorkspace);
+    Set<AIPService.History> prepareUpdatedAIP(Path tenantWorkspace);
 
-    Set<DataFile> prepareNotFullyStored(String tenantWorkspace);
+    Set<DataFile> prepareNotFullyStored(Path tenantWorkspace);
 }
