@@ -196,17 +196,24 @@ public class JobService implements IJobService {
             jobsMap.put(jobInfo, (RunnableFuture<Void>) threadPool.submit(job));
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             LOGGER.error("Unable to instantiate job", e);
-            jobInfo.updateStatus(JobStatus.FAILED);
-            printStackTrace(jobInfo.getStatus(), e);
+            manageJobInstantiationError(jobInfo, e);
         } catch (JobParameterMissingException e) {
             LOGGER.error("Missing parameter", e);
-            jobInfo.updateStatus(JobStatus.FAILED);
-            printStackTrace(jobInfo.getStatus(), e);
+            manageJobInstantiationError(jobInfo, e);
         } catch (JobParameterInvalidException e) {
             LOGGER.error("Invalid parameter", e);
-            jobInfo.updateStatus(JobStatus.FAILED);
-            printStackTrace(jobInfo.getStatus(), e);
+            manageJobInstantiationError(jobInfo, e);
         }
+    }
+
+    /**
+     * Manage an error while instantiation Job, like invalid parameters, ClassNotFOundException, etc....
+     */
+    private void manageJobInstantiationError(JobInfo jobInfo, Exception e) {
+        jobInfo.updateStatus(JobStatus.FAILED);
+        printStackTrace(jobInfo.getStatus(), e);
+        jobInfoService.save(jobInfo);
+        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
     }
 
     /**
