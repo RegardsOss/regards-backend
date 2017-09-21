@@ -38,8 +38,6 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.metrics.dao.ILogEventRepository;
 
 @RunWith(SpringRunner.class)
@@ -51,10 +49,6 @@ public class LogEventTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogEventTest.class);
 
     private static final int SLEEP_TIME = 500;
-
-    private static final String DEFAULT_ROLE = "role-user-test";
-
-    private static final String DEFAULT_USER = "John Doe";
 
     private static final String FIRST_MESSAGE = "Hello I'am an event";
 
@@ -79,16 +73,13 @@ public class LogEventTest {
     ILogEventRepository logEventRepository;
 
     @Autowired
-    private JWTService jwtService;
-
-    @Autowired
     private ITenantResolver tenantResolver;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
-    public void init() throws JwtException {
+    public void init() {
         // Get all tenants
         tenants = Lists.newArrayList(tenantResolver.getAllTenants());
 
@@ -103,9 +94,6 @@ public class LogEventTest {
         runtimeTenantResolver.forceTenant(defaultTenant);
         logEventRepository.deleteAll();
         Assert.assertEquals(0, logEventRepository.count());
-
-        // inject token for the default token
-        jwtService.injectToken(defaultTenant, DEFAULT_ROLE, DEFAULT_USER);
     }
 
     @Test

@@ -34,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -41,7 +42,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -87,6 +87,11 @@ public class ProjectUserService implements IProjectUserService {
     private final IAccountService accountService;
 
     /**
+     * Authentication resolver
+     */
+    private final IAuthenticationResolver authResolver;
+
+    /**
      * A filter on meta data to keep visible ones only
      */
     private final Predicate<? super MetaData> keepVisibleMetaData = m -> !UserVisibility.HIDDEN
@@ -97,18 +102,11 @@ public class ProjectUserService implements IProjectUserService {
      */
     private final String instanceAdminUserEmail;
 
-    /**
-     * Constructor
-     *
-     * @param pProjectUserRepository
-     * @param pRoleService
-     * @param pAccountService
-     * @param pInstanceAdminUserEmail
-     */
-    public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
-            final IAccountService pAccountService,
+    public ProjectUserService(IAuthenticationResolver authResolver, final IProjectUserRepository pProjectUserRepository,
+            final IRoleService pRoleService, final IAccountService pAccountService,
             @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
+        this.authResolver = authResolver;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
@@ -183,7 +181,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
-        final String email = SecurityUtils.getActualUser();
+        final String email = authResolver.getUser();
         return projectUserRepository.findOneByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
@@ -450,8 +448,11 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.findByRoleName(role.getName());
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#delete(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#delete(fr.cnes.regards.modules.
+     * accessrights.domain.projects.ProjectUser)
      */
     @Override
     public void deleteByEmail(String pEmail) throws EntityNotFoundException {

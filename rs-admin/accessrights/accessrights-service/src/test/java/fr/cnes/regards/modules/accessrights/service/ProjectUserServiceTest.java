@@ -36,17 +36,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -135,6 +133,8 @@ public class ProjectUserServiceTest {
      */
     private IAccountService accountService;
 
+    private IAuthenticationResolver authResolver;
+
     /**
      * Do some setup before each test
      */
@@ -158,9 +158,10 @@ public class ProjectUserServiceTest {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = Mockito.mock(IRoleService.class);
         accountService = Mockito.mock(IAccountService.class);
+        authResolver = Mockito.mock(IAuthenticationResolver.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(projectUserRepository, roleService, accountService,
+        projectUserService = new ProjectUserService(authResolver, projectUserRepository, roleService, accountService,
                 "instance_admin@regards.fr");
     }
 
@@ -396,12 +397,8 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve the current logged user.")
     public void retrieveCurrentUser() throws EntityNotFoundException {
-        // Mock authentication
-        final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setName(EMAIL);
-        jwtAuth.setUser(details);
-        SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+
+        Mockito.when(authResolver.getUser()).thenReturn(EMAIL);
 
         // Mock the repository returned value
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));

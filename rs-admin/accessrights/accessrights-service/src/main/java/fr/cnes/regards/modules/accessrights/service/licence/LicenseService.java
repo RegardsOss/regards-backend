@@ -25,13 +25,13 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
@@ -55,15 +55,19 @@ public class LicenseService {
 
     private final IProjectsClient projectsClient;
 
-    public LicenseService(IProjectUserService pProjectUserService, IProjectsClient pProjectsClient) {
+    private final IAuthenticationResolver authResolver;
+
+    public LicenseService(IProjectUserService pProjectUserService, IProjectsClient pProjectsClient,
+            IAuthenticationResolver authResolver) {
         super();
         projectUserService = pProjectUserService;
         projectsClient = pProjectsClient;
+        this.authResolver = authResolver;
     }
 
     public LicenseDTO retrieveLicenseState(String pProjectName) throws EntityNotFoundException {
         Project project = retrieveProject(pProjectName);
-        if(!SecurityUtils.getActualRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+        if (!authResolver.getRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
             ProjectUser pu = projectUserService.retrieveCurrentUser();
             if ((project.getLicenceLink() != null) && !project.getLicenceLink().isEmpty()) {
                 return new LicenseDTO(pu.isLicenseAccepted(), project.getLicenceLink());
