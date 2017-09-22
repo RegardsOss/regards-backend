@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -17,11 +18,15 @@ public interface IDataFileDao {
 
     DataFile save(DataFile prepareFailed);
 
-    DataFile findByAipAndType(AIP aip, DataType dataType);
+    Optional<DataFile> findByAipAndType(AIP aip, DataType dataType);
 
     Collection<DataFile> save(Collection<DataFile> dataFiles);
 
     void deleteAll();
 
-    DataFile findOneById(Long dataFileId);
+    Optional<DataFile> findOneById(Long dataFileId);
+
+    Set<DataFile> findAllByChecksumIn(Set<String> checksums);
+
+    void remove(DataFile data);
 }

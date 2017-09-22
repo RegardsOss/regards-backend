@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -36,7 +37,7 @@ public interface IAIPDao {
 
     Set<AIP> findAllByStateService(AIPState state);
 
-    AIP findOneByIpId(String ipId);
+    Optional<AIP> findOneByIpId(String ipId);
 
     void deleteAll();
 

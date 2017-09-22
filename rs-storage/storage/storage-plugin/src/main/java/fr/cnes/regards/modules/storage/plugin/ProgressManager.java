@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
@@ -21,19 +22,24 @@ public class ProgressManager {
 
     private final Set<String> failureCauses = Sets.newHashSet();
 
+    private final IJob job;
+
     private boolean errorStatus = false;
 
     private final Collection<DataFile> failedDataFile = Sets.newHashSet();
 
-    public ProgressManager(IPublisher publisher) {
+    public ProgressManager(IPublisher publisher, IJob job) {
         this.publisher = publisher;
+        this.job = job;
     }
 
+    //TODO required file size
     public void storageSucceed(DataFile dataFile, URL storedUrl) {
         dataFile.setUrl(storedUrl);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                StorageEventType.SUCCESSFUL);
-        //hell yeah this is not the usual publish method, but i know what i'm doing to trust me!
+                StorageEventType.SUCCESSFULL);
+        job.advanceCompletion();
+        //hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
@@ -43,6 +49,7 @@ public class ProgressManager {
         failedDataFile.add(dataFile);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.FAILED);
+        job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
@@ -53,22 +60,29 @@ public class ProgressManager {
     public void deletionFailed(DataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.FAILED);
+        job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
         //FIXME: set failure into the failureCauses or into another set?
     }
 
     public void deletionSucceed(DataFile dataFile) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                StorageEventType.SUCCESSFUL);
+                StorageEventType.SUCCESSFULL);
+        job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
     public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
-
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.SUCCESSFULL);
+        dataStorageEvent.setRestorationPath(restoredFilePath);
+        job.advanceCompletion();
+        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
     public void restoreFailed(DataFile dataFile) {
-
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.FAILED);
+        job.advanceCompletion();
+        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
     public Set<String> getFailureCauses() {

@@ -30,11 +30,16 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.FixityInformation;
 import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
+ *
+ * contains useful, for the system, metadata of a file from an AIP.
+ * It mixes {@link DataObject}, {@link FixityInformation}, {@link RepresentationInformation} and add some information needed by the system not extracted from the AIP
  *
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -243,13 +248,17 @@ public class DataFile {
         if (checksum != null ? !checksum.equals(dataFile.checksum) : dataFile.checksum != null) {
             return false;
         }
-        return algorithm != null ? algorithm.equals(dataFile.algorithm) : dataFile.algorithm == null;
+        if (algorithm != null ? !algorithm.equals(dataFile.algorithm) : dataFile.algorithm != null) {
+            return false;
+        }
+        return aipDataBase != null ? aipDataBase.equals(dataFile.aipDataBase) : dataFile.aipDataBase == null;
     }
 
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
         result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
+        result = (31 * result) + (aipDataBase != null ? aipDataBase.hashCode() : 0);
         return result;
     }
 }

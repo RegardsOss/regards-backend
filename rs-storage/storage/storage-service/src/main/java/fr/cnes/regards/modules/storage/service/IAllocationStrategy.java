@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
  *
  */
 @PluginInterface(description = "Interface for all AllocationStrategy plugin")
+@FunctionalInterface
 public interface IAllocationStrategy {
 
     /**

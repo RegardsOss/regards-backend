@@ -1,21 +1,29 @@
 package fr.cnes.regards.modules.storage.client;
 
-import javax.validation.Valid;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -25,6 +33,8 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 public interface IAipClient {
 
     public static final String AIP_PATH = "/aips";
+
+    public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     public static final String ID_PATH = AIP_PATH + "/{ipId}";
 
@@ -67,4 +77,10 @@ public interface IAipClient {
     public HttpEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
             @RequestParam("page") int pPage, @RequestParam("size") int pSize);
 
+    @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
+    public HttpEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
+
+    // TODO : update this method with real arguments and return types
+    // Merci de prévenir Olivier
+    InputStream downloadFile(String aipId, String checksum);
 }

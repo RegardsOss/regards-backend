@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.service.job;
 
-import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -19,7 +17,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
@@ -95,20 +92,24 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     }
 
     @Override
-    public void setParameters(Set<JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Set<JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
         checkParameters(parameters);
-        this.parameters=parameters;
+        this.parameters = parameters;
     }
 
     @Override
     public void run() {
-        progressManager = new ProgressManager(publisher);
+        progressManager = new ProgressManager(publisher, this);
         // first lets check that all parameters are there and valid.
         Map<String, JobParameter> parameterMap = beforeRun();
         // then lets store the files
-        doRun(parameterMap);
-        // eventually, lets see if everything went as planned
-        afterRun();
+        try {
+            doRun(parameterMap);
+        } finally {
+            // eventually, lets see if everything went as planned
+            afterRun();
+        }
     }
 
     /**
@@ -139,6 +140,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             throw new StorageException(String.format(FAILURE_CAUSES, progressManager.getFailureCauses().stream()
                     .collect(Collectors.joining(", ", "[", " ]"))));
         }
+        //TODO getHandleDataFile from progressmanager and call storage failed on not handled ones
     }
 
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {
@@ -149,12 +151,24 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to do the storage
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             // before storage on file system, lets update the DataFiles by setting which data storage is used to store them.
-            for(DataFile data: workingSubset.getDataFiles()) {
+            for (DataFile data : workingSubset.getDataFiles()) {
                 data.setDataStorageUsed(confToUse);
             }
             storagePlugin.store(workingSubset, replaceMode, progressManager);
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getCompletionCount() {
+        try {
+            Map<String, JobParameter> paramMap = checkParameters(parameters);
+            return ((IWorkingSubset) paramMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size();
+        } catch (JobParameterMissingException | JobParameterInvalidException e) {
+            //it should not happens here!
+            LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

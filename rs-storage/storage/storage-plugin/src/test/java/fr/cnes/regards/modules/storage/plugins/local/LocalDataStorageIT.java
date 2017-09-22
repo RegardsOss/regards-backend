@@ -45,6 +45,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
@@ -52,7 +53,6 @@ import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
