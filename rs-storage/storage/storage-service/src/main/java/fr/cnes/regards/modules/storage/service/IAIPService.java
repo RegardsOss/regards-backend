@@ -3,9 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +21,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -46,12 +45,27 @@ public interface IAIPService {
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable);
 
     /**
-     * @param pAIP
-     * @return
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
+     * Run asynchronous jobs to handle new {@link AIP}s creation.<br/>
+     * This process handle :
+     * <ul>
+     * <li> Storage in db of {@link AIP}</li>
+     * <li> Storage in db of each {@link DataFile} associated </li>
+     * <li> Physical storage of each {@link DataFile} through {@link IDataStorage} plugins</li>
+     * <li> Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage} plugins</li>
+     * </ul>
+     * @param pAIP new {@link Set}<{@link AIP}> to create
+     * @return {@link Set}<{@link UUID}> of scheduled store AIP Jobs.
+     * @throws ModuleException
      */
     Set<UUID> create(Set<AIP> pAIP) throws ModuleException;
+
+    /**
+     * Update existing AIPs
+     * @param pAIP existing {@link Set}<{@link AIP}> to update
+     * @return {@link Set}<{@link UUID}> of scheduled update AIP Jobs.
+     * @throws ModuleException
+     */
+    Set<UUID> update(Set<AIP> pAIP) throws ModuleException;
 
     /**
      * @param pIpId

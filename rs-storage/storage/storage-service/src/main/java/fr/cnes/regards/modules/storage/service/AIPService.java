@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -181,19 +182,23 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
          * @param event {@link DataStorageEvent}
          */
         private void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
-            DataFile data = dataFileDao.findOneById(event.getDataFileId());
-            Path restorationPath = event.getRestorationPath();
-            switch (type) {
-                case SUCCESSFULL:
-                    cachedFileService.handleRestorationSuccess(data, restorationPath);
-                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
-                    break;
-                case FAILED:
-                    cachedFileService.handleRestorationFailure(data);
-                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
-                    break;
-                default:
-                    break;
+            Optional<DataFile> data = dataFileDao.findOneById(event.getDataFileId());
+            if (data.isPresent()) {
+                Path restorationPath = event.getRestorationPath();
+                switch (type) {
+                    case SUCCESSFULL:
+                        cachedFileService.handleRestorationSuccess(data.get(), restorationPath);
+                        publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.get().getChecksum()));
+                        break;
+                    case FAILED:
+                        cachedFileService.handleRestorationFailure(data.get());
+                        publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.get().getChecksum()));
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                LOG.warn("[DATA STORAGE EVENT] restoration of non existing DataFile id {}", event.getDataFileId());
             }
         }
 
@@ -203,43 +208,58 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
          * @param event {@link DataStorageEvent}
          */
         private void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
-            DataFile data = dataFileDao.findOneById(event.getDataFileId());
-            if (data != null) {
+            // Check that the given DataFile id is associated to an existing DataFile from db.
+            Optional<DataFile> data = dataFileDao.findOneById(event.getDataFileId());
+            if (data.isPresent()) {
                 switch (type) {
                     case SUCCESSFULL:
-                        if (data.getChecksum().equals(event.getChecksum())) {
-                            AIP aip = aipDao.findOneByIpId(data.getAip().getIpId());
-                            DataFile file = dataFileDao.findByAipAndType(aip, DataType.AIP);
-                            // If deleted file is not AIP metadata file
-                            // or if the AIP metadata file deleted is the current associated one
-                            // Set the AIP to updated state.
-                            if (!DataType.AIP.equals(data.getDataType()) || !(file.getId().equals(data.getId()))) {
-                                Set<InformationObject> iosToRemove = aip
-                                        .getInformationObjects().stream().filter(io -> io.getPdi()
-                                                .getFixityInformation().getChecksum().equals(data.getChecksum()))
-                                        .collect(Collectors.toSet());
-                                aip.getInformationObjects().removeAll(iosToRemove);
-                                aip.setState(AIPState.UPDATED);
-                                aipDao.save(aip);
-                                dataFileDao.remove(data);
-                                LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state", data.getAip().getIpId());
-                            } else {
-                                LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.", data.getAip().getIpId());
-                            }
-                        }
+                        handleDeletionSuccess(data.get(), event.getChecksum());
                         //otherwise we consider it comes from an update and the aip should not be set to updated
                         break;
                     case FAILED:
                     default:
-                        //FIXME: what to do?
-                        // update data status
-                        // dataFileDao.remove(data);
-                        // FIXME: what do we do on AIP here? change the meta or not? do we change meta on removal query?
+                        // IDataStorage plugin used to delete the file is not able to delete the file right now.
+                        // Maybe the file can be deleted later. So do nothing and just notify administrator.
+                        // TODO : Notofy deletion error.
                         break;
                 }
             } else {
                 LOG.error("[DATAFILE DELETION EVENT] Invalid DataFile deletion event. DataFile does not exists in db for id {}",
                           event.getDataFileId());
+            }
+        }
+
+        private void handleDeletionSuccess(DataFile dataFileDeleted, String checksumOfDeletedFile) {
+            // Get the associated AIP of the deleted DataFile from db
+            Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getIpId());
+            if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
+                AIP associatedAIP = optionalAssociatedAIP.get();
+                Optional<DataFile> metadataAIPFile = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
+                // If deleted file is not an AIP metadata file
+                // or if the AIP metadata file deleted is the current associated one
+                // Set the AIP to UPDATED state.
+                if (!DataType.AIP.equals(dataFileDeleted.getDataType()) || !metadataAIPFile.isPresent()
+                        || !(metadataAIPFile.get().getId().equals(dataFileDeleted.getId()))) {
+                    // Get from the AIP all the pdi to remove. All pdi to remove are the pdi with the same checksum that
+                    // the deleted DataFile.
+                    // @formatter:off
+                    Set<InformationObject> iosToRemove =
+                            associatedAIP.getInformationObjects()
+                                .stream()
+                                .filter(io -> checksumOfDeletedFile.equals(io.getPdi().getFixityInformation().getChecksum()))
+                                .collect(Collectors.toSet());
+                    // @formatter:on
+                    associatedAIP.getInformationObjects().removeAll(iosToRemove);
+                    associatedAIP.setState(AIPState.UPDATED);
+                    aipDao.save(associatedAIP);
+                    LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state", dataFileDeleted.getAip().getIpId());
+                    dataFileDao.remove(dataFileDeleted);
+                } else {
+                    // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
+                    // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
+                    // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
+                    LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.", dataFileDeleted.getAip().getIpId());
+                }
             }
         }
 
@@ -249,114 +269,78 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
          * @param event {@link DataStorageEvent}
          */
         private void handleStoreAction(StorageEventType type, DataStorageEvent event) {
-            DataFile data = dataFileDao.findOneById(event.getDataFileId());
-            data.setUrl(event.getNewUrl());
-            switch (type) {
-                case SUCCESSFULL:
-                    // update data status
-                    PluginConfiguration dataStorageUsed = null;
-                    try {
-                        dataStorageUsed = pluginService.getPluginConfiguration(event.getStorageConfId());
-                    } catch (ModuleException e) {
-                        LOG.error("You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
-                                  e);
-                        throw new RuntimeException(e);
+            Optional<DataFile> optionalData = dataFileDao.findOneById(event.getDataFileId());
+            if (optionalData.isPresent()) {
+                DataFile data = optionalData.get();
+                Optional<AIP> optionalAssociatedAip = aipDao.findOneByIpId(data.getAip().getIpId());
+                if (optionalAssociatedAip.isPresent()) {
+                    AIP associatedAIP = optionalAssociatedAip.get();
+                    data.setUrl(event.getNewUrl());
+                    switch (type) {
+                        case SUCCESSFULL:
+                            // update data status
+                            PluginConfiguration dataStorageUsed = null;
+                            try {
+                                dataStorageUsed = pluginService.getPluginConfiguration(event.getStorageConfId());
+                            } catch (ModuleException e) {
+                                LOG.error("You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
+                                          e);
+                                throw new RuntimeException(e);
+                            }
+                            data.setChecksum(event.getChecksum());
+                            data.setFileSize(event.getFileSize());
+                            data.setDataStorageUsed(dataStorageUsed);
+                            data.setState(DataFileState.STORED);
+                            dataFileDao.save(data);
+                            LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", data.getUrl());
+                            if (data.getDataType() == DataType.AIP) {
+                                // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
+                                // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
+                                // workspace!
+                                Paths.get(workspace, runtimeTenantResolver.getTenant(), data.getChecksum() + ".json")
+                                        .toFile().delete();
+                                associatedAIP.setState(AIPState.STORED);
+                                aipDao.save(associatedAIP);
+                                LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", data.getAip().getIpId());
+                                publisher.publish(new AIPEvent(associatedAIP));
+                            } else {
+                                // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
+                                // just let set the new information about this DataFile
+                                // @formatter:off
+                                InformationObject io =
+                                        associatedAIP.getInformationObjects()
+                                            .stream()
+                                            .filter(informationObject -> informationObject.getPdi()
+                                                        .getFixityInformation().getChecksum().equals(data.getChecksum()))
+                                            .findFirst()
+                                            .get();
+                                // @formatter:on
+                                io.getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
+                                                                                "File stored into REGARDS");
+                                io.getPdi().getFixityInformation().setFileSize(data.getFileSize());
+                                io.getContentInformation().getDataObject().setUrl(data.getUrl());
+                                io.getContentInformation().getDataObject().setFilename(data.getName());
+                                aipDao.save(associatedAIP);
+                            }
+                            break;
+                        case FAILED:
+                            // update data status
+                            data.setState(DataFileState.ERROR);
+                            dataFileDao.save(data);
+                            // Update associated AIP in db
+                            associatedAIP.setState(AIPState.STORAGE_ERROR);
+                            aipDao.save(associatedAIP);
+                            publisher.publish(new AIPEvent(associatedAIP));
+                            break;
                     }
-                    data.setChecksum(event.getChecksum());
-                    data.setFileSize(event.getFileSize());
-                    data.setDataStorageUsed(dataStorageUsed);
-                    data.setState(DataFileState.STORED);
-                    dataFileDao.save(data);
-                    LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", data.getUrl());
-                    if (data.getDataType() == DataType.AIP) {
-                        // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
-                        // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
-                        // workspace!
-                        Paths.get(workspace, runtimeTenantResolver.getTenant(), data.getChecksum() + ".json").toFile()
-                                .delete();
-                        AIP aip = data.getAip();
-                        aip.setState(AIPState.STORED);
-                        aipDao.save(aip);
-                        LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", data.getAip().getIpId());
-                        publisher.publish(new AIPEvent(aip));
-                    } else {
-                        // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
-                        // just let set the new information about this DataFile
-                        AIP aip = aipDao.findOneByIpId(data.getAip().getIpId());
-                        InformationObject io = aip
-                                .getInformationObjects().stream().filter(informationObject -> informationObject.getPdi()
-                                        .getFixityInformation().getChecksum().equals(data.getChecksum()))
-                                .findFirst().get();
-                        io.getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
-                                                                        "File stored into REGARDS");
-                        io.getPdi().getFixityInformation().setFileSize(data.getFileSize());
-                        io.getContentInformation().getDataObject().setUrl(data.getUrl());
-                        io.getContentInformation().getDataObject().setFilename(data.getName());
-                        aipDao.save(aip);
-                    }
-                    break;
-                case FAILED:
-                    // update data status
-                    data.setState(DataFileState.ERROR);
-                    dataFileDao.save(data);
-                    AIP aip = data.getAip();
-                    aip = aipDao.findOneByIpId(aip.getIpId());
-                    aip.setState(AIPState.STORAGE_ERROR);
-                    aipDao.save(aip);
-                    publisher.publish(new AIPEvent(aip));
-                    break;
+                } else {
+                    LOG.warn("[DATA STORAGE EVENT] DataFile stored {} is not associated to an existing AIP",
+                             event.getDataFileId());
+                }
+            } else {
+                LOG.warn("[DATA STORAGE EVENT] DataFile stored {} does not exists", event.getDataFileId());
             }
         }
-    }
-
-    /**
-     * AIP has been validated by Controller REST. Validation of an AIP is only to check if network has not corrupted
-     * informations.(There is another validation point when each file is stored as file are only downloaded by
-     * asynchronous task)
-     *
-     */
-    @Override
-    public Set<UUID> create(Set<AIP> aips) throws ModuleException {
-        LOG.trace("Entering method create(Set<AIP>) with {} aips", aips.size());
-        Set<AIP> aipsInDb = Sets.newHashSet();
-        Set<DataFile> dataFilesToStore = Sets.newHashSet();
-        // 1. Create each AIP into database with VALID state.
-        // 2. Create each DataFile of each AIP into database with PENDING state.
-        for (AIP aip : aips) {
-            // Can not create an existing AIP.
-            if (aipDao.findOneByIpId(aip.getIpId()) != null) {
-                throw new EntityAlreadyExistsException(
-                        String.format("AIP with ip id %s already exists", aip.getIpId()));
-            }
-            aip.setState(AIPState.VALID);
-            aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
-            aipsInDb.add(aipDao.save(aip));
-            Collection<DataFile> dataFiles = dataFileDao.save(DataFile.extractDataFiles(aip));
-            dataFiles.forEach(df -> df.setState(DataFileState.PENDING));
-            dataFilesToStore.addAll(dataFiles);
-            // Notify system for new VALID AIP created.
-            publisher.publish(new AIPEvent(aip));
-        }
-        LOG.trace("{} aips built {} data objects to store", aips.size(), dataFilesToStore.size());
-        IAllocationStrategy allocationStrategy = getAllocationStrategy(); // FIXME: should probably set the tenant into
-        // maintenance in case of module exception
-
-        // 3. Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
-        Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
-        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                  dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
-        // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
-        checkDispatch(dataFilesToStore, storageWorkingSetMap);
-        Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
-        // change the state to PENDING
-        for (AIP aip : aipsInDb) {
-            aip.setState(AIPState.PENDING);
-            aipDao.save(aip);
-            // Notify system for AIP updated to PENDING state.
-            publisher.publish(new AIPEvent(aip));
-        }
-
-        return jobIds;
     }
 
     protected void checkDispatch(Set<DataFile> dataFilesToStore,
@@ -652,6 +636,67 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return metadataToStore;
     }
 
+    @Override
+    public Set<UUID> update(Set<AIP> aipsToUpdate) throws ModuleException {
+        LOG.trace("Entering method update(Set<AIP>) with {} aips", aipsToUpdate.size());
+        Set<AIP> aipsInDb = Sets.newHashSet();
+        Set<DataFile> dataFilesToStore = Sets.newHashSet();
+        // 1. Create each AIP into database with VALID state.
+        // 2. Create each DataFile of each AIP into database with PENDING state.
+        for (AIP aip : aipsToUpdate) {
+            // Can not create an existing AIP.
+            if (aipDao.findOneByIpId(aip.getIpId()).isPresent()) {
+                throw new EntityAlreadyExistsException(
+                        String.format("AIP with ip id %s already exists", aip.getIpId()));
+            }
+        }
+        return Sets.newHashSet();
+    }
+
+    @Override
+    public Set<UUID> create(Set<AIP> aips) throws ModuleException {
+        LOG.trace("Entering method create(Set<AIP>) with {} aips", aips.size());
+        Set<AIP> aipsInDb = Sets.newHashSet();
+        Set<DataFile> dataFilesToStore = Sets.newHashSet();
+        // 1. Create each AIP into database with VALID state.
+        // 2. Create each DataFile of each AIP into database with PENDING state.
+        for (AIP aip : aips) {
+            // Can not create an existing AIP.
+            if (aipDao.findOneByIpId(aip.getIpId()).isPresent()) {
+                throw new EntityAlreadyExistsException(
+                        String.format("AIP with ip id %s already exists", aip.getIpId()));
+            }
+            aip.setState(AIPState.VALID);
+            aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
+            aipsInDb.add(aipDao.save(aip));
+            Collection<DataFile> dataFiles = dataFileDao.save(DataFile.extractDataFiles(aip));
+            dataFiles.forEach(df -> df.setState(DataFileState.PENDING));
+            dataFilesToStore.addAll(dataFiles);
+            // Notify system for new VALID AIP created.
+            publisher.publish(new AIPEvent(aip));
+        }
+        LOG.trace("{} aips built {} data objects to store", aips.size(), dataFilesToStore.size());
+        IAllocationStrategy allocationStrategy = getAllocationStrategy(); // FIXME: should probably set the tenant into
+        // maintenance in case of module exception
+
+        // 3. Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
+        Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
+        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
+                  dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
+        // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
+        checkDispatch(dataFilesToStore, storageWorkingSetMap);
+        Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
+        // change the state to PENDING
+        for (AIP aip : aipsInDb) {
+            aip.setState(AIPState.PENDING);
+            aipDao.save(aip);
+            // Notify system for AIP updated to PENDING state.
+            publisher.publish(new AIPEvent(aip));
+        }
+
+        return jobIds;
+    }
+
     /**
      * Write on disk the asscoiated metadata file of the given {@link  AIP}.
      * @param aip {@link AIP}
@@ -736,20 +781,29 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<History> result = Sets.newHashSet();
         Set<AIP> updatedAips = aipDao.findAllByStateService(AIPState.UPDATED);
         for (AIP updatedAip : updatedAips) {
-            // Create new AIP file (descriptor file) for the given updated AIP.
-            DataFile meta;
-            try {
-                meta = writeMetaToWorkspace(updatedAip, tenantWorkspace);
-                // Store the associated dataFile.
-                DataFile oldOne = dataFileDao.findByAipAndType(updatedAip, DataType.AIP);
-                meta.setId(oldOne.getId());
-                result.add(new History(oldOne, meta));
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-                // if we don't have a meta to store that means a problem happened and we set the aip to STORAGE_ERROR
-                updatedAip.setState(AIPState.STORAGE_ERROR);
-                aipDao.save(updatedAip);
-                publisher.publish(new AIPEvent(updatedAip));
+            // Store the associated dataFile.
+            Optional<DataFile> optionalExistingAIPMetadataFile = dataFileDao.findByAipAndType(updatedAip, DataType.AIP);
+            if (optionalExistingAIPMetadataFile.isPresent()) {
+                // Create new AIP file (descriptor file) for the given updated AIP.
+                DataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
+                DataFile newAIPMetadataFile;
+                try {
+                    // To ensure that at any time there is only one DataFile of AIP type, we do not create
+                    // a new DataFile for the newAIPMetadataFile.
+                    // The newAIPMetadataFile get the id of the old one and so only replace it when it is stored.
+                    newAIPMetadataFile = writeMetaToWorkspace(updatedAip, tenantWorkspace);
+                    newAIPMetadataFile.setId(existingAIPMetadataFile.getId());
+                    result.add(new History(existingAIPMetadataFile, newAIPMetadataFile));
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                    // if we don't have a meta to store that means a problem happened and we set the aip to STORAGE_ERROR
+                    updatedAip.setState(AIPState.STORAGE_ERROR);
+                    aipDao.save(updatedAip);
+                    publisher.publish(new AIPEvent(updatedAip));
+                }
+            } else {
+                LOG.warn("Unable to update AIP metadata for AIP {} as there no existing one");
+                // TODO : Notify ?
             }
         }
         return result;
