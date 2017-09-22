@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,7 +70,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     @Override
     @EventListener
-    @Transactional(TxType.NEVER)
+    @Transactional(Transactional.TxType.NEVER) // Doesn't need a transaction (make Controller IT tests failed otherwise)
     public void onApplicationEvent(ContextRefreshedEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
     }
