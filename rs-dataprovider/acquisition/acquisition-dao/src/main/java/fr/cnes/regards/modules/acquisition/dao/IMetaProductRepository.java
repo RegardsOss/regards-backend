@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,5 +31,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 @Repository
 public interface IMetaProductRepository extends CrudRepository<MetaProduct, Long> {
+
+    @EntityGraph("graph.product.complete")
+    MetaProduct findCompleteById(Long id);
 
 }

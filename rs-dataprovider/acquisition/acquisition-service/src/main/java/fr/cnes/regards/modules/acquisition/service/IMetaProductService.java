@@ -42,5 +42,12 @@ public interface IMetaProductService {
      */
     MetaProduct retrieve(Long id);
     
+    /**
+     * Retrieve one specified {@link MetaProduct} with all TODO
+     * @param id {@link MetaProduct}
+     */
+    MetaProduct retrieveComplete(Long id);
+
+    
     void delete(Long id);
 }

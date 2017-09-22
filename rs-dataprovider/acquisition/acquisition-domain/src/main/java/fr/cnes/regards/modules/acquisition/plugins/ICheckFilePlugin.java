@@ -29,8 +29,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  */
 @PluginInterface(description = "Plugin to validate a product")
 public interface ICheckFilePlugin {
-
-    public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException;
+    
+    // TODO CMZ à renommer c'est plutôt validate ou check
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException;
     
     public int getFileVersion();
 

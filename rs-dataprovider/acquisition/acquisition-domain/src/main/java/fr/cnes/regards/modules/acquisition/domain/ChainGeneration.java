@@ -40,7 +40,10 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
  * 
@@ -111,6 +114,18 @@ public class ChainGeneration implements IIdentifiable<Long> {
     @Type(type = "text")
     private String comment;
 
+    /**
+     * A {@link PluginConfiguration} of a {@link IAcquisitionScanPlugin}
+     */
+    @Column(name = "scan_plugin")
+    private Long scanAcquisitionPluginConf;
+
+    /**
+     * A {@link PluginConfiguration} of a {@link ICheckFilePlugin}
+     */
+    @Column(name = "check_plugin")
+    private Long checkAcquisitionPluginConf;
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -167,7 +182,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.label = label;
     }
 
-    public Boolean getActive() {
+    public Boolean isActive() {
         return active;
     }
 
@@ -213,6 +228,22 @@ public class ChainGeneration implements IIdentifiable<Long> {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Long getScanAcquisitionPluginConf() {
+        return scanAcquisitionPluginConf;
+    }
+
+    public void setScanAcquisitionPluginConf(Long scanAcquisitionPluginConf) {
+        this.scanAcquisitionPluginConf = scanAcquisitionPluginConf;
+    }
+
+    public Long getCheckAcquisitionPluginConf() {
+        return checkAcquisitionPluginConf;
+    }
+
+    public void setCheckAcquisitionPluginConf(Long checkAcquisitionPluginConf) {
+        this.checkAcquisitionPluginConf = checkAcquisitionPluginConf;
     }
 
     @Override

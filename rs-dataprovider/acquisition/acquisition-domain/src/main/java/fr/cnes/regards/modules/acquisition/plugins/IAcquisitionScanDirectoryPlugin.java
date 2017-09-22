@@ -16,18 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service;
+package fr.cnes.regards.modules.acquisition.plugins;
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import java.util.Set;
 
-@Configuration
-@EnableAutoConfiguration
-@PropertySource(value = { "classpath:application-test.properties", "classpath:test_${user.name}.properties" },
-        ignoreResourceNotFound = true)
-@ComponentScan(basePackages="fr.cnes.regards.modules.acquisition")
-public class AcquisitionServiceConfiguration {
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+
+/**
+ * @author Christophe Mertz
+ *
+ */
+@PluginInterface(description = "Plugin to detect file to acquire in some directories")
+public interface IAcquisitionScanDirectoryPlugin extends IAcquisitionScanPlugin {
+
+    public Set<MetaFile> getMetaFiles();
 
 }

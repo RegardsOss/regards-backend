@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.ErrorType;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
@@ -92,31 +93,30 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
     @Autowired
     private IScanDirectoryRepository scandirRepository;
 
+    @Autowired
     private IMetaFileService metaFileService;
 
+    @Autowired
     private IMetaProductService metaProductService;
 
+    @Autowired
     private IProductService productService;
 
+    @Autowired
     private IAcquisitionFileService acqfileService;
 
-    private IScanDirectoryService scandirService;;
+    @Autowired
+    private IScanDirectoryService scandirService;
 
     @Before
     public void setUp() throws Exception {
-        metaProductService = new MetaProductService(metaProductRepository);
-        productService = new ProductService(productRepository);
-        acqfileService = new AcquisitionFileService(acqfileRepository);
-        metaFileService = new MetaFileService(metafileRepository);
-        scandirService = new ScanDirectoryService(scandirRepository);
-
         tenantResolver.forceTenant(TENANT);
 
         cleanDb();
     }
 
-    private Product addProduct(MetaProduct metaProduct, String label) {
-        Product product = productService.save(ProductBuilder.build(label).withStatus(ProductStatus.INIT.toString())
+    private Product addProduct(MetaProduct metaProduct, String productName) {
+        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.INIT.toString())
                 .withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
@@ -150,8 +150,11 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
                 .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
+                .withActivationDate(OffsetDateTime.now().minusDays(5))
+                .withErrorType(ErrorType.WARNING.toString())
                 .withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO).get();
         acqFile1.setMetaFile(aMetaFile);
+        acqFile1.setProduct(aProduct);
         acqFile1 = acqfileService.save(acqFile1);
 
         // Add the AcquisitionFile to the Product
@@ -159,8 +162,9 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
 
         AcquisitionFile acqFile2 = AcquisitionFileBuilder.build("file two")
                 .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(15686L)
-                .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).get();
+                .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).withActivationDate(OffsetDateTime.now()).get();
         acqFile2.setMetaFile(aMetaFile);
+        acqFile2.setProduct(aProduct);
         acqFile2 = acqfileService.save(acqFile2);
 
         // Add the AcquisitionFile to the Product
@@ -170,6 +174,8 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
         Assert.assertEquals(3, metaFileService.retrieve(aMetaFile.getId()).getScanDirectories().size());
         Assert.assertEquals(2, acqfileService.retrieveAll().size());
         Assert.assertEquals(2, aProduct.getAcquisitionFile().size());
+        Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(0).getProduct());
+        Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(1).getProduct());
 
         // Remove a ScanDirectory
         aMetaFile.removeScanDirectory(scanDir2);

@@ -43,4 +43,8 @@ public interface IChainGenerationService {
     List<ChainGeneration> retrieveAll();
     
     void delete(Long id);
+    
+    boolean run(Long id);
+    
+    boolean run(ChainGeneration chain);
 }

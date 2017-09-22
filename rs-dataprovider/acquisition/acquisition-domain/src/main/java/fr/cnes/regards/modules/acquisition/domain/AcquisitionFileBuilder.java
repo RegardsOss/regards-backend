@@ -80,7 +80,7 @@ public final class AcquisitionFileBuilder {
         return this;
     }
 
-    public AcquisitionFileBuilder withActivatioDaten(OffsetDateTime date) {
+    public AcquisitionFileBuilder withActivationDate(OffsetDateTime date) {
         acqFile.setAcqDate(date);
         return this;
     }

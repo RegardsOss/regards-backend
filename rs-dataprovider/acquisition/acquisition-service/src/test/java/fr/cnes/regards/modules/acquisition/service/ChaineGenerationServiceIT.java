@@ -77,30 +77,29 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
     private IChainGenerationRepository chainRepository;
 
     @Autowired
-    private IMetaProductRepository metaProductRepository;;
+    private IMetaProductRepository metaProductRepository;
 
     @Autowired
     private IProductRepository productRepository;
 
+    @Autowired
     private IChainGenerationService chainfoService;
 
+    @Autowired
     private IMetaProductService metaProductService;
 
+    @Autowired
     private IProductService productService;
 
     @Before
     public void setUp() throws Exception {
-        chainfoService = new ChaineGenerationService(chainRepository);
-        metaProductService = new MetaProductService(metaProductRepository);
-        productService = new ProductService(productRepository);
-
         tenantResolver.forceTenant(TENANT);
 
         cleanDb();
     }
 
-    private Product addProduct(MetaProduct metaProduct, String label) {
-        Product product = productService.save(ProductBuilder.build(label).withStatus(ProductStatus.INIT.toString())
+    private Product addProduct(MetaProduct metaProduct, String productName) {
+        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.INIT.toString())
                 .withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
@@ -170,14 +169,14 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         Assert.assertEquals(2, productService.retrieveAll().size());
 
         // Control the number of products from the MetaProduct
-        Assert.assertEquals(2, metaProductService.retrieve(metaProduct.getId()).getProducts().size());
+        Assert.assertEquals(2, metaProductService.retrieveComplete(metaProduct.getId()).getProducts().size());
 
         // Delete a product
         productService.delete(aProduct.getId());
         Assert.assertEquals(1, productService.retrieveAll().size());
 
         // Get the MetaProduct
-        Assert.assertEquals(1, metaProductService.retrieve(metaProduct.getId()).getProducts().size());
+        Assert.assertEquals(1, metaProductService.retrieveComplete(metaProduct.getId()).getProducts().size());
     }
 
     @After

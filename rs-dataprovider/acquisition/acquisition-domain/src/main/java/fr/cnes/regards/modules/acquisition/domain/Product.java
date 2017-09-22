@@ -32,6 +32,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -93,7 +95,7 @@ public class Product implements IIdentifiable<Long> {
      * The {@link MetaProduct}
      */
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "meta_product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"),
             updatable = false)
     private MetaProduct metaProduct;
@@ -112,8 +114,8 @@ public class Product implements IIdentifiable<Long> {
      * Liste des fichiers composants les produits
      */
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "acquisition_file_id", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "fk_acq_file"))
+    @JoinColumn(name = "product_id", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "fk_product_id"))
     private Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
 
     @Override

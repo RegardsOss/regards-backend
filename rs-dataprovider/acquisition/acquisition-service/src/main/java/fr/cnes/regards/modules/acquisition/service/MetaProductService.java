@@ -65,4 +65,9 @@ public class MetaProductService implements IMetaProductService {
         this.metaProductRepository.delete(id);
     }
 
+    @Override
+    public MetaProduct retrieveComplete(Long id) {
+        return this.metaProductRepository.findCompleteById(id);
+    }
+
 }

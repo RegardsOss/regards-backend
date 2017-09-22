@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.domain;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embedded;
@@ -100,8 +101,10 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     @Enumerated(EnumType.STRING)
     private AcquisitionFileStatus status;
 
-    // TODO CMZ util ?
-    //    protected Product product;
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_acq_file_id"),
+            updatable = false)
+    protected Product product;
 
     /**
      * The {@link MetaFile}
@@ -237,6 +240,14 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     public void setMetaFile(MetaFile metaFile) {
         this.metaFile = metaFile;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public ErrorType getError() {

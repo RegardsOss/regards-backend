@@ -18,14 +18,23 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.job.ScanJob;
 
 /**
  * 
@@ -36,7 +45,12 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 @Service
 public class ChaineGenerationService implements IChainGenerationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChaineGenerationService.class);
+
     private final IChainGenerationRepository chainRepository;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     public ChaineGenerationService(IChainGenerationRepository repository) {
         super();
@@ -63,6 +77,51 @@ public class ChaineGenerationService implements IChainGenerationService {
     @Override
     public void delete(Long id) {
         chainRepository.delete(id);
+    }
+
+    @Override
+    public boolean run(Long id) {
+        return run(this.retrieve(id));
+    }
+
+    @Override
+    public boolean run(ChainGeneration chain) {
+        // il ne faut pas lancer une chaine en cours d'exécution
+        // non pas ici , c'est à gérér par celui qui appel
+
+        // the ChainGeneration must be active
+        if (!chain.isActive()) {
+            StringBuilder strBuilder = new StringBuilder("Unable to run the chain generation ");
+            strBuilder.append("<").append(chain.getLabel()).append("> : ").append("the chain is not active");
+            LOGGER.warn(strBuilder.toString());
+            return false;
+        }
+
+        // the difference between the previous activation date and current time must be greater than the periodicity
+        if (chain.getLastDateActivation() != null
+                && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
+            StringBuilder strBuilder = new StringBuilder("Unable to run the chain generation ");
+            strBuilder.append("<").append(chain.getLabel()).append("> : ").append("the periodicity of ")
+                    .append(chain.getPeriodicity())
+                    .append(" seconds is not verified. The last activation date is to close from now.");
+            LOGGER.warn(strBuilder.toString());
+            return false;
+        }
+
+        // Create a ScanJob
+        JobInfo scanJobInfo = new JobInfo();
+        scanJobInfo.setParameters(new ChainGenerationJobParameter(chain));
+        scanJobInfo.setClassName(ScanJob.class.getName());
+        // TODO CMZ à revoir pour récupérer le user courant
+        scanJobInfo.setOwner(SecurityUtils.getActualUser());
+        scanJobInfo.setPriority(50);
+
+        jobInfoService.createAsQueued(scanJobInfo);
+
+        chain.setLastDateActivation(OffsetDateTime.now());
+
+        return true;
+
     }
 
 }

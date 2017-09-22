@@ -84,5 +84,10 @@ public final class ChainGenerationBuilder {
         chain.setDataSet(dataSet);
         return this;
     }
+    
+    public ChainGenerationBuilder withScanAcquisitionPluginConf(Long  pluginconfId) {
+        chain.setScanAcquisitionPluginConf(pluginconfId);
+        return this;
+    }
 
 }

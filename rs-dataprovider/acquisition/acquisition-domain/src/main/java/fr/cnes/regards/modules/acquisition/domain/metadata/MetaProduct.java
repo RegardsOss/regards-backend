@@ -31,6 +31,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -51,6 +53,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @Entity
 @Table(name = "t_meta_product", indexes = { @Index(name = "idx_meta_product_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_meta_product_label", columnNames = { "label" }))
+@NamedEntityGraph(name = "graph.product.complete", attributeNodes = @NamedAttributeNode(value = "products"))
 public class MetaProduct implements IIdentifiable<Long> {
 
     /**
@@ -70,7 +73,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     @Column(name = "label", length = MAX_STRING_LENGTH, nullable = false)
     private String label;
 
-    @OneToMany(fetch = FetchType.EAGER) // TODO CMZ remettre LAZY
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
     private Set<Product> products = new HashSet<Product>();
 
