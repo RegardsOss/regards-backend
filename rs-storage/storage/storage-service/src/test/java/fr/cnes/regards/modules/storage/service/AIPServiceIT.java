@@ -12,6 +12,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,13 +21,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -37,7 +35,6 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -82,16 +79,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private boolean failed;
 
-    @Configuration
-    static class Config {
-
-        @Bean
-        public IResourceService resourceService() {
-            return Mockito.mock(IResourceService.class);
-        }
-
-    }
-
     @Autowired
     private Gson gson;
 
@@ -127,7 +114,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
-
+        this.cleanUp();
         failed = false;
         succeeded = Sets.newConcurrentHashSet();
         subscriber.subscribeTo(JobEvent.class, new JobEventHandler());
@@ -173,16 +160,16 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         }
         LOG.info("All waiting JOB succeeded");
         Assert.assertFalse("The job failed while it should not have", failed);
-        AIP aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
         // Wait for AIP set STORED status
         LOG.info("Waiting for AIP {} stored", aip.getIpId());
         wait = 0;
-        while (!AIPState.STORED.equals(aipFromDB.getState()) && (wait < 10000)) {
+        while (!AIPState.STORED.equals(aipFromDB.get().getState()) && (wait < 10000)) {
             aipFromDB = aipDao.findOneByIpId(aip.getIpId());
             Thread.sleep(1000);
             wait = wait + 1000;
         }
-        Assert.assertEquals(AIPState.STORED, aipFromDB.getState());
+        Assert.assertEquals(AIPState.STORED, aipFromDB.get().getState());
         LOG.info("AIP {} stored", aip.getIpId());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
         Assert.assertEquals(2, dataFiles.size());
@@ -195,21 +182,22 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile().getAbsolutePath()));
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
         int wait = 0;
+        LOG.info("Waiting for jobs end ...");
         while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
             wait = wait + 1000;
         }
         Assert.assertTrue("The job succeeded while it should not have", failed);
-        LOG.info("Waiting for AIP {} error ...", aip.getIpId());
-        AIP aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
         wait = 0;
-        while (!AIPState.STORAGE_ERROR.equals(aipFromDB.getState()) && (wait < 10000)) {
+        LOG.info("Waiting for AIP {} error ...", aip.getIpId());
+        while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < 10000)) {
             aipFromDB = aipDao.findOneByIpId(aip.getIpId());
             Thread.sleep(1000);
             wait = wait + 1000;
         }
-        Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.getState());
+        Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
         LOG.info("AIP {} is in ERROR State", aip.getIpId());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
         Assert.assertEquals(1, dataFiles.size());
@@ -232,14 +220,14 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             }
             Assert.assertFalse("The job failed while it should not have", failed);
             LOG.info("Waiting for AIP {} error ...", aip.getIpId());
-            AIP aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
             wait = 0;
-            while (!AIPState.STORAGE_ERROR.equals(aipFromDB.getState()) && (wait < 10000)) {
+            while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < 10000)) {
                 aipFromDB = aipDao.findOneByIpId(aip.getIpId());
                 Thread.sleep(1000);
                 wait = wait + 1000;
             }
-            Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.getState());
+            Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
         } finally {
@@ -253,16 +241,39 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets create the aip
         createSuccessTest();
         // now that it is correctly created, lets say it has been updated and add a tag
-        DataFile oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
-        aip = aipDao.findOneByIpId(aip.getIpId());
+        Optional<DataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
+        aip = aipDao.findOneByIpId(aip.getIpId()).get();
         aip.getTags().add("Exemple Tag For Fun");
         aip.setState(AIPState.UPDATED);
         aipDao.save(aip);
+        Assert.assertTrue("The old data file should exists !",
+                          Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
         // now lets launch the method without scheduling
         aipService.updateAlreadyStoredMetadata();
-        Thread.sleep(40000);
-        Assert.assertFalse("the old data file should not exists anymore!",
-                           Files.exists(Paths.get(oldDataFile.getUrl().toURI())));
+
+        // Here the AIP should be in STORING_METADATA state
+        AIP newAIP = aipDao.findOneByIpId(aip.getIpId()).get();
+        Assert.assertTrue("AIP should be in storing metadata state",
+                          newAIP.getState().equals(AIPState.STORING_METADATA));
+        int count = 0;
+        while (Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())) && (count < 40)) {
+            Thread.sleep(1000);
+            count++;
+        }
+        // After job is done, the old AIP metadata file should be deleted
+        Assert.assertFalse("The old data file should not exists anymore!",
+                           Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
+        newAIP = aipDao.findOneByIpId(aip.getIpId()).get();
+        count = 0;
+        // After job is done, the AIP should be in STORED state.
+        while (!newAIP.getState().equals(AIPState.STORED) && (count < 10)) {
+            Thread.sleep(1000);
+            newAIP = aipDao.findOneByIpId(aip.getIpId()).get();
+            count++;
+        }
+        // After job is done, the new AIP metadata file should be present in local datastorage
+        DataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
+        Assert.assertTrue("The new data file should exists!", Files.exists(Paths.get(file.getUrl().toURI())));
     }
 
     private class JobEventHandler implements IHandler<JobEvent> {

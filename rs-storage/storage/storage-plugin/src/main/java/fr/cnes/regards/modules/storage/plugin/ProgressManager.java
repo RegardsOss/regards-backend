@@ -37,7 +37,7 @@ public class ProgressManager {
     public void storageSucceed(DataFile dataFile, URL storedUrl) {
         dataFile.setUrl(storedUrl);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                StorageEventType.SUCCESSFUL);
+                StorageEventType.SUCCESSFULL);
         job.advanceCompletion();
         //hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
@@ -67,13 +67,13 @@ public class ProgressManager {
 
     public void deletionSucceed(DataFile dataFile) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                StorageEventType.SUCCESSFUL);
+                StorageEventType.SUCCESSFULL);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
     public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
-        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.SUCCESSFUL);
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.SUCCESSFULL);
         dataStorageEvent.setRestorationPath(restoredFilePath);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
