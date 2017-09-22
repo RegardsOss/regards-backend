@@ -68,6 +68,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.EventType;
+import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
@@ -90,30 +91,69 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * This service handle actions on the {@link AIP} entities and associated {@link DataFile}s.<br/>
+ * An {@link AIP} can be associated to many {@link DataFile}s but only one of type {@link DataType#AIP}.<br/>
+ * At startup, this service subscribe to all {@link DataStorageEvent}s to handle physical actions
+ * (store, retrieve and deletion) on {@link DataFile}s.<br/>
+ * <br/>
+ * This service also run scheduled actions :
+ * <ul>
+ * <li>{@link #storeMetadata} : This cron action executed every minutes handle
+ *  update of {@link AIP} state by looking for all associated {@link DataFile} states.
+ *  An {@link AIP} is STORED when all his {@link DataFile}s are STORED</li>
+ * </ul>
  *
+ * @author Sylvain Vissiere-Guerinet
+ * @author Sébastien Binda
  */
 @Service
 @RegardsTransactional
 public class AIPService implements IAIPService, ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = LoggerFactory.getLogger(AIPService.class);
 
+    /**
+     * DAO to access {@link AIP} entities through the {@link AIPDataBase} entities stored in db.
+     */
     @Autowired
     private IAIPDao aipDao;
 
+    /**
+     * DAO to access {@link DataFile} entities.
+     */
+    @Autowired
+    private IDataFileDao dataFileDao;
+
+    /**
+     * AMQP Publisher.
+     */
     @Autowired
     private IPublisher publisher;
 
+    /**
+     * AMQP Subscriber.
+     */
     @Autowired
     private ISubscriber subscriber;
 
+    /**
+     * Service to retrieve and use Plugins more specificly the {@link IDataStorage} plugins.
+     */
     @Autowired
     private PluginService pluginService;
 
+    /**
+     * The AIP service uses JOBS to run asynchronous store actions.
+     */
     @Autowired
     private IJobInfoService jobInfoService;
 
+    /**
+     * Resolver to know all existing tenants of the current REGARDS instance.
+     */
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -122,9 +162,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Autowired
     private Gson gson;
-
-    @Autowired
-    private IDataFileDao dataFileDao;
 
     /**
      * to get transactionnality inside scheduled
@@ -137,6 +174,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Autowired
     private ICachedFileService cachedFileService;
+
+    /**
+     * JSON files extension.
+     */
+    private static final String JSON_FILE_EXT = ".json";
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
@@ -177,7 +219,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
 
         /**
-         * Handle {@link DataFile} restoration events.
+         * Handle {@link DataStorageEvent} events for {@link StorageAction#RESTORATION} type.
          * @param type {@link StorageEventType}
          * @param event {@link DataStorageEvent}
          */
@@ -203,7 +245,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
 
         /**
-         * Handle {@link DataFile} deletion events.
+         * Handle {@link DataStorageEvent} events for {@link StorageAction#DELETION} type.
          * @param type {@link StorageEventType}
          * @param event {@link DataStorageEvent}
          */
@@ -229,6 +271,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         }
 
+        /**
+         * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
+         * @param dataFileDeleted {@link DataFile} deleted.
+         * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link DataFile}
+         */
         private void handleDeletionSuccess(DataFile dataFileDeleted, String checksumOfDeletedFile) {
             // Get the associated AIP of the deleted DataFile from db
             Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getIpId());
@@ -264,7 +311,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
 
         /**
-         * Handle {@link DataFile} store events.
+         * Handle {@link DataStorageEvent} events for {@link StorageAction#STORE} type.
          * @param type {@link StorageEventType}
          * @param event {@link DataStorageEvent}
          */
@@ -275,62 +322,16 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 Optional<AIP> optionalAssociatedAip = aipDao.findOneByIpId(data.getAip().getIpId());
                 if (optionalAssociatedAip.isPresent()) {
                     AIP associatedAIP = optionalAssociatedAip.get();
-                    data.setUrl(event.getNewUrl());
                     switch (type) {
                         case SUCCESSFULL:
-                            // update data status
-                            PluginConfiguration dataStorageUsed = null;
-                            try {
-                                dataStorageUsed = pluginService.getPluginConfiguration(event.getStorageConfId());
-                            } catch (ModuleException e) {
-                                LOG.error("You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
-                                          e);
-                                throw new RuntimeException(e);
-                            }
-                            data.setChecksum(event.getChecksum());
-                            data.setFileSize(event.getFileSize());
-                            data.setDataStorageUsed(dataStorageUsed);
-                            data.setState(DataFileState.STORED);
-                            dataFileDao.save(data);
-                            LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", data.getUrl());
-                            if (data.getDataType() == DataType.AIP) {
-                                // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
-                                // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
-                                // workspace!
-                                Paths.get(workspace, runtimeTenantResolver.getTenant(), data.getChecksum() + ".json")
-                                        .toFile().delete();
-                                associatedAIP.setState(AIPState.STORED);
-                                aipDao.save(associatedAIP);
-                                LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", data.getAip().getIpId());
-                                publisher.publish(new AIPEvent(associatedAIP));
-                            } else {
-                                // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
-                                // just let set the new information about this DataFile
-                                // @formatter:off
-                                InformationObject io =
-                                        associatedAIP.getInformationObjects()
-                                            .stream()
-                                            .filter(informationObject -> informationObject.getPdi()
-                                                        .getFixityInformation().getChecksum().equals(data.getChecksum()))
-                                            .findFirst()
-                                            .get();
-                                // @formatter:on
-                                io.getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
-                                                                                "File stored into REGARDS");
-                                io.getPdi().getFixityInformation().setFileSize(data.getFileSize());
-                                io.getContentInformation().getDataObject().setUrl(data.getUrl());
-                                io.getContentInformation().getDataObject().setFilename(data.getName());
-                                aipDao.save(associatedAIP);
-                            }
+                            handleStoreSuccess(data, event.getChecksum(), event.getNewUrl(), event.getFileSize(),
+                                               event.getStorageConfId(), associatedAIP);
                             break;
                         case FAILED:
-                            // update data status
-                            data.setState(DataFileState.ERROR);
-                            dataFileDao.save(data);
-                            // Update associated AIP in db
-                            associatedAIP.setState(AIPState.STORAGE_ERROR);
-                            aipDao.save(associatedAIP);
-                            publisher.publish(new AIPEvent(associatedAIP));
+                            handleStoreFailed(data, associatedAIP, event.getNewUrl());
+                            break;
+                        default:
+                            LOG.error("Unhandle DataStorage STORE event type {}", type);
                             break;
                     }
                 } else {
@@ -340,6 +341,89 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             } else {
                 LOG.warn("[DATA STORAGE EVENT] DataFile stored {} does not exists", event.getDataFileId());
             }
+        }
+
+        /**
+         * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
+         * @param storedDataFile {@link DataFile} successfully stored
+         * @param associatedAIP {@link AIP} associated to the given {@link DataFile} successfully stored
+         * @param event
+         */
+        private void handleStoreSuccess(DataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
+                Long storedFileSize, Long dataStoragePluginConfId, AIP associatedAIP) {
+            // update data status
+            PluginConfiguration dataStorageUsed = null;
+            try {
+                dataStorageUsed = pluginService.getPluginConfiguration(dataStoragePluginConfId);
+            } catch (ModuleException e) {
+                LOG.error("You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
+                          e);
+                // TODO : notify admin for invalid configuration.
+                return;
+            }
+            storedDataFile.setChecksum(storedFileChecksum);
+            storedDataFile.setFileSize(storedFileSize);
+            storedDataFile.setDataStorageUsed(dataStorageUsed);
+            storedDataFile.setState(DataFileState.STORED);
+            storedDataFile.setUrl(storedFileNewURL);
+            dataFileDao.save(storedDataFile);
+            LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrl());
+            if (storedDataFile.getDataType() == DataType.AIP) {
+                // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
+                // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
+                // workspace!
+                String dataFileName = storedDataFile.getChecksum() + JSON_FILE_EXT;
+                Path aipDataFileFromWorkspace = Paths.get(workspace, runtimeTenantResolver.getTenant(), dataFileName);
+                if (aipDataFileFromWorkspace.toFile().exists()) {
+                    try {
+                        Files.delete(aipDataFileFromWorkspace);
+                    } catch (IOException e) {
+                        LOG.error("Error deleting temporary AIP metadata file from workspace {}",
+                                  aipDataFileFromWorkspace, e);
+                    }
+                }
+                associatedAIP.setState(AIPState.STORED);
+                aipDao.save(associatedAIP);
+                LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", storedDataFile.getAip().getIpId());
+                publisher.publish(new AIPEvent(associatedAIP));
+            } else {
+                // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
+                // just let set the new information about this DataFile
+                // @formatter:off
+                Optional<InformationObject> io =
+                        associatedAIP.getInformationObjects()
+                            .stream()
+                            .filter(informationObject -> informationObject.getPdi()
+                                        .getFixityInformation().getChecksum().equals(storedDataFile.getChecksum()))
+                            .findFirst();
+                // @formatter:on
+                if (io.isPresent()) {
+                    io.get().getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
+                                                                          "File stored into REGARDS");
+                    io.get().getPdi().getFixityInformation().setFileSize(storedDataFile.getFileSize());
+                    io.get().getContentInformation().getDataObject().setUrl(storedDataFile.getUrl());
+                    io.get().getContentInformation().getDataObject().setFilename(storedDataFile.getName());
+                    aipDao.save(associatedAIP);
+                }
+
+            }
+        }
+
+        /**
+         * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
+         * @param storeFailFile {@link DataFile} not deleted.
+         * @param associatedAIP {@link AIP} Associated to the {@link DataFile} in error.
+         * @param newUrl {@link URL} new URL of the {@link DataFile}
+         */
+        private void handleStoreFailed(DataFile storeFailFile, AIP associatedAIP, URL newUrl) {
+            // update data status
+            storeFailFile.setState(DataFileState.ERROR);
+            storeFailFile.setUrl(newUrl);
+            dataFileDao.save(storeFailFile);
+            // Update associated AIP in db
+            associatedAIP.setState(AIPState.STORAGE_ERROR);
+            aipDao.save(associatedAIP);
+            publisher.publish(new AIPEvent(associatedAIP));
         }
     }
 
@@ -572,9 +656,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             errors.add(inError.getChecksum());
         }
         // lets constrcut the result
-        AvailabilityResponse availabilityResponse = new AvailabilityResponse(errors, onlineFiles,
-                nearlineAvailableAndError.getAvailables());
-        return availabilityResponse;
+        return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
     }
 
     /**
@@ -716,7 +798,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
         String toWrite = gson.toJson(aip);
         String checksum = ChecksumUtils.getHexChecksum(md5.digest(toWrite.getBytes(StandardCharsets.UTF_8)));
-        Path metadataLocation = Paths.get(tenantWorkspace.toString(), checksum + ".json");
+        Path metadataLocation = Paths.get(tenantWorkspace.toString(), checksum + JSON_FILE_EXT);
         try (BufferedWriter writer = Files.newBufferedWriter(metadataLocation, StandardCharsets.UTF_8)) {
             writer.write(toWrite);
             writer.flush();
@@ -727,7 +809,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
                 metadataAipFile = new DataFile(urlToMetadata, checksum, checksumAlgorithm, DataType.AIP,
                         urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"), aip,
-                        aip.getIpId() + ".json");
+                        aip.getIpId() + JSON_FILE_EXT);
             } else {
                 LOG.error(String.format(
                                         "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
