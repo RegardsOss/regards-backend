@@ -52,13 +52,14 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     /**
      * The current plugin package
      */
-    private static final String PLUGIN_CURRENT_PACKAGE = "fr.cnes.regards.plugins.utils.plugintypes";
+    private static final String PLUGIN_CURRENT_PACKAGE = "fr.cnes.regards.framework.utils.plugins.plugintypes";
 
     /**
      * A {@link List} of package
      */
-    private static final List<String> PLUGIN_PACKAGES = Arrays
-            .asList(PLUGIN_CURRENT_PACKAGE, "fr.cnes.regards.plugins.utils.bean", "fr.cnes.regards.plugins.utils");
+    private static final List<String> PLUGIN_PACKAGES = Arrays.asList(PLUGIN_CURRENT_PACKAGE,
+                                                                      "fr.cnes.regards.framework.utils.plugins.bean",
+                                                                      "fr.cnes.regards.framework.utils.plugins");
 
     /**
      * A not exiting plugin package
@@ -158,21 +159,21 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexPlugin.COEFF, PluginInterfaceUtilsTest.CINQ).getParameters();
 
         HashMap<Long, Object> instantiatedPluginMap = new HashMap<>();
-        instantiatedPluginMap.put(pluginConfigurationInterface.getId(), PluginUtils
-                .getPlugin(pluginConfigurationInterface, pluginConfigurationInterface.getPluginClassName(),
-                           Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap));
+        instantiatedPluginMap.put(pluginConfigurationInterface.getId(),
+                                  PluginUtils.getPlugin(pluginConfigurationInterface,
+                                                        pluginConfigurationInterface.getPluginClassName(),
+                                                        Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap));
         /*
          * Instantiate the parent plugin
          */
-        complexPlugin = PluginUtils
-                .getPlugin(complexParameters, ComplexPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
-                           instantiatedPluginMap);
+        complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
+                                              Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap);
         Assert.assertNotNull(complexPlugin);
 
         Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
                                             Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
         Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
-                                  .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
+                .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 
         LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 

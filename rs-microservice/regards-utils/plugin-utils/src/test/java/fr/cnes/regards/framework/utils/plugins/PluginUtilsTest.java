@@ -32,14 +32,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObject;
 
 /**
@@ -54,7 +52,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtilsTest.class);
 
-    private static final String PLUGIN_PACKAGE = "fr.cnes.regards.plugins.utils";
+    private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
 
     /**
      * Load all plugins
@@ -106,15 +104,16 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         pojoParam.setDate(currentDate);
 
-        Gson gson = new GsonBuilder().setDateFormat(PluginParameterUtils.DATE_TIME_FORMAT).create();;
+        Gson gson = new GsonBuilder().setDateFormat(PluginParameterUtils.DATE_TIME_FORMAT).create();
+        ;
         /*
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.POJO, gson.toJson(pojoParam)).addParameter(SamplePlugin.SUFFIXE, "chris_test_1")
-                .getParameters();
+                .addParameter(SamplePlugin.POJO, gson.toJson(pojoParam))
+                .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
