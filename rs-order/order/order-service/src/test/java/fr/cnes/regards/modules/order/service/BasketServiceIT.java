@@ -1,25 +1,28 @@
 package fr.cnes.regards.modules.order.service;
 
-import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import static fr.cnes.regards.modules.order.test.CatalogClientMock.*;
+import static fr.cnes.regards.modules.order.test.CatalogClientMock.DS1_IP_ID;
+import static fr.cnes.regards.modules.order.test.CatalogClientMock.DS2_IP_ID;
+import static fr.cnes.regards.modules.order.test.CatalogClientMock.DS3_IP_ID;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 
 /**
@@ -40,13 +43,15 @@ public class BasketServiceIT {
     @Autowired
     private IOrderService orderService;
 
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
     private static final String USER_EMAIL = "marc.sordi@baltringue.fr";
 
     @Before
     public void setUp() {
-
         basketRepository.deleteAll();
-        SecurityUtils.mockActualRole(DefaultRole.REGISTERED_USER.toString());
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
 
     /**
@@ -71,8 +76,8 @@ public class BasketServiceIT {
         Assert.assertEquals(3_003_000l, dsSelection.getFilesSize());
 
         // Add a selection on DS2 and DS3 with an opensearch request
-        basketService.addSelection(basket.getId(), "tags:(" + DS2_IP_ID.toString() + " OR "
-                + DS3_IP_ID.toString() + ")");
+        basketService.addSelection(basket.getId(),
+                                   "tags:(" + DS2_IP_ID.toString() + " OR " + DS3_IP_ID.toString() + ")");
         basket = basketService.load(basket.getId());
         Assert.assertEquals(3, basket.getDatasetSelections().size());
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {

@@ -21,10 +21,11 @@ package fr.cnes.regards.modules.order.service;
 import java.util.List;
 import java.util.UUID;
 
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -46,8 +47,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  */
 @Service
 @MultitenantTransactional
-public class OrderJobService
-        implements IOrderJobService, IHandler<JobEvent> {
+public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     /**
      * Number of concurrent storage files retrieval jobs per user
@@ -67,7 +67,9 @@ public class OrderJobService
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Override
     @EventListener
+    @Transactional(TxType.NEVER)
     public void onApplicationEvent(ContextRefreshedEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
     }
@@ -86,7 +88,7 @@ public class OrderJobService
             return (int) (80 * (1 - rate));
         }
         // Admin : Priotiry between 80 and 100 depending on rate
-        return (int) (100 - 20 * (1 - rate));
+        return (int) (100 - (20 * (1 - rate)));
     }
 
     @Override
@@ -94,8 +96,8 @@ public class OrderJobService
         int currentUserJobCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
         // There is room for several jobs to be executed for this user
         if (currentUserJobCount < maxJobsPerUser) {
-            List<JobInfo> jobInfos = jobInfoRepository
-                    .findTopUserPendingJobs(user, maxJobsPerUser - currentUserJobCount);
+            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user,
+                                                                              maxJobsPerUser - currentUserJobCount);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
                     jobInfo.updateStatus(JobStatus.QUEUED);

@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.transaction.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
@@ -11,12 +10,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
@@ -25,6 +27,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -32,7 +36,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -73,19 +76,22 @@ public class OrderServiceIT {
     @Autowired
     private IJobInfoRepository jobInfoRepository;
 
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
@@ -94,16 +100,18 @@ public class OrderServiceIT {
 
         jobInfoRepository.deleteAll();
 
-        SecurityUtils.mockActualRole(DefaultRole.REGISTERED_USER.toString());
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
 
-/*    @After
-    public void tearDown() {
-        basketRepository.deleteAll();
-        orderRepository.deleteAll();
-
-        jobInfoRepository.deleteAll();
-    }*/
+    /*
+     * @After
+     * public void tearDown() {
+     * basketRepository.deleteAll();
+     * orderRepository.deleteAll();
+     * 
+     * jobInfoRepository.deleteAll();
+     * }
+     */
 
     @Test
     public void test1() throws Exception {
@@ -196,9 +204,8 @@ public class OrderServiceIT {
         System.out.println("-----------------------------------------------");
         System.out.println(orderFromDb);
         orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next().getReliantTasks();
-        System.out.println(
-                orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next().getFiles()
-                        .iterator().next().getName());
+        System.out.println(orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next()
+                .getFiles().iterator().next().getName());
         OrderDataFile[] datafiles = orderFromDb.getDatasetTasks().iterator().next().getReliantTasks().iterator().next()
                 .getJobInfo().getParameters().iterator().next().getValue();
         System.out.println(datafiles);
