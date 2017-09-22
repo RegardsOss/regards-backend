@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.domain.dto;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +16,7 @@ import fr.cnes.regards.modules.order.domain.Order;
 public class OrderDto {
     private Long id;
 
-    private String email;
+    private String owner;
 
     private UUID uid;
 
@@ -31,12 +30,12 @@ public class OrderDto {
         this.id = id;
     }
 
-    public String getEmail() {
-        return email;
+    public String getOwner() {
+        return owner;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public UUID getUid() {

@@ -21,6 +21,6 @@ public interface IBasketRepository extends JpaRepository<Basket, Long> {
      * Load a basket with all its relations
      */
     @EntityGraph("graph.basket")
-    Basket findByEmail(String email);
+    Basket findByOwner(String owner);
 
 }

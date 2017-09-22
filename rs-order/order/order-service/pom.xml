@@ -41,7 +41,10 @@
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-client</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>fr.cnes.regards.modules.storage</groupId>
+			<artifactId>storage-client</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
