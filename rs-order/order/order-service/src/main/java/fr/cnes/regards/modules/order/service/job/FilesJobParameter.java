@@ -22,4 +22,11 @@ public class FilesJobParameter extends JobParameter {
     public void setValue(OrderDataFile[] value) {
         super.setValue(value);
     }
+
+    /**
+     * Check if given JobParameter is compatible with FilesJobParameter ie same name
+     */
+    public static boolean isCompatible(JobParameter param) {
+        return param.getName().equals(NAME);
+    }
 }

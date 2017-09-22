@@ -61,18 +61,18 @@ public class StorageFilesJob extends AbstractJob<Void> {
             throw new JobParameterInvalidException("Two parameters are expected : 'files' and 'expirationDate'.");
         }
         for (JobParameter param : parameters) {
-            if (!(param instanceof FilesJobParameter) && !(param instanceof ExpirationDateJobParameter)) {
+            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))) {
                 throw new JobParameterInvalidException(
                         "Please use FilesJobParameter and ExpirarionDateJobParameter in place of JobParameter (these "
                                 + "classes are here to facilitate your life so please use them.");
             }
-            if (param instanceof FilesJobParameter) {
+            if (FilesJobParameter.isCompatible(param)) {
                 OrderDataFile[] files = param.getValue();
                 filesCount = files.length;
                 for (OrderDataFile dataFile : files) {
                     notAvailableMap.put(dataFile.getChecksum(), dataFile);
                 }
-            } else if (param instanceof ExpirationDateJobParameter) {
+            } else if (ExpirationDateJobParameter.isCompatible(param)) {
                 expirationDate = param.getValue();
             }
         }
@@ -97,6 +97,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
 
     private void handle(TenantWrapper<DataFileEvent> wrapper) {
         DataFileEvent event = wrapper.getContent();
+        if (!notAvailableMap.containsKey(event.getChecksum())) {
+            return;
+        }
         switch (event.getState()) {
             case AVAILABLE:
                 notAvailableMap.get(event.getChecksum()).setState(FileState.AVAILABLE);
