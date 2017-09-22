@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.file.utils.validation;
+package fr.cnes.regards.framework.utils.file.validation;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

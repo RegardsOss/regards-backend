@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.plugins.utils;
+package fr.cnes.regards.framework.utils.plugins;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,8 +45,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.plugins.utils.bean.IPluginUtilsBean;
-import fr.cnes.regards.plugins.utils.bean.PluginUtilsBean;
+import fr.cnes.regards.framework.utils.plugins.bean.IPluginUtilsBean;
+import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
 /**
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to

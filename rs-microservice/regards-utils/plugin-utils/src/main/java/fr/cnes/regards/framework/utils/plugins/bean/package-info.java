@@ -20,4 +20,4 @@
  * @author Christophe Mertz
  *
  */
-package fr.cnes.regards.plugins.utils.bean;
+package fr.cnes.regards.framework.utils.plugins.bean;

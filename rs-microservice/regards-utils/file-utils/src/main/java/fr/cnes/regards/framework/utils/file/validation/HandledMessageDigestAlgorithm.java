@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.file.utils.validation;
+package fr.cnes.regards.framework.utils.file.validation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

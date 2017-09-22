@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.plugins.utils;
+package fr.cnes.regards.framework.utils.plugins;
 
 import java.util.ArrayList;
 import java.util.List;

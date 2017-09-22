@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.file.utils.compression.zip;
+package fr.cnes.regards.framework.utils.file.compression.zip;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -27,11 +27,11 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.file.utils.compression.AbstractRunnableCompression;
-import fr.cnes.regards.framework.file.utils.compression.CompressManager;
-import fr.cnes.regards.framework.file.utils.compression.CompressionException;
-import fr.cnes.regards.framework.file.utils.compression.CompressionTypeEnum;
-import fr.cnes.regards.framework.file.utils.compression.FileAlreadyExistException;
+import fr.cnes.regards.framework.utils.file.compression.AbstractRunnableCompression;
+import fr.cnes.regards.framework.utils.file.compression.CompressManager;
+import fr.cnes.regards.framework.utils.file.compression.CompressionException;
+import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
+import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistException;
 
 /**
  *

@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.file.utils;
+package fr.cnes.regards.framework.utils.file;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +14,9 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

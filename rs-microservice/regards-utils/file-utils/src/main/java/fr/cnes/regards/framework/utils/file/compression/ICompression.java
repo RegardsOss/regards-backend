@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.file.utils.compression;
+package fr.cnes.regards.framework.utils.file.compression;
 
 import java.io.File;
 import java.nio.charset.Charset;

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.plugins.utils.bean;
+package fr.cnes.regards.framework.utils.plugins.bean;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,9 +33,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
-import fr.cnes.regards.plugins.utils.PluginInterfaceUtils;
-import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsTestConstants;
+import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsTestConstants;
+import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.

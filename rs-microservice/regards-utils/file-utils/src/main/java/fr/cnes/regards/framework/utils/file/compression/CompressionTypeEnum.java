@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.file.utils.compression;
+package fr.cnes.regards.framework.utils.file.compression;
 
 /**
  * <code>CompressionTypeEnum</code> definit une liste d'enumere des modes de compression possibles.

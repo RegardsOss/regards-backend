@@ -54,6 +54,8 @@
 		<module>microservice-core-starter</module>
 		<module>authentication-regards</module>
 		<module>authentication-regards-starter</module>
+		<module>jpa-commons-regards</module>
+		<module>jpa-data-regards</module>
 	</modules>
 
 	<dependencies>

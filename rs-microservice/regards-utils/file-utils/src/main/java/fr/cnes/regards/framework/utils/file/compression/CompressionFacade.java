@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.file.utils.compression;
+package fr.cnes.regards.framework.utils.file.compression;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -12,9 +12,9 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.file.utils.compression.gzip.GZipCompression;
-import fr.cnes.regards.framework.file.utils.compression.tar.TarCompression;
-import fr.cnes.regards.framework.file.utils.compression.zip.ZipCompression;
+import fr.cnes.regards.framework.utils.file.compression.gzip.GZipCompression;
+import fr.cnes.regards.framework.utils.file.compression.tar.TarCompression;
+import fr.cnes.regards.framework.utils.file.compression.zip.ZipCompression;
 
 /**
  *

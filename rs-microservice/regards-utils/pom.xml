@@ -22,7 +22,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.framework</groupId>
-	<artifactId>regards-core</artifactId>
+	<artifactId>regards-utils</artifactId>
 	<version>2.0.0-SNAPSHOT</version>
 	<description>REGARDS core</description>
 	<packaging>pom</packaging>
@@ -36,9 +36,6 @@
 
 	<modules>
 		<module>plugin-utils</module>
-		<module>regards-core-jpa-common</module>
-		<module>security-utils</module>
-		<module>regards-core-jpa-data</module>
 		<module>file-utils</module>
 	</modules>
 </project>

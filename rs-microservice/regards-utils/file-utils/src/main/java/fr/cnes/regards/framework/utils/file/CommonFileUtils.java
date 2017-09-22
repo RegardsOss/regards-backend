@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.framework.file.utils;
+package fr.cnes.regards.framework.utils.file;
 
 import java.io.IOException;
 import java.nio.file.Files;

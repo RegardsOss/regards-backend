@@ -19,4 +19,4 @@
 /**
  * TODO Description 
  */
-package fr.cnes.regards.plugins.utils.plugintypes;
+package fr.cnes.regards.framework.utils.plugins.plugintypes;

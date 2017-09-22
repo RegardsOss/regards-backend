@@ -55,7 +55,7 @@
 			<artifactId>plugins-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.utils</groupId>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
 			<artifactId>plugin-utils</artifactId>
 		</dependency>
 	</dependencies>
