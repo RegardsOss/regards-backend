@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -30,6 +31,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -52,6 +55,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 @ActiveProfiles("test")
 @Transactional
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@DirtiesContext
 public class OrderServiceIT {
 
     @Autowired
@@ -89,6 +93,8 @@ public class OrderServiceIT {
         orderRepository.deleteAll();
 
         jobInfoRepository.deleteAll();
+
+        SecurityUtils.mockActualRole(DefaultRole.REGISTERED_USER.toString());
     }
 
 /*    @After
@@ -153,14 +159,18 @@ public class OrderServiceIT {
         dataFile1.setOnline(true);
         dataFile1.setSize(1_000_000l);
         dataFile1.setName("tutu");
-        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile1, DO1_IP_ID, order.getId()));
+        OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
+        dataFileRepository.save(df1);
+        ds1SubOrder1Task.addFile(df1);
 
         DataFile dataFile2 = new DataFile();
         dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
         dataFile2.setOnline(false);
         dataFile2.setSize(1l);
         dataFile2.setName("tutu2");
-        ds1SubOrder1Task.addFile(new OrderDataFile(dataFile2, DO2_IP_ID, order.getId()));
+        OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
+        dataFileRepository.save(df2);
+        ds1SubOrder1Task.addFile(df2);
 
         JobInfo storageJobInfo = new JobInfo();
         storageJobInfo.setClassName("...");
@@ -168,9 +178,11 @@ public class OrderServiceIT {
         storageJobInfo.setOwner(USER_EMAIL);
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
-        storageJobInfo.setParameters(new FilesJobParameter(
-                new OrderDataFile[] { new OrderDataFile(dataFile1, DO1_IP_ID, order.getId()),
-                                      new OrderDataFile(dataFile2, DO2_IP_ID, order.getId()) }));
+
+        OrderDataFile df3 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
+        OrderDataFile df4 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
+
+        storageJobInfo.setParameters(new FilesJobParameter(new OrderDataFile[] { df3, df4 }));
 
         storageJobInfo = jobInfoRepository.save(storageJobInfo);
 
@@ -197,6 +209,5 @@ public class OrderServiceIT {
         List<OrderDataFile> dataFiles = dataFileRepository.findAllAvailables(order.getId());
         Assert.assertEquals(1, dataFiles.size());
     }
-
 
 }

@@ -6,11 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -21,21 +19,19 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 
 /**
+ * Job that ask files availability to storage microservice and wait for all files acailability or error
  * @author oroussel
  */
-public class StorageFilesJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(StorageFilesJob.class);
-
-    private int filesCount;
+public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataFileEvent> {
 
     private OffsetDateTime expirationDate;
 
     @Autowired
-    private ISubscriber subscriber;
+    private IForwardingDataFileEventHandlerService subscriber;
 
     @Autowired
     private IAipClient aipClient;
@@ -46,10 +42,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
     private Semaphore semaphore;
 
     /**
-     * Map { checksum -> dataFile } of not yet available data files.
-     * Each time an event is received (with checksum), corresponding entry is removed from map
+     * Map { checksum -> dataFile } of data files.
      */
-    private Map<String, OrderDataFile> notAvailableMap = new HashMap<>();
+    private Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
 
     @Override
     public void setParameters(Set<JobParameter> parameters)
@@ -68,9 +63,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
             }
             if (FilesJobParameter.isCompatible(param)) {
                 OrderDataFile[] files = param.getValue();
-                filesCount = files.length;
                 for (OrderDataFile dataFile : files) {
-                    notAvailableMap.put(dataFile.getChecksum(), dataFile);
+                    dataFilesMap.put(dataFile.getChecksum(), dataFile);
                 }
             } else if (ExpirationDateJobParameter.isCompatible(param)) {
                 expirationDate = param.getValue();
@@ -81,31 +75,55 @@ public class StorageFilesJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        this.semaphore = new Semaphore(-notAvailableMap.size());
-        subscriber.subscribeTo(DataFileEvent.class, this::handle);
+        this.semaphore = new Semaphore(-dataFilesMap.size() + 1);
+        subscriber.subscribe(this);
         AvailabilityRequest request = new AvailabilityRequest();
-        request.setChecksums(notAvailableMap.keySet());
+        request.setChecksums(dataFilesMap.keySet());
         request.setExpirationDate(expirationDate);
-        aipClient.makeFilesAvailable(request);
+        AvailabilityResponse response = aipClient.makeFilesAvailable(request).getBody();
+        // Update all already available files
+        boolean atLeastOneDataFileIntoResponse = false;
+        for (String checksum : response.getAlreadyAvailable()) {
+            OrderDataFile dataFile = dataFilesMap.get(checksum);
+            // If dataFile is ONLINE, don't set its state to AVAILABLE, it is mandatory to keep ONLINE state
+            if (dataFile.getState() != FileState.ONLINE) {
+                dataFile.setState(FileState.AVAILABLE);
+            }
+            atLeastOneDataFileIntoResponse = true;
+            this.semaphore.release();
+        }
+        // Update all files in error
+        for (String checksum : response.getErrors()) {
+            dataFilesMap.get(checksum).setState(FileState.ERROR);
+            atLeastOneDataFileIntoResponse = true;
+            this.semaphore.release();
+        }
+        // Update all dataFiles state if at least one is already available or in error
+        if (atLeastOneDataFileIntoResponse) {
+            dataFileService.save(dataFilesMap.values());
+        }
+        // Wait for remaining files availability from storage
         try {
             this.semaphore.acquire();
         } catch (InterruptedException e) {
             return;
         }
-        dataFileService.save(notAvailableMap.values());
+        subscriber.unsubscribe(this);
+        dataFileService.save(dataFilesMap.values());
     }
 
-    private void handle(TenantWrapper<DataFileEvent> wrapper) {
+    @Override
+    public void handle(TenantWrapper<DataFileEvent> wrapper) {
         DataFileEvent event = wrapper.getContent();
-        if (!notAvailableMap.containsKey(event.getChecksum())) {
+        if (!dataFilesMap.containsKey(event.getChecksum())) {
             return;
         }
         switch (event.getState()) {
             case AVAILABLE:
-                notAvailableMap.get(event.getChecksum()).setState(FileState.AVAILABLE);
+                dataFilesMap.get(event.getChecksum()).setState(FileState.AVAILABLE);
                 break;
             case ERROR:
-                notAvailableMap.get(event.getChecksum()).setState(FileState.ERROR);
+                dataFilesMap.get(event.getChecksum()).setState(FileState.ERROR);
                 break;
         }
         this.semaphore.release();
@@ -113,6 +131,6 @@ public class StorageFilesJob extends AbstractJob<Void> {
 
     @Override
     public int getCompletionCount() {
-        return filesCount;
+        return dataFilesMap.size();
     }
 }
