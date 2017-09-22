@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 /**
  * Reliant task. Associated jobs of this task must not be executed while reliants task jobs are not terminated
  * This class is abstract. Please inherit it from your microservice adding your personal informations in order to use it
+ * <b>By default, equality between 2 entities uses id if both exist else they are considered as different</b>
  * @author oroussel
  */
 @Entity
@@ -85,8 +86,8 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
         }
 
         AbstractReliantTask<?> that = (AbstractReliantTask<?>) o;
-
-        return id != null ? id.equals(that.id) : that.id == null;
+        // id1 == id2 else false if id1, id2 or both is (are) null
+        return id != null ? id.equals(that.id) : false;
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import fr.cnes.regards.framework.amqp.IInstancePoller;
@@ -104,10 +105,10 @@ public class AmqpAutoConfiguration {
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
     public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(ITenantResolver pTenantResolver,
             final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
-            final RestTemplate pRestTemplate) {
+            final RestOperations restOperations) {
         return new RabbitVirtualHostAdmin(pTenantResolver, amqpProperties.getRabbitmqUserName(),
                 amqpProperties.getRabbitmqPassword(), amqpProperties.getAmqpManagementHost(),
-                amqpProperties.getAmqpManagementPort(), pRestTemplate, pSimpleRoutingConnectionFactory,
+                amqpProperties.getAmqpManagementPort(), restOperations, pSimpleRoutingConnectionFactory,
                 amqpProperties.getRabbitmqAddresses(), bootstrapProperties.getBootstrapTenants());
     }
 

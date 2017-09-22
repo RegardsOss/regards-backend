@@ -1,18 +1,23 @@
 package fr.cnes.regards.framework.oais.urn.validator;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import javax.validation.Constraint;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
-import java.lang.annotation.*;
-
 /**
- * Annotation allowing to certifate that a String is a {@link UniformResourceName} thanks to {@link RegardsOaisUrnAsStringValidator}
+ * Annotation allowing to certifate that a String is a {@link UniformResourceName} thanks to
+ * {@link RegardsOaisUrnAsStringValidator}
  *
  * @author Sylvain Vissiere-Guerinet
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
+@Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Constraint(validatedBy = RegardsOaisUrnAsStringValidator.class)
 @Documented
 public @interface RegardsOaisUrnAsString {

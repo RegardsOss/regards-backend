@@ -16,17 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.cloud.autoconfigure;
+package fr.cnes.regards.framework.oais;
 
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
+import javax.validation.constraints.NotNull;
 
-@Configuration
-@ConditionalOnProperty(prefix = "regards.cloud", name = "enabled", matchIfMissing = true)
-@EnableDiscoveryClient
-@AutoConfigureBefore(EurekaClientAutoConfiguration.class)
-public class CloudAutoConfiguration {
+/**
+ *
+ * OAIS semantic
+ *
+ * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
+ *
+ */
+public class Semantic {
+
+    @NotNull
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String pDescription) {
+        description = pDescription;
+    }
+
+    @Override
+    public boolean equals(Object pOther) {
+        return (pOther instanceof Semantic) && description.equals(((Semantic) pOther).description);
+    }
+
+    @Override
+    public int hashCode() {
+        return description.hashCode();
+    }
 }

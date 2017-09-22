@@ -32,12 +32,10 @@
 	</parent>
 
 	<dependencies>
-
-	<dependency>
-		<groupId>fr.cnes.regards.framework</groupId>
-		<artifactId>staf</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
-	</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>staf</artifactId>
+			<version>2.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
-
 </project>

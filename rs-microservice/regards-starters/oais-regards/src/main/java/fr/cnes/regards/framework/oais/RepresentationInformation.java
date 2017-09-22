@@ -16,39 +16,47 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.geojson.geometry;
+package fr.cnes.regards.framework.oais;
 
-import fr.cnes.regards.framework.geojson.AbstractGeoJsonObject;
-import fr.cnes.regards.framework.geojson.GeoJsonType;
+import javax.validation.constraints.NotNull;
 
 /**
- * RFC 7946 -August 2016<br/>
- * GeoJson geometry common representation
  *
+ * OAIS representation information
+ *
+ * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  *
  */
-public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implements IGeometry {
+public class RepresentationInformation {
 
-    protected T coordinates;
+    private Semantic semantic;
 
-    public AbstractGeometry(GeoJsonType type) {
-        super(type);
+    @NotNull
+    private Syntax syntax;
+
+    public Syntax getSyntax() {
+        return syntax;
     }
 
-    public T getCoordinates() {
-        return coordinates;
+    public void setSyntax(Syntax syntax) {
+        this.syntax = syntax;
     }
 
-    public void setCoordinates(T coordinates) {
-        this.coordinates = coordinates;
+    public Semantic getSemantic() {
+        return semantic;
+    }
+
+    public void setSemantic(Semantic semantic) {
+        this.semantic = semantic;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = super.hashCode();
-        result = (prime * result) + ((coordinates == null) ? 0 : coordinates.hashCode());
+        int result = 1;
+        result = (prime * result) + ((semantic == null) ? 0 : semantic.hashCode());
+        result = (prime * result) + ((syntax == null) ? 0 : syntax.hashCode());
         return result;
     }
 
@@ -57,21 +65,28 @@ public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implemen
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null) {
             return false;
         }
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractGeometry other = (AbstractGeometry) obj;
-        if (coordinates == null) {
-            if (other.coordinates != null) {
+        RepresentationInformation other = (RepresentationInformation) obj;
+        if (semantic == null) {
+            if (other.semantic != null) {
                 return false;
             }
-        } else if (!coordinates.equals(other.coordinates)) {
+        } else if (!semantic.equals(other.semantic)) {
+            return false;
+        }
+        if (syntax == null) {
+            if (other.syntax != null) {
+                return false;
+            }
+        } else if (!syntax.equals(other.syntax)) {
             return false;
         }
         return true;
     }
+
 }

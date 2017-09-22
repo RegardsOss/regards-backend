@@ -26,22 +26,6 @@ public class STAFArchive {
     private String password = null;
 
     /**
-     * Utilisateur d'un compte GF (Gros Fichier)
-     */
-    private Boolean gfAccount = false;
-
-    /**
-     * @return Indique s'il s'agit d'une archive GF (Gros Fichiers)
-     */
-    public Boolean isGFAccount() {
-        return gfAccount;
-    }
-
-    public void setGFAccount(boolean pGFAccount) {
-        gfAccount = pGFAccount;
-    }
-
-    /**
      * @return Retourne le nom du projet STAF auquel s'applique la configuration.
      */
     public String getArchiveName() {

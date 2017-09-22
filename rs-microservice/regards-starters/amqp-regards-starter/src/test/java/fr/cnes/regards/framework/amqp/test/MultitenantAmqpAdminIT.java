@@ -31,15 +31,10 @@ import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestOperations;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
@@ -47,14 +42,7 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.domain.CleaningRabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.domain.GettingRabbitMQBindingException;
-import fr.cnes.regards.framework.amqp.test.domain.GettingRabbitMQExchangeException;
-import fr.cnes.regards.framework.amqp.test.domain.GettingRabbitMQQueueException;
-import fr.cnes.regards.framework.amqp.test.domain.RestBinding;
-import fr.cnes.regards.framework.amqp.test.domain.RestExchange;
-import fr.cnes.regards.framework.amqp.test.domain.RestQueue;
-import fr.cnes.regards.framework.amqp.test.domain.TestEvent;
+import fr.cnes.regards.framework.amqp.test.domain.*;
 
 /**
  * @author svissier
@@ -100,7 +88,7 @@ public class MultitenantAmqpAdminIT {
      * bean allowing us to clena the broker
      */
     @Autowired
-    private RestTemplate restTemplate;
+    private RestOperations restTemplate;
 
     @Before
     public void init() {

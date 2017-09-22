@@ -16,17 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.cloud.autoconfigure;
+package fr.cnes.regards.framework.oais.builder;
 
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
+/**
+ * OAIS Builder contract
+ *
+ * @author Marc Sordi
+ *
+ */
+@FunctionalInterface
+public interface IOAISBuilder<T> {
 
-@Configuration
-@ConditionalOnProperty(prefix = "regards.cloud", name = "enabled", matchIfMissing = true)
-@EnableDiscoveryClient
-@AutoConfigureBefore(EurekaClientAutoConfiguration.class)
-public class CloudAutoConfiguration {
+    public T build();
 }

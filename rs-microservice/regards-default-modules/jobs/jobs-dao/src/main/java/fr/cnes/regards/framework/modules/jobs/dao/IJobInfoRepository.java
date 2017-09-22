@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,11 +34,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing Jobs.
- * 
  * @author Léo Mieulet
  * @author Christophe Mertz
  */
 public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
+
     /**
      * @param status the {@link JobStatus} to used for the request
      * @return a list of {@link JobInfo}
@@ -57,4 +59,44 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3 "
             + "and j.status.status = 'RUNNING'")
     void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id);
+
+    Long countByStatusStatusIn(JobStatus... statuses);
+
+    /**
+     * Count all jobs that will be launched in the future and jobs that are currently running
+     */
+    default long countFutureAndRunningJobs() {
+        return countByStatusStatusIn(JobStatus.PENDING, JobStatus.QUEUED, JobStatus.TO_BE_RUN, JobStatus.RUNNING);
+    }
+
+    Long countByOwnerAndStatusStatusIn(String owner, JobStatus... statuses);
+
+    /**
+     * Count user jobs that will be launched in the future and jobs that are currently running
+     */
+    default long countUserFutureAndRunningJobs(String user) {
+        return countByOwnerAndStatusStatusIn(user, JobStatus.PENDING, JobStatus.QUEUED, JobStatus.TO_BE_RUN,
+                                             JobStatus.RUNNING);
+    }
+
+    /**
+     * Count jobs that are planned to be launched and jobs that are currently running
+     */
+    default long countUserPlannedAndRunningJobs(String user) {
+        return countByOwnerAndStatusStatusIn(user, JobStatus.QUEUED, JobStatus.TO_BE_RUN, JobStatus.RUNNING);
+    }
+
+    /**
+     * Find all jobInfo by owner with a specified status. Results are ordered by desc priority and limited thanks to
+     * page
+     */
+    List<JobInfo> findByOwnerAndStatusStatusOrderByPriorityDesc(String owner, JobStatus status, Pageable page);
+
+    /**
+     * Find top priority user pending jobs
+     * @param count number of results to retrieve
+     */
+    default List<JobInfo> findTopUserPendingJobs(String user, int count) {
+        return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, new PageRequest(0, count));
+    }
 }

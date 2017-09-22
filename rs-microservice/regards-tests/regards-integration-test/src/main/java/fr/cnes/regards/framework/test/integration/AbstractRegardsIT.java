@@ -60,7 +60,7 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
  * @author Sébastien Binda
  */
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
@@ -344,6 +344,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
             multipartRequestBuilder.file(file);
         }
         addSecurityHeader(multipartRequestBuilder, pAuthToken);
+        multipartRequestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
+        multipartRequestBuilder.header(HttpConstants.ACCEPT, "application/json");
         return multipartRequestBuilder;
     }
 
