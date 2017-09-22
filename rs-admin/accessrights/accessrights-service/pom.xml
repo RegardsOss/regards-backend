@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules.accessrights</groupId>
 	<artifactId>accessrights-service</artifactId>
-	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
@@ -33,6 +32,10 @@
 
 	<dependencies>
 		<!-- REGARDS Framework -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>authentication-regards</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-instance-regards</artifactId>

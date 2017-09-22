@@ -37,6 +37,10 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-core-starter</artifactId>
+		</dependency>
 		<!-- Framework Starters dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -45,11 +49,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
-		</dependency>
-		<!-- Core dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
 		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
