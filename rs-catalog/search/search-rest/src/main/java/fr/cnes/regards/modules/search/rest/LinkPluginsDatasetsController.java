@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import fr.cnes.regards.framework.hateoas.IResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -50,7 +49,6 @@ public class LinkPluginsDatasetsController {
     @Autowired
     private ILinkPluginsDatasetsService linkService;
 
-
     /**
      * The resource service. Autowired by Spring.
      */
@@ -60,8 +58,8 @@ public class LinkPluginsDatasetsController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset")
     @ResponseBody
-    public ResponseEntity<Resource<LinkPluginsDatasets>> retrieveLink(@PathVariable("datasetId") final String pDatasetId)
-            throws EntityNotFoundException {
+    public ResponseEntity<Resource<LinkPluginsDatasets>> retrieveLink(
+            @PathVariable("datasetId") final String pDatasetId) throws EntityNotFoundException {
         final LinkPluginsDatasets link = linkService.retrieveLink(pDatasetId);
         Resource<LinkPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);

@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.search.client;
 
 import java.util.Map;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 
@@ -25,6 +30,8 @@ public interface ICatalogClient {
     String DATASET_PATH = "/datasets";
 
     String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
+
+    String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects/searchwithoutfacets";
 
     /**
      * Return dataset
@@ -43,4 +50,8 @@ public interface ICatalogClient {
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "datasetIpId", required = false) final String datasetIpId,
             @RequestParam(value = "fileTypes") final String... fileTypes);
+
+    @RequestMapping(path = DATAOBJECTS_SEARCH_WITHOUT_FACETS, method = RequestMethod.GET)
+    ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
+            @RequestParam final Map<String, String> allParams, final Pageable pPageable);
 }

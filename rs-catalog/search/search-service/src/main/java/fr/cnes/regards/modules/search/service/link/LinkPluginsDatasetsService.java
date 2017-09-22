@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.service.link;
 
 import javax.annotation.PostConstruct;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;

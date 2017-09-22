@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -45,12 +46,12 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.search.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.search.plugin.IService;
 import fr.cnes.regards.modules.search.plugin.SampleServicePlugin;
 import fr.cnes.regards.modules.search.rest.plugin.TestService;
 import fr.cnes.regards.modules.search.service.link.ILinkPluginsDatasetsService;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
  * @author Sylvain Vissiere-Guerinet

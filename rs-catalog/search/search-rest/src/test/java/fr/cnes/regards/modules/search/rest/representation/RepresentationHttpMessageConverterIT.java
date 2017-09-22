@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -50,11 +51,11 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 import fr.cnes.regards.modules.search.rest.plugin.MarkdownRepresentation;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 @TestPropertySource(locations = { "classpath:test-representation.properties" })
 @ActiveProfiles("testAmqp")
@@ -108,9 +109,10 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
     @After
     public void cleanUp() {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-        PluginConfiguration geoJson= null;
+        PluginConfiguration geoJson = null;
         try {
-            geoJson = pluginService.getPluginConfigurationByLabel(RepresentationConfiguration.DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
+            geoJson = pluginService
+                    .getPluginConfigurationByLabel(RepresentationConfiguration.DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
             pluginService.deletePluginConfiguration(geoJson.getId());
         } catch (ModuleException e) { // NOSONAR
         }

@@ -113,7 +113,7 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                                                        facetConverter);
+                facetConverter);
     }
 
     /**
