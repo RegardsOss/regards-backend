@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.EventType;
@@ -47,7 +48,6 @@ import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFDataStorage;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFStoreWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFWorkingSubset;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 @ContextConfiguration(classes = { STAFDataStorageConfiguration.class, MockingResourceServiceConfiguration.class })
 @TestPropertySource(locations = { "classpath:test.properties" })
