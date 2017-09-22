@@ -27,17 +27,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
 import fr.cnes.regards.modules.acquisition.job.ScanJob;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -51,6 +51,9 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     public ChaineGenerationService(IChainGenerationRepository repository) {
         super();
@@ -98,7 +101,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         }
 
         // the difference between the previous activation date and current time must be greater than the periodicity
-        if (chain.getLastDateActivation() != null
+        if ((chain.getLastDateActivation() != null)
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
             StringBuilder strBuilder = new StringBuilder("Unable to run the chain generation ");
             strBuilder.append("<").append(chain.getLabel()).append("> : ").append("the periodicity of ")
@@ -113,7 +116,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         scanJobInfo.setParameters(new ChainGenerationJobParameter(chain));
         scanJobInfo.setClassName(ScanJob.class.getName());
         // TODO CMZ à revoir pour récupérer le user courant
-        scanJobInfo.setOwner(SecurityUtils.getActualUser());
+        scanJobInfo.setOwner(authResolver.getUser());
         scanJobInfo.setPriority(50);
 
         jobInfoService.createAsQueued(scanJobInfo);
