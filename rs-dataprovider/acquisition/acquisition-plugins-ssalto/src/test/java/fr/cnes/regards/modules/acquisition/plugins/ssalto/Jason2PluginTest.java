@@ -149,6 +149,8 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
+        addPluginTestDef("DA_TC_JASON2_FREQAJ_BALPUB", "COMMUN/BALISES_PUBLIQUES/FA",
+                "JA2_FBP_AXXCNE20080703_120400_20080701_235951_20080702_235551");
     }
 
     @Override

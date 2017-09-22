@@ -38,7 +38,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 
 /**
  * This class represents a data file feature
@@ -82,12 +81,12 @@ public class MetaFile implements IIdentifiable<Long> {
             foreignKey = @ForeignKey(name = "fk_acq_directory"))
     private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
-    /**
-     * The data file name found
-     *  TODO CMZ util ? le nom du fichier est dans {@link AcquisitionFile}
-     */
-    @Column(name = "file_name", length = MAX_FILE_NAME_LENGTH)
-    private String fileName;
+    //    /**
+    //     * The data file name found
+    //     *  TODO CMZ util ? le nom du fichier est dans {@link AcquisitionFile}
+    //     */
+    //    @Column(name = "file_name", length = MAX_FILE_NAME_LENGTH)
+    //    private String fileName;
 
     /**
      * A folder used to move invalid data file
@@ -178,14 +177,6 @@ public class MetaFile implements IIdentifiable<Long> {
 
     public void removeScanDirectory(ScanDirectory scanDirectory) {
         this.scanDirectories.remove(scanDirectory);
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 
     public String getInvalidFolder() {

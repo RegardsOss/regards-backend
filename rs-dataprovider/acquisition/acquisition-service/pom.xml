@@ -85,10 +85,5 @@
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>acquisition-plugins</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 </project>

@@ -38,12 +38,10 @@ public final class MetaFileBuilder {
 
     /**
      * Create a {@link MetaFile} 
-     * @param name the file name
      * @return
      */
-    public static MetaFileBuilder build(String name) {
+    public static MetaFileBuilder build() {
         final MetaFile mf = new MetaFile();
-        mf.setFileName(name);
         return new MetaFileBuilder(mf);
     }
 

@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.util.Set;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
  * @author Christophe Mertz
@@ -29,7 +26,5 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  */
 @PluginInterface(description = "Plugin to detect file to acquire in some directories")
 public interface IAcquisitionScanDirectoryPlugin extends IAcquisitionScanPlugin {
-
-    public Set<MetaFile> getMetaFiles();
 
 }

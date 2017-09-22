@@ -141,7 +141,7 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
                 .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a aMetaFile with the 3 ScanDirectory
-        MetaFile aMetaFile = MetaFileBuilder.build("meta file un").withInvalidFolder("/var/regards/data/invalid")
+        MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
@@ -210,7 +210,7 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
                 .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a MetaFile with the 2 ScanDirectory
-        MetaFile aMetaFile = MetaFileBuilder.build("meta file un").withInvalidFolder("/var/regards/data/invalid")
+        MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();
@@ -251,7 +251,7 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
                 .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a MetaFile with the 2 ScanDirectory
-        MetaFile aMetaFile = MetaFileBuilder.build("meta file un").withInvalidFolder("/var/regards/data/invalid")
+        MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();

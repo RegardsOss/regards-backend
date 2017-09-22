@@ -17,11 +17,13 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.plugins;
+package fr.cnes.regards.modules.acquisition.step;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -30,8 +32,10 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
+import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
+import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 
 /**
  * Class ScanDirectoryPlugin A default {@link Plugin} of type {@link IConnectionPlugin}. Allows to
@@ -44,17 +48,20 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
 
+    @Autowired
+    private IMetaProductService metaProductService;
+
     private static final String CHECKUM_ALGO = "SHA-256";
-    
-    public final static String META_PRODUCT_PARAM  = "meta-produt";
-    
-    public final static String META_FILE_PARAM  = "meta-file";
 
-    @PluginParameter(name = META_PRODUCT_PARAM)
-    MetaProduct metaProduct;
+    public final static String META_PRODUCT_PARAM = "meta-produt";
 
-    @PluginParameter(name = META_FILE_PARAM)
-    Set<MetaFile> metaFiles;
+    public final static String META_FILE_PARAM = "meta-file";
+
+    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
+    String metaProductName;
+
+    @PluginParameter(name = META_FILE_PARAM, optional = true)
+    Set<MetaFileDto> metaFiles;
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
@@ -66,9 +73,11 @@ public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
         // chercher des fichiers vérifiant le pattern
         // créer des AcquisitionFile pour les fichiers trouvés
 
-        Set<MetaFile> metas = getMetaFiles();
+        //        Set<MetaFile> metas = getMetaFiles();
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
+
+        MetaProduct metaProduct = metaProductService.retrieve(metaProductName);
 
         AcquisitionFile a = new AcquisitionFile();
         String aFileName = "Coucou";
@@ -77,7 +86,7 @@ public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
         a.setProduct(aProduct);
         a.setFileName(aFileName);
         a.setSize(33L);
-        a.setMetaFile(metas.iterator().next());
+        a.setMetaFile(null); //TODO CMZ à voir
         a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
         a.setAcqDate(OffsetDateTime.now());
         a.setAlgorithm(CHECKUM_ALGO);
@@ -91,7 +100,7 @@ public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
         b.setProduct(bProduct);
         b.setFileName(bFileName);
         b.setSize(156L);
-        b.setMetaFile(metas.iterator().next());
+        b.setMetaFile(null); //TODO CMZ à voir
         b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
         b.setAcqDate(OffsetDateTime.now());
         b.setAlgorithm(CHECKUM_ALGO);
@@ -99,11 +108,6 @@ public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
         acqFileList.add(b);
 
         return acqFileList;
-    }
-
-    @Override
-    public Set<MetaFile> getMetaFiles() {
-        return metaFiles;
     }
 
 }

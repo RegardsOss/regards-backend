@@ -52,6 +52,11 @@ public class MetaProductService implements IMetaProductService {
     public MetaProduct retrieve(Long id) {
         return metaProductRepository.findOne(id);
     }
+    
+    @Override
+    public MetaProduct retrieve(String label) {
+        return metaProductRepository.findByLabel(label);
+    }
 
     @Override
     public List<MetaProduct> retrieveAll() {

@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -55,6 +56,11 @@ public class ScanJob extends AbstractJob<Void> {
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
+        if (chainGeneration.getMetaProduct() == null) {
+            throw new RuntimeException("The required MetaProduct is missing for the ChainGeneration <"
+                    + chainGeneration.getLabel() + ">");
+        }
+        
         if (chainGeneration.getScanAcquisitionPluginConf() == null) {
             throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
                     + chainGeneration.getLabel() + ">");
@@ -63,11 +69,18 @@ public class ScanJob extends AbstractJob<Void> {
         // Lance le plugin de scan configuré dans la ChainGeneration
 
         try {
+            
+            // il faut construire les paramètres dynamiques à passer au Plugin
+            // en ayant le nom des paramètres ainsi que leur valeur en Json
+            // --> dans la chaine une Map String,String ave les noms de paramètres et 
+            
+//            PluginParametersFactory.build().addParameter()
             IAcquisitionScanPlugin scanPlugin = pluginService.getPlugin(chainGeneration.getScanAcquisitionPluginConf());
             Set<AcquisitionFile> acquistionFiles = scanPlugin.getAcquisitionFiles();
 
-            // pour chaque Product trouvé faire un AcquisitionProductJob
-            acquistionFiles.stream().map(ac -> ac.getProduct());
+            for (AcquisitionFile file : acquistionFiles) {
+                LOGGER.info(file.getProduct().toString());
+            }
 
             // question : quand persister en base
             // il faut logBook
