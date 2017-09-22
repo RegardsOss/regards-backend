@@ -15,11 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-common</artifactId>
+			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
@@ -36,10 +32,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.storage</groupId>
 			<artifactId>storage-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-domain</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>

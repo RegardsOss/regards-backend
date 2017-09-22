@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -14,6 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,13 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
+
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -44,11 +46,11 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
-import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
+import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
@@ -79,18 +81,21 @@ public class OrderService implements IOrderService {
     @Autowired
     private IAipClient aipClient;
 
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
 
-    private long bucketSize = bucketSizeMb * 1024l * 1024l;
+    private final long bucketSize = bucketSizeMb * 1024l * 1024l;
 
     /**
      * Set of DataTypes to retrieve on DataObjects
      */
-    private Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes()).map(DataType::valueOf)
+    private final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes()).map(DataType::valueOf)
             .collect(Collectors.toSet());
 
     @Override
@@ -101,7 +106,7 @@ public class OrderService implements IOrderService {
         order.setOwner(basket.getOwner());
         // To generate orderId
         order = repos.save(order);
-        int priority = orderJobService.computePriority(order.getOwner(), SecurityUtils.getActualRole());
+        int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
 
         // Dataset selections
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {

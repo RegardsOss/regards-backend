@@ -29,12 +29,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.service.IBasketService;
@@ -60,6 +60,9 @@ public class BasketController implements IResourceController<Basket> {
     @Autowired
     private IOrderService orderService;
 
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
     /**
      * Add a selection to the basket
      * @param basketSelectionRequest selection request
@@ -68,7 +71,7 @@ public class BasketController implements IResourceController<Basket> {
     @ResourceAccess(description = "Add a selection to the basket")
     @RequestMapping(method = RequestMethod.POST, value = "/selection")
     public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest) {
-        String user = SecurityUtils.getActualUser();
+        String user = authResolver.getUser();
         Basket basket = basketService.findOrCreate(user);
         String openSearchRequest = basketSelectionRequest.computeOpenSearchRequest();
         return ResponseEntity.ok(toResource(basketService.addSelection(basket.getId(), openSearchRequest)));
@@ -84,7 +87,7 @@ public class BasketController implements IResourceController<Basket> {
     @RequestMapping(method = RequestMethod.DELETE, value = "/dataset/{datasetSelectionId}")
     public ResponseEntity<Resource<Basket>> removeDatasetSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId) throws EmptyBasketException {
-        Basket basket = basketService.find(SecurityUtils.getActualUser());
+        Basket basket = basketService.find(authResolver.getUser());
         return ResponseEntity.ok(toResource(basketService.removeDatasetSelection(basket, dsSelectionId)));
     }
 
@@ -100,7 +103,7 @@ public class BasketController implements IResourceController<Basket> {
     public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
             @PathVariable("itemsSelectionDate") OffsetDateTime itemsSelectionDate) throws EmptyBasketException {
-        Basket basket = basketService.find(SecurityUtils.getActualUser());
+        Basket basket = basketService.find(authResolver.getUser());
         return ResponseEntity
                 .ok(toResource(basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate)));
     }
@@ -113,7 +116,7 @@ public class BasketController implements IResourceController<Basket> {
     @ResourceAccess(description = "Get the basket")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Resource<Basket>> get() throws EmptyBasketException {
-        Basket basket = basketService.find(SecurityUtils.getActualUser());
+        Basket basket = basketService.find(authResolver.getUser());
         return ResponseEntity.ok(toResource(basket));
     }
 
@@ -124,8 +127,8 @@ public class BasketController implements IResourceController<Basket> {
     @ResourceAccess(description = "Empty the basket")
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Void> empty() {
-        basketService.deleteIfExists(SecurityUtils.getActualUser());
-        return ResponseEntity.<Void>noContent().build();
+        basketService.deleteIfExists(authResolver.getUser());
+        return ResponseEntity.<Void> noContent().build();
     }
 
     @Override

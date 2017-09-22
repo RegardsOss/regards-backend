@@ -1,42 +1,29 @@
 package fr.cnes.regards.modules.order.rest;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import com.google.common.io.ByteStreams;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.service.IBasketService;
@@ -60,6 +47,9 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderService orderService;
 
     @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
 
     private static final String ADMIN_ROOT_PATH = "/orders";
@@ -70,7 +60,7 @@ public class OrderController implements IResourceController<OrderDto> {
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<Resource<OrderDto>> createOrder() throws EmptyBasketException {
-        String user = SecurityUtils.getActualUser();
+        String user = authResolver.getUser();
         Basket basket = basketService.find(user);
 
         Order order = orderService.createOrder(basket);
@@ -90,16 +80,15 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (user.isEmpty()) ?
-                orderService.findAll(pageRequest) :
-                orderService.findAll(user, pageRequest);
+        Page<Order> orderPage = (user.isEmpty()) ? orderService.findAll(pageRequest)
+                : orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Find all user orders", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
-        String user = SecurityUtils.getActualUser();
+        String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(orderService.findAll(user, pageRequest).map(OrderDto::fromOrder),
                                                   orderDtoPagedResourcesAssembler));
     }
@@ -107,8 +96,8 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/download")
-    public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) throws NotYetAvailableException {
+    public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response)
+            throws NotYetAvailableException {
         orderService.downloadOrderCurrentZip(orderId, response);
     }
 
