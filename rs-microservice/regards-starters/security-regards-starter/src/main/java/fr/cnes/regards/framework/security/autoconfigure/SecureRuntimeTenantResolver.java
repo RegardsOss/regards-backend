@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
@@ -33,7 +32,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * @author Marc Sordi
  *
  */
-public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver, IAuthenticationResolver {
+public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     /**
      * Class logger
@@ -94,25 +93,5 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver, IAut
     @Override
     public Boolean isInstance() {
         return instanceTenantName.equals(getTenant());
-    }
-
-    @Override
-    public String getUser() {
-        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        if ((authentication != null) && (authentication.getUser() != null)) {
-            return authentication.getUser().getName();
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public String getRole() {
-        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        if ((authentication != null) && (authentication.getUser() != null)) {
-            return authentication.getUser().getRole();
-        } else {
-            return null;
-        }
     }
 }

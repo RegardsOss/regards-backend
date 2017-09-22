@@ -38,10 +38,6 @@ public class AuthenticationAutoConfiguration {
 
     public static final String DEFAULT_ROLE = "DEFAULT_ROLE";
 
-    public AuthenticationAutoConfiguration() {
-        System.out.println("hello");
-    }
-
     @ConditionalOnMissingBean
     @Bean
     public IAuthenticationResolver defaultAuthenticationResolver() {
@@ -59,6 +55,5 @@ public class AuthenticationAutoConfiguration {
         public String getRole() {
             return DEFAULT_ROLE;
         }
-
     }
 }
