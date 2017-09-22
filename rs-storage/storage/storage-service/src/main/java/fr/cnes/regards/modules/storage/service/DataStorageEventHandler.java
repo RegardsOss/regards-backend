@@ -1,0 +1,328 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.storage.service;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.EventType;
+import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
+import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
+import fr.cnes.regards.modules.storage.domain.event.StorageAction;
+import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+
+/**
+ * Handler for DataStorageEvent events. This events are sent by the {@link ProgressManager} associated
+ * to the {@link IDataStorage} plugins. After each {@link DataFile} stored, deleted or restored a {@link DataStorageEvent}
+ * should be sent thought the {@link ProgressManager}.
+ *
+ * @author Sylvain Vissiere-Guerinet
+ * @author Sébastien Binda
+ */
+@Component
+public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AIPService.class);
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
+     * DAO to access {@link DataFile} entities.
+     */
+    @Autowired
+    private IDataFileDao dataFileDao;
+
+    /**
+     * DAO to access {@link AIP} entities through the {@link AIPDataBase} entities stored in db.
+     */
+    @Autowired
+    private IAIPDao aipDao;
+
+    /**
+     * AMQP Publisher.
+     */
+    @Autowired
+    private IPublisher publisher;
+
+    @Autowired
+    private ICachedFileService cachedFileService;
+
+    /**
+     * Service to retrieve and use Plugins more specificly the {@link IDataStorage} plugins.
+     */
+    @Autowired
+    private PluginService pluginService;
+
+    @Value("${regards.storage.workspace}")
+    private String workspace;
+
+    /**
+     * Dispatch actions to handle by {@link StorageAction}
+     */
+    @Override
+    public void handle(TenantWrapper<DataStorageEvent> wrapper) {
+        String tenant = wrapper.getTenant();
+        runtimeTenantResolver.forceTenant(tenant);
+        DataStorageEvent event = wrapper.getContent();
+        StorageAction action = event.getStorageAction();
+        StorageEventType type = event.getType();
+        switch (action) {
+            case STORE:
+                handleStoreAction(type, event);
+                break;
+            case DELETION:
+                handleDeletionAction(type, event);
+                break;
+            case RESTORATION:
+                handleRestorationAction(type, event);
+                break;
+            default:
+                throw new EnumConstantNotPresentException(StorageAction.class, action.toString());
+        }
+        runtimeTenantResolver.clearTenant();
+    }
+
+    /**
+     * Handle {@link DataStorageEvent} events for {@link StorageAction#RESTORATION} type.
+     * @param type {@link StorageEventType}
+     * @param event {@link DataStorageEvent}
+     */
+    private void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
+        Optional<DataFile> data = dataFileDao.findOneById(event.getDataFileId());
+        if (data.isPresent()) {
+            Path restorationPath = event.getRestorationPath();
+            switch (type) {
+                case SUCCESSFULL:
+                    cachedFileService.handleRestorationSuccess(data.get(), restorationPath);
+                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.get().getChecksum()));
+                    break;
+                case FAILED:
+                    cachedFileService.handleRestorationFailure(data.get());
+                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.get().getChecksum()));
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            LOG.warn("[DATA STORAGE EVENT] restoration of non existing DataFile id {}", event.getDataFileId());
+        }
+    }
+
+    /**
+     * Handle {@link DataStorageEvent} events for {@link StorageAction#DELETION} type.
+     * @param type {@link StorageEventType}
+     * @param event {@link DataStorageEvent}
+     */
+    private void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
+        // Check that the given DataFile id is associated to an existing DataFile from db.
+        Optional<DataFile> data = dataFileDao.findOneById(event.getDataFileId());
+        if (data.isPresent()) {
+            switch (type) {
+                case SUCCESSFULL:
+                    handleDeletionSuccess(data.get(), event.getChecksum());
+                    break;
+                case FAILED:
+                default:
+                    // IDataStorage plugin used to delete the file is not able to delete the file right now.
+                    // Maybe the file can be deleted later. So do nothing and just notify administrator.
+                    LOG.error("Error deleting file {}", event.getDataFileId());
+                    // TODO : Notofy deletion error.
+                    break;
+            }
+        } else {
+            LOG.error("[DATAFILE DELETION EVENT] Invalid DataFile deletion event. DataFile does not exists in db for id {}",
+                      event.getDataFileId());
+        }
+    }
+
+    /**
+     * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
+     * @param dataFileDeleted {@link DataFile} deleted.
+     * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link DataFile}
+     */
+    private void handleDeletionSuccess(DataFile dataFileDeleted, String checksumOfDeletedFile) {
+        // Get the associated AIP of the deleted DataFile from db
+        Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getIpId());
+        if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
+            AIP associatedAIP = optionalAssociatedAIP.get();
+            Optional<DataFile> metadataAIPFile = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
+            // If deleted file is not an AIP metadata file
+            // or if the AIP metadata file deleted is the current associated one
+            // Set the AIP to UPDATED state.
+            if (!DataType.AIP.equals(dataFileDeleted.getDataType()) || !metadataAIPFile.isPresent()
+                    || !(metadataAIPFile.get().getId().equals(dataFileDeleted.getId()))) {
+                // Get from the AIP all the pdi to remove. All pdi to remove are the pdi with the same checksum that
+                // the deleted DataFile.
+                // @formatter:off
+                Set<InformationObject> iosToRemove =
+                        associatedAIP.getInformationObjects()
+                            .stream()
+                            .filter(io -> checksumOfDeletedFile.equals(io.getPdi().getFixityInformation().getChecksum()))
+                            .collect(Collectors.toSet());
+                // @formatter:on
+                associatedAIP.getInformationObjects().removeAll(iosToRemove);
+                associatedAIP.setState(AIPState.UPDATED);
+                aipDao.save(associatedAIP);
+                LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state", dataFileDeleted.getAip().getIpId());
+                dataFileDao.remove(dataFileDeleted);
+            } else {
+                // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
+                // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
+                // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
+                LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.", dataFileDeleted.getAip().getIpId());
+            }
+        }
+    }
+
+    /**
+     * Handle {@link DataStorageEvent} events for {@link StorageAction#STORE} type.
+     * @param type {@link StorageEventType}
+     * @param event {@link DataStorageEvent}
+     */
+    private void handleStoreAction(StorageEventType type, DataStorageEvent event) {
+        Optional<DataFile> optionalData = dataFileDao.findOneById(event.getDataFileId());
+        if (optionalData.isPresent()) {
+            DataFile data = optionalData.get();
+            Optional<AIP> optionalAssociatedAip = aipDao.findOneByIpId(data.getAip().getIpId());
+            if (optionalAssociatedAip.isPresent()) {
+                AIP associatedAIP = optionalAssociatedAip.get();
+                switch (type) {
+                    case SUCCESSFULL:
+                        handleStoreSuccess(data, event.getChecksum(), event.getNewUrl(), event.getFileSize(),
+                                           event.getStorageConfId(), associatedAIP);
+                        break;
+                    case FAILED:
+                        handleStoreFailed(data, associatedAIP, event.getNewUrl());
+                        break;
+                    default:
+                        LOG.error("Unhandle DataStorage STORE event type {}", type);
+                        break;
+                }
+            } else {
+                LOG.warn("[DATA STORAGE EVENT] DataFile stored {} is not associated to an existing AIP",
+                         event.getDataFileId());
+            }
+        } else {
+            LOG.warn("[DATA STORAGE EVENT] DataFile stored {} does not exists", event.getDataFileId());
+        }
+    }
+
+    /**
+     * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
+     * @param storedDataFile {@link DataFile} successfully stored
+     * @param associatedAIP {@link AIP} associated to the given {@link DataFile} successfully stored
+     * @param event
+     */
+    private void handleStoreSuccess(DataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
+            Long storedFileSize, Long dataStoragePluginConfId, AIP associatedAIP) {
+        // update data status
+        PluginConfiguration dataStorageUsed = null;
+        try {
+            dataStorageUsed = pluginService.getPluginConfiguration(dataStoragePluginConfId);
+        } catch (ModuleException e) {
+            LOG.error("You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
+                      e);
+            // TODO : notify admin for invalid configuration.
+            return;
+        }
+        storedDataFile.setChecksum(storedFileChecksum);
+        storedDataFile.setFileSize(storedFileSize);
+        storedDataFile.setDataStorageUsed(dataStorageUsed);
+        storedDataFile.setState(DataFileState.STORED);
+        storedDataFile.setUrl(storedFileNewURL);
+        dataFileDao.save(storedDataFile);
+        LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrl());
+        if (storedDataFile.getDataType() == DataType.AIP) {
+            // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
+            // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
+            // workspace!
+            String dataFileName = storedDataFile.getChecksum() + AIPService.JSON_FILE_EXT;
+            Path aipDataFileFromWorkspace = Paths.get(workspace, runtimeTenantResolver.getTenant(), dataFileName);
+            if (aipDataFileFromWorkspace.toFile().exists()) {
+                try {
+                    Files.delete(aipDataFileFromWorkspace);
+                } catch (IOException e) {
+                    LOG.error("Error deleting temporary AIP metadata file from workspace {}", aipDataFileFromWorkspace,
+                              e);
+                }
+            }
+            associatedAIP.setState(AIPState.STORED);
+            aipDao.save(associatedAIP);
+            LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", storedDataFile.getAip().getIpId());
+            publisher.publish(new AIPEvent(associatedAIP));
+        } else {
+            // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
+            // just let set the new information about this DataFile
+            // @formatter:off
+            Optional<InformationObject> io =
+                    associatedAIP.getInformationObjects()
+                        .stream()
+                        .filter(informationObject -> informationObject.getPdi()
+                                    .getFixityInformation().getChecksum().equals(storedDataFile.getChecksum()))
+                        .findFirst();
+            // @formatter:on
+            if (io.isPresent()) {
+                io.get().getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
+                                                                      "File stored into REGARDS");
+                io.get().getPdi().getFixityInformation().setFileSize(storedDataFile.getFileSize());
+                io.get().getContentInformation().getDataObject().setUrl(storedDataFile.getUrl());
+                io.get().getContentInformation().getDataObject().setFilename(storedDataFile.getName());
+                aipDao.save(associatedAIP);
+            }
+        }
+    }
+
+    /**
+     * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
+     * @param storeFailFile {@link DataFile} not deleted.
+     * @param associatedAIP {@link AIP} Associated to the {@link DataFile} in error.
+     * @param newUrl {@link URL} new URL of the {@link DataFile}
+     */
+    private void handleStoreFailed(DataFile storeFailFile, AIP associatedAIP, URL newUrl) {
+        // update data status
+        storeFailFile.setState(DataFileState.ERROR);
+        storeFailFile.setUrl(newUrl);
+        dataFileDao.save(storeFailFile);
+        // Update associated AIP in db
+        associatedAIP.setState(AIPState.STORAGE_ERROR);
+        aipDao.save(associatedAIP);
+        publisher.publish(new AIPEvent(associatedAIP));
+    }
+}

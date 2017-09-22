@@ -22,27 +22,13 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
+ * @author Sébastien Binda
  */
 public interface IAIPService {
-
-    /**
-     * retrieve pages of AIP filtered according to the parameters
-     *
-     * @param pTo
-     *            maximum date of last event that affected any AIP wanted
-     * @param pFrom
-     *            minimum date of submission into REGARDS wanted
-     * @param pState
-     *            State of AIP wanted
-     * @param pPageable
-     *            pageable object
-     * @return filtered page of AIP
-     */
-    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable);
 
     /**
      * Run asynchronous jobs to handle new {@link AIP}s creation.<br/>
@@ -60,12 +46,26 @@ public interface IAIPService {
     Set<UUID> create(Set<AIP> pAIP) throws ModuleException;
 
     /**
-     * Update existing AIPs
-     * @param pAIP existing {@link Set}<{@link AIP}> to update
-     * @return {@link Set}<{@link UUID}> of scheduled update AIP Jobs.
-     * @throws ModuleException
+     * load files into the cache if necessary
+     * @param availabilityRequest
+     * @return checksums of files that are already available
      */
-    Set<UUID> update(Set<AIP> pAIP) throws ModuleException;
+    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest);
+
+    /**
+     * retrieve pages of AIP filtered according to the parameters
+     *
+     * @param pTo
+     *            maximum date of last event that affected any AIP wanted
+     * @param pFrom
+     *            minimum date of submission into REGARDS wanted
+     * @param pState
+     *            State of AIP wanted
+     * @param pPageable
+     *            pageable object
+     * @return filtered page of AIP
+     */
+    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable);
 
     /**
      * @param pIpId
@@ -81,23 +81,29 @@ public interface IAIPService {
     List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
 
     /**
-     * load files into the cache if necessary
-     * @param availabilityRequest
-     * @return checksums of files that are already available
+     * Handle update of physical AIP metadata files associated to {@link AIP} updated in database.
+     * This method is periodicly called by {@link UpdateMetadataScheduler}.
      */
-    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest);
-
     void updateAlreadyStoredMetadata();
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
     ///////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Schedule new {@link UpdateDataFilesJob}s for all {@link DataFile} of AIP metadata files given
+     * and set there state to STORING_METADATA.
+     * @param metadataToUpdate List of {@link DataFile} of new AIP metadata files mapped to old ones.
+     */
     void scheduleStorageMetadata(Set<DataFile> metadataToStore);
 
-    void scheduleStorageMetadataUpdate(Set<AIPService.History> metadataToUpdate);
+    /**
+     * Schedule
+     * @param metadataToUpdate
+     */
+    void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
 
-    Set<AIPService.History> prepareUpdatedAIP(Path tenantWorkspace);
+    Set<UpdatableMetadataFile> prepareUpdatedAIP(Path tenantWorkspace);
 
     Set<DataFile> prepareNotFullyStored(Path tenantWorkspace);
 }
