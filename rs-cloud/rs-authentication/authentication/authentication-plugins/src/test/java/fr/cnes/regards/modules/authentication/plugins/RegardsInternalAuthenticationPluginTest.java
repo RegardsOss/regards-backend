@@ -35,11 +35,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
-import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  *
