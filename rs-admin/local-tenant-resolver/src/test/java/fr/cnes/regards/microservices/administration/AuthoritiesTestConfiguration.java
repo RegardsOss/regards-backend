@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
@@ -68,6 +69,11 @@ public class AuthoritiesTestConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    @Bean
+    public IAuthenticationResolver mockAuthenticationResolver() {
+        return Mockito.mock(IAuthenticationResolver.class);
+    }
 
     /**
      *
