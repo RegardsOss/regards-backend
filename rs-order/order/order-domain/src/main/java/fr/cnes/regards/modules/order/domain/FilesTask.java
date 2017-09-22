@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.LeafTask;
 @PrimaryKeyJoinColumn(foreignKey = @ForeignKey(name = "fk_task_id"))
 public class FilesTask extends LeafTask {
 
-    @OneToMany(cascade = CascadeType.ALL) // dataFiles used on more than one DataObjects are considered as not identical.
+    @OneToMany // dataFiles used on more than one DataObjects are considered as not identical.
     @JoinColumn(name = "files_task_id", foreignKey = @ForeignKey(name = "fk_files_task"))
     private Set<OrderDataFile> files = new HashSet<>();
 

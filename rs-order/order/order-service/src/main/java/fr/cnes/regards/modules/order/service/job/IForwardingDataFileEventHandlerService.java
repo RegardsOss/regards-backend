@@ -16,30 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.service;
+package fr.cnes.regards.modules.order.service.job;
 
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+
 /**
- * Order job service.
- * This service is responsible of managing order jobs taken into account user restrictions on priorities and number of
- * concurrent jobs
+ * DataFileEvent handler that forward received DataFileEvents to subscribed handlers.
+ * That permits to override AMQP queue handler name limitation (one handler by class name) so that every StorageFilesJob
+ * can listen to DataFileEvents
  * @author oroussel
  */
-public interface IOrderJobService {
+public interface IForwardingDataFileEventHandlerService extends IHandler<DataFileEvent> {
     void onApplicationEvent(ContextRefreshedEvent event);
 
-    /**
-     * Compute priority for next order/jobInfo(s)
-     * @param user user concerned by priority computing
-     * @param role user role
-     * @return a number between 0 and 100
-     */
-    int computePriority(String user, String role);
+    void subscribe(IHandler<DataFileEvent> receiver);
 
-    /**
-     * Manage user order jobs ie look if restriction on user concurrent jobs count permits new ones to be added and add
-     * them if it is the case
-     */
-    void manageUserOrderJobInfos(String user);
+    void unsubscribe(IHandler<DataFileEvent> receiver);
+
 }

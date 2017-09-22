@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
  * @author oroussel
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.modules.order" })
+@ComponentScan(basePackages = { "fr.cnes.regards.modules.order.service" })
 @EnableAutoConfiguration
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
@@ -50,41 +50,4 @@ public class ServiceConfiguration {
         return Mockito.mock(IAipClient.class);
     }
 
-//    @Bean
-//    public IAipClient aipClient() {
-//        return new IAipClient() {
-//
-//            @Override
-//            public InputStream downloadFile(String aipId, String checksum) {
-//                return getClass().getResourceAsStream("/files/" + checksum);
-//            }
-//
-//            @Override
-//            public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
-//                    OffsetDateTime pTo, int pPage, int pSize) {
-//                return null;
-//            }
-//
-//            @Override
-//            public HttpEntity<Set<UUID>> createAIP(Set<AIP> aips) {
-//                return null;
-//            }
-//
-//            @Override
-//            public HttpEntity<List<DataObject>> retrieveAIPFiles(UniformResourceName pIpId) {
-//                return null;
-//            }
-//
-//            @Override
-//            public HttpEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
-//                    int pSize) {
-//                return null;
-//            }
-//
-//            @Override
-//            public HttpEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
-//                return null;
-//            }
-//        };
-//    }
 }
