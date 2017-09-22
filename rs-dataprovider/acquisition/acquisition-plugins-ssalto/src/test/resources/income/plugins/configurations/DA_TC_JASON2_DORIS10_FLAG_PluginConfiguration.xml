@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>DJ2_FLA_1Pa([PDS]{1})([0-9_]*)</fileNamePattern>
+	<translatedAttributeFromName>
+		<groupNumber>1</groupNumber>
+		<translationFilePath>/DORIS10TranslationFile.properties</translationFilePath>
+		<specification>
+			<name>PRODUCT_OPTION</name>
+			<valueType>STRING</valueType>
+			<order>3</order>
+		</specification>
+	</translatedAttributeFromName>
+	<compositeAttribute>
+		<name>CYCLE_RANGE</name>
+		<order>2</order>
+		<translatedAttributeFromCycleFile>
+			<otherAttributeName>START_DATE</otherAttributeName>
+			<specification>
+				<name>CYCLE_MIN</name>
+				<valueType>INTEGER</valueType>
+			</specification>
+		</translatedAttributeFromCycleFile>
+		<translatedAttributeFromCycleFile>
+			<otherAttributeName>STOP_DATE</otherAttributeName>
+			<specification>
+				<name>CYCLE_MAX</name>
+				<valueType>INTEGER</valueType>
+			</specification>
+		</translatedAttributeFromCycleFile>
+	</compositeAttribute>
+</PLUGIN_CONFIGURATION>

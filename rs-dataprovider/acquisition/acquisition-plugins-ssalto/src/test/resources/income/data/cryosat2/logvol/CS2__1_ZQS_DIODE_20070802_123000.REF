@@ -1,0 +1,11 @@
+020C5A84 (version 4.3)
+                                          sigma_initial_position	         m	       100.000000000000	            1	        00000064	0000	 0	16	O	O
+                                           sigma_initial_vitesse	     m-sec	         0.100000000000	         1000	        00000064	0002	 0	16	O	O
+                                              sigma_initial_pole	 sec_d_arc	         0.300000000000	         1000	        0000012C	0004	 0	16	O	O
+                                              sigma_initial_hill	    m-sec2	         0.000000500000	    100000000	        00000032	0006	 0	16	O	O
+                                        sigma_initial_frottement	    m-sec2	         0.000000200000	   1000000000	        000000C8	0008	 0	16	O	O
+                                         sigma_initial_frequence	     m-sec	        10.000000000000	          100	        000003E8	000A	 0	16	O	O
+                                             sigma_initial_tropo	         m	         0.100000000000	         1000	        00000064	000C	 0	16	O	O
+                    sigma_modele_acceleration_composante_radiale	    m-sec2	         0.000000100000	    100000000	        0000000A	000E	 0	16	O	O
+               sigma_modele_acceleration_composante_tangentielle	    m-sec2	         0.000000100000	    100000000	        0000000A	0010	 0	16	O	O
+                    sigma_modele_acceleration_composante_normale	    m-sec2	         0.000000100000	    100000000	        0000000A	0012	 0	16	O	O

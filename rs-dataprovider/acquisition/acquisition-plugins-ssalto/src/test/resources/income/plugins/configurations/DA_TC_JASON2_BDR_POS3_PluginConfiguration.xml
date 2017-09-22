@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>(POS3_)([1-2]{1})(_BDR_)(.{4})_([0-9]{8})(.*)</fileNamePattern>
+	<compositeAttribute>
+		<name>TIME_PERIOD</name>
+		<order>1</order>
+		<attributeFromName>
+			<groupNumber>5</groupNumber>
+			<specification>
+				<name>START_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<order>1</order>
+				<formatRead>yyyyMMdd</formatRead>
+			</specification>
+		</attributeFromName>
+		<attributeFromOther>
+			<otherAttributeName>START_DATE</otherAttributeName>
+			<specification>
+				<name>STOP_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<order>2</order>
+			</specification>
+		</attributeFromOther>
+	</compositeAttribute>
+<translatedAttributeFromName>
+	<groupNumber>2</groupNumber>
+	<translationFilePath>/BDR_POS3_TranslationFile.properties</translationFilePath>
+	<specification>
+		<name>PRODUCT_OPTION</name>
+		<valueType>STRING</valueType>
+		<order>3</order>
+	</specification>
+</translatedAttributeFromName>	
+	<fileInfoAttribute>
+		<fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+		<specification>
+			<name>FILE_CREATION_DATE</name>
+			<valueType>DATE_TIME</valueType>
+			<order>4</order>
+		</specification>
+	</fileInfoAttribute>
+	<attributeFromName>
+		<groupNumber>4</groupNumber>
+		<specification>
+			<name>OBJECT_VERSION</name>
+			<valueType>STRING</valueType>
+			<order>5</order>
+		</specification>
+	</attributeFromName>
+</PLUGIN_CONFIGURATION>

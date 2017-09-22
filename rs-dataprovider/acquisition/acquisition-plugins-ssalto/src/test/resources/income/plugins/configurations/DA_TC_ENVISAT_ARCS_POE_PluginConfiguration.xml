@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>ENVISAT_ARCS</fileNamePattern>
+	<compositeAttribute>
+		<name>TIME_PERIOD</name>
+		<order>1</order>
+		<fixedValueAttribute>
+			<fixedValue>2002-04-23T00:00:00</fixedValue>
+			<specification>
+				<name>START_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<formatRead>yyyy-MM-dd'T'HH:mm:ss</formatRead>
+			</specification>
+		</fixedValueAttribute>
+		<attributeFromAsciiFile>
+			<linePattern>\s*([0-9]{6}).*</linePattern>
+			<lineNumber>-2</lineNumber>
+			<groupNumber>1</groupNumber>
+			<specification>
+				<name>STOP_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<formatRead>ddMMyy</formatRead>
+				<calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetStopDateHours</calculationClass>
+			</specification>
+		</attributeFromAsciiFile>
+	</compositeAttribute>
+	<fileInfoAttribute>
+		<fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+		<specification>
+			<name>FILE_CREATION_DATE</name>
+			<valueType>DATE_TIME</valueType>
+			<order>3</order>
+		</specification>
+	</fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

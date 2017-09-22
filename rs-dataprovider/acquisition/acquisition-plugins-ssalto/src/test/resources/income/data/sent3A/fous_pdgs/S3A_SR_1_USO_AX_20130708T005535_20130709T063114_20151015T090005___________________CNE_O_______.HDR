@@ -1,0 +1,24 @@
+<?xml version ="1.0"?>
+<Earth_Explorer_Header Schema_Server_Url="http://earth.esa.int/sentinel3/xml">
+    <Fixed_Header>
+    <File_Name>S3A_SR_1_USO_AX_20130708T005535_20130709T063114_20151015T090005___________________CNE_O_______</File_Name>
+    <File_Description>DORIS USO drift file</File_Description>
+    <Notes></Notes>
+    <Mission>Sentinel-3A</Mission>
+    <File_Class>TEST</File_Class>
+    <File_Type>SR_1_USO_AX</File_Type>
+    <Validity_Period>
+        <Validity_Start>UTC=2013-07-08T00:55:35</Validity_Start>
+        <Validity_Stop>UTC=2013-07-09T06:31:14</Validity_Stop>
+    </Validity_Period>
+        <File_Version>0001</File_Version>
+    <Source>
+        <System>CNES</System>
+        <Creator>O_M</Creator>
+        <Creator_Version>4.5</Creator_Version>
+        <Creation_Date>UTC=2015-10-15T09:00:05</Creation_Date>
+    </Source>
+    </Fixed_Header>
+    <Variable_Header>
+    </Variable_Header>
+</Earth_Explorer_Header>

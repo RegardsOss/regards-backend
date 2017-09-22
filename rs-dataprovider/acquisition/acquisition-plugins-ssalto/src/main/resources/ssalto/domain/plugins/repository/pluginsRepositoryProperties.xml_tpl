@@ -1,0 +1,2 @@
+regards.acquisition.ssalto.plugin-conf-files-dir=@project.acquisition.plugins.confs.dir_TOKEN@
+regards.acquisition.ssalto.plugin-translation-files-dir=@project.acquisition.plugins.translations.dir_TOKEN@

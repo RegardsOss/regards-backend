@@ -1,0 +1,19 @@
+020C5A54 (version 4.3)
+                               hauteur_antenne_sol_2_GHz_Alcatel	         m	         0.510000000000	         1000	        000001FE	0000	 0	16	O	N
+                             hauteur_antenne_sol_400_MHz_Alcatel	         m	         0.335000000000	         1000	        0000014F	0002	 0	16	O	N
+                                hauteur_antenne_sol_2_GHz_Starec	         m	         0.487000000000	         1000	        000001E7	0004	 0	16	O	N
+                              hauteur_antenne_sol_400_MHz_Starec	         m	         0.000000000000	         1000	        00000000	0006	 0	16	O	N
+                               hauteur_antenne_sol_2_GHz_Autre_1	         m	         0.000000000000	         1000	        00000000	0008	 0	16	O	N
+                             hauteur_antenne_sol_400_MHz_Autre_1	         m	         0.000000000000	         1000	        00000000	000A	 0	16	O	N
+                               hauteur_antenne_sol_2_GHz_Autre_2	         m	         0.000000000000	         1000	        00000000	000C	 0	16	O	N
+                             hauteur_antenne_sol_400_MHz_Autre_2	         m	         0.000000000000	         1000	        00000000	000E	 0	16	O	N
+                                 emission_top_synchro_400_MHz_BM	       sec	         2.700000000000	         1000	        00000A8C	0010	 0	16	O	N
+                                   emission_top_synchro_2_GHz_BM	       sec	         2.700000000000	         1000	        00000A8C	0012	 0	16	O	N
+                                 emission_top_synchro_400_MHz_BL	       sec	         5.300000000000	         1000	        000014B4	0014	 0	16	O	N
+                                   emission_top_synchro_2_GHz_BL	       sec	         5.300000000000	         1000	        000014B4	0016	 0	16	O	N
+                                  le_delai_de_chauffage_de_l_ous	      s.u.	         1.000000000000	            1	        00000001	0018	 0	16	O	N
+                      la_qualite_initiale_des_donnees_de_synchro	       sec	         0.000005000000	   1000000000	        00001388	001C	 0	16	O	N
+                                             priorite_par_defaut	      s.u.	        50.000000000000	            1	        00000032	0020	 8	 8	O	N
+                                                 site_par_defaut	       deg	         8.000000000000	            1	        00000008	0024	 0	 8	O	N
+                                 balise_de_navigation_par_defaut	      s.u.	         1.000000000000	            1	        00000001	0028	 0	 8	O	N
+                                               le_to_des_donnees	      jour	      1827.000000000000	            1	        00000723	002C	 0	16	O	N

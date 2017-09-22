@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(SRL_XNG_OP)([a-zA-Z]{1})(3([0-9]{8}))</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromAsciiFile>
+            <linePattern>First_Measurement_Time_Of_Mission_2 =  ([0-9T:\-]*)\..*</linePattern>
+            <lineNumber>26</lineNumber>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyy-MM-dd'T'HH:mm:ss</formatRead>
+            </specification>
+        </attributeFromAsciiFile>
+        <attributeFromAsciiFile>
+            <linePattern>Last_Measurement_Time_Of_Mission_2 =  ([0-9T:\-]*)\..*</linePattern>
+            <lineNumber>27</lineNumber>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyy-MM-dd'T'HH:mm:ss</formatRead>
+            </specification>
+        </attributeFromAsciiFile>
+    </compositeAttribute>
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+        <order>2</order>
+        <attributeFromAsciiFile>
+            <linePattern>First_Cycle_Number_Of_Mission_2 = [ ]*([0-9]*);</linePattern>
+            <lineNumber>22</lineNumber>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>CYCLE_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromAsciiFile>
+        <attributeFromAsciiFile>
+            <linePattern>Last_Cycle_Number_Of_Mission_2 = [ ]*([0-9]*);</linePattern>
+            <lineNumber>23</lineNumber>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>CYCLE_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromAsciiFile>
+    </compositeAttribute>
+    <compositeAttribute>
+        <name>ORBIT_RANGE</name>
+        <order>3</order>
+        <attributeFromAsciiFile>
+            <linePattern>First_Pass_Number_Of_Mission_2 = [ ]*([0-9]*);</linePattern>
+            <lineNumber>24</lineNumber>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>ORBIT_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromAsciiFile>
+        <attributeFromAsciiFile>
+            <linePattern>Last_Pass_Number_Of_Mission_2 = [ ]*([0-9]*);</linePattern>
+            <lineNumber>25</lineNumber>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>ORBIT_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromAsciiFile>
+    </compositeAttribute>
+    <attributeFromOther>
+        <otherAttributeName>ORBIT_MIN</otherAttributeName>
+        <specification>
+            <name>PHASE</name>
+            <valueType>STRING</valueType>
+            <order>4</order>
+            <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.IsPairCalculation</calculationClass>
+        </specification>
+    </attributeFromOther>
+    <attributeFromName>
+        <groupNumber>1</groupNumber>
+        <groupNumber>3</groupNumber>
+        <specification>
+            <name>RADICAL</name>
+            <valueType>STRING</valueType>
+            <order>5</order>
+        </specification>
+    </attributeFromName>
+    <attributeFromName>
+        <groupNumber>2</groupNumber>
+        <specification>
+            <name>OBJECT_VERSION</name>
+            <valueType>STRING</valueType>
+            <order>6</order>
+        </specification>
+    </attributeFromName>
+    <attributeFromAsciiFile>
+        <linePattern>Product_Creation_Time = ([0-9T:\-]*)\..*</linePattern>
+        <lineNumber>9</lineNumber>
+        <groupNumber>1</groupNumber>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>7</order>    
+            <formatRead>yyyy-MM-dd'T'HH:mm:ss</formatRead>
+        </specification>
+    </attributeFromAsciiFile>
+</PLUGIN_CONFIGURATION>

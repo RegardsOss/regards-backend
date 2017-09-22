@@ -1,0 +1,123 @@
+DORIS Command History File
+Command history printout from time: 2008-12-02T00:00:00.000000 to time: 2008-12-02T23:59:59.999999
+Current printout time: 2008-12-03T14:00:04.830404  Print view mode: FULL  Sort order: EXECUTION  Filter: INACTIVE
+
+Name       Description              Sequence Release Time       Execution Time        S D C G B IL ST Source   Update Time           R GTO A SS 1122 CC 
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+OSC10500   NOP No Operation                  2008.337.08.46.35  2008.337.08.46.35.862 E E E        MS sun057   2008.337.08.46.36.067 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.48.49  2008.337.08.48.49.693 E E E        MS sun057   2008.337.08.48.49.854 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.50.58  2008.337.08.55.57.970 E E E        MS sun057   2008.337.08.51.01.333 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.51.01  2008.337.09.00.57.970 E E E        MS sun057   2008.337.08.51.03.785 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.51.12  2008.337.09.05.57.970 E E E        MS sun057   2008.337.08.51.15.048 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.51.50  2008.337.09.15.57.970 E E E        MS sun057   2008.337.08.51.53.042 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.51.51  2008.337.09.25.57.970 E E E        MS sun057   2008.337.08.51.55.651 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.51.53  2008.337.09.35.57.970 E E E        MS sun057   2008.337.08.51.56.351 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.08.51.54  2008.337.10.00.57.970 E E E        MS sun057   2008.337.08.51.56.832 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.00.04  2008.337.09.00.04.823 E E E        MS sun057   2008.337.09.00.04.982 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.10.30.57.970 E E E        MS sun057   2008.337.09.07.37.885 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.11.00.57.970 E E E        MS sun057   2008.337.09.07.40.797 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.11.30.57.970 E E E        MS sun057   2008.337.09.07.41.456 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.12.00.57.970 E E E        MS sun057   2008.337.09.07.41.457 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.12.30.57.970 E E E        MS sun057   2008.337.09.07.42.157 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.13.00.57.970 E E E        MS sun057   2008.337.09.07.42.787 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.13.30.57.970 E E E        MS sun057   2008.337.09.07.43.328 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.14.00.57.970 E E E        MS sun057   2008.337.09.07.43.987 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.14.30.57.970 E E E        MS sun057   2008.337.09.07.43.989 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.37  2008.337.15.00.57.970 E E E        MS sun057   2008.337.09.07.43.992 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.38  2008.337.15.30.57.970 E E E        MS sun057   2008.337.09.07.44.686 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.07.38  2008.337.16.00.57.970 E E E        MS sun057   2008.337.09.07.45.216 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.12.09  2008.337.09.12.10.175 E E E        MS sun057   2008.337.09.12.10.341 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.14.19  2008.337.17.30.57.970 E E E        MS sun057   2008.337.09.14.23.106 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.14.19  2008.337.18.30.57.970 E E E        MS sun057   2008.337.09.14.23.108 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.14.19  2008.337.20.30.57.970 E E E        MS sun057   2008.337.09.14.23.112 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.14.19  2008.338.00.30.57.970 E E E        MS sun057   2008.337.09.14.23.756 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.14.19  2008.338.02.30.57.970 E E E        MS sun057   2008.337.09.14.24.406 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 
+OSC10500   NOP No Operation                  2008.337.09.14.19  2008.338.06.30.57.970 E E E        MS sun057   2008.337.09.14.25.005 S SS               
+  OSP10311 FunctionID               Raw      Dec                1                                                     
+  OSP10313 ActivityID               Raw      Dec                0                                                     
+  OSP10306 NOP Code                 Raw      Dec                42405                                                 

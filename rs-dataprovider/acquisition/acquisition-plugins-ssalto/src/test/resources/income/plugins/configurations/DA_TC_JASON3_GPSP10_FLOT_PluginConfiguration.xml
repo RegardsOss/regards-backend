@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>(JA3_.*)</fileNamePattern>
+
+	<compositeAttribute>
+		<name>CYCLE_RANGE</name>
+		<order>3</order>
+		<translatedAttributeFromCycleFile>
+			<otherAttributeName>START_DATE</otherAttributeName>
+			<specification>
+				<name>CYCLE_MIN</name>
+				<valueType>INTEGER</valueType>
+			</specification>
+		</translatedAttributeFromCycleFile>
+		<translatedAttributeFromCycleFile>
+			<otherAttributeName>STOP_DATE</otherAttributeName>
+			<specification>
+				<name>CYCLE_MAX</name>
+				<valueType>INTEGER</valueType>
+			</specification>
+		</translatedAttributeFromCycleFile>
+	</compositeAttribute>
+
+</PLUGIN_CONFIGURATION>
