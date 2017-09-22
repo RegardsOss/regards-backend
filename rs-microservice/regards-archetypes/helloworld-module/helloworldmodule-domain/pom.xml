@@ -34,7 +34,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
+			<artifactId>jpa-data-regards</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>

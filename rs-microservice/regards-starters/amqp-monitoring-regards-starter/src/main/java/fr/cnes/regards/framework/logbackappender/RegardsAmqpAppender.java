@@ -31,9 +31,9 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.Publisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 
 /**
  *
@@ -46,7 +46,7 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAppender.class);
-    
+
     /**
      * Unknow user. No user authenticated (JWT Token).
      */
@@ -55,10 +55,13 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     /**
      * The {@link Publisher} used to send {@link LogEvent}
      */
-    private IPublisher publisher;
+    private final IPublisher publisher;
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    IAuthenticationResolver authResolver;
 
     /**
      * The microservice name
@@ -74,8 +77,8 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent eventObject) {
 
-        String user = SecurityUtils.getActualUser();
-        if (user == null){
+        String user = authResolver.getUser();
+        if (user == null) {
             user = UNDEFINED_USER;
         }
         String tenant = runtimeTenantResolver.getTenant();

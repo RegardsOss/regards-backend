@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-import fr.cnes.regards.framework.file.utils.validation.HandledMessageDigestAlgorithm;
+import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 /**
  *

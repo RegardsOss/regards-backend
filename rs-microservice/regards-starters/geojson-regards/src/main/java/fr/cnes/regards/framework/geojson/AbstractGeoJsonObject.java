@@ -21,8 +21,6 @@ package fr.cnes.regards.framework.geojson;
 import java.util.Arrays;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJsonObject common model
@@ -37,14 +35,12 @@ public abstract class AbstractGeoJsonObject {
     /**
      * Optional bounding box
      */
-    @Nullable
     protected Double[] bbox;
 
     /**
      * Optional coordinate reference system. If not specified, WGS84 is considered as the default CRS.<br/>
      * CRS is not in RFC 7946 -August 2016.
      */
-    @Nullable
     protected String crs;
 
     public AbstractGeoJsonObject(GeoJsonType type) {

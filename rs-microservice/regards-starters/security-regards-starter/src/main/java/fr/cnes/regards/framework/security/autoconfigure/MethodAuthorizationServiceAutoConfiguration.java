@@ -26,6 +26,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.authentication.autoconfigure.AuthenticationAutoConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
@@ -43,7 +45,7 @@ import fr.cnes.regards.framework.security.event.SecurityEventHandler;
  */
 @Configuration
 @ConditionalOnWebApplication
-@AutoConfigureBefore(MultitenantAutoConfiguration.class)
+@AutoConfigureBefore({ AuthenticationAutoConfiguration.class, MultitenantAutoConfiguration.class })
 public class MethodAuthorizationServiceAutoConfiguration {
 
     /**
@@ -59,6 +61,12 @@ public class MethodAuthorizationServiceAutoConfiguration {
     @Bean
     public IRuntimeTenantResolver secureThreadTenantResolver() {
         return new SecureRuntimeTenantResolver(instanceTenantName);
+    }
+
+    @ConditionalOnMissingBean
+    @Bean
+    public IAuthenticationResolver secureThreadAuthenticationResolver() {
+        return new SecureRuntimeAuthenticationResolver();
     }
 
     @Bean

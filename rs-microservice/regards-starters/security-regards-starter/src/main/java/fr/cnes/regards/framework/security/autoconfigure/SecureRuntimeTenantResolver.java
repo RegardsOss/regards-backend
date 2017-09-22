@@ -81,8 +81,9 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
         LOGGER.debug("Clearing tenant");
         tenantHolder.remove();
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        // when we clear the tenant, system will act by getting it from the security context holder, so we do the same for logging
-        if(authentication!=null) {
+        // when we clear the tenant, system will act by getting it from the security context holder, so we do the same
+        // for logging
+        if (authentication != null) {
             MDC.put("tenant", authentication.getTenant());
         } else {
             MDC.put("tenant", null);

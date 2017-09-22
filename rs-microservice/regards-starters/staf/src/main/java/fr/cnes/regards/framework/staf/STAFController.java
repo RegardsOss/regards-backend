@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.file.utils.ChecksumUtils;
-import fr.cnes.regards.framework.file.utils.CutFileUtils;
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
 import fr.cnes.regards.framework.staf.domain.PhysicalCutFile;
@@ -40,30 +38,34 @@ import fr.cnes.regards.framework.staf.exception.STAFTarException;
 import fr.cnes.regards.framework.staf.protocol.STAFURLException;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 import fr.cnes.regards.framework.staf.protocol.STAFURLParameter;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.file.CutFileUtils;
 
 /**
  * STAF Controller to handle STAF recommandations to store and retrieve files.<br/>
  * Recommandations are :
  * <ul>
- * <li>Do not store short files as single files into STAF Archive. Store short files into a single archive file (TAR File)</li>
+ * <li>Do not store short files as single files into STAF Archive. Store short files into a single archive file (TAR
+ * File)</li>
  * <li>Do not store files that exceed Xoctets. Cut too big files into multiple files in STAF</li>
  * </ul>
  * <br/>
  * To archive files :
  * <ul>
- * <li> 1. prepare files with {@link #prepareFilesToArchive} method.</li>
- * <li> 2. do archive prepared files with {@link #archiveFiles} method.</li>
- * <li> 3. Retrieve link between raw files and archived files with the {@link #getRawFilesArchived} method.</li>
+ * <li>1. prepare files with {@link #prepareFilesToArchive} method.</li>
+ * <li>2. do archive prepared files with {@link #archiveFiles} method.</li>
+ * <li>3. Retrieve link between raw files and archived files with the {@link #getRawFilesArchived} method.</li>
  * </ul>
  * To retrieve files :
  * <ul>
- * <li> 1. prepare files with {@link #prepareFilesToRestore} method. </li>
- * <li> 2. do restore prepared files with {@link #restoreFiles} method. All files are restored in the given directory.</li>
+ * <li>1. prepare files with {@link #prepareFilesToRestore} method.</li>
+ * <li>2. do restore prepared files with {@link #restoreFiles} method. All files are restored in the given
+ * directory.</li>
  * </ul>
  * To delete files :
  * <ul>
- * <li>1. prepare files with {@link #prepareFilesToDelete} method. </li>
- * <li>2. do delete files with {@link #deleteFiles} method. </li>
+ * <li>1. prepare files with {@link #prepareFilesToDelete} method.</li>
+ * <li>2. do delete files with {@link #deleteFiles} method.</li>
  * </ul>
  *
  * @author Sébastien Binda
@@ -252,7 +254,8 @@ public class STAFController {
                 return Sets.newHashSet();
             }
 
-            // 2. Prepare TAR Files for delation or replacement (replacement if only a part of the files in the TAR are to delete)
+            // 2. Prepare TAR Files for delation or replacement (replacement if only a part of the files in the TAR are
+            // to delete)
             for (PhysicalTARFile tar : stafTARToRetrieve) {
                 try {
                     retrieveFileFromSTAF(tar);
@@ -286,7 +289,8 @@ public class STAFController {
             try {
                 Set<String> replacedFiles = stafService.archiveFiles(filesToReplace, Paths.get("/"), true);
                 for (PhysicalTARFile tar : stafTARToRetrieve) {
-                    // If tar is not in error status and is present in the replaced files so the files in TAR are well DELETED.
+                    // If tar is not in error status and is present in the replaced files so the files in TAR are well
+                    // DELETED.
                     if (!PhysicalFileStatusEnum.ERROR.equals(tar.getStatus())
                             && replacedFiles.contains(tar.getLocalFilePath().toString())) {
                         LOG.info("[STAF] TAR File replaced {}", tar.getSTAFFilePath());
@@ -449,12 +453,13 @@ public class STAFController {
     }
 
     /**
-     * Create the list of {@link AbstractPhysicalFile} associated to the given list of {@link Path} file to archive per STAF node.
+     * Create the list of {@link AbstractPhysicalFile} associated to the given list of {@link Path} file to archive per
+     * STAF node.
      * @param pFileToArchivePerStafNode {@link Map}<{@link Path},{@link Set}<{@link Path}>> <br/>
-     * <ul>
-     * <li>key : STAF Node where to store the {@link Path}s in map value</li>
-     * <li>value : {@link Path} Files to store for the given STAF Node.</li>
-     * </ul>
+     *            <ul>
+     *            <li>key : STAF Node where to store the {@link Path}s in map value</li>
+     *            <li>value : {@link Path} Files to store for the given STAF Node.</li>
+     *            </ul>
      * @param pMode {@link STAFArchiveModeEnum} Archiving mode.
      * @return {@link Set}<{@link AbstractPhysicalFile}> prepared files to archive with STAF recomandations.
      */
@@ -481,7 +486,7 @@ public class STAFController {
 
     public Set<AbstractPhysicalFile> prepareFilesToDelete(Set<URL> pSTAFFilesToDelete) {
         Set<AbstractPhysicalFile> physicalFiles = Sets.newHashSet();
-        //1. Create STAF File from given urls
+        // 1. Create STAF File from given urls
         for (URL stafURL : pSTAFFilesToDelete) {
             try {
                 AbstractPhysicalFile physicalFile = getSTAFPhysicalFile(stafURL, physicalFiles,
@@ -508,7 +513,7 @@ public class STAFController {
 
     public Set<AbstractPhysicalFile> prepareFilesToRestore(Set<URL> pSTAFFilesToRestore) {
         Set<AbstractPhysicalFile> physicalFiles = Sets.newHashSet();
-        //1. Create STAF File from given urls
+        // 1. Create STAF File from given urls
         for (URL stafURL : pSTAFFilesToRestore) {
             try {
                 AbstractPhysicalFile physicalFile = getSTAFPhysicalFile(stafURL, physicalFiles,
@@ -825,7 +830,8 @@ public class STAFController {
             // 2. Get file archiving mode
             STAFArchiveModeEnum mode = getFileArchiveMode(pFileToArchive.toFile().length());
 
-            // 3. Calculate MD5 signature of file. This signature is used into STAF System for file names to ensure unicity.
+            // 3. Calculate MD5 signature of file. This signature is used into STAF System for file names to ensure
+            // unicity.
             String stafFileName = calculateSTAFFileName(pFileToArchive);
 
             // 3. Manage file transformation if needed before staf storage
