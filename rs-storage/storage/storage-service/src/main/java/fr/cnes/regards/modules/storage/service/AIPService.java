@@ -93,8 +93,8 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
  * This service also run scheduled actions :
  * <ul>
  * <li>{@link #storeMetadata} : This cron action executed every minutes handle
- *  update of {@link AIP} state by looking for all associated {@link DataFile} states.
- *  An {@link AIP} is STORED when all his {@link DataFile}s are STORED</li>
+ * update of {@link AIP} state by looking for all associated {@link DataFile} states.
+ * An {@link AIP} is STORED when all his {@link DataFile}s are STORED</li>
  * </ul>
  *
  * @author Sylvain Vissiere-Guerinet
@@ -235,7 +235,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<String> requestedChecksums = availabilityRequest.getChecksums();
         Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
         Set<String> errors = Sets.newHashSet();
-        //first lets identify the files that we don't recognize
+        // first lets identify the files that we don't recognize
         if (dataFiles.size() != requestedChecksums.size()) {
             Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
             errors.addAll(Sets.difference(requestedChecksums, dataFilesChecksums));
@@ -338,7 +338,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * This method scheduls {@link StoreDataFilesJob} or {@link StoreMetadataFilesJob} to store given {@link DataFile}s.<br/>
+     * This method scheduls {@link StoreDataFilesJob} or {@link StoreMetadataFilesJob} to store given
+     * {@link DataFile}s.<br/>
      * A Job is scheduled for each {@link IWorkingSubset} of each {@link PluginConfiguration}.<br/>
      * @param storageWorkingSetMap List of {@link DataFile} to store per {@link PluginConfiguration}.
      * @param storingData FALSE to store {@link DataType#AIP}, or TRUE for all other type of {@link DataFile}.
@@ -360,10 +361,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 if (storingData) {
-                    jobsToSchedule.add(new JobInfo(0, parameters, SecurityUtils.getActualUser(),
-                            StoreDataFilesJob.class.getName()));
+                    jobsToSchedule
+                            .add(new JobInfo(0, parameters, authResolver.getUser(), StoreDataFilesJob.class.getName()));
                 } else {
-                    jobsToSchedule.add(new JobInfo(0, parameters, SecurityUtils.getActualUser(),
+                    jobsToSchedule.add(new JobInfo(0, parameters, authResolver.getUser(),
                             StoreMetadataFilesJob.class.getName()));
                 }
 
@@ -377,7 +378,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to create {@link IWorkingSubset}
+     * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to create
+     * {@link IWorkingSubset}
      * of {@link DataFile}s.
      * @param storageWorkingSetMap List of {@link DataFile} to prepare.
      * @param dataStorageConf {@link PluginConfiguration}
@@ -456,7 +458,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * This cron action executed every minutes handle  update of {@link AIP} state by
+     * This cron action executed every minutes handle update of {@link AIP} state by
      * looking for all associated {@link DataFile} states. An {@link AIP} is STORED
      * when all his {@link DataFile}s are STORED.
      */
@@ -583,7 +585,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Prepare all AIP in UPDATED state in order to create and store the new AIP metadata file (descriptor file) asscoiated.<br/>
+     * Prepare all AIP in UPDATED state in order to create and store the new AIP metadata file (descriptor file)
+     * asscoiated.<br/>
      * After an AIP is updated in database, this method write the new {@link DataFile} of the AIP metadata on disk
      * and return the list of created {@link DataFile} mapped to the old {@link DataFile} of the updated AIPs.
      * @param tenantWorkspace {@link Path} to the local directory where to write AIP files.
@@ -609,7 +612,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     result.add(new UpdatableMetadataFile(existingAIPMetadataFile, newAIPMetadataFile));
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
-                    // if we don't have a meta to store that means a problem happened and we set the aip to STORAGE_ERROR
+                    // if we don't have a meta to store that means a problem happened and we set the aip to
+                    // STORAGE_ERROR
                     updatedAip.setState(AIPState.STORAGE_ERROR);
                     aipDao.save(updatedAip);
                     publisher.publish(new AIPEvent(updatedAip));
@@ -627,7 +631,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         try {
             // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
             doScheduleStorageMetadataUpdate(metadataToUpdate);
-            //to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to STORING_METADATA
+            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
+            // STORING_METADATA
             Set<AIP> aips = metadataToUpdate.stream().map(oldNew -> oldNew.getNewOne().getAip())
                     .collect(Collectors.toSet());
             for (AIP aip : aips) {
@@ -679,8 +684,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
                         oldOneCorrespondingToWorkingSubset
                                 .toArray(new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
-                jobsToSchedule.add(new JobInfo(0, parameters, SecurityUtils.getActualUser(),
-                        UpdateDataFilesJob.class.getName()));
+                jobsToSchedule
+                        .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
             }
         }
         // scheduleJob for files just give to the job the AIP ipId or id
