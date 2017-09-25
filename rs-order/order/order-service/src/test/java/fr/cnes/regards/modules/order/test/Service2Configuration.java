@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +47,7 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -129,6 +131,11 @@ public class Service2Configuration {
             }
         };
 
+    }
+
+    @Bean
+    public IAuthenticationResolver mockAuthResolver() {
+        return Mockito.mock(IAuthenticationResolver.class);
     }
 
     private static DataType getDataType(String filename) {

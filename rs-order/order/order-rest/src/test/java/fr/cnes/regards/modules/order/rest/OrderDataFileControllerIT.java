@@ -16,13 +16,9 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -42,13 +38,12 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * @author oroussel
  */
-@TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(classes = OrderConfiguration.class)
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Autowired
@@ -73,23 +68,6 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
                                                                                 "ORDER", UUID.randomUUID(), 1);
-
-    @Configuration
-    static class Conf {
-
-        @Bean
-        public ICatalogClient catalogClient() {
-            return Mockito.mock(ICatalogClient.class);
-        }
-
-        @Bean
-        public IAipClient aipClient() {
-            IAipClient mock = Mockito.mock(IAipClient.class);
-            Mockito.when(mock.downloadFile(Matchers.anyString(), Mockito.eq("FILE1")))
-                    .thenReturn(this.getClass().getResourceAsStream("/files/file1.txt"));
-            return mock;
-        }
-    }
 
     @Before
     public void init() {
@@ -120,10 +98,11 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         dataFile1.setName("file1.txt");
         dataFile1.setIpId(DO1_IP_ID);
         dataFile1.setOnline(true);
-        String checksum = "FILE1";
-        dataFile1.setChecksum(checksum);
+        // Use filename as checksum (same as OrderControllerIT)
+        dataFile1.setChecksum(dataFile1.getName());
         dataFile1.setOrderId(order.getId());
         dataFile1.setMimeType(MediaType.TEXT_PLAIN);
+        dataFileRepository.save(dataFile1);
         files1Task.addFile(dataFile1);
         ds1Task.addReliantTask(files1Task);
 
@@ -151,7 +130,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         tenantResolver.forceTenant(DEFAULT_TENANT); // ?
 
         Optional<OrderDataFile> dataFileOpt = dataFileRepository
-                .findFirstByChecksumAndIpIdAndOrderId(checksum, DO1_IP_ID, order.getId());
+                .findFirstByChecksumAndIpIdAndOrderId(dataFile1.getChecksum(), DO1_IP_ID, order.getId());
         Assert.assertTrue(dataFileOpt.isPresent());
         Assert.assertEquals(FileState.DOWNLOADED,
                             dataFileOpt.get().getState());
