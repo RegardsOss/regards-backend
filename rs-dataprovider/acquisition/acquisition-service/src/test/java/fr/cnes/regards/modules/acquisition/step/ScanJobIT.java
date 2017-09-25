@@ -20,7 +20,10 @@
 package fr.cnes.regards.modules.acquisition.step;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -43,10 +46,13 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -55,12 +61,14 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
+import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 
 /**
@@ -71,7 +79,7 @@ import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 
-public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
+public class ScanJobIT extends AbstractRegardsServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
 
@@ -85,8 +93,18 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
+    public final static String META_PRODUCT_PARAM = "meta-produt";
+
+    public final static String META_FILE_PARAM = "meta-file";
+
     @Autowired
     private IChainGenerationService chainService;
+
+    @Autowired
+    private IMetaProductService metaProductService;
+
+    @Autowired
+    private IMetaFileService metaFileService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -102,6 +120,9 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     IPluginConfigurationRepository pluginConfigurationRepository;
+
+    @Autowired
+    private IMetaProductRepository metaProductRepository;;
 
     @Autowired
     private IPluginService pluginService;
@@ -121,8 +142,11 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() {
 
+        cleanDb();
+
+        this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
+
         this.chain = ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get();
-        this.metaProduct = MetaProductBuilder.build(META_PRODUCT_NAME).get();
         this.chain.setMetaProduct(metaProduct);
 
         // Create 2 ScanDirectory
@@ -131,27 +155,27 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
         ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input2")
                 .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
 
-        metaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+        metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
-                .addScanDirectory(scanDir2).get();
-
-        cleanDb();
+                .addScanDirectory(scanDir2).get());
     }
 
     @Test
     public void runActiveChainGeneration() throws ModuleException {
         LOGGER.info("start");
 
-        String metaFileJson = new Gson().toJson(MetaFileDto.fromMetaFile(metaFile));
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
 
+        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
-        PluginConfiguration plgConf = getPluginConfiguration("ScanDirectoryPlugin",
+        PluginConfiguration plgConf = getPluginConfiguration("TestScanDirectoryPlugin",
                                                              IAcquisitionScanDirectoryPlugin.class);
-
         chain.setScanAcquisitionPluginConf(plgConf.getId());
-        // TODO CMZ : passer les paramètres dynamiques : MetaProduct, Set<MetaFile> sous forme de Json
+        chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
 
         boolean res = chainService.run(chain);
         Assert.assertTrue(res);
@@ -159,7 +183,7 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
         // tester que le job s'exécute et qu'il fait ce qui est attendu
 
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage());
             Assert.fail();
@@ -198,6 +222,7 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
     @After
     public void cleanDb() {
         jobInfoRepository.deleteAll();
+        metaProductRepository.deleteAll();
     }
 
     // TODO CMZ à mettre dans PluginService
@@ -221,6 +246,16 @@ public class ScanJobIT extends AbstractRegardsServiceTransactionalIT {
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
                 "Automatic plugin configuration for plugin id : " + pluginId);
         pluginConfiguration.setPluginId(pluginId);
+
+        List<PluginParameter> plgParams = new ArrayList<>();
+        for (PluginParameterType param : metaDatas.get(0).getParameters()) {
+            PluginParameter plgParam = new PluginParameter(param.getName(), param.getDefaultValue());
+            plgParam.setName(param.getName());
+            plgParam.setValue(param.getDefaultValue());
+            plgParam.setIsDynamic(param.isOptional());
+            plgParams.add(plgParam);
+        }
+        pluginConfiguration.setParameters(plgParams);
 
         return pluginService.savePluginConfiguration(pluginConfiguration);
     }

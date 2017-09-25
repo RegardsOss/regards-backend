@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,6 +35,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
@@ -119,6 +122,9 @@ public class ChainGeneration implements IIdentifiable<Long> {
      */
     @Column(name = "scan_plugin")
     private Long scanAcquisitionPluginConf;
+
+    @Transient
+    private Map<String, String> scanAcquisitionParameter = new HashMap<>();
 
     /**
      * A {@link PluginConfiguration} of a {@link ICheckFilePlugin}
@@ -244,6 +250,18 @@ public class ChainGeneration implements IIdentifiable<Long> {
 
     public void setCheckAcquisitionPluginConf(Long checkAcquisitionPluginConf) {
         this.checkAcquisitionPluginConf = checkAcquisitionPluginConf;
+    }
+
+    public Map<String, String> getScanAcquisitionParameter() {
+        return scanAcquisitionParameter;
+    }
+
+    public void setScanAcquisitionParameter(Map<String, String> scanAcquisitionParameter) {
+        this.scanAcquisitionParameter = scanAcquisitionParameter;
+    }
+
+    public void addScanAcquisitionParameter(String name, String value) {
+        this.scanAcquisitionParameter.put(name, value);
     }
 
     @Override

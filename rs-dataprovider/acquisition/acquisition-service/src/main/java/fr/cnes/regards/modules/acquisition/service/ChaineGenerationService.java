@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
@@ -54,6 +55,9 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IPluginService pluginService;
 
     public ChaineGenerationService(IChainGenerationRepository repository) {
         super();
@@ -111,17 +115,18 @@ public class ChaineGenerationService implements IChainGenerationService {
             return false;
         }
 
+        chain.setLastDateActivation(OffsetDateTime.now());
+
         // Create a ScanJob
         JobInfo scanJobInfo = new JobInfo();
         scanJobInfo.setParameters(new ChainGenerationJobParameter(chain));
         scanJobInfo.setClassName(ScanJob.class.getName());
-        // TODO CMZ à revoir pour récupérer le user courant
         scanJobInfo.setOwner(authResolver.getUser());
         scanJobInfo.setPriority(50);
-
+        
         jobInfoService.createAsQueued(scanJobInfo);
 
-        chain.setLastDateActivation(OffsetDateTime.now());
+        // TODO CMZ écouter la fin du Job
 
         return true;
 

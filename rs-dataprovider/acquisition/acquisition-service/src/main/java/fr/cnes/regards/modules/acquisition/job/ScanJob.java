@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.job;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -50,17 +52,14 @@ public class ScanJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        // quand ca marchera une classe abstraite pour implémenter la détection des AcquisitionFile
-        // le reste des traitements doit être standard indépendemment de la détection des fichiers par le Plugin
-
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
         if (chainGeneration.getMetaProduct() == null) {
-            throw new RuntimeException("The required MetaProduct is missing for the ChainGeneration <"
-                    + chainGeneration.getLabel() + ">");
+            throw new RuntimeException(
+                    "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
         }
-        
+
         if (chainGeneration.getScanAcquisitionPluginConf() == null) {
             throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
                     + chainGeneration.getLabel() + ">");
@@ -69,13 +68,17 @@ public class ScanJob extends AbstractJob<Void> {
         // Lance le plugin de scan configuré dans la ChainGeneration
 
         try {
-            
-            // il faut construire les paramètres dynamiques à passer au Plugin
-            // en ayant le nom des paramètres ainsi que leur valeur en Json
-            // --> dans la chaine une Map String,String ave les noms de paramètres et 
-            
-//            PluginParametersFactory.build().addParameter()
-            IAcquisitionScanPlugin scanPlugin = pluginService.getPlugin(chainGeneration.getScanAcquisitionPluginConf());
+            PluginParametersFactory factory = PluginParametersFactory.build();
+            for (Map.Entry<String, String> entry : chainGeneration.getScanAcquisitionParameter().entrySet()) {
+                factory.addParameterDynamic(entry.getKey(), entry.getValue());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Add <%s> parameter %s : ", entry.getKey(), entry.getValue());
+                }
+            }
+
+            IAcquisitionScanPlugin scanPlugin = pluginService
+                    .getPlugin(chainGeneration.getScanAcquisitionPluginConf(),
+                               factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
             Set<AcquisitionFile> acquistionFiles = scanPlugin.getAcquisitionFiles();
 
             for (AcquisitionFile file : acquistionFiles) {
