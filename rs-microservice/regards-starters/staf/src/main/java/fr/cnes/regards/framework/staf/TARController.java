@@ -33,13 +33,13 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.file.utils.compression.CompressionException;
-import fr.cnes.regards.framework.file.utils.compression.CompressionFacade;
-import fr.cnes.regards.framework.file.utils.compression.CompressionTypeEnum;
 import fr.cnes.regards.framework.staf.domain.PhysicalFileStatusEnum;
 import fr.cnes.regards.framework.staf.domain.PhysicalTARFile;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.exception.STAFTarException;
+import fr.cnes.regards.framework.utils.file.compression.CompressionException;
+import fr.cnes.regards.framework.utils.file.compression.CompressionFacade;
+import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 
 /**
  * STAF Controller to handle TAR files creation.
@@ -108,7 +108,8 @@ public class TARController {
      * Get a system physical lock on the workspace TAR directory associated to the given STAF Archive and STAF Node.
      * @param pSTAFArchiveName
      * @param pStafNode
-     * @return {@link FileLock}. Need to be released with the {@link fr.cnes.regards.framework.staf.TARController#releaseLock} method
+     * @return {@link FileLock}. Need to be released with the
+     *         {@link fr.cnes.regards.framework.staf.TARController#releaseLock} method
      * @throws STAFTarException
      */
     public FileLock getDirectoryLock(String pSTAFArchiveName, Path pStafNode) throws STAFTarException {
@@ -215,14 +216,14 @@ public class TARController {
     /**
      * Update the given {@link PhysicalTARFile} with the local tar informations.<br/>
      * <ul>
-     * <li> Calculate tar creation date. </li>
-     * <li> Check if tar is locally stored. </li>
+     * <li>Calculate tar creation date.</li>
+     * <li>Check if tar is locally stored.</li>
      * </ul>
      * @param pTARFile {@link PhysicalTARFile} to update
      */
     public void getLocalInformations(PhysicalTARFile pTARFile) {
 
-        //1. Check if STAF File name match the date format pattern
+        // 1. Check if STAF File name match the date format pattern
         Matcher matcher = TAR_FILE_NAME_DATE_PATTERN.matcher(pTARFile.getStafFileName());
         if (matcher.matches()) {
             // File name matches
@@ -326,7 +327,7 @@ public class TARController {
     }
 
     /**
-     * Do compress the files from the given  {@link PhysicalTARFile}.
+     * Do compress the files from the given {@link PhysicalTARFile}.
      * @param pTARToCreate {@link PhysicalTARFile} to create.
      * @throws STAFTarException Error during TAR Compression.
      */
@@ -363,7 +364,7 @@ public class TARController {
             Path localTarDir = pTARFile.getLocalTarDirectory();
             if (pTARFile.getStatus().equals(PhysicalFileStatusEnum.TO_DELETE) && (localTarDir != null)
                     && localTarDir.toFile().exists()) {
-                //2. Get lock
+                // 2. Get lock
                 lock = getDirectoryLock(pTARFile.getStafArchiveName(), pTARFile.getStafNode());
                 pTARFile.getFilesInTar().forEach((raw, path) -> {
                     Path fileInTarPath = Paths.get(localTarDir.toString(), path.toString());
@@ -400,7 +401,7 @@ public class TARController {
     public boolean deleteFilesFromTAR(PhysicalTARFile pTARFile) throws STAFTarException {
 
         boolean tarFullDeletion = false;
-        //1. Init tmp decompression directory
+        // 1. Init tmp decompression directory
         Path decompressDir = Paths
                 .get(getWorkingTarPath(pTARFile.getStafArchiveName(), pTARFile.getStafNode()).toString(),
                      "." + pTARFile.getLocalFilePath().getFileName().toString());
@@ -412,12 +413,12 @@ public class TARController {
             }
         }
 
-        //2. Check file existance
+        // 2. Check file existance
         if (!pTARFile.getLocalFilePath().toFile().exists()) {
             throw new STAFTarException(
                     String.format("[STAF] Decompression - TAR file %s does not exists", pTARFile.getLocalFilePath()));
         }
-        //3. Decompress TAR
+        // 3. Decompress TAR
         CompressionFacade facade = new CompressionFacade();
         try {
             facade.decompress(CompressionTypeEnum.TAR, pTARFile.getLocalFilePath().toFile(), decompressDir.toFile());
@@ -523,7 +524,8 @@ public class TARController {
 
     /**
      * Get the PhysicalTARFile associated to the current working TAR.
-     * The current working TAR, is a directory containing all files waiting to be send to STAF system as compressed into a TAR file.
+     * The current working TAR, is a directory containing all files waiting to be send to STAF system as compressed into
+     * a TAR file.
      * The TAR File is sent to the staf only if the minimum size of a TAR is raised.
      * If no current TAR is found, a new one is created.
      *

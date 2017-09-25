@@ -36,11 +36,10 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.authentication.autoconfigure.AuthenticationAutoConfiguration;
 import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -52,10 +51,6 @@ public class LogbackAppenderTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogbackAppenderTest.class);
 
     private static final int SLEEP_TIME = 500;
-
-    private static final String DEFAULT_ROLE = "role-user-test";
-
-    private static final String DEFAULT_USER = "John Doe";
 
     /**
      * Static default defaultTenant
@@ -85,13 +80,10 @@ public class LogbackAppenderTest {
     private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     @Autowired
-    private JWTService jwtService;
-
-    @Autowired
     SubscriberLogEvent receiverLogEvent;
 
     @Before
-    public void init() throws JwtException {
+    public void init() {
         // Get all tenants
         tenants = Lists.newArrayList(tenantResolver.getAllTenants());
 
@@ -100,7 +92,6 @@ public class LogbackAppenderTest {
 
         // initialize the runtime tenant for the message to publish
         runtimeTenantResolver.forceTenant(defaultTenant);
-        jwtService.injectToken(defaultTenant, DEFAULT_ROLE, DEFAULT_USER);
 
         rabbitVirtualHostAdmin.addVhost(defaultTenant);
         rabbitVirtualHostAdmin.addVhost(otherTenant);
@@ -259,7 +250,7 @@ public class LogbackAppenderTest {
         Assert.assertNotNull(event);
         Assert.assertEquals(this.getClass().getCanonicalName(), event.getCaller());
         Assert.assertEquals(microserviceName, event.getMicroservice());
-        Assert.assertEquals(DEFAULT_USER, event.getUserName());
+        Assert.assertEquals(AuthenticationAutoConfiguration.DEFAULT_USER, event.getUserName());
     }
 
 }

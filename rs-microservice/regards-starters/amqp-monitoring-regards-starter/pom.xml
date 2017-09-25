@@ -34,16 +34,15 @@
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>authentication-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>multitenant-regards-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards-starter</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.logback-extensions/logback-ext-spring -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

@@ -19,11 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.file.utils.CommonFileUtils;
-import fr.cnes.regards.framework.file.utils.CutFileUtils;
-import fr.cnes.regards.framework.file.utils.compression.CompressionException;
-import fr.cnes.regards.framework.file.utils.compression.CompressionFacade;
-import fr.cnes.regards.framework.file.utils.compression.CompressionTypeEnum;
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalCutFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalCutPartFile;
@@ -35,14 +30,19 @@ import fr.cnes.regards.framework.staf.event.CollectEvent;
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.framework.staf.protocol.STAFURLException;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
+import fr.cnes.regards.framework.utils.file.CommonFileUtils;
+import fr.cnes.regards.framework.utils.file.CutFileUtils;
+import fr.cnes.regards.framework.utils.file.compression.CompressionException;
+import fr.cnes.regards.framework.utils.file.compression.CompressionFacade;
+import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 
 /**
  * STAF Service listener for retreiving process.<br/>
  * This listener handle the link between files retrieved from STAF and files asked during the retrieve process.<br/>
  * <ul>
- * <li> For cut files : 1 file to retrieve = X files to retrieve from STAF.</li>
- * <li> For normal files : 1 file to retrieve = 1 file to retrieve from STAF.</li>
- * <li> For TAR files : X files to retrieve = 1 file to retrieve from STAF</li>
+ * <li>For cut files : 1 file to retrieve = X files to retrieve from STAF.</li>
+ * <li>For normal files : 1 file to retrieve = 1 file to retrieve from STAF.</li>
+ * <li>For TAR files : X files to retrieve = 1 file to retrieve from STAF</li>
  * </ul>
  *
  * @author Sébastien Binda
@@ -74,7 +74,8 @@ public class STAFCollectListener {
      * Constructor
      * @param pAllFilesToRestore {@link Set}<{@link AbstractPhysicalFile}> All files to restore from STAF.
      * @param pRestorationDirectoryPath {@link Path} of the restoration directory.
-     * @param pClientListener {@link IClientCollectListener} to inform retrieve ended and retrieve error for each file of allFilesToRestore.
+     * @param pClientListener {@link IClientCollectListener} to inform retrieve ended and retrieve error for each file
+     *            of allFilesToRestore.
      */
     public STAFCollectListener(Set<AbstractPhysicalFile> pAllFilesToRestore, Path pRestorationDirectoryPath,
             IClientCollectListener pClientListener) {

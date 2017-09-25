@@ -35,11 +35,10 @@
 
 	<modules>
 		<module>regards-archetypes</module>
-		<module>regards-core</module>
-		<module>regards-default-core</module>
-		<module>regards-default-modules</module>
+		<module>regards-modules</module>
 		<module>regards-starters</module>
 		<module>regards-tests</module>
+		<module>regards-utils</module>
 	</modules>
 
 	<build>
