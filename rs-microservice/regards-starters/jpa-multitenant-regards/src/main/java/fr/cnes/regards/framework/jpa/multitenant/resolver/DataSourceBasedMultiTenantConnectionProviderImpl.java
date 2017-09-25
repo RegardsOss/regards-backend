@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
-import java.util.Map;
-
 import javax.sql.DataSource;
+import java.util.Map;
 
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.slf4j.Logger;
@@ -71,8 +70,9 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         DataSource tenantDataSource = dataSources.get(pTenantIdentifier);
         if (tenantDataSource == null) {
             String message = String.format("No data source found for tenant %s.", pTenantIdentifier);
-            LOGGER.error(message);
-            throw new InvalidDataSourceTenant(message);
+            InvalidDataSourceTenant e = new InvalidDataSourceTenant(message);
+            LOGGER.error(message, e);
+            throw e;
         }
         return dataSources.get(pTenantIdentifier);
     }
