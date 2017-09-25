@@ -10,29 +10,21 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -46,17 +38,11 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
-import fr.cnes.regards.modules.storage.client.IAipClient;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 
 /**
  * @author oroussel
  */
-@TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(classes = OrderConfiguration.class)
 public class OrderControllerIT extends AbstractRegardsIT {
 
     @Autowired
@@ -94,53 +80,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     public static final UniformResourceName DO5_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
                                                                                 "ORDER", UUID.randomUUID(), 1);
-
-    @Configuration
-    static class Conf {
-
-        @Bean
-        public ICatalogClient catalogClient() {
-            return Mockito.mock(ICatalogClient.class);
-        }
-
-        @Bean
-        public IAipClient aipClient() {
-            return new IAipClient() {
-
-                @Override
-                public InputStream downloadFile(String aipId, String checksum) {
-                    return getClass().getResourceAsStream("/files/" + checksum);
-                }
-
-                @Override
-                public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
-                        OffsetDateTime pTo, int pPage, int pSize) {
-                    return null;
-                }
-
-                @Override
-                public HttpEntity<Set<UUID>> createAIP(Set<AIP> aips) {
-                    return null;
-                }
-
-                @Override
-                public HttpEntity<List<DataObject>> retrieveAIPFiles(UniformResourceName pIpId) {
-                    return null;
-                }
-
-                @Override
-                public HttpEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
-                        int pSize) {
-                    return null;
-                }
-
-                @Override
-                public HttpEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
-                    return null;
-                }
-            };
-        }
-    }
 
     @Before
     public void init() {
@@ -255,6 +194,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         dataFile1.setChecksum(filename);
         dataFile1.setOrderId(order.getId());
         dataFile1.setMimeType(MediaType.TEXT_PLAIN);
+        dataFileRepository.save(dataFile1);
         return dataFile1;
     }
 }

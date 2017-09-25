@@ -93,12 +93,11 @@ public class OrderService2IT {
         dataFileRepos.deleteAll();
 
         jobInfoRepos.deleteAll();
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PROJECT_ADMIN.toString());
     }
 
     @Test
     public void testBucketsJobs() throws IOException, InterruptedException {
-
-        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PROJECT_ADMIN.toString());
 
         Basket basket = new Basket("tulavu@qui.fr");
         SortedSet<BasketDatasetSelection> dsSelections = new TreeSet<>();
