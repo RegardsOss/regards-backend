@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -251,4 +252,17 @@ public interface IPluginService {
      * @return tenant plugin instance
      */
     Object getCachedPlugin(Long confId);
+    
+    /**
+     * Return a {@link PluginConfiguration} for a plugin identifier.
+     * If it does not exists, the {@link PluginConfiguration} is created.
+     * 
+     * @param pluginId a pluginidentifier
+     * @param interfacePluginType the {@link PluginInterface}
+     * @return a {@link PluginConfiguration}
+     * @throws ModuleException
+     *     an error is trhown
+     */
+    PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType)
+            throws ModuleException;
 }
