@@ -44,6 +44,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -573,4 +574,72 @@ public class PluginService implements IPluginService {
         }
         return null;
     }
+
+    /**
+     * Return a {@link PluginConfiguration} for a plugin identifier.
+     * If it does not exists, the {@link PluginConfiguration} is created.
+     * 
+     * @param pluginId a pluginidentifier
+     * @param interfacePluginType the {@link PluginInterface}
+     * @return a {@link PluginConfiguration}
+     * @throws ModuleException
+     *     an error is trhown
+     */
+    @Override
+    public PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType)
+            throws ModuleException {
+
+        // Test if a configuration exists for this pluginId
+        List<PluginConfiguration> pluginConfigurations = this.getPluginConfigurationsByType(interfacePluginType);
+
+        if (!pluginConfigurations.isEmpty()) {
+            PluginConfiguration plgConf = loadPluginConfiguration(pluginId, pluginConfigurations);
+            if (plgConf != null) {
+                return plgConf;
+            }
+        }
+
+        // Get the PluginMetadata
+        List<PluginMetaData> metaDatas = this.getPluginsByType(interfacePluginType);
+
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
+                "Automatic plugin configuration for plugin id : " + pluginId);
+        pluginConfiguration.setPluginId(pluginId);
+
+        List<PluginParameter> plgParams = new ArrayList<>();
+        for (PluginParameterType param : metaDatas.get(0).getParameters()) {
+            PluginParameter plgParam = new PluginParameter(param.getName(), param.getDefaultValue());
+            plgParam.setName(param.getName());
+            plgParam.setValue(param.getDefaultValue());
+            plgParam.setIsDynamic(param.isOptional());
+            plgParams.add(plgParam);
+        }
+        pluginConfiguration.setParameters(plgParams);
+
+        return this.savePluginConfiguration(pluginConfiguration);
+    }
+
+    /**
+     * Return a {@link PluginConfiguration} for a pluginId
+     *  
+     * @param pluginId the pluginid to search
+     * 
+     * @return the found {@link PluginConfiguration}
+     */
+    private PluginConfiguration loadPluginConfiguration(String pluginId, List<PluginConfiguration> pluginConfs) {
+        PluginConfiguration foundPlgConf = null;
+        boolean exist = false;
+
+        for (PluginConfiguration aPluginConf : pluginConfs) {
+            if (!exist) {
+                exist = aPluginConf.getPluginId().equals(pluginId);
+                if (exist) {
+                    foundPlgConf = aPluginConf;
+                }
+            }
+        }
+
+        return foundPlgConf;
+    }
+
 }
