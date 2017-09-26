@@ -42,8 +42,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.ScanDirectoryDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
-import fr.cnes.regards.modules.acquisition.job.AbstractAcquisitionScanPlugin;
-import fr.cnes.regards.modules.acquisition.job.RegexFilenameFilter;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;

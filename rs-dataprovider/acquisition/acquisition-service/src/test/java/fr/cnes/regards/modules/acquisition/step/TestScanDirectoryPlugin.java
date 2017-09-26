@@ -35,7 +35,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
-import fr.cnes.regards.modules.acquisition.job.AbstractAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 
@@ -48,7 +47,7 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 @Plugin(id = "TestScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
+public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
 
     @Autowired
     private IMetaProductService metaProductService;

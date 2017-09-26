@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
-
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 
 /**
@@ -94,59 +92,55 @@ public class RinexFileHelper {
     public String getValue(int lineNumber, Pattern pattern, int catchGroup) throws PluginAcquisitionException {
 
         String value = null;
-        try {
-            if (lineNumber > 0) {
-                String line = getLine(lineNumber, currentFile);
-                LOGGER.debug("line read : " + line);
-                Matcher valueMatcher = pattern.matcher(line);
-                valueMatcher.matches();
-                value = valueMatcher.group(catchGroup);
-            } else if ((lineNumber == 0) || (lineNumber == -1)) {
-                // all must be done using filePattern.
-                // the first line which matches the filePattern contains the value
-                BufferedReader reader = new BufferedReader(new FileReader(currentFile));
+        if (lineNumber > 0) {
+            String line = getLine(lineNumber, currentFile);
+            LOGGER.debug("line read : " + line);
+            Matcher valueMatcher = pattern.matcher(line);
+            valueMatcher.matches();
+            value = valueMatcher.group(catchGroup);
+        } else if ((lineNumber == 0) || (lineNumber == -1)) {
+            // all must be done using filePattern.
+            // the first line which matches the filePattern contains the value
+            try (BufferedReader reader = new BufferedReader(new FileReader(currentFile))) {
                 String line = "";
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        Matcher valueMatcher = pattern.matcher(line);
-                        if (valueMatcher.matches()) {
-                            value = valueMatcher.group(catchGroup);
-                            break;
-                        }
-                    }
-                } finally {
-                    reader.close();
-                }
-            }
-            // get the file's last line
-            else if (lineNumber == -2) {
-                String line = getLine(lineNumber, currentFile);
-                LOGGER.debug("line read : " + line);
-                Matcher valueMatcher = pattern.matcher(line);
-                valueMatcher.matches();
-                value = valueMatcher.group(catchGroup);
-            } else if (lineNumber == -3) {
-                // all must be done using filePattern.
-                // the last line which matches the filePattern contains the value
-                BufferedReader reader = new BufferedReader(new FileReader(currentFile));
-                String line = "";
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        Matcher valueMatcher = pattern.matcher(line);
-                        if (valueMatcher.matches()) {
-                            value = valueMatcher.group(catchGroup);
-                        }
-                    }
-                } finally {
-                    reader.close();
-                }
-            }
 
-            LOGGER.info("value : " + value + " found at line " + lineNumber + " and column " + catchGroup);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new PluginAcquisitionException(e);
+                while ((line = reader.readLine()) != null) {
+                    Matcher valueMatcher = pattern.matcher(line);
+                    if (valueMatcher.matches()) {
+                        value = valueMatcher.group(catchGroup);
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new PluginAcquisitionException(e);
+            }
         }
+        // get the file's last line
+        else if (lineNumber == -2) {
+            String line = getLine(lineNumber, currentFile);
+            LOGGER.debug("line read : " + line);
+            Matcher valueMatcher = pattern.matcher(line);
+            valueMatcher.matches();
+            value = valueMatcher.group(catchGroup);
+        } else if (lineNumber == -3) {
+            // all must be done using filePattern.
+            // the last line which matches the filePattern contains the value
+            try (BufferedReader reader = new BufferedReader(new FileReader(currentFile))) {
+                String line = "";
+                while ((line = reader.readLine()) != null) {
+                    Matcher valueMatcher = pattern.matcher(line);
+                    if (valueMatcher.matches()) {
+                        value = valueMatcher.group(catchGroup);
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new PluginAcquisitionException(e);
+            }
+        }
+
+        LOGGER.info("value : " + value + " found at line " + lineNumber + " and column " + catchGroup);
         return value;
     }
 

@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorF
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 
 /**
+ * TODO CMZ to delete
  * @author Christophe Mertz
  */
 
