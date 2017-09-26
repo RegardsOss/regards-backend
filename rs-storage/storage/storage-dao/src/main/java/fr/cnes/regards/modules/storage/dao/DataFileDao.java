@@ -84,11 +84,6 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public void remove(DataFile data) {
-        Optional<AIPDataBase> aipDatabase = getAipDataBase(data);
-        if (aipDatabase.isPresent()) {
-            // TODO : Why ???
-            data.setAipDataBase(aipDatabase.get());
-        }
         repository.delete(data);
     }
 

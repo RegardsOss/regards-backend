@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 
 /**
  * Storage plugin to store plugin in CNES STAF System.<br/>
@@ -160,7 +160,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void store(STAFWorkingSubset pSubset, Boolean replaceMode, ProgressManager progressManager) {
+    public void store(STAFWorkingSubset pSubset, Boolean replaceMode, IProgressManager progressManager) {
         STAFStoreWorkingSubset ws = (STAFStoreWorkingSubset) pSubset;
         if (ws != null) {
             LOG.info("[STAFDataStorage Plugin] {} - Store action - Start with Working subset for STAF Node : {}",
@@ -181,7 +181,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, ProgressManager pProgressManager) {
+    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
         STAFRetrieveWorkingSubset ws = (STAFRetrieveWorkingSubset) pWorkingSubset;
         if (ws != null) {
             stafController.restoreFiles(ws.getFilesToRestore(), pDestinationPath,
@@ -199,7 +199,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<DataFile> pDataFiles, ProgressManager pProgressManager) {
+    public void delete(Set<DataFile> pDataFiles, IProgressManager pProgressManager) {
         // 1. Prepare files
         Map<URL, DataFile> urls = Maps.newHashMap();
         pDataFiles.stream().forEach(f -> urls.put(f.getUrl(), f));
@@ -222,7 +222,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @param pProgressManager{@link Boolean} replace if files exists into STAF ?
      */
     private void doStore(Set<DataFile> pFilesToStore, Path pSTAFNode, Boolean pReplaceMode,
-            ProgressManager pProgressManager) {
+            IProgressManager pProgressManager) {
 
         // 1. Dispatch files to store by stafNode
         Map<Path, Set<Path>> filesToPrepare = Maps.newHashMap();

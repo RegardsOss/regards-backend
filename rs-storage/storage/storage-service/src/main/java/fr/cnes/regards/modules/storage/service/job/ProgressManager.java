@@ -1,4 +1,7 @@
-package fr.cnes.regards.modules.storage.plugin;
+/*
+ * LICENSE_PLACEHOLDER
+ */
+package fr.cnes.regards.modules.storage.service.job;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -15,17 +18,40 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 
-public class ProgressManager {
+/**
+ * Implementaion of {@link IProgressManager} used by {@link IDataStorage} plugins.<br/>
+ * This implementation notify the system thanks to the AMQP publisher.
+ *
+ * @author Sébastien Binda
+ */
+public class ProgressManager implements IProgressManager {
 
+    /**
+     * Publisher to notify system of files events (stored, retrieved or deleted).
+     */
     private final IPublisher publisher;
 
+    /**
+     * List of all failure causes throw by the {@link IDataStorage} plugins.
+     */
     private final Set<String> failureCauses = Sets.newHashSet();
 
-    private final IJob job;
+    /**
+     * Job associated to the current progress manager.
+     */
+    private final IJob<?> job;
 
+    /**
+     * Does the process is in error ?
+     */
     private boolean errorStatus = false;
 
+    /**
+     * List of {@link DataFile} in error during {@link IDataStorage} plugin action.
+     */
     private final Collection<DataFile> failedDataFile = Sets.newHashSet();
 
     public ProgressManager(IPublisher publisher, IJob job) {
@@ -34,6 +60,7 @@ public class ProgressManager {
     }
 
     //TODO required file size
+    @Override
     public void storageSucceed(DataFile dataFile, URL storedUrl) {
         dataFile.setUrl(storedUrl);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
@@ -43,6 +70,7 @@ public class ProgressManager {
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
+    @Override
     public void storageFailed(DataFile dataFile, String cause) {
         failureCauses.add(cause);
         errorStatus = true;
@@ -57,6 +85,7 @@ public class ProgressManager {
         return errorStatus;
     }
 
+    @Override
     public void deletionFailed(DataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.FAILED);
@@ -65,6 +94,7 @@ public class ProgressManager {
         //FIXME: set failure into the failureCauses or into another set?
     }
 
+    @Override
     public void deletionSucceed(DataFile dataFile) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.SUCCESSFULL);
@@ -72,15 +102,19 @@ public class ProgressManager {
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
+    @Override
     public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
-        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.SUCCESSFULL);
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
+                StorageEventType.SUCCESSFULL);
         dataStorageEvent.setRestorationPath(restoredFilePath);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }
 
+    @Override
     public void restoreFailed(DataFile dataFile) {
-        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION, StorageEventType.FAILED);
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
+                StorageEventType.FAILED);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }

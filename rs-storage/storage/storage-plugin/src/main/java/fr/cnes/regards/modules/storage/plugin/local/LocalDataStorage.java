@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -62,11 +62,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, ProgressManager progressManager) {
+    public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, IProgressManager progressManager) {
         workingSubset.getDataFiles().parallelStream().forEach(data -> doStore(progressManager, data, replaceMode));
     }
 
-    private void doStore(ProgressManager progressManager, DataFile data, Boolean replaceMode) {
+    private void doStore(IProgressManager progressManager, DataFile data, Boolean replaceMode) {
         String fullPathToFile;
         try {
             fullPathToFile = getStorageLocation(data);
@@ -139,7 +139,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<DataFile> dataFiles, ProgressManager progressManager) {
+    public void delete(Set<DataFile> dataFiles, IProgressManager progressManager) {
         for (DataFile data : dataFiles) {
             try {
                 Files.deleteIfExists(Paths.get(getStorageLocation(data)));

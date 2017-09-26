@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.service.job;
 
 import java.util.Map;
@@ -9,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -21,7 +25,6 @@ import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -62,8 +65,8 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         parameters.forEach(jp -> parametersMap.put(jp.getName(), jp));
         //lets see if the plugin to use has been given through a plugin configuration.
         JobParameter pluginToUse;
-        if (((pluginToUse = parametersMap.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null) || !(pluginToUse
-                .getValue() instanceof PluginConfiguration)) {
+        if (((pluginToUse = parametersMap.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null)
+                || !(pluginToUse.getValue() instanceof PluginConfiguration)) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), PluginConfiguration.class.getName(),
                                   PLUGIN_TO_USE_PARAMETER_NAME));
@@ -80,8 +83,8 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             throw e;
         }
         JobParameter workingSubSet;
-        if (((workingSubSet = parametersMap.get(WORKING_SUB_SET_PARAMETER_NAME)) == null) || !(workingSubSet
-                .getValue() instanceof IWorkingSubset)) {
+        if (((workingSubSet = parametersMap.get(WORKING_SUB_SET_PARAMETER_NAME)) == null)
+                || !(workingSubSet.getValue() instanceof IWorkingSubset)) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), IWorkingSubset.class.getName(),
                                   WORKING_SUB_SET_PARAMETER_NAME));
@@ -137,8 +140,9 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     protected void afterRun() {
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
-            throw new StorageException(String.format(FAILURE_CAUSES, progressManager.getFailureCauses().stream()
-                    .collect(Collectors.joining(", ", "[", " ]"))));
+            throw new StorageException(String
+                    .format(FAILURE_CAUSES,
+                            progressManager.getFailureCauses().stream().collect(Collectors.joining(", ", "[", " ]"))));
         }
         //TODO getHandleDataFile from progressmanager and call storage failed on not handled ones
     }

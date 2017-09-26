@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
 
@@ -160,7 +160,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     @Test
     public void testStore() throws ModuleException, IOException {
-        ProgressManager progressManager = Mockito.mock(ProgressManager.class);
+        IProgressManager progressManager = Mockito.mock(IProgressManager.class);
         AIP aip = getAipFromFile();
         aip.addEvent(EventType.SUBMISSION.name(), "just for fun", OffsetDateTime.now());
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());

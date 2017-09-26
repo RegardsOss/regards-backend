@@ -6,7 +6,8 @@ package fr.cnes.regards.modules.storage.service;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
- * Association between old AIP metadata file {@link DataFile} and the new one for update.
+ * Association between old AIP metadata file {@link DataFile} and the new one for update.<br/>
+ * Update of an AIP metadata file means the deletion of the old one and the creation of the new one.
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
