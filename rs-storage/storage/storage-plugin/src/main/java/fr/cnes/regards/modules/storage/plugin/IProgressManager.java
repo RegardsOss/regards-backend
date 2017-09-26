@@ -27,7 +27,7 @@ public interface IProgressManager {
      * @param dataFile {@link DataFile} stored.
      * @param storedUrl {@link URL} new URL of the successfuly stored file.
      */
-    public void storageSucceed(DataFile storedDataFile, URL storedUrl);
+    public void storageSucceed(DataFile storedDataFile, URL storedUrl, Long storedFileSize);
 
     /**
      * Notify the system that the given {@link DataFile} couldn't be stored.

@@ -170,7 +170,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             // Check if files are already stored
             dispatchAlreadyStoredFiles(pSubset.getDataFiles(), alreadyStoredFiles, filesToStore);
             // Files already stored in STAF. Only send stored event to listeners
-            alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getUrl()));
+            alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getUrl(), file.getFileSize()));
             // Files need to be stored
             doStore(filesToStore, ws.getStafNode(), replaceMode, progressManager);
             LOG.info("[STAFDataStorage Plugin] {} - Store action - End.", stafArchive.getArchiveName());
@@ -263,7 +263,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 if ((rawFile.getKey() != null) && fileToStore.getUrl().getPath().equals(rawFile.getKey().toString())) {
                     fileArchived = true;
                     // Raw file successfully stored
-                    pProgressManager.storageSucceed(fileToStore, rawFile.getValue());
+                    pProgressManager.storageSucceed(fileToStore, rawFile.getValue(),
+                                                    rawFile.getKey().toFile().length());
                     break;
                 }
             }

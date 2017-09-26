@@ -42,12 +42,12 @@ import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.service.job.ProgressManager;
+import fr.cnes.regards.modules.storage.service.job.StoreJobProgressManager;
 
 /**
- * Handler for DataStorageEvent events. This events are sent by the {@link ProgressManager} associated
+ * Handler for DataStorageEvent events. This events are sent by the {@link StoreJobProgressManager} associated
  * to the {@link IDataStorage} plugins. After each {@link DataFile} stored, deleted or restored a {@link DataStorageEvent}
- * should be sent thought the {@link ProgressManager}.
+ * should be sent thought the {@link StoreJobProgressManager}.
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda

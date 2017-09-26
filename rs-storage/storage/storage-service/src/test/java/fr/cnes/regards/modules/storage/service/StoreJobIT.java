@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
-import fr.cnes.regards.modules.storage.service.job.ProgressManager;
+import fr.cnes.regards.modules.storage.service.job.StoreJobProgressManager;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 
@@ -144,7 +144,7 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         JobInfo toTest = new JobInfo(0, parameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
         StoreDataFilesJob job = (StoreDataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
-        ProgressManager progressManager = job.getProgressManager();
+        StoreJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
     }
 
@@ -153,7 +153,7 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         JobInfo toTest = new JobInfo(0, parameters, DEFAULT_USER_EMAIL, StoreMetadataFilesJob.class.getName());
         StoreMetadataFilesJob job = (StoreMetadataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
-        ProgressManager progressManager = job.getProgressManager();
+        StoreJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
     }
 

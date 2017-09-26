@@ -49,7 +49,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     @Autowired
     protected IPublisher publisher;
 
-    protected ProgressManager progressManager;
+    protected StoreJobProgressManager progressManager;
 
     /**
      * Check that the given job parameters contains required parameters and that they are valid.
@@ -103,7 +103,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        progressManager = new ProgressManager(publisher, this);
+        progressManager = new StoreJobProgressManager(publisher, this);
         // first lets check that all parameters are there and valid.
         Map<String, JobParameter> parameterMap = beforeRun();
         // then lets store the files
@@ -177,7 +177,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         }
     }
 
-    public ProgressManager getProgressManager() {
+    public StoreJobProgressManager getProgressManager() {
         return progressManager;
     }
 }

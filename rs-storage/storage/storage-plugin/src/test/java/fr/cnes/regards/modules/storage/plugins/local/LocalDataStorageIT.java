@@ -181,7 +181,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         Set<DataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);
-        Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any());
+        Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any(), Mockito.any());
         Mockito.verify(progressManager, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
     }
 

@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storage.plugin.IProgressManager;
  *
  * @author Sébastien Binda
  */
-public class ProgressManager implements IProgressManager {
+public class StoreJobProgressManager implements IProgressManager {
 
     /**
      * Publisher to notify system of files events (stored, retrieved or deleted).
@@ -54,15 +54,15 @@ public class ProgressManager implements IProgressManager {
      */
     private final Collection<DataFile> failedDataFile = Sets.newHashSet();
 
-    public ProgressManager(IPublisher publisher, IJob job) {
+    public StoreJobProgressManager(IPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;
     }
 
-    //TODO required file size
     @Override
-    public void storageSucceed(DataFile dataFile, URL storedUrl) {
+    public void storageSucceed(DataFile dataFile, URL storedUrl, Long storedFileSize) {
         dataFile.setUrl(storedUrl);
+        dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.SUCCESSFULL);
         job.advanceCompletion();
@@ -90,8 +90,9 @@ public class ProgressManager implements IProgressManager {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.FAILED);
         job.advanceCompletion();
+        failureCauses.add(failureCause);
+        errorStatus = true;
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
-        //FIXME: set failure into the failureCauses or into another set?
     }
 
     @Override
@@ -112,9 +113,11 @@ public class ProgressManager implements IProgressManager {
     }
 
     @Override
-    public void restoreFailed(DataFile dataFile) {
+    public void restoreFailed(DataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
                 StorageEventType.FAILED);
+        failureCauses.add(failureCause);
+        errorStatus = true;
         job.advanceCompletion();
         publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
     }

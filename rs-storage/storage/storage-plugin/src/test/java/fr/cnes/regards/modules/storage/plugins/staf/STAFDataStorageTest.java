@@ -197,14 +197,14 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
             // Mock the progress manager to verify the number of call for succeed and failted files.
             IProgressManager pm = Mockito.mock(IProgressManager.class);
             Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-            Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
+            Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
             plugin.store(subset, false, pm);
             // 3 files should have been stored in CUT MODE
             // 2 files should have been stored in NORMAL MODE
             // 6 files should have been stored in TAR MODE.
             // 2 files should not been stored. files does not exists
             Mockito.verify(pm, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
-            Mockito.verify(pm, Mockito.times(11)).storageSucceed(Mockito.any(), Mockito.any());
+            Mockito.verify(pm, Mockito.times(11)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
         });
 
     }
@@ -224,7 +224,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Mock the progress manager to verify the number of call for succeed and failted files.
         IProgressManager pm = Mockito.mock(IProgressManager.class);
         Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -257,7 +257,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // All files are on error. Workspace is not accessible.
         Mockito.verify(pm, Mockito.times(8)).storageFailed(Mockito.any(), Mockito.any());
         // 0 Files are stored.
-        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     /**
