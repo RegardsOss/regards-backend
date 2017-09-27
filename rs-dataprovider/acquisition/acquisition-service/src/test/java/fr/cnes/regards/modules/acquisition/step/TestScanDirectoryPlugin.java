@@ -24,9 +24,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -39,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 
 /**
- * Class ScanDirectoryPlugin A default {@link Plugin} of type {@link IConnectionPlugin}. Allows to
+ * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
  *
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
@@ -69,7 +71,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
     public Set<AcquisitionFile> getAcquisitionFiles() {
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
-
+        
         MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
 
         AcquisitionFile a = new AcquisitionFile();
@@ -79,7 +81,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
         a.setProduct(aProduct);
         a.setFileName(aFileName);
         a.setSize(33L);
-        a.setMetaFile(null); //TODO CMZ à voir
+        a.setMetaFile(null);
         a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
         a.setAcqDate(OffsetDateTime.now());
         a.setAlgorithm(CHECKUM_ALGO);
@@ -93,7 +95,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
         b.setProduct(bProduct);
         b.setFileName(bFileName);
         b.setSize(156L);
-        b.setMetaFile(null); //TODO CMZ à voir
+        b.setMetaFile(null);
         b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
         b.setAcqDate(OffsetDateTime.now());
         b.setAlgorithm(CHECKUM_ALGO);

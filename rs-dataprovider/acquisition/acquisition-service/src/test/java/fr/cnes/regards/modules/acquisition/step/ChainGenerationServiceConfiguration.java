@@ -16,18 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service;
+package fr.cnes.regards.modules.acquisition.step;
 
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+
 @Configuration
 @PropertySource(value = { "classpath:application-test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
-@ComponentScan(basePackages = "fr.cnes.regards.modules.acquisition")
+@ComponentScan(basePackages = {"fr.cnes.regards.modules.acquisition"})
 @EnableAutoConfiguration
-public class AcquisitionServiceConfiguration {
+public class ChainGenerationServiceConfiguration {
+    
+    @Bean
+    public IAuthenticationResolver authenticationResolver() {
+        return Mockito.mock(IAuthenticationResolver.class);
+    }
 
 }

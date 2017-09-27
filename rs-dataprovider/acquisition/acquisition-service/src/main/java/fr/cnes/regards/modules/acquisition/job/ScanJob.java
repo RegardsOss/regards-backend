@@ -55,35 +55,38 @@ public class ScanJob extends AbstractJob<Void> {
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
+        // The MetaProduct is required
         if (chainGeneration.getMetaProduct() == null) {
             throw new RuntimeException(
                     "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
         }
 
+        // A plugin for the scan configuration is required
         if (chainGeneration.getScanAcquisitionPluginConf() == null) {
             throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
                     + chainGeneration.getLabel() + ">");
         }
 
-        // Lance le plugin de scan configuré dans la ChainGeneration
-
+        // Lunch the scan plugin
         try {
+            // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
             for (Map.Entry<String, String> entry : chainGeneration.getScanAcquisitionParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Add <%s> parameter %s : ", entry.getKey(), entry.getValue());
+                    LOGGER.debug("Add <" + entry.getKey() + "> parameter " + entry.getValue() + " : ");
                 }
             }
 
+            // get an instance of the plugin
             IAcquisitionScanPlugin scanPlugin = pluginService
                     .getPlugin(chainGeneration.getScanAcquisitionPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+
+            // launch the plugin to get the AcquisitionFile
             Set<AcquisitionFile> acquistionFiles = scanPlugin.getAcquisitionFiles();
 
-            for (AcquisitionFile file : acquistionFiles) {
-                LOGGER.info(file.getProduct().toString());
-            }
+            acquistionFiles.size();
 
             // question : quand persister en base
             // il faut logBook
@@ -92,8 +95,6 @@ public class ScanJob extends AbstractJob<Void> {
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
         }
-
-        // pour chaque produit detecte, il faut créer un AcqusitionProductJob
 
     }
 

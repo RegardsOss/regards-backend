@@ -20,27 +20,20 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -62,12 +55,13 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactionalIT {
+@Transactional
+public class AcquisitionFileServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
 
-    private static final String TENANT = "PROJECT";
+    @Value("${regards.tenant}")
+    private String tenant;
 
     private static final String META_PRODUCT_NAME = "meta product name";
 
@@ -77,21 +71,6 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
-    @Autowired
-    private IMetaProductRepository metaProductRepository;;
-
-    @Autowired
-    private IProductRepository productRepository;
-
-    @Autowired
-    private IAcquisitionFileRepository acqfileRepository;
-
-    @Autowired
-    private IMetaFileRepository metafileRepository;
-
-    @Autowired
-    private IScanDirectoryRepository scandirRepository;
 
     @Autowired
     private IMetaFileService metaFileService;
@@ -108,16 +87,14 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
     @Autowired
     private IScanDirectoryService scandirService;
 
-    @Before
-    public void setUp() throws Exception {
-        tenantResolver.forceTenant(TENANT);
-
-        cleanDb();
+    @BeforeTransaction
+    protected void beforeTransaction() {
+        tenantResolver.forceTenant(tenant);
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) {
-        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get());
+        Product product = productService.save(ProductBuilder.build(productName)
+                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
         metaProduct = metaProductService.save(metaProduct);
@@ -127,17 +104,19 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
 
     @Test
     public void testAcqFiles() {
+        Assert.assertEquals(0, scandirService.retrieveAll().size());
+
         // Init Product and MetaProduct
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
                 .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).get());
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1")
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
                 .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input2")
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02")
                 .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input3")
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03")
                 .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a aMetaFile with the 3 ScanDirectory
@@ -150,8 +129,7 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
                 .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
-                .withActivationDate(OffsetDateTime.now().minusDays(5))
-                .withErrorType(ErrorType.WARNING.toString())
+                .withActivationDate(OffsetDateTime.now().minusDays(5)).withErrorType(ErrorType.WARNING.toString())
                 .withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO).get();
         acqFile1.setMetaFile(aMetaFile);
         acqFile1.setProduct(aProduct);
@@ -266,12 +244,4 @@ public class AcquisitionFileServiceIT extends AbstractRegardsServiceTransactiona
         Assert.assertTrue(true);
     }
 
-    @After
-    public void cleanDb() {
-        productRepository.deleteAll();
-        metaProductRepository.deleteAll();
-        scandirRepository.deleteAll();
-        acqfileRepository.deleteAll();
-        metafileRepository.deleteAll();
-    }
 }

@@ -44,7 +44,7 @@ public interface IChainGenerationService {
     
     void delete(Long id);
     
-    boolean run(Long id);
+    boolean run(Long id) throws InterruptedException;
     
-    boolean run(ChainGeneration chain);
+    boolean run(ChainGeneration chain) throws InterruptedException;
 }

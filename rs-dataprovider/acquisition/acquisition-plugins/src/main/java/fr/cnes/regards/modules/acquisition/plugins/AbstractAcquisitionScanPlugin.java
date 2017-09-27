@@ -100,26 +100,11 @@ public abstract class AbstractAcquisitionScanPlugin {
     }
 
     protected AcquisitionFile initAcquisitionFile(MetaFile metaFile, File baseFile, MetaProductDto metaProduct) {
-        //        SsaltoFile ssaltoFile = new SsaltoFile();
-        //        // Set attributes
-        //        ssaltoFile.setMetaFile(pMetaFile);
-        //        ssaltoFile.setStatus(SsaltoFileStatus.IN_PROGRESS);
-        //        ssaltoFile.setFileName(baseFile.getName());
-        //        ssaltoFile.setSize(new Long(baseFile.length()));
-        //        DescriptorFile descriptor = new DescriptorFile();
-        //        descriptor.setFileName(SsaltoFileControler.getDescriptorFileName(ssaltoFile));
-        //        ssaltoFile.setMetaDataFileName(descriptor);
-        //        return ssaltoFile;
-
         AcquisitionFile acqFile = new AcquisitionFile();
-
-        acqFile.setFileName(baseFile.getName());
-        acqFile.setSize(new Long(baseFile.length()));
         acqFile.setMetaFile(metaFile);
         acqFile.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        //        b.setAcqDate(OffsetDateTime.now());
-        //        b.setAlgorithm(CHECKUM_ALGO);
-        
+        acqFile.setFileName(baseFile.getName());
+        acqFile.setSize(new Long(baseFile.length()));
         return acqFile;
     }
 

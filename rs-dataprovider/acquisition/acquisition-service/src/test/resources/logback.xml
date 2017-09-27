@@ -30,9 +30,13 @@
 	<logger name="org.springframework" level="INFO" />
 	<logger name="com.mchange.v2.resourcepool" level="INFO" />
 	<logger name="com.mchange.v2.c3p0.impl" level="INFO" />
-	
+	<logger name="com.mchange.v2.sql.SqlUtils" level="INFO" />
+	<logger name="org.reflections.Reflections" level="OFF" />
+	<logger name="fr.cnes.regards.framework.jpa.multitenant.resolver" level="INFO" />
+	<logger name="org.hibernate.engine.transaction.internal" level="INFO" />
+	<logger name="org.hibernate" level="INFO" />
 
-	<root level="info">
+	<root level="debug">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

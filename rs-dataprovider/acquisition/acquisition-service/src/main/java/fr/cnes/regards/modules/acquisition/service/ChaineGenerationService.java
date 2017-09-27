@@ -20,18 +20,28 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
@@ -56,12 +66,28 @@ public class ChaineGenerationService implements IChainGenerationService {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    @Autowired
-    private IPluginService pluginService;
+    private final ISubscriber subscriber;
 
-    public ChaineGenerationService(IChainGenerationRepository repository) {
+    //    @Autowired
+    //    private IPluginService pluginService;
+
+    private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
+
+    public ChaineGenerationService(final ISubscriber subscriber, IChainGenerationRepository repository) {
         super();
         this.chainRepository = repository;
+        this.subscriber = subscriber;
+    }
+
+    @PostConstruct
+    public void init() {
+        subscriber.subscribeTo(JobEvent.class, new ScanJobHandler());
     }
 
     @Override
@@ -87,12 +113,12 @@ public class ChaineGenerationService implements IChainGenerationService {
     }
 
     @Override
-    public boolean run(Long id) {
+    public boolean run(Long id) throws InterruptedException {
         return run(this.retrieve(id));
     }
 
     @Override
-    public boolean run(ChainGeneration chain) {
+    public boolean run(ChainGeneration chain) throws InterruptedException {
         // il ne faut pas lancer une chaine en cours d'exécution
         // non pas ici , c'est à gérér par celui qui appel
 
@@ -115,6 +141,7 @@ public class ChaineGenerationService implements IChainGenerationService {
             return false;
         }
 
+        // TODO CMZ : pas ici à mon avis, ça dépends si au moins un fichier AcquisitionFile est détecté
         chain.setLastDateActivation(OffsetDateTime.now());
 
         // Create a ScanJob
@@ -123,12 +150,46 @@ public class ChaineGenerationService implements IChainGenerationService {
         scanJobInfo.setClassName(ScanJob.class.getName());
         scanJobInfo.setOwner(authResolver.getUser());
         scanJobInfo.setPriority(50);
-        
-        jobInfoService.createAsQueued(scanJobInfo);
 
-        // TODO CMZ écouter la fin du Job
+        scanJobInfo = jobInfoService.createAsQueued(scanJobInfo);
+
+//        while (runnings.isEmpty() || runnings.contains(scanJobInfo.getId())) {
+//            Thread.sleep(1_000);
+//            LOGGER.info(scanJobInfo.getId() + " is running");
+//        }
+        LOGGER.info(scanJobInfo.getId() + " is create and queued");
 
         return true;
+
+    }
+
+    private class ScanJobHandler implements IHandler<JobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<JobEvent> wrapper) {
+            JobEvent event = wrapper.getContent();
+            JobEventType type = event.getJobEventType();
+            switch (type) {
+                case RUNNING:
+                    runnings.add(wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+                    break;
+                case SUCCEEDED:
+                    succeededs.add(wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+                    break;
+                case ABORTED:
+                    aborteds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+                    break;
+                case FAILED:
+                    faileds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent ");
+            }
+        }
 
     }
 

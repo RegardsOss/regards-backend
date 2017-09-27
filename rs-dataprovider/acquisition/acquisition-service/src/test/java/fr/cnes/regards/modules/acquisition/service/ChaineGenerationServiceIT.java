@@ -20,24 +20,24 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
-import org.junit.After;
+import javax.persistence.EntityManager;
+
+import org.hibernate.engine.spi.PersistenceContext;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
-import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -53,12 +53,16 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransactionalIT {
+@Transactional
+public class ChaineGenerationServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaineGenerationServiceIT.class);
 
-    private static final String TENANT = "PROJECT";
+    /**
+     * Static default tenant
+     */
+    @Value("${regards.tenant}")
+    private String tenant;
 
     private static final String CHAINE_LABEL = "chaine label";
 
@@ -74,15 +78,6 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private IChainGenerationRepository chainRepository;
-
-    @Autowired
-    private IMetaProductRepository metaProductRepository;
-
-    @Autowired
-    private IProductRepository productRepository;
-
-    @Autowired
     private IChainGenerationService chainfoService;
 
     @Autowired
@@ -91,16 +86,19 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
     @Autowired
     private IProductService productService;
 
-    @Before
-    public void setUp() throws Exception {
-        tenantResolver.forceTenant(TENANT);
-
-        cleanDb();
+    @BeforeTransaction
+    protected void beforeTransaction() {
+        tenantResolver.forceTenant(tenant);
     }
 
+//    @Before
+//    public void setUp() throws Exception {
+//        tenantResolver.forceTenant(tenant);
+//    }
+
     private Product addProduct(MetaProduct metaProduct, String productName) {
-        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get());
+        Product product = productService.save(ProductBuilder.build(productName)
+                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
         metaProduct = metaProductService.save(metaProduct);
@@ -174,15 +172,5 @@ public class ChaineGenerationServiceIT extends AbstractRegardsServiceTransaction
         // Delete a product
         productService.delete(aProduct.getId());
         Assert.assertEquals(1, productService.retrieveAll().size());
-
-        // Get the MetaProduct
-        Assert.assertEquals(1, metaProductService.retrieveComplete(metaProduct.getId()).getProducts().size());
-    }
-
-    @After
-    public void cleanDb() {
-        productRepository.deleteAll();
-        chainRepository.deleteAll();
-        metaProductRepository.deleteAll();
     }
 }

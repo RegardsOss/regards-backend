@@ -20,7 +20,6 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.io.File;
-import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,19 +31,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.ScanDirectoryDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
-import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 
 /**
  * Class ScanDirectoryPlugin A default {@link Plugin} of type {@link IConnectionPlugin}. Allows to
@@ -58,9 +50,6 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirectoryPlugin.class);
-
-    @Autowired
-    private IMetaProductService metaProductService;
 
     @Autowired
     private IMetaFileService metaFileService;
@@ -90,8 +79,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
-        MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
-
         for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
 
             LOGGER.info("ScanDirectoryPlugin : scan Metafile <" + metaFileDto.getFileNamePattern() + ">");
@@ -103,51 +90,54 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
 
             for (ScanDirectoryDto scanDirectoryDto : metaFileDto.getScanDirectories()) {
+
                 LOGGER.info("ScanDirectoryPlugin : scan directory <" + scanDirectoryDto.getScanDir() + ">");
+
                 scanDirectories(scanDirectoryDto, filter, metaFile, acqFileList);
-                
+
                 // TODO stocker les nouveaux AcquisitionFile
                 // non pas ici à faire dans le service appelant
                 // idem pour les fichiers en erreur cest en retour du plugin
                 // il faut une map avec la liste des fichiers trouvés et la liste des mauvais fichiers 
                 // reportBadFiles(metaFile);
-                
+
             }
 
         }
-
-        AcquisitionFile a = new AcquisitionFile();
-        String aFileName = "Coucou";
-        Product aProduct = ProductBuilder.build(aFileName).withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        a.setProduct(aProduct);
-        a.setFileName(aFileName);
-        a.setSize(33L);
-        a.setMetaFile(null); //TODO CMZ à voir
-        a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        a.setAcqDate(OffsetDateTime.now());
-        a.setAlgorithm(CHECKUM_ALGO);
-        // a.setChecksum(null);
-        acqFileList.add(a);
-
-        AcquisitionFile b = new AcquisitionFile();
-        String bFileName = "Hello Toulouse";
-        Product bProduct = ProductBuilder.build(bFileName).withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        b.setProduct(bProduct);
-        b.setFileName(bFileName);
-        b.setSize(156L);
-        b.setMetaFile(null); //TODO CMZ à voir
-        b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        b.setAcqDate(OffsetDateTime.now());
-        b.setAlgorithm(CHECKUM_ALGO);
-        // b.setChecksum(null);
-        acqFileList.add(b);
+        //
+        //        AcquisitionFile a = new AcquisitionFile();
+        //        String aFileName = "Coucou";
+        //        Product aProduct = ProductBuilder.build(aFileName).withStatus(ProductStatus.INIT.toString())
+        //                .withMetaProduct(metaProduct).get();
+        //        a.setProduct(aProduct);
+        //        a.setFileName(aFileName);
+        //        a.setSize(33L);
+        //        a.setMetaFile(null); //TODO CMZ à voir
+        //        a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+        //        a.setAcqDate(OffsetDateTime.now());
+        //        a.setAlgorithm(CHECKUM_ALGO);
+        //        // a.setChecksum(null);
+        //        acqFileList.add(a);
+        //
+        //        AcquisitionFile b = new AcquisitionFile();
+        //        String bFileName = "Hello Toulouse";
+        //        Product bProduct = ProductBuilder.build(bFileName).withStatus(ProductStatus.INIT.toString())
+        //                .withMetaProduct(metaProduct).get();
+        //        b.setProduct(bProduct);
+        //        b.setFileName(bFileName);
+        //        b.setSize(156L);
+        //        b.setMetaFile(null); //TODO CMZ à voir
+        //        b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+        //        b.setAcqDate(OffsetDateTime.now());
+        //        b.setAlgorithm(CHECKUM_ALGO);
+        //        // b.setChecksum(null);
+        //        acqFileList.add(b);
 
         return acqFileList;
     }
 
-    private void scanDirectories(ScanDirectoryDto scanDirDto, RegexFilenameFilter filter, MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
+    private void scanDirectories(ScanDirectoryDto scanDirDto, RegexFilenameFilter filter, MetaFile metaFile,
+            Set<AcquisitionFile> acqFileList) {
         String dirPath = scanDirDto.getScanDir();
         File dirFile = new File(dirPath);
         // Check if directory exists and is readable
@@ -156,28 +146,32 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
         }
 
     }
-    
-    private void addMatchedFile(File dirFile, ScanDirectoryDto scanDirDto, RegexFilenameFilter filter, MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
+
+    private void addMatchedFile(File dirFile, ScanDirectoryDto scanDirDto, RegexFilenameFilter filter,
+            MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
         // TODO CMZ ajouter lasAcdDate dans DTO
-        // gérer la première acquisition où li y aura pas de Date
+        // gérer la première acquisition où il n'y aura pas de Date
         List<File> filteredFileList = filteredFileList(dirFile, filter, 0);
-        
+
         for (File baseFile : filteredFileList) {
-            
-            // TODO CMZ manque MetaProduct
+
             AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile, null);
-            
+
             // calculer checksum si configuré
-            
+
             // initAcquisitionInformation
-            
+
             Long lastModifiedDate = new Long(baseFile.lastModified());
-            
+
             // TODO convertir en OffSetDateTime
             acqFile.setAcqDate(null);
-            
+
             acqFileList.add(acqFile);
-            
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("new file to acquire : " + acqFile.getFileName());
+            }
+
         }
     }
 

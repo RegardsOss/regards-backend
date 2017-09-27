@@ -81,13 +81,14 @@ public class RinexFileHelper {
      * pPattern.
      *
      * @param lineNumber
-     *            Si 0 ou -1 = Recherche de la ligne a partir d'un filePattern; Si -2 = Recherche de la derniere ligne;
+     *            Si 0 ou -1 = Recherche de la ligne a partir d'un filePattern
+     *            Si -2 = Recherche de la derniere ligne;
      *            Si >0 = Recherche de la ligne x dans le fichier
      * @param pattern
      * @param catchGroup
      * @return
      * @throws PluginAcquisitionException
-     *             if get line return an empty string
+     *             if get line return an empty {@link String}
      */
     public String getValue(int lineNumber, Pattern pattern, int catchGroup) throws PluginAcquisitionException {
 
@@ -145,22 +146,21 @@ public class RinexFileHelper {
     }
 
     /**
-     * retourne ligne dont le numero est pLineNumber. Si la fin du fichier est atteinte avant d'arriver a pLineNumber,
-     * alors la valeur "" est renvoyee Si pLineNumber=-2, alors on renvoie la derniere ligne. Les valeurs de pLineNumber
-     * = 0 et -1 sont a exclure de cette methode car la recherche de la ligne se fait d'apres un filePattern
+     * retourne ligne dont le numero est pLineNumber.
+     * Si la fin du fichier est atteinte avant d'arriver a pLineNumber, alors la valeur "" est renvoyee
+     * Si pLineNumber=-2, alors on renvoie la derniere ligne
+     * Les valeurs de pLineNumber = 0 et -1 sont a exclure de cette methode car la recherche de la ligne se fait d'apres un filePattern
      *
      * @param lineNumber
      *            le numero de la ligne a renvoyer
      * @param aFile
      *            le fichier a lire
-     * @return a string that may be empty
-     * @throws IOException
+     * @return a {@link String} that may be empty
+     * @throws PluginAcquisitionException
      */
     private String getLine(int lineNumber, File aFile) throws PluginAcquisitionException {
-        BufferedReader reader = null;
         String line = EMPTY_STRING;
-        try {
-            reader = new BufferedReader(new FileReader(aFile));
+        try (BufferedReader reader = new BufferedReader(new FileReader(aFile))) {
             // get the last line
             String lastLine = EMPTY_STRING;
             if (lineNumber > 0) {
@@ -190,15 +190,6 @@ public class RinexFileHelper {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new PluginAcquisitionException(e);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    // Just log it
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }
         }
 
         // If empty : throws a plugin exception
