@@ -18,53 +18,33 @@
  */
 package fr.cnes.regards.framework.utils.plugins.bean;
 
-import java.lang.reflect.Field;
-
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.ReflectionUtils;
 
 /**
  * @author Christophe Mertz
  *
  */
 @Component
-public class PluginUtilsBean implements IPluginUtilsBean, BeanFactoryAware {
+public class PluginUtilsBean {
 
-    /**
-     * A factory for accessing to the Spring bean container.
-     */
-    private BeanFactory beanFactory;
+    static PluginUtilsBean instance;
 
-    @Override
-    public void setBeanFactory(final BeanFactory pBeanFactory) {
-        beanFactory = pBeanFactory;
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
+
+    public static PluginUtilsBean getInstance() {
+        return instance;
+    }
+    
+    @Autowired
+    public void setInstance(PluginUtilsBean bean) {
+        instance = bean;
     }
 
-    @Override
-    public <T> void processAutowiredBean(final T pPluginInstance)  {
-        // Look for annotated fields
-        for (final Field field : pPluginInstance.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(Autowired.class)) {
-                ReflectionUtils.makeAccessible(field);
-                @SuppressWarnings("unchecked")
-                final T effectiveVal = (T) beanFactory.getBean(field.getType());
-                ReflectionUtils.makeAccessible(field);
-                try {
-                    field.set(pPluginInstance, effectiveVal);
-                } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new PluginUtilsRuntimeException("Unable to set the field <" + field.getName() + ">.", e);
-                }
-            }
-        }
-    }
-
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
+    public <T> void processAutowiredBean(final T plugin) {
+        beanFactory.autowireBean(plugin);
     }
 
 }
