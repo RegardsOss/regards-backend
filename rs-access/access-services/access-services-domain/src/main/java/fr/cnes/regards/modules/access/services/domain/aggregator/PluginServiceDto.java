@@ -22,7 +22,7 @@ public class PluginServiceDto {
 
     private final String label;
 
-    private final URL icon;
+    private final URL iconUrl;
 
     private final Set<ServiceScope> applicationModes;
 
@@ -44,7 +44,7 @@ public class PluginServiceDto {
         super();
         configId = pConfigId;
         label = pLabel;
-        icon = pIcon;
+        iconUrl = pIcon;
         applicationModes = pApplicationModes;
         entityTypes = pEntityTypes;
         type = pType;
@@ -91,10 +91,10 @@ public class PluginServiceDto {
     }
 
     /**
-     * @return the icon
+     * @return the iconUrl
      */
-    public URL getIcon() {
-        return icon;
+    public URL getIconUrl() {
+        return iconUrl;
     }
 
     /**
