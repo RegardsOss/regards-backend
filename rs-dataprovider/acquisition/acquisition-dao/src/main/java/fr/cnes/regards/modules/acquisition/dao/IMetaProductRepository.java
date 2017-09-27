@@ -35,4 +35,6 @@ public interface IMetaProductRepository extends CrudRepository<MetaProduct, Long
     @EntityGraph("graph.product.complete")
     MetaProduct findCompleteById(Long id);
 
+    MetaProduct findByLabel(String name);
+
 }

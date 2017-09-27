@@ -136,7 +136,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
      */
     @Column(name = "error", length = MAX_ENUM_LENGTH)
     @Enumerated(EnumType.STRING)
-    private ErrorType error;
+    private ErrorType error=ErrorType.OK;
 
     /**
      * Data file asquisition date

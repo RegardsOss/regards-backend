@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.job;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -30,6 +31,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -49,25 +52,41 @@ public class ScanJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        // quand ca marchera une classe abstraite pour implémenter la détection des AcquisitionFile
-        // le reste des traitements doit être standard indépendemment de la détection des fichiers par le Plugin
-
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
+        // The MetaProduct is required
+        if (chainGeneration.getMetaProduct() == null) {
+            throw new RuntimeException(
+                    "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
+        }
+
+        // A plugin for the scan configuration is required
         if (chainGeneration.getScanAcquisitionPluginConf() == null) {
             throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
                     + chainGeneration.getLabel() + ">");
         }
 
-        // Lance le plugin de scan configuré dans la ChainGeneration
-
+        // Lunch the scan plugin
         try {
-            IAcquisitionScanPlugin scanPlugin = pluginService.getPlugin(chainGeneration.getScanAcquisitionPluginConf());
+            // build the plugin parameters
+            PluginParametersFactory factory = PluginParametersFactory.build();
+            for (Map.Entry<String, String> entry : chainGeneration.getScanAcquisitionParameter().entrySet()) {
+                factory.addParameterDynamic(entry.getKey(), entry.getValue());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Add <" + entry.getKey() + "> parameter " + entry.getValue() + " : ");
+                }
+            }
+
+            // get an instance of the plugin
+            IAcquisitionScanPlugin scanPlugin = pluginService
+                    .getPlugin(chainGeneration.getScanAcquisitionPluginConf(),
+                               factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+
+            // launch the plugin to get the AcquisitionFile
             Set<AcquisitionFile> acquistionFiles = scanPlugin.getAcquisitionFiles();
 
-            // pour chaque Product trouvé faire un AcquisitionProductJob
-            acquistionFiles.stream().map(ac -> ac.getProduct());
+            acquistionFiles.size();
 
             // question : quand persister en base
             // il faut logBook
@@ -76,8 +95,6 @@ public class ScanJob extends AbstractJob<Void> {
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
         }
-
-        // pour chaque produit detecte, il faut créer un AcqusitionProductJob
 
     }
 

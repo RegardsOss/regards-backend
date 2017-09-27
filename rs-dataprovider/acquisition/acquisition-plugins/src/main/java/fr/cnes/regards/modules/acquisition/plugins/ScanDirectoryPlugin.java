@@ -19,19 +19,24 @@
 
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.time.OffsetDateTime;
+import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.ScanDirectoryDto;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
+import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 
 /**
  * Class ScanDirectoryPlugin A default {@link Plugin} of type {@link IConnectionPlugin}. Allows to
@@ -42,19 +47,25 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 @Plugin(id = "ScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
+public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirectoryPlugin.class);
+
+    @Autowired
+    private IMetaFileService metaFileService;
 
     private static final String CHECKUM_ALGO = "SHA-256";
-    
-    public final static String META_PRODUCT_PARAM  = "meta-produt";
-    
-    public final static String META_FILE_PARAM  = "meta-file";
 
-    @PluginParameter(name = META_PRODUCT_PARAM)
-    MetaProduct metaProduct;
+    public final static String META_PRODUCT_PARAM = "meta-produt";
 
-    @PluginParameter(name = META_FILE_PARAM)
-    Set<MetaFile> metaFiles;
+    public final static String META_FILE_PARAM = "meta-file";
+
+    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
+    MetaProductDto metaProductDto;
+
+    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
+    @PluginParameter(name = META_FILE_PARAM, optional = true)
+    SetOfMetaFileDto metaFiles;
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
@@ -66,44 +77,102 @@ public class ScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
         // chercher des fichiers vérifiant le pattern
         // créer des AcquisitionFile pour les fichiers trouvés
 
-        Set<MetaFile> metas = getMetaFiles();
-
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
-        AcquisitionFile a = new AcquisitionFile();
-        String aFileName = "Coucou";
-        Product aProduct = ProductBuilder.build(aFileName).withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        a.setProduct(aProduct);
-        a.setFileName(aFileName);
-        a.setSize(33L);
-        a.setMetaFile(metas.iterator().next());
-        a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        a.setAcqDate(OffsetDateTime.now());
-        a.setAlgorithm(CHECKUM_ALGO);
-        // a.setChecksum(null);
-        acqFileList.add(a);
+        for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
 
-        AcquisitionFile b = new AcquisitionFile();
-        String bFileName = "Hello Toulouse";
-        Product bProduct = ProductBuilder.build(bFileName).withStatus(ProductStatus.INIT.toString())
-                .withMetaProduct(metaProduct).get();
-        b.setProduct(bProduct);
-        b.setFileName(bFileName);
-        b.setSize(156L);
-        b.setMetaFile(metas.iterator().next());
-        b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        b.setAcqDate(OffsetDateTime.now());
-        b.setAlgorithm(CHECKUM_ALGO);
-        // b.setChecksum(null);
-        acqFileList.add(b);
+            LOGGER.info("ScanDirectoryPlugin : scan Metafile <" + metaFileDto.getFileNamePattern() + ">");
+
+            MetaFile metaFile = metaFileService.retrieve(metaFileDto.getId());
+
+            String filePattern = metaFileDto.getFileNamePattern();
+            String adaptedPattern = getAdaptedPattern(filePattern);
+            RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
+
+            for (ScanDirectoryDto scanDirectoryDto : metaFileDto.getScanDirectories()) {
+
+                LOGGER.info("ScanDirectoryPlugin : scan directory <" + scanDirectoryDto.getScanDir() + ">");
+
+                scanDirectories(scanDirectoryDto, filter, metaFile, acqFileList);
+
+                // TODO stocker les nouveaux AcquisitionFile
+                // non pas ici à faire dans le service appelant
+                // idem pour les fichiers en erreur cest en retour du plugin
+                // il faut une map avec la liste des fichiers trouvés et la liste des mauvais fichiers 
+                // reportBadFiles(metaFile);
+
+            }
+
+        }
+        //
+        //        AcquisitionFile a = new AcquisitionFile();
+        //        String aFileName = "Coucou";
+        //        Product aProduct = ProductBuilder.build(aFileName).withStatus(ProductStatus.INIT.toString())
+        //                .withMetaProduct(metaProduct).get();
+        //        a.setProduct(aProduct);
+        //        a.setFileName(aFileName);
+        //        a.setSize(33L);
+        //        a.setMetaFile(null); //TODO CMZ à voir
+        //        a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+        //        a.setAcqDate(OffsetDateTime.now());
+        //        a.setAlgorithm(CHECKUM_ALGO);
+        //        // a.setChecksum(null);
+        //        acqFileList.add(a);
+        //
+        //        AcquisitionFile b = new AcquisitionFile();
+        //        String bFileName = "Hello Toulouse";
+        //        Product bProduct = ProductBuilder.build(bFileName).withStatus(ProductStatus.INIT.toString())
+        //                .withMetaProduct(metaProduct).get();
+        //        b.setProduct(bProduct);
+        //        b.setFileName(bFileName);
+        //        b.setSize(156L);
+        //        b.setMetaFile(null); //TODO CMZ à voir
+        //        b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+        //        b.setAcqDate(OffsetDateTime.now());
+        //        b.setAlgorithm(CHECKUM_ALGO);
+        //        // b.setChecksum(null);
+        //        acqFileList.add(b);
 
         return acqFileList;
     }
 
-    @Override
-    public Set<MetaFile> getMetaFiles() {
-        return metaFiles;
+    private void scanDirectories(ScanDirectoryDto scanDirDto, RegexFilenameFilter filter, MetaFile metaFile,
+            Set<AcquisitionFile> acqFileList) {
+        String dirPath = scanDirDto.getScanDir();
+        File dirFile = new File(dirPath);
+        // Check if directory exists and is readable
+        if (dirFile.exists() && dirFile.isDirectory() && dirFile.canRead()) {
+            addMatchedFile(dirFile, scanDirDto, filter, metaFile, acqFileList);
+        }
+
+    }
+
+    private void addMatchedFile(File dirFile, ScanDirectoryDto scanDirDto, RegexFilenameFilter filter,
+            MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
+        // TODO CMZ ajouter lasAcdDate dans DTO
+        // gérer la première acquisition où il n'y aura pas de Date
+        List<File> filteredFileList = filteredFileList(dirFile, filter, 0);
+
+        for (File baseFile : filteredFileList) {
+
+            AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile, null);
+
+            // calculer checksum si configuré
+
+            // initAcquisitionInformation
+
+            Long lastModifiedDate = new Long(baseFile.lastModified());
+
+            // TODO convertir en OffSetDateTime
+            acqFile.setAcqDate(null);
+
+            acqFileList.add(acqFile);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("new file to acquire : " + acqFile.getFileName());
+            }
+
+        }
     }
 
 }

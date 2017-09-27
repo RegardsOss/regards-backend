@@ -69,22 +69,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>plugins-regards-starter</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>acquisition-plugins</artifactId>
-			<scope>test</scope>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-service</artifactId>
 		</dependency>
 	</dependencies>
 </project>
