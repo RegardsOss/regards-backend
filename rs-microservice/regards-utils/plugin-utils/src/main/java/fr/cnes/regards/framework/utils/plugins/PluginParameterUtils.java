@@ -190,15 +190,16 @@ public final class PluginParameterUtils {
         // Retrieve global type of Field
         ParamType fieldType = getFieldParameterType(pField, pPrefixs);
 
-        // If type is not a primitive one, check for cyclic types dependencies
-        if (fieldType != ParamType.PRIMITIVE) {
-            if (pHierarchicalParentUsedTypes.contains(pField.getType().getName())) {
-                throw new PluginUtilsRuntimeException(
-                        String.format("Cyclic parameter types detected !! for %s", pField.getType().getName()));
-            } else {
-                pHierarchicalParentUsedTypes.add(pField.getType().getName());
-            }
-        }
+     // FIXME à reprendre, marche pas cf issue #23
+//        // If type is not a primitive one, check for cyclic types dependencies
+//        if (fieldType != ParamType.PRIMITIVE) {
+//            if (pHierarchicalParentUsedTypes.contains(pField.getType().getName())) {
+//                throw new PluginUtilsRuntimeException(
+//                        String.format("Cyclic parameter types detected !! for %s", pField.getType().getName()));
+//            } else {
+//                pHierarchicalParentUsedTypes.add(pField.getType().getName());
+//            }
+//        }
         // Retrieve annotation if any
         final PluginParameter pluginParameter = pField.getAnnotation(PluginParameter.class);
 
