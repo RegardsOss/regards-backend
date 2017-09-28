@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storage.plugin.IProgressManager;
  *
  * @author Sébastien Binda
  */
-public class StoreJobProgressManager implements IProgressManager {
+public class StorageJobProgressManager implements IProgressManager {
 
     /**
      * Publisher to notify system of files events (stored, retrieved or deleted).
@@ -54,7 +54,7 @@ public class StoreJobProgressManager implements IProgressManager {
      */
     private final Collection<DataFile> failedDataFile = Sets.newHashSet();
 
-    public StoreJobProgressManager(IPublisher publisher, IJob<?> job) {
+    public StorageJobProgressManager(IPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;
     }

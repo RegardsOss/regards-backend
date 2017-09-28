@@ -11,5 +11,11 @@ public enum DataFileState {
     /**
      * storage process ended, successfully or not
      */
-    STORED, ERROR
+    STORED,
+    ERROR;
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
 }
