@@ -27,34 +27,74 @@ public enum JobStatus {
     /**
      * Job created but not yet to be taken into account
      */
-    PENDING,
+    PENDING {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return false;
+        }
+    },
     /**
      * Job taken into account by job service pool
      */
-    QUEUED,
+    QUEUED {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return false;
+        }
+    },
     /**
      * Job taken into account by a microservice to be run
      */
-    TO_BE_RUN,
+    TO_BE_RUN {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return false;
+        }
+    },
     /**
      * Job running
      */
-    RUNNING,
+    RUNNING {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return false;
+        }
+    },
     /**
      * Job finished without error
      */
-    SUCCEEDED,
+    SUCCEEDED {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return true;
+        }
+    },
     /**
      * Job finished with error(s)
      */
-    FAILED,
+    FAILED {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return true;
+        }
+    },
     /**
      * Job cancelled
      */
-    ABORTED;
+    ABORTED {
+        @Override
+        public boolean isCompatibleWithPause() {
+            return true;
+        }
+    };
 
     @Override
     public String toString() {
         return this.name();
     }
+
+    /**
+     * Tell wether or not specified status is compatible with a paused Job (ie job is ended or aborted)
+     */
+    public abstract boolean isCompatibleWithPause();
 }
