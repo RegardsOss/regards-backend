@@ -67,20 +67,10 @@ public final class PluginUtils {
     private static final String CANNOT_INSTANTIATE = "Cannot instantiate <%s>";
 
     /**
-     * Interface to be implemented by {@link PluginUtilsBean} to load your own
-     * {@link org.springframework.beans.factory.BeanFactory}
-     */
-    private static IPluginUtilsBean pluginUtilsBean;
-
-    /**
      * Constructor
      */
     private PluginUtils() {
         // Static class
-    }
-
-    public static synchronized void setPluginUtilsBean(IPluginUtilsBean pPluginUtilsBean) {
-        pluginUtilsBean = pPluginUtilsBean;
     }
 
     /**
@@ -209,9 +199,8 @@ public final class PluginUtils {
             PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPrefixs, instantiatedPluginMap,
                                              pPluginParameters);
 
-            //
-            if (pluginUtilsBean != null) {
-                pluginUtilsBean.processAutowiredBean(returnPlugin);
+            if (PluginUtilsBean.getInstance() != null) {
+                PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
             }
 
             // Launch init method if detected
@@ -229,7 +218,6 @@ public final class PluginUtils {
     public static <T> T getPlugin(PluginConfiguration pPluginConf, PluginMetaData pPluginMetadata,
             IPluginUtilsBean pPluginUtilsBean, List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... pPluginParameters) {
-        setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pPluginConf, pPluginMetadata, pPrefixs, instantiatedPluginMap, pPluginParameters);
     }
 
@@ -256,8 +244,8 @@ public final class PluginUtils {
             PluginParameterUtils.postProcess(returnPlugin, pPluginConf, pPrefixs, instantiatedPluginMap,
                                              pPluginParameters);
 
-            if (pluginUtilsBean != null) {
-                pluginUtilsBean.processAutowiredBean(returnPlugin);
+            if (PluginUtilsBean.getInstance() != null) {
+                PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
             }
 
             // Launch init method if detected
@@ -286,7 +274,6 @@ public final class PluginUtils {
     public static <T> T getPlugin(List<PluginParameter> pParameters, Class<T> pReturnInterfaceType,
             IPluginUtilsBean pPluginUtilsBean, List<String> pPrefixs, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... pPluginParameters) {
-        setPluginUtilsBean(pPluginUtilsBean);
         return PluginUtils.getPlugin(pParameters, pReturnInterfaceType, pPrefixs, instantiatedPluginMap,
                                      pPluginParameters);
     }

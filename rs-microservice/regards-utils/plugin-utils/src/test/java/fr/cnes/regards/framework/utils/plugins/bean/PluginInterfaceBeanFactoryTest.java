@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsTestConstants;
-import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
@@ -53,19 +52,7 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginInterfaceBeanFactoryTest.class);
 
     @Autowired
-    private PluginUtilsBean pluginUtilsBean;
-
-    @Autowired
     private ISampleBeanService sampleBeanService;
-
-    @Test
-    public void getBean() {
-        Assert.assertNotNull(pluginUtilsBean);
-        Assert.assertNotNull(sampleBeanService);
-
-        final ISampleBeanService asBeanService = pluginUtilsBean.getBeanFactory().getBean((ISampleBeanService.class));
-        Assert.assertNotNull(asBeanService);
-    }
 
     /**
      * Load a plugins
@@ -73,13 +60,12 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
     @Test
     public void loadPlugin() {
         SampleBeanFactoryPlugin samplePlugin = null;
-        Assert.assertNotNull(pluginUtilsBean);
         Assert.assertNotNull(sampleBeanService);
 
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SampleBeanFactoryPlugin.SUFFIXE, "chris_test_1").getParameters();
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, pluginUtilsBean,
+        samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class,
                                              Arrays.asList("fr.cnes.regards.plugins.utils.bean"), new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
