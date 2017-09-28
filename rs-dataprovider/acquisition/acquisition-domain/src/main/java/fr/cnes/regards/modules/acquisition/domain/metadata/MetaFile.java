@@ -247,7 +247,7 @@ public class MetaFile implements IIdentifiable<Long> {
     }
 
     public String toString() {
-        return fileNamePattern;
+        return id + fileNamePattern;
     }
 
 }

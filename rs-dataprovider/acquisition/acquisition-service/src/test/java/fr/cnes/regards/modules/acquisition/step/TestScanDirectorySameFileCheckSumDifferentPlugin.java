@@ -41,13 +41,10 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
-@Plugin(id = "TestScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
+@Plugin(id = "TestScanDirectorySameFileCheckSumDifferentPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
-
-    @Autowired
-    private IMetaProductService metaProductService;
+public class TestScanDirectorySameFileCheckSumDifferentPlugin implements IAcquisitionScanDirectoryPlugin {
 
     @Autowired
     private IMetaFileService metaFileService;
@@ -80,7 +77,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
         a.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
         a.setAcqDate(OffsetDateTime.now());
         a.setAlgorithm(CHECKUM_ALGO);
-        a.setChecksum("hello i am the checksum");
+        a.setChecksum("hello I have a new checksum");
         acqFileList.add(a);
 
         AcquisitionFile b = new AcquisitionFile();
@@ -91,7 +88,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
         b.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
         b.setAcqDate(OffsetDateTime.now());
         b.setAlgorithm(CHECKUM_ALGO);
-        b.setChecksum(null);
+        b.setChecksum("this my own checksum");
         acqFileList.add(b);
 
         return acqFileList;

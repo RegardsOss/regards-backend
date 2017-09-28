@@ -19,83 +19,67 @@
 
 package fr.cnes.regards.modules.acquisition.job;
 
-import java.util.Map;
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
+import fr.cnes.regards.modules.acquisition.job.step.AbstractStep;
+import fr.cnes.regards.modules.acquisition.job.step.AcquisitionScanStep;
+import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
 /**
  * @author Christophe Mertz
  *
  */
-public class ScanJob extends AbstractJob<Void> {
+public class AcquisitionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScanJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionJob.class);
 
     @Autowired
-    IPluginService pluginService;
+    private AutowireCapableBeanFactory beanFactory;
 
     @Override
     public void run() {
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
+        LOGGER.info("Start acquisition job for the chain <" + chainGeneration.getLabel() + ">");
+
         // The MetaProduct is required
         if (chainGeneration.getMetaProduct() == null) {
-            throw new RuntimeException(
+            throw new AcquisitionRuntimeException(
                     "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
         }
 
-        // A plugin for the scan configuration is required
-        if (chainGeneration.getScanAcquisitionPluginConf() == null) {
-            throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
-                    + chainGeneration.getLabel() + ">");
-        }
+        chainGeneration.setLastDateActivation(OffsetDateTime.now());
 
-        // Lunch the scan plugin
+        AbstractStep firstStep = new AcquisitionScanStep();
+        beanFactory.autowireBean(firstStep);
+
+        ProcessGeneration process = new ProcessGeneration(chainGeneration);
+        process.setCurrentStep(firstStep);
+        firstStep.setProcess(process);
+        // configurer les steps        
+        // firstStep.setNextStep(totoStep);
+
         try {
-            // build the plugin parameters
-            PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : chainGeneration.getScanAcquisitionParameter().entrySet()) {
-                factory.addParameterDynamic(entry.getKey(), entry.getValue());
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Add <" + entry.getKey() + "> parameter " + entry.getValue() + " : ");
-                }
-            }
-
-            // get an instance of the plugin
-            IAcquisitionScanPlugin scanPlugin = pluginService
-                    .getPlugin(chainGeneration.getScanAcquisitionPluginConf(),
-                               factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
-
-            // launch the plugin to get the AcquisitionFile
-            Set<AcquisitionFile> acquistionFiles = scanPlugin.getAcquisitionFiles();
-
-            acquistionFiles.size();
-
-            // question : quand persister en base
-            // il faut logBook
-            // attention à la reprise
-
-        } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
+            firstStep.proceedStep();
+        } catch (AcquisitionRuntimeException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
         }
 
+        LOGGER.info("End  acquisition job for the chain <" + chainGeneration.getLabel() + ">");
     }
 
     @Override

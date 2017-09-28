@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
  * {@link AcquisitionFile} repository
@@ -31,4 +34,5 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 @Repository
 public interface IAcquisitionFileRepository extends CrudRepository<AcquisitionFile, Long> {
 
+    List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
 }

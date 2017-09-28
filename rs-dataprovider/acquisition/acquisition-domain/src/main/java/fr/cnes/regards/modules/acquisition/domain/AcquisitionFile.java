@@ -136,7 +136,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
      */
     @Column(name = "error", length = MAX_ENUM_LENGTH)
     @Enumerated(EnumType.STRING)
-    private ErrorType error=ErrorType.OK;
+    private ErrorType error = ErrorType.OK;
 
     /**
      * Data file asquisition date
@@ -155,7 +155,6 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
      * Algorithm used to calculate the checksum.
      * see {@link MessageDigest}
      */
-    @NotNull
     @Column(name = "algorithm", length = 16)
     private String algorithm;
 
@@ -163,9 +162,8 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((checksum == null) ? 0 : checksum.hashCode());
         result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((size == null) ? 0 : size.hashCode());
         return result;
     }
 
@@ -178,20 +176,15 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
         if (getClass() != obj.getClass())
             return false;
         AcquisitionFile other = (AcquisitionFile) obj;
+        if (checksum == null) {
+            if (other.checksum != null)
+                return false;
+        } else if (!checksum.equals(other.checksum))
+            return false;
         if (fileName == null) {
             if (other.fileName != null)
                 return false;
         } else if (!fileName.equals(other.fileName))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (size == null) {
-            if (other.size != null)
-                return false;
-        } else if (!size.equals(other.size))
             return false;
         return true;
     }

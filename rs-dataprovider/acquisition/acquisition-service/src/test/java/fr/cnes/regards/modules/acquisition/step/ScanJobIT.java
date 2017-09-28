@@ -20,8 +20,10 @@
 package fr.cnes.regards.modules.acquisition.step;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -40,13 +42,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -55,7 +60,6 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -67,8 +71,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
@@ -112,6 +116,9 @@ public class ScanJobIT {
     private IScanDirectoryService scandirService;
 
     @Autowired
+    private IAcquisitionFileService acquisitionFileService;
+
+    @Autowired
     private IJobInfoRepository jobInfoRepository;
 
     @Autowired
@@ -133,9 +140,6 @@ public class ScanJobIT {
     private IProductRepository productRepository;
 
     @Autowired
-    private IMetaFileRepository metaFileRepository;
-
-    @Autowired
     private IScanDirectoryRepository scanDirectoryRepository;
 
     @Autowired
@@ -144,11 +148,25 @@ public class ScanJobIT {
     @Autowired
     private IAcquisitionFileRepository acquisitionFileRepository;
 
+    @Autowired
+    private IMetaFileRepository metaFileRepository;
+
     private ChainGeneration chain;
 
     private MetaFile metaFile;
 
     private MetaProduct metaProduct;
+
+    private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
+
+    @Autowired
+    private ISubscriber subscriber;
 
     @Before
     public void setUp() throws Exception {
@@ -159,15 +177,22 @@ public class ScanJobIT {
 
         tenantResolver.forceTenant(tenant);
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
+
+        subscriber.subscribeTo(JobEvent.class, new ScanJobHandler());
+
+        runnings.clear();
+        succeededs.clear();
+        aborteds.clear();
+        faileds.clear();
     }
 
     @Before
     public void init() {
 
+        // Create a ChainGeneration and a MetaProduct
         this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
-
-        this.chain = ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get();
-        this.chain.setMetaProduct(metaProduct);
+        this.chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
+                .withMetaProduct(metaProduct).get());
 
         // Create 2 ScanDirectory
         ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1")
@@ -183,7 +208,38 @@ public class ScanJobIT {
 
     @Test
     public void runActiveChainGeneration() throws ModuleException, InterruptedException {
-        LOGGER.info("start");
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
+
+        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
+        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
+
+        PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
+                                                                           IAcquisitionScanDirectoryPlugin.class);
+        chain.setScanAcquisitionPluginConf(plgConf.getId());
+        chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
+
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJob(5_000);
+
+        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(1, metaFileService.retrieveAll().size());
+        Assert.assertEquals(2, acquisitionFileService.retrieveAll().size());
+
+        chain = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chain.getLastDateActivation());
+    }
+    
+    @Test
+    public void runActiveChainGenerationAcquireSameFilesWithSameChecksum() throws ModuleException, InterruptedException {
+        this.chain.setPeriodicity(1L);
 
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
@@ -197,62 +253,106 @@ public class ScanJobIT {
         chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
 
-        boolean res = chainService.run(chain);
-        Assert.assertTrue(res);
+        // Activate the chain
+        Assert.assertTrue(chainService.run(chain));
 
-        // tester que le job s'exécute et qu'il fait ce qui est attendu
+        waitJob(5_000);
 
-        try {
-            Thread.sleep(5_000);
-        } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage());
-            Assert.fail();
-        }
+        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        // Repeat the activation of the same chain
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJob(2_000);
+
+        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(1, metaFileService.retrieveAll().size());
+        Assert.assertEquals(2, acquisitionFileService.retrieveAll().size());
+
+        chain = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chain.getLastDateActivation());
     }
-
+    
     @Test
-    public void runActiveChainGenerationWithoutJob() throws ModuleException, InterruptedException {
-        LOGGER.info("start");
+    public void runActiveChainGenerationAcquireSameFilesWithDifferentChecksum()
+            throws ModuleException, InterruptedException {
+        this.chain.setPeriodicity(1L);
 
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-        PluginParametersFactory factory = PluginParametersFactory.build()
-                .addParameterDynamic(META_PRODUCT_PARAM, metaProductJson)
-                .addParameterDynamic(META_FILE_PARAM, metaFilesJson);
+
         PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                            IAcquisitionScanDirectoryPlugin.class);
+        chain.setScanAcquisitionPluginConf(plgConf.getId());
+        chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
 
-        IAcquisitionScanPlugin scanPlugin = pluginService
-                .getPlugin(plgConf.getId(),
-                           factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+        // Activate the chain
+        Assert.assertTrue(chainService.run(chain));
 
-        Set<AcquisitionFile> acquistionFiles = scanPlugin.getAcquisitionFiles();
-        
-        Assert.assertNotNull(acquistionFiles);
-        Assert.assertEquals(2,acquistionFiles.size());
+        waitJob(5_000);
+
+        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        // Repeat the activation of the same chain with an other Plugin
+        plgConf = pluginService.getPluginConfiguration("TestScanDirectorySameFileCheckSumDifferentPlugin",
+                                                       IAcquisitionScanDirectoryPlugin.class);
+        chain.setScanAcquisitionPluginConf(plgConf.getId());
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJob(2_000);
+
+        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(1, metaFileService.retrieveAll().size());
+        Assert.assertEquals(4, acquisitionFileService.retrieveAll().size());
+
+        chain = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chain.getLastDateActivation());
     }
 
     @Test
     public void runActiveChainGenerationWithoutScanPlugin() throws InterruptedException {
-        boolean res = chainService.run(chain);
-        Assert.assertTrue(res);
+        Assert.assertTrue(chainService.run(chain));
 
-        try {
-            Thread.sleep(5_000);
-        } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage());
-            Assert.fail();
-        }
+        waitJob(1_000);
+
+        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertTrue(succeededs.isEmpty());
+        Assert.assertTrue(!faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
     }
 
     @Test
     public void runNoActiveChainGeneration() throws InterruptedException {
         this.chain.setActive(false);
-        boolean res = chainService.run(chain);
-        Assert.assertFalse(res);
+
+        Assert.assertFalse(chainService.run(chain));
+
+        waitJob(1_000);
+
+        Assert.assertTrue(runnings.isEmpty());
+        Assert.assertTrue(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
     }
 
     @Test
@@ -260,8 +360,15 @@ public class ScanJobIT {
         this.chain.setActive(true);
         this.chain.setLastDateActivation(OffsetDateTime.now().minusHours(1));
         this.chain.setPeriodicity(3650L);
-        boolean res = chainService.run(chain);
-        Assert.assertFalse(res);
+
+        Assert.assertFalse(chainService.run(chain));
+
+        waitJob(1_000);
+
+        Assert.assertTrue(runnings.isEmpty());
+        Assert.assertTrue(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
     }
 
     @After
@@ -270,7 +377,47 @@ public class ScanJobIT {
         scanDirectoryRepository.deleteAll();
         productRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
+        chainGenerationRepository.deleteAll();
         metaProductRepository.deleteAll();
+        metaFileRepository.deleteAll();
+    }
+
+    private void waitJob(long millSecs) {
+        try {
+            Thread.sleep(millSecs);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+            Assert.fail();
+        }
+    }
+
+    private class ScanJobHandler implements IHandler<JobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<JobEvent> wrapper) {
+            JobEvent event = wrapper.getContent();
+            JobEventType type = event.getJobEventType();
+            switch (type) {
+                case RUNNING:
+                    runnings.add(wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+                    break;
+                case SUCCEEDED:
+                    succeededs.add(wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+                    break;
+                case ABORTED:
+                    aborteds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+                    break;
+                case FAILED:
+                    faileds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent ");
+            }
+        }
     }
 
 }

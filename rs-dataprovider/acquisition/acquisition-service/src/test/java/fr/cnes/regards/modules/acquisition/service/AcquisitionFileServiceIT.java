@@ -171,6 +171,45 @@ public class AcquisitionFileServiceIT {
         aProduct.removeAcquisitionFile(acqFile1);
         Assert.assertEquals(1, aProduct.getAcquisitionFile().size());
     }
+    
+    @Test
+    public void testAcqFilesWithoutProduct() {
+        Assert.assertEquals(0, scandirService.retrieveAll().size());
+
+        // Create 3 ScanDirectory
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
+                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02")
+                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03")
+                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
+
+        // Create a aMetaFile with the 3 ScanDirectory
+        MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
+                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
+                .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
+        aMetaFile = metaFileService.save(aMetaFile);
+
+        // Create 2 AcquisitionFile 
+        AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
+                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
+                .withActivationDate(OffsetDateTime.now().minusDays(5)).withErrorType(ErrorType.WARNING.toString())
+                .withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO).get();
+        acqFile1.setMetaFile(aMetaFile);
+        acqFile1 = acqfileService.save(acqFile1);
+
+        AcquisitionFile acqFile2 = AcquisitionFileBuilder.build("file two")
+                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(15686L)
+                .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).withActivationDate(OffsetDateTime.now()).get();
+        acqFile2.setMetaFile(aMetaFile);
+        acqFile2 = acqfileService.save(acqFile2);
+
+        Assert.assertEquals(3, scandirService.retrieveAll().size());
+        Assert.assertEquals(3, metaFileService.retrieve(aMetaFile.getId()).getScanDirectories().size());
+        Assert.assertEquals(2, acqfileService.retrieveAll().size());
+        Assert.assertEquals(0, productService.retrieveAll().size());
+    }
 
     @Test
     public void getUnkonwScanDirectory() {

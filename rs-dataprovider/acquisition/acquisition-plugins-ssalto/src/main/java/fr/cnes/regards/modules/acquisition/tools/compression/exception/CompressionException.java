@@ -26,8 +26,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * l'application appelant.
  * 
  * @author CS
- * @version $Revision: 1.3 $
- * @since 1.0
  */
 public class CompressionException extends ModuleException {
 
