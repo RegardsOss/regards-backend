@@ -233,8 +233,14 @@ public class JobService implements IJobService {
                         task.cancel(true);
                     }
                     break;
-                case PENDING: // this case should not occurred but...
+                case PENDING: // even a PENDING Job must be set at ABORTED status to avoid a third party service to
+                // set it at QUEUED
                 case QUEUED:
+                    // Update to ABORTED status (this avoids this job to be taken into account)
+                    jobInfo.updateStatus(JobStatus.ABORTED);
+                    jobInfoService.save(jobInfo);
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                    break;
                 case TO_BE_RUN:
                     // Job not yet running
                     abortedBeforeStartedJobs.add(jobInfo.getId());

@@ -20,15 +20,10 @@ package fr.cnes.regards.framework.plugins.autoconfigure;
 
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
 /**
  * Class PluginUtilsAutoConfiguration A bean used to defined a implementation of {@link BeanFactoryAware}.
@@ -36,15 +31,10 @@ import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
  * @author Christophe Mertz
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.plugins" })
 @AutoConfigureAfter({ MultitenantJpaAutoConfiguration.class, AmqpAutoConfiguration.class })
+@Deprecated
+// a supprimer lorsque l'on aura valider l'utilité de @AutoConfigureAfter
+// utiliser plutôt plugins-service ou plugins-rest suivant le besoin
 public class PluginUtilsAutoConfiguration {
 
-    @ConditionalOnMissingBean
-    @Bean
-    public PluginUtilsBean pluginUtilsBean() {
-        PluginUtilsBean pluginUtilsBean = new PluginUtilsBean();
-        PluginUtils.setPluginUtilsBean(pluginUtilsBean);
-        return pluginUtilsBean;
-    }
 }

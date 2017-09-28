@@ -16,35 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins.bean;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.stereotype.Component;
+package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- * @author Christophe Mertz
- *
+ * @author oroussel
  */
-@Component
-public class PluginUtilsBean {
+public class CannotResumeOrderException extends ModuleException {
 
-    static PluginUtilsBean instance;
-
-    @Autowired
-    private AutowireCapableBeanFactory beanFactory;
-
-    public static PluginUtilsBean getInstance() {
-        return instance;
+    public CannotResumeOrderException() {
+        super("Order is not completely in pause. You must wait for its full pause before resume it.");
     }
-    
-    @Autowired
-    public void setInstance(PluginUtilsBean bean) {
-        instance = bean;
-    }
-
-    public <T> void processAutowiredBean(final T plugin) {
-        beanFactory.autowireBean(plugin);
-    }
-
 }

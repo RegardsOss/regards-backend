@@ -656,7 +656,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(1)).fileRetreived(argumentURL.capture(), argumentPath.capture());
-        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any(), Mockito.any());
         Assert.assertEquals(true, argumentURL.getValue().equals(stafUrl));
         Assert.assertEquals(true, argumentPath.getValue()
                 .equals(Paths.get(RESTORE_DIRECTORY_PATH.toString(), fileNameToRestore)));
@@ -721,7 +721,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(1)).fileRetreived(argumentURL.capture(), argumentPath.capture());
-        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any(), Mockito.any());
         Assert.assertEquals(true, argumentURL.getValue().equals(stafCutUrl));
         Assert.assertEquals(true,
                             argumentPath.getValue().equals(Paths.get(RESTORE_DIRECTORY_PATH.toString(), cutfileName)));
@@ -793,7 +793,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(3)).fileRetreived(argumentURL.capture(), argumentPath.capture());
-        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any(), Mockito.any());
         for (URL url : stafUrls) {
             Assert.assertEquals(true, argumentURL.getAllValues().contains(url));
         }
@@ -907,7 +907,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(2)).fileRetreived(argumentURL.capture(), argumentPath.capture());
-        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(Mockito.any(), Mockito.any());
         for (URL url : stafUrlsExpectedToBeRestored) {
             Assert.assertEquals(true, argumentURL.getAllValues().contains(url));
         }
@@ -1036,7 +1036,7 @@ public class STAFControllerTest {
         // 3 files restore succeed (2 from local, 1 from remote)
         Mockito.verify(listenerMock, Mockito.times(3)).fileRetreived(argumentURL.capture(), argumentPath.capture());
         // 2 files restore error (1 from local, 1 from remote)
-        Mockito.verify(listenerMock, Mockito.times(2)).fileRetrieveError(Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(2)).fileRetrieveError(Mockito.any(), Mockito.any());
         for (URL url : stafUrlsExpectedToBeRestored) {
             Assert.assertEquals(String.format("URL not restored %s", url.toString()), true,
                                 argumentURL.getAllValues().contains(url));
@@ -1115,7 +1115,7 @@ public class STAFControllerTest {
         // Check event sent after staf retreive.
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         Mockito.verify(listenerMock, Mockito.times(0)).fileRetreived(Mockito.any(), Mockito.any());
-        Mockito.verify(listenerMock, Mockito.times(3)).fileRetrieveError(argumentURL.capture());
+        Mockito.verify(listenerMock, Mockito.times(3)).fileRetrieveError(argumentURL.capture(), Mockito.any());
         Assert.assertEquals(true, argumentURL.getAllValues().contains(stafUrl));
         Assert.assertEquals(true, argumentURL.getAllValues().contains(stafTarUrl));
         Assert.assertEquals(true, argumentURL.getAllValues().contains(stafCutUrl));
@@ -1195,7 +1195,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<URL> argumentURLNotFound = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
-        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURLNotFound.capture());
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURLNotFound.capture(), Mockito.any());
         Mockito.verify(listenerMock, Mockito.times(3)).fileRetreived(argumentURL.capture(), argumentPath.capture());
         for (URL url : expectedRestoredSTAFUrls) {
             Assert.assertEquals(String.format("Missing a notification on the listener for URL %s", url.toString()),
@@ -1264,7 +1264,7 @@ public class STAFControllerTest {
         // Check event sent after staf retreive.
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         Mockito.verify(listenerMock, Mockito.times(0)).fileRetreived(Mockito.any(), Mockito.any());
-        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURL.capture());
+        Mockito.verify(listenerMock, Mockito.times(1)).fileRetrieveError(argumentURL.capture(), Mockito.any());
         Assert.assertEquals("As the restoration directory is not available, there should be an error notification sent for the STAF URL",
                             true, argumentURL.getValue().equals(stafUrl));
     }
@@ -1309,7 +1309,7 @@ public class STAFControllerTest {
         ArgumentCaptor<URL> argumentURL = ArgumentCaptor.forClass(URL.class);
         ArgumentCaptor<Path> argumentPath = ArgumentCaptor.forClass(Path.class);
         Mockito.verify(listenerMock, Mockito.times(2)).fileRetreived(argumentURL.capture(), argumentPath.capture());
-        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any());
+        Mockito.verify(listenerMock, Mockito.times(0)).fileRetrieveError(Mockito.any(), Mockito.any());
         Assert.assertEquals(true, argumentURL.getAllValues().contains(stafUrl));
         Assert.assertEquals(true, argumentURL.getAllValues().contains(stafUrlOtherNode));
         Assert.assertEquals(true, argumentPath.getAllValues()

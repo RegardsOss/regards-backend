@@ -131,11 +131,13 @@ public class STAFCollectListener {
                 if (!PhysicalFileStatusEnum.ERROR.equals(partNotRestored.getIncludingCutFile().getStatus())) {
                     partNotRestored.getIncludingCutFile().setStatus(PhysicalFileStatusEnum.ERROR);
                     sendFileRetrieveErrorNotification(STAFURLFactory
-                            .getCutFileSTAFUrl(partNotRestored.getIncludingCutFile()));
+                            .getCutFileSTAFUrl(partNotRestored.getIncludingCutFile()),
+                                                      "[STAF] File is in ERROR status.");
                 }
             } else {
                 // For other case TAR and NORMAL notify listener for the files in error.
-                STAFURLFactory.getSTAFURLs(pFileNotRestored).forEach(this::sendFileRetrieveErrorNotification);
+                STAFURLFactory.getSTAFURLs(pFileNotRestored).forEach(f -> sendFileRetrieveErrorNotification(f, String
+                        .format("[STAF] File %s not restored.", f.toString())));
             }
         } catch (STAFURLException e) {
             LOG.error("[STAF] Invalid file to handle restore error", e);
@@ -215,7 +217,7 @@ public class STAFCollectListener {
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                     includingCutFile.setStatus(PhysicalFileStatusEnum.ERROR);
-                    sendFileRetrieveErrorNotification(url);
+                    sendFileRetrieveErrorNotification(url, e.getMessage());
                 }
             } catch (STAFURLException e1) {
                 LOG.error("[STAF] Invalid file restored", e1);
@@ -244,8 +246,10 @@ public class STAFCollectListener {
                     facade.decompress(CompressionTypeEnum.TAR, pTARFileRestored.getLocalFilePath().toFile(),
                                       tarExtractionPath.toFile());
                 } catch (CompressionException | IOException e) {
-                    LOG.error("[STAF] Error during TAR decompression {}", pTARFileRestored.getLocalFilePath(), e);
-                    urls.forEach((localPath, url) -> sendFileRetrieveErrorNotification(url));
+                    String msg = String.format("[STAF] Error during TAR decompression %s.",
+                                               pTARFileRestored.getLocalFilePath());
+                    LOG.error(msg, e);
+                    urls.forEach((localPath, url) -> sendFileRetrieveErrorNotification(url, msg));
                 }
             }
             // Check files existance and notify client if files are well restored.
@@ -319,18 +323,23 @@ public class STAFCollectListener {
                     }
                     sendFileRetrievedNotification(pFileRestoredSTAFURL, finalDestinationPath);
                 } else {
-                    sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);
+                    String msg = String.format("[STAF]Error restoring file. File %s already exists.",
+                                               pFileRestoredSTAFURL);
+                    sendFileRetrieveErrorNotification(pFileRestoredSTAFURL, msg);
                 }
 
             } catch (IOException e) {
-                LOG.error("Error moving file from temporary tar extraction directory {} to restoration directory {}",
-                          pTARExtractionPath.toString(), restorationDirectoryPath.toString(), e.getMessage(), e);
-                sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);
+                String msg = String
+                        .format("Error moving file from temporary tar extraction directory %s to restoration directory %s. %s",
+                                pTARExtractionPath.toString(), restorationDirectoryPath.toString(), e.getMessage());
+                LOG.error(msg, e);
+                sendFileRetrieveErrorNotification(pFileRestoredSTAFURL, msg);
             }
         } else {
-            LOG.error("[STAF] File {} is not found in the {} TAR file restored from STAF System.",
-                      extractedfilePath.getFileName().toString(), pFileRestoredSTAFURL.toString());
-            sendFileRetrieveErrorNotification(pFileRestoredSTAFURL);
+            String msg = String.format("[STAF] File %s is not found in the %s TAR file restored from STAF System.",
+                                       extractedfilePath.getFileName().toString(), pFileRestoredSTAFURL.toString());
+            LOG.error(msg);
+            sendFileRetrieveErrorNotification(pFileRestoredSTAFURL, msg);
         }
     }
 
@@ -356,9 +365,9 @@ public class STAFCollectListener {
         clientListener.fileRetreived(pSTAFURL, pLocalFilePathRestored);
     }
 
-    private void sendFileRetrieveErrorNotification(URL pSTAFURL) {
+    private void sendFileRetrieveErrorNotification(URL pSTAFURL, String pErrorMessage) {
         LOG.error("[STAF collect-listener] Sending notification for STAF File {} retrieve error", pSTAFURL.toString());
-        clientListener.fileRetrieveError(pSTAFURL);
+        clientListener.fileRetrieveError(pSTAFURL, pErrorMessage);
     }
 
 }
