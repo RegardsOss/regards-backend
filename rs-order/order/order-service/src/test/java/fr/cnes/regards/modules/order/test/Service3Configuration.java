@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 @EnableScheduling
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
-public class Service2Configuration {
+public class Service3Configuration {
     @Bean
     public ICatalogClient catalogClient() {
         return new ICatalogClient() {
@@ -189,12 +189,16 @@ public class Service2Configuration {
 
             @Override
             public HttpEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
+                int delay = 100;
                 for (String checksum : availabilityRequest.getChecksums()) {
-                    if ((int)(Math.random() * 10) % 2 == 0) {
-                        publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
-                    } else {
-                        publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
+                    // Take more an more time
+//                    delay *= 2;
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
                 }
                 return new HttpEntity<>(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
                                                                  Collections.emptySet()));

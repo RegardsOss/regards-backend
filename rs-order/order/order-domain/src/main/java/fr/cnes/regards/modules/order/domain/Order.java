@@ -55,6 +55,15 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
+    /**
+     * Math.floor() percent completed task (number of treated files on total files)
+     */
+    @Column(name = "percent_complete")
+    private int percentCompleted = 0;
+
+    @Column(name = "files_in_error")
+    private int filesInErrorCount = 0;
+
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", foreignKey = @ForeignKey(name = "fk_order"))
     @SortNatural
@@ -102,6 +111,22 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public void setExpirationDate(OffsetDateTime expirationDate) {
         this.expirationDate = expirationDate;
+    }
+
+    public int getPercentCompleted() {
+        return percentCompleted;
+    }
+
+    public void setPercentCompleted(int percentCompleted) {
+        this.percentCompleted = percentCompleted;
+    }
+
+    public int getFilesInErrorCount() {
+        return filesInErrorCount;
+    }
+
+    public void setFilesInErrorCount(int filesInErrorCount) {
+        this.filesInErrorCount = filesInErrorCount;
     }
 
     @Override

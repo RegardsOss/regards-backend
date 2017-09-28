@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import fr.cnes.regards.framework.module.rest.exception.CannotResumeOrderException;
 import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -41,6 +42,16 @@ public interface IOrderService {
     Order loadComplete(Long id);
 
     /**
+     * Pause an order (async task)
+     */
+    void pause(Long id);
+
+    /**
+     * Resume a paused order (async task too)
+     */
+    void resume(Long id) throws CannotResumeOrderException;
+
+    /**
      * Find all orders sorted by descending date.
      * Orders are simple loaded
      */
@@ -63,4 +74,11 @@ public interface IOrderService {
 
     void downloadOrderCurrentZip(Long orderId, HttpServletResponse response)
             throws NotYetAvailableException;
+
+    /**
+     * Scheduled method to update all current running orders completions values into database
+     */
+    void updateCurrentOrdersCompletions();
+
+    void updateTenantCurrentOrdersCompletions();
 }

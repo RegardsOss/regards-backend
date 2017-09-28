@@ -1,19 +1,26 @@
 package fr.cnes.regards.modules.order.domain;
 
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EntityResult;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.hibernate.annotations.Parameter;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -29,6 +36,29 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 @Entity
 @Table(name = "t_data_file",
         indexes = @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"))
+@NamedNativeQueries({
+        @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM t_data_file df, t_order o WHERE "
+                + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
+                + "GROUP BY o.id ORDER BY o.id",
+                resultSetMapping = "sumMapping",
+                name = "selectSumSizesByOrderId"),
+        @NamedNativeQuery(
+                query = "SELECT o.*, sum(df.size) as size FROM t_data_file df, t_order o WHERE "
+                + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
+                + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
+                resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
+        @NamedNativeQuery(
+                query = "SELECT o.*, count(df.*) as count FROM t_data_file df, t_order o WHERE "
+                        + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
+                        + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
+                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates")
+        })
+@SqlResultSetMappings({
+        @SqlResultSetMapping(name = "sumMapping", columns = @ColumnResult(name = "size", type = Long.class),
+                             entities = @EntityResult(entityClass = Order.class)),
+        @SqlResultSetMapping(name = "countMapping", columns = @ColumnResult(name = "count", type = Long.class),
+                entities = @EntityResult(entityClass = Order.class))
+})
 public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     private Long id;

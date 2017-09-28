@@ -9,12 +9,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +30,25 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.CannotResumeOrderException;
 import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -83,6 +95,18 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IOrderService self;
+
+    @Autowired
+    private ISubscriber subscriber;
 
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
@@ -200,6 +224,31 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public void pause(Long id) {
+        Order order = repos.findCompleteById(id);
+        // Ask for all jobInfos abortion
+        order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
+                .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
+    }
+
+    @Override
+    public void resume(Long id) throws CannotResumeOrderException {
+        Order order = repos.findCompleteById(id);
+        // Look at all associated JobInfos : they must be at a paused compatible status
+        boolean inPause = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
+        if (!inPause) {
+            throw new CannotResumeOrderException();
+        }
+        // Passes all ABORTED jobInfo to PENDING
+        order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
+                .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
+                .peek(jobInfo -> jobInfo.updateStatus(JobStatus.PENDING)).forEach(jobInfoService::save);
+        // Don't forget to manage user order jobs again (PENDING -> QUEUED)
+        orderJobService.manageUserOrderJobInfos(order.getOwner());
+    }
+
+    @Override
     public Page<Order> findAll(Pageable pageRequest) {
         return repos.findAllByOrderByCreationDateDesc(pageRequest);
     }
@@ -259,5 +308,24 @@ public class OrderService implements IOrderService {
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Scheduled(fixedDelayString = "${regards.order.completion.update.rate.ms:1000}")
+    public void updateCurrentOrdersCompletions() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            self.updateTenantCurrentOrdersCompletions();
+        }
+    }
+
+    @Override
+    public void updateTenantCurrentOrdersCompletions() {
+        Set<Order> orders = dataFileService.updateCurrentOrdersCompletionValues();
+        if (!orders.isEmpty()) {
+            repos.save(orders);
+        }
+
     }
 }
