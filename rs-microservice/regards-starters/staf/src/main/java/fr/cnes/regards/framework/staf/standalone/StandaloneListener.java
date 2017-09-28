@@ -29,8 +29,8 @@ public class StandaloneListener implements IClientCollectListener {
     }
 
     @Override
-    public void fileRetrieveError(URL pSTAFFileUrl) {
-        LOG.info(" --> Error retrieving file: {}", pSTAFFileUrl);
+    public void fileRetrieveError(URL pSTAFFileUrl, String pErrorMessage) {
+        LOG.info(" --> Error retrieving file: {}. Cause : ", pSTAFFileUrl, pErrorMessage);
     }
 
 }

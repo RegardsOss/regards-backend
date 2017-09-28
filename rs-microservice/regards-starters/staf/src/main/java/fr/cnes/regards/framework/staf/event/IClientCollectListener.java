@@ -24,6 +24,7 @@ public interface IClientCollectListener {
      * Inform the the instanciated client that there was an error during <br/>
      * the given {@link URL} file restoration<br/>
      * @param pSTAFFileUrl {@link URL} of the STAF File in error.
+     * @param pErrorMessage {@link String} error message.
      */
-    void fileRetrieveError(URL pSTAFFileUrl);
+    void fileRetrieveError(URL pSTAFFileUrl, String pErrorMessage);
 }
