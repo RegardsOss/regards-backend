@@ -127,17 +127,6 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
         expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
-                .param("service_scope", ServiceScope.QUERY.toString());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
-                          builder);
-    }
-
-    @Test
-    public void testRetrieveServicesMany() {
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.MANY.toString());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
                           builder);
@@ -160,13 +149,13 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId", Matchers.is("tata")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes",
-                                                        Matchers.containsInAnyOrder("QUERY", "ONE")));
+                                                        Matchers.containsInAnyOrder("MANY", "ONE")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes",
                                                         Matchers.contains("DATA")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
                                                         Matchers.is("aSampleServicePlugin")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
-                                                        Matchers.containsInAnyOrder("QUERY", "ONE")));
+                                                        Matchers.containsInAnyOrder("MANY", "ONE")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
                                                         Matchers.contains("DATASET")));
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)

@@ -25,6 +25,7 @@ package fr.cnes.regards.modules.catalog.services.domain;
  * @author Xavier-Alexandre Brochard
  */
 public enum ServiceScope {
+
     /**
      * Can this implementation be used with only one datum's id? Should have a PluginParameter representing this datum
      */
@@ -34,11 +35,5 @@ public enum ServiceScope {
      * Can this implementation be used with a list of data's id? Should have a PluginParameter corresponding to this
      * list
      */
-    MANY,
-
-    /**
-     * Can this implementation be used with a query similar to the ones used by searches endpoint? Should have a
-     * PluginParameter for the query
-     */
-    QUERY
+    MANY
 }

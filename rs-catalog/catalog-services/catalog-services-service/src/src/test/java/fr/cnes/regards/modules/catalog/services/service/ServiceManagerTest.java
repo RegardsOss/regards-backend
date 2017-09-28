@@ -143,7 +143,7 @@ public class ServiceManagerTest {
                 .retrieveServices("aSampleServicePlugin", ServiceScope.ONE);
 
         // Define expected
-        Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY);
+        Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY);
         Set<EntityType> expectedEntityTypes = Sets.newHashSet(EntityType.DATASET);
 
         // Check
