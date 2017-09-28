@@ -36,7 +36,7 @@ public class PluginServiceDtoTest {
 
     private static URL ICON_URL;
 
-    private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.ONE, ServiceScope.QUERY);
+    private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY);
 
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.DATASET);
 
