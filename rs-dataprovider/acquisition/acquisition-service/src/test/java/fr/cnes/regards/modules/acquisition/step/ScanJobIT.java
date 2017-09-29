@@ -99,9 +99,11 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    public final static String META_PRODUCT_PARAM = "meta-produt";
+    private final static String META_PRODUCT_PARAM = "meta-produt";
 
-    public final static String META_FILE_PARAM = "meta-file";
+    private final static String META_FILE_PARAM = "meta-file";
+
+    private final static long WAIT_TIME = 3_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -170,13 +172,22 @@ public class ScanJobIT {
 
     @Before
     public void setUp() throws Exception {
+        tenantResolver.forceTenant(tenant);
+
         cleanDb();
 
-        Assume.assumeTrue(rabbitVhostAdmin.brokerRunning());
-        rabbitVhostAdmin.addVhost(tenant);
+        initAmqp();
 
-        tenantResolver.forceTenant(tenant);
+        initData();
+
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
+    }
+
+    public void initAmqp() {
+        Assume.assumeTrue(rabbitVhostAdmin.brokerRunning());
+        rabbitVhostAdmin.bind(tenantResolver.getTenant());
+
+        rabbitVhostAdmin.unbind();
 
         subscriber.subscribeTo(JobEvent.class, new ScanJobHandler());
 
@@ -186,9 +197,7 @@ public class ScanJobIT {
         faileds.clear();
     }
 
-    @Before
     public void initData() {
-
         // Create a ChainGeneration and a MetaProduct
         this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
         this.chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
@@ -222,7 +231,7 @@ public class ScanJobIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(5_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -236,9 +245,10 @@ public class ScanJobIT {
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
-    
+
     @Test
-    public void runActiveChainGenerationAcquireSameFilesWithSameChecksum() throws ModuleException, InterruptedException {
+    public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
+            throws ModuleException, InterruptedException {
         this.chain.setPeriodicity(1L);
 
         Set<MetaFile> metaFiles = new HashSet<>();
@@ -256,7 +266,7 @@ public class ScanJobIT {
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(2_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -266,7 +276,7 @@ public class ScanJobIT {
         // Repeat the activation of the same chain
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(2_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -280,7 +290,7 @@ public class ScanJobIT {
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
-    
+
     @Test
     public void runActiveChainGenerationAcquireSameFilesWithDifferentChecksum()
             throws ModuleException, InterruptedException {
@@ -301,7 +311,7 @@ public class ScanJobIT {
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(2_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -314,7 +324,7 @@ public class ScanJobIT {
         chain.setScanAcquisitionPluginConf(plgConf.getId());
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(2_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
