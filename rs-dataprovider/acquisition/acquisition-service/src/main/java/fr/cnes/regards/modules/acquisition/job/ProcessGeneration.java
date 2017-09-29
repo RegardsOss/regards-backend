@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.job.step.AbstractStep;
+import fr.cnes.regards.modules.acquisition.job.step.IStep;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
 /**
@@ -52,7 +53,7 @@ public class ProcessGeneration {
     /**
      * Etape courante
      */
-    protected AbstractStep currentStep = null;
+    protected IStep currentStep = null;
 
     //    /**
     //     * Rapport d'activite du processus courant
@@ -285,11 +286,11 @@ public class ProcessGeneration {
         this.chainGeneration = chainGeneration;
     }
 
-    public AbstractStep getCurrentStep() {
+    public IStep getCurrentStep() {
         return currentStep;
     }
 
-    public void setCurrentStep(AbstractStep currentStep) {
+    public void setCurrentStep(IStep currentStep) {
         this.currentStep = currentStep;
     }
 

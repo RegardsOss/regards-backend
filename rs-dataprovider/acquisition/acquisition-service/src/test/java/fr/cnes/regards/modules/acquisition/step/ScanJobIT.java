@@ -187,7 +187,7 @@ public class ScanJobIT {
     }
 
     @Before
-    public void init() {
+    public void initData() {
 
         // Create a ChainGeneration and a MetaProduct
         this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
@@ -256,7 +256,7 @@ public class ScanJobIT {
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(5_000);
+        waitJob(2_000);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -301,7 +301,7 @@ public class ScanJobIT {
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(5_000);
+        waitJob(2_000);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());

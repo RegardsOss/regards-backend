@@ -33,8 +33,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
-import fr.cnes.regards.modules.acquisition.job.step.AbstractStep;
-import fr.cnes.regards.modules.acquisition.job.step.AcquisitionScanStep;
+import fr.cnes.regards.modules.acquisition.job.step.IAcquisitionScanStep;
+import fr.cnes.regards.modules.acquisition.job.step.IStep;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
 /**
@@ -47,6 +47,9 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
+
+    @Autowired
+    private IAcquisitionScanStep acquisitionScanStep;
 
     @Override
     public void run() {
@@ -61,18 +64,20 @@ public class AcquisitionJob extends AbstractJob<Void> {
                     "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
         }
 
-        chainGeneration.setLastDateActivation(OffsetDateTime.now());
-
-        AbstractStep firstStep = new AcquisitionScanStep();
-        beanFactory.autowireBean(firstStep);
-
         ProcessGeneration process = new ProcessGeneration(chainGeneration);
-        process.setCurrentStep(firstStep);
+
+        // AcquisitionStep is the first step
+        IStep firstStep = acquisitionScanStep;
         firstStep.setProcess(process);
+        beanFactory.autowireBean(firstStep);
+        process.setCurrentStep(firstStep);
+
+        // CheckStep is the second step
         // configurer les steps        
         // firstStep.setNextStep(totoStep);
 
         try {
+            chainGeneration.setLastDateActivation(OffsetDateTime.now());
             firstStep.proceedStep();
         } catch (AcquisitionRuntimeException e) {
             LOGGER.error(e.getMessage());

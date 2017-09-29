@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  * 
  * @author Christophe Mertz
  */
-public abstract class AbstractStep {
+public abstract class AbstractStep implements IStep {
 
     // TOCO CMZ à utiliser
     protected int state;
@@ -111,7 +111,8 @@ public abstract class AbstractStep {
         this.state = state;
     }
 
-    public AbstractStep getNextStep() {
+    @Override
+    public IStep getNextStep() {
         return nextStep;
     }
 
@@ -123,6 +124,7 @@ public abstract class AbstractStep {
         return process;
     }
 
+    @Override
     public void setProcess(ProcessGeneration process) {
         this.process = process;
     }

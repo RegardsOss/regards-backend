@@ -26,7 +26,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -45,7 +47,9 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  * @author Christophe Mertz
  *
  */
-public class AcquisitionScanStep extends AbstractStep {
+@MultitenantTransactional
+@Service
+public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanStep.class);
 
@@ -54,7 +58,7 @@ public class AcquisitionScanStep extends AbstractStep {
 
     @Autowired
     IChainGenerationService chainGenerationService;
-    
+
     @Autowired
     IAcquisitionFileRepository acquisitionFileRepository;
 
@@ -106,28 +110,21 @@ public class AcquisitionScanStep extends AbstractStep {
     private void synchronizedDatabase(Set<AcquisitionFile> acquisitionFiles) {
         chainGenerationService.save(chainGeneration);
 
-        for (AcquisitionFile af  : acquisitionFiles) {
-            // TODO CMZ à revoir pour ne faire qu'une seule fois
-            List<AcquisitionFile> listAf = acquisitionFileRepository.findByMetaFile(af.getMetaFile());
-            
+        for (AcquisitionFile af : acquisitionFiles) {
+            List<AcquisitionFile> listAf = acquisitionFileService.findByMetaFile(af.getMetaFile());
+
             if (listAf.contains(af)) {
+                // if the AcquisitionFile already exists in database
+                // update his status and his date acquisition
                 AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
                 afExisting.setAcqDate(af.getAcqDate());
                 afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
                 acquisitionFileService.save(afExisting);
-            }
-            else {
+            } else {
                 af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
                 acquisitionFileService.save(af);
             }
         }
-
-//        acquisitionFiles.forEach(af -> {
-//            acquisitionFileRepository.findByMetaFile(af.getMetaFile());
-//            af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-//            acquisitionFileService.save(af);
-//        });
-
     }
 
     @Override
