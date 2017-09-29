@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles("test")
-@DirtiesContext
+//@DirtiesContext
 public class BasketServiceIT {
 
     @Autowired
