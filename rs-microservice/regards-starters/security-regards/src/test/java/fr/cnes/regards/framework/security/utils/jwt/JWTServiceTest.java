@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,11 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 
 /**
  * @author msordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JwtTestConfiguration.class })
@@ -74,6 +82,35 @@ public class JWTServiceTest {
             final String message = "Error while generating JWT without group";
             LOGGER.debug(message, e);
             Assert.fail(message);
+        }
+    }
+
+    @Test
+    public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
+        Map<String, String> addParams = new HashMap<String, String>() {{
+            put("toto", "titi");
+        }};
+        String token = jwtService
+                .generateToken(TENANT, EMAIL, ROLE, OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, "pouet");
+
+        try {
+            jwtService.parseToken(token, "teuop");
+            Assert.fail("An exception should have been thrown here caused to an invalid secret key");
+        } catch (JwtException e) {
+        }
+        try {
+            Jws<Claims> jwsClaims = jwtService.parseToken(token, "pouet");
+            System.out.println(jwsClaims);
+        } catch (JwtException e) {
+        }
+
+        String expiredToken = jwtService
+                .generateToken(TENANT, EMAIL, ROLE, OffsetDateTime.now(), addParams, "pouet");
+        Thread.sleep(1_000);
+        try {
+            Jws<Claims> jwsClaims = jwtService.parseToken(expiredToken, "pouet");
+            Assert.fail("An exception should have been thrown here caused to an expired token");
+        } catch (ExpiredJwtException e) {
         }
     }
 }
