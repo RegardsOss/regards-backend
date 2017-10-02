@@ -42,6 +42,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
+
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
@@ -133,9 +134,9 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     }
 
     private void customizeBuilder(GsonBuilder pBuilder) {
-        pBuilder.registerTypeAdapter(Path.class, new PathAdapter().nullSafe());
+        pBuilder.registerTypeHierarchyAdapter(Path.class, new PathAdapter().nullSafe());
         pBuilder.registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe());
-        pBuilder.registerTypeAdapter(Multimap.class, new MultimapAdapter());
+        pBuilder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         pBuilder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
 
     }
