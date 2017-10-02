@@ -6,7 +6,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -21,10 +26,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.*;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -93,7 +101,7 @@ public class JobService implements IJobService {
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
+        subscriber.subscribeTo(StopJobEvent.class, this::handleStopEvent);
     }
 
     @Override
@@ -216,6 +224,14 @@ public class JobService implements IJobService {
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
     }
 
+    private void handleStopEvent(TenantWrapper<StopJobEvent> wrapper) {
+        if (wrapper.getContent() != null) {
+            runtimeTenantResolver.forceTenant(wrapper.getTenant());
+            JobService.this.abort(wrapper.getContent().getJobId());
+        }
+    }
+
+
     /**
      * Ask for job abortion if current thread pool is responsible of job execution
      * @param jobId job id
@@ -233,8 +249,14 @@ public class JobService implements IJobService {
                         task.cancel(true);
                     }
                     break;
-                case PENDING: // this case should not occurred but...
+                case PENDING: // even a PENDING Job must be set at ABORTED status to avoid a third party service to
+                // set it at QUEUED
                 case QUEUED:
+                    // Update to ABORTED status (this avoids this job to be taken into account)
+                    jobInfo.updateStatus(JobStatus.ABORTED);
+                    jobInfoService.save(jobInfo);
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                    break;
                 case TO_BE_RUN:
                     // Job not yet running
                     abortedBeforeStartedJobs.add(jobInfo.getId());
@@ -245,17 +267,4 @@ public class JobService implements IJobService {
         }
     }
 
-    /**
-     * Handler for StopEventJob
-     */
-    private class StopJobHandler implements IHandler<StopJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<StopJobEvent> wrapper) {
-            if (wrapper.getContent() != null) {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                JobService.this.abort(wrapper.getContent().getJobId());
-            }
-        }
-    }
 }

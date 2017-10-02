@@ -40,12 +40,9 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.TextCodec;
 
 /**
- *
  * Utility service based on JJWT library to generate or part a JWT based on a secret.
- *
  * @author Marc Sordi
  * @author Christophe Mertz
- *
  */
 @Service
 public class JWTService {
@@ -88,17 +85,11 @@ public class JWTService {
     private long validityDelay = 120;
 
     /**
-     *
      * Inject a generated token in the {@link SecurityContextHolder}
-     *
-     * @param pTenant
-     *            tenant
-     * @param pRole
-     *            Role name
-     * @param pUserName
-     *            User name
-     * @throws JwtException
-     *             Error during token generation
+     * @param pTenant tenant
+     * @param pRole Role name
+     * @param pUserName User name
+     * @throws JwtException Error during token generation
      * @since 1.0-SNAPSHOT
      */
     public void injectToken(final String pTenant, final String pRole, final String pUserName) throws JwtException {
@@ -108,11 +99,8 @@ public class JWTService {
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
-     *
-     * @param pToken
-     *            the token to inject into the {@link SecurityContextHolder}
-     * @throws JwtException
-     *             Error during token parsing
+     * @param pToken the token to inject into the {@link SecurityContextHolder}
+     * @throws JwtException Error during token parsing
      * @since 1.2-SNAPSHOT
      */
     private void injectToken(final String pToken) throws JwtException {
@@ -121,13 +109,9 @@ public class JWTService {
     }
 
     /**
-     *
      * Mock to simulate a token in the {@link SecurityContextHolder}.
-     *
-     * @param pTenant
-     *            tenant
-     * @param pRole
-     *            Role name
+     * @param pTenant tenant
+     * @param pRole Role name
      * @since 1.0-SNAPSHOT
      */
     public void injectMockToken(final String pTenant, final String pRole) {
@@ -144,12 +128,9 @@ public class JWTService {
 
     /**
      * Parse JWT to retrieve full user information
-     *
-     * @param pAuthentication
-     *            containing just JWT
+     * @param pAuthentication containing just JWT
      * @return Full user information
-     * @throws JwtException
-     *             Invalid JWT signature
+     * @throws JwtException Invalid JWT signature
      */
     public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
 
@@ -194,19 +175,14 @@ public class JWTService {
     }
 
     /**
-     *
      * FIXME : JWT should be completed with expiration date
      *
      * FIXME : JWT generate must manage RSA keys
      *
      * Generate a JWT handling the tenant name, the user name and its related role
-     *
-     * @param tenant
-     *            tenant
-     * @param pName
-     *            user name
-     * @param pRole
-     *            user role
+     * @param tenant tenant
+     * @param pName user name
+     * @param pRole user role
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String pName, String pRole) {
@@ -216,11 +192,36 @@ public class JWTService {
     }
 
     /**
+     * Generate a token providing almost all informations
+     * @param tenant tenant
+     * @param user user who aked for token
+     * @param role user role
+     * @param expirationDate specific expiration date
+     * @param additionalParams additional parameters (user specific)
+     * @param secret sec ret phrase (user specific)
+     * @return a Json Web Token
+     */
+    public String generateToken(String tenant, String user, String role, OffsetDateTime expirationDate,
+            Map<String, String> additionalParams, String secret) {
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, role, user, additionalParams))
+                .setSubject(user).signWith(ALGO, TextCodec.BASE64.encode(secret))
+                .setExpiration(Date.from(expirationDate.toInstant())).compact();
+    }
+
+    public Jws<Claims> parseToken(String token, String secret) throws InvalidJwtException {
+        try {
+            return Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret)).parseClaimsJws(token);
+        } catch (final SignatureException e) {
+            final String message = "Invalid token";
+            LOG.error(message, e);
+            throw new InvalidJwtException(message);
+        }
+    }
+
+    /**
      * retrieve the current token in place in the security context
-     *
      * @return parsed token which is in the security context
-     * @throws JwtException
-     *             if JWT cannot be parsed
+     * @throws JwtException if JWT cannot be parsed
      */
     public JWTAuthentication getCurrentToken() throws JwtException {
         JWTAuthentication jwt = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -228,23 +229,34 @@ public class JWTService {
     }
 
     /**
-     *
      * Method to generate REGARDS JWT Tokens CLAIMS
-     *
-     * @param tenant
-     *            tenant
-     * @param pRole
-     *            user role
-     * @param pUserName
-     *            user name
+     * @param tenant tenant
+     * @param pRole user role
+     * @param pUserName user name
      * @return claim map
      * @since 1.0-SNAPSHOT
      */
     public Map<String, Object> generateClaims(final String tenant, final String pRole, final String pUserName) {
+        return generateClaims(tenant, pRole, pUserName, null);
+    }
+
+    /**
+     * Method to generate REGARDS JWT Tokens CLAIMS
+     * @param tenant tenant
+     * @param role user role
+     * @param user user name
+     * @param additionalParams optional additional parameters (can be null)
+     * @return claim map
+     */
+    public Map<String, Object> generateClaims(final String tenant, final String role, final String user,
+            Map<String, String> additionalParams) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_TENANT, tenant);
-        claims.put(CLAIM_ROLE, pRole);
-        claims.put(CLAIM_SUBJECT, pUserName);
+        claims.put(CLAIM_ROLE, role);
+        claims.put(CLAIM_SUBJECT, user);
+        if (additionalParams != null) {
+            claims.putAll(additionalParams);
+        }
         return claims;
     }
 
@@ -256,8 +268,7 @@ public class JWTService {
     }
 
     /**
-     * @param pSecret
-     *            the secret to set
+     * @param pSecret the secret to set
      */
     public void setSecret(final String pSecret) {
         secret = pSecret;
