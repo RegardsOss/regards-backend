@@ -4,11 +4,15 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,8 +72,14 @@ public class CachedFileService implements ICachedFileService {
     @Value("${regards.storage.cache.path}")
     private String cachePath;
 
-    @Value("${regards.storage.cache.size.limit.ko:100000000}")
-    private Long cacheSizeLimitKo;
+    @Value("${regards.storage.cache.size.limit.ko:500000000}")
+    private Long maxCacheSizeKo;
+
+    @Value("${regards.storage.cache.purge.upper.threshold.ko:450000000}")
+    private Long cacheSizePurgeUpperThreshold;
+
+    @Value("${regards.storage.cache.purge.lower.threshold.ko:400000000}")
+    private Long cacheSizePurgeLowerThreshold;
 
     @Autowired
     private IDataFileDao dataFileDao;
@@ -119,10 +129,18 @@ public class CachedFileService implements ICachedFileService {
                 .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).collect(Collectors.toSet());
         Set<DataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
                 .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
+        // Get cached files queued
+        Set<CachedFile> queuedCachedFiles = cachedFiles.stream()
+                .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toSet());
+        Set<DataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
+                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
 
         // Create the list of data files not handle by cache and needed to be restored
         Set<DataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
+        // Remove all files already availables in cache.
         toRetrieve.removeAll(alreadyCachedData);
+        // Try to retrieve queued files if possible
+        toRetrieve.addAll(queuedData);
 
         // Dispatch each Datafile by storage plugin.
         Multimap<PluginConfiguration, DataFile> toRetrieveByStorage = HashMultimap.create();
@@ -136,14 +154,29 @@ public class CachedFileService implements ICachedFileService {
         return new CoupleAvailableError(alreadyAvailableData, errors);
     }
 
-    @Scheduled(fixedRateString = "${regards.cache.cleanup.rate:86400000}")
+    /**
+     * Periodicly check the cache total size and delete expired files or/and older files if needed.
+     * Default : scheduled to be run every 5minutes.
+     */
+    @Scheduled(fixedRateString = "${regards.cache.cleanup.rate.ms:300000}")
     public void cleanCache() {
-        // TODO
+        LOG.debug(" -----------------> Clean cache START <-----------------------");
+        purgeExpiredCachedFiles();
+        purgeOlderCachedFiles();
+        LOG.debug(" -----------------> Clean cache END <-----------------------");
     }
 
-    @Scheduled(fixedRate = 60000)
+    /**
+     * Periodicly tries to restore all {@link CachedFile}s in {@link CachedFileState#QUEUED} status.
+     * Default : scheduled to be run every 2minutes.
+     */
+    @Scheduled(fixedRateString = "${regards.cache.restore.queued.rate.ms:120000}")
     public void checkForCachedFilesQueuedToRestore() {
-        // TODO
+        Set<CachedFile> queuedFilesToCache = cachedFileRepository.findByState(CachedFileState.QUEUED);
+        Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum).collect(Collectors.toSet());
+        Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
+        // Set an expiration date minimum of 24hours
+        restore(dataFiles, OffsetDateTime.now().plusDays(1));
     }
 
     @Override
@@ -155,7 +188,9 @@ public class CachedFileService implements ICachedFileService {
                 CachedFile cf = ocf.get();
                 cf.setLocation(restorationPath.toUri().toURL());
                 cf.setState(CachedFileState.AVAILABLE);
-                cachedFileRepository.save(cf);
+                cf = cachedFileRepository.save(cf);
+                LOG.debug("File {} is now available in cache until {}", cf.getChecksum(),
+                          cf.getExpiration().toString());
                 publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
             } else {
                 LOG.error("Restauration succeed but the file with checksum {} is not associated to any cached file is database.",
@@ -175,6 +210,7 @@ public class CachedFileService implements ICachedFileService {
         if (ocf.isPresent()) {
             CachedFile cf = ocf.get();
             cachedFileRepository.delete(cf);
+            LOG.error("Error during cache file restoration {}", cf.getChecksum());
             publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
         } else {
             LOG.error("Restauration fails but the file with checksum {} is not associated to any cached file is database.",
@@ -182,7 +218,11 @@ public class CachedFileService implements ICachedFileService {
         }
     }
 
-    private Long getCacheSizeUsed() {
+    /**
+     * Return the current size of the cache in octets.
+     * @return {@link Long}
+     */
+    private Long getCacheSizeUsedOctets() {
         // @formatter:off
         return cachedFileRepository.findAll()
                 .stream()
@@ -193,12 +233,99 @@ public class CachedFileService implements ICachedFileService {
         // @formatter:on
     }
 
+    /**
+     * Delete all outdated {@link CachedFile}s.<br/>
+     */
+    private void purgeExpiredCachedFiles() {
+        LOG.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
+        deleteCachedFiles(cachedFileRepository.findByExpirationBefore(OffsetDateTime.now()));
+    }
+
+    /**
+     * Delete older {@link CachedFile}s if the {link {@link #cacheSizePurgeUpperThreshold}} is reached.<br/>
+     * This method method deletes as many {@link CachedFile}s as needed to set the cache size under the {@link #cacheSizePurgeLowerThreshold}.
+     */
+    private void purgeOlderCachedFiles() {
+        // Calculate chache size
+        Long cacheCurrentSize = getCacheSizeUsedOctets();
+        Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
+        Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
+        // If cache is over upper threshold size then delete older files to reached the lower threshold.
+        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
+                && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
+            LOG.debug("Cache is overloaded.({}Mo) Deleting older files from cache", cacheCurrentSize / (1024 * 1024));
+            Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
+            Set<CachedFile> allCachedFiles = cachedFileRepository
+                    .findByStateOrderByLastRequestDateAsc(CachedFileState.AVAILABLE);
+            Long fileSizesSum = 0L;
+            Set<CachedFile> filesToDelete = Sets.newHashSet();
+            Iterator<CachedFile> it = allCachedFiles.iterator();
+            while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
+                CachedFile fileToDelete = it.next();
+                filesToDelete.add(fileToDelete);
+                fileSizesSum += fileToDelete.getFileSize();
+            }
+            deleteCachedFiles(filesToDelete);
+        }
+    }
+
+    /**
+     * Delete all given {@link CachedFile}s.<br/>
+     * <ul>
+     * <li> 1. Disk deletion of the physical files</li>
+     * <li> 2. Database deletion of the {@link CachedFile}s
+     * </ul>
+     * @param filesToDelete {@link Set}<{@link CachedFile}> to delete.
+     */
+    private void deleteCachedFiles(Set<CachedFile> filesToDelete) {
+        LOG.debug("Deleting {} files from cache.", filesToDelete.size());
+        for (CachedFile cachedFile : filesToDelete) {
+            if (cachedFile.getLocation() != null) {
+                Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
+                if (fileLocation.toFile().exists()) {
+                    try {
+                        LOG.debug("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
+                                  cachedFile.getExpiration().toString(), fileLocation);
+                        Files.delete(fileLocation);
+                        cachedFileRepository.delete(cachedFile);
+                        LOG.debug("Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
+                                  cachedFile.getExpiration().toString(), fileLocation);
+                    } catch (NoSuchFileException e) {
+                        // File does not exists, just log a warning and do delet file in db.
+                        LOG.warn(e.getMessage(), e);
+                        cachedFileRepository.delete(cachedFile);
+                        LOG.debug("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
+                                  cachedFile.getExpiration().toString(), fileLocation);
+                    } catch (IOException e) {
+                        // File exists but is not deletable.
+                        LOG.error(e.getMessage(), e);
+                    }
+                } else {
+                    LOG.error("File to delete {} does not exists", fileLocation);
+                    cachedFileRepository.delete(cachedFile);
+                    LOG.debug("Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
+                              cachedFile.getExpiration().toString(), fileLocation);
+                }
+            } else {
+                cachedFileRepository.delete(cachedFile);
+                LOG.debug("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
+                          cachedFile.getExpiration().toString());
+            }
+        }
+    }
+
+    /**
+     * Caclulate the {@link DataFile}s restorable to not over the max cache size limit {@link #maxCacheSizeKo}.
+     * @param dataFilesToRestore {@link DataFile}s to restore
+     * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
+     * @return the {@link DataFile}s restorable
+     */
     private Set<DataFile> getRestorableDataFiles(Collection<DataFile> dataFilesToRestore,
             OffsetDateTime expirationDate) {
         // 2.2 Caculate total size of files to restore
         Long totalFilesSize = dataFilesToRestore.stream().mapToLong(df -> df.getFileSize()).sum();
-        Long currentCacheTotalSize = getCacheSizeUsed();
-        Long cacheMaxSizeInOctets = cacheSizeLimitKo * 1024;
+        Long currentCacheTotalSize = getCacheSizeUsedOctets();
+        Long cacheMaxSizeInOctets = maxCacheSizeKo * 1024;
         Long availableCacheSize = cacheMaxSizeInOctets - currentCacheTotalSize;
 
         final Set<DataFile> restorableFiles = Sets.newHashSet();
@@ -232,13 +359,21 @@ public class CachedFileService implements ICachedFileService {
                 if (restorableFiles.contains(dataFileToRestore)) {
                     fileState = CachedFileState.RESTORING;
                 }
-                cachedFileRepository.save(new CachedFile(dataFileToRestore, expirationDate, fileState));
+                CachedFile cf = cachedFileRepository.save(new CachedFile(dataFileToRestore, expirationDate, fileState));
+                LOG.debug("New file queued for cache {} exp={}", cf.getChecksum(), cf.getExpiration().toString());
             }
         }
 
         return restorableFiles;
     }
 
+    /**
+     * Do schedule {@link DataFile}s restoration {@link PluginConfiguration} to restore files.
+     * @param pluginConf {@link PluginConfiguration} Plugin to use to restore files.
+     * @param dataFilesToRestore {@link DataFile}s to restore.
+     * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
+     * @return {@link DataFile}s that can not be restored.
+     */
     private Set<DataFile> scheduleDataFileRestoration(PluginConfiguration pluginConf,
             Collection<DataFile> dataFilesToRestore, OffsetDateTime expirationDate) {
         LOG.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
@@ -264,6 +399,13 @@ public class CachedFileService implements ICachedFileService {
         return nonRestoredFiles;
     }
 
+    /**
+     * Do schedule @{link RestorationJob}s for each {@link IWorkingSubset} (more specialy for
+     * the associated {@link DataFile}s) using the given {@link PluginConfiguration} to restore files.
+     * @param workingSubsets Subsets containing {@link DataFile}s to restore.
+     * @param pluginConf {@link PluginConfiguration} Plugin to use to restore files.
+     * @return {@link JobInfo}s of the scheduled jobs
+     */
     private Set<JobInfo> scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {
         // lets instantiate every job for every DataStorage to use
         Set<JobInfo> jobs = Sets.newHashSet();
@@ -277,10 +419,9 @@ public class CachedFileService implements ICachedFileService {
                     .createAsPending(new JobInfo(0, parameters, getOwner(), RestorationJob.class.getName()));
             Path destination = Paths.get(cachePath, runtimeTenantResolver.getTenant(), jobInfo.getId().toString());
             jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
-            // TODO handler job execution according to space left into cache
             jobInfo.updateStatus(JobStatus.QUEUED);
             jobInfo = jobService.save(jobInfo);
-            LOG.info("New restoration job scheduled uuid={}", jobInfo.getId().toString());
+            LOG.debug("New restoration job scheduled uuid={}", jobInfo.getId().toString());
             jobs.add(jobInfo);
         }
         return jobs;
@@ -302,8 +443,8 @@ public class CachedFileService implements ICachedFileService {
             notSubSetDataFiles.stream()
                     .peek(df -> LOG.error(
                                           String.format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it!",
-                                                        df.getId(), df.getChecksum()))/* TODO: notify */)
-                    .forEach(df -> result.add(df));
+                                                        df.getId(), df.getChecksum())))
+                    .forEach(result::add);
         }
         return result;
     }
