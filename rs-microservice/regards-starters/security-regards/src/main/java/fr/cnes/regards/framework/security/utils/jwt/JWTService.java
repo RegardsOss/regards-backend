@@ -68,6 +68,11 @@ public class JWTService {
     private static final SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
 
     /**
+     * Short Encryption algorithm (for user specific token generation)
+     */
+    private static final SignatureAlgorithm SHORT_ALGO = SignatureAlgorithm.HS256;
+
+    /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
@@ -199,12 +204,13 @@ public class JWTService {
      * @param expirationDate specific expiration date
      * @param additionalParams additional parameters (user specific)
      * @param secret sec ret phrase (user specific)
+     * @param shorter if true, use a 256 bits algo instead of 512
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String user, String role, OffsetDateTime expirationDate,
-            Map<String, String> additionalParams, String secret) {
+            Map<String, Object> additionalParams, String secret, boolean shorter) {
         return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, role, user, additionalParams))
-                .setSubject(user).signWith(ALGO, TextCodec.BASE64.encode(secret))
+                .setSubject(user).signWith(shorter ? SHORT_ALGO : ALGO, TextCodec.BASE64.encode(secret))
                 .setExpiration(Date.from(expirationDate.toInstant())).compact();
     }
 
@@ -254,7 +260,7 @@ public class JWTService {
      * @return claim map
      */
     public Map<String, Object> generateClaims(final String tenant, final String role, final String user,
-            Map<String, String> additionalParams) {
+            Map<String, Object> additionalParams) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_TENANT, tenant);
         claims.put(CLAIM_ROLE, role);
