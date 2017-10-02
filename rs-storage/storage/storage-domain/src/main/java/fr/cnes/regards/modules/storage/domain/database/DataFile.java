@@ -27,6 +27,7 @@ import org.springframework.util.MimeType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.DataObject;
@@ -81,6 +82,7 @@ public class DataFile {
     private Long fileSize;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private DataFileState state;
 
     @Column(nullable = false)
@@ -97,6 +99,7 @@ public class DataFile {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
+    @GsonIgnore
     private AIPDataBase aipDataBase;
 
     // serialization

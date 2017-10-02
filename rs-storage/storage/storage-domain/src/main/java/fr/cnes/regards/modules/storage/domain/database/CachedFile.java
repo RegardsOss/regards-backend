@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -28,11 +29,12 @@ public class CachedFile {
     @GeneratedValue(generator = "cachedFileSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    /**
-     * unique business id
-     */
-    @Column(length = 512)
+    @NotNull
+    @Column(unique = true)
     private String checksum;
+
+    @Column
+    private Long fileSize;
 
     /**
      * location into the cache
@@ -46,6 +48,12 @@ public class CachedFile {
     @Column
     private OffsetDateTime expiration;
 
+    /**
+     * Date of the last request to make the file available.
+     */
+    @Column
+    private OffsetDateTime lastRequestDate;
+
     @Column
     @Enumerated(EnumType.STRING)
     private CachedFileState state;
@@ -56,10 +64,12 @@ public class CachedFile {
     public CachedFile() {
     }
 
-    public CachedFile(DataFile df, OffsetDateTime expiration) {
-        this.checksum = df.getChecksum();
-        this.expiration = expiration;
-        this.state = CachedFileState.RESTORING;
+    public CachedFile(DataFile df, OffsetDateTime expirationDate, CachedFileState fileState) {
+        checksum = df.getChecksum();
+        fileSize = df.getFileSize();
+        expiration = expirationDate;
+        lastRequestDate = OffsetDateTime.now();
+        state = fileState;
     }
 
     public Long getId() {
@@ -68,14 +78,6 @@ public class CachedFile {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
     }
 
     public URL getLocation() {
@@ -109,4 +111,29 @@ public class CachedFile {
     public String getFailureCause() {
         return failureCause;
     }
+
+    public OffsetDateTime getLastRequestDate() {
+        return lastRequestDate;
+    }
+
+    public void setLastRequestDate(OffsetDateTime pLastRequestDate) {
+        lastRequestDate = pLastRequestDate;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long pFileSize) {
+        fileSize = pFileSize;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String pChecksum) {
+        checksum = pChecksum;
+    }
+
 }

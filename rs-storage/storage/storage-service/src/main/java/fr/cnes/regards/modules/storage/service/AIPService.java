@@ -235,19 +235,29 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<String> requestedChecksums = availabilityRequest.getChecksums();
         Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
         Set<String> errors = Sets.newHashSet();
-        // first lets identify the files that we don't recognize
+
+        // 1. Check for invalid files.
         if (dataFiles.size() != requestedChecksums.size()) {
             Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
-            errors.addAll(Sets.difference(requestedChecksums, dataFilesChecksums));
+            Set<String> checksumNotFound = Sets.difference(requestedChecksums, dataFilesChecksums);
+            errors.addAll(checksumNotFound);
+            checksumNotFound.stream()
+                    .forEach(cs -> LOG.error("File to restore with checksum {} is not stored by REGARDS.", cs));
         }
         Set<DataFile> onlineFiles = Sets.newHashSet();
         Set<DataFile> nearlineFiles = Sets.newHashSet();
-        // for each data file, lets see if it is online or not
+
+        // 2. Check for online files. Online files doesn't need to be stored in the cache
+        // they can be access directly where they are stored.
         for (DataFile df : dataFiles) {
-            if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
-                onlineFiles.add(df);
+            if (df.getDataStorageUsed() != null) {
+                if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+                    onlineFiles.add(df);
+                } else {
+                    nearlineFiles.add(df);
+                }
             } else {
-                nearlineFiles.add(df);
+                LOG.error("File to restore {} has no storage plugin information. Restoration failed.", df.getId());
             }
         }
         // now lets ask the cache service to handle nearline restoration and give us the already available ones

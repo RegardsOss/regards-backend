@@ -80,6 +80,10 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      */
     public static final String FILE_PROTOCOLE = "file";
 
+    public static final String STAF_ARCHIVE_PARAMETER_NAME = "archiveParameters";
+
+    public static final String STAF_WORKSPACE_PATH = "workspaceDirectory";
+
     /**
      * STAF connections manager
      */
@@ -89,7 +93,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     /**
      * Plugin parameter containing STAF archive connection informations
      */
-    @PluginParameter(name = "archiveParameters")
+    @PluginParameter(name = STAF_ARCHIVE_PARAMETER_NAME)
     private STAFArchive stafArchive;
 
     /**
@@ -100,7 +104,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     /**
      * STAF Plugin working directory.
      */
-    @PluginParameter(name = "workspaceDirectory")
+    @PluginParameter(name = STAF_WORKSPACE_PATH)
     private String workspaceDirectory;
 
     @PluginInit

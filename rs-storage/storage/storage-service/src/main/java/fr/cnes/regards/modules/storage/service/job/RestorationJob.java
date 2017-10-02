@@ -28,9 +28,8 @@ public class RestorationJob extends AbstractStoreFilesJob {
             throws JobParameterMissingException, JobParameterInvalidException {
         Map<String, JobParameter> jobParamMap = super.checkParameters(parameters);
         //lets see if destination has been given or not
-        JobParameter oldDataFiles;
-        if (((oldDataFiles = jobParamMap.get(DESTINATION_PATH_PARAMETER_NAME)) == null)
-                || !(oldDataFiles.getValue() instanceof Path)) {
+        JobParameter destinationPath = jobParamMap.get(DESTINATION_PATH_PARAMETER_NAME);
+        if ((destinationPath == null) || !(destinationPath.getValue() instanceof Path)) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), Path.class.getName(),
                                   DESTINATION_PATH_PARAMETER_NAME));
@@ -53,6 +52,8 @@ public class RestorationJob extends AbstractStoreFilesJob {
             for (DataFile data : workingSubset.getDataFiles()) {
                 data.setDataStorageUsed(confToUse);
             }
+            LOG.debug("Plugin {} - Running restoration for {}files", storagePlugin.getClass().getName(),
+                      workingSubset.getDataFiles().size());
             storagePlugin.retrieve(workingSubset, destination, progressManager);
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.

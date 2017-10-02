@@ -46,7 +46,7 @@ public interface IAIPService {
     Set<UUID> create(Set<AIP> pAIP) throws ModuleException;
 
     /**
-     * load files into the cache if necessary
+     * Make asked files available into the cache file system if necessary.<br/>
      * @param availabilityRequest
      * @return checksums of files that are already available
      */
