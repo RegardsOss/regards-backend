@@ -33,6 +33,8 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     List<OrderDataFile> findByOrderIdAndStateIn(Long orderId, FileState... states);
 
+    List<OrderDataFile> findAllByOrderId(Long orderId);
+
     Optional<OrderDataFile> findFirstByChecksumAndIpIdAndOrderId(String checksum, UniformResourceName aipId,
             Long orderId);
 

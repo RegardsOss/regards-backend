@@ -72,8 +72,22 @@ public interface IOrderService {
         return findAll(user, new PageRequest(0, pageSize));
     }
 
+    /**
+     * Create a ZIP containing all currently available files. Once a file has been part of ZIP file, it will not be
+     * part of another again.
+     * @param orderId concerned order id
+     * @throws NotYetAvailableException if no files are available yet
+     */
     void downloadOrderCurrentZip(Long orderId, HttpServletResponse response)
             throws NotYetAvailableException;
+
+    /**
+     * Create a metalink file with all files.
+     * @param orderId concerned order id
+     * @param tokenRequestParam security token to be used with public download file url (request param version ie
+     * name=value)
+     */
+    void downloadOrderMetalink(Long orderId, String tokenRequestParam, HttpServletResponse response);
 
     /**
      * Scheduled method to update all current running orders completions values into database

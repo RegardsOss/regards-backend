@@ -1,7 +1,18 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -9,15 +20,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,20 +39,18 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriUtils;
 
 import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.CannotResumeOrderException;
 import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -61,8 +66,15 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.metalink.schema.FileType;
+import fr.cnes.regards.modules.order.metalink.schema.FilesType;
+import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
+import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
+import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
@@ -74,6 +86,8 @@ import fr.cnes.regards.modules.storage.client.IAipClient;
 public class OrderService implements IOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
+
+    private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
 
     @Autowired
     private IOrderRepository repos;
@@ -100,6 +114,9 @@ public class OrderService implements IOrderService {
     private ITenantResolver tenantResolver;
 
     @Autowired
+    private IProjectsClient projectClient;
+
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
@@ -113,6 +130,9 @@ public class OrderService implements IOrderService {
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
+
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     private final long bucketSize = bucketSizeMb * 1024l * 1024l;
 
@@ -270,15 +290,11 @@ public class OrderService implements IOrderService {
                            "attachment;filename=order_" + OffsetDateTime.now().toString() + ".zip");
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
-        OrderDataFile curDataFile = null;
-        String curAip = null;
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
 
             Set<String> aips = new HashSet<>();
             for (OrderDataFile dataFile : availableFiles) {
                 String aip = dataFile.getIpId().toString();
-                curAip = aip;
-                curDataFile = dataFile;
                 try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum())) {
                     if (is == null) {
                         throw new FileNotFoundException(
@@ -298,8 +314,7 @@ public class OrderService implements IOrderService {
             zos.flush();
             zos.finish();
         } catch (Throwable t) {
-            LOGGER.error("File : " + curDataFile.getName() + ", aip : " + curAip);
-            t.printStackTrace();
+            LOGGER.error("Error while generating zip order file", t);
             throw new RuntimeException(t);
         }
         try {
@@ -307,6 +322,83 @@ public class OrderService implements IOrderService {
             dataFileService.save(availableFiles);
         } catch (Throwable t) {
             throw new RuntimeException(t);
+        }
+    }
+
+    @Override
+    public void downloadOrderMetalink(Long orderId, String tokenRequestParam, HttpServletResponse response) {
+        Order order = repos.findSimpleById(orderId);
+
+        List<OrderDataFile> files = dataFileService.findAll(orderId);
+
+        response.addHeader("Content-disposition",
+                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".metalink");
+        response.setContentType("application/metalink+xml");
+
+        // Retrieve host for generating datafiles download urls
+        FeignSecurityManager.asSystem();
+        Project project = projectClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent();
+        String host = project.getHost();
+        FeignSecurityManager.reset();
+
+        // Create XML metalink object
+        ObjectFactory factory = new ObjectFactory();
+        MetalinkType xmlMetalink = factory.createMetalinkType();
+        FilesType xmlFiles = factory.createFilesType();
+        // For all data files
+        for (OrderDataFile file : files) {
+            FileType xmlFile = factory.createFileType();
+            xmlFile.setIdentity(file.getName());
+            xmlFile.setSize(BigInteger.valueOf(file.getSize()));
+            if (file.getMimeType() != null) {
+                xmlFile.setMimetype(file.getMimeType().toString());
+            }
+            ResourcesType xmlResources = factory.createResourcesType();
+            ResourcesType.Url xmlUrl = factory.createResourcesTypeUrl();
+            // Build URL to publi downloadFile
+            StringBuilder buff = new StringBuilder();
+            buff.append(host);
+            // FIXME => Sylvain Vessière Guerinet
+            buff.append("/api/v2/").append(encode4Uri(microserviceName));
+            buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
+            buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
+            xmlUrl.setValue(buff.toString());
+            xmlResources.getUrl().add(xmlUrl);
+            xmlFile.setResources(xmlResources);
+            xmlFiles.getFile().add(xmlFile);
+        }
+        xmlMetalink.setFiles(xmlFiles);
+
+        // Create XML and send reponse
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(MetalinkType.class);
+            final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+            // Format output
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+            // Enable validation
+            final InputStream in = this.getClass().getClassLoader().getResourceAsStream(METALINK_XML_SCHEMA_NAME);
+            final StreamSource xsdSource = new StreamSource(in);
+            jaxbMarshaller
+                    .setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource));
+
+            // Marshall data
+            jaxbMarshaller.marshal(factory.createMetalink(xmlMetalink), response.getOutputStream());
+            response.getOutputStream().close();
+        } catch (Throwable t) {
+            LOGGER.error("Error while generating metalink order file", t);
+            throw new RuntimeException(t);
+        }
+    }
+
+    private static String encode4Uri(String str) {
+        try {
+            return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(),
+                              StandardCharsets.US_ASCII);
+        } catch (UnsupportedEncodingException e) {
+            // Will never occurs
+            throw new RuntimeException(e);
         }
     }
 

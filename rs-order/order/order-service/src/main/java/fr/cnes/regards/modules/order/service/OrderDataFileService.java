@@ -58,6 +58,11 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
+    public List<OrderDataFile> findAll(Long orderId) {
+        return repos.findAllByOrderId(orderId);
+    }
+
+    @Override
     public void downloadFile(Long orderId, UniformResourceName aipId, String checksum, HttpServletResponse response)
             throws IOException {
         // Maybe this file is into an AIP that is asked several time for this Order (several Dataset for example)

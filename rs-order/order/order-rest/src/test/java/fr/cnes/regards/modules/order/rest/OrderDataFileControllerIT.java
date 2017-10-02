@@ -113,8 +113,8 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
 
         ResultActions resultActions = performDefaultGet(
-                "/orders/{orderId}/dataset/{datasetId}/aips/{aipId}/files/{checksum}", expectations,
-                "Should return result", order.getId(), ds1Task.getId(), dataFile1.getIpId().toString(),
+                "/orders/{orderId}/aips/{aipId}/files/{checksum}", expectations,
+                "Should return result", order.getId(), dataFile1.getIpId().toString(),
                 dataFile1.getChecksum());
 
         assertMediaType(resultActions, MediaType.TEXT_PLAIN);

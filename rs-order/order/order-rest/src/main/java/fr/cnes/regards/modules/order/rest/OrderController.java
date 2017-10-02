@@ -2,7 +2,10 @@ package fr.cnes.regards.modules.order.rest;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -20,9 +23,12 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
@@ -37,6 +43,8 @@ import fr.cnes.regards.modules.order.service.IOrderService;
 @RequestMapping("")
 public class OrderController implements IResourceController<OrderDto> {
 
+    public static final String ORDER_ID_KEY = "ORDER_ID";
+
     @Autowired
     private IResourceService resourceService;
 
@@ -47,6 +55,12 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderService orderService;
 
     @Autowired
+    private JWTService jwtService;
+
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
     private IAuthenticationResolver authResolver;
 
     @Autowired
@@ -55,6 +69,9 @@ public class OrderController implements IResourceController<OrderDto> {
     private static final String ADMIN_ROOT_PATH = "/orders";
 
     private static final String USER_ROOT_PATH = "/user/orders";
+
+    @Value("${regards.order.secret}")
+    private String secret;
 
     @ResourceAccess(description = "Validate current basket and find or create corresponding order",
             role = DefaultRole.REGISTERED_USER)
@@ -80,8 +97,9 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (user.isEmpty()) ? orderService.findAll(pageRequest)
-                : orderService.findAll(user, pageRequest);
+        Page<Order> orderPage = (user.isEmpty()) ?
+                orderService.findAll(pageRequest) :
+                orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
@@ -97,8 +115,27 @@ public class OrderController implements IResourceController<OrderDto> {
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/download")
     public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response)
-            throws NotYetAvailableException {
+            throws NotYetAvailableException, EntityNotFoundException {
+        Order order = orderService.loadSimple(orderId);
+        if (order == null) {
+            throw new EntityNotFoundException(orderId.toString(), Order.class);
+        }
         orderService.downloadOrderCurrentZip(orderId, response);
+    }
+
+    @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/metalink/download")
+    public void downloadMetalinkFile(@PathVariable("orderId") Long orderId, HttpServletResponse response)
+            throws NotYetAvailableException, EntityNotFoundException {
+        Order order = orderService.loadSimple(orderId);
+        if (order == null) {
+            throw new EntityNotFoundException(orderId.toString(), Order.class);
+        }
+        String token = jwtService
+                .generateToken(tenantResolver.getTenant(), authResolver.getUser(), authResolver.getRole(),
+                               order.getExpirationDate(), Collections.singletonMap(ORDER_ID_KEY, orderId.toString()),
+                               secret, true);
+        orderService.downloadOrderMetalink(orderId, "token=" + token, response);
     }
 
     // TODO : add links

@@ -27,6 +27,12 @@ public interface IOrderDataFileService {
     List<OrderDataFile> findAllAvailables(Long orderId);
 
     /**
+     * Find all OrderDataFile of given order
+     * @param orderId if of order
+     */
+    List<OrderDataFile> findAll(Long orderId);
+
+    /**
      * Copy asked file from storage to HttpServletResponse
      */
     void downloadFile(Long orderId, UniformResourceName aipId, String checksum, HttpServletResponse response)

@@ -16,14 +16,19 @@ import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.io.ByteStreams;
+import com.netflix.discovery.converters.Auto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -38,6 +43,8 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  * @author oroussel
@@ -56,6 +63,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private IOrderDataFileRepository dataFileRepository;
+
+    @Autowired
+    private IProjectsClient projectsClient;
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
                                                                                 "ORDER", UUID.randomUUID(), 1);
@@ -89,6 +99,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         orderRepository.deleteAll();
         dataFileRepository.deleteAll();
+
+        Project project = new Project();
+        project.setHost("regards.org");
+        Mockito.when(projectsClient.retrieveProject(Matchers.anyString())).thenReturn(ResponseEntity.ok(new Resource<>(project)));
     }
 
     @Test
@@ -171,6 +185,21 @@ public class OrderControllerIT extends AbstractRegardsIT {
         }
         Assert.assertEquals(3860l, resultFile.length());
 
+        ////////////////////////////////
+        resultActions = performDefaultGet("/user/orders/{orderId}/metalink/download", expectations,
+                                                        "Should return result", order.getId());
+        Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
+        File resultFileMl = File.createTempFile("ZIP_ORDER_", ".metalink");
+        resultFileMl.deleteOnExit();
+
+        try (FileOutputStream fos = new FileOutputStream(resultFileMl)) {
+            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+            ByteStreams.copy(is, fos);
+            is.close();
+        }
+        Assert.assertEquals(8335l, resultFileMl.length());
+        ////////////////////////////////
+
         tenantResolver.forceTenant(DEFAULT_TENANT); // ?
 
         List<OrderDataFile> dataFiles = dataFileRepository.findByOrderIdAndStateIn(order.getId(), FileState.DOWNLOADED);
@@ -184,6 +213,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/" + filename);
         dataFile1.setName(filename);
+        File file = new File("src/test/resources/files/" + filename);
+        dataFile1.setSize(file.length());
         dataFile1.setIpId(aipId);
         if (state == FileState.ONLINE) {
             dataFile1.setOnline(true);
