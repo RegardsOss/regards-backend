@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.File;
@@ -33,8 +36,8 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -66,7 +69,7 @@ import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { StoreJobIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
 public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
@@ -76,8 +79,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     private static final String ALLOCATION_CONF_LABEL = "AIPServiceIT_ALLOCATION";
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
-
-    private boolean failed;
 
     @Autowired
     private Gson gson;
@@ -89,9 +90,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     private IPluginService pluginService;
 
     @Autowired
-    private IJobInfoRepository jobRepo;
-
-    @Autowired
     private IPluginConfigurationRepository pluginRepo;
 
     @Autowired
@@ -101,6 +99,9 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     private IDataFileDao dataFileDao;
 
     @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
+    @Autowired
     private ISubscriber subscriber;
 
     @Value("${regards.storage.workspace}")
@@ -108,16 +109,25 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private AIP aip;
 
-    private Set<UUID> succeeded;
-
     private URL baseStorageLocation;
 
+    private final StoreJobEventHandler handler = new StoreJobEventHandler();
+
+    @Autowired
+    private IRabbitVirtualHostAdmin vHost;
+
+    @Autowired
+    private RegardsAmqpAdmin amqpAdmin;
+
     @Before
-    public void init() throws IOException, ModuleException, URISyntaxException {
+    public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         this.cleanUp();
-        failed = false;
-        succeeded = Sets.newConcurrentHashSet();
-        subscriber.subscribeTo(JobEvent.class, new JobEventHandler());
+        subscriber.subscribeTo(JobEvent.class, handler);
+        initDb();
+    }
+
+    private void initDb() throws ModuleException, IOException, URISyntaxException {
+
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets create a plugin configuration for IAllocationStrategy
@@ -153,13 +163,13 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
         jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
         int wait = 0;
-        while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
+        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
             wait = wait + 1000;
         }
         LOG.info("All waiting JOB succeeded");
-        Assert.assertFalse("The job failed while it should not have", failed);
+        Assert.assertFalse("The job failed while it should not have", handler.isFailed());
         Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
         // Wait for AIP set STORED status
         LOG.info("Waiting for AIP {} stored", aip.getIpId());
@@ -183,12 +193,12 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
-        while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
+        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
             wait = wait + 1000;
         }
-        Assert.assertTrue("The job succeeded while it should not have", failed);
+        Assert.assertTrue("The job succeeded while it should not have", handler.isFailed());
         Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
         wait = 0;
         LOG.info("Waiting for AIP {} error ...", aip.getIpId());
@@ -213,12 +223,12 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         try {
             Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
             int wait = 0;
-            while (!succeeded.containsAll(jobIds) && !failed && (wait < 10000)) {
+            while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
                 // lets wait for 1 sec before checking again if all our jobs has been done or not
                 Thread.sleep(1000);
                 wait = wait + 1000;
             }
-            Assert.assertFalse("The job failed while it should not have", failed);
+            Assert.assertFalse("The job failed while it should not have", handler.isFailed());
             LOG.info("Waiting for AIP {} error ...", aip.getIpId());
             Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
             wait = 0;
@@ -276,28 +286,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue("The new data file should exists!", Files.exists(Paths.get(file.getUrl().toURI())));
     }
 
-    private class JobEventHandler implements IHandler<JobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<JobEvent> wrapper) {
-            JobEvent event = wrapper.getContent();
-            switch (event.getJobEventType()) {
-                case ABORTED:
-                case FAILED:
-
-                    failed = true;
-                    getLogger().error("Job " + event.getJobId() + " failed or was aborted");
-                    break;
-                case SUCCEEDED:
-                    LOG.info("JOB succeeded {}", event.getJobId());
-                    succeeded.add(event.getJobId());
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
     private AIP getAIP() throws MalformedURLException {
 
         AIPBuilder aipBuilder = new AIPBuilder(EntityType.DATA,
@@ -322,17 +310,32 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         return aipBuilder.build();
     }
 
+    private void purgeAMQPqueues() {
+        vHost.bind(DEFAULT_TENANT);
+        try {
+            amqpAdmin.purgeQueue(JobEvent.class, RestoreJobEventHandler.class, true);
+        } catch (Exception e) {
+            // Nothing to do
+        }
+        vHost.unbind();
+    }
+
+    private void unsubscribeAMQPEvents() {
+        try {
+            subscriber.unsubscribeFrom(JobEvent.class);
+        } catch (Exception e) {
+            // Nothing to do
+        }
+        handler.reset();
+    }
+
     @After
     public void cleanUp() throws URISyntaxException, IOException {
-        jobRepo.deleteAll();
-        pluginRepo.deleteAll();
+        purgeAMQPqueues();
+        unsubscribeAMQPEvents();
+        jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
-        aipDao.deleteAll();
-        Path defaultTenantWorkspace = Paths.get(workspace, DEFAULT_TENANT);
-        // in other word, remove everything inside defaultTenantWorkspace but the directory defaultTenantWorkspace,
-        // service is not created on each test so workspace is not either
-        Files.walk(defaultTenantWorkspace).sorted(Comparator.reverseOrder()).map(Path::toFile)
-                .filter(f -> !f.equals(defaultTenantWorkspace.toFile())).forEach(File::delete);
+        pluginRepo.deleteAll();
         if (baseStorageLocation != null) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);

@@ -1,8 +1,15 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -15,8 +22,12 @@ import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
         url = "https://regardsoss.github.io/")
 public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWorkingSubset> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleNearLineStoragePlugin.class);
+
     @Override
     public Set<LocalWorkingSubset> prepare(Collection<DataFile> pDataFiles, DataStorageAccessModeEnum pMode) {
+        // Return only one workingSubset
+        LOG.info("SimpleNearLineStoragePlugin preparing files for restoration");
         LocalWorkingSubset ws = new LocalWorkingSubset();
         Set<DataFile> dataFiles = Sets.newHashSet();
         dataFiles.addAll(pDataFiles);
@@ -44,6 +55,9 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
 
     @Override
     public void retrieve(LocalWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
+        for (DataFile file : pWorkingSubset.getDataFiles()) {
+            LOG.info("FILE REstored id : {} cs : {}", file.getId(), file.getChecksum());
+            pProgressManager.restoreSucceed(file, Paths.get("target/restored/", file.getUrl().getFile()));
+        }
     }
 }

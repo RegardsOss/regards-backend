@@ -99,6 +99,7 @@ public class CachedFileService implements ICachedFileService {
 
     @Override
     public CoupleAvailableError restore(Set<DataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
+        LOG.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
         // Get files already in cache
         Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
@@ -202,21 +203,24 @@ public class CachedFileService implements ICachedFileService {
 
         final Set<DataFile> restorableFiles = Sets.newHashSet();
         // Check if there is enought space left in cache to restore all files into.
-        if (totalFilesSize < currentCacheTotalSize) {
+        if (totalFilesSize < availableCacheSize) {
             restorableFiles.addAll(dataFilesToRestore);
         } else {
             // There is no enought space left in cache to restore all files.
             // Return maximum number of files to restore.
             Set<String> checksums = Sets.newHashSet();
             Long totalFileSizesToHandle = 0L;
-            dataFilesToRestore.stream().forEach(fileToRestore -> {
+            for (DataFile fileToRestore : dataFilesToRestore) {
                 Long fileSize = fileToRestore.getFileSize();
-                if (checksums.contains(fileToRestore.getChecksum())
-                        || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
+                boolean fileAlreadyHandled = checksums.contains(fileToRestore.getChecksum());
+                if (fileAlreadyHandled || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
                     restorableFiles.add(fileToRestore);
-                    checksums.add(fileToRestore.getChecksum());
+                    if (!fileAlreadyHandled) {
+                        checksums.add(fileToRestore.getChecksum());
+                        totalFileSizesToHandle = totalFileSizesToHandle + fileSize;
+                    }
                 }
-            });
+            }
         }
 
         // Initialize all files in cache
@@ -237,7 +241,9 @@ public class CachedFileService implements ICachedFileService {
 
     private Set<DataFile> scheduleDataFileRestoration(PluginConfiguration pluginConf,
             Collection<DataFile> dataFilesToRestore, OffsetDateTime expirationDate) {
+        LOG.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
         Set<DataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
+        LOG.debug("CachedFileService : Schedule restoration job for {} files.", restorabledataFiles.size());
         Set<DataFile> nonRestoredFiles = Sets.newHashSet();
         if (!restorabledataFiles.isEmpty()) {
             try {
@@ -258,8 +264,9 @@ public class CachedFileService implements ICachedFileService {
         return nonRestoredFiles;
     }
 
-    private void scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {
+    private Set<JobInfo> scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {
         // lets instantiate every job for every DataStorage to use
+        Set<JobInfo> jobs = Sets.newHashSet();
         for (IWorkingSubset workingSubset : workingSubsets) {
             // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for each
             // of them
@@ -272,8 +279,11 @@ public class CachedFileService implements ICachedFileService {
             jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
             // TODO handler job execution according to space left into cache
             jobInfo.updateStatus(JobStatus.QUEUED);
-            jobService.save(jobInfo);
+            jobInfo = jobService.save(jobInfo);
+            LOG.info("New restoration job scheduled uuid={}", jobInfo.getId().toString());
+            jobs.add(jobInfo);
         }
+        return jobs;
     }
 
     /**
