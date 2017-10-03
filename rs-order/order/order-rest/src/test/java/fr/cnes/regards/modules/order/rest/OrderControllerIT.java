@@ -183,7 +183,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             ByteStreams.copy(is, fos);
             is.close();
         }
-        Assert.assertEquals(3860l, resultFile.length());
+        Assert.assertEquals(1816l, resultFile.length());
 
         ////////////////////////////////
         resultActions = performDefaultGet("/user/orders/{orderId}/metalink/download", expectations,

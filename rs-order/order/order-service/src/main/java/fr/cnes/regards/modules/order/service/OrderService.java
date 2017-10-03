@@ -41,7 +41,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
 import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -291,8 +293,8 @@ public class OrderService implements IOrderService {
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
-
-            Set<String> aips = new HashSet<>();
+            // A multiset to manage multi-occurrences of files
+            Multiset<String> dataFiles = HashMultiset.create();
             for (OrderDataFile dataFile : availableFiles) {
                 String aip = dataFile.getIpId().toString();
                 try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum())) {
@@ -300,13 +302,21 @@ public class OrderService implements IOrderService {
                         throw new FileNotFoundException(
                                 String.format("aip : %s, checksum : %s", aip, dataFile.getChecksum()));
                     }
-                    // To avoid adding AIP entry several times
-                    if (!aips.contains(aip)) {
-                        zos.putNextEntry(new ZipEntry(aip + "/"));
-                        aips.add(aip);
-                        zos.closeEntry();
+                    // Add filename to multiset
+                    String filename = dataFile.getName();
+                    dataFiles.add(filename);
+                    // If same file appears several times, add "(n)" juste before extension
+                    int filenameCount = dataFiles.count(filename);
+                    if (filenameCount > 1) {
+                        String suffix = " (" + (filenameCount - 1) + ")";
+                        int lastDotIdx = filename.lastIndexOf('.');
+                        if (lastDotIdx != -1) {
+                            filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
+                        } else { // No extension
+                            filename += suffix;
+                        }
                     }
-                    zos.putNextEntry(new ZipEntry(aip + "/" + dataFile.getName()));
+                    zos.putNextEntry(new ZipEntry(filename));
                     ByteStreams.copy(is, zos);
                     zos.closeEntry();
                 }
