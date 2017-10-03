@@ -75,6 +75,7 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
@@ -83,12 +84,18 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
 /**
- * This service handle actions on the {@link AIP} entities and associated {@link DataFile}s.<br/>
+ * Service to handle {@link AIP} and associated {@link DataFile}s entities from all data straoge systems.<br/>
  * An {@link AIP} can be associated to many {@link DataFile}s but only one of type {@link DataType#AIP}.<br/>
+ * Available data storage systems are defined by the available {@link IDataStorage} plugins<br/>
+ * Stored files can be stored with :
+ * <ul>
+ * <li> Online data storage plugins {@link IOnlineDataStorage} : Files are directly accessible for download </li>
+ * <li> Nearline data storage plugins {@link INearlineDataStorage} : Files needs to be cached before download </li>
+ * </ul>
+ *
  * At startup, this service subscribe to all {@link DataStorageEvent}s to handle physical actions
  * (store, retrieve and deletion) on {@link DataFile}s.<br/>
- * See {@link DataStorageEventHandler} class to understand more
- * about actions done on physical files changes.<br/>
+ * See {@link DataStorageEventHandler} class to understand more about actions done on physical files changes.<br/>
  * <br/>
  * This service also run scheduled actions :
  * <ul>
@@ -96,6 +103,8 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
  * update of {@link AIP} state by looking for all associated {@link DataFile} states.
  * An {@link AIP} is STORED when all his {@link DataFile}s are STORED</li>
  * </ul>
+ * <br/>
+ * The cache system to make nearline files accessible is handled by the {@link ICachedFileService}.<br/>
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda

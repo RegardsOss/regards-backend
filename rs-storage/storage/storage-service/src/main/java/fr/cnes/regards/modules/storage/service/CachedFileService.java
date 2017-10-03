@@ -56,7 +56,26 @@ import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.RestorationJob;
 
 /**
+ * Service to manage temporary accessibility of {@link DataFile} stored with a {@link INearlineDataStorage}
+ * plugin.<br/>
+ * When a file is requested by {@link #restore} method this service retrieve the file from the
+ * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>
+ * As the cache maximum size is limited, this service queues the file requests and handle them when it is possible<br/>
+ *
+ * Files in cache are purged when :
+ * <ul>
+ * <li> Files are outdated in cache ({@link CachedFile#getExpiration()} date is past.</li>
+ * <li> Cache is full and no outdated files are in cache, then the older {@link CachedFile}s are deleted. </li>
+ * </ul>
+ *
+ * This service run two scheduled and periodilcy executed methods :
+ * <ul>
+ * <li> Cache purge : {@link #cleanCache()}</li>
+ * <li> Handle queued file requests : {@link #hanleQueuedFiles()}</li>
+ * </ul>
+ *
  * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @Service
 public class CachedFileService implements ICachedFileService {
@@ -171,7 +190,7 @@ public class CachedFileService implements ICachedFileService {
      * Default : scheduled to be run every 2minutes.
      */
     @Scheduled(fixedRateString = "${regards.cache.restore.queued.rate.ms:120000}")
-    public void checkForCachedFilesQueuedToRestore() {
+    public void hanleQueuedFiles() {
         Set<CachedFile> queuedFilesToCache = cachedFileRepository.findByState(CachedFileState.QUEUED);
         Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum).collect(Collectors.toSet());
         Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);

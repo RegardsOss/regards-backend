@@ -21,10 +21,23 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
 /**
+ * Service to handle {@link AIP} and {@link DataFile} entities from all data straoge systems.<br/>
+ * Available data storage systems are defined by the available {@link IDataStorage} plugins<br/>
+ * Stored files can be stored with :
+ * <ul>
+ * <li> Online data storage plugins {@link IOnlineDataStorage} : Files are directly accessible for download </li>
+ * <li> Nearline data storage plugins {@link INearlineDataStorage} : Files needs to be cached before download </li>
+ * </ul>
+ *
+ * The cache system to make nearline files accessible is handle by the {@link ICachedFileService}.
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
@@ -47,23 +60,23 @@ public interface IAIPService {
 
     /**
      * Make asked files available into the cache file system if necessary.<br/>
-     * @param availabilityRequest
+     * Files that are already available are return in the response. For other ones, asynchronous jobs are scheduled
+     * to make them available. As soon as a file is available, a {@link DataFileEvent} is published into the
+     * system message queue.
+     * @param {@link AvailabilityRequest} containing request informations. Files checksum to make available and
+     * files lifetime in cache.
      * @return checksums of files that are already available
      */
     AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest);
 
     /**
-     * retrieve pages of AIP filtered according to the parameters
+     * Retrieve pages of AIP filtered according to the parameters
      *
-     * @param pTo
-     *            maximum date of last event that affected any AIP wanted
-     * @param pFrom
-     *            minimum date of submission into REGARDS wanted
-     * @param pState
-     *            State of AIP wanted
-     * @param pPageable
-     *            pageable object
-     * @return filtered page of AIP
+     * @param pState {@link AIPState} State of AIP wanted
+     * @param pFrom {@link OffsetDateTime} start date of AIP to retrieve
+     * @param pto {@link OffsetDateTime} stop date of AIP to retrieve
+     * @param pPageable {@link Pageable} Pagination information
+     * @return {@link AIP}s corresponding to parameters given.
      */
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable);
 
