@@ -377,7 +377,12 @@ public class OrderService implements IOrderService {
             xmlFiles.getFile().add(xmlFile);
         }
         xmlMetalink.setFiles(xmlFiles);
+        createXmlAndSendResponse(response, factory, xmlMetalink);
 
+    }
+
+    private void createXmlAndSendResponse(HttpServletResponse response, ObjectFactory factory,
+            MetalinkType xmlMetalink) {
         // Create XML and send reponse
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(MetalinkType.class);
