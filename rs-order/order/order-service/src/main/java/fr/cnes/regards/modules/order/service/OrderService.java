@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -382,14 +381,14 @@ public class OrderService implements IOrderService {
         // Create XML and send reponse
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(MetalinkType.class);
-            final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
             // Format output
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
             // Enable validation
-            final InputStream in = this.getClass().getClassLoader().getResourceAsStream(METALINK_XML_SCHEMA_NAME);
-            final StreamSource xsdSource = new StreamSource(in);
+            InputStream in = this.getClass().getClassLoader().getResourceAsStream(METALINK_XML_SCHEMA_NAME);
+            StreamSource xsdSource = new StreamSource(in);
             jaxbMarshaller
                     .setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource));
 

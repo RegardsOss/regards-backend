@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +27,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.web.util.UriUtils;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Chars;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
@@ -46,13 +51,22 @@ import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.MalformedJwtException;
 
 /**
  * @author oroussel
  */
-@Controller
+@RestController
 @RequestMapping("")
 public class OrderDataFileController implements IResourceController<OrderDataFile> {
+
+    public static final String ORDERS_AIPS_AIP_ID_FILES_CHECKSUM = "/orders/aips/{aipId}/files/{checksum}";
+
+    public static final String ORDERS_ORDER_ID_AIPS_AIP_ID_FILES_CHECKSUM = "/orders/{orderId}/aips/{aipId}/files/{checksum}";
+
+    public static final String ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES = "/orders/{orderId}/dataset/{datasetId}/files";
+
+    public static final String ORDER_TOKEN = "orderToken";
 
     @Autowired
     private IResourceService resourceService;
@@ -73,7 +87,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     private String secret;
 
     @ResourceAccess(description = "Find all files from order for specified dataset", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = "/orders/{orderId}/dataset/{datasetId}/files")
+    @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
     public ResponseEntity<List<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
             @PathVariable("datasetId") Long datasetId) throws TooManyResultsException {
         DatasetTask dsTask = datasetTaskService.loadSimple(datasetId);
@@ -97,7 +111,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = "/orders/{orderId}/aips/{aipId}/files/{checksum}")
+    @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_AIPS_AIP_ID_FILES_CHECKSUM)
     public void downloadFile(@PathVariable("orderId") Long orderId, @PathVariable("aipId") String aipId,
             @PathVariable("checksum") String checksum, HttpServletResponse response)
             throws NoSuchElementException, IOException {
@@ -106,14 +120,20 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
-    @RequestMapping(method = RequestMethod.GET, path = "/orders/aips/{aipId}/files/{checksum}")
-    public void publicDownloadFile(@PathVariable("aipId") String aipId, @PathVariable("checksum") String checksum,
-            @RequestParam(name = "token") String token, HttpServletResponse response)
-            throws NoSuchElementException, IOException, InvalidJwtException {
+    @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_CHECKSUM)
+    public ResponseEntity<Void> publicDownloadFile(@PathVariable("aipId") String aipId,
+            @PathVariable("checksum") String checksum, @RequestParam(name = ORDER_TOKEN) String token,
+            HttpServletResponse response) throws NoSuchElementException, IOException {
         // Throws an invalidJwtException if secret isn't correct or expiration date has been reached
-        Claims claims = jwtService.parseToken(token, secret);
-        Long orderId = claims.get(OrderController.ORDER_ID_KEY, Long.class);
-        dataFileService.downloadFile(orderId, UniformResourceName.fromString(aipId), checksum, response);
+        try {
+            Claims claims = jwtService.parseToken(token, secret);
+            Long orderId = Long.parseLong(claims.get(OrderController.ORDER_ID_KEY, String.class));
+            dataFileService.downloadFile(orderId, UniformResourceName
+                    .fromString(UriUtils.decode(aipId, Charset.defaultCharset().name())), checksum, response);
+            return new ResponseEntity(HttpStatus.OK);
+        } catch (InvalidJwtException | MalformedJwtException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @Override

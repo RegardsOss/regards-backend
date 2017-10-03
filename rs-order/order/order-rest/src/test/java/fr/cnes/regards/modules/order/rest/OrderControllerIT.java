@@ -1,11 +1,24 @@
 package fr.cnes.regards.modules.order.rest;
 
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -26,14 +39,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.util.UriUtils;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.netflix.discovery.converters.Auto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -43,6 +61,10 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.metalink.schema.FileType;
+import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
+import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
+import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -102,7 +124,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         Project project = new Project();
         project.setHost("regards.org");
-        Mockito.when(projectsClient.retrieveProject(Matchers.anyString())).thenReturn(ResponseEntity.ok(new Resource<>(project)));
+        Mockito.when(projectsClient.retrieveProject(Matchers.anyString()))
+                .thenReturn(ResponseEntity.ok(new Resource<>(project)));
     }
 
     @Test
@@ -125,7 +148,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testDownloadFile() throws URISyntaxException, IOException, InterruptedException {
+    public void testDownloadFile()
+            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
+            ParserConfigurationException {
         Order order = new Order();
         order.setOwner(DEFAULT_USER_EMAIL);
         order.setCreationDate(OffsetDateTime.now());
@@ -173,8 +198,25 @@ public class OrderControllerIT extends AbstractRegardsIT {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
 
-        ResultActions resultActions = performDefaultGet("/user/orders/{orderId}/download", expectations,
+        // First Download metalink order file
+        ResultActions resultActions = performDefaultGet("/user/orders/{orderId}/metalink/download", expectations,
                                                         "Should return result", order.getId());
+        Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
+        File resultFileMl = File.createTempFile("ORDER_", ".metalink");
+        resultFileMl.deleteOnExit();
+
+        try (FileOutputStream fos = new FileOutputStream(resultFileMl)) {
+            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+            ByteStreams.copy(is, fos);
+            is.close();
+        }
+        Assert.assertEquals(8405l, resultFileMl.length()); // 14 files listed into metalink file
+
+        List<ResultMatcher> expectations2 = new ArrayList<>();
+        expectations2.add(MockMvcResultMatchers.status().isOk());
+        // Then download order Zip file
+        resultActions = performDefaultGet("/user/orders/{orderId}/download", expectations2, "Should return result",
+                                          order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         resultFile.deleteOnExit();
@@ -185,27 +227,43 @@ public class OrderControllerIT extends AbstractRegardsIT {
         }
         Assert.assertEquals(1816l, resultFile.length());
 
-        ////////////////////////////////
-        resultActions = performDefaultGet("/user/orders/{orderId}/metalink/download", expectations,
-                                                        "Should return result", order.getId());
-        Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
-        File resultFileMl = File.createTempFile("ZIP_ORDER_", ".metalink");
-        resultFileMl.deleteOnExit();
-
-        try (FileOutputStream fos = new FileOutputStream(resultFileMl)) {
-            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
-            ByteStreams.copy(is, fos);
-            is.close();
-        }
-        Assert.assertEquals(8335l, resultFileMl.length());
-        ////////////////////////////////
-
         tenantResolver.forceTenant(DEFAULT_TENANT); // ?
 
+        // 12 files from AVAILABLE to DOWNLOADED + the one already at this state
         List<OrderDataFile> dataFiles = dataFileRepository.findByOrderIdAndStateIn(order.getId(), FileState.DOWNLOADED);
-        // Don't forget the one that was already DOWNLOADED
         Assert.assertEquals(13, dataFiles.size());
 
+        // Check that URL from metalink file are correct
+        JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+        Unmarshaller u = jaxbContext.createUnmarshaller();
+
+        JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(resultFileMl);
+        MetalinkType metalink = rootElt.getValue();
+        int fileCount = 0;
+        for (FileType fileType : metalink.getFiles().getFile()) {
+            ResourcesType.Url urlO = fileType.getResources().getUrl().iterator().next();
+            String completeUrl = urlO.getValue();
+            // Only /orders/... part is interesting us
+            String url = completeUrl.substring(completeUrl.indexOf("/orders/"));
+            // extract aipId and checksum
+            String[] urlParts = url.split("/");
+            String aipId = urlParts[3];
+            String checksum = urlParts[5].substring(0, urlParts[5].indexOf('?'));
+            String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1);
+
+            List<ResultMatcher> expects = new ArrayList<>();
+            expects.add(MockMvcResultMatchers.status().isOk());
+
+            // Try downloading file as if, with token given into public file url
+            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_CHECKSUM,
+                                                      expects, "Should return result",
+                                                      RequestParamBuilder.build().param("orderToken", token), aipId,
+                                                      checksum, token);
+
+            assertMediaType(results, MediaType.TEXT_PLAIN);
+            fileCount++;
+        }
+        Assert.assertEquals(14, fileCount);
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)

@@ -135,7 +135,7 @@ public class OrderController implements IResourceController<OrderDto> {
                 .generateToken(tenantResolver.getTenant(), authResolver.getUser(), authResolver.getRole(),
                                order.getExpirationDate(), Collections.singletonMap(ORDER_ID_KEY, orderId.toString()),
                                secret, true);
-        orderService.downloadOrderMetalink(orderId, "token=" + token, response);
+        orderService.downloadOrderMetalink(orderId, OrderDataFileController.ORDER_TOKEN + "=" + token, response);
     }
 
     // TODO : add links
