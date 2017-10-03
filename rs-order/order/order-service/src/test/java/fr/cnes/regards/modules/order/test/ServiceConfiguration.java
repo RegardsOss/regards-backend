@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.DataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -46,6 +47,11 @@ public class ServiceConfiguration {
     @Bean
     public ICatalogClient mockCatalogClient() {
         return new CatalogClientMock();
+    }
+
+    @Bean
+    public IProjectsClient mockProjectsClient() {
+        return Mockito.mock(IProjectsClient.class);
     }
 
     @Bean
