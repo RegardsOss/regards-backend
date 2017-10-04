@@ -583,6 +583,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return metadataAipFile;
     }
 
+    /**
+     * TODO COMMENTS !!!!!!!!!
+     */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void updateAlreadyStoredMetadata() {

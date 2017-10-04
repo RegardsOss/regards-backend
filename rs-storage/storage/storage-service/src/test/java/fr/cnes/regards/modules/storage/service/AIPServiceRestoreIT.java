@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.builder.InformationObjectBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -115,7 +116,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private ISubscriber subscriber;
 
-    @Value("${regards.storage.cache.size.limit.ko}")
+    @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
     private Long cacheSizeLimitKo;
 
     private static RestoreJobEventHandler handler = new RestoreJobEventHandler();
@@ -136,6 +137,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     private static Path cacheDir = Paths.get("target/cache");
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     public void initCacheDir() throws IOException {
         if (cacheDir.toFile().exists()) {
             FileUtils.deleteDirectory(cacheDir.toFile());
@@ -145,6 +149,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     @Before
     public void init() throws Exception {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
         cleanUp();
         subscriber.subscribeTo(JobEvent.class, handler);

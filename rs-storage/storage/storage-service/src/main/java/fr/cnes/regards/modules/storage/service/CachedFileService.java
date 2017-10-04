@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.StorageException;
@@ -88,16 +89,28 @@ public class CachedFileService implements ICachedFileService {
     @Autowired
     private ICachedFileRepository cachedFileRepository;
 
+    /**
+     * Cache path origine for all tenants.
+     */
     @Value("${regards.storage.cache.path}")
-    private String cachePath;
+    private String globalCachePath;
 
-    @Value("${regards.storage.cache.size.limit.ko:500000000}")
+    /**
+     * Maximum cache size per tenant in ko.
+     */
+    @Value("${regards.storage.cache.size.limit.ko.per.tenant:500000000}")
     private Long maxCacheSizeKo;
 
-    @Value("${regards.storage.cache.purge.upper.threshold.ko:450000000}")
+    /**
+     * Upper threshold per tenant in ko to trigger the purge of older files.
+     */
+    @Value("${regards.storage.cache.purge.upper.threshold.ko.per.tenant:450000000}")
     private Long cacheSizePurgeUpperThreshold;
 
-    @Value("${regards.storage.cache.purge.lower.threshold.ko:400000000}")
+    /**
+     * Lower threshold per tenant in ko to trigger the purge of older files.
+     */
+    @Value("${regards.storage.cache.purge.lower.threshold.ko.per.tenant:400000000}")
     private Long cacheSizePurgeLowerThreshold;
 
     @Autowired
@@ -105,6 +118,12 @@ public class CachedFileService implements ICachedFileService {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
+     * Resolver to know all existing tenants of the current REGARDS instance.
+     */
+    @Autowired
+    private ITenantResolver tenantResolver;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -117,12 +136,27 @@ public class CachedFileService implements ICachedFileService {
 
     @PostConstruct
     public void checkValidity() {
-        // Check that the given cache storage path is available.
-        File cachedPathFile = Paths.get(cachePath).toFile();
-        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
-                || !cachedPathFile.canWrite()) {
-            throw new StorageException(String
-                    .format("Error initializing storage cache directory. %s is not a valid directory", cachePath));
+        // TODO : Handle new tenant creation
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            Path tenantCachePath = getTenantCachePath();
+            LOG.debug("Initilizing cache file system for tenant {} in repository {}", tenant, tenantCachePath);
+            // Check that the given cache storage path is available.
+            File cachedPathFile = tenantCachePath.toFile();
+            if (!cachedPathFile.exists()) {
+                try {
+                    Files.createDirectories(tenantCachePath);
+                } catch (IOException e) {
+                    throw new StorageException(e.getMessage(), e);
+                }
+            }
+            if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
+                    || !cachedPathFile.canWrite()) {
+                throw new StorageException(
+                        String.format("Error initializing storage cache directory. %s is not a valid directory",
+                                      tenantCachePath));
+            }
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -179,10 +213,14 @@ public class CachedFileService implements ICachedFileService {
      */
     @Scheduled(fixedRateString = "${regards.cache.cleanup.rate.ms:300000}")
     public void cleanCache() {
-        LOG.debug(" -----------------> Clean cache START <-----------------------");
-        purgeExpiredCachedFiles();
-        purgeOlderCachedFiles();
-        LOG.debug(" -----------------> Clean cache END <-----------------------");
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOG.debug(" -----------------> Clean cache for tenant {} START <-----------------------", tenant);
+            purgeExpiredCachedFiles();
+            purgeOlderCachedFiles();
+            LOG.debug(" -----------------> Clean cache for tenant {} END <-----------------------", tenant);
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     /**
@@ -191,11 +229,21 @@ public class CachedFileService implements ICachedFileService {
      */
     @Scheduled(fixedRateString = "${regards.cache.restore.queued.rate.ms:120000}")
     public void hanleQueuedFiles() {
-        Set<CachedFile> queuedFilesToCache = cachedFileRepository.findByState(CachedFileState.QUEUED);
-        Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum).collect(Collectors.toSet());
-        Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
-        // Set an expiration date minimum of 24hours
-        restore(dataFiles, OffsetDateTime.now().plusDays(1));
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOG.debug(" -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
+                      tenant);
+            Set<CachedFile> queuedFilesToCache = cachedFileRepository.findByState(CachedFileState.QUEUED);
+            LOG.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.size(), tenant);
+            Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum)
+                    .collect(Collectors.toSet());
+            Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
+            // Set an expiration date minimum of 24hours
+            restore(dataFiles, OffsetDateTime.now().plusDays(1));
+            LOG.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
+                      tenant);
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     @Override
@@ -436,7 +484,7 @@ public class CachedFileService implements ICachedFileService {
             parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
             JobInfo jobInfo = jobService
                     .createAsPending(new JobInfo(0, parameters, getOwner(), RestorationJob.class.getName()));
-            Path destination = Paths.get(cachePath, runtimeTenantResolver.getTenant(), jobInfo.getId().toString());
+            Path destination = Paths.get(getTenantCachePath().toString(), jobInfo.getId().toString());
             jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
             jobInfo.updateStatus(JobStatus.QUEUED);
             jobInfo = jobService.save(jobInfo);
@@ -470,5 +518,14 @@ public class CachedFileService implements ICachedFileService {
 
     private String getOwner() {
         return authResolver.getUser();
+    }
+
+    private Path getTenantCachePath() {
+        String currentTenant = runtimeTenantResolver.getTenant();
+        if (currentTenant == null) {
+            LOG.error("Unable to define current tenant chache directory path, Tenant is not defined from the runtimeTenantResolver.");
+            return null;
+        }
+        return Paths.get(globalCachePath, currentTenant);
     }
 }

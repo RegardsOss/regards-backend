@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
@@ -95,11 +94,6 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    @BeforeTransaction
-    public void initTransac() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-    }
-
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
@@ -109,10 +103,14 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
     private URL baseStorageLocation;
 
     @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
     private Gson gson;
 
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         // first lets get some parameters for the job ...
         // ... dataStorage ...
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());

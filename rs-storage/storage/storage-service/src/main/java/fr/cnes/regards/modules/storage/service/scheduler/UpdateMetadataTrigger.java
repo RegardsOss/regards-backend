@@ -1,53 +1,46 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.service;
+package fr.cnes.regards.modules.storage.service.scheduler;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.dao.IStorageParameterRepository;
 import fr.cnes.regards.modules.storage.domain.parameter.StorageParameter;
 import fr.cnes.regards.modules.storage.service.parameter.IStorageParameterService;
 
 /**
- *
- * Scheduler to calculate update rate of stored metadata.
- *
- * @author Sylvain VISSIERE-GUERINET
+ * {@link Trigger} to calculate next executation time of the {@link UpdateMetadataScheduledTask}.
+ * @author Sébastien Binda
  */
-@Configuration
-@EnableScheduling
-@Order
-public class UpdateMetadataScheduler implements SchedulingConfigurer {
+public class UpdateMetadataTrigger implements Trigger {
 
-    @Autowired
-    private IAIPService aipService;
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateMetadataTrigger.class);
 
-    @Autowired
-    private IStorageParameterRepository storageParameterRepo;
+    /**
+     * Tenant for the current scheduled task.
+     */
+    private final String tenant;
 
-    @Bean(destroyMethod = "shutdown")
-    public Executor updateMetadataTaskExecutor() {
-        return Executors.newScheduledThreadPool(1);
-    }
+    private final IStorageParameterRepository storageParameterRepo;
 
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        taskRegistrar.setScheduler(updateMetadataTaskExecutor());
-        taskRegistrar.addTriggerTask(aipService::updateAlreadyStoredMetadata, this::calculateNextExecutationDate);
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public UpdateMetadataTrigger(String pTenant, IRuntimeTenantResolver pRuntimeTenantResolver,
+            IStorageParameterRepository pStorageParameterRepo) {
+        super();
+        LOG.debug("New UpdateMetadataTrigger for tenant {}", pTenant);
+        tenant = pTenant;
+        runtimeTenantResolver = pRuntimeTenantResolver;
+        storageParameterRepo = pStorageParameterRepo;
     }
 
     /**
@@ -61,7 +54,10 @@ public class UpdateMetadataScheduler implements SchedulingConfigurer {
      * @param pTriggerContext {@link TriggerContext}
      * @return {@link Date} next executation date.
      */
-    private Date calculateNextExecutationDate(TriggerContext pTriggerContext) {
+    @Override
+    public Date nextExecutionTime(TriggerContext pTriggerContext) {
+        LOG.debug("Caculate next update metadata task run date for tenant {}", tenant);
+        runtimeTenantResolver.forceTenant(tenant);
         Calendar nextExecutionTime = new GregorianCalendar();
         Date lastActualExecutionTime = pTriggerContext.lastActualExecutionTime();
         nextExecutionTime.setTime(lastActualExecutionTime != null ? lastActualExecutionTime : new Date());
@@ -74,6 +70,7 @@ public class UpdateMetadataScheduler implements SchedulingConfigurer {
         }
         int updateRateFromDB = Integer.parseInt(updateRate.getValue());
         nextExecutionTime.add(Calendar.MINUTE, updateRateFromDB);
+        runtimeTenantResolver.clearTenant();
         return nextExecutionTime.getTime();
     }
 

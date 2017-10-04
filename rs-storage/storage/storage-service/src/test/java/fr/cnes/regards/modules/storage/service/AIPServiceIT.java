@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.builder.InformationObjectBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -119,8 +120,12 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private RegardsAmqpAdmin amqpAdmin;
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         this.cleanUp();
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();

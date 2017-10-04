@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
+import fr.cnes.regards.modules.storage.service.scheduler.UpdateMetadataScheduler;
 
 /**
  * Service Interface to handle {@link AIP} entities.
