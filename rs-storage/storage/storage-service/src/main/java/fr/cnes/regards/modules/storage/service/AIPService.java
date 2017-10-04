@@ -178,9 +178,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Value("${regards.storage.workspace}")
     private String workspace;
 
+    /**
+     * Service to manage avaibility of nearline files.
+     */
     @Autowired
     private ICachedFileService cachedFileService;
 
+    /**
+     * Handler to manage {@link DataStorageEvent} events.
+     */
     @Autowired
     private DataStorageEventHandler dataStorageEventHandler;
 
@@ -279,9 +285,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
     }
 
-    /**
-     * two {@link OffsetDateTime} are here considered equals to the second
-     */
     @Override
     public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable) { // NOSONAR
         if (pState != null) {
@@ -308,8 +311,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (pTo != null) {
             return aipDao.findAllByLastEventDateBefore(pTo.plusSeconds(1), pPageable);
         }
-        // return dao.findAll(pPageable);
-        return null;
+        return aipDao.findAll(pPageable);
     }
 
     @Override

@@ -3,12 +3,13 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,12 +17,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -32,8 +37,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
@@ -82,13 +87,10 @@ public class AIPController implements IResourceController<AIP> {
     @Autowired
     private IAIPService aipService;
 
-    @Autowired
-    private Gson gson;
-
     @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of all aips")
-    public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
+    public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, final Pageable pPageable,
@@ -100,7 +102,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "validate and create the specified AIP")
-    public HttpEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips)
+    public ResponseEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips)
             throws ModuleException, NoSuchAlgorithmException {
         Set<UUID> jobIds = aipService.create(aips);
         return new ResponseEntity<>(jobIds, HttpStatus.SEE_OTHER);
@@ -109,7 +111,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files metadata of a specified aip")
-    public HttpEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
+    public ResponseEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
             throws EntityNotFoundException {
         List<DataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));
         return new ResponseEntity<>(files, HttpStatus.OK);
@@ -119,7 +121,8 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(
             description = "allows to request that files are made available for downloading, return the list of file already available via their checksums")
-    public HttpEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest) {
+    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
+            @RequestBody AvailabilityRequest availabilityRequest) {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
 
@@ -135,8 +138,9 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files of a specified aip")
-    public HttpEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
-            final Pageable pPageable, final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
+    public ResponseEntity<List<String>> retrieveAIPVersionHistory(
+            @PathVariable("ip_id") @Valid UniformResourceName pIpId, final Pageable pPageable,
+            final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
         List<String> versions = aipService.retrieveAIPVersionHistory(pIpId);
         return new ResponseEntity<>(versions, HttpStatus.OK);
     }
@@ -146,6 +150,5 @@ public class AIPController implements IResourceController<AIP> {
         // TODO add hateoas links
         return resourceService.toResource(pElement);
     }
-
 
 }

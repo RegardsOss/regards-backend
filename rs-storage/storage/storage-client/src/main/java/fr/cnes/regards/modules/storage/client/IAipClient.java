@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.client;
 
-import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -80,7 +79,5 @@ public interface IAipClient {
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
     public HttpEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
 
-    // TODO : update this method with real arguments and return types
-    // Merci de prévenir Olivier
-    InputStream downloadFile(String aipId, String checksum);
+    public HttpEntity<Void> downloadFile(String aipId, String checksum);
 }

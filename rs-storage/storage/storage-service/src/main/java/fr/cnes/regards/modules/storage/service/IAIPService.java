@@ -23,20 +23,10 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
 /**
- * Service to handle {@link AIP} and {@link DataFile} entities from all data straoge systems.<br/>
- * Available data storage systems are defined by the available {@link IDataStorage} plugins<br/>
- * Stored files can be stored with :
- * <ul>
- * <li> Online data storage plugins {@link IOnlineDataStorage} : Files are directly accessible for download </li>
- * <li> Nearline data storage plugins {@link INearlineDataStorage} : Files needs to be cached before download </li>
- * </ul>
- *
- * The cache system to make nearline files accessible is handle by the {@link ICachedFileService}.
+ * Service Interface to handle {@link AIP} entities.
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
