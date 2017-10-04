@@ -34,7 +34,7 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TaskSequence")
     protected Long id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     // Using a join table better than a foreign key on t_job_info to avoid adding a dependence. A job/job_info knows
     // nothing (like Job Snow), it just have something to do regardless of everything else
     @JoinTable(name = "ta_task_job_info",
