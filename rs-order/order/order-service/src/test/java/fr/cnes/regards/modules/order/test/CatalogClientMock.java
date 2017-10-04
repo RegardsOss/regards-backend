@@ -13,6 +13,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -42,6 +44,8 @@ import fr.cnes.regards.modules.search.client.ICatalogClient;
  * @author oroussel
  */
 public class CatalogClientMock implements ICatalogClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogClientMock.class);
+
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
                                                                                 "ORDER", UUID.randomUUID(), 1);
@@ -268,7 +272,12 @@ public class CatalogClientMock implements ICatalogClient {
         }
         String reqDateStr = matcher.group(1);
         OffsetDateTime reqDate = OffsetDateTimeAdapter.parse(reqDateStr);
-        return -Arrays.binarySearch(dates, reqDate) - 1;
+        int idxFound = Arrays.binarySearch(dates, reqDate);
+        if (idxFound >= 0) {
+            LOGGER.error("INDEX POSITIF !!!!!");
+            return idxFound;
+        }
+        return -idxFound - 1;
     }
 
     private static DataType getDataType(String filename) {
