@@ -60,5 +60,9 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
+		</dependency>
 	</dependencies>
 </project>
