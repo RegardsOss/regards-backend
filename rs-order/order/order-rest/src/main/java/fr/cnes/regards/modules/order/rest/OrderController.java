@@ -68,9 +68,23 @@ public class OrderController implements IResourceController<OrderDto> {
     @Autowired
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
 
-    private static final String ADMIN_ROOT_PATH = "/orders";
+    public static final String ADMIN_ROOT_PATH = "/orders";
 
-    private static final String USER_ROOT_PATH = "/user/orders";
+    public static final String USER_ROOT_PATH = "/user/orders";
+
+    public static final String REMOVE_ORDER_PATH = USER_ROOT_PATH + "/remove/{orderId}";
+
+    public static final String DELETE_ORDER_PATH = USER_ROOT_PATH + "/{orderId}";
+
+    public static final String RESUME_ORDER_PATH = USER_ROOT_PATH + "/resume/{orderId}";
+
+    public static final String PAUSE_ORDER_PATH = USER_ROOT_PATH + "/pause/{orderId}";
+
+    public static final String GET_ORDER_PATH = USER_ROOT_PATH + "/{orderId}";
+
+    public static final String ZIP_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/download";
+
+    public static final String METALINK_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/metalink/download";
 
     @Value("${regards.order.secret}")
     private String secret;
@@ -90,34 +104,39 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}")
+    @RequestMapping(method = RequestMethod.GET, path = GET_ORDER_PATH)
     public ResponseEntity<Resource<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
-        return ResponseEntity.ok(toResource(OrderDto.fromOrder(orderService.loadSimple(orderId))));
-    }
-
-    @ResourceAccess(description = "Ask for an order to be paused", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.PUT, path = USER_ROOT_PATH + "/pause/{orderId}")
-    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) {
-        orderService.pause(orderId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        Order order = orderService.loadSimple(orderId);
+        if (order != null) {
+            return ResponseEntity.ok(toResource(OrderDto.fromOrder(order)));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @ResourceAccess(description = "Resume an order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.PUT, path = USER_ROOT_PATH + "/resume/{orderId}")
+    @RequestMapping(method = RequestMethod.PUT, path = RESUME_ORDER_PATH)
     public ResponseEntity<Void> resumeOrder(@PathVariable("orderId") Long orderId) throws CannotResumeOrderException {
         orderService.resume(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @ResourceAccess(description = "Ask for an order to be paused", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.PUT, path = PAUSE_ORDER_PATH)
+    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) {
+        orderService.pause(orderId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @ResourceAccess(description = "Delete an order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.DELETE, path = USER_ROOT_PATH + "/{orderId}")
+    @RequestMapping(method = RequestMethod.DELETE, path = DELETE_ORDER_PATH)
     public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") Long orderId) throws CannotDeleteOrderException {
         orderService.delete(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Remove an order", role = DefaultRole.PROJECT_ADMIN)
-    @RequestMapping(method = RequestMethod.DELETE, path = USER_ROOT_PATH + "/remove/{orderId}")
+    @RequestMapping(method = RequestMethod.DELETE, path = REMOVE_ORDER_PATH)
     public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws CannotRemoveOrderException {
         orderService.remove(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -143,7 +162,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/download")
+    @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
     public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response)
             throws NotYetAvailableException, EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
@@ -154,7 +173,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}/metalink/download")
+    @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
     public void downloadMetalinkFile(@PathVariable("orderId") Long orderId, HttpServletResponse response)
             throws NotYetAvailableException, EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);

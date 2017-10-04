@@ -1,16 +1,10 @@
 package fr.cnes.regards.modules.order.rest;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -39,15 +32,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.util.UriUtils;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.netflix.discovery.converters.Auto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -62,8 +50,8 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
@@ -135,25 +123,81 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testCreate() throws UnsupportedEncodingException {
+    public void testActions() throws UnsupportedEncodingException {
+        // Create an empty basket
         Basket basket = new Basket();
         basket.setOwner(DEFAULT_USER_EMAIL);
         basketRepos.save(basket);
 
-        // Test POST without argument
-        ResultActions results = performDefaultPost("/user/orders", null, Lists.newArrayList(MockMvcResultMatchers.status().isCreated()),
-                           "error");
+        // Test POST without argument : order should be created with RUNNING status
+        ResultActions results = performDefaultPost(OrderController.USER_ROOT_PATH, null,
+                                                   Lists.newArrayList(MockMvcResultMatchers.status().isCreated()),
+                                                   "error");
         String jsonResult = results.andReturn().getResponse().getContentAsString();
         Long orderId = Long.valueOf(jsonResult.replaceAll(".*\"id\":(\\d+).*", "$1"));
-        System.out.println(orderId);
+
+        // Retrieve order and test its status
+        assertStatus(orderId, OrderStatus.RUNNING);
+
+        // Pause Order
+        results = performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, okExpectations(), "error", orderId);
+        // Retrieve order and test its status
+        assertStatus(orderId, OrderStatus.PAUSED);
+
+        // Resume Order (immediate, order hasn't any files nor jobInfos)
+        results = performDefaultPut(OrderController.RESUME_ORDER_PATH, null, okExpectations(), "error", orderId);
+        // Retrieve order and test its status
+        assertStatus(orderId, OrderStatus.RUNNING);
+
+        // Try to delete
+        results = performDefaultDelete(OrderController.DELETE_ORDER_PATH,
+                                       expectations(MockMvcResultMatchers.status().isUnauthorized()), "error", orderId);
+
+        // Re-pause
+        results = performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, okExpectations(), "error", orderId);
+
+        // Try to remove
+        results = performDefaultDelete(OrderController.REMOVE_ORDER_PATH,
+                                       expectations(MockMvcResultMatchers.status().isUnauthorized()), "error", orderId);
+
+        // Re-delete
+        results = performDefaultDelete(OrderController.DELETE_ORDER_PATH, okExpectations(), "error", orderId);
+        // This time : ok
+        assertStatus(orderId, OrderStatus.DELETED);
+
+        // Re-remove
+        results = performDefaultDelete(OrderController.REMOVE_ORDER_PATH, okExpectations(), "error", orderId);
+        // This time : ok, so no more  order exists in database
+        performDefaultGet(OrderController.GET_ORDER_PATH, expectations(MockMvcResultMatchers.status().isNotFound()),
+                          "error", orderId);
+
+    }
+
+    private void assertStatus(Long orderId, OrderStatus expectedStatus) throws UnsupportedEncodingException {
+        List<ResultMatcher> expectations = okExpectations();
+        ResultActions results = performDefaultGet(OrderController.GET_ORDER_PATH, expectations, "error", orderId);
+        String jsonResult = results.andReturn().getResponse().getContentAsString();
+        Assert.assertTrue(jsonResult.contains("\"status\":\"" + expectedStatus.toString() + "\""));
+    }
+
+    private List<ResultMatcher> okExpectations() {
+        List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        return expectations;
+    }
+
+    private List<ResultMatcher> expectations(ResultMatcher resultMatcher) {
+        List<ResultMatcher> expectations = new ArrayList<>();
+        expectations.add(resultMatcher);
+        return expectations;
     }
 
     @Test
     public void testCreateNOK() {
         // All baskets have been deleted so order creation must fail
         // Test POST without argument
-        performDefaultPost("/user/orders", null, Lists.newArrayList(MockMvcResultMatchers.status().isNoContent()),
-                           "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, null,
+                           Lists.newArrayList(MockMvcResultMatchers.status().isNoContent()), "error");
     }
 
     @Test
@@ -204,11 +248,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order = orderRepository.save(order);
         ds1Task = order.getDatasetTasks().first();
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
+        List<ResultMatcher> expectations = okExpectations();
 
         // First Download metalink order file
-        ResultActions resultActions = performDefaultGet("/user/orders/{orderId}/metalink/download", expectations,
+        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, expectations,
                                                         "Should return result", order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
@@ -222,8 +265,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Assert.assertTrue(resultFileMl.length() > 8000l); // 14 files listed into metalink file (size is
         // slightely different into jenkins)
 
-        List<ResultMatcher> expectations2 = new ArrayList<>();
-        expectations2.add(MockMvcResultMatchers.status().isOk());
+        List<ResultMatcher> expectations2 = okExpectations();
         // Then download order Zip file
         resultActions = performDefaultGet("/user/orders/{orderId}/download", expectations2, "Should return result",
                                           order.getId());
@@ -261,8 +303,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             String checksum = urlParts[5].substring(0, urlParts[5].indexOf('?'));
             String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1);
 
-            List<ResultMatcher> expects = new ArrayList<>();
-            expects.add(MockMvcResultMatchers.status().isOk());
+            List<ResultMatcher> expects = okExpectations();
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_CHECKSUM,
