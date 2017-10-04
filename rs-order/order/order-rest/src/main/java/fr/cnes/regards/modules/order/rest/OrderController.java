@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.order.rest;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -32,6 +29,11 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
+import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 
@@ -91,6 +93,34 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH + "/{orderId}")
     public ResponseEntity<Resource<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(toResource(OrderDto.fromOrder(orderService.loadSimple(orderId))));
+    }
+
+    @ResourceAccess(description = "Ask for an order to be paused", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.PUT, path = USER_ROOT_PATH + "/pause/{orderId}")
+    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) {
+        orderService.pause(orderId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Resume an order", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.PUT, path = USER_ROOT_PATH + "/resume/{orderId}")
+    public ResponseEntity<Void> resumeOrder(@PathVariable("orderId") Long orderId) throws CannotResumeOrderException {
+        orderService.resume(orderId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Delete an order", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.DELETE, path = USER_ROOT_PATH + "/{orderId}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") Long orderId) throws CannotDeleteOrderException {
+        orderService.delete(orderId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Remove an order", role = DefaultRole.PROJECT_ADMIN)
+    @RequestMapping(method = RequestMethod.DELETE, path = USER_ROOT_PATH + "/remove/{orderId}")
+    public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws CannotRemoveOrderException {
+        orderService.remove(orderId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Find all or specified user orders")

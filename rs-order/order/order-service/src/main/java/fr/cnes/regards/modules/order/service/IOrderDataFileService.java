@@ -45,4 +45,9 @@ public interface IOrderDataFileService {
      * @return updated orders
      */
     Set<Order> updateCurrentOrdersCompletionValues();
+
+    /**
+     * Remove all data files from an order
+     */
+    void removeAll(Long orderId);
 }

@@ -5,14 +5,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import fr.cnes.regards.framework.module.rest.exception.CannotResumeOrderException;
-import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 
 /**
  * Order service
@@ -42,14 +41,28 @@ public interface IOrderService {
     Order loadComplete(Long id);
 
     /**
-     * Pause an order (async task)
+     * Pause an order (status is immediately updated but it's an async task)
      */
     void pause(Long id);
 
     /**
-     * Resume a paused order (async task too)
+     * Resume a paused order.
+     * All associated jobs must be compatible with a PAUSED status (not running nor planned to be run)
      */
     void resume(Long id) throws CannotResumeOrderException;
+
+    /**
+     * Delete an order. Order must be PAUSED and effectiveley paused (ie all associated jobs must be compatible with a
+     * PAUSED status (not running nor planned to be run))
+     * Only associated data files are removed from database (stats are still available)
+     */
+    void delete(Long id) throws CannotDeleteOrderException;
+
+    /**
+     * Remove completely an order. Current order status must be DELETED, All associated jobs must be compatible with a
+     * PAUSED status (not running nor planned to be run)
+     */
+    void remove(Long id) throws CannotRemoveOrderException;
 
     /**
      * Find all orders sorted by descending date.

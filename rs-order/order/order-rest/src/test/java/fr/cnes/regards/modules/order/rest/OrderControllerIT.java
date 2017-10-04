@@ -45,6 +45,8 @@ import org.xml.sax.SAXException;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.netflix.discovery.converters.Auto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -61,6 +63,7 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
@@ -113,6 +116,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public static final UniformResourceName DO5_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
                                                                                 "ORDER", UUID.randomUUID(), 1);
 
+    @Autowired
+    private Gson gson;
+
     @Before
     public void init() {
         tenantResolver.forceTenant(DEFAULT_TENANT);
@@ -129,14 +135,17 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testCreate() {
+    public void testCreate() throws UnsupportedEncodingException {
         Basket basket = new Basket();
         basket.setOwner(DEFAULT_USER_EMAIL);
         basketRepos.save(basket);
 
         // Test POST without argument
-        performDefaultPost("/user/orders", null, Lists.newArrayList(MockMvcResultMatchers.status().isCreated()),
+        ResultActions results = performDefaultPost("/user/orders", null, Lists.newArrayList(MockMvcResultMatchers.status().isCreated()),
                            "error");
+        String jsonResult = results.andReturn().getResponse().getContentAsString();
+        Long orderId = Long.valueOf(jsonResult.replaceAll(".*\"id\":(\\d+).*", "$1"));
+        System.out.println(orderId);
     }
 
     @Test

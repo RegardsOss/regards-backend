@@ -128,4 +128,9 @@ public class OrderDataFileService implements IOrderDataFileService {
         }
         return orders;
     }
+
+    @Override
+    public void removeAll(Long orderId) {
+        repos.deleteByOrderId(orderId);
+    }
 }

@@ -1,24 +1,42 @@
 package fr.cnes.regards.modules.order.domain.dto;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 
 /**
  * Order Dto used to avoid loading FilesTask and all files
  * @author oroussel
  */
 public class OrderDto {
+
     private Long id;
 
     private String owner;
 
-    private UUID uid;
+    private OffsetDateTime creationDate;
+
+    private OffsetDateTime expirationDate;
+
+    private int percentCompleted;
+
+    private int filesInErrorCount;
+
+    private OrderStatus status;
+
+    private OffsetDateTime statusDate;
 
     private List<DatasetTaskDto> datasetTasks = new ArrayList<>();
 
@@ -38,12 +56,52 @@ public class OrderDto {
         this.owner = owner;
     }
 
-    public UUID getUid() {
-        return uid;
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
-    public void setUid(UUID uid) {
-        this.uid = uid;
+    public void setCreationDate(OffsetDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public OffsetDateTime getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(OffsetDateTime expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public int getPercentCompleted() {
+        return percentCompleted;
+    }
+
+    public void setPercentCompleted(int percentCompleted) {
+        this.percentCompleted = percentCompleted;
+    }
+
+    public int getFilesInErrorCount() {
+        return filesInErrorCount;
+    }
+
+    public void setFilesInErrorCount(int filesInErrorCount) {
+        this.filesInErrorCount = filesInErrorCount;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public OffsetDateTime getStatusDate() {
+        return statusDate;
+    }
+
+    public void setStatusDate(OffsetDateTime statusDate) {
+        this.statusDate = statusDate;
     }
 
     public List<DatasetTaskDto> getDatasetTasks() {

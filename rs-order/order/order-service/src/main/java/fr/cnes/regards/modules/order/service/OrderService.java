@@ -48,8 +48,6 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.CannotResumeOrderException;
-import fr.cnes.regards.framework.module.rest.exception.NotYetAvailableException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -64,9 +62,14 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.FilesType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
@@ -149,6 +152,7 @@ public class OrderService implements IOrderService {
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
         order.setOwner(basket.getOwner());
+        order.setStatus(OrderStatus.PENDING);
         // To generate orderId
         order = repos.save(order);
         int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
@@ -190,6 +194,8 @@ public class OrderService implements IOrderService {
 
             order.addDatasetOrderTask(dsTask);
         }
+        // Order is ready to be taken into account
+        order.setStatus(OrderStatus.RUNNING);
         order = repos.save(order);
         orderJobService.manageUserOrderJobInfos(order.getOwner());
         return order;
@@ -250,6 +256,8 @@ public class OrderService implements IOrderService {
         // Ask for all jobInfos abortion
         order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
                 .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
+        order.setStatus(OrderStatus.PAUSED);
+        repos.save(order);
     }
 
     @Override
@@ -265,8 +273,42 @@ public class OrderService implements IOrderService {
         order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
                 .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
                 .peek(jobInfo -> jobInfo.updateStatus(JobStatus.PENDING)).forEach(jobInfoService::save);
+        order.setStatus(OrderStatus.RUNNING);
+        repos.save(order);
         // Don't forget to manage user order jobs again (PENDING -> QUEUED)
         orderJobService.manageUserOrderJobInfos(order.getOwner());
+    }
+
+    @Override
+    public void delete(Long id) throws CannotDeleteOrderException {
+        Order order = repos.findCompleteById(id);
+        if (order.getStatus() != OrderStatus.PAUSED) {
+            throw new CannotDeleteOrderException(
+                    String.format("An order must be paused before being deleted (current status is %s).",
+                                  order.getStatus()));
+        }
+        // Look at all associated JobInfos : they must be at a paused compatible status
+        boolean inPause = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
+        if (!inPause) {
+            throw new CannotDeleteOrderException("Order is not completely stopped, some tasks are still running, please "
+                                                         + "wait a while and retry later");
+        }
+        // Delete all order data files
+        dataFileService.removeAll(order.getId());
+        order.setStatus(OrderStatus.DELETED);
+        repos.save(order);
+    }
+
+    @Override
+    public void remove(Long id) throws CannotRemoveOrderException {
+        Order order = repos.findCompleteById(id);
+        if (order.getStatus() != OrderStatus.DELETED) {
+            throw new CannotRemoveOrderException(
+                    String.format("An order must be deleted before being removed (current status is %s).",
+                                  order.getStatus()));
+        }
+        repos.delete(order.getId());
     }
 
     @Override

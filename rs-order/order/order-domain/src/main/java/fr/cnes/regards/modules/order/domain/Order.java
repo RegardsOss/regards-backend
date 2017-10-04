@@ -4,6 +4,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -58,11 +60,19 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     /**
      * Math.floor() percent completed task (number of treated files on total files)
      */
-    @Column(name = "percent_complete")
+    @Column(name = "percent_complete", nullable = false)
     private int percentCompleted = 0;
 
-    @Column(name = "files_in_error")
+    @Column(name = "files_in_error", nullable = false)
     private int filesInErrorCount = 0;
+
+    @Column(name = "status", length = 20, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status = OrderStatus.PENDING;
+
+    @Column(name = "status_date", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime statusDate = OffsetDateTime.now();
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", foreignKey = @ForeignKey(name = "fk_order"))
@@ -127,6 +137,19 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public void setFilesInErrorCount(int filesInErrorCount) {
         this.filesInErrorCount = filesInErrorCount;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+        this.statusDate = OffsetDateTime.now();
+    }
+
+    public OffsetDateTime getStatusDate() {
+        return statusDate;
     }
 
     @Override

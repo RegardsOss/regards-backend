@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -73,4 +74,6 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
         return  selectCountFilesByOrderIdAndStates(limitDate, Arrays.asList(states).stream().map(FileState::toString).collect(Collectors.toList()));
     }
 
+    @Modifying
+    void deleteByOrderId(Long orderId);
 }

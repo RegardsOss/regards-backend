@@ -2,8 +2,8 @@ package fr.cnes.regards.modules.order.service;
 
 import java.time.OffsetDateTime;
 
-import fr.cnes.regards.framework.module.rest.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 
 /**
  * Basket service
