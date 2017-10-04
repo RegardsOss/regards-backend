@@ -97,7 +97,9 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * @return List for PluginConfiguration (Hateoas formated)
      * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(
+            description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication",
+            role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<List<Resource<PluginConfiguration>>> retrieveIdentityProviderPlugins() {
         final List<PluginConfiguration> plugins = service.retrieveIdentityProviderPlugins();

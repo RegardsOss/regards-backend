@@ -62,6 +62,7 @@ public class AuthenticationTestConfiguration {
     public final static String INVALID_PASSWORD = "invalid";
 
     @Bean
+    @Primary
     IPluginConfigurationRepository pluginConfigurationRepo() {
         return new PluginConfigurationRepositoryStub();
     }
