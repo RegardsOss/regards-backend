@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,8 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+
+import java.util.ArrayList;
 
 /**
  * Module-wide configuration for integration tests.
@@ -65,7 +70,23 @@ public class CatalogITConfiguration {
 
     @Bean
     public IAccessGroupClient groupClient() {
-        return Mockito.mock(IAccessGroupClient.class);
+        IAccessGroupClient accessGroupClient = Mockito.mock(IAccessGroupClient.class);
+
+        // Build accessGroupMock mock
+        final PagedResources.PageMetadata md = new PagedResources.PageMetadata(0, 0, 0);
+        final PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+                new ArrayList<>());
+        final ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity
+                .ok(pagedResources);
+        Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(pageResponseEntity);
+        return accessGroupClient;
+    }
+
+    @Bean
+    public IAccessRightClient accessClient() {
+        IAccessRightClient accessGroupClient = Mockito.mock(IAccessRightClient.class);
+        return accessGroupClient;
     }
 
     @Bean
@@ -87,4 +108,5 @@ public class CatalogITConfiguration {
     public IProjectsClient projectsClient() {
         return Mockito.mock(IProjectsClient.class);
     }
+
 }
