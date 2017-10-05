@@ -3,7 +3,10 @@
  */
 package fr.cnes.regards.framework.utils.file;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
@@ -47,6 +50,23 @@ public class CommonFileUtils {
 
         return availableFileName;
 
+    }
+
+    /**
+     * Write from a given {@link FileInputStream} to the output given {@link File} a maximum of <maxSizeToWrite> bytes.
+     * @param pInputStream {@link FileInputStream} reader
+     * @param outputFile {@link File} to write to
+     * @param maxSizeToWrite maximum number of bytes to write
+     * @return TRUE if there is more bytes to read from pInputStream after writing the maximum number of bytes.
+     * @throws IOException I/O exception.
+     */
+    public static void writeInFile(FileInputStream pInputStream, OutputStream os) throws IOException {
+        byte[] buffer = new byte[1024];
+        int charRead;
+        while ((charRead = pInputStream.read(buffer)) > 0) {
+            os.write(buffer, 0, charRead);
+        }
+        os.flush();
     }
 
 }
