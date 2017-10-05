@@ -18,16 +18,23 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import javax.validation.Valid;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.modules.search.service.IFileEntityDescriptionHelper;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -97,6 +104,8 @@ public class CatalogController {
 
     public static final String DATASETS_SEARCH = "/datasets/search";
 
+    public static final String DATASET_FILE = "/datasets/search";
+
     public static final String COLLECTIONS_SEARCH = "/collections/search";
 
     public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
@@ -123,6 +132,11 @@ public class CatalogController {
     private final ISearchService searchService;
 
     /**
+     * Service perfoming the ElasticSearch search directly. Autowired by Spring.
+     */
+    private final IFileEntityDescriptionHelper fileEntityDescriptionHelper;
+
+    /**
      * The resource service. Autowired by Spring.
      */
     private final IResourceService resourceService;
@@ -146,13 +160,14 @@ public class CatalogController {
      */
     public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService,
             final IResourceService pResourceService, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final OpenSearchDescriptionBuilder osDescriptorBuilder) {
+            final OpenSearchDescriptionBuilder osDescriptorBuilder, IFileEntityDescriptionHelper fileEntityDescriptionHelper) {
         super();
         catalogSearchService = pCatalogSearchService;
         searchService = pSearchService;
         resourceService = pResourceService;
         runtimeTenantResolver = pRuntimeTenantResolver;
         this.osDescriptorBuilder = osDescriptorBuilder;
+        this.fileEntityDescriptionHelper = fileEntityDescriptionHelper;
     }
 
     /**
@@ -265,7 +280,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the dataset of passed URN_COLLECTION.
+     * Return the dataset of passed dataset URN.
      *
      * @param pUrn
      *            the Uniform Resource Name of the dataset
@@ -275,9 +290,35 @@ public class CatalogController {
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Dataset>> getDataset(@Valid @PathVariable("urn") final UniformResourceName pUrn,
-            DatasetResourcesAssembler assembler) throws SearchException {
+                                                        DatasetResourcesAssembler assembler) throws SearchException {
         final Dataset dataset = searchService.get(pUrn);
         return new ResponseEntity<>(assembler.toResource(dataset), HttpStatus.OK);
+    }
+
+    /**
+     * Return the dataset file of passed dataset URN.
+     *
+     * @param pUrn
+     *            the Uniform Resource Name of the dataset
+     * @return the dataset file
+     * @throws SearchException
+     */
+    @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
+    @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
+                                                                @PathVariable("dataset_ipId") UniformResourceName pUrn) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
+        final ResponseEntity<InputStreamResource> fileStream = fileEntityDescriptionHelper.getFile(pUrn);
+
+
+        InputStreamResource isr = new InputStreamResource(fileStream.getBody().getInputStream());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(fileStream.getBody().contentLength());
+        headers.setContentType(fileStream.getHeaders().getContentType());
+        // set the X-Frame-Options header value to ALLOW-FROM origin
+        if (origin != null) {
+            headers.add(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
+        }
+        return new ResponseEntity<>(isr, headers, HttpStatus.OK);
     }
 
     /**
@@ -312,7 +353,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the dataobject of passed URN_COLLECTION.
+     * Return the dataobject of passed dataobject URN.
      *
      * @param pUrn
      *            the Uniform Resource Name of the dataobject
