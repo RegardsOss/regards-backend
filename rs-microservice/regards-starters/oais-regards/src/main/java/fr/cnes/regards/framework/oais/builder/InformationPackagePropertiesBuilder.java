@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.InformationPackage;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
 /**
@@ -35,9 +35,9 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * @author Marc Sordi
  *
  */
-public class InformationPackageBuilder implements IOAISBuilder<InformationPackage> {
+public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {
 
-    private final InformationPackage ip = new InformationPackage();
+    private final InformationPackageProperties ip = new InformationPackageProperties();
 
     private final Set<ContentInformation> cis = Sets.newHashSet();
 
@@ -48,7 +48,7 @@ public class InformationPackageBuilder implements IOAISBuilder<InformationPackag
     private final Map<String, Object> descriptitveInformation = Maps.newHashMap();
 
     @Override
-    public InformationPackage build() {
+    public InformationPackageProperties build() {
         ip.getContentInformations().addAll(cis);
         ip.setPdi(pdiBuilder.build());
         ip.getDescriptiveInformation().putAll(descriptitveInformation);

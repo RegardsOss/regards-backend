@@ -54,7 +54,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
         OAISDataObject dataObject = new OAISDataObject();
         dataObject.setFilename(filename);
-        dataObject.setRegards_dataType(dataType);
+        dataObject.setRegardsDataType(dataType);
         dataObject.setUrl(url);
         ci.setDataObject(dataObject);
     }

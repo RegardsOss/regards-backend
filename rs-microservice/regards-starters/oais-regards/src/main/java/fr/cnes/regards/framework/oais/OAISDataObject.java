@@ -61,11 +61,11 @@ public class OAISDataObject {
         this.filename = filename;
     }
 
-    public DataType getRegards_dataType() {
+    public DataType getRegardsDataType() {
         return regards_dataType;
     }
 
-    public void setRegards_dataType(DataType regards_dataType) {
+    public void setRegardsDataType(DataType regards_dataType) {
         this.regards_dataType = regards_dataType;
     }
 

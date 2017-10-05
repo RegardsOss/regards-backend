@@ -42,6 +42,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>gson-regards</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>geojson-regards</artifactId>
+		</dependency>
 		<!-- TEST dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
