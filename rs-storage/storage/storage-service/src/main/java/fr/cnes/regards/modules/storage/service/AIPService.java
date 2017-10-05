@@ -68,6 +68,7 @@ import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
@@ -315,13 +316,20 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public List<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
-        // AIP aip = dao.findOneByIpIdWithDataObjects(pIpId.toString());
-        // if (aip == null) {
-        // throw new EntityNotFoundException(pIpId.toString(), AIP.class);
-        // }
-        // return aip.getDataObjects();
-        return null;
+    public Set<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
+        Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
+        if (aip.isPresent()) {
+            Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
+            return dataFiles.stream().map(df -> {
+                DataObject dataObject = new DataObject();
+                dataObject.setDataType(df.getDataType());
+                dataObject.setUrl(df.getUrl());
+                dataObject.setFilename(df.getName());
+                return dataObject;
+            }).collect(Collectors.toSet());
+        } else {
+            throw new EntityNotFoundException(pIpId.toString(), AIP.class);
+        }
     }
 
     @Override
@@ -486,6 +494,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void storeMetadata() {
+        LOG.debug(" ------------------------> Update AIP storage informations - START<---------------------------- ");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             Path tenantWorkspace = Paths.get(workspace, tenant);
@@ -501,10 +510,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             // first lets get AIP that are not fully stored(at least metadata are not stored)
             metadataToStore.addAll(self.prepareNotFullyStored(tenantWorkspace));
             if (!metadataToStore.isEmpty()) {
+                LOG.debug("Scheduling {} updated metadata files for storage.", metadataToStore.size());
                 // now that we know all the metadata that should be stored, lets schedule their storage!
                 self.scheduleStorageMetadata(metadataToStore);
+            } else {
+                LOG.debug("No updated metadata files to store.");
             }
         }
+        LOG.debug(" ------------------------> Update AIP storage informations - END <---------------------------- ");
     }
 
     @Override
@@ -556,7 +569,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
         String toWrite = gson.toJson(aip);
         String checksum = ChecksumUtils.getHexChecksum(md5.digest(toWrite.getBytes(StandardCharsets.UTF_8)));
-        Path metadataLocation = Paths.get(tenantWorkspace.toString(), checksum + JSON_FILE_EXT);
+        Path metadataLocation = Paths.get(tenantWorkspace.toFile().getAbsolutePath(), checksum + JSON_FILE_EXT);
         try (BufferedWriter writer = Files.newBufferedWriter(metadataLocation, StandardCharsets.UTF_8)) {
             writer.write(toWrite);
             writer.flush();
@@ -718,5 +731,43 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
         return jobIds;
+    }
+
+    @Override
+    public Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws EntityNotFoundException {
+
+        // First find the AIP
+        Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
+        if (oaip.isPresent()) {
+            AIP aip = oaip.get();
+            // Now get requested DataFile
+            Set<DataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
+            Optional<DataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum())).findFirst();
+            if (odf.isPresent()) {
+                DataFile dataFile = odf.get();
+                if (dataFile.getDataStorageUsed() != null) {
+                    if (dataFile.getDataStorageUsed().getInterfaceNames()
+                            .contains(IOnlineDataStorage.class.getName())) {
+                        return Optional.of(dataFile);
+                    } else {
+                        // Check if file is available from cache
+                        Optional<CachedFile> ocf = cachedFileService.getAvailableCachedFile(pChecksum);
+                        if (ocf.isPresent()) {
+                            dataFile.setUrl(ocf.get().getLocation());
+                            return Optional.of(dataFile);
+                        } else {
+                            return Optional.empty();
+                        }
+                    }
+                } else {
+                    throw new EntityNotFoundException("Storage plugin used to store datafile is unknown.");
+                }
+            } else {
+                throw new EntityNotFoundException(pChecksum, DataFile.class);
+            }
+
+        } else {
+            throw new EntityNotFoundException(pAipId, AIP.class);
+        }
     }
 }

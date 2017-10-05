@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
@@ -39,4 +40,11 @@ public interface ICachedFileService {
      * @param data
      */
     void handleRestorationFailure(DataFile data);
+
+    /**
+     * Retrieve a {@link CachedFile} if exists and is AVAILABLED.
+     * @param pChecksum Checksum of the requested file.
+     * @return {@link CachedFile} or empty if it does not exists or is not available.
+     */
+    Optional<CachedFile> getAvailableCachedFile(String pChecksum);
 }

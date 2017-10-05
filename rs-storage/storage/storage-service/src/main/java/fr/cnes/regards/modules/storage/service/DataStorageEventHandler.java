@@ -58,7 +58,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     /**
      * Class logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AIPService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataStorageEventHandler.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;

@@ -16,6 +16,13 @@ public interface IDataFileDao {
 
     Set<DataFile> findAllByStateAndAip(DataFileState stored, AIP aip);
 
+    /**
+     * Find all {@link DataFile}s associated to the given {@link AIP}
+     * @param aip {@link AIP}
+     * @return {@link DataFile}s
+     */
+    Set<DataFile> findAllByAip(AIP aip);
+
     DataFile save(DataFile prepareFailed);
 
     Optional<DataFile> findByAipAndType(AIP aip, DataType dataType);
