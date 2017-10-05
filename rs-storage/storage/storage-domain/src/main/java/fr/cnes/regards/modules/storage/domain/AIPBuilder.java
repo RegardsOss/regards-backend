@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  *
@@ -39,13 +38,12 @@ public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Init AIP builder
-     * @param type {@link EntityType}
      * @param ipId required information package identifier
      * @param sipId SIP identifier (may be null)
      */
-    public AIPBuilder(EntityType type, String ipId, @Nullable String sipId) {
-        super(AIP.class, type);
-        ip.setIpId(ipId);
+    public AIPBuilder(UniformResourceName ipId, @Nullable String sipId) {
+        super(AIP.class);
+        ip.setId(ipId);
         ip.setSipId(sipId);
     }
 
@@ -73,7 +71,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Add an AIP event
-     * @param optional type event type key (may be null)
+     * @param type optional event type key (may be null)
      * @param comment event comment
      * @param date event date
      */

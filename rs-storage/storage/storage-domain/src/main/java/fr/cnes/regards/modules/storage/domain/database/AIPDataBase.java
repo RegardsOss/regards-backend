@@ -81,7 +81,7 @@ public class AIPDataBase {
     }
 
     public AIPDataBase(AIP aip) {
-        this.ipId = aip.getIpId();
+        this.ipId = aip.getId().toString();
         this.sipId = aip.getSipId();
         this.tags = Sets.newHashSet(aip.getTags());
         this.state = aip.getState();

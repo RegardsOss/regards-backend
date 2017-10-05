@@ -25,7 +25,7 @@ public class AIPEvent implements ISubscribable {
 
 
     public AIPEvent(AIP aip) {
-        ipId = aip.getIpId();
+        ipId = aip.getId().toString();
         aipState = aip.getState();
     }
 

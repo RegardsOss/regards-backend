@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.EventType;
+import fr.cnes.regards.framework.oais.EventType;
 
 @TestPropertySource("classpath:test.properties")
 public class AipClientIT extends AbstractRegardsWebIT {
