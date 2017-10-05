@@ -110,8 +110,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected MockMvc mvc;
 
     protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
-            String errorMsg, String accept, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, accept, urlVariables);
+            String errorMsg, HttpHeaders headers, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, headers, urlVariables);
     }
 
     protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
@@ -163,9 +163,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
-            String accept, Object... urlVariables) {
+            HttpHeaders headers, Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
-        return performGet(urlTemplate, jwt, matchers, errorMsg, accept, urlVariables);
+        return performGet(urlTemplate, jwt, matchers, errorMsg, headers, urlVariables);
     }
 
     protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
@@ -256,10 +256,11 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
-            List<ResultMatcher> matchers, String errorMsg, String accept, Object... urlVariables) {
+            List<ResultMatcher> matchers, String errorMsg, HttpHeaders headers, Object... urlVariables) {
 
         Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate, accept,
+
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate, headers,
                                                                          urlVariables);
         return performRequest(requestBuilder, matchers, errorMsg);
     }
@@ -287,25 +288,27 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     /**
-     * With default accept
+     * With default accept et content-type (json both)
      */
     protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
             String urlTemplate, Object... pUrlVars) {
-        return getRequestBuilder(pAuthToken, pHttpMethod, urlTemplate, "application/json", pUrlVars);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpConstants.CONTENT_TYPE, "application/json");
+        headers.add(HttpConstants.ACCEPT, "application/json");
+        return getRequestBuilder(pAuthToken, pHttpMethod, urlTemplate, headers, pUrlVars);
     }
 
     /**
-     * With specified accept
+     * With specified headers
      */
     protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
-            String urlTemplate, String accept, Object... pUrlVars) {
+            String urlTemplate, HttpHeaders headers, Object... pUrlVars) {
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .request(pHttpMethod, urlTemplate, pUrlVars);
         addSecurityHeader(requestBuilder, pAuthToken);
 
-        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        requestBuilder.header(HttpConstants.ACCEPT, accept);
+        requestBuilder.headers(headers);
 
         return requestBuilder;
     }
