@@ -39,7 +39,7 @@ public class DateAttributeControler extends AttributeControler {
      */
     public static final String XML_ELEMENT = "dateAttribute";
 
-    private final static DateTimeFormatter CYCLE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final  DateTimeFormatter CYCLE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public DateAttributeControler() {
         super();

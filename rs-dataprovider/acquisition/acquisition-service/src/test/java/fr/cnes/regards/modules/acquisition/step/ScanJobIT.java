@@ -99,11 +99,7 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private final static String META_PRODUCT_PARAM = "meta-produt";
-
-    private final static String META_FILE_PARAM = "meta-file";
-
-    private final static long WAIT_TIME = 3_000;
+    private static final long WAIT_TIME = 3_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -186,7 +182,6 @@ public class ScanJobIT {
     public void initAmqp() {
         Assume.assumeTrue(rabbitVhostAdmin.brokerRunning());
         rabbitVhostAdmin.bind(tenantResolver.getTenant());
-
         rabbitVhostAdmin.unbind();
 
         subscriber.subscribeTo(JobEvent.class, new ScanJobHandler());
@@ -226,12 +221,12 @@ public class ScanJobIT {
         PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                            IAcquisitionScanDirectoryPlugin.class);
         chain.setScanAcquisitionPluginConf(plgConf.getId());
-        chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(WAIT_TIME);
+        waitJob(150_000);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -260,8 +255,8 @@ public class ScanJobIT {
         PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                            IAcquisitionScanDirectoryPlugin.class);
         chain.setScanAcquisitionPluginConf(plgConf.getId());
-        chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
 
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
@@ -305,8 +300,8 @@ public class ScanJobIT {
         PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                            IAcquisitionScanDirectoryPlugin.class);
         chain.setScanAcquisitionPluginConf(plgConf.getId());
-        chain.addScanAcquisitionParameter(META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
 
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));

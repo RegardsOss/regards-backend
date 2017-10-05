@@ -83,14 +83,14 @@ public class MetaProduct implements IIdentifiable<Long> {
      */
     @Column(name = "algorithm", length = 16)
     private String algorithm;
-    
 
     /**
      * <code>true</code> clean the original file
+     * TODO CMZ : util ici ? non je ne pense pas
      */
     @NotNull
     @Column(name = "cleanOriginalFile")
-    private Boolean cleanOriginalFile = Boolean.TRUE;    
+    private Boolean cleanOriginalFile = Boolean.TRUE;
 
     //    /**
     //     * La liste des type de fichiers composant ce produit (liste de MetaFile)
@@ -170,30 +170,29 @@ public class MetaProduct implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MetaProduct other = (MetaProduct) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
         if (label == null) {
-            if (other.label != null)
+            if (other.label != null) {
                 return false;
-        } else if (!label.equals(other.label))
+            }
+        } else if (!label.equals(other.label)) {
             return false;
+        }
         return true;
     }
 
@@ -216,7 +215,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     public Boolean getCleanOriginalFile() {
         return cleanOriginalFile;
     }
-    
+
     public void setCleanOriginalFile(Boolean clean) {
         this.cleanOriginalFile = clean;
     }

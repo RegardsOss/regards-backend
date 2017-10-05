@@ -129,13 +129,13 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Format de la date dans le fichier orf
      */
-    private final static DateTimeFormatter ORF_DATE_TIME_FORMAT = DateTimeFormatter
+    private static final DateTimeFormatter ORF_DATE_TIME_FORMAT = DateTimeFormatter
             .ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
 
     /**
      * Format de la date dans les fichiers cycle
      */
-    private final static DateTimeFormatter CYCLE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final DateTimeFormatter CYCLE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public TranslatedFromCycleFileFinder() {
         super();

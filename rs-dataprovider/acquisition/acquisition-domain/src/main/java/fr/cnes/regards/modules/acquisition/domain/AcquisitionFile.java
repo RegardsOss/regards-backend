@@ -169,23 +169,30 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         AcquisitionFile other = (AcquisitionFile) obj;
         if (checksum == null) {
-            if (other.checksum != null)
+            if (other.checksum != null) {
                 return false;
-        } else if (!checksum.equals(other.checksum))
+            }
+        } else if (!checksum.equals(other.checksum)) {
             return false;
+        }
         if (fileName == null) {
-            if (other.fileName != null)
+            if (other.fileName != null) {
                 return false;
-        } else if (!fileName.equals(other.fileName))
+            }
+        } else if (!fileName.equals(other.fileName)) {
             return false;
+        }
         return true;
     }
 

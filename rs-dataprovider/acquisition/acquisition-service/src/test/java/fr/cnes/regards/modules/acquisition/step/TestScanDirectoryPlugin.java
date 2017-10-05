@@ -19,15 +19,20 @@
 
 package fr.cnes.regards.modules.acquisition.step;
 
+import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
@@ -46,6 +51,11 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestScanDirectoryPlugin.class);
+
     @Autowired
     private IMetaProductService metaProductService;
 
@@ -54,9 +64,9 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
-    public final static String META_PRODUCT_PARAM = "meta-produt";
+    public static final String META_PRODUCT_PARAM = "meta-produt";
 
-    public final static String META_FILE_PARAM = "meta-file";
+    public static final String META_FILE_PARAM = "meta-file";
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;
@@ -68,33 +78,31 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
 
-        //        MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
+//        MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
-        AcquisitionFile a = new AcquisitionFile();
-        String aFileName = "Coucou";
-        a.setFileName(aFileName);
-        a.setSize(33L);
-        MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
-        a.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
-        a.setAcqDate(OffsetDateTime.now());
-        a.setAlgorithm(CHECKUM_ALGO);
-        a.setChecksum("hello i am the checksum");
-        acqFileList.add(a);
-
-        AcquisitionFile b = new AcquisitionFile();
-        String bFileName = "Hello Toulouse";
-        b.setFileName(bFileName);
-        b.setSize(156L);
-        metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
-        b.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
-        b.setAcqDate(OffsetDateTime.now());
-        b.setAlgorithm(CHECKUM_ALGO);
-        b.setChecksum(null);
-        acqFileList.add(b);
+        acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXT"));
+        acqFileList.add(createAcquisitionFile("data", "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407"));
 
         return acqFileList;
+    }
+
+    private AcquisitionFile createAcquisitionFile(String dir, String name) {
+        File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
+
+        AcquisitionFile af = new AcquisitionFile();
+        af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getPath().toString()).get());
+        af.setFileName(file.getName());
+        af.setSize(file.getTotalSpace() / 1024);
+        af.setAcqDate(OffsetDateTime.now());
+        af.setAlgorithm(CHECKUM_ALGO);
+        af.setChecksum(null);// TODO CMZ à compléter
+
+        MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
+        af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
+
+        return af;
     }
 
 }

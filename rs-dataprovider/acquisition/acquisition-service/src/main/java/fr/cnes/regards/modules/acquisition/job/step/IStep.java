@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.job.step;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.job.ProcessGeneration;
+import fr.cnes.regards.modules.acquisition.job.AcquisitionProcess;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
@@ -66,6 +66,8 @@ public interface IStep {
 
     public IStep getNextStep();
 
-    public void setProcess(ProcessGeneration process);
+    public void setNextStep(IStep step);
+
+    public void setProcess(AcquisitionProcess process);
 
 }

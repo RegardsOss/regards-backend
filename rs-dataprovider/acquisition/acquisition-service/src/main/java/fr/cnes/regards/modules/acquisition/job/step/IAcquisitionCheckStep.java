@@ -16,26 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.dao;
-
-import java.util.List;
-
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+package fr.cnes.regards.modules.acquisition.job.step;
 
 /**
- * {@link AcquisitionFile} repository
- *
+ * 
  * @author Christophe Mertz
+ * 
  */
-@Repository
-public interface IAcquisitionFileRepository extends CrudRepository<AcquisitionFile, Long> {
+public interface IAcquisitionCheckStep extends IStep {
 
-    List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
-    
-    List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
 }

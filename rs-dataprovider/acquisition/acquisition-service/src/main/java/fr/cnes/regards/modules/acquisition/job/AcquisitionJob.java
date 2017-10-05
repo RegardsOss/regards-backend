@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.job.step.IAcquisitionCheckStep;
 import fr.cnes.regards.modules.acquisition.job.step.IAcquisitionScanStep;
 import fr.cnes.regards.modules.acquisition.job.step.IStep;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -49,7 +50,10 @@ public class AcquisitionJob extends AbstractJob<Void> {
     private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
-    private IAcquisitionScanStep acquisitionScanStep;
+    private IAcquisitionScanStep scanStep;
+
+    @Autowired
+    private IAcquisitionCheckStep checkStep;
 
     @Override
     public void run() {
@@ -64,25 +68,32 @@ public class AcquisitionJob extends AbstractJob<Void> {
                     "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
         }
 
-        ProcessGeneration process = new ProcessGeneration(chainGeneration);
+        AcquisitionProcess process = new AcquisitionProcess(chainGeneration);
 
         // AcquisitionStep is the first step
-        IStep firstStep = acquisitionScanStep;
+        IStep firstStep = scanStep;
         firstStep.setProcess(process);
         beanFactory.autowireBean(firstStep);
         process.setCurrentStep(firstStep);
 
+        // TODO à faire en fonction des plugins définis dans la chaine
         // CheckStep is the second step
-        // configurer les steps        
-        // firstStep.setNextStep(totoStep);
+        IStep secundStep = checkStep;
+        secundStep.setProcess(process);
+        beanFactory.autowireBean(secundStep);
+        firstStep.setProcess(process);
+        firstStep.setNextStep(secundStep);
 
-        try {
-            chainGeneration.setLastDateActivation(OffsetDateTime.now());
-            firstStep.proceedStep();
-        } catch (AcquisitionRuntimeException e) {
-            LOGGER.error(e.getMessage());
-            throw e;
-        }
+        //        try {
+        chainGeneration.setLastDateActivation(OffsetDateTime.now());
+
+        process.run();
+
+        //            firstStep.proceedStep();
+        //        } catch (AcquisitionRuntimeException e) {
+        //            LOGGER.error(e.getMessage());
+        //            throw e;
+        //        }
 
         LOGGER.info("End  acquisition job for the chain <" + chainGeneration.getLabel() + ">");
     }

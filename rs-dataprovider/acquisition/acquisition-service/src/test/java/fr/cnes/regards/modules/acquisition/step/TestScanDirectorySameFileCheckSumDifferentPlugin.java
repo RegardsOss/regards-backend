@@ -33,7 +33,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
-import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 
 /**
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
@@ -51,9 +50,9 @@ public class TestScanDirectorySameFileCheckSumDifferentPlugin implements IAcquis
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
-    public final static String META_PRODUCT_PARAM = "meta-produt";
+    public static final String META_PRODUCT_PARAM = "meta-produt";
 
-    public final static String META_FILE_PARAM = "meta-file";
+    public static final String META_FILE_PARAM = "meta-file";
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;

@@ -25,25 +25,22 @@ package fr.cnes.regards.modules.acquisition.tools;
  */
 public class FileInformationTypeEnum {
 
-    private String name_;
-    
-    public static final FileInformationTypeEnum LAST_MODIFICATION_DATE = new FileInformationTypeEnum("LAST_MODIFICATION_DATE");
+    private String name;
+
+    public static final FileInformationTypeEnum LAST_MODIFICATION_DATE = new FileInformationTypeEnum(
+            "LAST_MODIFICATION_DATE");
+
     public static final FileInformationTypeEnum FILE_SIZE = new FileInformationTypeEnum("FILE_SIZE");
-    /**
-     * 
-     * @since 1.2
-     * 
-     */
-    private FileInformationTypeEnum(String pFileInfo) {
-        name_=pFileInfo;
+
+    private FileInformationTypeEnum(String fileInfo) {
+        name = fileInfo;
     }
 
-    
-    public static FileInformationTypeEnum parse(String pValue) {
+    public static FileInformationTypeEnum parse(String value) {
         FileInformationTypeEnum returnValue = null;
-        if(pValue.equals(FileInformationTypeEnum.LAST_MODIFICATION_DATE.name_)) {
+        if (value.equals(FileInformationTypeEnum.LAST_MODIFICATION_DATE.name)) {
             returnValue = LAST_MODIFICATION_DATE;
-        } else if(pValue.equals(FileInformationTypeEnum.FILE_SIZE.name_)) {
+        } else if (value.equals(FileInformationTypeEnum.FILE_SIZE.name)) {
             returnValue = FILE_SIZE;
         }
         return returnValue;

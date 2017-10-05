@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.job.step;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.job.ProcessGeneration;
+import fr.cnes.regards.modules.acquisition.job.AcquisitionProcess;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
@@ -29,12 +29,12 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  */
 public abstract class AbstractStep implements IStep {
 
-    // TOCO CMZ à utiliser
+    // TODO CMZ à utiliser
     protected int state;
 
-    protected AbstractStep nextStep;
+    protected IStep nextStep;
 
-    protected ProcessGeneration process;
+    protected AcquisitionProcess process;
 
     public AbstractStep() {
         super();
@@ -101,6 +101,7 @@ public abstract class AbstractStep implements IStep {
      */
     public abstract void sleep();
 
+    // TODO CMZ util ?
     public abstract String getName();
 
     public int getState() {
@@ -116,16 +117,16 @@ public abstract class AbstractStep implements IStep {
         return nextStep;
     }
 
-    public void setNextStep(AbstractStep nextStep) {
+    public void setNextStep(IStep nextStep) {
         this.nextStep = nextStep;
     }
 
-    public ProcessGeneration getProcess() {
+    public AcquisitionProcess getProcess() {
         return process;
     }
 
     @Override
-    public void setProcess(ProcessGeneration process) {
+    public void setProcess(AcquisitionProcess process) {
         this.process = process;
     }
 

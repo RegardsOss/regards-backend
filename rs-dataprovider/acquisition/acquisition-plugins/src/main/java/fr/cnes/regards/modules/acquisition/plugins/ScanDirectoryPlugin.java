@@ -56,9 +56,9 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
-    public final static String META_PRODUCT_PARAM = "meta-produt";
+    public static final String META_PRODUCT_PARAM = "meta-produt";
 
-    public final static String META_FILE_PARAM = "meta-file";
+    public static final String META_FILE_PARAM = "meta-file";
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;
@@ -90,48 +90,11 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
 
             for (ScanDirectoryDto scanDirectoryDto : metaFileDto.getScanDirectories()) {
-
                 LOGGER.info("ScanDirectoryPlugin : scan directory <" + scanDirectoryDto.getScanDir() + ">");
 
                 scanDirectories(scanDirectoryDto, filter, metaFile, acqFileList);
-
-                // TODO stocker les nouveaux AcquisitionFile
-                // non pas ici à faire dans le service appelant
-                // idem pour les fichiers en erreur cest en retour du plugin
-                // il faut une map avec la liste des fichiers trouvés et la liste des mauvais fichiers 
-                // reportBadFiles(metaFile);
-
             }
-
         }
-        //
-        //        AcquisitionFile a = new AcquisitionFile();
-        //        String aFileName = "Coucou";
-        //        Product aProduct = ProductBuilder.build(aFileName).withStatus(ProductStatus.INIT.toString())
-        //                .withMetaProduct(metaProduct).get();
-        //        a.setProduct(aProduct);
-        //        a.setFileName(aFileName);
-        //        a.setSize(33L);
-        //        a.setMetaFile(null); //TODO CMZ à voir
-        //        a.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        //        a.setAcqDate(OffsetDateTime.now());
-        //        a.setAlgorithm(CHECKUM_ALGO);
-        //        // a.setChecksum(null);
-        //        acqFileList.add(a);
-        //
-        //        AcquisitionFile b = new AcquisitionFile();
-        //        String bFileName = "Hello Toulouse";
-        //        Product bProduct = ProductBuilder.build(bFileName).withStatus(ProductStatus.INIT.toString())
-        //                .withMetaProduct(metaProduct).get();
-        //        b.setProduct(bProduct);
-        //        b.setFileName(bFileName);
-        //        b.setSize(156L);
-        //        b.setMetaFile(null); //TODO CMZ à voir
-        //        b.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-        //        b.setAcqDate(OffsetDateTime.now());
-        //        b.setAlgorithm(CHECKUM_ALGO);
-        //        // b.setChecksum(null);
-        //        acqFileList.add(b);
 
         return acqFileList;
     }
@@ -154,7 +117,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
         List<File> filteredFileList = filteredFileList(dirFile, filter, 0);
 
         for (File baseFile : filteredFileList) {
-
             AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile, null);
 
             // calculer checksum si configuré
@@ -171,7 +133,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("new file to acquire : " + acqFile.getFileName());
             }
-
         }
     }
 

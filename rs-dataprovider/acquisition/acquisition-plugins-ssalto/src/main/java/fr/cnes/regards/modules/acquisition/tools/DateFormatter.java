@@ -57,66 +57,66 @@ public class DateFormatter {
     /**
      * Format le plus complet possible (à la milliseconde pres) pour les dates/heures dans les IHMs
      */
-    public final static String FULL_DATE_TIME_FORMAT = "FULL_DATE_TIME_FORMAT";
+    public static final  String FULL_DATE_TIME_FORMAT = "FULL_DATE_TIME_FORMAT";
 
     /**
      * Format de timestamp sans milliseconde
      */
-    public final static String DATE_TIMESTAMP = "DATE_TIMESTAMP";
+    public static final  String DATE_TIMESTAMP = "DATE_TIMESTAMP";
 
     /**
      * Format le plus complet possible (à la milliseconde pres) pour les dates/heures dans les IHMs mais sans separateur
      */
-    public final static String FULL_DATE_TIMESTAMP = "FULL_DATE_TIMESTAMP";
+    public static final  String FULL_DATE_TIMESTAMP = "FULL_DATE_TIMESTAMP";
 
     /**
      * Format commun pour les dates/heures dans les IHMs
      */
-    public final static String DATE_TIME_FORMAT = "DATE_TIME_FORMAT";
+    public static final  String DATE_TIME_FORMAT = "DATE_TIME_FORMAT";
 
-    public final static String DATE_TIME_FORMAT_DDMMYYYY = "DATE_TIME_FORMAT_DDMMYYYY";
+    public static final  String DATE_TIME_FORMAT_DDMMYYYY = "DATE_TIME_FORMAT_DDMMYYYY";
 
-    public final static String DATE_FORMAT_DDMMYYYY = "DATE_FORMAT_DDMMYYYY";
+    public static final  String DATE_FORMAT_DDMMYYYY = "DATE_FORMAT_DDMMYYYY";
 
     /**
      * Format simple pour les dates sans heure dans les IHMs
      */
-    public final static String DATE_ONLY_FORMAT = "DATE_ONLY_FORMAT";
+    public static final  String DATE_ONLY_FORMAT = "DATE_ONLY_FORMAT";
 
     /**
      * Format simple donnant uniquement la composant "heure" de la date fournie
      */
-    public final static String TIME_ONLY_FORMAT = "TIME_ONLY_FORMAT";
+    public static final  String TIME_ONLY_FORMAT = "TIME_ONLY_FORMAT";
 
     /**
      * Format simple pour les dates sans heure dans les IHMs
      */
-    public final static String DATE_FORMAT = "DATE_FORMAT";
+    public static final  String DATE_FORMAT = "DATE_FORMAT";
 
     /**
      * Format simple pour les dates sans heure pour l'ingestion.
      */
-    public final static String XS_DATE_FORMAT = "XS_DATE_FORMAT";
+    public static final  String XS_DATE_FORMAT = "XS_DATE_FORMAT";
 
     /**
      * Format commun pour les dates/heures pour l'ingestion.
      */
-    public final static String XS_DATE_TIME_FORMAT = "XS_DATE_TIME_FORMAT";
+    public static final  String XS_DATE_TIME_FORMAT = "XS_DATE_TIME_FORMAT";
 
     /**
      * format tout attache qui s'arrete aux minutes pour les noms de fichiers
      */
-    public final static String DATE_HOUR_MIN_FORMAT = "DATE_HOUR_MIN_FORMAT";
+    public static final  String DATE_HOUR_MIN_FORMAT = "DATE_HOUR_MIN_FORMAT";
 
     /**
      * format avec separateur qui s'arrete aux minutes
      */
-    public final static String DATE_HOUR_MIN_FORMAT_SEPARATED = "DATE_HOUR_MIN_FORMAT_SEPARATED";
+    public static final  String DATE_HOUR_MIN_FORMAT_SEPARATED = "DATE_HOUR_MIN_FORMAT_SEPARATED";
 
     /**
      * format avec separateur complet
      */
-    public final static String DATE_HOUR_FULL_FORMAT_SEPARATED = "DATE_HOUR_FULL_FORMAT_SEPARATED";
+    public static final  String DATE_HOUR_FULL_FORMAT_SEPARATED = "DATE_HOUR_FULL_FORMAT_SEPARATED";
 
     /**
      * Map qui contient les informations sur les formats reconnus par la classe GuiDate (attribut statique et
@@ -325,12 +325,12 @@ public class DateFormatter {
         /**
          * Le format de parsing des dates
          */
-        private DateFormat parsingDateFormat = null;
+        private static DateFormat parsingDateFormat = null;
 
         /**
          * Le format de validation des dates
          */
-        private Pattern validatingPattern = null;
+        private static Pattern validatingPattern = null;
 
         /**
          * Cree un objet etant donne un motif de parsing et un motif de validation

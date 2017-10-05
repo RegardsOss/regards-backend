@@ -19,9 +19,9 @@
 
 package fr.cnes.regards.modules.acquisition.job.step;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,9 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
@@ -49,9 +51,9 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  */
 @MultitenantTransactional
 @Service
-public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep  {
+public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCheckStep {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanStep.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionCheckStep.class);
 
     @Autowired
     IPluginService pluginService;
@@ -67,13 +69,18 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     private ChainGeneration chainGeneration;
 
+    /**
+     * {@link List} of {@link AcquisitionFile} that should be check
+     */
+    private List<AcquisitionFile> inProgressFileList;
+
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
 
         this.chainGeneration = process.getChainGeneration();
 
         // A plugin for the scan configuration is required
-        if (this.chainGeneration.getScanAcquisitionPluginConf() == null) {
+        if (this.chainGeneration.getCheckAcquisitionPluginConf() == null) {
             throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
                     + this.chainGeneration.getLabel() + ">");
         }
@@ -82,7 +89,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
         try {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.chainGeneration.getScanAcquisitionParameter().entrySet()) {
+            for (Map.Entry<String, String> entry : this.chainGeneration.getCheckAcquisitionParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add <" + entry.getKey() + "> parameter " + entry.getValue() + " : ");
@@ -90,19 +97,29 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             }
 
             // get an instance of the plugin
-            IAcquisitionScanPlugin scanPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getScanAcquisitionPluginConf(),
+            ICheckFilePlugin checkPlugin = pluginService
+                    .getPlugin(this.chainGeneration.getCheckAcquisitionPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
-            // launch the plugin to get the AcquisitionFile
-            // c'est le plugin qui met la Date d'acquisition du fichier
-            // c'est plugin qui calcule le checksum si c'est configuré dans la chaine   
-            Set<AcquisitionFile> acquisitionFiles = scanPlugin.getAcquisitionFiles();
+            if (inProgressFileList != null) {
+                // TODO il faut récupérer les produits à traiter pour un MetaProduit, ou MetaFile
 
-            synchronizedDatabase(acquisitionFiles);
-            
-            // TODO CMZ 
-//            reportBadFiles(metaFile);
+                for (AcquisitionFile acqFile : inProgressFileList) {
+                    File currentFile = null;
+                    if (acqFile.getAcquisitionInformations() != null) {
+                        String workingDir = acqFile.getAcquisitionInformations().getWorkingDirectory();
+                        if (workingDir != null) {
+                            currentFile = new File(workingDir, acqFile.getFileName());
+                        }
+                    } else {
+                        currentFile = new File(acqFile.getFileName());
+                    }
+
+                    if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
+                        synchronizedDatabase(acqFile, checkPlugin);
+                    }
+                }
+            }
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -110,32 +127,30 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     }
 
-    private void synchronizedDatabase(Set<AcquisitionFile> acquisitionFiles) {
-        chainGenerationService.save(chainGeneration);
+    private void synchronizedDatabase(AcquisitionFile acqFile, ICheckFilePlugin checkPlugin) {
+        acqFile.setStatus(AcquisitionFileStatus.VALID);
 
-        for (AcquisitionFile af : acquisitionFiles) {
-            List<AcquisitionFile> listAf = acquisitionFileService.findByMetaFile(af.getMetaFile());
+        //      ProductBuilder.build(checkPlugin.getProductName())
+        //      .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get();
 
-            if (listAf.contains(af)) {
-                // if the AcquisitionFile already exists in database
-                // update his status and his date acquisition
-                AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
-                afExisting.setAcqDate(af.getAcqDate());
-                afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                acquisitionFileService.save(afExisting);
-            } else {
-                af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                acquisitionFileService.save(af);
-            }
-        }
+        Product currentProduct = new Product();
+        currentProduct.setProductName(checkPlugin.getProductName());
+        currentProduct.setStatus(ProductStatus.ACQUIRING);
+        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ virer 
+        acqFile.setProduct(currentProduct);
+        //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
     }
 
     @Override
     public void getResources() throws AcquisitionException {
+        // TODO CMZ à compléter il ne faut que le AcquisitionFile pour un MetaProduct et peut-être avec une date 
+        inProgressFileList = acquisitionFileRepository.findByStatus(AcquisitionFileStatus.IN_PROGRESS);
     }
 
     @Override
     public void freeResources() throws AcquisitionException {
+        inProgressFileList = null;
+        super.process = null;
     }
 
     @Override

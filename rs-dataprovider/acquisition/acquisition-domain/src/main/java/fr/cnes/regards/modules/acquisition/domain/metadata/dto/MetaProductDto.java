@@ -36,6 +36,7 @@ public class MetaProductDto {
 
     private String algorithm;
 
+    // TODO CMZ : util ?
     private Boolean cleanOriginalFile;
 
     public Long getId() {

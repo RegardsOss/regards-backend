@@ -39,7 +39,7 @@ public class DateTimeAttributeControler extends AttributeControler {
      */
     public static final String XML_ELEMENT = "dateTimeAttribute";
 
-    private final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public DateTimeAttributeControler() {
         super();

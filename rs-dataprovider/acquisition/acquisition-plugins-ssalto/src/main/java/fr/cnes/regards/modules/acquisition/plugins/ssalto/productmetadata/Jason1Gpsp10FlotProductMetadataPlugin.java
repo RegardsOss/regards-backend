@@ -64,7 +64,7 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
 
     private static final String STOP_DATE = "STOP_DATE";
 
-    protected final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     protected Pattern patternd;
 

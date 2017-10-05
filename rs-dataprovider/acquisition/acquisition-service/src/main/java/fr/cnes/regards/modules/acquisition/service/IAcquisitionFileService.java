@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.util.List;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
@@ -43,6 +44,9 @@ public interface IAcquisitionFileService {
      * @return a {@link List} of {@link AcquisitionFile}
      */
     public List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
+    
+    
+    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
 
     /**
      * Retrieve one specified {@link AcquisitionFile}

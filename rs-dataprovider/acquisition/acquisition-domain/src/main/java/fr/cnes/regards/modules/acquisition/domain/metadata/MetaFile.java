@@ -208,7 +208,6 @@ public class MetaFile implements IIdentifiable<Long> {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode());
         result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode());
         return result;
@@ -216,33 +215,37 @@ public class MetaFile implements IIdentifiable<Long> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MetaFile other = (MetaFile) obj;
         if (fileNamePattern == null) {
-            if (other.fileNamePattern != null)
+            if (other.fileNamePattern != null) {
                 return false;
-        } else if (!fileNamePattern.equals(other.fileNamePattern))
+            }
+        } else if (!fileNamePattern.equals(other.fileNamePattern)) {
             return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
+        }
         if (invalidFolder == null) {
-            if (other.invalidFolder != null)
+            if (other.invalidFolder != null) {
                 return false;
-        } else if (!invalidFolder.equals(other.invalidFolder))
+            }
+        } else if (!invalidFolder.equals(other.invalidFolder)) {
             return false;
+        }
         if (mandatory == null) {
-            if (other.mandatory != null)
+            if (other.mandatory != null) {
                 return false;
-        } else if (!mandatory.equals(other.mandatory))
+            }
+        } else if (!mandatory.equals(other.mandatory)) {
             return false;
+        }
         return true;
     }
 

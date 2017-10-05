@@ -32,9 +32,9 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  * 
  * @author Christophe Mertz
  */
-public class ProcessGeneration {
+public class AcquisitionProcess {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessGeneration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcess.class);
 
     //    private static final String DEFAULT_LOG_EXTENSION = ".log";
 
@@ -86,7 +86,7 @@ public class ProcessGeneration {
      */
     private boolean stopProcess = false;
 
-    public ProcessGeneration(ChainGeneration chain) {
+    public AcquisitionProcess(ChainGeneration chain) {
         chainGeneration = chain;
     }
 

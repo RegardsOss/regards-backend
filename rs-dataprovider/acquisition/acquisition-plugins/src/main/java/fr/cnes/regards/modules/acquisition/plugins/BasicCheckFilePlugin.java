@@ -30,11 +30,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
-@Plugin(id = "BasicCheckFilePlugin", version = "1.0.0-SNAPSHOT",
-        description = "BasicCheckFilePlugin", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "BasicCheckFilePlugin", version = "1.0.0-SNAPSHOT", description = "BasicCheckFilePlugin",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class BasicCheckFilePlugin implements ICheckFilePlugin {
-    
+
     protected String productName;
 
     protected String nodeIdentifier;
@@ -43,7 +43,23 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
         productName = fileToCheck.getName();
         nodeIdentifier = dataSetId + " - " + productName;
-        return true;
+        boolean result = false;
+
+        // Check file exists
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
+            nodeIdentifier = fileToCheck.getName();
+            String name = fileToCheck.getName();
+            int indexExtension = name.lastIndexOf('.');
+            if (indexExtension > 0) {
+                name = name.substring(0, indexExtension);
+            }
+            productName = name;
+            result = true;
+        } else {
+            throw new ModuleException("Can't read file " + fileToCheck.getAbsolutePath());
+        }
+
+        return result;
     }
 
     @Override
@@ -58,7 +74,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     @Override
     public String getProductName() {
-        return null;
+        return productName;
     }
 
     @Override
@@ -68,7 +84,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     @Override
     public String getNodeIdentifier() {
-        return null;
+        return nodeIdentifier;
     }
 
 }
