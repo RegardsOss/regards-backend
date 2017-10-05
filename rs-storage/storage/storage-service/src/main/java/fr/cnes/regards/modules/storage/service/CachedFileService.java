@@ -161,6 +161,16 @@ public class CachedFileService implements ICachedFileService {
     }
 
     @Override
+    public Optional<CachedFile> getAvailableCachedFile(String pChecksum) {
+        Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(pChecksum);
+        if (ocf.isPresent() && CachedFileState.AVAILABLE.equals(ocf.get().getState())) {
+            return ocf;
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public CoupleAvailableError restore(Set<DataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
         LOG.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
         // Get files already in cache

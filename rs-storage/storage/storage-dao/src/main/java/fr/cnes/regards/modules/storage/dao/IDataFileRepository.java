@@ -20,6 +20,9 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
     Set<DataFile> findAllByStateAndAipDataBase(DataFileState stored, AIPDataBase aipDataBase);
 
     @EntityGraph(value = "graph.datafile.full")
+    Set<DataFile> findAllByAipDataBase(AIPDataBase aipDataBase);
+
+    @EntityGraph(value = "graph.datafile.full")
     Optional<DataFile> findByAipDataBaseAndDataType(AIPDataBase aipDataBase, DataType dataType);
 
     @EntityGraph(value = "graph.datafile.full")

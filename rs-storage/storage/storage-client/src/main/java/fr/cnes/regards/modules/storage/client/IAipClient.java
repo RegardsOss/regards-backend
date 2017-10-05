@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.client;
 
 import javax.validation.Valid;
@@ -8,9 +11,11 @@ import java.util.UUID;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -21,16 +26,18 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @RestClient(name = "rs-storage")
-@RequestMapping(value = IAipClient.AIP_PATH)
+@RequestMapping(value = IAipClient.AIP_PATH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAipClient {
 
     public static final String AIP_PATH = "/aips";
 
     public static final String PREPARE_DATA_FILES = "/dataFiles";
 
-    public static final String ID_PATH = AIP_PATH + "/{ipId}";
+    public static final String ID_PATH = "/{ip_id}";
 
     public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
@@ -48,31 +55,37 @@ public interface IAipClient {
 
     public static final String THUMB_NAIL = ID_PATH + "/thumbnail";
 
-    public static final String TAGS_PATH = AIP_PATH + "/tags";
+    public static final String TAGS_PATH = "/tags";
 
     public static final String TAGS_VALUE_PATH = TAGS_PATH + "/{tag}";
 
-    public static final String OBJECT_LINKS_ID_PATH = AIP_PATH + "/objectLinks/{objectLinkid}";
+    public static final String OBJECT_LINKS_ID_PATH = "/objectLinks/{objectLinkid}";
+
+    public static final String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
-    public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
+    public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
-    public HttpEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips);
+    public ResponseEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
-    public HttpEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid UniformResourceName pIpId);
+    public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
 
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
-    public HttpEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
-            @RequestParam("page") int pPage, @RequestParam("size") int pSize);
+    public ResponseEntity<List<String>> retrieveAIPVersionHistory(
+            @PathVariable("ip_id") @Valid UniformResourceName pIpId, @RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
-    public HttpEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
+    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
+            @RequestBody AvailabilityRequest availabilityRequest);
 
-    public HttpEntity<Void> downloadFile(String aipId, String checksum);
+    @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
 }

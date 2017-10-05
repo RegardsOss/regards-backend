@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.storage.service;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -76,7 +77,7 @@ public interface IAIPService {
      * @return
      * @throws EntityNotFoundException
      */
-    List<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException;
+    Set<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException;
 
     /**
      * @param pIpId
@@ -89,6 +90,16 @@ public interface IAIPService {
      * This method is periodicly called by {@link UpdateMetadataScheduler}.
      */
     void updateAlreadyStoredMetadata();
+
+    /**
+     * Retrieve the local {@link Path} of the {@link DataFile} associated to the given {@link AIP} and matching the given checksum.<br/>
+     * Return Optional.empty if the {@link DataFile} is not accesible localy.<br/>
+     * @param pAipId
+     * @param pChecksum
+     * @return
+     * @throw EntityNotFoundException if the request {@link DataFile} does not exists.
+     */
+    Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws EntityNotFoundException;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
