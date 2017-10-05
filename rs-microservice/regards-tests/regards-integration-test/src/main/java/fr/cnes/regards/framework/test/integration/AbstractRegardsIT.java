@@ -54,8 +54,7 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 
 /**
  * Base class to realize integration tests using JWT and MockMvc and mocked Cots. Should hold all the configurations to
- * be considred by any of its children.
- *
+ * be considered by any of its children.
  * @author svissier
  * @author Sébastien Binda
  */
@@ -110,237 +109,239 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     @Autowired
     protected MockMvc mvc;
 
-    protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
-                              pUrlVariables);
+    protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
+            String errorMsg, HttpHeaders headers, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, headers, urlVariables);
     }
 
-    protected ResultActions performGet(final String pUrlTemplate, final String pAuthenticationToken,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final RequestParamBuilder pRequestParams,
-            final Object... pUrlVariables) {
-        return performRequest(pAuthenticationToken, HttpMethod.GET, pUrlTemplate, pMatchers, pErrorMessage,
-                              pRequestParams, pUrlVariables);
+    protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
+            String errorMsg, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performPost(final String pUrlTemplate, final String pAuthenticationToken,
-            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final Object... pUrlVariables) {
-        return performRequest(pAuthenticationToken, HttpMethod.POST, pUrlTemplate, pContent, pMatchers, pErrorMessage,
-                              pUrlVariables);
+    protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
+            String errorMsg, RequestParamBuilder requestParams, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, requestParams, urlVariables);
     }
 
-    protected ResultActions performPut(final String pUrlTemplate, final String pAuthenticationToken,
-            final Object pContent, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final Object... pUrlVariables) {
-        return performRequest(pAuthenticationToken, HttpMethod.PUT, pUrlTemplate, pContent, pMatchers, pErrorMessage,
-                              pUrlVariables);
+    protected ResultActions performPost(String urlTemplate, String authToken, Object content,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.POST, urlTemplate, content, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDelete(final String pUrlTemplate, final String pAuthenticationToken,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        return performRequest(pAuthenticationToken, HttpMethod.DELETE, pUrlTemplate, pMatchers, pErrorMessage,
-                              pUrlVariables);
+    protected ResultActions performPut(String urlTemplate, String authToken, Object content,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.PUT, urlTemplate, content, matchers, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performDelete(String urlTemplate, String authToken, List<ResultMatcher> matchers,
+            String errorMsg, Object... urlVariables) {
+        return performRequest(authToken, HttpMethod.DELETE, urlTemplate, matchers, errorMsg, urlVariables);
     }
 
     // File upload
 
-    protected ResultActions performFileUpload(final String pUrlTemplate, final String pAuthenticationToken,
-            final Path pFilePath, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final Object... pUrlVariables) {
-        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(pAuthenticationToken, pFilePath,
-                                                                                        pUrlTemplate, pUrlVariables);
-        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+    protected ResultActions performFileUpload(String urlTemplate, String authToken, Path pFilePath,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(authToken, pFilePath, urlTemplate,
+                                                                                  urlVariables);
+        return performRequest(requestBuilder, matchers, errorMsg);
     }
 
     // Automatic default security management methods
 
-    protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage, final RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
-        return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage, pRequestParams, pUrlVariables);
+    protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+            RequestParamBuilder requestParams, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
+        return performGet(urlTemplate, jwt, matchers, errorMsg, requestParams, urlVariables);
     }
 
-    protected ResultActions performDefaultGet(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.GET);
-        return performGet(pUrlTemplate, jwt, pMatchers, pErrorMessage, pUrlVariables);
+    protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+            Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
+        return performGet(urlTemplate, jwt, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultPost(final String pUrlTemplate, final Object pContent,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.POST);
-        return performPost(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage, pUrlVariables);
+    protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+            HttpHeaders headers, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
+        return performGet(urlTemplate, jwt, matchers, errorMsg, headers, urlVariables);
     }
 
-    protected ResultActions performDefaultPut(final String pUrlTemplate, final Object pContent,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.PUT);
-        return performPut(pUrlTemplate, jwt, pContent, pMatchers, pErrorMessage, pUrlVariables);
+    protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
+            String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        return performPost(urlTemplate, jwt, content, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultDelete(final String pUrlTemplate, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, RequestMethod.DELETE);
-        return performDelete(pUrlTemplate, jwt, pMatchers, pErrorMessage, pUrlVariables);
+    protected ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
+            String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.PUT);
+        return performPut(urlTemplate, jwt, content, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate, final Path pFilePath,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFilePath, pMatchers, pErrorMessage,
-                                        pUrlVariables);
+    protected ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+            Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.DELETE);
+        return performDelete(urlTemplate, jwt, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultFileUploadPost(final String pUrlTemplate,
-            final List<MockMultipartFile> pFileList, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final Object... pUrlVariables) {
-        return performDefaultFileUpload(RequestMethod.POST, pUrlTemplate, pFileList, pMatchers, pErrorMessage,
-                                        pUrlVariables);
+    protected ResultActions performDefaultFileUploadPost(String urlTemplate, Path pFilePath,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performDefaultFileUpload(RequestMethod.POST, urlTemplate, pFilePath, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultFileUpload(RequestMethod verb, final String pUrlTemplate, final Path filePath,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage, final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, verb);
-        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, filePath, pUrlTemplate,
-                                                                                        pUrlVariables);
-        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+    protected ResultActions performDefaultFileUploadPost(String urlTemplate, List<MockMultipartFile> pFileList,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performDefaultFileUpload(RequestMethod.POST, urlTemplate, pFileList, matchers, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultFileUpload(RequestMethod verb, final String pUrlTemplate,
-            final List<MockMultipartFile> pFileList, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final Object... pUrlVariables) {
-        final String jwt = manageDefaultSecurity(pUrlTemplate, verb);
-        final MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFileList, pUrlTemplate,
-                                                                                        pUrlVariables);
-        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+    protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate, Path filePath,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, verb);
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, filePath, urlTemplate,
+                                                                                  urlVariables);
+        return performRequest(requestBuilder, matchers, errorMsg);
+    }
+
+    protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate,
+            List<MockMultipartFile> pFileList, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, verb);
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFileList, urlTemplate,
+                                                                                  urlVariables);
+        return performRequest(requestBuilder, matchers, errorMsg);
     }
 
     /**
      * Perform a REST request and control expectations
-     *
-     * @param pAuthenticationToken
-     *            JWT token
-     * @param pHttpMethod
-     *            HTTP method
-     * @param pUrlTemplate
-     *            URL template
-     * @param pContent
-     *            content for {@link HttpMethod#POST} and {@link HttpMethod#PUT} methods
-     * @param pMatchers
-     *            expectations
-     * @param pErrorMessage
-     *            message if error occurs
-     * @param pUrlVariables
-     *            URL variables
+     * @param authToken JWT token
+     * @param pHttpMethod HTTP method
+     * @param urlTemplate URL template
+     * @param content content for {@link HttpMethod#POST} and {@link HttpMethod#PUT} methods
+     * @param matchers expectations
+     * @param errorMsg message if error occurs
+     * @param urlVariables URL variables
      * @return result
      */
-    protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final Object pContent, final List<ResultMatcher> pMatchers,
-            final String pErrorMessage, final Object... pUrlVariables) {
+    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate, Object content,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
 
         Assert.assertTrue(HttpMethod.POST.equals(pHttpMethod) || HttpMethod.PUT.equals(pHttpMethod));
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
-                                                                         pUrlTemplate, pUrlVariables);
-        final String content = gson(pContent);
-        requestBuilder = requestBuilder.content(content)
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
+                                                                         urlVariables);
+        String jsonContent = gson(content);
+        requestBuilder = requestBuilder.content(jsonContent)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+        return performRequest(requestBuilder, matchers, errorMsg);
     }
 
-    protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final RequestParamBuilder pRequestParams, final Object... pUrlVariables) {
+    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
+            List<ResultMatcher> matchers, String errorMsg, RequestParamBuilder requestParams, Object... urlVariables) {
 
         // Request parameters is only available on GET request AT THE MOMENT
         Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod));
-        final MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
-                                                                               pUrlTemplate, pUrlVariables);
-        requestBuilder.params(pRequestParams.getParameters());
-        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
+                                                                         urlVariables);
+        requestBuilder.params(requestParams.getParameters());
+        return performRequest(requestBuilder, matchers, errorMsg);
     }
 
-    protected ResultActions performRequest(final String pAuthenticationToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final List<ResultMatcher> pMatchers, final String pErrorMessage,
-            final Object... pUrlVariables) {
+    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
 
         Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
-        final MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(pAuthenticationToken, pHttpMethod,
-                                                                               pUrlTemplate, pUrlVariables);
-        return performRequest(requestBuilder, pMatchers, pErrorMessage);
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
+                                                                         urlVariables);
+        return performRequest(requestBuilder, matchers, errorMsg);
+    }
+
+    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
+            List<ResultMatcher> matchers, String errorMsg, HttpHeaders headers, Object... urlVariables) {
+
+        Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
+
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate, headers,
+                                                                         urlVariables);
+        return performRequest(requestBuilder, matchers, errorMsg);
     }
 
     /**
-     * @param pRequestBuilder
-     *            request builder
-     * @param pMatchers
-     *            expectations
-     * @param pErrorMessage
-     *            message if error occurs
+     * @param pRequestBuilder request builder
+     * @param matchers expectations
+     * @param errorMsg message if error occurs
      * @return result
      */
-    protected ResultActions performRequest(final MockHttpServletRequestBuilder pRequestBuilder,
-            final List<ResultMatcher> pMatchers, final String pErrorMessage) {
+    protected ResultActions performRequest(MockHttpServletRequestBuilder pRequestBuilder, List<ResultMatcher> matchers,
+            String errorMsg) {
         try {
             ResultActions request = mvc.perform(pRequestBuilder);
-            for (final ResultMatcher matcher : pMatchers) {
+            for (ResultMatcher matcher : matchers) {
                 request = request.andExpect(matcher);
             }
             return request;
             // CHECKSTYLE:OFF
-        } catch (final Exception e) {
+        } catch (Exception e) {
             // CHECKSTYLE:ON
-            getLogger().error(pErrorMessage, e);
-            throw new AssertionError(pErrorMessage, e);
+            getLogger().error(errorMsg, e);
+            throw new AssertionError(errorMsg, e);
         }
     }
 
-    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final Object... pUrlVars) {
+    /**
+     * With default accept et content-type (json both)
+     */
+    protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
+            String urlTemplate, Object... pUrlVars) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpConstants.CONTENT_TYPE, "application/json");
+        headers.add(HttpConstants.ACCEPT, "application/json");
+        return getRequestBuilder(pAuthToken, pHttpMethod, urlTemplate, headers, pUrlVars);
+    }
 
-        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
-                .request(pHttpMethod, pUrlTemplate, pUrlVars);
+    /**
+     * With specified headers
+     */
+    protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
+            String urlTemplate, HttpHeaders headers, Object... pUrlVars) {
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .request(pHttpMethod, urlTemplate, pUrlVars);
         addSecurityHeader(requestBuilder, pAuthToken);
 
-        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        requestBuilder.header(HttpConstants.ACCEPT, "application/json");
+        requestBuilder.headers(headers);
 
         return requestBuilder;
     }
 
     /**
      * Build a multi-part request builder based on file {@link Path}
-     *
-     * @param pAuthToken
-     *            authorization token
-     * @param pFilePath
-     *            {@link Path}
-     * @param pUrlTemplate
-     *            URL template
-     * @param pUrlVars
-     *            URL vars
+     * @param pAuthToken authorization token
+     * @param pFilePath {@link Path}
+     * @param urlTemplate URL template
+     * @param pUrlVars URL vars
      * @return {@link MockMultipartHttpServletRequestBuilder}
      */
-    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(final String pAuthToken,
-            final Path pFilePath, final String pUrlTemplate, final Object... pUrlVars) {
+    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String pAuthToken, Path pFilePath,
+            String urlTemplate, Object... pUrlVars) {
 
         try {
-            final MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(pFilePath));
-            final List<MockMultipartFile> fileList = new ArrayList<>(1);
+            MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(pFilePath));
+            List<MockMultipartFile> fileList = new ArrayList<>(1);
             fileList.add(file);
-            return getMultipartRequestBuilder(pAuthToken, fileList, pUrlTemplate, pUrlVars);
-        } catch (final IOException e) {
-            final String message = String.format("Cannot create input stream for file %s", pFilePath.toString());
+            return getMultipartRequestBuilder(pAuthToken, fileList, urlTemplate, pUrlVars);
+        } catch (IOException e) {
+            String message = String.format("Cannot create input stream for file %s", pFilePath.toString());
             getLogger().error(message, e);
             throw new AssertionError(message, e);
         }
     }
 
-    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(final String pAuthToken,
-            final List<MockMultipartFile> pFiles, final String pUrlTemplate, final Object... pUrlVars) {
+    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String pAuthToken,
+            List<MockMultipartFile> pFiles, String urlTemplate, Object... pUrlVars) {
 
-        final MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
-                .fileUpload(pUrlTemplate, pUrlVars);
-        for (final MockMultipartFile file : pFiles) {
+        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
+                .fileUpload(urlTemplate, pUrlVars);
+        for (MockMultipartFile file : pFiles) {
             multipartRequestBuilder.file(file);
         }
         addSecurityHeader(multipartRequestBuilder, pAuthToken);
@@ -349,25 +350,23 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return multipartRequestBuilder;
     }
 
-    protected void addSecurityHeader(final MockHttpServletRequestBuilder pRequestBuilder, final String pAuthToken) {
+    protected void addSecurityHeader(MockHttpServletRequestBuilder pRequestBuilder, String pAuthToken) {
         pRequestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
 
     /**
      * Extract payload data from response optionally checking media type
-     *
-     * @param pResultActions
-     *            results
+     * @param pResultActions results
      * @return payload data
      */
-    protected String payload(final ResultActions pResultActions) {
+    protected String payload(ResultActions pResultActions) {
 
         Assert.assertNotNull(pResultActions);
-        final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
+        MockHttpServletResponse response = pResultActions.andReturn().getResponse();
         try {
             return response.getContentAsString();
             // CHECKSTYLE:OFF
-        } catch (final Exception e) {
+        } catch (Exception e) {
             // CHECKSTYLE:ON
             getLogger().error("Cannot parse payload data");
             throw new AssertionError(e);
@@ -376,40 +375,34 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Check response media type
-     *
-     * @param pResultActions
-     *            results
-     * @param pMediaType
-     *            {@link MediaType}
+     * @param pResultActions results
+     * @param pMediaType {@link MediaType}
      */
-    protected void assertMediaType(final ResultActions pResultActions, final MediaType pMediaType) {
+    protected void assertMediaType(ResultActions pResultActions, MediaType pMediaType) {
         Assert.assertNotNull(pResultActions);
         Assert.assertNotNull(pMediaType);
-        final MockHttpServletResponse response = pResultActions.andReturn().getResponse();
-        final MediaType current = MediaType.parseMediaType(response.getContentType());
+        MockHttpServletResponse response = pResultActions.andReturn().getResponse();
+        MediaType current = MediaType.parseMediaType(response.getContentType());
         Assert.assertEquals(pMediaType, current);
     }
 
     // CHECKSTYLE:OFF
-    protected String gson(final Object pObject) {
+    protected String gson(Object pObject) {
         if (pObject instanceof String) {
             return (String) pObject;
         }
-        final Gson gson = gsonBuilder.create();
+        Gson gson = gsonBuilder.create();
         return gson.toJson(pObject);
     }
     // CHECKSTYLE:ON
+
     /**
      * Set authorities for default tenant
-     *
-     * @param pUrlPath
-     *            endpoint
-     * @param pMethod
-     *            HTTP method
-     * @param pRoleNames
-     *            list of roles
+     * @param pUrlPath endpoint
+     * @param pMethod HTTP method
+     * @param pRoleNames list of roles
      */
-    protected void setAuthorities(final String pUrlPath, final RequestMethod pMethod, final String... pRoleNames) {
+    protected void setAuthorities(String pUrlPath, RequestMethod pMethod, String... pRoleNames) {
         authService.setAuthorities(DEFAULT_TENANT, pUrlPath, "osef", pMethod, pRoleNames);
     }
 
@@ -421,20 +414,17 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * </ul>
      * The helper generates a JWT using its configuration and grants access to the endpoint for the specified role
      * role.
-     *
-     * @param pUrlPath
-     *            target endpoint
-     * @param pMethod
-     *            target HTTP method
+     * @param pUrlPath target endpoint
+     * @param pMethod target HTTP method
      * @return security token to authenticate user
      */
-    protected String manageSecurity(final String pUrlPath, final RequestMethod pMethod, String email, String roleName) {
+    protected String manageSecurity(String pUrlPath, RequestMethod pMethod, String email, String roleName) {
 
         String path = pUrlPath;
         if (pUrlPath.contains("?")) {
             path = path.substring(0, pUrlPath.indexOf('?'));
         }
-        final String jwt = generateToken(email, roleName);
+        String jwt = generateToken(email, roleName);
         setAuthorities(path, pMethod, roleName);
         return jwt;
     }
@@ -447,14 +437,11 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * </ul>
      * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
      * role.
-     *
-     * @param pUrlPath
-     *            target endpoint
-     * @param pMethod
-     *            target HTTP method
+     * @param pUrlPath target endpoint
+     * @param pMethod target HTTP method
      * @return security token to authenticate user
      */
-    protected String manageDefaultSecurity(final String pUrlPath, final RequestMethod pMethod) {
+    protected String manageDefaultSecurity(String pUrlPath, RequestMethod pMethod) {
         return manageSecurity(pUrlPath, pMethod, DEFAULT_USER_EMAIL, getDefaultRole());
     }
 
@@ -466,15 +453,12 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * </ul>
      * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
      * role.
-     *
      * @param userEmail specific user
-     * @param pUrlPath
-     *            target endpoint
-     * @param pMethod
-     *            target HTTP method
+     * @param pUrlPath target endpoint
+     * @param pMethod target HTTP method
      * @return security token to authenticate user
      */
-    protected String manageDefaultSecurity(String userEmail, final String pUrlPath, final RequestMethod pMethod) {
+    protected String manageDefaultSecurity(String userEmail, String pUrlPath, RequestMethod pMethod) {
         return manageSecurity(pUrlPath, pMethod, userEmail, getDefaultRole());
     }
 
@@ -484,9 +468,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Utility method to read an external JSON file and get it as a string to perform a HTTP request
-     *
-     * @param pJSonFileName
-     *            JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
+     * @param pJSonFileName JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
      * @return JSON as string
      */
     protected String readJsonContract(String pJSonFileName) {
