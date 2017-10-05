@@ -19,15 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.file.utils.DownloadUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -62,19 +62,20 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, ProgressManager progressManager) {
+    public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, IProgressManager progressManager) {
         workingSubset.getDataFiles().parallelStream().forEach(data -> doStore(progressManager, data, replaceMode));
     }
 
-    private void doStore(ProgressManager progressManager, DataFile data, Boolean replaceMode) {
+    private void doStore(IProgressManager progressManager, DataFile data, Boolean replaceMode) {
         String fullPathToFile;
         try {
             fullPathToFile = getStorageLocation(data);
             //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
             if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getUrl().getPath()))) {
-                data.setFileSize(Paths.get(fullPathToFile).toFile().length());
+                Long fileSize = Paths.get(fullPathToFile).toFile().length();
+                data.setFileSize(fileSize);
                 //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
-                progressManager.storageSucceed(data, data.getUrl());
+                progressManager.storageSucceed(data, data.getUrl(), fileSize);
                 return;
             }
         } catch (IOException ioe) {
@@ -94,8 +95,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
             } else {
-                data.setFileSize(Paths.get(fullPathToFile).toFile().length());
-                progressManager.storageSucceed(data, new URL("file", "", fullPathToFile));
+                Long fileSize = Paths.get(fullPathToFile).toFile().length();
+                data.setFileSize(fileSize);
+                progressManager.storageSucceed(data, new URL("file", "", fullPathToFile), fileSize);
             }
         } catch (NoSuchAlgorithmException e) {
             RuntimeException re = new RuntimeException(e);
@@ -139,7 +141,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<DataFile> dataFiles, ProgressManager progressManager) {
+    public void delete(Set<DataFile> dataFiles, IProgressManager progressManager) {
         for (DataFile data : dataFiles) {
             try {
                 Files.deleteIfExists(Paths.get(getStorageLocation(data)));

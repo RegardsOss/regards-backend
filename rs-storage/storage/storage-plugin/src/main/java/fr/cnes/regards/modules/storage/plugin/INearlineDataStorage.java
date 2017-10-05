@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin;
 
 import java.nio.file.Path;
@@ -11,8 +14,8 @@ public interface INearlineDataStorage<T extends IWorkingSubset> extends IDataSto
      * Do the retreive action for the given {@link T} working subset.
      * @param workingSubset Subset of files to store.
      * @param destinationPath {@link Path} where to put retrieved files.
-     * @param progressManager {@link ProgressManager} object to inform global store process after each transfer succeed or fail.
+     * @param progressManager {@link IProgressManager} object to inform global store process after each transfer succeed or fail.
      */
-    void retrieve(T workingSubset, Path destinationPath, ProgressManager progressManager);
+    void retrieve(T workingSubset, Path destinationPath, IProgressManager progressManager);
 
 }

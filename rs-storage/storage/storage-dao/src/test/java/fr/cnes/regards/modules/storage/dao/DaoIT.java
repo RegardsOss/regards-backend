@@ -17,6 +17,8 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +44,8 @@ import fr.cnes.regards.modules.storage.domain.EventType;
  */
 @TestPropertySource("classpath:dao-storage.properties")
 public class DaoIT extends AbstractDaoTransactionalTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DaoIT.class);
 
     @Autowired
     private IAIPDataBaseRepository repo;
@@ -81,6 +85,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Before
     public void init() throws NoSuchAlgorithmException, MalformedURLException {
+        repo.deleteAll();
         dao = new AIPDao(repo);
         aip1 = generateRandomAIP();
         aip1.setState(AIPState.VALID);
@@ -431,4 +436,5 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.contains(aip4));
         Assert.assertFalse(aips.contains(aip5));
     }
+
 }

@@ -16,6 +16,9 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
+ * Metadata of an AIP.
+ * It was not necessary to map all the AIP structure into the database so we just mapped some metadata and added the whole AIP as a json field.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity

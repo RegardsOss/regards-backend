@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.file.utils.DownloadUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -37,11 +36,12 @@ import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.exception.STAFException;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.plugin.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 
 /**
  * Storage plugin to store plugin in CNES STAF System.<br/>
@@ -80,6 +80,10 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      */
     public static final String FILE_PROTOCOLE = "file";
 
+    public static final String STAF_ARCHIVE_PARAMETER_NAME = "archiveParameters";
+
+    public static final String STAF_WORKSPACE_PATH = "workspaceDirectory";
+
     /**
      * STAF connections manager
      */
@@ -89,7 +93,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     /**
      * Plugin parameter containing STAF archive connection informations
      */
-    @PluginParameter(name = "archiveParameters")
+    @PluginParameter(name = STAF_ARCHIVE_PARAMETER_NAME)
     private STAFArchive stafArchive;
 
     /**
@@ -100,7 +104,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     /**
      * STAF Plugin working directory.
      */
-    @PluginParameter(name = "workspaceDirectory")
+    @PluginParameter(name = STAF_WORKSPACE_PATH)
     private String workspaceDirectory;
 
     @PluginInit
@@ -160,7 +164,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void store(STAFWorkingSubset pSubset, Boolean replaceMode, ProgressManager progressManager) {
+    public void store(STAFWorkingSubset pSubset, Boolean replaceMode, IProgressManager progressManager) {
         STAFStoreWorkingSubset ws = (STAFStoreWorkingSubset) pSubset;
         if (ws != null) {
             LOG.info("[STAFDataStorage Plugin] {} - Store action - Start with Working subset for STAF Node : {}",
@@ -170,7 +174,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             // Check if files are already stored
             dispatchAlreadyStoredFiles(pSubset.getDataFiles(), alreadyStoredFiles, filesToStore);
             // Files already stored in STAF. Only send stored event to listeners
-            alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getUrl()));
+            alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getUrl(), file.getFileSize()));
             // Files need to be stored
             doStore(filesToStore, ws.getStafNode(), replaceMode, progressManager);
             LOG.info("[STAFDataStorage Plugin] {} - Store action - End.", stafArchive.getArchiveName());
@@ -181,7 +185,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, ProgressManager pProgressManager) {
+    public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
         STAFRetrieveWorkingSubset ws = (STAFRetrieveWorkingSubset) pWorkingSubset;
         if (ws != null) {
             stafController.restoreFiles(ws.getFilesToRestore(), pDestinationPath,
@@ -199,7 +203,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<DataFile> pDataFiles, ProgressManager pProgressManager) {
+    public void delete(Set<DataFile> pDataFiles, IProgressManager pProgressManager) {
         // 1. Prepare files
         Map<URL, DataFile> urls = Maps.newHashMap();
         pDataFiles.stream().forEach(f -> urls.put(f.getUrl(), f));
@@ -222,7 +226,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @param pProgressManager{@link Boolean} replace if files exists into STAF ?
      */
     private void doStore(Set<DataFile> pFilesToStore, Path pSTAFNode, Boolean pReplaceMode,
-            ProgressManager pProgressManager) {
+            IProgressManager pProgressManager) {
 
         // 1. Dispatch files to store by stafNode
         Map<Path, Set<Path>> filesToPrepare = Maps.newHashMap();
@@ -263,7 +267,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 if ((rawFile.getKey() != null) && fileToStore.getUrl().getPath().equals(rawFile.getKey().toString())) {
                     fileArchived = true;
                     // Raw file successfully stored
-                    pProgressManager.storageSucceed(fileToStore, rawFile.getValue());
+                    pProgressManager.storageSucceed(fileToStore, rawFile.getValue(),
+                                                    rawFile.getKey().toFile().length());
                     break;
                 }
             }

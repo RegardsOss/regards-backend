@@ -1,9 +1,13 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.service.job;
 
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -27,8 +31,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
         Map<String, JobParameter> jobParamMap = super.checkParameters(parameters);
         //lets see if old data files has been given or not
         JobParameter oldDataFiles;
-        if (((oldDataFiles = jobParamMap.get(OLD_DATA_FILES_PARAMETER_NAME)) == null) || !(oldDataFiles
-                .getValue() instanceof DataFile[])) {
+        if (((oldDataFiles = jobParamMap.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
+                || !(oldDataFiles.getValue() instanceof DataFile[])) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), DataFile[].class.getName(),
                                   OLD_DATA_FILES_PARAMETER_NAME));
@@ -64,6 +68,19 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             }
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getCompletionCount() {
+        try {
+            Map<String, JobParameter> paramMap = checkParameters(parameters);
+            return ((IWorkingSubset) paramMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
+                    + ((DataFile[]) paramMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
+        } catch (JobParameterMissingException | JobParameterInvalidException e) {
+            //it should not happens here!
+            LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

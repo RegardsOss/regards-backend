@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.service.parameter;
 
 import java.util.List;
@@ -12,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.dao.IStorageParameterRepository;
 import fr.cnes.regards.modules.storage.domain.parameter.StorageParameter;
 
@@ -20,6 +25,15 @@ import fr.cnes.regards.modules.storage.domain.parameter.StorageParameter;
  */
 @Service
 public class StorageParameterService implements IStorageParameterService, ApplicationListener<ApplicationReadyEvent> {
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
+     * Resolver to know all existing tenants of the current REGARDS instance.
+     */
+    @Autowired
+    private ITenantResolver tenantResolver;
 
     @Autowired
     private IStorageParameterRepository repository;
@@ -71,7 +85,12 @@ public class StorageParameterService implements IStorageParameterService, Applic
     @Override
     @Transactional(propagation = Propagation.SUPPORTS)
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        initDefaultParameters();
+        // TODO : Handle new tenant creation
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            initDefaultParameters();
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     private void initDefaultParameters() {

@@ -18,7 +18,11 @@ import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,16 +42,16 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFDataStorage;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFStoreWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.staf.STAFWorkingSubset;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 @ContextConfiguration(classes = { STAFDataStorageConfiguration.class, MockingResourceServiceConfiguration.class })
 @TestPropertySource(locations = { "classpath:test.properties" })
@@ -191,16 +195,16 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
             STAFStoreWorkingSubset ws = (STAFStoreWorkingSubset) subset;
             Assert.assertEquals(ws.getStafNode(), STAFDataStorage.getStafNode(null));
             // Mock the progress manager to verify the number of call for succeed and failted files.
-            ProgressManager pm = Mockito.mock(ProgressManager.class);
+            IProgressManager pm = Mockito.mock(IProgressManager.class);
             Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-            Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
+            Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
             plugin.store(subset, false, pm);
             // 3 files should have been stored in CUT MODE
             // 2 files should have been stored in NORMAL MODE
             // 6 files should have been stored in TAR MODE.
             // 2 files should not been stored. files does not exists
             Mockito.verify(pm, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
-            Mockito.verify(pm, Mockito.times(11)).storageSucceed(Mockito.any(), Mockito.any());
+            Mockito.verify(pm, Mockito.times(11)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
         });
 
     }
@@ -218,9 +222,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Files.setPosixFilePermissions(WORKSPACE, Sets.newHashSet());
 
         // Mock the progress manager to verify the number of call for succeed and failted files.
-        ProgressManager pm = Mockito.mock(ProgressManager.class);
+        IProgressManager pm = Mockito.mock(IProgressManager.class);
         Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
-        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -253,7 +257,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // All files are on error. Workspace is not accessible.
         Mockito.verify(pm, Mockito.times(8)).storageFailed(Mockito.any(), Mockito.any());
         // 0 Files are stored.
-        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     /**
@@ -264,9 +268,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void restore() throws MalformedURLException {
 
         // Mock the progress manager to verify the number of call for succeed and failted files.
-        ProgressManager pm = Mockito.mock(ProgressManager.class);
+        IProgressManager pm = Mockito.mock(IProgressManager.class);
         Mockito.verify(pm, Mockito.times(0)).restoreSucceed(Mockito.any(), Mockito.any());
-        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any(), Mockito.any());
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -321,7 +325,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         });
 
         // No restoration error
-        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any(), Mockito.any());
         // 1 Datafile restored
         Mockito.verify(pm, Mockito.times(3)).restoreSucceed(Mockito.any(), Mockito.any());
 
@@ -343,9 +347,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void restoreTARError() throws MalformedURLException {
 
         // Mock the progress manager to verify the number of call for succeed and failted files.
-        ProgressManager pm = Mockito.mock(ProgressManager.class);
+        IProgressManager pm = Mockito.mock(IProgressManager.class);
         Mockito.verify(pm, Mockito.times(0)).restoreSucceed(Mockito.any(), Mockito.any());
-        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any(), Mockito.any());
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -402,7 +406,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         });
 
         // No restoration error
-        Mockito.verify(pm, Mockito.times(1)).restoreFailed(Mockito.any());
+        Mockito.verify(pm, Mockito.times(1)).restoreFailed(Mockito.any(), Mockito.any());
         // 1 Datafile restored
         Mockito.verify(pm, Mockito.times(2)).restoreSucceed(Mockito.any(), Mockito.any());
 
@@ -424,9 +428,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void restoreFileNotFoundError() throws MalformedURLException {
 
         // Mock the progress manager to verify the number of call for succeed and failted files.
-        ProgressManager pm = Mockito.mock(ProgressManager.class);
+        IProgressManager pm = Mockito.mock(IProgressManager.class);
         Mockito.verify(pm, Mockito.times(0)).restoreSucceed(Mockito.any(), Mockito.any());
-        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any());
+        Mockito.verify(pm, Mockito.times(0)).restoreFailed(Mockito.any(), Mockito.any());
 
         // Add plugin package
         List<String> packages = Lists.newArrayList();
@@ -483,7 +487,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         });
 
         // All files retore error
-        Mockito.verify(pm, Mockito.times(3)).restoreFailed(Mockito.any());
+        Mockito.verify(pm, Mockito.times(3)).restoreFailed(Mockito.any(), Mockito.any());
         // No Datafile restored
         Mockito.verify(pm, Mockito.times(0)).restoreSucceed(Mockito.any(), Mockito.any());
 
@@ -504,7 +508,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void delete() throws MalformedURLException {
 
         // Mock the progress manager to verify the number of call for succeed and failted files.
-        ProgressManager pm = Mockito.mock(ProgressManager.class);
+        IProgressManager pm = Mockito.mock(IProgressManager.class);
         Mockito.verify(pm, Mockito.times(0)).deletionFailed(Mockito.any(), Mockito.any());
         Mockito.verify(pm, Mockito.times(0)).deletionSucceed(Mockito.any());
 

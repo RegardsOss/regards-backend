@@ -4,7 +4,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -14,7 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 
@@ -90,8 +89,8 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Strin
     @EntityGraph("graph.aip.tags")
     Page<AIPDataBase> findAllByLastEventDateBefore(OffsetDateTime pTo, Pageable pPageable);
 
-//    @Query("from AIPDataBase aip left join fetch aip.dataObjects where aip.ipId=:ipId")
-//    AIPDataBase findOneByIpIdWithDataObjects(@Param("ipId") String pIpId);
+    //    @Query("from AIPDataBase aip left join fetch aip.dataObjects where aip.ipId=:ipId")
+    //    AIPDataBase findOneByIpIdWithDataObjects(@Param("ipId") String pIpId);
 
     @Query("from AIPDataBase aip where aip.ipId LIKE :urnWithoutVersion%")
     Set<AIPDataBase> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);
@@ -100,5 +99,5 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Strin
     Set<AIPDataBase> findAllByStateIn(AIPState... states);
 
     @EntityGraph("graph.aip.tags")
-    AIPDataBase findOneByIpId(String ipId);
+    Optional<AIPDataBase> findOneByIpId(String ipId);
 }

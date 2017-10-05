@@ -40,7 +40,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-data</artifactId>
+			<artifactId>jpa-data-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -68,11 +68,11 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>module-plugins-domain</artifactId>
+			<artifactId>plugins-domain</artifactId>
 		</dependency>
 		<!-- for validation of message digest algorithms -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
 			<artifactId>file-utils</artifactId>
 		</dependency>
 		<!-- Test dependencies -->

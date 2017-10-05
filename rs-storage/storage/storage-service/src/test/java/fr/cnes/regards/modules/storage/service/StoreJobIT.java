@@ -1,6 +1,8 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -17,27 +20,26 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
 
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -45,26 +47,27 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
+import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { StoreJobIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(locations = "classpath:test.properties")
-@RegardsTransactional
-public class StoreJobIT extends AbstractRegardsServiceIT {
+public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String LOCAL_STORAGE_LABEL = "StoreJobIT";
 
@@ -79,19 +82,17 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
 
     private DataFile df;
 
-    @Configuration
-    static class Config {
+    @Autowired
+    private IPluginConfigurationRepository pluginRepo;
 
-        @Bean
-        public IResourceService resourceService() {
-            return Mockito.mock(IResourceService.class);
-        }
-    }
+    @Autowired
+    private IAIPDao aipDao;
 
-    @BeforeTransaction
-    public void initTransac() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-    }
+    @Autowired
+    private IDataFileDao dataFileDao;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -102,10 +103,14 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
     private URL baseStorageLocation;
 
     @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
     private Gson gson;
 
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         // first lets get some parameters for the job ...
         // ... dataStorage ...
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
@@ -141,7 +146,7 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         JobInfo toTest = new JobInfo(0, parameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
         StoreDataFilesJob job = (StoreDataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
-        ProgressManager progressManager = job.getProgressManager();
+        StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
     }
 
@@ -150,12 +155,15 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
         JobInfo toTest = new JobInfo(0, parameters, DEFAULT_USER_EMAIL, StoreMetadataFilesJob.class.getName());
         StoreMetadataFilesJob job = (StoreMetadataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
-        ProgressManager progressManager = job.getProgressManager();
+        StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
     }
 
     protected IJob runJob(JobInfo jobInfo) {
         try {
+
+            /**JobInfo createJobInfo = jobInfoService.createAsQueued(jobInfo);
+            IJob job = createJobInfo.getJob();*/
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setId(jobInfo.getId());
@@ -164,6 +172,7 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
                 job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
             }
             jobInfo.setJob(job);
+            jobInfo.getStatus().setStartDate(OffsetDateTime.now());
             job.run();
             return job;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
@@ -180,19 +189,24 @@ public class StoreJobIT extends AbstractRegardsServiceIT {
     }
 
     private AIP getAipFromFile() throws IOException {
-        FileReader fr = new FileReader("src/test/resources/aip_sample.json");
-        BufferedReader br = new BufferedReader(fr);
-        String fileLine = br.readLine();
-        AIP aip = gson.fromJson(fileLine, AIP.class);
-        br.close();
-        fr.close();
-        return aip;
+
+        try (JsonReader reader = new JsonReader(new FileReader("src/test/resources/aip_sample.json"))) {
+            JsonElement el = Streams.parse(reader);
+            String fileLine = el.toString();
+            AIP aip = gson.fromJson(fileLine, AIP.class);
+
+            return aip;
+        }
     }
 
     @After
     public void after() throws URISyntaxException, IOException {
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                 .forEach(File::delete);
+        jobInfoRepo.deleteAll();
+        dataFileDao.deleteAll();
+        pluginRepo.deleteAll();
+        aipDao.deleteAll();
     }
 
 }

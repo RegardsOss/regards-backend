@@ -29,17 +29,17 @@ public interface IDataStorage<T extends IWorkingSubset> {
     /**
      * Do the delete action for the given {@link T} working subset.
      * @param workingSubset Subset of files to store.
-     * @param progressManager {@link ProgressManager} object to inform global store process after each deletion succeed or fail.
+     * @param progressManager {@link IProgressManager} object to inform global store process after each deletion succeed or fail.
      */
-    void delete(Set<DataFile> dataFiles, ProgressManager progressManager);
+    void delete(Set<DataFile> dataFiles, IProgressManager progressManager);
 
     /**
      * Do the store action for the given {@link T} working subset.
      * @param workingSubset Subset of files to store.
      * @param replaceMode if file exists, to the store action should replace it ?
-     * @param progressManager {@link ProgressManager} object to inform global store process after each transfer succeed or fail.
+     * @param progressManager {@link IProgressManager} object to inform global store process after each transfer succeed or fail.
      */
-    void store(T workingSubset, Boolean replaceMode, ProgressManager progressManager);
+    void store(T workingSubset, Boolean replaceMode, IProgressManager progressManager);
 
     /**
      * Retreive informations about the storage system.

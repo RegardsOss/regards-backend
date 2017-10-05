@@ -8,8 +8,8 @@ import java.nio.file.Path;
 
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
 
 /**
  * Implementation of {@link IClientCollectListener} for {@link STAFDataStorage}.<br/>
@@ -22,7 +22,7 @@ public class STAFRetrieveListener implements IClientCollectListener {
     /**
      * Storage {@link ProgressManager}
      */
-    private final ProgressManager progressManager;
+    private final IProgressManager progressManager;
 
     /**
      * Current {@link IWorkingSubset}
@@ -34,7 +34,7 @@ public class STAFRetrieveListener implements IClientCollectListener {
      * @param pProgressManager Storage {@link ProgressManager}
      * @param pWorkingSubset Current {@link IWorkingSubset}
      */
-    public STAFRetrieveListener(ProgressManager pProgressManager, STAFRetrieveWorkingSubset pWorkingSubset) {
+    public STAFRetrieveListener(IProgressManager pProgressManager, STAFRetrieveWorkingSubset pWorkingSubset) {
         super();
         progressManager = pProgressManager;
         wokingSubset = pWorkingSubset;
@@ -42,20 +42,18 @@ public class STAFRetrieveListener implements IClientCollectListener {
 
     @Override
     public void fileRetreived(URL pSTAFFileUrl, Path pLocalFilePathRetrieved) {
-
         for (DataFile file : wokingSubset.getDataFiles()) {
             if (file.getUrl().equals(pSTAFFileUrl)) {
                 progressManager.restoreSucceed(file, pLocalFilePathRetrieved);
             }
         }
-
     }
 
     @Override
-    public void fileRetrieveError(URL pSTAFFileUrl) {
+    public void fileRetrieveError(URL pSTAFFileUrl, String pErrorMessage) {
         for (DataFile file : wokingSubset.getDataFiles()) {
             if (file.getUrl().equals(pSTAFFileUrl)) {
-                progressManager.restoreFailed(file);
+                progressManager.restoreFailed(file, pErrorMessage);
             }
         }
     }

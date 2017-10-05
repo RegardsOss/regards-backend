@@ -45,14 +45,14 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.ProgressManager;
+import fr.cnes.regards.modules.storage.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -160,7 +160,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     @Test
     public void testStore() throws ModuleException, IOException {
-        ProgressManager progressManager = Mockito.mock(ProgressManager.class);
+        IProgressManager progressManager = Mockito.mock(IProgressManager.class);
         AIP aip = getAipFromFile();
         aip.addEvent(EventType.SUBMISSION.name(), "just for fun", OffsetDateTime.now());
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
@@ -181,7 +181,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         Set<DataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);
-        Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any());
+        Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any(), Mockito.any());
         Mockito.verify(progressManager, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
     }
 
