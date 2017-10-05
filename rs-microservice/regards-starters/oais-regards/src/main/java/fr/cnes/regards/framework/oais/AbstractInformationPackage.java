@@ -48,11 +48,10 @@ public abstract class AbstractInformationPackage {
      * List of Information Object
      */
     @NotNull
-    protected List<InformationObject> informationObjects;
+    protected InformationPackage informationPackage;
 
     public AbstractInformationPackage() {
         tags = new ArrayList<>();
-        informationObjects = new ArrayList<>();
     }
 
     public EntityType getType() {
@@ -67,7 +66,11 @@ public abstract class AbstractInformationPackage {
         return tags;
     }
 
-    public List<InformationObject> getInformationObjects() {
-        return informationObjects;
+    public InformationPackage getInformationPackage() {
+        return informationPackage;
+    }
+
+    public void setInformationPackage(InformationPackage informationPackage) {
+        this.informationPackage = informationPackage;
     }
 }

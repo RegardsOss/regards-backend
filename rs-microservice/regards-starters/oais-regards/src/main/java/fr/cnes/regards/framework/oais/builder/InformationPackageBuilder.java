@@ -18,8 +18,15 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.util.Assert;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.InformationPackage;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
 /**
@@ -28,19 +35,37 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * @author Marc Sordi
  *
  */
-public class InformationObjectBuilder implements IOAISBuilder<InformationObject> {
+public class InformationPackageBuilder implements IOAISBuilder<InformationPackage> {
 
-    private final InformationObject io = new InformationObject();
+    private final InformationPackage ip = new InformationPackage();
+
+    private final Set<ContentInformation> cis = Sets.newHashSet();
 
     private final ContentInformationBuilder contentInformationBuilder = new ContentInformationBuilder();
 
     private final PDIBuilder pdiBuilder = new PDIBuilder();
 
+    private final Map<String, Object> descriptitveInformation = Maps.newHashMap();
+
     @Override
-    public InformationObject build() {
-        io.setContentInformation(contentInformationBuilder.build());
-        io.setPdi(pdiBuilder.build());
-        return io;
+    public InformationPackage build() {
+        ip.getContentInformations().addAll(cis);
+        ip.setPdi(pdiBuilder.build());
+        ip.getDescriptiveInformation().putAll(descriptitveInformation);
+        return ip;
+    }
+
+    /**
+     * Build content information from the content information builder and add it to the set of content informations of this information package being built
+     */
+    public void addContentInformation() {
+        cis.add(contentInformationBuilder.build());
+    }
+
+    public void addDescriptiveInformation(String key, Object value) {
+        Assert.hasLength(key, "Descriptive information key is required");
+        Assert.notNull(value, "Descriptive information value is required");
+        descriptitveInformation.put(key, value);
     }
 
     /**

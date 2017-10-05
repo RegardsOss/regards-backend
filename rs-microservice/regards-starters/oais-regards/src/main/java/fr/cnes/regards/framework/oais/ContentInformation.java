@@ -30,17 +30,16 @@ import javax.validation.constraints.NotNull;
  */
 public class ContentInformation {
 
-    @NotNull
-    private DataObject dataObject;
-
-    @NotNull
     private RepresentationInformation representationInformation;
 
-    public DataObject getDataObject() {
+    @NotNull
+    private OAISDataObject dataObject;
+
+    public OAISDataObject getDataObject() {
         return dataObject;
     }
 
-    public void setDataObject(DataObject pDataObject) {
+    public void setDataObject(OAISDataObject pDataObject) {
         dataObject = pDataObject;
     }
 

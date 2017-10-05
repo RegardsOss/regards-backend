@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
-import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.InformationPackage;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
@@ -74,16 +74,16 @@ public abstract class IPBuilder<T extends AbstractInformationPackage> implements
     }
 
     /**
-     * Add {@link InformationObject} to this information package
-     * @param informationObjects
+     * Add {@link InformationPackage} to this information package
+     * @param informationPackages
      */
-    public void addInformationObjects(InformationObject... informationObjects) {
-        Assert.notEmpty(informationObjects, "Information object is required. Do not call method otherwise.");
-        ip.getInformationObjects().addAll(Arrays.asList(informationObjects));
+    public void addInformationObjects(InformationPackage... informationPackages) {
+        Assert.notEmpty(informationPackages, "Information object is required. Do not call method otherwise.");
+        ip.getInformationPackage().addAll(Arrays.asList(informationPackages));
     }
 
-    public void addInformationObjects(Collection<InformationObject> informationObjects) {
-        Assert.notNull(informationObjects, "Information object collection cannot be null");
-        addInformationObjects(informationObjects.toArray(new InformationObject[informationObjects.size()]));
+    public void addInformationObjects(Collection<InformationPackage> informationPackages) {
+        Assert.notNull(informationPackages, "Information object collection cannot be null");
+        addInformationObjects(informationPackages.toArray(new InformationPackage[informationPackages.size()]));
     }
 }

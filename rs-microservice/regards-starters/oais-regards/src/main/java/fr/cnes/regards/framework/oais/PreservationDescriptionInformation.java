@@ -23,6 +23,8 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.google.common.collect.Maps;
+
 /**
  *
  * OAIS Preservation Description Information object
@@ -33,7 +35,15 @@ import javax.validation.constraints.NotNull;
  */
 public class PreservationDescriptionInformation {
 
+    public static final String CONTEXT_INFO_TAGS_KEY = "tags";
+
+    /**
+     * should contains the tags too as a "special" key
+     */
     private Map<String, Object> contextInformation;
+
+    @NotNull
+    private Map<String, String> referenceInformation;
 
     @NotNull
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
@@ -44,8 +54,11 @@ public class PreservationDescriptionInformation {
     @NotNull
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
-    public void setContextInformation(Map<String, Object> pContextInformation) {
-        contextInformation = pContextInformation;
+    public Map<String, String> getReferenceInformation() {
+        if(referenceInformation == null) {
+            referenceInformation = Maps.newHashMap();
+        }
+        return referenceInformation;
     }
 
     public Map<String, Object> getContextInformation() {
@@ -53,6 +66,10 @@ public class PreservationDescriptionInformation {
             contextInformation = new HashMap<>();
         }
         return contextInformation;
+    }
+
+    public AccessRightInformation getAccessRightInformation() {
+        return accessRightInformation;
     }
 
     public ProvenanceInformation getProvenanceInformation() {

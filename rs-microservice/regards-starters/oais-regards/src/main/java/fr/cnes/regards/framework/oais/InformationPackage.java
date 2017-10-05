@@ -20,6 +20,13 @@ package fr.cnes.regards.framework.oais;
 
 import javax.validation.constraints.NotNull;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.google.common.collect.Sets;
+
 /**
  *
  * OAIS Information object
@@ -28,20 +35,21 @@ import javax.validation.constraints.NotNull;
  * @author Marc Sordi
  *
  */
-public class InformationObject {
+public class InformationPackage {
 
-    @NotNull
-    private ContentInformation contentInformation;
+    @NotEmpty
+    private Set<ContentInformation> contentInformations;
 
     @NotNull
     private PreservationDescriptionInformation pdi;
 
-    public ContentInformation getContentInformation() {
-        return contentInformation;
-    }
+    private Map<String, Object> descriptiveInformation;
 
-    public void setContentInformation(ContentInformation pContentInformation) {
-        contentInformation = pContentInformation;
+    public Set<ContentInformation> getContentInformations() {
+        if(contentInformations == null) {
+            contentInformations = Sets.newHashSet();
+        }
+        return contentInformations;
     }
 
     public PreservationDescriptionInformation getPdi() {
@@ -52,11 +60,15 @@ public class InformationObject {
         pdi = pPdi;
     }
 
+    public Map<String, Object> getDescriptiveInformation() {
+        return descriptiveInformation;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((contentInformation == null) ? 0 : contentInformation.hashCode());
+        result = (prime * result) + ((contentInformations == null) ? 0 : contentInformations.hashCode());
         result = (prime * result) + ((pdi == null) ? 0 : pdi.hashCode());
         return result;
     }
@@ -72,12 +84,12 @@ public class InformationObject {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        InformationObject other = (InformationObject) obj;
-        if (contentInformation == null) {
-            if (other.contentInformation != null) {
+        InformationPackage other = (InformationPackage) obj;
+        if (contentInformations == null) {
+            if (other.contentInformations != null) {
                 return false;
             }
-        } else if (!contentInformation.equals(other.contentInformation)) {
+        } else if (!contentInformations.equals(other.contentInformations)) {
             return false;
         }
         if (pdi == null) {

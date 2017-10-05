@@ -21,7 +21,10 @@ package fr.cnes.regards.framework.oais;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 /**
  *
@@ -31,15 +34,24 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * @author Marc Sordi
  *
  */
-public class DataObject {
+public class OAISDataObject {
 
     @NotNull
-    private DataType dataType;
+    private DataType regards_dataType;
 
     @NotNull
     private URL url;
 
     private String filename;
+
+    @NotNull
+    @HandledMessageDigestAlgorithm
+    private String algorithm;
+
+    @NotBlank
+    private String checksum;
+
+    private Long fileSize;
 
     public String getFilename() {
         return filename;
@@ -49,12 +61,12 @@ public class DataObject {
         this.filename = filename;
     }
 
-    public DataType getDataType() {
-        return dataType;
+    public DataType getRegards_dataType() {
+        return regards_dataType;
     }
 
-    public void setDataType(DataType dataType) {
-        this.dataType = dataType;
+    public void setRegards_dataType(DataType regards_dataType) {
+        this.regards_dataType = regards_dataType;
     }
 
     public URL getUrl() {
@@ -63,6 +75,30 @@ public class DataObject {
 
     public void setUrl(URL url) {
         this.url = url;
+    }
+
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 
     @Override
@@ -74,9 +110,9 @@ public class DataObject {
             return false;
         }
 
-        DataObject that = (DataObject) o;
+        OAISDataObject that = (OAISDataObject) o;
 
-        if (dataType != that.dataType) {
+        if (regards_dataType != that.regards_dataType) {
             return false;
         }
         return url.equals(that.url);
@@ -84,7 +120,7 @@ public class DataObject {
 
     @Override
     public int hashCode() {
-        int result = dataType.hashCode();
+        int result = regards_dataType.hashCode();
         result = 31 * result + url.hashCode();
         return result;
     }
