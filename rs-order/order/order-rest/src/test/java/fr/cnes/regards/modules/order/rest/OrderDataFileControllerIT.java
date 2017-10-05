@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -112,19 +113,24 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
 
-        ResultActions resultActions = performDefaultGet(
-                "/orders/{orderId}/aips/{aipId}/files/{checksum}", expectations,
-                "Should return result", order.getId(), dataFile1.getIpId().toString(),
-                dataFile1.getChecksum());
+        File resultFile;
+        int count = 0;
+        do {
+            count++;
+            ResultActions resultActions = performDefaultGet("/orders/{orderId}/aips/{aipId}/files/{checksum}",
+                                                            expectations, "Should return result", order.getId(),
+                                                            dataFile1.getIpId().toString(), dataFile1.getChecksum());
 
-        assertMediaType(resultActions, MediaType.TEXT_PLAIN);
-        File resultFile = File.createTempFile("ORDER", "");
-        resultFile.deleteOnExit();
-        try (FileOutputStream fos = new FileOutputStream(resultFile)) {
-            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
-            ByteStreams.copy(is, fos);
-            is.close();
-        }
+            assertMediaType(resultActions, MediaType.TEXT_PLAIN);
+            resultFile = File.createTempFile("ORDER", "");
+            resultFile.deleteOnExit();
+
+            try (FileOutputStream fos = new FileOutputStream(resultFile)) {
+                InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+                ByteStreams.copy(is, fos);
+                is.close();
+            }
+        } while ((resultFile.length() == 0) && (count < 4));
         Assert.assertTrue(Files.equal(new File("src/test/resources/files/file1.txt"), resultFile));
 
         tenantResolver.forceTenant(DEFAULT_TENANT); // ?

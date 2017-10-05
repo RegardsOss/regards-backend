@@ -1,7 +1,10 @@
 package fr.cnes.regards.modules.order.rest;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -146,10 +150,16 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (user.isEmpty()) ?
+        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ?
                 orderService.findAll(pageRequest) :
                 orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
+    }
+
+    @ResourceAccess(description = "Generate a CSV file with all orders")
+    @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH, produces = "text/csv")
+    public void generateCsv(HttpServletResponse response) throws IOException {
+        orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()));
     }
 
     @ResourceAccess(description = "Find all user orders", role = DefaultRole.REGISTERED_USER)

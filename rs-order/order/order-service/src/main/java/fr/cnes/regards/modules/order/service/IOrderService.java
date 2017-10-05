@@ -2,6 +2,11 @@ package fr.cnes.regards.modules.order.service;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -69,6 +74,11 @@ public interface IOrderService {
      * Orders are simple loaded
      */
     Page<Order> findAll(Pageable pageRequest);
+
+    /**
+     * Write all orders in CSV format
+     */
+    void writeAllOrdersInCsv(BufferedWriter writer) throws IOException;
 
     default Page<Order> findAll(int pageSize) {
         return findAll(new PageRequest(0, pageSize));

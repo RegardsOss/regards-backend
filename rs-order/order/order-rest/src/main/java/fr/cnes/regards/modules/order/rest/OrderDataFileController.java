@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,28 +113,43 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_AIPS_AIP_ID_FILES_CHECKSUM)
-    public void downloadFile(@PathVariable("orderId") Long orderId, @PathVariable("aipId") String aipId,
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("orderId") Long orderId, @PathVariable("aipId") String aipId,
             @PathVariable("checksum") String checksum, HttpServletResponse response)
             throws NoSuchElementException, IOException {
-        dataFileService.downloadFile(orderId, UniformResourceName.fromString(aipId), checksum, response);
+        // Throws a NoSuchELementException if not found
+        OrderDataFile dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
+        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
+        response.setContentType(dataFile.getMimeType().toString());
+
+        return new ResponseEntity<>(os -> dataFileService
+                .downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_CHECKSUM)
-    public ResponseEntity<Void> publicDownloadFile(@PathVariable("aipId") String aipId,
+    public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("checksum") String checksum, @RequestParam(name = ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException, IOException {
-        // Throws an invalidJwtException if secret isn't correct or expiration date has been reached
+
         try {
             Claims claims = jwtService.parseToken(token, secret);
             Long orderId = Long.parseLong(claims.get(OrderController.ORDER_ID_KEY, String.class));
-            dataFileService.downloadFile(orderId, UniformResourceName
-                    .fromString(UriUtils.decode(aipId, Charset.defaultCharset().name())), checksum, response);
-            return new ResponseEntity(HttpStatus.OK);
+            // Throws a NoSuchELementException if not found
+            OrderDataFile dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
+            response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
+            response.setContentType(dataFile.getMimeType().toString());
+
+            return new ResponseEntity<>(os -> dataFileService
+                    .downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
+
         } catch (InvalidJwtException | MalformedJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    private static UniformResourceName decodeUrn(String aipId) throws UnsupportedEncodingException {
+        return UniformResourceName.fromString(UriUtils.decode(aipId, Charset.defaultCharset().name()));
     }
 
     @Override

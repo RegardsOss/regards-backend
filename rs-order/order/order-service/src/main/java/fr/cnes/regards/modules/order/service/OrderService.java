@@ -7,9 +7,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -47,6 +50,7 @@ import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -314,6 +318,25 @@ public class OrderService implements IOrderService {
     @Override
     public Page<Order> findAll(Pageable pageRequest) {
         return repos.findAllByOrderByCreationDateDesc(pageRequest);
+    }
+
+    @Override
+    public void writeAllOrdersInCsv(BufferedWriter writer) throws IOException {
+        List<Order> orders = repos.findAll();
+        writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
+        writer.newLine();
+        for (Order order : orders) {
+            writer.append(order.getId().toString()).append(';');
+            writer.append(OffsetDateTimeAdapter.format(order.getCreationDate())).append(';');
+            writer.append(OffsetDateTimeAdapter.format(order.getExpirationDate())).append(';');
+            writer.append(order.getOwner()).append(';');
+            writer.append(order.getStatus().toString()).append(';');
+            writer.append(OffsetDateTimeAdapter.format(order.getStatusDate())).append(';');
+            writer.append(Integer.toString(order.getPercentCompleted())).append(';');
+            writer.append(Integer.toString(order.getFilesInErrorCount()));
+            writer.newLine();
+        }
+        writer.close();
     }
 
     @Override

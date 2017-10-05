@@ -2,8 +2,10 @@ package fr.cnes.regards.modules.order.service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -20,6 +22,8 @@ public interface IOrderDataFileService {
 
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
 
+    OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException;
+
     /**
      * Find all OrderDataFile with state AVAILABLE associated to given order
      * @param orderId id of order
@@ -35,7 +39,7 @@ public interface IOrderDataFileService {
     /**
      * Copy asked file from storage to HttpServletResponse
      */
-    void downloadFile(Long orderId, UniformResourceName aipId, String checksum, HttpServletResponse response)
+    void downloadFile(OrderDataFile dataFile, UniformResourceName aipId, String checksum, OutputStream os)
             throws IOException;
 
     /**

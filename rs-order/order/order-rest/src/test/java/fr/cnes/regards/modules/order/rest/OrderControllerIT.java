@@ -26,11 +26,15 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.xml.sax.SAXException;
 
@@ -40,6 +44,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
@@ -315,6 +320,61 @@ public class OrderControllerIT extends AbstractRegardsIT {
             fileCount++;
         }
         Assert.assertEquals(14, fileCount);
+
+    }
+
+    @Test
+    public void testCsv() throws URISyntaxException, UnsupportedEncodingException {
+        Order order = new Order();
+        order.setOwner(DEFAULT_USER_EMAIL);
+        order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order = orderRepository.save(order);
+
+        // dataset task 1
+        DatasetTask ds1Task = new DatasetTask();
+        ds1Task.setDatasetIpid(DS1_IP_ID.toString());
+        ds1Task.setDatasetLabel("DS1");
+        order.addDatasetOrderTask(ds1Task);
+
+        FilesTask files1Task = new FilesTask();
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.ONLINE));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.ONLINE));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.ONLINE));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_sd.txt", FileState.ONLINE));
+        ds1Task.addReliantTask(files1Task);
+
+        // dataset task 2
+        DatasetTask ds2Task = new DatasetTask();
+        ds2Task.setDatasetIpid(DS2_IP_ID.toString());
+        ds2Task.setDatasetLabel("DS2");
+        order.addDatasetOrderTask(ds2Task);
+
+        FilesTask files20Task = new FilesTask();
+        files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2.txt", FileState.AVAILABLE));
+        files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_hd.txt", FileState.AVAILABLE));
+        files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_md.txt", FileState.AVAILABLE));
+        files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_sd.txt", FileState.AVAILABLE));
+        ds2Task.addReliantTask(files20Task);
+
+        FilesTask files21Task = new FilesTask();
+        files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2.txt", FileState.AVAILABLE));
+        files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_hd_bis.txt", FileState.AVAILABLE));
+        files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_md_bis.txt", FileState.AVAILABLE));
+        files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_sd_bis.txt", FileState.AVAILABLE));
+        files21Task.addFile(createOrderDataFile(order, DO4_IP_ID, "file3.txt", FileState.PENDING));
+        files21Task.addFile(createOrderDataFile(order, DO5_IP_ID, "file4.txt", FileState.DOWNLOADED));
+        ds2Task.addReliantTask(files21Task);
+
+        order = orderRepository.save(order);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpConstants.CONTENT_TYPE, "application/json");
+        headers.add(HttpConstants.ACCEPT, "text/csv");
+        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, okExpectations(), "error",
+                                                  headers);
+        // Juste test headers are present and CSV format is ok
+        Assert.assertTrue(results.andReturn().getResponse().getContentAsString().startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)

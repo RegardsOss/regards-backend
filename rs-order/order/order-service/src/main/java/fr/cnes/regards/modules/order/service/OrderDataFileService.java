@@ -53,6 +53,15 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
+    public OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException {
+        Optional<OrderDataFile> dataFileOpt = repos.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
+        if (!dataFileOpt.isPresent()) {
+            throw new NoSuchElementException();
+        }
+        return dataFileOpt.get();
+    }
+
+    @Override
     public List<OrderDataFile> findAllAvailables(Long orderId) {
         return repos.findAllAvailables(orderId);
     }
@@ -63,20 +72,8 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(Long orderId, UniformResourceName aipId, String checksum, HttpServletResponse response)
+    public void downloadFile(OrderDataFile dataFile, UniformResourceName aipId, String checksum, OutputStream os)
             throws IOException {
-        // Maybe this file is into an AIP that is asked several time for this Order (several Dataset for example)
-        /// but we just need first one because its name is unique by AIP ID and checksum
-        Optional<OrderDataFile> dataFileOpt = repos.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
-        if (!dataFileOpt.isPresent()) {
-            throw new NoSuchElementException();
-        }
-        OrderDataFile dataFile = dataFileOpt.get();
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
-
-        // Reading / Writing
-        OutputStream os = response.getOutputStream();
         try (InputStream is = aipClient.downloadFile(aipId.toString(), checksum)) {
             ByteStreams.copy(is, os);
             os.close();
