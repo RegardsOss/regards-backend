@@ -28,6 +28,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
  * Information object builder
@@ -80,5 +81,9 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public PDIBuilder getPDIBuilder() {
         return pdiBuilder;
+    }
+
+    public void setIpType(EntityType type) {
+        ip.setIpType(type);
     }
 }

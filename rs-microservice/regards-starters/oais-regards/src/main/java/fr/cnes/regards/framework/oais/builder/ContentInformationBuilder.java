@@ -48,7 +48,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param url reference to the physical file
      * @param filename optional filename (may be null)
      */
-    public void setDataObject(DataType dataType, URL url, @Nullable String filename) {
+    public void setDataObject(DataType dataType, URL url, @Nullable String filename, String algorithm, String checksum, @Nullable Long fileSize) {
         Assert.notNull(dataType, "Data type is required");
         Assert.notNull(url, "URL is required");
 
@@ -56,16 +56,19 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         dataObject.setFilename(filename);
         dataObject.setRegardsDataType(dataType);
         dataObject.setUrl(url);
+        dataObject.setAlgorithm(algorithm);
+        dataObject.setChecksum(checksum);
+        dataObject.setFileSize(fileSize);
         ci.setDataObject(dataObject);
     }
 
     /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String)} (no filename)
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no filename and no filesize)
      * @param dataType {@link DataType}
      * @param url reference to the physical file
      */
-    public void setDataObject(DataType dataType, URL url) {
-        setDataObject(dataType, url, null);
+    public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
+        setDataObject(dataType, url, null, algorithm, checksum, null);
     }
 
     /**
