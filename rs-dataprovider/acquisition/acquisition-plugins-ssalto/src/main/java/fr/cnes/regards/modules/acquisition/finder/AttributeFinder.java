@@ -47,6 +47,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.Files;
 
+import fr.cnes.regards.framework.utils.file.compression.CompressionException;
+import fr.cnes.regards.framework.utils.file.compression.CompressionFacade;
+import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -54,9 +57,6 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.tools.compression.exception.CompressionException;
-import fr.cnes.regards.modules.acquisition.tools.compression.CompressionFacade;
-import fr.cnes.regards.modules.acquisition.tools.compression.CompressionTypeEnum;
 
 /**
  * Classe mère des Finder dont le but est de construire une classe - Attribute à partir des informations suivantes :

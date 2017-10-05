@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -45,7 +46,7 @@ import fr.cnes.regards.modules.acquisition.finder.FileNameFinder;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
-import fr.cnes.regards.modules.acquisition.tools.compression.CompressionTypeEnum;
+
 
 /**
  * 
