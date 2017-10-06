@@ -18,15 +18,7 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import java.io.Serializable;
-
-import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
+import fr.cnes.regards.framework.geojson.geometry.*;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -40,7 +32,7 @@ import fr.cnes.regards.framework.geojson.geometry.Unlocated;
  * @author Marc Sordi
  *
  */
-public abstract class AbstractFeature<P, ID extends Serializable> extends AbstractGeoJsonObject {
+public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
 
     /**
      * ID MUST be a {@link String} or a {@link Number}

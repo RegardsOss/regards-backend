@@ -18,17 +18,12 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.net.URL;
-
 import javax.annotation.Nullable;
+import java.net.URL;
 
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.DataObject;
-import fr.cnes.regards.framework.oais.RepresentationInformation;
-import fr.cnes.regards.framework.oais.Semantic;
-import fr.cnes.regards.framework.oais.Syntax;
+import fr.cnes.regards.framework.oais.*;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
@@ -53,24 +48,27 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param url reference to the physical file
      * @param filename optional filename (may be null)
      */
-    public void setDataObject(DataType dataType, URL url, @Nullable String filename) {
+    public void setDataObject(DataType dataType, URL url, @Nullable String filename, String algorithm, String checksum, @Nullable Long fileSize) {
         Assert.notNull(dataType, "Data type is required");
         Assert.notNull(url, "URL is required");
 
-        DataObject dataObject = new DataObject();
+        OAISDataObject dataObject = new OAISDataObject();
         dataObject.setFilename(filename);
-        dataObject.setDataType(dataType);
+        dataObject.setRegardsDataType(dataType);
         dataObject.setUrl(url);
+        dataObject.setAlgorithm(algorithm);
+        dataObject.setChecksum(checksum);
+        dataObject.setFileSize(fileSize);
         ci.setDataObject(dataObject);
     }
 
     /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String)} (no filename)
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no filename and no filesize)
      * @param dataType {@link DataType}
      * @param url reference to the physical file
      */
-    public void setDataObject(DataType dataType, URL url) {
-        setDataObject(dataType, url, null);
+    public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
+        setDataObject(dataType, url, null, algorithm, checksum, null);
     }
 
     /**
@@ -109,6 +107,18 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         semantic.setDescription(semanticDescription);
 
         ci.getRepresentationInformation().setSemantic(semantic);
+    }
+
+    public void addSoftwareEnvironment(String key, Object value) {
+        Assert.hasLength(key, "Software environment information key is required");
+        Assert.notNull(value, "Software environment information value is required");
+        ci.getRepresentationInformation().getEnvironmentDescription().getSoftwareEnvironment().put(key, value);
+    }
+
+    public void addHardwareEnvironment(String key, Object value) {
+        Assert.hasLength(key, "Hardware environment information key is required");
+        Assert.notNull(value, "Hardware environment information value is required");
+        ci.getRepresentationInformation().getEnvironmentDescription().getHardwareEnvironment().put(key, value);
     }
 
 }

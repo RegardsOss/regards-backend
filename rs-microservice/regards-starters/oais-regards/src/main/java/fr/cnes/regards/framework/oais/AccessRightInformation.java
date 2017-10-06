@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.time.OffsetDateTime;
-
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 /**
  *
@@ -32,32 +31,12 @@ import javax.validation.constraints.NotNull;
  */
 public class AccessRightInformation {
 
-    @NotNull
-    private String publisherDID;
-
-    @NotNull
-    private String publisherID;
+    private String licence;
 
     @NotNull
     private String dataRights;
 
     private OffsetDateTime publicReleaseDate;
-
-    public String getPublisherDID() {
-        return publisherDID;
-    }
-
-    public void setPublisherDID(String publisherDID) {
-        this.publisherDID = publisherDID;
-    }
-
-    public String getPublisherID() {
-        return publisherID;
-    }
-
-    public void setPublisherID(String publisherID) {
-        this.publisherID = publisherID;
-    }
 
     public String getDataRights() {
         return dataRights;
@@ -75,14 +54,20 @@ public class AccessRightInformation {
         this.publicReleaseDate = publicReleaseDate;
     }
 
+    public String getLicence() {
+        return licence;
+    }
+
+    public void setLicence(String licence) {
+        this.licence = licence;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + ((dataRights == null) ? 0 : dataRights.hashCode());
         result = (prime * result) + ((publicReleaseDate == null) ? 0 : publicReleaseDate.hashCode());
-        result = (prime * result) + ((publisherDID == null) ? 0 : publisherDID.hashCode());
-        result = (prime * result) + ((publisherID == null) ? 0 : publisherID.hashCode());
         return result;
     }
 
@@ -110,20 +95,6 @@ public class AccessRightInformation {
                 return false;
             }
         } else if (!publicReleaseDate.equals(other.publicReleaseDate)) {
-            return false;
-        }
-        if (publisherDID == null) {
-            if (other.publisherDID != null) {
-                return false;
-            }
-        } else if (!publisherDID.equals(other.publisherDID)) {
-            return false;
-        }
-        if (publisherID == null) {
-            if (other.publisherID != null) {
-                return false;
-            }
-        } else if (!publisherID.equals(other.publisherID)) {
             return false;
         }
         return true;

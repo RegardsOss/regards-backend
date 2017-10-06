@@ -22,10 +22,6 @@ import org.springframework.http.HttpStatus;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- * //TODO Add comments to this class
- * Please, if someone read this class and no comment have been (yet !!!) added (at least on method isSuccess), thank you
- * to come seeing Sylvain Vissiere-Guerinet and make him bring back some chocolatines and/or croissants.
- * @oroussel (05/10/2017)
  */
 public final class HttpUtils {
 
@@ -33,7 +29,6 @@ public final class HttpUtils {
 
     /**
      * Not standard HTTP usual code
-     * @author oroussel (I wrote this comment, it does not count for what i wrote upper)
      */
     public static final int UNKNOWN_ERROR = 520;
 
@@ -41,6 +36,9 @@ public final class HttpUtils {
         // private constructor of a util class
     }
 
+    /**
+     * check {https://tools.ietf.org/html/rfc7231#section-6} for information
+     */
     public static boolean isSuccess(HttpStatus pHttpStatus) {
         return (pHttpStatus.value() / HTTP_CODE_CLASS_MULTIPLIER) == 2;
     }
