@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
@@ -40,6 +41,9 @@ public class InformationPackageProperties {
     }
 
     public Map<String, Object> getDescriptiveInformation() {
+        if(descriptiveInformation== null) {
+            descriptiveInformation = Maps.newHashMap();
+        }
         return descriptiveInformation;
     }
 

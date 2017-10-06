@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
@@ -33,8 +34,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
-public abstract class AbstractInformationPackage<ID>
-        extends AbstractFeature<InformationPackageProperties, ID> {
+public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
     public EntityType getIpType() {
         return properties.getIpType();
@@ -45,8 +45,13 @@ public abstract class AbstractInformationPackage<ID>
     }
 
     public Collection<String> getTags() {
-        return (Collection<String>) properties.getPdi().getContextInformation()
-                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        if (properties.getPdi().getContextInformation()
+                .containsKey(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY)) {
+            return (Collection<String>) properties.getPdi().getContextInformation()
+                    .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        } else {
+            return Sets.newHashSet();
+        }
     }
 
     public List<Event> getHistory() {
@@ -59,7 +64,7 @@ public abstract class AbstractInformationPackage<ID>
      */
     public Event getLastEvent() {
         List<Event> history = getHistory();
-        if(history.size()!=0) {
+        if (history.size() != 0) {
             return history.get(history.size() - 1);
         } else {
             return null;
@@ -67,7 +72,7 @@ public abstract class AbstractInformationPackage<ID>
     }
 
     public Event getSubmissionEvent() {
-        return getHistory().stream().filter(e -> e.getType().equals(EventType.SUBMISSION.name())).findFirst()
+        return getHistory().stream().filter(e -> EventType.SUBMISSION.name().equals(e.getType())).findFirst()
                 .orElse(null);
     }
 

@@ -42,7 +42,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     private final Set<ContentInformation> cis = Sets.newHashSet();
 
-    private final ContentInformationBuilder contentInformationBuilder = new ContentInformationBuilder();
+    private ContentInformationBuilder contentInformationBuilder = new ContentInformationBuilder();
 
     private final PDIBuilder pdiBuilder = new PDIBuilder();
 
@@ -61,6 +61,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public void addContentInformation() {
         cis.add(contentInformationBuilder.build());
+        contentInformationBuilder = new ContentInformationBuilder();
     }
 
     public void addDescriptiveInformation(String key, Object value) {

@@ -115,13 +115,21 @@ public class OAISDataObject {
         if (regards_dataType != that.regards_dataType) {
             return false;
         }
-        return url.equals(that.url);
+        if (url != null ? !url.equals(that.url) : that.url != null) {
+            return false;
+        }
+        if (algorithm != null ? !algorithm.equals(that.algorithm) : that.algorithm != null) {
+            return false;
+        }
+        return checksum != null ? checksum.equals(that.checksum) : that.checksum == null;
     }
 
     @Override
     public int hashCode() {
-        int result = regards_dataType.hashCode();
-        result = 31 * result + url.hashCode();
+        int result = regards_dataType != null ? regards_dataType.hashCode() : 0;
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        result = 31 * result + (checksum != null ? checksum.hashCode() : 0);
         return result;
     }
 }
