@@ -118,7 +118,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        // this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
