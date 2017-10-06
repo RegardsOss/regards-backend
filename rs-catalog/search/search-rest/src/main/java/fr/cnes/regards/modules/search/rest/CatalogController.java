@@ -306,7 +306,7 @@ public class CatalogController {
     @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
-                                                                @PathVariable("dataset_ipId") String pUrn) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
+                                                                @PathVariable("urn") String pUrn) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
         final ResponseEntity<InputStreamResource> fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn));
 
 
