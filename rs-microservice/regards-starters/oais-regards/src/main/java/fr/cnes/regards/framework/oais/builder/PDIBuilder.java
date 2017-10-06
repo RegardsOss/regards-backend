@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.security.MessageDigest;
-import java.time.OffsetDateTime;
-import java.util.Map;
-
 import javax.annotation.Nullable;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
 import org.springframework.util.Assert;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
@@ -45,23 +46,42 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
-     * Add <b>optional</b> context informations
-     * @param contextInformations free context informations
+     * Add tags
+     * @param tags tags to add
      */
-    public void addContextInformations(Map<String, Object> contextInformations) {
-        Assert.notEmpty(contextInformations, "At least one information is required. Do not call this method otherwise");
-        pdi.getContextInformation().putAll(contextInformations);
+    public void addTags(String... tags) {
+        Assert.notEmpty(tags, "Tag is required");
+        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
+                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        if (existingTags == null) {
+            existingTags = Sets.newHashSet(tags);
+        } else {
+            existingTags.addAll(Arrays.asList(tags));
+        }
     }
 
     /**
-     * * Add an <b>optional</b> context information
+     * Add an <b>optional</b> context information
      * @param key information key
      * @param value information
      */
     public void addContextInformation(String key, Object value) {
         Assert.hasLength(key, "Context information key is required");
+        Assert.isTrue(!key.equalsIgnoreCase(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY),
+                      "Tags must be added thanks to addTags method");
         Assert.notNull(value, "Context information value is required");
         pdi.getContextInformation().put(key, value);
+    }
+
+    /**
+     * Add optional context information
+     * @param key information key
+     * @param value information
+     */
+    public void addReferenceInformation(String key, String value) {
+        Assert.hasLength(key, "Reference information key is required");
+        Assert.notNull(value, "Reference information value is required");
+        pdi.getReferenceInformation().put(key, value);
     }
 
     /**
@@ -76,6 +96,57 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
         if (additional != null) {
             pdi.getProvenanceInformation().getAdditional().putAll(additional);
         }
+    }
+
+    /**
+     * add additional provenance information
+     * @param key name of the information
+     * @param value value of the information
+     */
+    public void addProvenanceInformation(String key, Object value) {
+        Assert.hasLength(key, "Name of the additional provenance information is required");
+        Assert.notNull(value, "Value of the additional provenance information is required");
+        pdi.getProvenanceInformation().getAdditional().put(key, value);
+    }
+
+    /**
+     * Set optional facility information
+     */
+    public void setFacility(String facility) {
+        Assert.hasLength(facility, "Facility cannot be empty");
+        pdi.getProvenanceInformation().setFacility(facility);
+    }
+
+    /**
+     * Set optional instrument information
+     */
+    public void setInstrument(String instrument) {
+        Assert.hasLength(instrument, "Instrument cannot be empty");
+        pdi.getProvenanceInformation().setInstrument(instrument);
+    }
+
+    /**
+     * Set optional filter information
+     */
+    public void setFilter(String filter) {
+        Assert.hasLength(filter, "Filter cannot be empty");
+        pdi.getProvenanceInformation().setFilter(filter);
+    }
+
+    /**
+     * Set optional detector information
+     */
+    public void setDetector(String detector) {
+        Assert.hasLength(detector, "Detector cannot be empty");
+        pdi.getProvenanceInformation().setDetector(detector);
+    }
+
+    /**
+     * Set optional proposal information
+     */
+    public void setProposal(String proposal) {
+        Assert.hasLength(proposal, "Proposal cannot be empty");
+        pdi.getProvenanceInformation().setProposal(proposal);
     }
 
     /**
@@ -101,7 +172,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add an information object event
-     * @param optional type event type key (may be null)
+     * @param type optional event type key (may be null)
      * @param comment event comment
      * @param date event date
      */
@@ -131,55 +202,25 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
-     * Set <b>required</b> fixity information
-     * @param checksum file checksum
-     * @param algorithm related checksum algorithm (All available {@link MessageDigest} algorithm can be used)
-     * @param fileSize file size (may be null)
-     */
-    public void setFixityInformation(String checksum, String algorithm, Long fileSize) {
-        Assert.hasLength(checksum, "Checksum is required");
-        Assert.hasLength(algorithm, "Checksum algorithm is required");
-        pdi.getFixityInformation().setChecksum(checksum);
-        pdi.getFixityInformation().setAlgorithm(algorithm);
-        pdi.getFixityInformation().setFileSize(fileSize);
-    }
-
-    /**
-     * Alias for {@link PDIBuilder#setFixityInformation(String, String, Long)} (no fileSize)
-     * @param checksum file checksum
-     * @param algorithm related checksum algorithm (All available {@link MessageDigest} algorithm can be used)
-     *
-     */
-    public void setFixityInformation(String checksum, String algorithm) {
-        setFixityInformation(checksum, algorithm, null);
-    }
-
-    /**
      * Set <b>required</b> access right information
-     * @param publisherDID system unique identifier (i.e. REGARDS ip_id)
-     * @param publisherID supplyer unique identifier (i.e. sip_id)
+     * @param licence optional licence
      * @param dataRights secure key
      * @param publicReleaseDate optional public release date (may be null)
      */
-    public void setAccessRightInformation(String publisherDID, String publisherID, String dataRights,
+    public void setAccessRightInformation(String licence, String dataRights,
             @Nullable OffsetDateTime publicReleaseDate) {
-        Assert.hasLength(publisherDID, "Publisher DID is required");
-        Assert.hasLength(publisherID, "Publisher ID is required");
         Assert.hasLength(dataRights, "Data rights is required");
-        pdi.getAccesRightInformation().setPublisherDID(publisherDID);
-        pdi.getAccesRightInformation().setPublisherID(publisherID);
         pdi.getAccesRightInformation().setDataRights(dataRights);
         pdi.getAccesRightInformation().setPublicReleaseDate(publicReleaseDate);
+        pdi.getAccesRightInformation().setLicence(licence);
     }
 
     /**
-     * Alias for {@link PDIBuilder#setAccessRightInformation(String, String, String, OffsetDateTime)} (no public release
+     * Alias for {@link PDIBuilder#setAccessRightInformation(String, String, OffsetDateTime)} (no public release
      * date)
-     * @param publisherDID system unique identifier (i.e. REGARDS ip_id)
-     * @param publisherID supplyer unique identifier (i.e. sip_id)
      * @param dataRights secure key
      */
-    public void setAccessRightInformation(String publisherDID, String publisherID, String dataRights) {
-        setAccessRightInformation(publisherDID, publisherID, dataRights, null);
+    public void setAccessRightInformation(String dataRights) {
+        setAccessRightInformation(null, dataRights, null);
     }
 }

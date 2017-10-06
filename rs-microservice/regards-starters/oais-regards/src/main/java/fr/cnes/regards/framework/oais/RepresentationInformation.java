@@ -35,6 +35,8 @@ public class RepresentationInformation {
     @NotNull
     private Syntax syntax;
 
+    private EnvironmentDescription environmentDescription;
+
     public Syntax getSyntax() {
         return syntax;
     }
@@ -49,6 +51,14 @@ public class RepresentationInformation {
 
     public void setSemantic(Semantic semantic) {
         this.semantic = semantic;
+    }
+
+    public EnvironmentDescription getEnvironmentDescription() {
+        return environmentDescription;
+    }
+
+    public void setEnvironmentDescription(EnvironmentDescription environmentDescription) {
+        this.environmentDescription = environmentDescription;
     }
 
     @Override

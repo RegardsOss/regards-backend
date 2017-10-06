@@ -36,8 +36,15 @@ import javax.validation.constraints.NotNull;
  */
 public class ProvenanceInformation {
 
-    @NotNull
     private String facility;
+
+    private String instrument;
+
+    private String filter;
+
+    private String detector;
+
+    private String proposal;
 
     @NotNull
     private final List<Event> history = new ArrayList<>();
@@ -61,6 +68,38 @@ public class ProvenanceInformation {
             additional = new HashMap<>();
         }
         return additional;
+    }
+
+    public String getInstrument() {
+        return instrument;
+    }
+
+    public void setInstrument(String instrument) {
+        this.instrument = instrument;
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public void setFilter(String filter) {
+        this.filter = filter;
+    }
+
+    public String getDetector() {
+        return detector;
+    }
+
+    public void setDetector(String detector) {
+        this.detector = detector;
+    }
+
+    public String getProposal() {
+        return proposal;
+    }
+
+    public void setProposal(String proposal) {
+        this.proposal = proposal;
     }
 
     public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {

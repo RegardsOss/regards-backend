@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
+import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
+import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
@@ -30,44 +31,54 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * OAIS Information package base structure
  *
  * @author Marc Sordi
- *
+ * @author Sylvain Vissiere-Guerinet
  */
-public abstract class AbstractInformationPackage {
+public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
+
+    public EntityType getIpType() {
+        return properties.getIpType();
+    }
+
+    public void setIpType(EntityType entityType) {
+        properties.setIpType(entityType);
+    }
+
+    public Collection<String> getTags() {
+        return properties.getPdi().getTags();
+    }
+
+    public List<Event> getHistory() {
+        return properties.getPdi().getProvenanceInformation().getHistory();
+    }
 
     /**
-     * Type of entity represented by this information package
+     * Abstraction on where the last event is and how to get it
+     * @return last event occurred to this aip
      */
-    protected EntityType type;
-
-    /**
-     * Tag list
-     */
-    protected List<String> tags;
-
-    /**
-     * List of Information Object
-     */
-    @NotNull
-    protected List<InformationObject> informationObjects;
-
-    public AbstractInformationPackage() {
-        tags = new ArrayList<>();
-        informationObjects = new ArrayList<>();
+    public Event getLastEvent() {
+        List<Event> history = getHistory();
+        if (history.size() != 0) {
+            return history.get(history.size() - 1);
+        } else {
+            return null;
+        }
     }
 
-    public EntityType getType() {
-        return type;
+    public Event getSubmissionEvent() {
+        return getHistory().stream().filter(e -> EventType.SUBMISSION.name().equals(e.getType())).findFirst()
+                .orElse(null);
     }
 
-    public void setType(EntityType pType) {
-        type = pType;
+    public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
+        Event event = new Event();
+        event.setType(type);
+        event.setComment(comment);
+        event.setDate(date);
+        getHistory().add(event);
     }
 
-    public List<String> getTags() {
-        return tags;
+    public void addEvent(@Nullable String type, String comment) {
+        addEvent(type, comment, OffsetDateTime.now());
     }
 
-    public List<InformationObject> getInformationObjects() {
-        return informationObjects;
-    }
 }

@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  *
@@ -33,7 +36,15 @@ import javax.validation.constraints.NotNull;
  */
 public class PreservationDescriptionInformation {
 
+    public static final String CONTEXT_INFO_TAGS_KEY = "tags";
+
+    /**
+     * should contains the tags too as a "special" key
+     */
     private Map<String, Object> contextInformation;
+
+    @NotNull
+    private Map<String, String> referenceInformation;
 
     @NotNull
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
@@ -44,8 +55,11 @@ public class PreservationDescriptionInformation {
     @NotNull
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
-    public void setContextInformation(Map<String, Object> pContextInformation) {
-        contextInformation = pContextInformation;
+    public Map<String, String> getReferenceInformation() {
+        if(referenceInformation == null) {
+            referenceInformation = Maps.newHashMap();
+        }
+        return referenceInformation;
     }
 
     public Map<String, Object> getContextInformation() {
@@ -53,6 +67,19 @@ public class PreservationDescriptionInformation {
             contextInformation = new HashMap<>();
         }
         return contextInformation;
+    }
+
+    public Collection<String> getTags() {
+        Collection<String> tags = (Collection<String>) getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
+        if(tags == null) {
+            tags = Sets.newHashSet();
+            getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);
+        }
+        return tags;
+    }
+
+    public AccessRightInformation getAccessRightInformation() {
+        return accessRightInformation;
     }
 
     public ProvenanceInformation getProvenanceInformation() {
