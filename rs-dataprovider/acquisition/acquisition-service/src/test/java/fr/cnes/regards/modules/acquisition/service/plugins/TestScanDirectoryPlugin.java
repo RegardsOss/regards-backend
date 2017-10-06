@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
@@ -50,6 +49,8 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
 
     @Autowired
     private IMetaFileService metaFileService;
+    
+    private static final String DIR_DATA="data";
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
@@ -93,6 +94,16 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
 
         return af;
+    }
+
+    @Override
+    public Set<File> getBadFiles() {
+        Set<File> badFiles = new HashSet<>();
+        badFiles.add(new File(
+                getClass().getClassLoader().getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_XXXXX.TXT").getFile()));
+        badFiles.add(new File(
+                getClass().getClassLoader().getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_YYYYY.TXT").getFile()));
+        return badFiles;
     }
 
 }

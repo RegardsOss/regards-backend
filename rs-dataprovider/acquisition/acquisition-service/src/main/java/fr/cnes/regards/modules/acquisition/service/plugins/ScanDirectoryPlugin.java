@@ -22,6 +22,7 @@ import java.io.File;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -120,6 +121,11 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
                 LOGGER.debug("new file to acquire : " + acqFile.getFileName());
             }
         }
+    }
+
+    @Override
+    public Set<File> getBadFiles() {
+        return new HashSet<>();
     }
 
 }

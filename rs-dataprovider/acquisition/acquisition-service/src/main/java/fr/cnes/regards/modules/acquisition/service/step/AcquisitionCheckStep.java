@@ -135,9 +135,8 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     private void synchronizedDatabase(AcquisitionFile acqFile, ICheckFilePlugin checkPlugin) {
         acqFile.setStatus(AcquisitionFileStatus.VALID);
 
-        //      ProductBuilder.build(checkPlugin.getProductName())
-        //      .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get();
-
+        // TODO rattacher le fichier acquis au bon Produit
+        // peut-être que le Produit existe déjà
         Product currentProduct = new Product();
         currentProduct.setProductName(checkPlugin.getProductName());
         currentProduct.setStatus(ProductStatus.ACQUIRING);

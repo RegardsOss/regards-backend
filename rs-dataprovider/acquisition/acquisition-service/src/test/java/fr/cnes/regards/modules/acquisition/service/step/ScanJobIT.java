@@ -236,7 +236,7 @@ public class ScanJobIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(WAIT_TIME);
+        waitJob(150_000);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());

@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.step;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,8 +102,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
             synchronizedDatabase(acquisitionFiles);
 
-            // TODO CMZ 
-            //            reportBadFiles(metaFile);
+            reportBadFiles(scanPlugin.getBadFiles());
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -139,6 +139,14 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
         // Save the ChainGeneration the last activation date as been modified 
         chainGenerationService.save(chainGeneration);
+    }
+
+    private void reportBadFiles(Set<File> badFiles) {
+        if (badFiles == null || badFiles.isEmpty()) {
+            return;
+        }
+        badFiles.forEach(f -> LOGGER.info("Unexpected file <" + f.getAbsoluteFile() + "> for chain : < "
+                + chainGeneration.getLabel() + ">"));
     }
 
     @Override
