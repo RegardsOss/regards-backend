@@ -14,21 +14,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +34,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import feign.Response;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
@@ -56,12 +47,13 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.DataObject;
-import fr.cnes.regards.framework.oais.InformationObject;
-import fr.cnes.regards.framework.oais.builder.ContentInformationBuilder;
-import fr.cnes.regards.framework.oais.builder.PDIBuilder;
+import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -76,7 +68,6 @@ import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.service.IAllocationStrategy;
-import fr.cnes.regards.framework.oais.EventType;
 
 /**
  * Run client IT scenario tests for store and restore files from rs-storage microservice.
@@ -216,30 +207,26 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Test
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException {
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(EntityType.DATASET, "URN:AIP:DATA:PROJECT:" + UUID.randomUUID() + ":V1",
-                "clientAipTest");
+        AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(),1),
+                                            "clientAipTest");
         builder.addEvent(EventType.SUBMISSION.toString(), "Creation", OffsetDateTime.now());
-        InformationObject io = new InformationObject();
-        ContentInformationBuilder ciBuilder = new ContentInformationBuilder();
-
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.setIpType(EntityType.DATASET);
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 
-        ciBuilder.setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()));
-        ciBuilder.setSyntax("application/text", "text", "application/text");
-        io.setContentInformation(ciBuilder.build());
-        PDIBuilder pdiBuilder = new PDIBuilder();
         String fileChecksum = "";
         try (FileInputStream is = new FileInputStream(file.toFile())) {
             fileChecksum = ChecksumUtils.computeHexChecksum(is, "MD5");
-            pdiBuilder.setFixityInformation(fileChecksum, "MD5");
         }
+        ippBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()), "MD5", fileChecksum);
+        ippBuilder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
+        ippBuilder.addContentInformation();
 
-        io.setPdi(pdiBuilder.build());
-        builder.addInformationObjects(io);
+        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
         Set<AIP> aips = Sets.newHashSet(aip);
-        Assert.assertFalse("AIP should not exists before test", aipDao.findOneByIpId(aip.getIpId()).isPresent());
+        Assert.assertFalse("AIP should not exists before test", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
 
         // 1. Create new AIP
         ResponseEntity<Set<UUID>> resp = client.createAIP(aips);
@@ -250,17 +237,17 @@ public class AipClientIT extends AbstractRegardsWebIT {
             // Nothing to do
         }
         Assert.assertTrue("Http response should be OK after createAIP.", HttpStatus.OK.equals(resp.getStatusCode()));
-        Assert.assertTrue("AIP is not created", aipDao.findOneByIpId(aip.getIpId()).isPresent());
+        Assert.assertTrue("AIP is not created", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
         // 2. Retrieve it
         ResponseEntity<PagedResources<Resource<AIP>>> resp2 = client.retrieveAIPs(null, null, null, 0, 10);
         Assert.assertTrue("Http response should be OK adter retrieveAIPs.",
                           HttpStatus.OK.equals(resp2.getStatusCode()));
         Assert.assertTrue("There should be only one AIP retrieve, the one created before",
                           resp2.getBody().getMetadata().getTotalElements() == 1);
-        aip = aipDao.findOneByIpId(aip.getIpId()).get();
+        aip = aipDao.findOneByIpId(aip.getId().toString()).get();
 
         // 3. Retrieve associated files (RAWDATA and AIP metadata)
-        ResponseEntity<List<DataObject>> resp3 = client.retrieveAIPFiles(aip.getIpId());
+        ResponseEntity<List<OAISDataObject>> resp3 = client.retrieveAIPFiles(aip.getId().toString());
         Assert.assertTrue("Http response should be OK adter retrieveAIPFiles.",
                           HttpStatus.OK.equals(resp3.getStatusCode()));
         Assert.assertTrue("There should be one DataObject from the AIP.", resp3.getBody() != null);
@@ -280,7 +267,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
                           response.getBody().getErrors().isEmpty());
 
         // 5. Download file
-        Response downloadResponse = client.downloadFile(aip.getIpId(), fileChecksum);
+        Response downloadResponse = client.downloadFile(aip.getId().toString(), fileChecksum);
         // Assert.assertTrue("Http response should be OK for download.", HttpStatus.OK.equals(downloadResponse.status()));
 
         Map<String, Collection<String>> headers = downloadResponse.headers();

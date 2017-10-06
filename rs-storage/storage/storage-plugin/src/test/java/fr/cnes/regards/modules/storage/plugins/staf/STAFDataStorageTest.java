@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -91,7 +92,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        builder.addEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
@@ -288,7 +292,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        builder.addEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
@@ -368,7 +375,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        builder.addEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
@@ -448,7 +458,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        builder.addEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
@@ -525,7 +538,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        builder.addEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToDelete.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),

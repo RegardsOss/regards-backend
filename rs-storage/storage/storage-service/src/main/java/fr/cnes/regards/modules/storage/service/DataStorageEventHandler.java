@@ -296,11 +296,11 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                         .findFirst();
             // @formatter:on
             if (ci.isPresent()) {
-                ci.get().getPdi().getProvenanceInformation()
-                        .addEvent(EventType.STORAGE.name(), "File stored into REGARDS");
-                ci.get().getPdi().getFixityInformation().setFileSize(storedDataFile.getFileSize());
-                ci.get().getContentInformation().getDataObject().setUrl(storedDataFile.getUrl());
-                ci.get().getContentInformation().getDataObject().setFilename(storedDataFile.getName());
+                associatedAIP.getProperties().getPdi().getProvenanceInformation()
+                        .addEvent(EventType.STORAGE.name(), "File "+storedDataFile.getName()+" stored into REGARDS");
+                ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
+                ci.get().getDataObject().setUrl(storedDataFile.getUrl());
+                ci.get().getDataObject().setFilename(storedDataFile.getName());
                 aipDao.save(associatedAIP);
             }
         }

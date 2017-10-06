@@ -14,11 +14,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -39,7 +35,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -56,7 +51,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -64,21 +60,10 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.framework.oais.EventType;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
-import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.*;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
@@ -212,9 +197,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // 2. Create each DataFile of each AIP into database with PENDING state.
         for (AIP aip : aips) {
             // Can not create an existing AIP.
-            if (aipDao.findOneByIpId(aip.getIpId()).isPresent()) {
+            if (aipDao.findOneByIpId(aip.getId().toString()).isPresent()) {
                 throw new EntityAlreadyExistsException(
-                        String.format("AIP with ip id %s already exists", aip.getIpId()));
+                        String.format("AIP with ip id %s already exists", aip.getId().toString()));
             }
             aip.setState(AIPState.VALID);
             aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
@@ -316,13 +301,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Set<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
+    public Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
         Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
         if (aip.isPresent()) {
             Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
             return dataFiles.stream().map(df -> {
-                DataObject dataObject = new DataObject();
-                dataObject.setDataType(df.getDataType());
+                OAISDataObject dataObject = new OAISDataObject();
+                dataObject.setRegardsDataType(df.getDataType());
                 dataObject.setUrl(df.getUrl());
                 dataObject.setFilename(df.getName());
                 return dataObject;
@@ -337,7 +322,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
         Set<AIP> versions = aipDao.findAllByIpIdStartingWith(ipIdWithoutVersion);
-        return versions.stream().map(a -> a.getIpId()).collect(Collectors.toList());
+        return versions.stream().map(a -> a.getId().toString()).collect(Collectors.toList());
     }
 
     /**
@@ -410,7 +395,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to create
      * {@link IWorkingSubset}
      * of {@link DataFile}s.
-     * @param storageWorkingSetMap List of {@link DataFile} to prepare.
+     * @param dataFilesToSubSet List of {@link DataFile} to prepare.
      * @param dataStorageConf {@link PluginConfiguration}
      * @return {@link IWorkingSubset}s
      * @throws ModuleException
@@ -580,11 +565,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
                 metadataAipFile = new DataFile(urlToMetadata, checksum, checksumAlgorithm, DataType.AIP,
                         urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"), aip,
-                        aip.getIpId() + JSON_FILE_EXT);
+                        aip.getId().toString() + JSON_FILE_EXT);
             } else {
                 LOG.error(String.format(
                                         "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                                        aip.getIpId(), tenantWorkspace));
+                                        aip.getId().toString(), tenantWorkspace));
             }
         } catch (Exception e) {
             // Delete written file
@@ -627,7 +612,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * After an AIP is updated in database, this method write the new {@link DataFile} of the AIP metadata on disk
      * and return the list of created {@link DataFile} mapped to the old {@link DataFile} of the updated AIPs.
      * @param tenantWorkspace {@link Path} to the local directory where to write AIP files.
-     * @return {@link Set}<{@link History}> The list of {@link DataFile} to store.
+     * @return {@link Set}<{@link UpdatableMetadataFile}> The list of {@link DataFile} to store.
      */
     @Override
     public Set<UpdatableMetadataFile> prepareUpdatedAIP(Path tenantWorkspace) {
@@ -673,7 +658,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Set<AIP> aips = metadataToUpdate.stream().map(oldNew -> oldNew.getNewOne().getAip())
                     .collect(Collectors.toSet());
             for (AIP aip : aips) {
-                LOG.debug("[UPDATING AIP METADATA] AIP {} is in STORING_METADATA state", aip.getIpId());
+                LOG.debug("[UPDATING AIP METADATA] AIP {} is in STORING_METADATA state", aip.getId().toString());
                 aip.setState(AIPState.STORING_METADATA);
                 aipDao.save(aip);
                 publisher.publish(new AIPEvent(aip));

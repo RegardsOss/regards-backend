@@ -48,7 +48,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP events
+     * Add AIP events, /!\ should only be used after information package properties has been set /!\
      * @param events events to add
      */
     public void addEvents(Event... events) {
@@ -61,7 +61,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP events
+     * Add AIP events, /!\ should only be used after information package properties has been set /!\
      * @param events events to add
      */
     public void addEvents(Collection<Event> events) {
@@ -70,7 +70,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add an AIP event
+     * Add an AIP event, /!\ should only be used after information package properties has been set /!\
      * @param type optional event type key (may be null)
      * @param comment event comment
      * @param date event date
@@ -84,7 +84,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP event
+     * Add AIP event, /!\ should only be used after information package properties has been set /!\
      * @param comment event comment
      * @param date event date
      */
@@ -93,7 +93,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP event
+     * Add AIP event, /!\ should only be used after information package properties has been set /!\
      * @param comment event comment
      */
     public void addEvent(String comment) {
