@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAipClient {
 
-    public static final String AIP_PATH = "/aips";
+    String AIP_PATH = "/aips";
 
     public static final String PREPARE_DATA_FILES = "/dataFiles";
 
@@ -41,23 +41,23 @@ public interface IAipClient {
 
     public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
-    public static final String ID_OBJECT_LINK_PATH = OBJECT_LINK_PATH + "/{objectLinkid}";
+    String ID_OBJECT_LINK_PATH = OBJECT_LINK_PATH + "/{objectLinkid}";
 
-    public static final String VERSION_PATH = ID_PATH + "/versions";
+    String VERSION_PATH = ID_PATH + "/versions";
 
-    public static final String HISTORY_PATH = ID_PATH + "/history";
+    String HISTORY_PATH = ID_PATH + "/history";
 
-    public static final String TAG_PATH = ID_PATH + "/tags";
+    String TAG_PATH = ID_PATH + "/tags";
 
-    public static final String TAG = TAG_PATH + "/{tag}";
+    String TAG = TAG_PATH + "/{tag}";
 
-    public static final String QUICK_LOOK = ID_PATH + "/quicklook";
+    String QUICK_LOOK = ID_PATH + "/quicklook";
 
-    public static final String THUMB_NAIL = ID_PATH + "/thumbnail";
+    String THUMB_NAIL = ID_PATH + "/thumbnail";
 
     public static final String TAGS_PATH = "/tags";
 
-    public static final String TAGS_VALUE_PATH = TAGS_PATH + "/{tag}";
+    String TAGS_VALUE_PATH = TAGS_PATH + "/{tag}";
 
     public static final String OBJECT_LINKS_ID_PATH = "/objectLinks/{objectLinkid}";
 
