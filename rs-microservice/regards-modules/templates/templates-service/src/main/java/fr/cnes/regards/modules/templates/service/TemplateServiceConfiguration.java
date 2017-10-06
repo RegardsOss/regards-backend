@@ -19,18 +19,16 @@
 package fr.cnes.regards.modules.templates.service;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.templates.domain.Template;
@@ -45,171 +43,174 @@ public class TemplateServiceConfiguration {
     /**
      * The email validation template code
      */
-    public static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE = "emailAccountValidationTemplate";
+    public static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE = "EMAIL_ACCOUNT_VALIDATION_TEMPLATE";
 
     /**
      * The password reset template code
      */
-    public static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
+    public static final String MDP_RESET_TEMPLATE_CODE = "PASSWORD_RESET_TEMPLATE";
 
     /**
      * The account unlock template code
      */
-    public static final String ACCOUNT_UNLOCK_TEMPLATE = "accountUnlockTemplate";
+    public static final String ACCOUNT_UNLOCK_TEMPLATE_CODE = "ACCOUNT_UNLOCK_TEMPLATE";
 
     /**
      * The account refused template code
      */
-    public static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
+    public static final String ACCOUNT_REFUSED_TEMPLATE_CODE = "ACCOUNT_REFUSED_TEMPLATE";
 
     /**
      * The project user activated template code
      */
-    public static final String PROJECT_USER_ACTIVATED_TEMPLATE = "projectUserActivatedTemplate";
+    public static final String PROJECT_USER_ACTIVATED_TEMPLATE_CODE = "PROJECT_USER_ACTIVATED_TEMPLATE";
 
     /**
      * The project user inactivated template code
      */
-    public static final String PROJECT_USER_INACTIVATED_TEMPLATE = "projectUserInactivatedTemplate";
+    public static final String PROJECT_USER_INACTIVATED_TEMPLATE_CODE = "PROJECT_USER_INACTIVATED_TEMPLATE";
 
     /**
      * The verification email template as html
      */
-    @Value("classpath:email-account-validation-template.html")
-    private Resource emailAccountValidationTemplate;
+    private static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE = "template/email-account-validation-template.html";
 
     /**
      * The password reset email template as html
      */
-    @Value("classpath:password-reset-template.html")
-    private Resource passwordResetTemplate;
+    private static final String PASSWORD_RESET_TEMPLATE = "template/password-reset-template.html";
 
     /**
      * The account unlock email template as html
      */
-    @Value("classpath:account-unlock-template.html")
-    private Resource accountUnlockTemplate;
+    private static final String ACCOUNT_UNLOCK_TEMPLATE = "template/account-unlock-template.html";
 
     /**
      * The account refused email template as html
      */
-    @Value("classpath:account-refused-template.html")
-    private Resource accountRefusedTemplate;
+
+    private static final String ACCOUNT_REFUSED_TEMPLATE = "template/account-refused-template.html";
 
     /**
      * The project user activated email template as html
      */
-    @Value("classpath:project-user-activated-template.html")
-    private Resource projectUserActivatedTemplate;
+    private static final String PROJECT_USER_ACTIVATED_TEMPLATE = "template/project-user-activated-template.html";
 
     /**
      * The project user inactivated email template as html
      */
-    @Value("classpath:project-user-inactivated-template.html")
-    private Resource projectUserInactivatedTemplate;
+    private static final String PROJECT_USER_INACTIVATED_TEMPLATE = "template/project-user-inactivated-template.html";
 
     /**
      * Declare the template as bean
      * @return the template
-     * @throws IOException
      */
     @Bean
     public Template emailAccountValidationTemplate() throws IOException {
-        try (InputStream is = emailAccountValidationTemplate.getInputStream()) {
+        ClassPathResource resource = new ClassPathResource(EMAIL_ACCOUNT_VALIDATION_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
             return new Template(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE, text, dataStructure, "Account Confirmation");
+        } catch (FileNotFoundException fnfe) {
+            return null;
         }
     }
 
     /**
      * Declare the template as bean
      * @return the template
-     * @throws IOException
      */
     @Bean
     public Template passwordResetTemplate() throws IOException {
-        try (InputStream is = passwordResetTemplate.getInputStream()) {
+        ClassPathResource resource = new ClassPathResource(PASSWORD_RESET_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(MDP_RESET_TEMPLATE, text, dataStructure, "Password Reset");
+            return new Template(MDP_RESET_TEMPLATE_CODE, text, dataStructure, "Password Reset");
+        } catch (FileNotFoundException fnfe) {
+            return null;
         }
     }
 
     /**
      * Declare the template as bean
      * @return the template
-     * @throws IOException
      */
     @Bean
     public Template accountUnlockTemplate() throws IOException {
-        try (InputStream is = accountUnlockTemplate.getInputStream()) {
+        ClassPathResource resource = new ClassPathResource(ACCOUNT_UNLOCK_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ACCOUNT_UNLOCK_TEMPLATE, text, dataStructure, "Account Unlock");
+            return new Template(ACCOUNT_UNLOCK_TEMPLATE_CODE, text, dataStructure, "Account Unlock");
+        } catch (FileNotFoundException fnfe) {
+            return null;
         }
     }
 
     /**
      * Declare the template as bean
      * @return the template
-     * @throws IOException
      */
     @Bean
     public Template accountRefusedTemplate() throws IOException {
-        try (InputStream is = accountRefusedTemplate.getInputStream()) {
+        ClassPathResource resource = new ClassPathResource(ACCOUNT_REFUSED_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ACCOUNT_REFUSED_TEMPLATE, text, dataStructure, "Account refused");
+            return new Template(ACCOUNT_REFUSED_TEMPLATE_CODE, text, dataStructure, "Account refused");
+        } catch (FileNotFoundException fnfe) {
+            return null;
         }
     }
 
     /**
      * Declare the template as bean
      * @return the template
-     * @throws IOException
      */
     @Bean
     public Template projectUserActivatedTemplate() throws IOException {
-        try (InputStream is = projectUserActivatedTemplate.getInputStream()) {
+        ClassPathResource resource = new ClassPathResource(PROJECT_USER_ACTIVATED_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(PROJECT_USER_ACTIVATED_TEMPLATE, text, dataStructure, "Access re-activated");
+            return new Template(PROJECT_USER_ACTIVATED_TEMPLATE_CODE, text, dataStructure, "Access re-activated");
+        } catch (FileNotFoundException fnfe) {
+            return null;
         }
     }
 
     /**
      * Declare the template as bean
      * @return the template
-     * @throws IOException
      */
     @Bean
     public Template projectUserInactivatedTemplate() throws IOException {
-        try (InputStream is = projectUserInactivatedTemplate.getInputStream()) {
+        ClassPathResource resource = new ClassPathResource(PROJECT_USER_INACTIVATED_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
             final String text = inputStreamToString(is);
             final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(PROJECT_USER_INACTIVATED_TEMPLATE, text, dataStructure, "Access deactivated");
+            return new Template(PROJECT_USER_INACTIVATED_TEMPLATE_CODE, text, dataStructure, "Access deactivated");
+        } catch (FileNotFoundException fnfe) {
+            return null;
         }
     }
 
     /**
      * Writes an {@link InputStream} to a {@link String}.
-     *
-     * @param pInputStream
-     *            the input stream
+     * @param is the input stream
      * @return the string
-     * @throws IOException
-     *             when an error occurs while reading the stream
+     * @throws IOException when an error occurs while reading the stream
      */
-    private String inputStreamToString(final InputStream pInputStream) throws IOException {
-        final StringBuilder textBuilder = new StringBuilder();
-        try (Reader reader = new BufferedReader(
-                new InputStreamReader(pInputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
-            int c = 0;
-            while ((c = reader.read()) != -1) {
-                textBuilder.append((char) c);
+    private String inputStreamToString(final InputStream is) throws IOException {
+        final StringBuilder buf = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buf.append(line);
             }
-            return textBuilder.toString();
+            return buf.toString();
         }
     }
 

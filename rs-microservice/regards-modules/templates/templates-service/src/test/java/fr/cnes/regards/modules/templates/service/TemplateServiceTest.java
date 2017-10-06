@@ -46,7 +46,6 @@ import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
  * Test suite for {@link TemplateService}.
- *
  * @author Xavier-Alexandre Brochard
  */
 public class TemplateServiceTest {
@@ -94,10 +93,12 @@ public class TemplateServiceTest {
     /**
      * Data
      */
-    // @formatter:off
     @SuppressWarnings("serial")
-    public static final Map<String, String> DATA = new HashMap<String, String>() {{ put("name", "Defaultname");put("age", DATA_VALUE_1);put("height", DATA_VALUE_2); }};
-    // @formatter:on
+    public static final Map<String, String> DATA = new HashMap<String, String>() {{
+        put("name", "Defaultname");
+        put("age", DATA_VALUE_1);
+        put("height", DATA_VALUE_2);
+    }};
 
     /**
      * A template
@@ -139,7 +140,7 @@ public class TemplateServiceTest {
         IInstanceSubscriber instanceSubscriber = Mockito.mock(InstanceSubscriber.class);
 
         templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver,
-                microserviceName, instanceSubscriber);
+                                              microserviceName, instanceSubscriber);
     }
 
     /**
@@ -186,9 +187,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#findById(Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
     @Purpose("Check that the system allows to retrieve a single template.")
@@ -210,9 +209,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#findById(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case where trying to retrieve a template of unknown id.")
@@ -230,11 +227,9 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test
     @Purpose("Check that the system allows to update a template.")
@@ -259,11 +254,9 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case of updating an not existing template.")
@@ -284,11 +277,9 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Purpose("Check that the system allows the case of inconsistency of ids in the request.")
@@ -309,9 +300,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
     @Purpose("Check that the system allows to delete a single template.")
@@ -331,9 +320,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case of deleting an inexistent template.")
@@ -350,9 +337,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[])}.
-     *
-     * @throws EntityNotFoundException
-     *             no template of passed code could be found
+     * @throws EntityNotFoundException no template of passed code could be found
      */
     @Test
     @Purpose("Check that the system uses templates to send emails.")

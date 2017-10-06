@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,23 +179,19 @@ public class TemplateService implements ITemplateService {
      * Populate the templates with default
      */
     private void initDefaultTemplates() {
-        if (!templateRepository.findOneByCode(passwordResetTemplate.getCode()).isPresent()) {
-            templateRepository.save(passwordResetTemplate);
-        }
-        if (!templateRepository.findOneByCode(accountUnlockTemplate.getCode()).isPresent()) {
-            templateRepository.save(accountUnlockTemplate);
-        }
-        if (!templateRepository.findOneByCode(emailAccountValidationTemplate.getCode()).isPresent()) {
-            templateRepository.save(emailAccountValidationTemplate);
-        }
-        if (!templateRepository.findOneByCode(accountRefusedTemplate.getCode()).isPresent()) {
-            templateRepository.save(accountRefusedTemplate);
-        }
-        if (!templateRepository.findOneByCode(projectUserActivatedTemplate.getCode()).isPresent()) {
-            templateRepository.save(projectUserActivatedTemplate);
-        }
-        if (!templateRepository.findOneByCode(projectUserInactivatedTemplate.getCode()).isPresent()) {
-            templateRepository.save(projectUserInactivatedTemplate);
+        // Look into classpath (via TemplateServiceConfiguration) if some templates are present. If yes, check if they
+        // exist into Database, if not, create them
+        checkAndSaveIfNecessary(passwordResetTemplate);
+        checkAndSaveIfNecessary(accountUnlockTemplate);
+        checkAndSaveIfNecessary(emailAccountValidationTemplate);
+        checkAndSaveIfNecessary(accountRefusedTemplate);
+        checkAndSaveIfNecessary(projectUserActivatedTemplate);
+        checkAndSaveIfNecessary(projectUserInactivatedTemplate);
+    }
+
+    private void checkAndSaveIfNecessary(Template template) {
+        if ((template != null) && !templateRepository.findOneByCode(template.getCode()).isPresent()) {
+            templateRepository.save(template);
         }
     }
 

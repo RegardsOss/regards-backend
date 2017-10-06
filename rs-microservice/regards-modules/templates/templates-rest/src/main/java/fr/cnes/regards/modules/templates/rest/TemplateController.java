@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,6 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * Rest controller defining endpoint for managing {@link Template}s.
- *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -66,11 +64,8 @@ public class TemplateController implements IResourceController<Template> {
 
     /**
      * Constructor
-     * 
-     * @param pTemplateService
-     *            the template service
-     * @param pResourceService
-     *            the resource service
+     * @param pTemplateService the template service
+     * @param pResourceService the resource service
      */
     public TemplateController(final ITemplateService pTemplateService, final IResourceService pResourceService) {
         super();
@@ -90,9 +85,7 @@ public class TemplateController implements IResourceController<Template> {
 
     /**
      * Creates a template
-     *
-     * @param pTemplate
-     *            the template
+     * @param pTemplate the template
      * @return the created template
      */
     @ResponseBody
@@ -103,11 +96,9 @@ public class TemplateController implements IResourceController<Template> {
     }
 
     /**
-     * @param pId
-     *            the retrieved template id
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @param pId the retrieved template id
      * @return the template of passed id
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.GET)
@@ -119,16 +110,12 @@ public class TemplateController implements IResourceController<Template> {
 
     /**
      * Updates the template of passed id
-     *
-     * @param pId
-     *            the updated template id
-     * @param pTemplate
-     *            the updated template
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @param pId the updated template id
+     * @param pTemplate the updated template
      * @return void
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.PUT)
@@ -140,12 +127,9 @@ public class TemplateController implements IResourceController<Template> {
 
     /**
      * Deletes the template of passed id
-     *
-     * @param pId
-     *            the updated template id
+     * @param pId the updated template id
      * @return void
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.DELETE)
