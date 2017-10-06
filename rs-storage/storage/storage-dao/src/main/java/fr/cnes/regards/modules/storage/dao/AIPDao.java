@@ -28,7 +28,7 @@ public class AIPDao implements IAIPDao {
     @Override
     public AIP save(AIP toSave) {
         AIPDataBase toSaveInDb = new AIPDataBase(toSave);
-        Optional<AIPDataBase> fromDb = repo.findOneByIpId(toSave.getIpId());
+        Optional<AIPDataBase> fromDb = repo.findOneByIpId(toSave.getId().toString());
         if (fromDb.isPresent()) {
             toSaveInDb.setId(fromDb.get().getId());
         }

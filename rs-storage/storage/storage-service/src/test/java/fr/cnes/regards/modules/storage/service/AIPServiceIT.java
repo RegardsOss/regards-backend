@@ -13,17 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +26,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -48,7 +39,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.builder.InformationObjectBuilder;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -60,7 +53,6 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
@@ -126,7 +118,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-        this.cleanUp();
+        // this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -141,24 +133,23 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        PluginMetaData allocationMeta = PluginUtils
-                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                                                         DefaultAllocationStrategyPlugin.class
+                                                                                 .getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
         // third, lets create a plugin configuration of IDataStorage with the highest priority
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils
+                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
+                                      IOnlineDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
+                              gson.toJson(baseStorageLocation)).getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
-                0);
+                                                                      0);
         dataStorageConf.setIsActive(true);
         pluginService.savePluginConfiguration(dataStorageConf);
     }
@@ -175,17 +166,17 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         }
         LOG.info("All waiting JOB succeeded");
         Assert.assertFalse("The job failed while it should not have", handler.isFailed());
-        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
         // Wait for AIP set STORED status
-        LOG.info("Waiting for AIP {} stored", aip.getIpId());
+        LOG.info("Waiting for AIP {} stored", aip.getId().toString());
         wait = 0;
         while (!AIPState.STORED.equals(aipFromDB.get().getState()) && (wait < 10000)) {
-            aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             Thread.sleep(1000);
             wait = wait + 1000;
         }
         Assert.assertEquals(AIPState.STORED, aipFromDB.get().getState());
-        LOG.info("AIP {} stored", aip.getIpId());
+        LOG.info("AIP {} stored", aip.getId().toString());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
         Assert.assertEquals(2, dataFiles.size());
     }
@@ -193,8 +184,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void createFailOnDataTest() throws MalformedURLException, ModuleException, InterruptedException {
         // first lets change the data location to be sure it fails
-        aip.getInformationObjects().get(0).getContentInformation().getDataObject().setUrl(new URL("file", "",
-                Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile().getAbsolutePath()));
+        aip.getProperties().getContentInformations()
+                .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
+                .setUrl(new URL("file", "", Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
+                        .getAbsolutePath()));
         Set<UUID> jobIds = aipService.create(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -204,22 +197,23 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             wait = wait + 1000;
         }
         Assert.assertTrue("The job succeeded while it should not have", handler.isFailed());
-        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
         wait = 0;
-        LOG.info("Waiting for AIP {} error ...", aip.getIpId());
+        LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
         while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < 10000)) {
-            aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             Thread.sleep(1000);
             wait = wait + 1000;
         }
         Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
-        LOG.info("AIP {} is in ERROR State", aip.getIpId());
+        LOG.info("AIP {} is in ERROR State", aip.getId().toString());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
         Assert.assertEquals(1, dataFiles.size());
     }
 
     @Test
-    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories") //FIXME
+    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories")
+    //FIXME
     public void createFailOnMetadataTest() throws ModuleException, InterruptedException, IOException {
         // to make the process fail just on metadata storage, lets remove permissions from the workspace
         Path workspacePath = Paths.get(workspace, DEFAULT_TENANT);
@@ -234,11 +228,11 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 wait = wait + 1000;
             }
             Assert.assertFalse("The job failed while it should not have", handler.isFailed());
-            LOG.info("Waiting for AIP {} error ...", aip.getIpId());
-            Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+            LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
+            Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             wait = 0;
             while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < 10000)) {
-                aipFromDB = aipDao.findOneByIpId(aip.getIpId());
+                aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
                 Thread.sleep(1000);
                 wait = wait + 1000;
             }
@@ -257,7 +251,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         createSuccessTest();
         // now that it is correctly created, lets say it has been updated and add a tag
         Optional<DataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
-        aip = aipDao.findOneByIpId(aip.getIpId()).get();
+        aip = aipDao.findOneByIpId(aip.getId().toString()).get();
         aip.getTags().add("Exemple Tag For Fun");
         aip.setState(AIPState.UPDATED);
         aipDao.save(aip);
@@ -267,7 +261,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         aipService.updateAlreadyStoredMetadata();
 
         // Here the AIP should be in STORING_METADATA state
-        AIP newAIP = aipDao.findOneByIpId(aip.getIpId()).get();
+        AIP newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
         Assert.assertTrue("AIP should be in storing metadata state",
                           newAIP.getState().equals(AIPState.STORING_METADATA));
         int count = 0;
@@ -278,40 +272,39 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // After job is done, the old AIP metadata file should be deleted
         Assert.assertFalse("The old data file should not exists anymore!",
                            Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
-        newAIP = aipDao.findOneByIpId(aip.getIpId()).get();
+        newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
         count = 0;
         // After job is done, the AIP should be in STORED state.
         while (!newAIP.getState().equals(AIPState.STORED) && (count < 10)) {
             Thread.sleep(1000);
-            newAIP = aipDao.findOneByIpId(aip.getIpId()).get();
+            newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
             count++;
         }
         // After job is done, the new AIP metadata file should be present in local datastorage
         DataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
-        Assert.assertTrue("The new data file should exists!", Files.exists(Paths.get(file.getUrl().toURI())));
+        Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrl().toURI())));
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(EntityType.DATA,
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1)
-                        .toString(),
+        AIPBuilder aipBuilder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
                 null);
-
         // Build IO
-        InformationObjectBuilder ioBuilder = new InformationObjectBuilder();
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        ippBuilder.setIpType(EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        ioBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path));
-        ioBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
+        ippBuilder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        ippBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
+        ippBuilder.addContentInformation();
+        ippBuilder.getPDIBuilder().setAccessRightInformation("public");
+        ippBuilder.getPDIBuilder().setProvenanceInformation("CS");
+        ippBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
 
-        ioBuilder.getPDIBuilder().setAccessRightInformation("publisherDID", "publisherID", "public");
-        ioBuilder.getPDIBuilder().setFixityInformation("de89a907d33a9716d11765582102b2e0", "MD5");
-        ioBuilder.getPDIBuilder().setProvenanceInformation("CS");
-        ioBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                OffsetDateTime.now());
-
-        aipBuilder.addInformationObjects(ioBuilder.build());
+        aipBuilder.setInformationPackageProperties(ippBuilder.build());
         return aipBuilder.build();
     }
 

@@ -8,8 +8,6 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -24,11 +22,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.framework.oais.InformationObject;
-import fr.cnes.regards.framework.oais.builder.InformationObjectBuilder;
+import fr.cnes.regards.framework.oais.Event;
+import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
+import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -36,7 +34,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.EventType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -50,7 +47,6 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     @Autowired
     private IAIPDataBaseRepository repo;
 
-    // @Autowired
     private IAIPDao dao;
 
     /**
@@ -93,9 +89,9 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
         aip1 = dao.save(aip1);
         aip12 = pseudoClone(aip1);
-        UniformResourceName version2 = UniformResourceName.fromString(aip12.getIpId());
+        UniformResourceName version2 = UniformResourceName.fromString(aip12.getId().toString());
         version2.setVersion(2);
-        aip12.setIpId(version2.toString());
+        aip12.setId(version2);
         aip12 = dao.save(aip12);
         aip2 = generateRandomAIP();
         aip2.setState(AIPState.PENDING);
@@ -121,10 +117,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     public AIP pseudoClone(AIP src) {
 
-        AIPBuilder aipBuilder = new AIPBuilder(src.getType(), src.getIpId(), src.getSipId());
-        aipBuilder.addTags(Lists.newArrayList(src.getTags()));
-        aipBuilder.addEvents(src.getHistory());
-        aipBuilder.addInformationObjects(Lists.newArrayList(src.getInformationObjects()));
+        AIPBuilder aipBuilder = new AIPBuilder(src.getId(), src.getSipId());
+        aipBuilder.setInformationPackageProperties(src.getProperties());
 
         AIP clone = aipBuilder.build();
         clone.setState(src.getState());
@@ -133,57 +127,52 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        String ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant", UUID.randomUUID(), 1)
-                .toString();
+        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+                                                           UUID.randomUUID(), 1);
         String sipId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(EntityType.COLLECTION, ipId, sipId);
-        aipBuilder.addTags(generateRandomTags());
-        aipBuilder.addEvent(EventType.SUBMISSION.name(), "addition of this aip into our beautiful system!",
-                            OffsetDateTime.now());
-        aipBuilder.addInformationObjects(generateRandomInformationObjects());
+        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId);
+        aipBuilder.setInformationPackageProperties(generateRandomInformationPackageProperties());
 
         return aipBuilder.build();
     }
 
-    private List<InformationObject> generateRandomInformationObjects()
+    public InformationPackageProperties generateRandomInformationPackageProperties()
             throws NoSuchAlgorithmException, MalformedURLException {
 
-        int listMaxSize = 5;
-        Random random = new Random();
-        int listSize = random.nextInt(listMaxSize) + 1;
-        List<InformationObject> informationObjects = new ArrayList<>(listSize);
-        for (int i = 0; i < listSize; i++) {
-            informationObjects.add(generateRandomInformationObject());
-        }
-        return informationObjects;
-    }
-
-    public InformationObject generateRandomInformationObject() throws NoSuchAlgorithmException, MalformedURLException {
-
         // Init Information object builder
-        InformationObjectBuilder ioBuilder = new InformationObjectBuilder();
-
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
         // Content information
-        ioBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, new URL("ftp://bla"));
-        ioBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", "application/name",
-                                                                      "DESCRIPTION");
-
+        generateRandomContentInformations(ippBuilder);
         // PDI
+        ippBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "addition of this aip into our beautiful system!",
+                            OffsetDateTime.now());
+        // - ContextInformation
+        ippBuilder.getPDIBuilder().addTags(generateRandomTags());
         // - Provenance
-        ioBuilder.getPDIBuilder().setProvenanceInformation("TestPerf");
-        // - Fixity
-        ioBuilder.getPDIBuilder().setFixityInformation(sha1("blahblah"), "SHA1",
-                                                       new Long((new Random()).nextInt(10000000)));
+        ippBuilder.getPDIBuilder().setProvenanceInformation("TestPerf");
         // - Access right
         Random random = new Random();
         int maxStringLength = 20;
-        ioBuilder.getPDIBuilder().setAccessRightInformation(generateRandomString(random, maxStringLength),
-                                                            generateRandomString(random, maxStringLength),
-                                                            generateRandomString(random, maxStringLength));
+        ippBuilder.getPDIBuilder().setAccessRightInformation(generateRandomString(random, maxStringLength));
 
-        return ioBuilder.build();
+        return ippBuilder.build();
+    }
+
+    private void generateRandomContentInformations(InformationPackagePropertiesBuilder ippBuilder)
+            throws NoSuchAlgorithmException, MalformedURLException {
+        int listMaxSize = 5;
+        Random random = new Random();
+        int listSize = random.nextInt(listMaxSize) + 1;
+        for (int i = 0; i < listSize; i++) {
+            ippBuilder.getContentInformationBuilder()
+                    .setDataObject(DataType.OTHER, new URL("ftp://bla"), null, "SHA1", sha1("blahblah"),
+                                   new Long((new Random()).nextInt(10000000)));
+            ippBuilder.getContentInformationBuilder()
+                    .setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", "application/name", "DESCRIPTION");
+            ippBuilder.addContentInformation();
+        }
     }
 
     private String generateRandomString(Random random, int maxStringLength) {
@@ -219,7 +208,9 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     }
 
     private void setSubmissionDate(AIP aip1, OffsetDateTime submissionDate) {
-        aip1.addEvent(EventType.SUBMISSION.name(), "Submission of this aip into our beautiful system", submissionDate);
+        Event submissionEvent = aip1.getSubmissionEvent();
+        submissionEvent.setComment("Submission of this aip into our beautiful system");
+        submissionEvent.setDate(submissionDate);
     }
 
     @Test
@@ -305,8 +296,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindByLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByLastEventDateBefore(aip1.getLastEvent().getDate().plusSeconds(1),
-                                                            new PageRequest(0, 10));
+        Page<AIP> result = dao
+                .findAllByLastEventDateBefore(aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
         Assert.assertTrue(result.getContent().contains(aip3));
@@ -344,9 +335,9 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByStateAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByStateAndLastEventDateBefore(aip1.getState(),
-                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
-                                                                    new PageRequest(0, 10));
+        Page<AIP> result = dao
+                .findAllByStateAndLastEventDateBefore(aip1.getState(), aip1.getLastEvent().getDate().plusSeconds(1),
+                                                      new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
@@ -365,16 +356,20 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllBySubmissionDateAfterAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllBySubmissionDateAfterAndLastEventDateBefore(aip1.getSubmissionEvent().getDate()
-                .minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
+        Page<AIP> result = dao
+                .findAllBySubmissionDateAfterAndLastEventDateBefore(aip1.getSubmissionEvent().getDate().minusNanos(1),
+                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
+                                                                    new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllBySubmissionDateAfterAndLastEventDateBefore(aip2.getSubmissionEvent().getDate()
-                .minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
+        result = dao
+                .findAllBySubmissionDateAfterAndLastEventDateBefore(aip2.getSubmissionEvent().getDate().minusNanos(1),
+                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
+                                                                    new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
@@ -405,8 +400,12 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByStateAndSubmissionDateAfterAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip1.getState(), aip1
-                .getSubmissionEvent().getDate().minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1),
+        Page<AIP> result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip1.getState(),
+                                                                                          aip1.getSubmissionEvent()
+                                                                                                  .getDate()
+                                                                                                  .minusNanos(1),
+                                                                                          aip1.getLastEvent().getDate()
+                                                                                                  .plusSeconds(1),
                                                                                           new PageRequest(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
@@ -414,8 +413,11 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip2.getState(), aip1
-                .getSubmissionEvent().getDate().minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1),
+        result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip2.getState(),
+                                                                                aip1.getSubmissionEvent().getDate()
+                                                                                        .minusNanos(1),
+                                                                                aip1.getLastEvent().getDate()
+                                                                                        .plusSeconds(1),
                                                                                 new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
@@ -426,7 +428,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByIpIdStartingWith() {
-        String ipIdWithoutVersion = aip1.getIpId();
+        String ipIdWithoutVersion = aip1.getId().toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
         Set<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
         Assert.assertTrue(aips.contains(aip1));

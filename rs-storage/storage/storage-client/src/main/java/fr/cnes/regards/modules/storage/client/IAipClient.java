@@ -3,26 +3,21 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
+import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.Valid;
-
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -79,7 +74,7 @@ public interface IAipClient {
     public ResponseEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
-    public ResponseEntity<List<DataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
+    public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
 
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     public ResponseEntity<List<String>> retrieveAIPVersionHistory(

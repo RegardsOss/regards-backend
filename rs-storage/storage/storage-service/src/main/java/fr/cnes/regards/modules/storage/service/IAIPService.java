@@ -15,7 +15,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -66,7 +66,7 @@ public interface IAIPService {
      *
      * @param pState {@link AIPState} State of AIP wanted
      * @param pFrom {@link OffsetDateTime} start date of AIP to retrieve
-     * @param pto {@link OffsetDateTime} stop date of AIP to retrieve
+     * @param pTo {@link OffsetDateTime} stop date of AIP to retrieve
      * @param pPageable {@link Pageable} Pagination information
      * @return {@link AIP}s corresponding to parameters given.
      */
@@ -77,7 +77,7 @@ public interface IAIPService {
      * @return
      * @throws EntityNotFoundException
      */
-    Set<DataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException;
+    Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException;
 
     /**
      * @param pIpId
@@ -108,7 +108,7 @@ public interface IAIPService {
     /**
      * Schedule new {@link UpdateDataFilesJob}s for all {@link DataFile} of AIP metadata files given
      * and set there state to STORING_METADATA.
-     * @param metadataToUpdate List of {@link DataFile} of new AIP metadata files mapped to old ones.
+     * @param metadataToStore List of {@link DataFile} of new AIP metadata files mapped to old ones.
      */
     void scheduleStorageMetadata(Set<DataFile> metadataToStore);
 

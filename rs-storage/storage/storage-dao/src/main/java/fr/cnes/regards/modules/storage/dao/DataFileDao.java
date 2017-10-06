@@ -98,7 +98,7 @@ public class DataFileDao implements IDataFileDao {
     }
 
     private Optional<AIPDataBase> getAipDataBase(AIP aip) {
-        return aipRepo.findOneByIpId(aip.getIpId());
+        return aipRepo.findOneByIpId(aip.getId().toString());
     }
 
     public Optional<AIPDataBase> getAipDataBase(DataFile dataFile) {

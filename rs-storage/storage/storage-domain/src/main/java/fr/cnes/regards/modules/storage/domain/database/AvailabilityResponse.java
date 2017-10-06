@@ -10,8 +10,14 @@ import com.google.common.collect.Sets;
  */
 public class AvailabilityResponse {
 
+    /**
+     * Checksums of files that could not be made available
+     */
     private Set<String> errors;
 
+    /**
+     * Checksums of files that are already available
+     */
     private Set<String> alreadyAvailable;
 
     public AvailabilityResponse() {

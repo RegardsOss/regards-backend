@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  *
@@ -39,18 +38,17 @@ public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Init AIP builder
-     * @param type {@link EntityType}
      * @param ipId required information package identifier
      * @param sipId SIP identifier (may be null)
      */
-    public AIPBuilder(EntityType type, String ipId, @Nullable String sipId) {
-        super(AIP.class, type);
-        ip.setIpId(ipId);
+    public AIPBuilder(UniformResourceName ipId, @Nullable String sipId) {
+        super(AIP.class);
+        ip.setId(ipId);
         ip.setSipId(sipId);
     }
 
     /**
-     * Add AIP events
+     * Add AIP events, /!\ should only be used after information package properties has been set /!\
      * @param events events to add
      */
     public void addEvents(Event... events) {
@@ -63,7 +61,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP events
+     * Add AIP events, /!\ should only be used after information package properties has been set /!\
      * @param events events to add
      */
     public void addEvents(Collection<Event> events) {
@@ -72,8 +70,8 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add an AIP event
-     * @param optional type event type key (may be null)
+     * Add an AIP event, /!\ should only be used after information package properties has been set /!\
+     * @param type optional event type key (may be null)
      * @param comment event comment
      * @param date event date
      */
@@ -86,7 +84,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP event
+     * Add AIP event, /!\ should only be used after information package properties has been set /!\
      * @param comment event comment
      * @param date event date
      */
@@ -95,7 +93,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
     }
 
     /**
-     * Add AIP event
+     * Add AIP event, /!\ should only be used after information package properties has been set /!\
      * @param comment event comment
      */
     public void addEvent(String comment) {

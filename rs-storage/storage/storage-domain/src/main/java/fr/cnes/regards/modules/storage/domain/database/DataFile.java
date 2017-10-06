@@ -1,38 +1,19 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import javax.persistence.*;
 import java.net.URL;
 import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.FixityInformation;
-import fr.cnes.regards.framework.oais.InformationObject;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -40,7 +21,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 /**
  *
  * contains useful, for the system, metadata of a file from an AIP.
- * It mixes {@link DataObject}, {@link FixityInformation}, {@link RepresentationInformation} and add some information needed by the system not extracted from the AIP
+ * It mixes {@link OAISDataObject}, {@link FixityInformation}, {@link RepresentationInformation} and add some information needed by the system not extracted from the AIP
  *
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -106,8 +87,8 @@ public class DataFile {
     private DataFile() {
     }
 
-    public DataFile(DataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
-        this(file.getUrl(), checksum, algorithm, file.getDataType(), fileSize, mimeType, aip, null);
+    public DataFile(OAISDataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
+        this(file.getUrl(), checksum, algorithm, file.getRegardsDataType(), fileSize, mimeType, aip, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrl().getPath().split("/");
@@ -225,13 +206,13 @@ public class DataFile {
 
     public static Set<DataFile> extractDataFiles(AIP aip) {
         Set<DataFile> dataFiles = Sets.newHashSet();
-        for (InformationObject io : aip.getInformationObjects()) {
-            DataObject file = io.getContentInformation().getDataObject();
+        for (ContentInformation ci : aip.getProperties().getContentInformations()) {
+            OAISDataObject file = ci.getDataObject();
             MimeType mimeType = MimeType
-                    .valueOf(io.getContentInformation().getRepresentationInformation().getSyntax().getMimeType());
-            String algorithm = io.getPdi().getFixityInformation().getAlgorithm();
-            String checksum = io.getPdi().getFixityInformation().getChecksum();
-            Long fileSize = io.getPdi().getFixityInformation().getFileSize();
+                    .valueOf(ci.getRepresentationInformation().getSyntax().getMimeType());
+            String algorithm = ci.getDataObject().getAlgorithm();
+            String checksum = ci.getDataObject().getChecksum();
+            Long fileSize = ci.getDataObject().getFileSize();
             dataFiles.add(new DataFile(file, algorithm, checksum, fileSize, mimeType, aip));
         }
         return dataFiles;
