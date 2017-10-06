@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigInteger;
@@ -18,8 +19,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -295,8 +298,9 @@ public class OrderService implements IOrderService {
         boolean inPause = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
         if (!inPause) {
-            throw new CannotDeleteOrderException("Order is not completely stopped, some tasks are still running, please "
-                                                         + "wait a while and retry later");
+            throw new CannotDeleteOrderException(
+                    "Order is not completely stopped, some tasks are still running, please "
+                            + "wait a while and retry later");
         }
         // Delete all order data files
         dataFileService.removeAll(order.getId());
@@ -323,7 +327,8 @@ public class OrderService implements IOrderService {
     @Override
     public void writeAllOrdersInCsv(BufferedWriter writer) throws IOException {
         List<Order> orders = repos.findAll();
-        writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
+        writer.append(
+                "ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {
             writer.append(order.getId().toString()).append(';');
@@ -345,31 +350,31 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void downloadOrderCurrentZip(Long orderId, HttpServletResponse response) throws NotYetAvailableException {
+    public void downloadOrderCurrentZip(List<OrderDataFile> inDataFiles, OutputStream os) throws IOException {
+        List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
+        List<OrderDataFile> inErrorFiles = new ArrayList<>();
 
-        List<OrderDataFile> availableFiles = dataFileService.findAllAvailables(orderId);
-        if (availableFiles.isEmpty()) {
-            throw new NotYetAvailableException();
-        }
-
-        response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".zip");
-        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+        try (ZipOutputStream zos = new ZipOutputStream(os)) {
             // A multiset to manage multi-occurrences of files
             Multiset<String> dataFiles = HashMultiset.create();
-            for (OrderDataFile dataFile : availableFiles) {
+            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
+                OrderDataFile dataFile = i.next();
                 String aip = dataFile.getIpId().toString();
-                try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum())) {
+                try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum()).body().asInputStream()) {
+                    // If storage cannot provide file
                     if (is == null) {
-                        throw new FileNotFoundException(
-                                String.format("aip : %s, checksum : %s", aip, dataFile.getChecksum()));
+                        inErrorFiles.add(dataFile);
+                        i.remove();
+                        LOGGER.warn(
+                                String.format("Cannot retrieve data file from storage (aip : %s, checksum : %s)", aip,
+                                              dataFile.getChecksum()));
+                        continue;
                     }
                     // Add filename to multiset
                     String filename = dataFile.getName();
                     dataFiles.add(filename);
-                    // If same file appears several times, add "(n)" juste before extension
+                    // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
+                    // you dumb ass ! What do you thing it could be ?)
                     int filenameCount = dataFiles.count(filename);
                     if (filenameCount > 1) {
                         String suffix = " (" + (filenameCount - 1) + ")";
@@ -387,16 +392,11 @@ public class OrderService implements IOrderService {
             }
             zos.flush();
             zos.finish();
-        } catch (Throwable t) {
-            LOGGER.error("Error while generating zip order file", t);
-            throw new RuntimeException(t);
         }
-        try {
-            availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
-            dataFileService.save(availableFiles);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
+        inErrorFiles.forEach(f -> f.setState(FileState.ERROR));
+        availableFiles.addAll(inErrorFiles);
+        dataFileService.save(availableFiles);
     }
 
     @Override

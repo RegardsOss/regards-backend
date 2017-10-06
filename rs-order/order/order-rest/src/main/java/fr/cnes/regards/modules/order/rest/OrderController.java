@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.order.rest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,12 +16,14 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.base.Strings;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -31,6 +35,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
@@ -39,6 +44,7 @@ import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.service.IBasketService;
+import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 
 /**
@@ -59,6 +65,9 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @Autowired
     private IOrderService orderService;
+
+    @Autowired
+    private IOrderDataFileService dataFileService;
 
     @Autowired
     private JWTService jwtService;
@@ -173,13 +182,23 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
-    public void downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response)
-            throws NotYetAvailableException, EntityNotFoundException {
+    public ResponseEntity<StreamingResponseBody> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
+            HttpServletResponse response) throws EntityNotFoundException, IOException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        orderService.downloadOrderCurrentZip(orderId, response);
+        response.addHeader("Content-disposition",
+                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".zip");
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
+        // No file available
+        if (availableFiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(
+                os -> orderService.downloadOrderCurrentZip(availableFiles, response.getOutputStream()), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)

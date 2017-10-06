@@ -74,19 +74,13 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Override
     public void downloadFile(OrderDataFile dataFile, UniformResourceName aipId, String checksum, OutputStream os)
             throws IOException {
-        try (InputStream is = aipClient.downloadFile(aipId.toString(), checksum)) {
+        try (InputStream is = aipClient.downloadFile(aipId.toString(), checksum).body().asInputStream()) {
             ByteStreams.copy(is, os);
             os.close();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
         }
         // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
-        try {
-            dataFile.setState(FileState.DOWNLOADED);
-            self.save(dataFile);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        dataFile.setState(FileState.DOWNLOADED);
+        self.save(dataFile);
     }
 
     @Override

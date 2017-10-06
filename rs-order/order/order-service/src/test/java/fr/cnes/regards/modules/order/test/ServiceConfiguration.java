@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.order.test;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -17,8 +18,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.DataObject;
@@ -62,35 +66,29 @@ public class ServiceConfiguration {
             private IPublisher publisher;
 
             @Override
-            public InputStream downloadFile(String aipId, String checksum) {
-                return getClass().getResourceAsStream("/files/" + checksum);
-            }
-
-            @Override
-            public HttpEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
+            public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
                     OffsetDateTime pTo, int pPage, int pSize) {
                 return null;
             }
 
             @Override
-            public HttpEntity<Set<UUID>> createAIP(Set<AIP> aips) {
+            public ResponseEntity<Set<UUID>> createAIP(Set<AIP> aips) {
                 return null;
             }
 
             @Override
-            public HttpEntity<List<DataObject>> retrieveAIPFiles(
-                    UniformResourceName pIpId) {
+            public ResponseEntity<List<DataObject>> retrieveAIPFiles(String s) {
                 return null;
             }
 
             @Override
-            public HttpEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
+            public ResponseEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
                     int pSize) {
                 return null;
             }
 
             @Override
-            public HttpEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
+            public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
                 for (String checksum : availabilityRequest.getChecksums()) {
                     if ((int)(Math.random() * 10) % 2 == 0) {
                         publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
@@ -98,8 +96,19 @@ public class ServiceConfiguration {
                         publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
                     }
                 }
-                return new HttpEntity<>(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
+                return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
                                                                  Collections.emptySet()));
+            }
+
+            @Override
+            public Response downloadFile(String aipId, String checksum) {
+                Response mockResp = Mockito.mock(Response.class);
+                try {
+                    Mockito.when(mockResp.body().asInputStream()).thenReturn( getClass().getResourceAsStream("/files/" + checksum));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return mockResp;
             }
         };
     }

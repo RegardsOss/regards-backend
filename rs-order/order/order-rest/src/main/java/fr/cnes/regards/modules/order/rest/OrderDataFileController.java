@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
+import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -113,16 +114,16 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_AIPS_AIP_ID_FILES_CHECKSUM)
-    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("orderId") Long orderId, @PathVariable("aipId") String aipId,
-            @PathVariable("checksum") String checksum, HttpServletResponse response)
-            throws NoSuchElementException, IOException {
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("orderId") Long orderId,
+            @PathVariable("aipId") String aipId, @PathVariable("checksum") String checksum,
+            HttpServletResponse response) throws NoSuchElementException, IOException {
         // Throws a NoSuchELementException if not found
         OrderDataFile dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
         response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
         response.setContentType(dataFile.getMimeType().toString());
 
-        return new ResponseEntity<>(os -> dataFileService
-                .downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
+        return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, decodeUrn(aipId), checksum, os),
+                                    HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
@@ -131,20 +132,29 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("checksum") String checksum, @RequestParam(name = ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException, IOException {
-
+        OrderDataFile dataFile;
         try {
             Claims claims = jwtService.parseToken(token, secret);
             Long orderId = Long.parseLong(claims.get(OrderController.ORDER_ID_KEY, String.class));
             // Throws a NoSuchELementException if not found
-            OrderDataFile dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
-            response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-            response.setContentType(dataFile.getMimeType().toString());
-
-            return new ResponseEntity<>(os -> dataFileService
-                    .downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
-
+            dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
         } catch (InvalidJwtException | MalformedJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
+        response.setContentType(dataFile.getMimeType().toString());
+
+        switch (dataFile.getState()) {
+            case PENDING:
+                // For JDownloader : status 202 when file not yet available
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            case ERROR:
+                // Error from storage
+                return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
+            default:
+                return new ResponseEntity<>(
+                        os -> dataFileService.downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
         }
     }
 

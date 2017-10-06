@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
@@ -98,11 +100,10 @@ public interface IOrderService {
     /**
      * Create a ZIP containing all currently available files. Once a file has been part of ZIP file, it will not be
      * part of another again.
-     * @param orderId concerned order id
+     * @param inDataFiles concerned order data files
      * @throws NotYetAvailableException if no files are available yet
      */
-    void downloadOrderCurrentZip(Long orderId, HttpServletResponse response)
-            throws NotYetAvailableException;
+    void downloadOrderCurrentZip(List<OrderDataFile> inDataFiles, OutputStream os) throws IOException;
 
     /**
      * Create a metalink file with all files.

@@ -255,7 +255,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         List<ResultMatcher> expectations = okExpectations();
 
-        // First Download metalink order file
+        ////////////////////////////////////////
+        // First Download metalink order file //
+        ////////////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, expectations,
                                                         "Should return result", order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
@@ -271,13 +273,17 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // slightely different into jenkins)
 
         List<ResultMatcher> expectations2 = okExpectations();
-        // Then download order Zip file
+        //////////////////////////////////
+        // Then download order Zip file //
+        //////////////////////////////////
         resultActions = performDefaultGet("/user/orders/{orderId}/download", expectations2, "Should return result",
                                           order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         resultFile.deleteOnExit();
         try (FileOutputStream fos = new FileOutputStream(resultFile)) {
+            Object o = resultActions.andReturn().getAsyncResult();
+            System.out.println(o);
             InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
             ByteStreams.copy(is, fos);
             is.close();
@@ -290,7 +296,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         List<OrderDataFile> dataFiles = dataFileRepository.findByOrderIdAndStateIn(order.getId(), FileState.DOWNLOADED);
         Assert.assertEquals(13, dataFiles.size());
 
-        // Check that URL from metalink file are correct
+        //////////////////////////////////////////////////////
+        // Check that URL from metalink file are correct    //
+        // ie download all files with public url and token  //
+        //////////////////////////////////////////////////////
         JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
@@ -308,7 +317,13 @@ public class OrderControllerIT extends AbstractRegardsIT {
             String checksum = urlParts[5].substring(0, urlParts[5].indexOf('?'));
             String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1);
 
-            List<ResultMatcher> expects = okExpectations();
+            List<ResultMatcher> expects;
+            // File file3.txt has a status PENDING...
+            if (!checksum.contains("file3.txt")) {
+                expects = okExpectations();
+            } else { // ...so its HttpStatus is 202 (ACCEPTED)
+                expects = expectations(MockMvcResultMatchers.status().isAccepted());
+            }
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_CHECKSUM,

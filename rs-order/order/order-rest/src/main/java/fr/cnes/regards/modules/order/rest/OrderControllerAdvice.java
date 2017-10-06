@@ -53,20 +53,17 @@ public class OrderControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CannotDeleteOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotDeleteOrderException(final CannotDeleteOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(CannotResumeOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotResumeOrderException(final CannotResumeOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(CannotRemoveOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotRemoveOrderException(final CannotRemoveOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
 }
