@@ -282,7 +282,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         }
         // After job is done, the new AIP metadata file should be present in local datastorage
         DataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
-        Assert.assertTrue("The new data file should exists!", Files.exists(Paths.get(file.getUrl().toURI())));
+        Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrl().toURI())));
     }
 
     private AIP getAIP() throws MalformedURLException {
