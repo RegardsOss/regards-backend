@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
 import java.security.MessageDigest;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,7 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
@@ -99,6 +101,12 @@ public class MetaProduct implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
+
+//    /**
+//     * The last activation date when an acquisition were running 
+//     */
+//    @Transient
+//    private OffsetDateTime lastAcqDate;
 
     //    /**
     //     * Les informations d'acquisition pour ce type de produit
@@ -250,6 +258,14 @@ public class MetaProduct implements IIdentifiable<Long> {
     public void setId(Long id) {
         this.id = id;
     }
+
+//    public OffsetDateTime getLastAcqDate() {
+//        return lastAcqDate;
+//    }
+//
+//    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+//        this.lastAcqDate = lastAcqDate;
+//    }
 
     @Override
     public String toString() {

@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,9 +34,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.ScanDirectoryDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
@@ -56,10 +59,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
-    public static final String META_PRODUCT_PARAM = "meta-produt";
-
-    public static final String META_FILE_PARAM = "meta-file";
-
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;
 
@@ -69,14 +68,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
-
-        // TODO CMZ à compléter
-        // pour chaque MetaFile
-        // pour chaque ScanDirectory
-        // tester date de dernière acquisition
-        // chercher des fichiers vérifiant le pattern
-        // créer des AcquisitionFile pour les fichiers trouvés
-
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
@@ -84,49 +75,44 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             LOGGER.info("ScanDirectoryPlugin : scan Metafile <" + metaFileDto.getFileNamePattern() + ">");
 
             MetaFile metaFile = metaFileService.retrieve(metaFileDto.getId());
-
-            String filePattern = metaFileDto.getFileNamePattern();
-            String adaptedPattern = getAdaptedPattern(filePattern);
-            RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
-
-            for (ScanDirectoryDto scanDirectoryDto : metaFileDto.getScanDirectories()) {
-                LOGGER.info("ScanDirectoryPlugin : scan directory <" + scanDirectoryDto.getScanDir() + ">");
-
-                scanDirectories(scanDirectoryDto, filter, metaFile, acqFileList);
-            }
+            scanDirectories(metaFile, acqFileList);
         }
 
         return acqFileList;
     }
 
-    private void scanDirectories(ScanDirectoryDto scanDirDto, RegexFilenameFilter filter, MetaFile metaFile,
-            Set<AcquisitionFile> acqFileList) {
-        String dirPath = scanDirDto.getScanDir();
-        File dirFile = new File(dirPath);
-        // Check if directory exists and is readable
-        if (dirFile.exists() && dirFile.isDirectory() && dirFile.canRead()) {
-            addMatchedFile(dirFile, scanDirDto, filter, metaFile, acqFileList);
+    private void scanDirectories(MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
+
+        String filePattern = metaFile.getFileNamePattern();
+        String adaptedPattern = getAdaptedPattern(filePattern);
+        RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
+
+        for (ScanDirectory scanDir : metaFile.getScanDirectories()) {
+            LOGGER.info("ScanDirectoryPlugin : scan directory <" + scanDir.getScanDir() + ">");
+
+            String dirPath = scanDir.getScanDir();
+            File dirFile = new File(dirPath);
+            // Check if directory exists and is readable
+            if (dirFile.exists() && dirFile.isDirectory() && dirFile.canRead()) {
+                addMatchedFile(dirFile, scanDir, filter, metaFile, acqFileList);
+            }
         }
 
     }
 
-    private void addMatchedFile(File dirFile, ScanDirectoryDto scanDirDto, RegexFilenameFilter filter,
-            MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
-        // TODO CMZ ajouter lasAcdDate dans DTO
-        // gérer la première acquisition où il n'y aura pas de Date
-        List<File> filteredFileList = filteredFileList(dirFile, filter, 0);
+    private void addMatchedFile(File dirFile, ScanDirectory scanDir, RegexFilenameFilter filter, MetaFile metaFile,
+            Set<AcquisitionFile> acqFileList) {
+        List<File> filteredFileList = filteredFileList(dirFile, filter, null);
+        // TODO CMZ à remettre, il faut la lastAcqDate
+        //        List<File> filteredFileList = filteredFileList(dirFile, filter, metaProductDto.getLastAcqDate());
 
         for (File baseFile : filteredFileList) {
-            AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile, null);
+            AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile);
 
             // calculer checksum si configuré
 
-            // initAcquisitionInformation
-
-            Long lastModifiedDate = new Long(baseFile.lastModified());
-
-            // TODO convertir en OffSetDateTime
-            acqFile.setAcqDate(null);
+            acqFile.setAcqDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(baseFile.lastModified()),
+                                                        ZoneId.of("UTC")));
 
             acqFileList.add(acqFile);
 

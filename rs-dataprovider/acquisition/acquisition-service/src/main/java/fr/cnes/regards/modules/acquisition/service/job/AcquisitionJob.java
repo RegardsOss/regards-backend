@@ -85,9 +85,6 @@ public class AcquisitionJob extends AbstractJob<Void> {
             firstStep.setNextStep(secundStep);
         }
 
-        // TODO CMZ : à mettre à ce moment ?
-        chainGeneration.setLastDateActivation(OffsetDateTime.now());
-
         process.run();
 
         LOGGER.info("End  acquisition job for the chain <" + chainGeneration.getLabel() + ">");

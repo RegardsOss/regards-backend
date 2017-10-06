@@ -24,21 +24,18 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
-import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 
 /**
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
@@ -49,7 +46,7 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 @Plugin(id = "TestScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
+public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
 
     @Autowired
     private IMetaFileService metaFileService;
@@ -70,7 +67,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
 
-//        MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
+        //        MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
@@ -86,10 +83,11 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
         AcquisitionFile af = new AcquisitionFile();
         af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getParent().toString()).get());
         af.setFileName(file.getName());
-        af.setSize(file.getTotalSpace() / 1024);
+        af.setSize(file.length());
         af.setAcqDate(OffsetDateTime.now());
         af.setAlgorithm(CHECKUM_ALGO);
         af.setChecksum(null);// TODO CMZ à compléter
+        af.setStatus(null);
 
         MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
         af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));

@@ -218,6 +218,7 @@ public class ScanJobIT {
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
+//        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 

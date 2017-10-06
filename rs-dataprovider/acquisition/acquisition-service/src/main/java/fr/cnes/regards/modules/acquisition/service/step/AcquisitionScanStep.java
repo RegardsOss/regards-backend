@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  */
 @MultitenantTransactional
 @Service
-public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep  {
+public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanStep.class);
 
@@ -100,9 +100,9 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             Set<AcquisitionFile> acquisitionFiles = scanPlugin.getAcquisitionFiles();
 
             synchronizedDatabase(acquisitionFiles);
-            
+
             // TODO CMZ 
-//            reportBadFiles(metaFile);
+            //            reportBadFiles(metaFile);
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -111,8 +111,6 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
     }
 
     private void synchronizedDatabase(Set<AcquisitionFile> acquisitionFiles) {
-        chainGenerationService.save(chainGeneration);
-
         for (AcquisitionFile af : acquisitionFiles) {
             List<AcquisitionFile> listAf = acquisitionFileService.findByMetaFile(af.getMetaFile());
 
@@ -127,7 +125,20 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
                 af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
                 acquisitionFileService.save(af);
             }
+
+            // for the first activation of the ChainGeneration
+            // set the last activation date with the activation date of the current AcquisitionFile
+            if (chainGeneration.getLastDateActivation() == null) {
+                chainGeneration.setLastDateActivation(af.getAcqDate());
+            } else {
+                if (chainGeneration.getLastDateActivation().isBefore(af.getAcqDate())) {
+                    chainGeneration.setLastDateActivation(af.getAcqDate());
+                }
+            }
         }
+
+        // Save the ChainGeneration the last activation date as been modified 
+        chainGenerationService.save(chainGeneration);
     }
 
     @Override

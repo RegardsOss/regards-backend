@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.metadata.dto;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.beans.BeanUtils;
 
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -38,6 +40,8 @@ public class MetaProductDto {
 
     // TODO CMZ : util ?
     private Boolean cleanOriginalFile;
+
+//    private OffsetDateTime lastAcqDate;
 
     public Long getId() {
         return id;
@@ -70,6 +74,14 @@ public class MetaProductDto {
     public void setCleanOriginalFile(Boolean cleanOriginalFile) {
         this.cleanOriginalFile = cleanOriginalFile;
     }
+
+//    public OffsetDateTime getLastAcqDate() {
+//        return lastAcqDate;
+//    }
+//
+//    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+//        this.lastAcqDate = lastAcqDate;
+//    }
 
     public static MetaProductDto fromMetaProduct(MetaProduct metaProduct) {
         MetaProductDto dto = new MetaProductDto();

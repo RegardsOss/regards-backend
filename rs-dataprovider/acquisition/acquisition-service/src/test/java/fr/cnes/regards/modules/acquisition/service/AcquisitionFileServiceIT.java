@@ -154,6 +154,10 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(2, aProduct.getAcquisitionFile().size());
         Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(0).getProduct());
         Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(1).getProduct());
+        Assert.assertEquals(2,acqfileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
+        Assert.assertEquals(0,acqfileService.findByStatus(AcquisitionFileStatus.DELETED).size());
+        Assert.assertEquals(2,acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, aMetaFile).size());
+        Assert.assertEquals(0,acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.DELETED, aMetaFile).size());
 
         // Remove a ScanDirectory
         aMetaFile.removeScanDirectory(scanDir2);
