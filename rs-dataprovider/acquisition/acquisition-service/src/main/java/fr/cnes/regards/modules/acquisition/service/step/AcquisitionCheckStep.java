@@ -17,9 +17,10 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.job.step;
+package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
@@ -102,20 +104,23 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             if (inProgressFileList != null) {
-                // TODO il faut récupérer les produits à traiter pour un MetaProduit, ou MetaFile
-
                 for (AcquisitionFile acqFile : inProgressFileList) {
                     File currentFile = null;
                     if (acqFile.getAcquisitionInformations() != null) {
                         String workingDir = acqFile.getAcquisitionInformations().getWorkingDirectory();
                         if (workingDir != null) {
                             currentFile = new File(workingDir, acqFile.getFileName());
+                        } else {
+                            currentFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
+                                    acqFile.getFileName());
                         }
                     } else {
                         currentFile = new File(acqFile.getFileName());
                     }
 
+                    // execute the check plugin
                     if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
+                        // if the AcquisitionFile is check, update in database
                         synchronizedDatabase(acqFile, checkPlugin);
                     }
                 }
@@ -143,8 +148,11 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void getResources() throws AcquisitionException {
-        // TODO CMZ à compléter il ne faut que le AcquisitionFile pour un MetaProduct et peut-être avec une date 
-        inProgressFileList = acquisitionFileRepository.findByStatus(AcquisitionFileStatus.IN_PROGRESS);
+        inProgressFileList = new ArrayList<>();
+        for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
+            inProgressFileList.addAll(acquisitionFileRepository
+                    .findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, metaFile));
+        }
     }
 
     @Override

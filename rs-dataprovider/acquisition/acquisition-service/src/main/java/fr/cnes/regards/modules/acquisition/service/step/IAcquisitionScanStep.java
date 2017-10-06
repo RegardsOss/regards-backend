@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.job.step;
+package fr.cnes.regards.modules.acquisition.service.step;
 
 /**
  * 
  * @author Christophe Mertz
  * 
  */
-public interface IAcquisitionCheckStep extends IStep {
+public interface IAcquisitionScanStep extends IStep {
 
 }

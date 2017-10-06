@@ -37,16 +37,17 @@ public interface IAcquisitionFileService {
      * @return a {@link List} of {@link AcquisitionFile}
      */
     List<AcquisitionFile> retrieveAll();
-    
+
     /**
      * Find the {@link AcquisitionFile} for a {@link MetaFile}
      * @param metaFile
      * @return a {@link List} of {@link AcquisitionFile}
      */
     public List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
-    
-    
+
     public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
+    
+    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
 
     /**
      * Retrieve one specified {@link AcquisitionFile}

@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.step;
+package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -71,12 +71,15 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
+import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
 
 /**
  * @author Christophe Mertz
@@ -99,7 +102,7 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private static final long WAIT_TIME = 3_000;
+    private static final long WAIT_TIME = 6_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -193,11 +196,6 @@ public class ScanJobIT {
     }
 
     public void initData() {
-        // Create a ChainGeneration and a MetaProduct
-        this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
-        this.chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
-                .withMetaProduct(metaProduct).get());
-
         // Create 2 ScanDirectory
         ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1")
                 .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
@@ -208,6 +206,11 @@ public class ScanJobIT {
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get());
+        
+        // Create a ChainGeneration and a MetaProduct
+        this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
+        this.chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
+                .withMetaProduct(metaProduct).get());
     }
 
     @Test
@@ -218,15 +221,21 @@ public class ScanJobIT {
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
-        PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
+        PluginConfiguration plgConfScan = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                            IAcquisitionScanDirectoryPlugin.class);
-        chain.setScanAcquisitionPluginConf(plgConf.getId());
+        chain.setScanAcquisitionPluginConf(plgConfScan.getId());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
+        
+        PluginConfiguration plgConfCheck = pluginService.getPluginConfiguration("BasicCheckFilePlugin",
+                                                                           ICheckFilePlugin.class);
+        chain.setCheckAcquisitionPluginConf(plgConfCheck.getId());
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(150_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());

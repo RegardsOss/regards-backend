@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain.metadata;
 
 import java.security.MessageDigest;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -74,7 +75,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     private String label;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     private Set<Product> products = new HashSet<Product>();
 
     /**
@@ -92,10 +93,12 @@ public class MetaProduct implements IIdentifiable<Long> {
     @Column(name = "cleanOriginalFile")
     private Boolean cleanOriginalFile = Boolean.TRUE;
 
-    //    /**
-    //     * La liste des type de fichiers composant ce produit (liste de MetaFile)
-    //     */
-    //    private List<MetaFile> metaFileList;
+    /**
+     * The {@link List} of {@link MetaFile} for this {@link MetaProduct}
+     */
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
+    private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
 
     //    /**
     //     * Les informations d'acquisition pour ce type de produit
@@ -230,6 +233,18 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     public void removeProduct(Product product) {
         this.products.remove(product);
+    }
+
+    public Set<MetaFile> getMetaFiles() {
+        return metaFiles;
+    }
+
+    public void addMetaFile(MetaFile metaFile) {
+        this.metaFiles.add(metaFile);
+    }
+
+    public void removeMetaFile(MetaFile metaFile) {
+        this.metaFiles.remove(metaFile);
     }
 
     public void setId(Long id) {

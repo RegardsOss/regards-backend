@@ -38,4 +38,6 @@ public interface IAcquisitionFileRepository extends CrudRepository<AcquisitionFi
     List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
     
     List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
+    
+    List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
 }

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.acquisition.plugins;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -16,13 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
-package fr.cnes.regards.modules.acquisition.plugins;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
  * 
@@ -34,6 +37,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class BasicCheckFilePlugin implements ICheckFilePlugin {
+
+    public static final String META_PRODUCT_PARAM = "meta-produt";
+
+    public static final String META_FILE_PARAM = "meta-file";
+
+    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
+    MetaProductDto metaProductDto;
+
+    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
+    @PluginParameter(name = META_FILE_PARAM, optional = true)
+    SetOfMetaFileDto metaFiles;
 
     protected String productName;
 

@@ -76,4 +76,9 @@ public class AcquisitionFileService implements IAcquisitionFileService {
         return acqfileRepository.findByStatus(status);
     }
 
+    @Override
+    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile) {
+        return acqfileRepository.findByStatusAndMetaFile(status, metaFile);
+    }
+
 }

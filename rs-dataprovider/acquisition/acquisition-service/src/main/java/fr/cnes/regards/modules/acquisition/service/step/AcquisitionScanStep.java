@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.job.step;
+package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.util.List;
 import java.util.Map;

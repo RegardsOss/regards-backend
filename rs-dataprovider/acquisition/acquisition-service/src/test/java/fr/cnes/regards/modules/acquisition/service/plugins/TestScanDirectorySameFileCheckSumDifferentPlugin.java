@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.step;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;

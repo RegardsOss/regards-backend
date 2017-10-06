@@ -262,7 +262,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
         return checkAcquisitionParameter;
     }
 
-    public void addChecknAcquisitionParameter(String name, String value) {
+    public void addCheckAcquisitionParameter(String name, String value) {
         this.checkAcquisitionParameter.put(name, value);
     }
 

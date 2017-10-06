@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.job;
+package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.time.OffsetDateTime;
 import java.util.Set;
@@ -33,10 +33,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
-import fr.cnes.regards.modules.acquisition.job.step.IAcquisitionCheckStep;
-import fr.cnes.regards.modules.acquisition.job.step.IAcquisitionScanStep;
-import fr.cnes.regards.modules.acquisition.job.step.IStep;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
+import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionCheckStep;
+import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionScanStep;
+import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
  * @author Christophe Mertz
@@ -70,30 +70,25 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration);
 
-        // AcquisitionStep is the first step
+        // IAcquisitionScanStep is the first step, it is mandatory
         IStep firstStep = scanStep;
         firstStep.setProcess(process);
         beanFactory.autowireBean(firstStep);
         process.setCurrentStep(firstStep);
 
-        // TODO à faire en fonction des plugins définis dans la chaine
-        // CheckStep is the second step
-        IStep secundStep = checkStep;
-        secundStep.setProcess(process);
-        beanFactory.autowireBean(secundStep);
-        firstStep.setProcess(process);
-        firstStep.setNextStep(secundStep);
+        // IAcquisitionCheckStep is optional
+        if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
+            IStep secundStep = checkStep;
+            secundStep.setProcess(process);
+            beanFactory.autowireBean(secundStep);
+            firstStep.setProcess(process);
+            firstStep.setNextStep(secundStep);
+        }
 
-        //        try {
+        // TODO CMZ : à mettre à ce moment ?
         chainGeneration.setLastDateActivation(OffsetDateTime.now());
 
         process.run();
-
-        //            firstStep.proceedStep();
-        //        } catch (AcquisitionRuntimeException e) {
-        //            LOGGER.error(e.getMessage());
-        //            throw e;
-        //        }
 
         LOGGER.info("End  acquisition job for the chain <" + chainGeneration.getLabel() + ">");
     }

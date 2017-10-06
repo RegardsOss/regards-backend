@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.step;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 import java.time.OffsetDateTime;
@@ -50,14 +50,6 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestScanDirectoryPlugin.class);
-
-    @Autowired
-    private IMetaProductService metaProductService;
 
     @Autowired
     private IMetaFileService metaFileService;
@@ -92,7 +84,7 @@ public class TestScanDirectoryPlugin implements IAcquisitionScanDirectoryPlugin 
         File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
 
         AcquisitionFile af = new AcquisitionFile();
-        af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getPath().toString()).get());
+        af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getParent().toString()).get());
         af.setFileName(file.getName());
         af.setSize(file.getTotalSpace() / 1024);
         af.setAcqDate(OffsetDateTime.now());

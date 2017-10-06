@@ -106,11 +106,6 @@ public class AcquisitionFileServiceIT {
     public void testAcqFiles() {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
 
-        // Init Product and MetaProduct
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
-                .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).get());
-        Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
-
         // Create 3 ScanDirectory
         ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
                 .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
@@ -125,6 +120,11 @@ public class AcquisitionFileServiceIT {
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
         aMetaFile = metaFileService.save(aMetaFile);
+        
+        // Init Product and MetaProduct
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+                .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
+        Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
@@ -232,6 +232,9 @@ public class AcquisitionFileServiceIT {
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();
         aMetaFile = metaFileService.save(aMetaFile);
+        
+        metaProduct.addMetaFile(aMetaFile);
+        metaProductService.save(metaProduct);
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")

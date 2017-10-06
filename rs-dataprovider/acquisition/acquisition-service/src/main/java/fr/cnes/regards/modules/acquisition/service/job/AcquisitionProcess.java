@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.job;
+package fr.cnes.regards.modules.acquisition.service.job;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.job.step.AbstractStep;
-import fr.cnes.regards.modules.acquisition.job.step.IStep;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
+import fr.cnes.regards.modules.acquisition.service.step.AbstractStep;
+import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
  * cette classe represente un process et regroupe le comportement commun a tous les Process

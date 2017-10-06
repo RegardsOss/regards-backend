@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
-import fr.cnes.regards.modules.acquisition.job.AcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJob;
 
 /**
  *
