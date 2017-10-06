@@ -23,7 +23,6 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
@@ -45,13 +44,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     }
 
     public Collection<String> getTags() {
-        if (properties.getPdi().getContextInformation()
-                .containsKey(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY)) {
-            return (Collection<String>) properties.getPdi().getContextInformation()
-                    .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
-        } else {
-            return Sets.newHashSet();
-        }
+        return properties.getPdi().getTags();
     }
 
     public List<Event> getHistory() {

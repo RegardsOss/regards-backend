@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
-
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  *
@@ -66,6 +67,15 @@ public class PreservationDescriptionInformation {
             contextInformation = new HashMap<>();
         }
         return contextInformation;
+    }
+
+    public Collection<String> getTags() {
+        Collection<String> tags = (Collection<String>) getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
+        if(tags == null) {
+            tags = Sets.newHashSet();
+            getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);
+        }
+        return tags;
     }
 
     public AccessRightInformation getAccessRightInformation() {
