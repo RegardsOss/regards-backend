@@ -209,7 +209,6 @@ public class AipClientIT extends AbstractRegardsWebIT {
         // Create new AIP
         AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(),1),
                                             "clientAipTest");
-        builder.addEvent(EventType.SUBMISSION.toString(), "Creation", OffsetDateTime.now());
         InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
         ippBuilder.setIpType(EntityType.DATASET);
         // Init a test file to add with the new AIP.
@@ -224,6 +223,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         ippBuilder.addContentInformation();
 
         builder.setInformationPackageProperties(ippBuilder.build());
+        builder.addEvent(EventType.SUBMISSION.toString(), "Creation", OffsetDateTime.now());
         AIP aip = builder.build();
         Set<AIP> aips = Sets.newHashSet(aip);
         Assert.assertFalse("AIP should not exists before test", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
