@@ -144,16 +144,7 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private IInstanceSubscriber instanceSubscriber;
 
-    public TemplateService(/*final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver,
-            final IRuntimeTenantResolver pRuntimeTenantResolver,
-            @Value("${spring.application.name}") final String pMicroserviceName,
-            final IInstanceSubscriber pInstanceSubscriber*/) throws IOException {
-        super();
-//        templateRepository = pTemplateRepository;
-//        tenantResolver = pTenantResolver;
-//        runtimeTenantResolver = pRuntimeTenantResolver;
-//        microserviceName = pMicroserviceName;
-//        instanceSubscriber = pInstanceSubscriber;
+    public TemplateService() throws IOException {
         configureTemplateLoader();
     }
 

@@ -174,14 +174,6 @@ public class TemplateServiceTest {
     @Before
     public void setUp() throws IOException {
         template = new Template(CODE, CONTENT, DATA, SUBJECT);
-        //        templateRepository = Mockito.mock(ITemplateRepository.class);
-        //        tenantResolver = Mockito.mock(ITenantResolver.class);
-        //        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        //        String microserviceName = "rs-admin";
-        //        IInstanceSubscriber instanceSubscriber = Mockito.mock(InstanceSubscriber.class);
-
-        //        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver,
-        //                                              microserviceName, instanceSubscriber);
     }
 
     /**
