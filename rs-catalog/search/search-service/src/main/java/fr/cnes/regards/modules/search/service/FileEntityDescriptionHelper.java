@@ -42,7 +42,7 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
             FeignSecurityManager.asSystem();
             ResponseEntity<Boolean> isUserAutorisedToAccessDataset = accessRightClient.isUserAutorisedToAccessDataset(datasetIpId, userEmail);
             if (isUserAutorisedToAccessDataset.getBody()) {
-                ResponseEntity<StreamingResponseBody> fileStream = datasetClient.retrieveDatasetDescription(datasetIpIdAsString, response);
+                ResponseEntity<StreamingResponseBody> fileStream = datasetClient.retrieveDatasetDescription(datasetIpIdAsString);
                 return fileStream;
             } else {
                 throw new EntityOperationForbiddenException(datasetIpIdAsString, Dataset.class, "You are not allowed to access to the dataset");
