@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -34,12 +32,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
 
 import feign.Response;
-import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
@@ -79,7 +75,7 @@ public class OrderConfiguration {
             }
 
             @Override
-            public ResponseEntity<List<DataObject>> retrieveAIPFiles(String s) {
+            public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
                 return null;
             }
 
@@ -98,14 +94,6 @@ public class OrderConfiguration {
             public Response downloadFile(String aipId, String checksum) {
                 return Response.create(200, "ignore", Collections.emptyMap(),
                                 getClass().getResourceAsStream("/files/" + checksum), 1000);
-//                Response mockResp = Mockito.mock(Response.class);
-//                try {
-//                    Mockito.when(mockResp.body().asInputStream())
-//                            .thenReturn(getClass().getResourceAsStream("/files/" + checksum));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                return mockResp;
             }
         };
     }

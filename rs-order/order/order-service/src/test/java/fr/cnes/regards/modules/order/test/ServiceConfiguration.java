@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.order.test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -17,15 +16,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.oais.DataObject;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
@@ -77,7 +74,7 @@ public class ServiceConfiguration {
             }
 
             @Override
-            public ResponseEntity<List<DataObject>> retrieveAIPFiles(String s) {
+            public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
                 return null;
             }
 
