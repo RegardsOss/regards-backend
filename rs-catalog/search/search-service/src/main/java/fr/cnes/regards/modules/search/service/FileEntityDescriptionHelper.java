@@ -9,19 +9,18 @@ import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 
 /**
- * The converter retrieves attributes regarding their names. It may be static or dynamic attributes.
- * And then build facets according to attribute properties.
+ * Provides an endpoint that cheks if the current user has access rights to the dataset
+ * Before retrieve it and send it to user
  *
- * @author Marc Sordi
- *
+ * @author Léo Mieulet
  */
 @Service
 public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper {
@@ -32,7 +31,7 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
     @Autowired
     private IDatasetClient datasetClient;
 
-    public ResponseEntity<InputStreamResource> getFile(UniformResourceName datasetIpId) throws EntityOperationForbiddenException, IOException, EntityNotFoundException {
+    public ResponseEntity<StreamingResponseBody> getFile(UniformResourceName datasetIpId) throws EntityOperationForbiddenException, IOException, EntityNotFoundException {
         final String datasetIpIdAsString = datasetIpId.toString();
 
         // Retrieve current user from security context
@@ -42,7 +41,7 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
             FeignSecurityManager.asSystem();
             ResponseEntity<Boolean> isUserAutorisedToAccessDataset = accessRightClient.isUserAutorisedToAccessDataset(datasetIpId, userEmail);
             if (isUserAutorisedToAccessDataset.getBody()) {
-                ResponseEntity<InputStreamResource> fileStream = datasetClient.retrieveDatasetDescription(datasetIpIdAsString);
+                ResponseEntity<StreamingResponseBody> fileStream = datasetClient.retrieveDatasetDescription(datasetIpIdAsString, null);
                 return fileStream;
             } else {
                 throw new EntityOperationForbiddenException(datasetIpIdAsString, Dataset.class, "You are not allowed to access to the dataset");

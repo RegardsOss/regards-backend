@@ -18,40 +18,15 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-
-import javax.validation.Valid;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.modules.search.service.IFileEntityDescriptionHelper;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.entities.domain.*;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -67,7 +42,26 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
 import fr.cnes.regards.modules.search.rest.representation.IRepresentation;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.IFileEntityDescriptionHelper;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 /**
  * REST controller managing the research of REGARDS entities ({@link Collection}s, {@link Dataset}s, {@link DataObject}s
@@ -294,28 +288,28 @@ public class CatalogController {
     /**
      * Return the dataset file of passed dataset URN.
      *
-     * @param pUrn
-     *            the Uniform Resource Name of the dataset
+     * @param pUrn the Uniform Resource Name of the dataset
      * @return the dataset file
      * @throws SearchException
      */
     @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
-                                                                @PathVariable("urn") String pUrn) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
-        final ResponseEntity<InputStreamResource> fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn));
+    public ResponseEntity<StreamingResponseBody> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
+                                                                            @PathVariable("urn") String pUrn,
+                                                                            HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
+        final ResponseEntity<StreamingResponseBody> fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn));
 
-
-        InputStreamResource isr = new InputStreamResource(fileStream.getBody().getInputStream());
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(fileStream.getBody().contentLength());
-        headers.setContentType(fileStream.getHeaders().getContentType());
+        response.setContentLength(Math.toIntExact(fileStream.getHeaders().getContentLength()));
+        response.setContentType(fileStream.getHeaders().getContentType().toString());
+        response.addHeader("Content-disposition", fileStream.getHeaders().getFirst("Content-disposition"));
         // set the X-Frame-Options header value to ALLOW-FROM origin
         if (origin != null) {
-            headers.add(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
+            response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
         }
-        return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+
+        return new ResponseEntity<>((OutputStream os) -> {
+            fileStream.getBody().writeTo(os);
+        }, HttpStatus.OK);
     }
 
     /**
