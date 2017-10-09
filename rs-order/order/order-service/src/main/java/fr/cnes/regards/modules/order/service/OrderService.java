@@ -8,12 +8,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +38,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -76,7 +73,6 @@ import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.FilesType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
@@ -204,8 +200,13 @@ public class OrderService implements IOrderService {
         // Order is ready to be taken into account
         order.setStatus(OrderStatus.RUNNING);
         order = repos.save(order);
+        sendOrderCreationEmail(order);
         orderJobService.manageUserOrderJobInfos(order.getOwner());
         return order;
+    }
+
+    private void sendOrderCreationEmail(Order order) {
+        // Metalink file
     }
 
     private DatasetTask createDatasetTask(BasketDatasetSelection dsSel) {
