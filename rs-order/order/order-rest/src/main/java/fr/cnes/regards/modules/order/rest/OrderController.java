@@ -197,8 +197,9 @@ public class OrderController implements IResourceController<OrderDto> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
+        // Stream the response
         return new ResponseEntity<>(
-                os -> orderService.downloadOrderCurrentZip(availableFiles, response.getOutputStream()), HttpStatus.OK);
+                os -> orderService.downloadOrderCurrentZip(availableFiles, os), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)

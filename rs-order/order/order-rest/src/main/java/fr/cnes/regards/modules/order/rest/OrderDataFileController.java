@@ -127,7 +127,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
-            role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_CHECKSUM)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("checksum") String checksum, @RequestParam(name = ORDER_TOKEN) String token,
@@ -153,6 +153,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 // Error from storage
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
+                // Stream the response
                 return new ResponseEntity<>(
                         os -> dataFileService.downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
         }
