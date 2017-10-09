@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -31,7 +32,7 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
     @Autowired
     private IDatasetClient datasetClient;
 
-    public ResponseEntity<StreamingResponseBody> getFile(UniformResourceName datasetIpId) throws EntityOperationForbiddenException, IOException, EntityNotFoundException {
+    public ResponseEntity<StreamingResponseBody> getFile(UniformResourceName datasetIpId, HttpServletResponse response) throws EntityOperationForbiddenException, IOException, EntityNotFoundException {
         final String datasetIpIdAsString = datasetIpId.toString();
 
         // Retrieve current user from security context
@@ -41,7 +42,7 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
             FeignSecurityManager.asSystem();
             ResponseEntity<Boolean> isUserAutorisedToAccessDataset = accessRightClient.isUserAutorisedToAccessDataset(datasetIpId, userEmail);
             if (isUserAutorisedToAccessDataset.getBody()) {
-                ResponseEntity<StreamingResponseBody> fileStream = datasetClient.retrieveDatasetDescription(datasetIpIdAsString, null);
+                ResponseEntity<StreamingResponseBody> fileStream = datasetClient.retrieveDatasetDescription(datasetIpIdAsString, response);
                 return fileStream;
             } else {
                 throw new EntityOperationForbiddenException(datasetIpIdAsString, Dataset.class, "You are not allowed to access to the dataset");

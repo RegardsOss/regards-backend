@@ -297,8 +297,7 @@ public class CatalogController {
     public ResponseEntity<StreamingResponseBody> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
                                                                             @PathVariable("urn") String pUrn,
                                                                             HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
-        final ResponseEntity<StreamingResponseBody> fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn));
-
+        final ResponseEntity<StreamingResponseBody> fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn), response);
         response.setContentLength(Math.toIntExact(fileStream.getHeaders().getContentLength()));
         response.setContentType(fileStream.getHeaders().getContentType().toString());
         response.addHeader("Content-disposition", fileStream.getHeaders().getFirst("Content-disposition"));
