@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.net.URL;
+
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -37,7 +38,7 @@ import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgor
 public class OAISDataObject {
 
     @NotNull
-    private DataType regards_dataType;
+    private DataType regardsDataType;
 
     @NotNull
     private URL url;
@@ -62,11 +63,11 @@ public class OAISDataObject {
     }
 
     public DataType getRegardsDataType() {
-        return regards_dataType;
+        return regardsDataType;
     }
 
-    public void setRegardsDataType(DataType regards_dataType) {
-        this.regards_dataType = regards_dataType;
+    public void setRegardsDataType(DataType regardsDataType) {
+        this.regardsDataType = regardsDataType;
     }
 
     public URL getUrl() {
@@ -106,13 +107,13 @@ public class OAISDataObject {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
         OAISDataObject that = (OAISDataObject) o;
 
-        if (regards_dataType != that.regards_dataType) {
+        if (regardsDataType != that.regardsDataType) {
             return false;
         }
         if (url != null ? !url.equals(that.url) : that.url != null) {
@@ -126,10 +127,10 @@ public class OAISDataObject {
 
     @Override
     public int hashCode() {
-        int result = regards_dataType != null ? regards_dataType.hashCode() : 0;
-        result = 31 * result + (url != null ? url.hashCode() : 0);
-        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
-        result = 31 * result + (checksum != null ? checksum.hashCode() : 0);
+        int result = regardsDataType != null ? regardsDataType.hashCode() : 0;
+        result = (31 * result) + (url != null ? url.hashCode() : 0);
+        result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
+        result = (31 * result) + (checksum != null ? checksum.hashCode() : 0);
         return result;
     }
 }

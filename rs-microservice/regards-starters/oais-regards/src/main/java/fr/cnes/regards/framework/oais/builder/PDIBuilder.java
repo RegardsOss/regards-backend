@@ -18,21 +18,77 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
 /**
  *
- * Preservation Description Information Builder
+ * Preservation Description Information Builder.<br/>
+ *
+ * A {@link PreservationDescriptionInformation} contains exactly five information objects :
+ * <ul>
+ * <li>A context information object</li>
+ * <li>A reference information object</li>
+ * <li>A provenance information object</li>
+ * <li>A fixity information object</li>
+ * <li>An access right information object</li>
+ * </ul>
+ * <hr>
+ * This builder helps to fill in these objects.
+ * <br/>
+ * <br/>
+ * The context information object may store links to other information outside (like tags). <br/>
+ * Methods to use :
+ * <ul>
+ * <li>{@link PDIBuilder#addTags(String...)}</li>
+ * <li>{@link PDIBuilder#addContextInformation(String, Object)}</li>
+ * </ul>
+ * <br/>
+ * The reference information object stores identifiers. <br/>
+ * Method to use :
+ * <ul>
+ * <li>{@link PDIBuilder#addReferenceInformation(String, String)}</li>
+ * </ul>
+ * <br/>
+ * The provenance information object may store as indicated provenance information plus history events. <br/>
+ * Methods to use :
+ * <ul>
+ * <li>{@link PDIBuilder#setFacility(String)}</li>
+ * <li>{@link PDIBuilder#setInstrument(String)}</li>
+ * <li>{@link PDIBuilder#setFilter(String)}</li>
+ * <li>{@link PDIBuilder#setDetector(String)}</li>
+ * <li>{@link PDIBuilder#setProposal(String)}</li>
+ * <li>{@link PDIBuilder#addAdditionalProvenanceInformation(String, Object)}</li>
+ * <li>{@link PDIBuilder#addProvenanceInformationEvent(String)}</li>
+ * <li>{@link PDIBuilder#addProvenanceInformationEvent(String, OffsetDateTime)}</li>
+ * <li>{@link PDIBuilder#addProvenanceInformationEvent(String, String, OffsetDateTime)}</li>
+ * <li>{@link PDIBuilder#addProvenanceInformationEvents(Event...)}</li>
+ * </ul>
+ * <br/>
+ * The fixity information object may store data consistency information. <br/>
+ * Method to use :
+ * <ul>
+ * <li>{@link PDIBuilder#addFixityInformation(String, Object)}</li>
+ * </ul>
+ * <br/>
+ * The access right information object may store as indicated access right information. <br/>
+ * Methods to use :
+ * <ul>
+ * <li>{@link PDIBuilder#setAccessRightInformation(String)}</li>
+ * <li>{@link PDIBuilder#setAccessRightInformation(String, String, OffsetDateTime)}</li>
+ * </ul>
+ * <br/>
+ *
  * @author Marc Sordi
  *
  */
@@ -51,10 +107,12 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
+        @SuppressWarnings("unchecked")
         Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
                 .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
+            pdi.getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
         } else {
             existingTags.addAll(Arrays.asList(tags));
         }
@@ -74,7 +132,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
-     * Add optional context information
+     * Add optional reference information
      * @param key information key
      * @param value information
      */
@@ -85,25 +143,11 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
-     * Set <b>required</b> provenance information
-     * @param facility required facility
-     * @param additional optional additional information (may be null)
-     */
-    public void setProvenanceInformation(String facility, @Nullable Map<String, Object> additional) {
-        Assert.hasLength(facility, "Facility is required");
-        pdi.getProvenanceInformation().setFacility(facility);
-
-        if (additional != null) {
-            pdi.getProvenanceInformation().getAdditional().putAll(additional);
-        }
-    }
-
-    /**
      * add additional provenance information
      * @param key name of the information
      * @param value value of the information
      */
-    public void addProvenanceInformation(String key, Object value) {
+    public void addAdditionalProvenanceInformation(String key, Object value) {
         Assert.hasLength(key, "Name of the additional provenance information is required");
         Assert.notNull(value, "Value of the additional provenance information is required");
         pdi.getProvenanceInformation().getAdditional().put(key, value);
@@ -150,14 +194,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
-     * Alias for {@link PDIBuilder#setProvenanceInformation(String, Map)} (no additional)
-     * @param facility required facility
-     */
-    public void setProvenanceInformation(String facility) {
-        setProvenanceInformation(facility, null);
-    }
-
-    /**
      * Add information object events
      * @param events events to add
      */
@@ -199,6 +235,17 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addProvenanceInformationEvent(String comment) {
         addProvenanceInformationEvent(null, comment, OffsetDateTime.now());
+    }
+
+    /**
+     * Add an <b>optional</b> fixity information
+     * @param key information key
+     * @param value information
+     */
+    public void addFixityInformation(String key, Object value) {
+        Assert.hasLength(key, "Fixity information key is required");
+        Assert.notNull(value, "Fixity information value is required");
+        pdi.getFixityInformation().put(key, value);
     }
 
     /**

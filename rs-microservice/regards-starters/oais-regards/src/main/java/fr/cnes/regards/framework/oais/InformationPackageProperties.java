@@ -15,7 +15,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  */
 public class InformationPackageProperties {
 
-    private EntityType ip_type;
+    private EntityType ipType;
 
     @NotEmpty
     private Set<ContentInformation> contentInformations;
@@ -48,11 +48,11 @@ public class InformationPackageProperties {
     }
 
     public EntityType getIpType() {
-        return ip_type;
+        return ipType;
     }
 
     public void setIpType(EntityType ip_type) {
-        this.ip_type = ip_type;
+        this.ipType = ip_type;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class InformationPackageProperties {
 
         InformationPackageProperties that = (InformationPackageProperties) o;
 
-        if (ip_type != that.ip_type) {
+        if (ipType != that.ipType) {
             return false;
         }
         if (!contentInformations.equals(that.contentInformations)) {
@@ -82,7 +82,7 @@ public class InformationPackageProperties {
 
     @Override
     public int hashCode() {
-        int result = ip_type != null ? ip_type.hashCode() : 0;
+        int result = ipType != null ? ipType.hashCode() : 0;
         result = 31 * result + contentInformations.hashCode();
         result = 31 * result + pdi.hashCode();
         result = 31 * result + (descriptiveInformation != null ? descriptiveInformation.hashCode() : 0);

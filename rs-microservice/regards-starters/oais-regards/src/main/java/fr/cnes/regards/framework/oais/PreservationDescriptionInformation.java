@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
+import javax.validation.constraints.NotNull;
+
 import com.google.common.collect.Sets;
 
 /**
@@ -50,14 +50,14 @@ public class PreservationDescriptionInformation {
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
 
     @NotNull
-    private final FixityInformation fixityInformation = new FixityInformation();
+    private Map<String, Object> fixityInformation;
 
     @NotNull
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
     public Map<String, String> getReferenceInformation() {
-        if(referenceInformation == null) {
-            referenceInformation = Maps.newHashMap();
+        if (referenceInformation == null) {
+            referenceInformation = new HashMap<>();
         }
         return referenceInformation;
     }
@@ -70,8 +70,9 @@ public class PreservationDescriptionInformation {
     }
 
     public Collection<String> getTags() {
+        @SuppressWarnings("unchecked")
         Collection<String> tags = (Collection<String>) getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
-        if(tags == null) {
+        if (tags == null) {
             tags = Sets.newHashSet();
             getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);
         }
@@ -86,7 +87,10 @@ public class PreservationDescriptionInformation {
         return provenanceInformation;
     }
 
-    public FixityInformation getFixityInformation() {
+    public Map<String, Object> getFixityInformation() {
+        if (fixityInformation == null) {
+            fixityInformation = new HashMap<>();
+        }
         return fixityInformation;
     }
 

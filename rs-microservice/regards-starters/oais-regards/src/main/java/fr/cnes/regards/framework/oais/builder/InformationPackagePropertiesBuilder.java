@@ -25,13 +25,14 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
- * Information object builder
+ * Information package properties builder
  *
  * @author Marc Sordi
  *
@@ -46,18 +47,25 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     private final PDIBuilder pdiBuilder = new PDIBuilder();
 
-    private final Map<String, Object> descriptitveInformation = Maps.newHashMap();
+    private final Map<String, Object> descriptiveInformation = Maps.newHashMap();
+
+    public InformationPackagePropertiesBuilder(EntityType ipType) {
+        super();
+        Assert.notNull(ipType, "Information package is required");
+        ip.setIpType(ipType);
+    }
 
     @Override
     public InformationPackageProperties build() {
         ip.getContentInformations().addAll(cis);
         ip.setPdi(pdiBuilder.build());
-        ip.getDescriptiveInformation().putAll(descriptitveInformation);
+        ip.getDescriptiveInformation().putAll(descriptiveInformation);
         return ip;
     }
 
     /**
-     * Build content information from the content information builder and add it to the set of content informations of this information package being built
+     * Build content information from the content information builder and add it to the set of content informations of
+     * this information package being built
      */
     public void addContentInformation() {
         cis.add(contentInformationBuilder.build());
@@ -67,7 +75,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     public void addDescriptiveInformation(String key, Object value) {
         Assert.hasLength(key, "Descriptive information key is required");
         Assert.notNull(value, "Descriptive information value is required");
-        descriptitveInformation.put(key, value);
+        descriptiveInformation.put(key, value);
     }
 
     /**
@@ -82,9 +90,5 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public PDIBuilder getPDIBuilder() {
         return pdiBuilder;
-    }
-
-    public void setIpType(EntityType type) {
-        ip.setIpType(type);
     }
 }

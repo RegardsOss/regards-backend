@@ -18,17 +18,46 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
+
+import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.oais.*;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.RepresentationInformation;
+import fr.cnes.regards.framework.oais.Semantic;
+import fr.cnes.regards.framework.oais.Syntax;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  *
- * Content Information Builder
+ * Content Information Builder.<br/>
+ *
+ * A {@link ContentInformation} is composed of two objects :
+ * <ul>
+ * <li>An {@link OAISDataObject} containing physical file information</li>
+ * <li>A {@link RepresentationInformation} object describing how to handle,understand,etc. this data object.</li>
+ * </ul>
+ * <hr>
+ * This builder helps to fill in these objects.
+ * <br/>
+ * <br/>
+ * To define the data object, use :
+ * <ul>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)}</li>
+ * </ul>
+ * <br/>
+ * To set the representation information, use :
+ * <ul>
+ * <li>{@link ContentInformationBuilder#setSyntax(String, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#setSyntaxAndSemantic(String, String, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#addHardwareEnvironmentProperty(String, Object)}</li>
+ * <li>{@link ContentInformationBuilder#addSoftwareEnvironmentProperty(String, Object)}</li>
+ * </ul>
+ * <br/>
  *
  * @author Marc Sordi
  *
@@ -48,7 +77,8 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param url reference to the physical file
      * @param filename optional filename (may be null)
      */
-    public void setDataObject(DataType dataType, URL url, @Nullable String filename, String algorithm, String checksum, @Nullable Long fileSize) {
+    public void setDataObject(DataType dataType, URL url, @Nullable String filename, String algorithm, String checksum,
+            @Nullable Long fileSize) {
         Assert.notNull(dataType, "Data type is required");
         Assert.notNull(url, "URL is required");
 
@@ -63,7 +93,8 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no filename and no filesize)
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no
+     * filename and no filesize)
      * @param dataType {@link DataType}
      * @param url reference to the physical file
      */
@@ -109,13 +140,13 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         ci.getRepresentationInformation().setSemantic(semantic);
     }
 
-    public void addSoftwareEnvironment(String key, Object value) {
+    public void addSoftwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Software environment information key is required");
         Assert.notNull(value, "Software environment information value is required");
         ci.getRepresentationInformation().getEnvironmentDescription().getSoftwareEnvironment().put(key, value);
     }
 
-    public void addHardwareEnvironment(String key, Object value) {
+    public void addHardwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Hardware environment information key is required");
         Assert.notNull(value, "Hardware environment information value is required");
         ci.getRepresentationInformation().getEnvironmentDescription().getHardwareEnvironment().put(key, value);
