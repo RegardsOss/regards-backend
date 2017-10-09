@@ -34,5 +34,13 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>oais-regards</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>geojson-starter</artifactId>
+		</dependency>
 	</dependencies>
 </project>
