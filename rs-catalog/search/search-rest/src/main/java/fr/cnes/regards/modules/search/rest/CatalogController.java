@@ -54,12 +54,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -310,8 +312,10 @@ public class CatalogController {
         if (origin != null) {
             response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
         }
-        StreamingResponseBody bodyContent = (StreamingResponseBody) fileStream.body();
-        return new ResponseEntity<>(bodyContent::writeTo, HttpStatus.OK);
+        final InputStream inputStream = fileStream.body().asInputStream();
+        return new ResponseEntity<>(os ->
+                StreamUtils.copy(inputStream, os)
+            , HttpStatus.OK);
     }
 
     /**
