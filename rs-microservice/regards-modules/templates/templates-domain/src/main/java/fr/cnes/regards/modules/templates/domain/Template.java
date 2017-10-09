@@ -18,7 +18,18 @@
  */
 package fr.cnes.regards.modules.templates.domain;
 
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,9 +40,10 @@ import org.hibernate.validator.constraints.NotBlank;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
- * Domain class representing a template.
- *
+ * Domain class representing a template.<br>
+ * A template defines a content using named keys with a $ ($toto for example)
  * @author Xavier-Alexandre Brochard
+ * @author oroussel
  */
 @Entity
 @Table(name = "t_template", uniqueConstraints = @UniqueConstraint(name = "uk_template_code", columnNames = { "code" }))
@@ -49,7 +61,7 @@ public class Template implements IIdentifiable<Long> {
      * A human readable code identifying the template
      */
     @NotBlank
-    @Column(name = "code")
+    @Column(name = "code", nullable = false)
     private final String code;
 
     /**
@@ -66,7 +78,8 @@ public class Template implements IIdentifiable<Long> {
      */
     @NotNull
     @ElementCollection
-    @CollectionTable(name = "t_template_data",joinColumns = @JoinColumn(name = "template_id"),foreignKey = @ForeignKey(name = "fk_template_data_template_id"))
+    @CollectionTable(name = "t_template_data", joinColumns = @JoinColumn(name = "template_id"),
+            foreignKey = @ForeignKey(name = "fk_template_data_template_id"))
     private Map<String, String> dataStructure;
 
     /**
@@ -93,14 +106,10 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pCode
-     *            the code
-     * @param pContent
-     *            the content
-     * @param pData
-     *            the data
-     * @param pSubject
-     *            the subject if the template should be written to something with a subject or title (like an email)
+     * @param pCode the code
+     * @param pContent the content
+     * @param pData the data
+     * @param pSubject the subject if the template should be written to something with a subject or title (like an email)
      */
     public Template(final String pCode, final String pContent, final Map<String, String> pData, final String pSubject) {
         super();
@@ -119,8 +128,7 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
@@ -134,8 +142,7 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pContent
-     *            the content to set
+     * @param pContent the content to set
      */
     public void setContent(final String pContent) {
         content = pContent;
@@ -149,8 +156,7 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pDataStructure
-     *            the data structure to set
+     * @param pDataStructure the data structure to set
      */
     public void setDataStructure(final Map<String, String> pDataStructure) {
         dataStructure = pDataStructure;
@@ -164,8 +170,7 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pDescription
-     *            the description to set
+     * @param pDescription the description to set
      */
     public void setDescription(final String pDescription) {
         description = pDescription;
@@ -185,4 +190,22 @@ public class Template implements IIdentifiable<Long> {
         return subject;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Template template = (Template) o;
+
+        return code.equals(template.code);
+    }
+
+    @Override
+    public int hashCode() {
+        return code.hashCode();
+    }
 }

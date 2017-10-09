@@ -24,13 +24,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.InstanceSubscriber;
@@ -46,10 +54,38 @@ import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
  * Test suite for {@link TemplateService}.
- *
  * @author Xavier-Alexandre Brochard
+ * @author oroussel
  */
+@RunWith(SpringRunner.class)
+@TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
+        "regards.amqp.enabled=false" })
 public class TemplateServiceTest {
+
+    @Configuration
+    @EnableAutoConfiguration
+    public static class Config {
+
+        @Bean
+        public ITemplateRepository templateRepository() {
+            return Mockito.mock(ITemplateRepository.class);
+        }
+
+        @Bean
+        public ITenantResolver tenantResolver() {
+            return Mockito.mock(ITenantResolver.class);
+        }
+
+        @Bean
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return Mockito.mock(IRuntimeTenantResolver.class);
+        }
+
+        @Bean
+        public IInstanceSubscriber instanceSubscriber() {
+            return Mockito.mock(InstanceSubscriber.class);
+        }
+    }
 
     /**
      * Code
@@ -94,10 +130,12 @@ public class TemplateServiceTest {
     /**
      * Data
      */
-    // @formatter:off
     @SuppressWarnings("serial")
-    public static final Map<String, String> DATA = new HashMap<String, String>() {{ put("name", "Defaultname");put("age", DATA_VALUE_1);put("height", DATA_VALUE_2); }};
-    // @formatter:on
+    public static final Map<String, String> DATA = new HashMap<String, String>() {{
+        put("name", "Defaultname");
+        put("age", DATA_VALUE_1);
+        put("height", DATA_VALUE_2);
+    }};
 
     /**
      * A template
@@ -112,34 +150,38 @@ public class TemplateServiceTest {
     /**
      * Tested service
      */
+    @Autowired
     private ITemplateService templateService;
 
     /**
      * Mocked CRUD repository managing {@link Template}s
      */
+    @Autowired
     private ITemplateRepository templateRepository;
 
     /**
      * Mocked tenant resolver
      */
+    @Autowired
     private ITenantResolver tenantResolver;
 
     /**
      * Mocked runtime tenant resolver
      */
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
     public void setUp() throws IOException {
         template = new Template(CODE, CONTENT, DATA, SUBJECT);
-        templateRepository = Mockito.mock(ITemplateRepository.class);
-        tenantResolver = Mockito.mock(ITenantResolver.class);
-        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        String microserviceName = "rs-admin";
-        IInstanceSubscriber instanceSubscriber = Mockito.mock(InstanceSubscriber.class);
+        //        templateRepository = Mockito.mock(ITemplateRepository.class);
+        //        tenantResolver = Mockito.mock(ITenantResolver.class);
+        //        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        //        String microserviceName = "rs-admin";
+        //        IInstanceSubscriber instanceSubscriber = Mockito.mock(InstanceSubscriber.class);
 
-        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver,
-                microserviceName, instanceSubscriber);
+        //        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver,
+        //                                              microserviceName, instanceSubscriber);
     }
 
     /**
@@ -186,9 +228,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#findById(Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
     @Purpose("Check that the system allows to retrieve a single template.")
@@ -210,9 +250,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#findById(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case where trying to retrieve a template of unknown id.")
@@ -230,11 +268,9 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test
     @Purpose("Check that the system allows to update a template.")
@@ -259,11 +295,9 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case of updating an not existing template.")
@@ -284,11 +318,9 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Purpose("Check that the system allows the case of inconsistency of ids in the request.")
@@ -309,9 +341,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
     @Purpose("Check that the system allows to delete a single template.")
@@ -331,9 +361,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case of deleting an inexistent template.")
@@ -350,9 +378,7 @@ public class TemplateServiceTest {
 
     /**
      * Test method for {@link SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[])}.
-     *
-     * @throws EntityNotFoundException
-     *             no template of passed code could be found
+     * @throws EntityNotFoundException no template of passed code could be found
      */
     @Test
     @Purpose("Check that the system uses templates to send emails.")
