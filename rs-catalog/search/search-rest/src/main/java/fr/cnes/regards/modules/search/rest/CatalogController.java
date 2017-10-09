@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -297,30 +298,29 @@ public class CatalogController {
     public ResponseEntity<StreamingResponseBody> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
                                                                             @PathVariable("urn") String pUrn,
                                                                             HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
-        final ResponseEntity<StreamingResponseBody> fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn), response);
-        response.setContentLength(Math.toIntExact(fileStream.getHeaders().getContentLength()));
-        response.setContentType(fileStream.getHeaders().getContentType().toString());
-        response.addHeader("Content-disposition", fileStream.getHeaders().getFirst("Content-disposition"));
+        final Response fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn), response);
+
+        // Copy all headers
+        for (String headerName: fileStream.headers().keySet()) {
+            for (String headerValue: fileStream.headers().get(headerName)) {
+                response.addHeader(headerName, headerValue);
+            }
+        }
         // set the X-Frame-Options header value to ALLOW-FROM origin
         if (origin != null) {
             response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
         }
-
-        return new ResponseEntity<>((OutputStream os) -> {
-            fileStream.getBody().writeTo(os);
-        }, HttpStatus.OK);
+        StreamingResponseBody bodyContent = (StreamingResponseBody) fileStream.body();
+        return new ResponseEntity<>(bodyContent::writeTo, HttpStatus.OK);
     }
 
     /**
      * Perform an OpenSearch request on datasets.
      *
-     * @param allParams
-     *            all query parameters
-     * @param pPageable
-     *            the page
+     * @param allParams all query parameters
+     * @param pPageable the page
      * @return the page of datasets matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
