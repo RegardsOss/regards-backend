@@ -53,7 +53,7 @@ public class SendProjectUserActivatedEmailListener implements ApplicationListene
     /**
      * The email template
      */
-    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_ACTIVATED_TEMPLATE;
+    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_ACTIVATED_TEMPLATE_CODE;
 
     /**
      * Service handling CRUD operations on email templates
