@@ -24,13 +24,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.InstanceSubscriber;
@@ -47,8 +55,37 @@ import fr.cnes.regards.modules.templates.domain.Template;
 /**
  * Test suite for {@link TemplateService}.
  * @author Xavier-Alexandre Brochard
+ * @author oroussel
  */
+@RunWith(SpringRunner.class)
+@TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
+        "regards.amqp.enabled=false" })
 public class TemplateServiceTest {
+
+    @Configuration
+    @EnableAutoConfiguration
+    public static class Config {
+
+        @Bean
+        public ITemplateRepository templateRepository() {
+            return Mockito.mock(ITemplateRepository.class);
+        }
+
+        @Bean
+        public ITenantResolver tenantResolver() {
+            return Mockito.mock(ITenantResolver.class);
+        }
+
+        @Bean
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return Mockito.mock(IRuntimeTenantResolver.class);
+        }
+
+        @Bean
+        public IInstanceSubscriber instanceSubscriber() {
+            return Mockito.mock(InstanceSubscriber.class);
+        }
+    }
 
     /**
      * Code
@@ -113,34 +150,30 @@ public class TemplateServiceTest {
     /**
      * Tested service
      */
+    @Autowired
     private ITemplateService templateService;
 
     /**
      * Mocked CRUD repository managing {@link Template}s
      */
+    @Autowired
     private ITemplateRepository templateRepository;
 
     /**
      * Mocked tenant resolver
      */
+    @Autowired
     private ITenantResolver tenantResolver;
 
     /**
      * Mocked runtime tenant resolver
      */
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
     public void setUp() throws IOException {
         template = new Template(CODE, CONTENT, DATA, SUBJECT);
-        templateRepository = Mockito.mock(ITemplateRepository.class);
-        tenantResolver = Mockito.mock(ITenantResolver.class);
-        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        String microserviceName = "rs-admin";
-        IInstanceSubscriber instanceSubscriber = Mockito.mock(InstanceSubscriber.class);
-
-        templateService = new TemplateService(templateRepository, tenantResolver, runtimeTenantResolver,
-                                              microserviceName, instanceSubscriber);
     }
 
     /**

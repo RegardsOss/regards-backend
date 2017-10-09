@@ -11,6 +11,9 @@ import java.security.NoSuchAlgorithmException;
  */
 public class ChecksumUtils {
 
+    /**
+     * transform a byte array to an hexadecimal string
+     */
     public static String getHexChecksum(byte[] checksumByte) {
         StringBuffer hexString = new StringBuffer();
         for (byte element : checksumByte) {
@@ -23,6 +26,11 @@ public class ChecksumUtils {
         return hexString.toString();
     }
 
+    /**
+     * @return checksum compute from the input stream thanks to the algorithm as an hexadecimal string.
+     * @throws NoSuchAlgorithmException if checksumAlgorithm is not handled and known by the java process
+     * @throws IOException see possible causes from InputStream
+     */
     public static String computeHexChecksum(InputStream is, String checksumAlgorithm)
             throws NoSuchAlgorithmException, IOException {
         byte[] buffer = new byte[8192];

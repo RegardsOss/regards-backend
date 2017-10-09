@@ -89,7 +89,8 @@ public class TemplateService implements ITemplateService {
     /**
      * The JPA repository managing CRUD operation on templates. Autowired by Spring.
      */
-    private final ITemplateRepository templateRepository;
+    @Autowired
+    private ITemplateRepository templateRepository;
 
     /**
      * The string template loader
@@ -104,12 +105,14 @@ public class TemplateService implements ITemplateService {
     /**
      * Tenant resolver to access all configured tenant
      */
-    private final ITenantResolver tenantResolver;
+    @Autowired
+    private ITenantResolver tenantResolver;
 
     /**
      * Runtime tenant resolver
      */
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private Template emailAccountValidationTemplate;
@@ -132,32 +135,16 @@ public class TemplateService implements ITemplateService {
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String noReplyAdress;
 
-    private final String microserviceName;
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     /**
      * AMQP instance message subscriber
      */
-    private final IInstanceSubscriber instanceSubscriber;
+    @Autowired
+    private IInstanceSubscriber instanceSubscriber;
 
-    /**
-     *
-     * @param pTemplateRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pMicroserviceName
-     * @param pInstanceSubscriber
-     * @throws IOException
-     */
-    public TemplateService(final ITemplateRepository pTemplateRepository, final ITenantResolver pTenantResolver,
-            final IRuntimeTenantResolver pRuntimeTenantResolver,
-            @Value("${spring.application.name}") final String pMicroserviceName,
-            final IInstanceSubscriber pInstanceSubscriber) throws IOException {
-        super();
-        templateRepository = pTemplateRepository;
-        tenantResolver = pTenantResolver;
-        runtimeTenantResolver = pRuntimeTenantResolver;
-        microserviceName = pMicroserviceName;
-        instanceSubscriber = pInstanceSubscriber;
+    public TemplateService() throws IOException {
         configureTemplateLoader();
     }
 
@@ -310,28 +297,28 @@ public class TemplateService implements ITemplateService {
      * java.lang.String[])
      */
     @Override
-    public SimpleMailMessage writeToEmail(final String pTemplateCode, final Map<String, String> pDataModel,
-            final String[] pRecipients) throws EntityNotFoundException {
+    public SimpleMailMessage writeToEmail(final String templateCode, final Map<String, String> dataModel,
+            final String[] recipients) throws EntityNotFoundException {
         // Retrieve the template of passed code
         Template template = null;
         if (!runtimeTenantResolver.isInstance()) {
-            template = templateRepository.findOneByCode(pTemplateCode)
-                    .orElseThrow(() -> new EntityNotFoundException(pTemplateCode, Template.class));
+            template = templateRepository.findOneByCode(templateCode)
+                    .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
         } else {
-            if (accountUnlockTemplate.getCode().equals(pTemplateCode)) {
+            if (accountUnlockTemplate.getCode().equals(templateCode)) {
                 template = accountUnlockTemplate;
             }
 
-            if (passwordResetTemplate.getCode().equals(pTemplateCode)) {
+            if (passwordResetTemplate.getCode().equals(templateCode)) {
                 template = passwordResetTemplate;
             }
 
-            if (accountRefusedTemplate.getCode().equals(pTemplateCode)) {
+            if (accountRefusedTemplate.getCode().equals(templateCode)) {
                 template = accountRefusedTemplate;
             }
 
             if (template == null) {
-                throw new EntityNotFoundException(pTemplateCode, Template.class);
+                throw new EntityNotFoundException(templateCode, Template.class);
             }
         }
 
@@ -343,7 +330,7 @@ public class TemplateService implements ITemplateService {
         try {
             final Writer out = new StringWriter();
             // Retrieve the template (freemarker Template) and process it with the data model
-            configuration.getTemplate(template.getCode()).process(pDataModel, out);
+            configuration.getTemplate(template.getCode()).process(dataModel, out);
             text = out.toString();
         } catch (TemplateException |
 
@@ -356,7 +343,7 @@ public class TemplateService implements ITemplateService {
         final SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject(template.getSubject());
         message.setText(text);
-        message.setTo(pRecipients);
+        message.setTo(recipients);
         message.setFrom(noReplyAdress);
 
         return message;
