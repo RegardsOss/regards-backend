@@ -145,8 +145,8 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
         if (badFiles == null || badFiles.isEmpty()) {
             return;
         }
-        badFiles.forEach(f -> LOGGER.info("Unexpected file <" + f.getAbsoluteFile() + "> for chain : < "
-                + chainGeneration.getLabel() + ">"));
+        badFiles.forEach(f -> LOGGER.info("Unexpected file <{}> for the chain <{}>", f.getAbsoluteFile(),
+                                          chainGeneration.getLabel()));
     }
 
     @Override

@@ -32,6 +32,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -49,6 +51,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 @Entity
 @Table(name = "t_product")
+@NamedEntityGraph(name = "graph.acquisition.file.complete", attributeNodes = @NamedAttributeNode(value = "fileList"))
 public class Product implements IIdentifiable<Long> {
 
     /**

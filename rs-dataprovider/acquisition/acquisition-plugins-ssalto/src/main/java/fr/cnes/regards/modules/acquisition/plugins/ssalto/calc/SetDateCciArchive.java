@@ -29,8 +29,8 @@ import fr.cnes.regards.modules.acquisition.tools.CNESJulianDate;
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
- * This classe calculates a date according to the input value.<br>
- * The required value format is "jjjjjhhmm" in CNES Julian Date
+ * This class calculates a date according to the input value.<br>
+ * The required value format is "jjjjjhhmm" in CNES Julian Date.
  * <ul>
  * <li>Julian day = jjjjj</li>
  * <li>Hours = hh</li>
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 public class SetDateCciArchive implements ICalculationClass {
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
         String days = null;
         String hours = null;
@@ -54,7 +54,7 @@ public class SetDateCciArchive implements ICalculationClass {
         // Required filePattern
         String requiredPattern = "([0-9]{5})([0-9]{2})([0-9]{2})";
         Pattern pattern = Pattern.compile(requiredPattern);
-        Matcher matcher = pattern.matcher((String) pValue);
+        Matcher matcher = pattern.matcher((String) value);
         if (matcher.matches()) {
             // Days = group 1
             days = matcher.group(1);
@@ -65,8 +65,8 @@ public class SetDateCciArchive implements ICalculationClass {
         }
 
         Date tmp = CNESJulianDate.toDate(days, hours, minutes, seconds);
-        String tmp2String = DateFormatter.getDateRepresentation(tmp, DateFormatter.XS_DATE_TIME_FORMAT);
-        return tmp2String;
+        
+        return DateFormatter.getDateRepresentation(tmp, DateFormatter.XS_DATE_TIME_FORMAT);
     }
 
 }

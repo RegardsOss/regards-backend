@@ -31,6 +31,8 @@ public abstract class AbstractAcquisitionScanPlugin {
 
     public static final String META_FILE_PARAM = "meta-file";
 
+    public static final String CHAIN_GENERATION_PARAM = "chain";
+
     /**
      * Transforme le pattern indique dans la fourniture en pattern Java.<br>
      * Les correspondances implementees sont presentees dans le tableau suivant.<br>
@@ -100,11 +102,11 @@ public abstract class AbstractAcquisitionScanPlugin {
         List<File> sortedFileList = new ArrayList<>(nameFileArray.length);
         for (File element : nameFileArray) {
 
-            if (lastAcqDate == null || (lastAcqDate != null && OffsetDateTime
-                    .ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC")).isAfter(lastAcqDate))) {
+            if (lastAcqDate == null || OffsetDateTime
+                    .ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC")).isAfter(lastAcqDate)) {
                 sortedFileList.add(element);
             } else {
-                LOGGER.info("File <" + element.getName() + "> is too old");
+                LOGGER.info("File <{}> is too old", element.getName());
             }
         }
         return sortedFileList;

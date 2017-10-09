@@ -22,7 +22,6 @@ import java.io.File;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,6 +59,9 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
+    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
+    String chainLabel;
+
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;
 
@@ -69,15 +71,20 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
+
+        LOGGER.info("Start scanning for the chain <{}> ", chainLabel);
+
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
 
-            LOGGER.info("ScanDirectoryPlugin : scan Metafile <" + metaFileDto.getFileNamePattern() + ">");
+            LOGGER.info("Scan Metafile <{}>", metaFileDto.getFileNamePattern());
 
             MetaFile metaFile = metaFileService.retrieve(metaFileDto.getId());
             scanDirectories(metaFile, acqFileList);
         }
+
+        LOGGER.info("End scanning for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
@@ -89,7 +96,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
         RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
 
         for (ScanDirectory scanDir : metaFile.getScanDirectories()) {
-            LOGGER.info("ScanDirectoryPlugin : scan directory <" + scanDir.getScanDir() + ">");
+            LOGGER.info("Scan directory <{}>", scanDir.getScanDir());
 
             String dirPath = scanDir.getScanDir();
             File dirFile = new File(dirPath);
@@ -125,7 +132,47 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     @Override
     public Set<File> getBadFiles() {
-        return new HashSet<>();
+
+        Set<File> badFiles = new HashSet<>();
+
+        for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
+            MetaFile metaFile = metaFileService.retrieve(metaFileDto.getId());
+            badFiles.addAll(reportBadFile(metaFile));
+        }
+
+        return badFiles;
     }
 
+    private Set<File> reportBadFile(MetaFile metaFile) {
+        LOGGER.info("Start reporting bad files for the chain <{}> ", chainLabel);
+        Set<File> badFiles = new HashSet<>();
+        String filePattern = metaFile.getFileNamePattern();
+        String adaptedPattern = getAdaptedPattern(filePattern);
+        RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
+
+        // invert the result
+        filter.setPatternExclusion(Boolean.TRUE);
+
+        for (ScanDirectory scanDir : metaFile.getScanDirectories()) {
+
+            String dirPath = scanDir.getScanDir();
+            File dirFile = new File(dirPath);
+            // Check if directory exists and is readable
+            if (dirFile.exists() && dirFile.isDirectory() && dirFile.canRead()) {
+                File[] fileArray = dirFile.listFiles(filter);
+
+                // Add files to list : filter selects only files
+                for (int j = 0; j < fileArray.length; j++) {
+                    //   // Report
+                    //   process_.addWarnToReport(msg);
+                    LOGGER.info("Unexpected file <{}> for the chain <{}>", fileArray[j].getAbsolutePath(), chainLabel);
+                    badFiles.add(fileArray[j]);
+                }
+            }
+        }
+
+        LOGGER.info("End reporting bad files for the chain <{}> ", chainLabel);
+        return badFiles;
+
+    }
 }

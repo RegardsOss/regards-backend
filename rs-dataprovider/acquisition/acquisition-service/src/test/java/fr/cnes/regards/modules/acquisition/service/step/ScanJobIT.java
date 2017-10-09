@@ -62,6 +62,9 @@ import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -77,6 +80,7 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
+import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
@@ -115,6 +119,9 @@ public class ScanJobIT {
 
     @Autowired
     private IScanDirectoryService scandirService;
+
+    @Autowired
+    private IProductService productService;
 
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
@@ -206,9 +213,10 @@ public class ScanJobIT {
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get());
-        
+
         // Create a ChainGeneration and a MetaProduct
-        this.metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
+        this.metaProduct = metaProductService
+                .save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
         this.chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
                 .withMetaProduct(metaProduct).get());
     }
@@ -218,25 +226,30 @@ public class ScanJobIT {
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
-//        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
+        //        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
+        // Create an existing Product
+        Product product = productService.save(ProductBuilder.build(TestScanDirectoryPlugin.EXISTING_PRODUCT)
+                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
+
         PluginConfiguration plgConfScan = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
-                                                                           IAcquisitionScanDirectoryPlugin.class);
+                                                                               IAcquisitionScanDirectoryPlugin.class);
         chain.setScanAcquisitionPluginConf(plgConfScan.getId());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-        
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
         PluginConfiguration plgConfCheck = pluginService.getPluginConfiguration("BasicCheckFilePlugin",
-                                                                           ICheckFilePlugin.class);
+                                                                                ICheckFilePlugin.class);
         chain.setCheckAcquisitionPluginConf(plgConfCheck.getId());
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(150_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(!runnings.isEmpty());
         Assert.assertTrue(!succeededs.isEmpty());
@@ -246,6 +259,7 @@ public class ScanJobIT {
         Assert.assertEquals(1, chainService.retrieveAll().size());
         Assert.assertEquals(1, metaFileService.retrieveAll().size());
         Assert.assertEquals(2, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(2, productService.retrieveAll().size());
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -415,19 +429,19 @@ public class ScanJobIT {
             switch (type) {
                 case RUNNING:
                     runnings.add(wrapper.getContent().getJobId());
-                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for {}", wrapper.getContent().getJobId());
                     break;
                 case SUCCEEDED:
                     succeededs.add(wrapper.getContent().getJobId());
-                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for {}", wrapper.getContent().getJobId());
                     break;
                 case ABORTED:
                     aborteds.add(wrapper.getContent().getJobId());
-                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for {}", wrapper.getContent().getJobId());
                     break;
                 case FAILED:
                     faileds.add(wrapper.getContent().getJobId());
-                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for {}", wrapper.getContent().getJobId());
                     break;
                 default:
                     throw new IllegalArgumentException(type + " is not an handled type of JobEvent ");

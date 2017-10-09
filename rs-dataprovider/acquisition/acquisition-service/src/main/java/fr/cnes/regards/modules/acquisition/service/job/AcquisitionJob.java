@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -60,7 +59,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
-        LOGGER.info("Start acquisition job for the chain <" + chainGeneration.getLabel() + ">");
+        LOGGER.info("Start acquisition job for the chain <{}>", chainGeneration.getLabel());
 
         // The MetaProduct is required
         if (chainGeneration.getMetaProduct() == null) {
@@ -87,7 +86,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
         process.run();
 
-        LOGGER.info("End  acquisition job for the chain <" + chainGeneration.getLabel() + ">");
+        LOGGER.info("End  acquisition job for the chain <{}>", chainGeneration.getLabel());
     }
 
     @Override

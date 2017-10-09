@@ -65,4 +65,9 @@ public class ProductService implements IProductService {
         this.productRepository.delete(id);
     }
 
+    @Override
+    public Product retrive(String productName) {
+        return productRepository.findCompleteByProductName(productName);
+    }
+
 }

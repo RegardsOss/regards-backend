@@ -24,6 +24,8 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -47,16 +49,19 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestScanDirectoryPlugin.class);
+
     @Autowired
     private IMetaFileService metaFileService;
-    
-    private static final String DIR_DATA="data";
+
+    public static final String EXISTING_PRODUCT = "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407";
+
+    private static final String DIR_DATA = "data";
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
-    public static final String META_PRODUCT_PARAM = "meta-produt";
-
-    public static final String META_FILE_PARAM = "meta-file";
+    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
+    String chainLabel;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;
@@ -68,12 +73,14 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
 
-        //        MetaProduct metaProduct = metaProductService.retrieve(metaProductDto.getLabel());
+        LOGGER.info("start scanning for the chain <{}> ", chainLabel);
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXT"));
-        acqFileList.add(createAcquisitionFile("data", "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407"));
+        acqFileList.add(createAcquisitionFile("data", EXISTING_PRODUCT));
+
+        LOGGER.info("end scanning for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
@@ -98,11 +105,13 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
 
     @Override
     public Set<File> getBadFiles() {
+        LOGGER.info("Start reporting bad files for the chain <{}> ", chainLabel);
         Set<File> badFiles = new HashSet<>();
-        badFiles.add(new File(
-                getClass().getClassLoader().getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_XXXXX.TXT").getFile()));
-        badFiles.add(new File(
-                getClass().getClassLoader().getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_YYYYY.TXT").getFile()));
+        badFiles.add(new File(getClass().getClassLoader()
+                .getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_XXXXX.TXT").getFile()));
+        badFiles.add(new File(getClass().getClassLoader()
+                .getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_YYYYY.TXT").getFile()));
+        LOGGER.info("End reporting bad files for the chain <{}> ", chainLabel);
         return badFiles;
     }
 

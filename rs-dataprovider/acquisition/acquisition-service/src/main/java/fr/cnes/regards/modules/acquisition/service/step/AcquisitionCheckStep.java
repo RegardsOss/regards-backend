@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
@@ -68,6 +69,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Autowired
     IAcquisitionFileService acquisitionFileService;
+
+    @Autowired
+    IProductService productService;
 
     private ChainGeneration chainGeneration;
 
@@ -135,14 +139,25 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     private void synchronizedDatabase(AcquisitionFile acqFile, ICheckFilePlugin checkPlugin) {
         acqFile.setStatus(AcquisitionFileStatus.VALID);
 
-        // TODO rattacher le fichier acquis au bon Produit
-        // peut-être que le Produit existe déjà
-        Product currentProduct = new Product();
-        currentProduct.setProductName(checkPlugin.getProductName());
-        currentProduct.setStatus(ProductStatus.ACQUIRING);
-        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ virer 
+        // Get the product if it exists
+        Product currentProduct = productService.retrive(checkPlugin.getProductName());
+
+        if (currentProduct == null) {
+            // It is a new Product,  create it
+            currentProduct = new Product();
+            currentProduct.setProductName(checkPlugin.getProductName());
+            currentProduct.setStatus(ProductStatus.ACQUIRING);
+            currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
+        }
+        currentProduct.addAcquisitionFile(acqFile);
         acqFile.setProduct(currentProduct);
+        
+        productService.save(currentProduct);
+        acquisitionFileService.save(acqFile);
+
+        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ virer 
         //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
+
     }
 
     @Override

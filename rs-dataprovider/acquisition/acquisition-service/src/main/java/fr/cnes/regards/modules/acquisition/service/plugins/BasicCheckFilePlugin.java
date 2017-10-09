@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -38,9 +41,16 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
         url = "https://github.com/RegardsOss")
 public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicCheckFilePlugin.class);
+
     public static final String META_PRODUCT_PARAM = "meta-produt";
 
     public static final String META_FILE_PARAM = "meta-file";
+
+    public static final String CHAIN_GENERATION_PARAM = "chain";
+
+    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
+    String chainLabel;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;
@@ -55,6 +65,9 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     @Override
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+
+        LOGGER.info("Start checking for the chain <{}> ", chainLabel);
+
         productName = fileToCheck.getName();
         nodeIdentifier = dataSetId + " - " + productName;
         boolean result = false;
@@ -72,6 +85,8 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
         } else {
             throw new ModuleException("Can't read file " + fileToCheck.getAbsolutePath());
         }
+
+        LOGGER.info("End checking for the chain <{}> ", chainLabel);
 
         return result;
     }
