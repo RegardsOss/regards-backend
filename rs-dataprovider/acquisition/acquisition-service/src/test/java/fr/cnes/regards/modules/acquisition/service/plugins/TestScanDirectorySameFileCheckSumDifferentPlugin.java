@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -91,6 +92,12 @@ public class TestScanDirectorySameFileCheckSumDifferentPlugin implements IAcquis
         acqFileList.add(b);
 
         return acqFileList;
+    }
+
+    @Override
+    public Set<File> getBadFiles() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

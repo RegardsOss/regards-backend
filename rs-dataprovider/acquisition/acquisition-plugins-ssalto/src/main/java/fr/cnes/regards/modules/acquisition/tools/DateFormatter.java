@@ -325,12 +325,12 @@ public class DateFormatter {
         /**
          * Le format de parsing des dates
          */
-        private static DateFormat parsingDateFormat = null;
+        private DateFormat parsingDateFormat = null;
 
         /**
          * Le format de validation des dates
          */
-        private static Pattern validatingPattern = null;
+        private Pattern validatingPattern = null;
 
         /**
          * Cree un objet etant donne un motif de parsing et un motif de validation
