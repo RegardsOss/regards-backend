@@ -49,8 +49,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
     private String baseStorageLocationAsString;
 
-    @PluginParameter(name = LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD)
-    private Long occupiedSpaceThreshold;
+//    @PluginParameter(name = LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD)
+//    private Long occupiedSpaceThreshold;
 
     private URL baseStorageLocation;
 
