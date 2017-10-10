@@ -82,8 +82,8 @@ public class MetaProduct implements IIdentifiable<Long> {
      * Algorithm used to calculate the checksum
      * see {@link MessageDigest}
      */
-    @Column(name = "algorithm", length = 16)
-    private String algorithm;
+    @Column(name = "checksumAlgorithm", length = 16)
+    private String checksumAlgorithm;
 
     /**
      * <code>true</code> clean the original file
@@ -100,11 +100,11 @@ public class MetaProduct implements IIdentifiable<Long> {
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
 
-//    /**
-//     * The last activation date when an acquisition were running 
-//     */
-//    @Transient
-//    private OffsetDateTime lastAcqDate;
+    //    /**
+    //     * The last activation date when an acquisition were running 
+    //     */
+    //    @Transient
+    //    private OffsetDateTime lastAcqDate;
 
     //    /**
     //     * Les informations d'acquisition pour ce type de produit
@@ -205,12 +205,12 @@ public class MetaProduct implements IIdentifiable<Long> {
         return true;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public String getChecksumAlgorithm() {
+        return checksumAlgorithm;
     }
 
-    public void setAlgorithm(String algo) {
-        this.algorithm = algo;
+    public void setChecksumAlgorithm(String checksumAlgorithm) {
+        this.checksumAlgorithm = checksumAlgorithm;
     }
 
     public String getLabel() {
@@ -257,13 +257,13 @@ public class MetaProduct implements IIdentifiable<Long> {
         this.id = id;
     }
 
-//    public OffsetDateTime getLastAcqDate() {
-//        return lastAcqDate;
-//    }
-//
-//    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
-//        this.lastAcqDate = lastAcqDate;
-//    }
+    //    public OffsetDateTime getLastAcqDate() {
+    //        return lastAcqDate;
+    //    }
+    //
+    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+    //        this.lastAcqDate = lastAcqDate;
+    //    }
 
     @Override
     public String toString() {

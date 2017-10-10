@@ -94,7 +94,7 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         af.setFileName(file.getName());
         af.setSize(file.length());
         af.setAcqDate(OffsetDateTime.now());
-        af.setAlgorithm(CHECKUM_ALGO);
+        af.setChecksumAlgorithm(CHECKUM_ALGO);
         af.setChecksum(null);// TODO CMZ à compléter
         af.setStatus(null);
 
@@ -110,7 +110,7 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         af.setFileName(name);
         af.setSize(123456L);
         af.setAcqDate(OffsetDateTime.now());
-        af.setAlgorithm(CHECKUM_ALGO);
+        af.setChecksumAlgorithm(CHECKUM_ALGO);
         af.setChecksum(null);// TODO CMZ à compléter
         af.setStatus(null);
 

@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -32,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
@@ -117,7 +121,20 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
         for (File baseFile : filteredFileList) {
             AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile);
 
-            // calculer checksum si configuré
+            // Calculate MD5 checksum with the specified algorithme            
+            if (!metaProductDto.getChecksumAlgorithm().isEmpty()) {
+                File tF = new File(dirFile, acqFile.getFileName());
+                try (FileInputStream fis = new FileInputStream(tF)) {
+                    acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, metaProductDto.getChecksumAlgorithm()));
+                    acqFile.setChecksumAlgorithm(metaProductDto.getChecksumAlgorithm());
+                } catch (NoSuchAlgorithmException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
 
             acqFile.setAcqDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(baseFile.lastModified()),
                                                         ZoneId.of("UTC")));

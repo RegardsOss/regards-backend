@@ -67,6 +67,9 @@ public class AcquisitionFileServiceIT {
 
     private static final String PRODUCT_NAME = "first product name";
 
+    /*
+     *  @see https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#MessageDigest
+     */
     private static final String CHECKUM_ALGO = "SHA-256";
 
     @Autowired
@@ -123,7 +126,7 @@ public class AcquisitionFileServiceIT {
 
         // Init Product and MetaProduct
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
-                .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
+                .withChecksumAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         Assert.assertEquals(1, metaProductService.retrieveAll().size());
@@ -227,7 +230,7 @@ public class AcquisitionFileServiceIT {
     public void getUnkonwScanDirectory() {
         // Init Product and MetaProduct
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
-                .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.TRUE).get());
+                .withChecksumAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.TRUE).get());
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 3 ScanDirectory

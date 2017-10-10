@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.metadata.dto;
 
-import java.time.OffsetDateTime;
-
 import org.springframework.beans.BeanUtils;
 
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -36,12 +34,12 @@ public class MetaProductDto {
 
     private String label;
 
-    private String algorithm;
+    private String checksumAlgorithm;
 
     // TODO CMZ : util ?
     private Boolean cleanOriginalFile;
 
-//    private OffsetDateTime lastAcqDate;
+    //    private OffsetDateTime lastAcqDate;
 
     public Long getId() {
         return id;
@@ -59,12 +57,12 @@ public class MetaProductDto {
         this.label = label;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public String getChecksumAlgorithm() {
+        return checksumAlgorithm;
     }
 
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
+    public void setChecksumAlgorithm(String checksumAlgorithm) {
+        this.checksumAlgorithm = checksumAlgorithm;
     }
 
     public Boolean getCleanOriginalFile() {
@@ -75,13 +73,13 @@ public class MetaProductDto {
         this.cleanOriginalFile = cleanOriginalFile;
     }
 
-//    public OffsetDateTime getLastAcqDate() {
-//        return lastAcqDate;
-//    }
-//
-//    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
-//        this.lastAcqDate = lastAcqDate;
-//    }
+    //    public OffsetDateTime getLastAcqDate() {
+    //        return lastAcqDate;
+    //    }
+    //
+    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+    //        this.lastAcqDate = lastAcqDate;
+    //    }
 
     public static MetaProductDto fromMetaProduct(MetaProduct metaProduct) {
         MetaProductDto dto = new MetaProductDto();

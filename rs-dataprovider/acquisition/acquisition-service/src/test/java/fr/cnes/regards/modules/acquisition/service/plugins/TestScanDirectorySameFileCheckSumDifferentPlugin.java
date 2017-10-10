@@ -76,7 +76,7 @@ public class TestScanDirectorySameFileCheckSumDifferentPlugin implements IAcquis
         MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
         a.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
         a.setAcqDate(OffsetDateTime.now());
-        a.setAlgorithm(CHECKUM_ALGO);
+        a.setChecksumAlgorithm(CHECKUM_ALGO);
         a.setChecksum("hello I have a new checksum");
         acqFileList.add(a);
 
@@ -87,7 +87,7 @@ public class TestScanDirectorySameFileCheckSumDifferentPlugin implements IAcquis
         metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
         b.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
         b.setAcqDate(OffsetDateTime.now());
-        b.setAlgorithm(CHECKUM_ALGO);
+        b.setChecksumAlgorithm(CHECKUM_ALGO);
         b.setChecksum("this my own checksum");
         acqFileList.add(b);
 

@@ -87,7 +87,7 @@ public final class AcquisitionFileBuilder {
 
     public AcquisitionFileBuilder withChecksum(String checksum, String algo) {
         acqFile.setChecksum(checksum);
-        acqFile.setAlgorithm(algo);
+        acqFile.setChecksumAlgorithm(algo);
         return this;
     }
 

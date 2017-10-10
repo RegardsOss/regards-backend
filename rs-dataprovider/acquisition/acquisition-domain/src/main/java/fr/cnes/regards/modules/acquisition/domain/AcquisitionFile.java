@@ -155,8 +155,8 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
      * Algorithm used to calculate the checksum.
      * see {@link MessageDigest}
      */
-    @Column(name = "algorithm", length = 16)
-    private String algorithm;
+    @Column(name = "checksumAlgorithm", length = 16)
+    private String checksumAlgorithm;
 
     @Override
     public int hashCode() {
@@ -274,12 +274,12 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
         this.checksum = check;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public String getChecksumAlgorithm() {
+        return checksumAlgorithm;
     }
 
-    public void setAlgorithm(String algo) {
-        this.algorithm = algo;
+    public void setChecksumAlgorithm(String checksumAlgorithm) {
+        this.checksumAlgorithm = checksumAlgorithm;
     }
 
     public FileAcquisitionInformations getAcquisitionInformations() {

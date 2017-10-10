@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
 public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCheckStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionCheckStep.class);
-    
+
     private static String SUFFIX_FOR_INVALID_FILE = ".inv";
 
     @Autowired
@@ -141,6 +141,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                     } else {
                         acqFile.setStatus(AcquisitionFileStatus.INVALID);
                     }
+
                     // Check file status and link the AcquisitionFile to the Product
                     product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
 
@@ -175,7 +176,8 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     }
 
-    private Product checkFileStatus(AcquisitionFile acqFile, File currentFile, String productName) throws ModuleException {
+    private Product checkFileStatus(AcquisitionFile acqFile, File currentFile, String productName)
+            throws ModuleException {
         Product product = null;
         if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
             LOGGER.info("Valid file {}", acqFile.getFileName());
@@ -214,17 +216,11 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             //                        .getMessage("ssalto.service.acquisitionun.step..rcheck.unexpected.status",
             //                                    currentFile.getFileName()));
         }
-        
+
         return product;
     }
 
     private void moveInvalidFile(AcquisitionFile acqFile, File currentFile) throws ModuleException {
-
-        //            final String workingDirStr = SsaltoControlers.getControler(pSsaltoFile.getAcquisitionInformations())
-        //                    .getWorkingDirectory(pSsaltoFile.getAcquisitionInformations());
-        //
-        //            final File sourceFile = new File(workingDirStr, pSsaltoFile.getFileName());
-
         // Create invalid folder (if necessary)
         final File invalidFolder = new File(
                 this.invalidDataFolder + File.separator + acqFile.getMetaFile().getInvalidFolder());
@@ -236,7 +232,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             Files.move(currentFile, targetFile);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-//            throw new ModuleException(e.getMessage());
         }
 
     }

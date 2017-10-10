@@ -60,14 +60,18 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFileBuilder;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
+import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
+import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.acquisition.service.step.ChainGenerationServiceConfiguration;
 
@@ -84,17 +88,27 @@ public class ScanDirectoryPluginIT {
     @Value("${regards.tenant}")
     private String tenant;
 
-    private static final String CHAINE_LABEL = "chaine label";
+    private static final String CHAINE_LABEL = "the chain label";
 
-    private static final String DATASET_NAME = "dataset name";
+    private static final String DATASET_NAME = "the dataset name";
 
-    public static final String META_FILE_PARAM = "meta-file";
+    private static final String META_PRODUCT_NAME = "the meta product name";
 
-    public static final String CHAIN_GENERATION_PARAM = "chain";
+    //    public static final String META_FILE_PARAM = "meta-file";
+    //
+    //    public static final String CHAIN_GENERATION_PARAM = "chain";
 
     private static final String DEFAULT_USER = "John Doe";
 
     public static final String PATTERN_FILTER = "[A-Z]{4}_MESURE_TC_([0-9]{8}_[0-9]{6}).TXT";
+
+    /*
+     *  @see https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#MessageDigest
+     */
+    private static final String CHECKUM_ALGO = "SHA-256";
+
+    @Autowired
+    private IMetaProductService metaProductService;
 
     @Autowired
     private IMetaFileService metaFileService;
@@ -183,12 +197,17 @@ public class ScanDirectoryPluginIT {
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+                .addMetaFile(metaFile).withChecksumAlgorithm(CHECKUM_ALGO).get());
+
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
         PluginParametersFactory factory = PluginParametersFactory.build();
-        //        factory.addParameterDynamic(META_PRODUCT_NAME, new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct)));
-        factory.addParameterDynamic(META_FILE_PARAM, new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
-        factory.addParameterDynamic(CHAIN_GENERATION_PARAM, chain.getLabel());
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_PRODUCT_PARAM,
+                                    new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_FILE_PARAM,
+                                    new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         IAcquisitionScanPlugin scanPlugin = pluginService
                 .getPlugin(pluginService
@@ -199,6 +218,9 @@ public class ScanDirectoryPluginIT {
 
         Set<AcquisitionFile> acqFiles = scanPlugin.getAcquisitionFiles();
         Assert.assertTrue(acqFiles != null && acqFiles.size() == 1);
+        Assert.assertEquals(CHECKUM_ALGO, acqFiles.iterator().next().getChecksumAlgorithm());
+        Assert.assertEquals("5b483e5260dc8f59bb1b57414b54ede8bc5344f1b2ef338e4463d9b4aa032f97",
+                            acqFiles.iterator().next().getChecksum());
 
         Set<File> badFiles = scanPlugin.getBadFiles();
         Assert.assertTrue(badFiles != null && badFiles.size() == 3);
@@ -216,8 +238,9 @@ public class ScanDirectoryPluginIT {
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
         PluginParametersFactory factory = PluginParametersFactory.build();
-        factory.addParameterDynamic(META_FILE_PARAM, new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
-        factory.addParameterDynamic(CHAIN_GENERATION_PARAM, chain.getLabel());
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_FILE_PARAM,
+                                    new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         IAcquisitionScanPlugin scanPlugin = pluginService
                 .getPlugin(pluginService

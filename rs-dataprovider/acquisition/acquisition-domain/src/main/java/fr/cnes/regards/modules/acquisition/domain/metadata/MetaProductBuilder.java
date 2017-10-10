@@ -59,8 +59,8 @@ public final class MetaProductBuilder {
         return this;
     }
 
-    public MetaProductBuilder withAlgorithm(String algo) {
-        metaProduct.setAlgorithm(algo);
+    public MetaProductBuilder withChecksumAlgorithm(String algo) {
+        metaProduct.setChecksumAlgorithm(algo);
         return this;
     }
 
