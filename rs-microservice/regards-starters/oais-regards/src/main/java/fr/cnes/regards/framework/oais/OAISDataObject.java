@@ -45,7 +45,7 @@ public class OAISDataObject {
 
     private String filename;
 
-    @NotNull
+    @NotBlank
     @HandledMessageDigestAlgorithm
     private String algorithm;
 

@@ -1,21 +1,19 @@
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 public class InformationPackageProperties {
-
-    private EntityType ipType;
 
     @NotEmpty
     private Set<ContentInformation> contentInformations;
@@ -26,7 +24,7 @@ public class InformationPackageProperties {
     private Map<String, Object> descriptiveInformation;
 
     public Set<ContentInformation> getContentInformations() {
-        if(contentInformations == null) {
+        if (contentInformations == null) {
             contentInformations = Sets.newHashSet();
         }
         return contentInformations;
@@ -41,51 +39,55 @@ public class InformationPackageProperties {
     }
 
     public Map<String, Object> getDescriptiveInformation() {
-        if(descriptiveInformation== null) {
+        if (descriptiveInformation == null) {
             descriptiveInformation = Maps.newHashMap();
         }
         return descriptiveInformation;
     }
 
-    public EntityType getIpType() {
-        return ipType;
-    }
-
-    public void setIpType(EntityType ip_type) {
-        this.ipType = ip_type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        InformationPackageProperties that = (InformationPackageProperties) o;
-
-        if (ipType != that.ipType) {
-            return false;
-        }
-        if (!contentInformations.equals(that.contentInformations)) {
-            return false;
-        }
-        if (!pdi.equals(that.pdi)) {
-            return false;
-        }
-        return descriptiveInformation != null ?
-                descriptiveInformation.equals(that.descriptiveInformation) :
-                that.descriptiveInformation == null;
-    }
-
     @Override
     public int hashCode() {
-        int result = ipType != null ? ipType.hashCode() : 0;
-        result = 31 * result + contentInformations.hashCode();
-        result = 31 * result + pdi.hashCode();
-        result = 31 * result + (descriptiveInformation != null ? descriptiveInformation.hashCode() : 0);
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((contentInformations == null) ? 0 : contentInformations.hashCode());
+        result = (prime * result) + ((descriptiveInformation == null) ? 0 : descriptiveInformation.hashCode());
+        result = (prime * result) + ((pdi == null) ? 0 : pdi.hashCode());
         return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        InformationPackageProperties other = (InformationPackageProperties) obj;
+        if (contentInformations == null) {
+            if (other.contentInformations != null) {
+                return false;
+            }
+        } else if (!contentInformations.equals(other.contentInformations)) {
+            return false;
+        }
+        if (descriptiveInformation == null) {
+            if (other.descriptiveInformation != null) {
+                return false;
+            }
+        } else if (!descriptiveInformation.equals(other.descriptiveInformation)) {
+            return false;
+        }
+        if (pdi == null) {
+            if (other.pdi != null) {
+                return false;
+            }
+        } else if (!pdi.equals(other.pdi)) {
+            return false;
+        }
+        return true;
     }
 }

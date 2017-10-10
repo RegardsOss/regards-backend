@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -35,13 +37,8 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  */
 public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
-    public EntityType getIpType() {
-        return properties.getIpType();
-    }
-
-    public void setIpType(EntityType entityType) {
-        properties.setIpType(entityType);
-    }
+    @NotNull
+    private EntityType ipType;
 
     public Collection<String> getTags() {
         return properties.getPdi().getTags();
@@ -57,7 +54,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      */
     public Event getLastEvent() {
         List<Event> history = getHistory();
-        if (history.size() != 0) {
+        if (!history.isEmpty()) {
             return history.get(history.size() - 1);
         } else {
             return null;
@@ -79,6 +76,41 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     public void addEvent(@Nullable String type, String comment) {
         addEvent(type, comment, OffsetDateTime.now());
+    }
+
+    public EntityType getIpType() {
+        return ipType;
+    }
+
+    public void setIpType(EntityType ipType) {
+        this.ipType = ipType;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = (prime * result) + ((ipType == null) ? 0 : ipType.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        @SuppressWarnings("rawtypes")
+        AbstractInformationPackage other = (AbstractInformationPackage) obj;
+        if (ipType != other.ipType) {
+            return false;
+        }
+        return true;
     }
 
 }

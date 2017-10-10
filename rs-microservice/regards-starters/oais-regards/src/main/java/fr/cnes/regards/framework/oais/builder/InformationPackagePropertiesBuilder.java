@@ -29,7 +29,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
  * Information package properties builder
@@ -48,12 +47,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     private final PDIBuilder pdiBuilder = new PDIBuilder();
 
     private final Map<String, Object> descriptiveInformation = Maps.newHashMap();
-
-    public InformationPackagePropertiesBuilder(EntityType ipType) {
-        super();
-        Assert.notNull(ipType, "Information package is required");
-        ip.setIpType(ipType);
-    }
 
     @Override
     public InformationPackageProperties build() {
