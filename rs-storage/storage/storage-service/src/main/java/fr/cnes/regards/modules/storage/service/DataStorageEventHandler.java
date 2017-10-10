@@ -55,6 +55,14 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      */
     private static final Logger LOG = LoggerFactory.getLogger(DataStorageEventHandler.class);
 
+    private static final String METADATA_STORED_SUCCESSFULLY = "AIP metadata has been successfully stored into REGARDS";
+
+    private static final String DATAFILE_STORED_SUCCESSFULLY = "File %s has been successfully stored";
+
+    private static final String DATAFILE_DELETED_SUCCESSFULLY = "File %s has been successfully deleted";
+
+    private static final String METADATA_UPDATED_SUCCESSFULLY = "AIP metadata has been successfully updated";
+
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -195,6 +203,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 // @formatter:on
                 associatedAIP.getProperties().getContentInformations().removeAll(cisToRemove);
                 associatedAIP.setState(AIPState.UPDATED);
+                associatedAIP.addEvent(EventType.DELETION.name(), String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName()));
                 aipDao.save(associatedAIP);
                 LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                           dataFileDeleted.getAip().getId().toString());
@@ -205,6 +214,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
                 LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                           dataFileDeleted.getAip().getId().toString());
+                associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
             }
         }
     }
@@ -282,6 +292,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 }
             }
             associatedAIP.setState(AIPState.STORED);
+            associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
             aipDao.save(associatedAIP);
             LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", storedDataFile.getAip().getId().toString());
             publisher.publish(new AIPEvent(associatedAIP));
@@ -301,6 +312,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
                 ci.get().getDataObject().setUrl(storedDataFile.getUrl());
                 ci.get().getDataObject().setFilename(storedDataFile.getName());
+                associatedAIP.addEvent(EventType.STORAGE.name(), String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
                 aipDao.save(associatedAIP);
             }
         }
