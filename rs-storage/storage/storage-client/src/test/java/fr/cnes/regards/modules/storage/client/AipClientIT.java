@@ -208,9 +208,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException {
         // Create new AIP
         AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(),1),
-                                            "clientAipTest");
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.setIpType(EntityType.DATASET);
+                                            "clientAipTest", EntityType.DATA);
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 
@@ -218,11 +216,10 @@ public class AipClientIT extends AbstractRegardsWebIT {
         try (FileInputStream is = new FileInputStream(file.toFile())) {
             fileChecksum = ChecksumUtils.computeHexChecksum(is, "MD5");
         }
-        ippBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()), "MD5", fileChecksum);
-        ippBuilder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
-        ippBuilder.addContentInformation();
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()), "MD5", fileChecksum);
+        builder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
+        builder.addContentInformation();
 
-        builder.setInformationPackageProperties(ippBuilder.build());
         builder.addEvent(EventType.SUBMISSION.toString(), "Creation", OffsetDateTime.now());
         AIP aip = builder.build();
         Set<AIP> aips = Sets.newHashSet(aip);

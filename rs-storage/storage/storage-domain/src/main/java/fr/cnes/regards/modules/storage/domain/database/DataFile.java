@@ -12,16 +12,14 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.FixityInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  *
  * contains useful, for the system, metadata of a file from an AIP.
- * It mixes {@link OAISDataObject}, {@link FixityInformation}, {@link RepresentationInformation} and add some information needed by the system not extracted from the AIP
+ * It mirrors {@link OAISDataObject} and add some information needed by the system not extracted from the AIP
  *
  * @author Sylvain VISSIERE-GUERINET
  */

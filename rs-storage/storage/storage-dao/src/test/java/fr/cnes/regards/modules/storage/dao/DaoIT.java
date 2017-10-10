@@ -117,10 +117,9 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     public AIP pseudoClone(AIP src) {
 
-        AIPBuilder aipBuilder = new AIPBuilder(src.getId(), src.getSipId());
-        aipBuilder.setInformationPackageProperties(src.getProperties());
+        AIPBuilder aipBuilder = new AIPBuilder(src.getId(), src.getSipId(), src.getIpType());
 
-        AIP clone = aipBuilder.build();
+        AIP clone = aipBuilder.build(src.getProperties());
         clone.setState(src.getState());
         return clone;
     }
@@ -132,17 +131,16 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         String sipId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId);
-        aipBuilder.setInformationPackageProperties(generateRandomInformationPackageProperties());
+        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA);
 
-        return aipBuilder.build();
+        return aipBuilder.build(generateRandomInformationPackageProperties());
     }
 
     public InformationPackageProperties generateRandomInformationPackageProperties()
             throws NoSuchAlgorithmException, MalformedURLException {
 
         // Init Information object builder
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
+        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder(EntityType.DATA);
         // Content information
         generateRandomContentInformations(ippBuilder);
         // PDI
@@ -151,7 +149,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         // - ContextInformation
         ippBuilder.getPDIBuilder().addTags(generateRandomTags());
         // - Provenance
-        ippBuilder.getPDIBuilder().setProvenanceInformation("TestPerf");
+        ippBuilder.getPDIBuilder().setFacility("TestPerf");
         // - Access right
         Random random = new Random();
         int maxStringLength = 20;

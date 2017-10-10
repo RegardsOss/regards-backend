@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
@@ -40,63 +41,11 @@ public class AIPBuilder extends IPBuilder<AIP> {
      * Init AIP builder
      * @param ipId required information package identifier
      * @param sipId SIP identifier (may be null)
+     * @param entityType
      */
-    public AIPBuilder(UniformResourceName ipId, @Nullable String sipId) {
-        super(AIP.class);
+    public AIPBuilder(UniformResourceName ipId, @Nullable String sipId, EntityType entityType) {
+        super(AIP.class, entityType);
         ip.setId(ipId);
         ip.setSipId(sipId);
-    }
-
-    /**
-     * Add AIP events, /!\ should only be used after information package properties has been set /!\
-     * @param events events to add
-     */
-    public void addEvents(Event... events) {
-        Assert.notEmpty(events, "At least one event is required if this method is called");
-        for (Event event : events) {
-            Assert.hasLength(event.getComment(), "Event comment is required");
-            Assert.notNull(event.getDate(), "Event date is required");
-            ip.getHistory().add(event);
-        }
-    }
-
-    /**
-     * Add AIP events, /!\ should only be used after information package properties has been set /!\
-     * @param events events to add
-     */
-    public void addEvents(Collection<Event> events) {
-        Assert.notNull(events, "Collection of events cannot be null");
-        addEvents(events.toArray(new Event[events.size()]));
-    }
-
-    /**
-     * Add an AIP event, /!\ should only be used after information package properties has been set /!\
-     * @param type optional event type key (may be null)
-     * @param comment event comment
-     * @param date event date
-     */
-    public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
-        Event event = new Event();
-        event.setType(type);
-        event.setComment(comment);
-        event.setDate(date);
-        addEvents(event);
-    }
-
-    /**
-     * Add AIP event, /!\ should only be used after information package properties has been set /!\
-     * @param comment event comment
-     * @param date event date
-     */
-    public void addEvent(String comment, OffsetDateTime date) {
-        addEvent(null, comment, date);
-    }
-
-    /**
-     * Add AIP event, /!\ should only be used after information package properties has been set /!\
-     * @param comment event comment
-     */
-    public void addEvent(String comment) {
-        addEvent(null, comment, OffsetDateTime.now());
     }
 }

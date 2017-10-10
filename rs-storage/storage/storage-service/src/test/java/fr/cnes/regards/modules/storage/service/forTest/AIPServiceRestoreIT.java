@@ -741,23 +741,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         AIPBuilder aipBuilder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null);
-
-        // Build IO
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.setIpType(EntityType.DATA);
+                null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        ippBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
-        ippBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
-        ippBuilder.addContentInformation();
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
+        aipBuilder.addContentInformation();
 
-        ippBuilder.getPDIBuilder().setAccessRightInformation("public");
-        ippBuilder.getPDIBuilder().setProvenanceInformation("CS");
-        ippBuilder.getPDIBuilder()
+        aipBuilder.getPDIBuilder().setAccessRightInformation("public");
+        aipBuilder.getPDIBuilder().setFacility("CS");
+        aipBuilder.getPDIBuilder()
                 .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
-
-        aipBuilder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = aipBuilder.build();
         aip.addEvent(EventType.SUBMISSION.name(), "submission");
         return aip;

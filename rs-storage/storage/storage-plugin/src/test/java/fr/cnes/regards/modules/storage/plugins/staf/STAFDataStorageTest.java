@@ -91,11 +91,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Files.createDirectories(RESTORATION_PATH);
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.getPDIBuilder()
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
+        builder.getPDIBuilder()
                 .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
-        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
@@ -291,11 +289,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.getPDIBuilder()
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
+        builder.getPDIBuilder()
                 .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
-        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
@@ -374,11 +370,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.getPDIBuilder()
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
+        builder.getPDIBuilder()
                 .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
-        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
@@ -457,11 +451,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.getPDIBuilder()
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
+        builder.getPDIBuilder()
                 .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
-        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
@@ -537,11 +529,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToDelete = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null);
-        InformationPackagePropertiesBuilder ippBuilder = new InformationPackagePropertiesBuilder();
-        ippBuilder.getPDIBuilder()
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
+        builder.getPDIBuilder()
                 .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
-        builder.setInformationPackageProperties(ippBuilder.build());
         AIP aip = builder.build();
 
         dataFilesToDelete.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
