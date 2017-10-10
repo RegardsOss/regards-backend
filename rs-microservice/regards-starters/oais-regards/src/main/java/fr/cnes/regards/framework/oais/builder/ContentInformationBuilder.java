@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 
-import javax.annotation.Nullable;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -47,7 +49,9 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * To define the data object, use :
  * <ul>
  * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, Path, String, String)}</li>
  * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)}</li>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)}</li>
  * </ul>
  * <br/>
  * To set the representation information, use :
@@ -64,6 +68,8 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  */
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContentInformationBuilder.class);
+
     private final ContentInformation ci = new ContentInformation();
 
     @Override
@@ -76,9 +82,12 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param dataType {@link DataType}
      * @param url reference to the physical file
      * @param filename optional filename (may be null)
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     * @param fileSize file size
      */
-    public void setDataObject(DataType dataType, URL url, @Nullable String filename, String algorithm, String checksum,
-            @Nullable Long fileSize) {
+    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
+            Long fileSize) {
         Assert.notNull(dataType, "Data type is required");
         Assert.notNull(url, "URL is required");
 
@@ -93,13 +102,49 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
+     * Set <b>required</b> data object reference and information
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param filename optional filename (may be null)
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     * @param fileSize file size
+     */
+    public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
+            Long fileSize) {
+        Assert.notNull(filePath, "Data path is required");
+        try {
+            setDataObject(dataType, filePath.toUri().toURL(), filename, algorithm, checksum, fileSize);
+        } catch (MalformedURLException e) {
+            String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
+                                                filePath.toString());
+            LOGGER.error(errorMessage, e);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no
      * filename and no filesize)
      * @param dataType {@link DataType}
      * @param url reference to the physical file
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
         setDataObject(dataType, url, null, algorithm, checksum, null);
+    }
+
+    /**
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
+     * filename and no filesize)
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     */
+    public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
+        setDataObject(dataType, filePath, null, algorithm, checksum, null);
     }
 
     /**

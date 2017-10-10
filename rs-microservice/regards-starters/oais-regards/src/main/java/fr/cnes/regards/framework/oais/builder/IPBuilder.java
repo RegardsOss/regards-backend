@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
@@ -83,6 +84,32 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
+     * Set optional feature bounding box an CRS
+     * @param bbox bounding box
+     * @param crs coordinate reference system (default WGS 84)
+     */
+    public void setBbox(Double[] bbox, String crs) {
+        ip.setBbox(bbox);
+        ip.setCrs(crs);
+    }
+
+    /**
+     * Set optional feature bounding box
+     * @param bbox
+     */
+    public void setBbox(Double[] bbox) {
+        setBbox(bbox, null);
+    }
+
+    /**
+     * Set optional geometry. Use {@link IGeometry} to build a valid geometry.
+     * @param geometry
+     */
+    public void setGeometry(IGeometry geometry) {
+        ip.setGeometry(geometry);
+    }
+
+    /**
      * @return builder for building <b>required</b> {@link ContentInformation}. At least one is required. When all
      *         information is set, you must call {@link IPBuilder#addContentInformation()} to effectively add the
      *         {@link ContentInformation} to this information package.
@@ -93,8 +120,9 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Build current content information from the content information builder and add it to the set of content
-     * informations of
-     * this information package being built
+     * informations of this information package being built.<br/>
+     * This method has to be called after filling in each {@link ContentInformation} using
+     * {@link IPBuilder#getContentInformationBuilder()}.
      */
     public void addContentInformation() {
         ipPropertiesBuilder.addContentInformation();
