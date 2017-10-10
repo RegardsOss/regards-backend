@@ -18,28 +18,35 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import java.nio.file.Paths;
+import java.util.Set;
+
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
 /**
  * Test building, serializing and deserializing SIP feature.
  * @author Marc Sordi
  *
  */
-@Ignore("TODO")
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
+@TestPropertySource(properties = { "spring.data.jpa.repositories.enabled=false" })
 public class SIPBuilderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderTest.class);
@@ -50,38 +57,66 @@ public class SIPBuilderTest {
     @Test
     public void createSIPByValue() {
 
-        String url = "url";
-        String mimeType = "mimeType";
+        // Ingestion metadata
+        String processingChain = "chain";
+        String sessionId = "firstSession";
+
+        String fileName = "test.xml";
         DataType dataType = DataType.RAWDATA;
         String checksum = "checksum";
-        String checksumAlgorithm = "checksumAlgorithm";
+        String algorithm = "checksumAlgorithm";
 
-        // Build SIPs
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder();
-        collectionBuilder.setProcessing("myChain1");
-        collectionBuilder.setSessionId("23");
+        // Initialize a SIP Collection builder
+        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId);
+
+        // Create a SIP builder
+        String sipId = "SIP_001";
+        SIPBuilder sipBuilder = new SIPBuilder(sipId);
+
+        // Fill in required content information
+        sipBuilder.getContentInformationBuilder().setDataObject(dataType, Paths.get(fileName), algorithm, checksum);
+        sipBuilder.addContentInformation();
+
+        // Add SIP to its collection
+        collectionBuilder.add(sipBuilder.build());
+
         SIPCollection collection = collectionBuilder.build();
-
-        SIPBuilder builder = new SIPBuilder();
-        builder.addDataObject(url, mimeType, dataType, checksum, checksumAlgorithm);
-        collection.add(builder.build());
-
         String collectionString = gson.toJson(collection);
         LOGGER.debug(collectionString);
 
         // Read SIPs
         SIPCollection sips = gson.fromJson(collectionString, SIPCollection.class);
-        Assert.assertNotNull(sips.getFeatures().size() == 1);
+        Assert.assertTrue(sips.getFeatures().size() == 1);
         Assert.assertTrue(sips.getFeatures().get(0) instanceof SIP);
+
         SIP one = sips.getFeatures().get(0);
-        SIPProperties ppties = one.getProperties();
-        Assert.assertNotNull(ppties);
-        Assert.assertTrue(ppties.getDataObjects().size() == 1);
-        SIPDataObject dataObject = ppties.getDataObjects().get(0);
-        Assert.assertEquals(url, dataObject.getUrl());
-        Assert.assertEquals(mimeType, dataObject.getMimeType());
-        Assert.assertEquals(dataType, dataObject.getDataType());
+        Assert.assertTrue(sipId.equals(one.getId()));
+        Assert.assertNotNull(one.getProperties());
+
+        Set<ContentInformation> cisOne = one.getProperties().getContentInformations();
+        Assert.assertNotNull(cisOne);
+        Assert.assertTrue(cisOne.size() == 1);
+
+        ContentInformation ciOne = cisOne.iterator().next();
+        Assert.assertNotNull(ciOne);
+        Assert.assertNotNull(ciOne.getDataObject());
+        Assert.assertNull(ciOne.getRepresentationInformation());
+
+        OAISDataObject dataObject = ciOne.getDataObject();
+        Assert.assertEquals(dataType, dataObject.getRegardsDataType());
+        Assert.assertEquals(Paths.get(fileName).toAbsolutePath().toString(), dataObject.getUrl().getPath());
+        Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
-        Assert.assertEquals(checksumAlgorithm, dataObject.getChecksumAlgorithm());
+    }
+
+    @Test
+    public void createSIPByReference() {
+
+        String sipId = "refSip";
+        SIPBuilder builder = new SIPBuilder(sipId);
+        SIP ref = builder.buildReference(Paths.get("ref.xml"), "algo", "123456789a");
+
+        String refString = gson.toJson(ref);
+        LOGGER.debug(refString);
     }
 }

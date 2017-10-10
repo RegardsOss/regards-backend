@@ -1,0 +1,53 @@
+/*
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.ingest.rest;
+
+import javax.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+
+/**
+ * SIP module controller
+ * @author Marc Sordi
+ *
+ */
+@RestController
+@ModuleInfo(name = "SIP management module", description = "SIP submission and management", version = "2.0.0-SNAPSHOT",
+        author = "CSSI", legalOwner = "CNES", documentation = "TODO")
+@RequestMapping(SIPController.TYPE_MAPPING)
+public class SIPController {
+
+    public static final String TYPE_MAPPING = "/sips";
+
+    @ResourceAccess(description = "SIP collections submission (bulk request)")
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8)
+    public ResponseEntity<String> submitSipCollection(@Valid @RequestBody SIPController sips) throws ModuleException {
+        // TODO
+        return ResponseEntity.ok("TODO");
+    }
+}

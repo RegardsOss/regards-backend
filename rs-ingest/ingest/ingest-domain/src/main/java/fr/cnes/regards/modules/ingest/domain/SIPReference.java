@@ -18,6 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import java.net.URL;
+import java.security.MessageDigest;
+
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotBlank;
+
+import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+
 /**
  *
  * This class represents a SIP passed by reference
@@ -25,6 +34,42 @@ package fr.cnes.regards.modules.ingest.domain;
  * @author Marc Sordi
  *
  */
-public class SIPReference extends AbstractFileReference {
+public class SIPReference {
 
+    @NotNull
+    private URL url;
+
+    @NotBlank
+    private String checksum;
+
+    /**
+     * All available {@link MessageDigest} algorithm
+     */
+    @NotBlank
+    @HandledMessageDigestAlgorithm
+    private String algorithm;
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
 }

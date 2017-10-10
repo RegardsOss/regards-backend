@@ -39,10 +39,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>oais-regards</artifactId>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-data-regards</artifactId>
-		</dependency>
+		</dependency> -->
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

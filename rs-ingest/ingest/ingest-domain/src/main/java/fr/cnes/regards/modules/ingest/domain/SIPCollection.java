@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
 /**
- * SIP collection representation based on GeoJson standard structure
+ * SIP collection representation based on GeoJson standard structure.
+ *
+ * To build a {@link SIPCollection}, you have to use a {@link SIPCollectionBuilder}.
  *
  * @author Marc Sordi
  *

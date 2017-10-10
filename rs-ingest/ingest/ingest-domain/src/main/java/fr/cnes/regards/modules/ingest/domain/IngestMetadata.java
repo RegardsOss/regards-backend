@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.domain;
 
 import java.util.Optional;
 
-import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Extra information useful for bulk SIP submission.<br/>
@@ -35,7 +35,7 @@ public class IngestMetadata {
     /**
      * Processing chain name
      */
-    @NotNull
+    @NotBlank
     private String processing;
 
     /**

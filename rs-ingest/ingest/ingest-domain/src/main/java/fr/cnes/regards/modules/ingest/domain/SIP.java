@@ -18,32 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import fr.cnes.regards.framework.geojson.AbstractFeature;
+import fr.cnes.regards.framework.oais.AbstractInformationPackage;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
  *
- * SIP representation based on GeoJson standard structure.<br/>
- * GeoJson properties represented by {@link SIPProperties} are used for SIP passed by value.<br/>
- * "ref" extension attribute is used for SIP passed by reference.
+ * SIP representation based on OAIS information package standard structure as well as GeoJson structure.<br/>
+ * Base representation is used for SIP passed by value.<br/>
+ * "ref" extension attribute is used for SIP passed by reference.<br/>
+ *
+ * To build a {@link SIP}, you have to use a {@link SIPBuilder}.
  *
  * @author Marc Sordi
  *
  */
-public class SIP extends AbstractFeature<SIPProperties, String> {
+public class SIP extends AbstractInformationPackage<String> {
 
     /**
-     * ref : extension attribute for SIP passed by reference. May be null if SIP passed by value (filling
-     * {@link SIPProperties})
+     * ref : extension attribute for SIP passed by reference. Should be null if SIP passed by value.
      */
     private SIPReference ref;
-
-    public SIP() {
-        properties = new SIPProperties();
-    }
-
-    public void addDataObject(SIPDataObject dataObject) {
-        properties.addDataObject(dataObject);
-    }
 
     public SIPReference getRef() {
         return ref;
