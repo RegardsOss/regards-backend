@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -25,6 +29,8 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.Event;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
@@ -78,7 +84,11 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     @Override
     public T build() {
-        ip.setProperties(ipPropertiesBuilder.build());
+        return build(ipPropertiesBuilder.build());
+    }
+
+    public T build(InformationPackageProperties properties) {
+        ip.setProperties(properties);
         return ip;
     }
 
@@ -142,4 +152,54 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     public void addDescriptiveInformation(String key, Object value) {
         ipPropertiesBuilder.addDescriptiveInformation(key, value);
     }
+
+    /**
+     * Add IP events
+     * @param events events to add
+     */
+    public void addEvents(Event... events) {
+        Assert.notEmpty(events, "At least one event is required if this method is called");
+        getPDIBuilder().addProvenanceInformationEvents(events);
+    }
+
+    /**
+     * Add IP events
+     * @param events events to add
+     */
+    public void addEvents(Collection<Event> events) {
+        Assert.notNull(events, "Collection of events cannot be null");
+        addEvents(events.toArray(new Event[events.size()]));
+    }
+
+    /**
+     * Add an IP event
+     * @param type optional event type key (may be null)
+     * @param comment event comment
+     * @param date event date
+     */
+    public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
+        Event event = new Event();
+        event.setType(type);
+        event.setComment(comment);
+        event.setDate(date);
+        addEvents(event);
+    }
+
+    /**
+     * Add IP event
+     * @param comment event comment
+     * @param date event date
+     */
+    public void addEvent(String comment, OffsetDateTime date) {
+        addEvent(null, comment, date);
+    }
+
+    /**
+     * Add IP event
+     * @param comment event comment
+     */
+    public void addEvent(String comment) {
+        addEvent(null, comment, OffsetDateTime.now());
+    }
+
 }

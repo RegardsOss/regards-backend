@@ -99,45 +99,42 @@ public class PreservationDescriptionInformation {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + accessRightInformation.hashCode();
-        result = (prime * result) + ((contextInformation == null) ? 0 : contextInformation.hashCode());
-        result = (prime * result) + fixityInformation.hashCode();
-        result = (prime * result) + provenanceInformation.hashCode();
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        PreservationDescriptionInformation that = (PreservationDescriptionInformation) o;
+
+        if (contextInformation != null ?
+                !contextInformation.equals(that.contextInformation) :
+                that.contextInformation != null) {
+            return false;
+        }
+        if (provenanceInformation != null ?
+                !provenanceInformation.equals(that.provenanceInformation) :
+                that.provenanceInformation != null) {
+            return false;
+        }
+        if (fixityInformation != null ?
+                !fixityInformation.equals(that.fixityInformation) :
+                that.fixityInformation != null) {
+            return false;
+        }
+        return accessRightInformation != null ?
+                accessRightInformation.equals(that.accessRightInformation) :
+                that.accessRightInformation == null;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        PreservationDescriptionInformation other = (PreservationDescriptionInformation) obj;
-        if (!accessRightInformation.equals(other.accessRightInformation)) {
-            return false;
-        }
-        if (contextInformation == null) {
-            if (other.contextInformation != null) {
-                return false;
-            }
-        } else if (!contextInformation.equals(other.contextInformation)) {
-            return false;
-        }
-        if (!fixityInformation.equals(other.fixityInformation)) {
-            return false;
-        }
-        if (!provenanceInformation.equals(other.provenanceInformation)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        int result = contextInformation != null ? contextInformation.hashCode() : 0;
+        result = 31 * result + (provenanceInformation != null ? provenanceInformation.hashCode() : 0);
+        result = 31 * result + (fixityInformation != null ? fixityInformation.hashCode() : 0);
+        result = 31 * result + (accessRightInformation != null ? accessRightInformation.hashCode() : 0);
+        return result;
     }
-
 }
