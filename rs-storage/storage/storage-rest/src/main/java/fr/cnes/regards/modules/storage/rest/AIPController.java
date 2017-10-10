@@ -27,13 +27,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -136,16 +143,23 @@ public class AIPController implements IResourceController<AIP> {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
 
-    // @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
-    // @ResponseBody
-    // @ResourceAccess(description = "send the history of event occured on each data file of the specified AIP")
-    // public HttpEntity<Map<String, List<Event>>> retrieveAIPHistory(
-    // @PathVariable("ip_id") @Valid UniformResourceName pIpId) throws EntityNotFoundException {
-    // Map<String, List<Event>> history = aipService.retrieveAIPHistory(pIpId);
-    // return new ResponseEntity<>(history, HttpStatus.OK);
-    // }
+    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "allows to update a given aip metadata")
+    @ResponseBody
+    public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated) {
+        return new ResponseEntity<AIP>(aipService.updateAip(ipId, updated), HttpStatus.OK);
+    }
 
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
+    @ResourceAccess(description = "send the history of event occured on each data file of the specified AIP")
+    @ResponseBody
+    public ResponseEntity<List<Event>> retrieveAIPHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId)
+            throws EntityNotFoundException {
+        List<Event> history = aipService.retrieveAIPHistory(pIpId);
+        return new ResponseEntity<>(history, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = VERSION_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files of a specified aip")
     public ResponseEntity<List<String>> retrieveAIPVersionHistory(

@@ -14,7 +14,12 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -42,7 +47,10 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -51,19 +59,32 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.*;
+import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.database.CachedFile;
+import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.plugin.*;
+import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
@@ -272,7 +293,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable) { // NOSONAR
+    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo,
+            Pageable pPageable) { // NOSONAR
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {
@@ -289,8 +311,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
         if (pFrom != null) {
             if (pTo != null) {
-                return aipDao.findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1),
-                                                                                 pTo.plusSeconds(1), pPageable);
+                return aipDao
+                        .findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1), pTo.plusSeconds(1),
+                                                                            pPageable);
             }
             return aipDao.findAllBySubmissionDateAfter(pFrom.minusNanos(1), pPageable);
         }
@@ -310,6 +333,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 dataObject.setRegardsDataType(df.getDataType());
                 dataObject.setUrl(df.getUrl());
                 dataObject.setFilename(df.getName());
+                dataObject.setFileSize(df.getFileSize());
+                dataObject.setChecksum(df.getChecksum());
+                dataObject.setAlgorithm(df.getAlgorithm());
                 return dataObject;
             }).collect(Collectors.toSet());
         } else {
@@ -379,7 +405,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                             .add(new JobInfo(0, parameters, authResolver.getUser(), StoreDataFilesJob.class.getName()));
                 } else {
                     jobsToSchedule.add(new JobInfo(0, parameters, authResolver.getUser(),
-                            StoreMetadataFilesJob.class.getName()));
+                                                   StoreMetadataFilesJob.class.getName()));
                 }
 
             }
@@ -440,8 +466,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeAllocationStrategies.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of "
-                            + IAllocationStrategy.class.getName());
+                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
+                            .getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -535,6 +561,107 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return metadataToStore;
     }
 
+    @Override
+    public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws EntityNotFoundException {
+        Optional<AIP> aip = aipDao.findOneByIpId(ipId.toString());
+        if (aip.isPresent()) {
+            return aip.get().getHistory();
+        } else {
+            throw new EntityNotFoundException(ipId.toString(), AIP.class);
+        }
+    }
+
+    @Override
+    public AIP updateAip(String ipId, AIP updated)
+            throws EntityNotFoundException, EntityNotIdentifiableException, EntityInconsistentIdentifierException,
+            EntityOperationForbiddenException {
+        Optional<AIP> oldAipOpt = aipDao.findOneByIpId(ipId);
+        // first lets check for issues
+        if (!oldAipOpt.isPresent()) {
+            throw new EntityNotFoundException(ipId, AIP.class);
+        }
+        AIP oldAip = oldAipOpt.get();
+        if(oldAip.getState() != AIPState.UPDATED || oldAip.getState() != AIPState.STORED) {
+            throw new EntityOperationForbiddenException(ipId, AIP.class, "update while aip metadata are being stored!");
+        }
+        if (updated.getId() == null) {
+            throw new EntityNotIdentifiableException("give updated AIP has no id!");
+        }
+        if (!oldAip.getId().toString().equals(updated.getId().toString())) {
+            throw new EntityInconsistentIdentifierException(ipId, updated.getId().toString(), AIP.class);
+        }
+        // now that requirement are meant, lets update the old one
+        AIPBuilder updatingBuilder = new AIPBuilder(oldAip);
+        // Only PDI and descriptive information can be updated
+        PreservationDescriptionInformation updatedPdi = updated.getProperties().getPdi();
+        // Provenance Information
+        // first lets merge the events
+        updatingBuilder.getPDIBuilder()
+                .addProvenanceInformationEvents(updated.getHistory().toArray(new Event[updated.getHistory().size()]));
+        // second lets merge other provenance informations
+        Map<String, Object> additionalProvenanceInfoMap;
+        if ((additionalProvenanceInfoMap = updatedPdi.getProvenanceInformation().getAdditional()) != null) {
+            for (Map.Entry<String, Object> additionalProvenanceEntry : additionalProvenanceInfoMap.entrySet()) {
+                updatingBuilder.getPDIBuilder().addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
+                                                                                   additionalProvenanceEntry
+                                                                                           .getValue());
+            }
+        }
+        // third lets handle those "special" provenance information
+        updatingBuilder.getPDIBuilder().setFacility(updatedPdi.getProvenanceInformation().getFacility());
+        updatingBuilder.getPDIBuilder().setDetector(updatedPdi.getProvenanceInformation().getDetector());
+        updatingBuilder.getPDIBuilder().setFilter(updatedPdi.getProvenanceInformation().getFilter());
+        updatingBuilder.getPDIBuilder().setInstrument(updatedPdi.getProvenanceInformation().getInstrument());
+        updatingBuilder.getPDIBuilder().setProposal(updatedPdi.getProvenanceInformation().getProposal());
+        // Context Information
+        // first tags
+        updatingBuilder.getPDIBuilder().addTags(updated.getTags().toArray(new String[updated.getTags().size()]));
+        // now the rest of them
+        Map<String, Object> contextInformationMap;
+        if ((contextInformationMap = updatedPdi.getContextInformation()) != null) {
+            for (Map.Entry<String, Object> contextEntry : contextInformationMap.entrySet()) {
+                //tags have their specific handling
+                if (!contextEntry.getKey().equals(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY)) {
+                    updatingBuilder.getPDIBuilder()
+                            .addContextInformation(contextEntry.getKey(), contextEntry.getValue());
+                }
+            }
+        }
+        // reference information
+        Map<String, String> referenceInformationMap;
+        if ((referenceInformationMap = updatedPdi.getReferenceInformation()) != null) {
+            for (Map.Entry<String, String> refEntry : referenceInformationMap.entrySet()) {
+                //tags have their specific handling
+                updatingBuilder.getPDIBuilder().addContextInformation(refEntry.getKey(), refEntry.getValue());
+            }
+        }
+        // fixity information
+        Map<String, Object> fixityInformationMap;
+        if ((fixityInformationMap = updatedPdi.getFixityInformation()) != null) {
+            for (Map.Entry<String, Object> fixityEntry : fixityInformationMap.entrySet()) {
+                //tags have their specific handling
+                updatingBuilder.getPDIBuilder().addContextInformation(fixityEntry.getKey(), fixityEntry.getValue());
+            }
+        }
+        // Access Right information
+        updatingBuilder.getPDIBuilder().setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
+                                                                  updatedPdi.getAccessRightInformation()
+                                                                          .getDataRights(),
+                                                                  updatedPdi.getAccessRightInformation()
+                                                                          .getPublicReleaseDate());
+        // descriptive information
+        Map<String, Object> descriptiveInformationMap;
+        if ((descriptiveInformationMap = updated.getProperties().getDescriptiveInformation()) != null) {
+            for(Map.Entry<String, Object> descriptiveEntry: descriptiveInformationMap.entrySet()) {
+                updatingBuilder.addDescriptiveInformation(descriptiveEntry.getKey(), descriptiveEntry.getValue());
+            }
+        }
+        //not that all updates are set into the builder, lets build and save the updatedAip
+        AIP updatedAip = updatingBuilder.build();
+        updatedAip.setState(AIPState.UPDATED);
+        return aipDao.save(updatedAip);
+    }
+
     /**
      * Write on disk the asscoiated metadata file of the given {@link AIP}.
      * @param aip {@link AIP}
@@ -564,12 +691,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             if (fileChecksum.equals(checksum)) {
                 URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
                 metadataAipFile = new DataFile(urlToMetadata, checksum, checksumAlgorithm, DataType.AIP,
-                        urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"), aip,
-                        aip.getId().toString() + JSON_FILE_EXT);
+                                               urlToMetadata.openConnection().getContentLengthLong(),
+                                               new MimeType("application", "json"), aip,
+                                               aip.getId().toString() + JSON_FILE_EXT);
             } else {
                 LOG.error(String.format(
-                                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                                        aip.getId().toString(), tenantWorkspace));
+                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
+                        aip.getId().toString(), tenantWorkspace));
             }
         } catch (Exception e) {
             // Delete written file
@@ -704,8 +832,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                        oldOneCorrespondingToWorkingSubset
-                                .toArray(new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
+                                                oldOneCorrespondingToWorkingSubset.toArray(
+                                                        new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
                 jobsToSchedule
                         .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
             }

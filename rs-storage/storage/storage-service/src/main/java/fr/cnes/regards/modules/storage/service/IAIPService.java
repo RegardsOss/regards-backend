@@ -13,8 +13,12 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -100,6 +104,12 @@ public interface IAIPService {
      * @throw EntityNotFoundException if the request {@link DataFile} does not exists.
      */
     Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws EntityNotFoundException;
+
+    List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws EntityNotFoundException;
+
+    AIP updateAip(String ipId, AIP updated)
+            throws EntityNotFoundException, EntityNotIdentifiableException, EntityInconsistentIdentifierException,
+            EntityOperationForbiddenException;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
