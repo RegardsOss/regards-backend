@@ -45,11 +45,13 @@ import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.IFileEntityDescriptionHelper;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -297,25 +299,22 @@ public class CatalogController {
      */
     @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<StreamingResponseBody> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
-                                                                            @PathVariable("urn") String pUrn,
-                                                                            HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
+    public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
+                                                                          @PathVariable("urn") String pUrn,
+                                                                          HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
         final Response fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn), response);
+        // Return rs-dam headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, fileStream.headers().get(HttpHeaders.CONTENT_TYPE).stream().findFirst().get());
+        headers.add(HttpHeaders.CONTENT_LENGTH, fileStream.headers().get(HttpHeaders.CONTENT_LENGTH).stream().findFirst().get());
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, fileStream.headers().get(HttpHeaders.CONTENT_DISPOSITION).stream().findFirst().get());
 
-        // Copy all headers
-        for (String headerName: fileStream.headers().keySet()) {
-            for (String headerValue: fileStream.headers().get(headerName)) {
-                response.addHeader(headerName, headerValue);
-            }
-        }
         // set the X-Frame-Options header value to ALLOW-FROM origin
         if (origin != null) {
             response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
         }
         final InputStream inputStream = fileStream.body().asInputStream();
-        return new ResponseEntity<>(os ->
-                StreamUtils.copy(inputStream, os)
-            , HttpStatus.OK);
+        return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
     }
 
     /**
