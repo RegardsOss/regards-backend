@@ -255,5 +255,41 @@ public class ScanDirectoryPluginIT {
         Set<File> badFiles = scanPlugin.getBadFiles();
         Assert.assertTrue(badFiles != null && badFiles.size() == 0);
     }
+    
+    @Test
+    public void scanPluginTestWrongChecksumAlgo() throws ModuleException {
+        // Create a ScanDirectory
+        URL dataPath = getClass().getResource("/data");
+        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath())
+                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+
+        MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
+
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+                .addMetaFile(metaFile).withChecksumAlgorithm("UNKNOW").get());
+
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
+        PluginParametersFactory factory = PluginParametersFactory.build();
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_PRODUCT_PARAM,
+                                    new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_FILE_PARAM,
+                                    new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        IAcquisitionScanPlugin scanPlugin = pluginService
+                .getPlugin(pluginService
+                        .getPluginConfiguration("ScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class)
+                        .getId(), factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+
+        Assert.assertNotNull(scanPlugin);
+
+        Set<AcquisitionFile> acqFiles = scanPlugin.getAcquisitionFiles();
+        Assert.assertTrue(acqFiles != null && acqFiles.size() == 1);
+        Assert.assertNull(acqFiles.iterator().next().getChecksumAlgorithm());
+        Assert.assertNull(acqFiles.iterator().next().getChecksum());
+    }
 
 }

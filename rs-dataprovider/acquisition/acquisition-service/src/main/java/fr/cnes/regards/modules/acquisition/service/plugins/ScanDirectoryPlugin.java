@@ -61,8 +61,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
     @Autowired
     private IMetaFileService metaFileService;
 
-    private static final String CHECKUM_ALGO = "SHA-256";
-
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     String chainLabel;
 
@@ -128,11 +126,9 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
                     acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, metaProductDto.getChecksumAlgorithm()));
                     acqFile.setChecksumAlgorithm(metaProductDto.getChecksumAlgorithm());
                 } catch (NoSuchAlgorithmException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage());
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage());
                 }
             }
 
@@ -142,7 +138,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             acqFileList.add(acqFile);
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("new file to acquire : " + acqFile.getFileName());
+                LOGGER.debug("new file to acquire : {}", acqFile.getFileName());
             }
         }
     }

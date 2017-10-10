@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.finder;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.CharBuffer;
 import java.nio.MappedByteBuffer;
@@ -491,20 +492,28 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * @throws IOException
      */
     private CharBuffer readFile(String filePath) throws IOException {
+        CharBuffer cb = null;
 
         // Open the file and then get a channel from the stream
-        final FileInputStream fis = new FileInputStream(filePath);
-        final FileChannel fc = fis.getChannel();
+        try (FileInputStream fis = new FileInputStream(filePath)) {
 
-        // Get the file's size and then map it into memory
-        final int sz = (int) fc.size();
-        final MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
+            final FileChannel fc = fis.getChannel();
 
-        // Decode the file into a char buffer
-        final CharBuffer cb = decoder_.decode(bb);
+            // Get the file's size and then map it into memory
+            final int sz = (int) fc.size();
+            final MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
 
-        // Close File
-        fis.close();
+            // Decode the file into a char buffer
+            cb = decoder_.decode(bb);
+            
+            fc.close();
+        } catch (FileNotFoundException e) {
+            LOGGER.equals(e.getMessage());
+            throw e;
+        } catch (IOException e) {
+            LOGGER.equals(e.getMessage());
+            throw e;
+        }
 
         return cb;
     }
