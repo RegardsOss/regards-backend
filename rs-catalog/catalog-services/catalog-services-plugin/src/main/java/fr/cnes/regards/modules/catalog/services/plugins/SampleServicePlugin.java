@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.models.domain.EntityType;
 @Plugin(description = "Sample plugin test", id = "aSampleServicePlugin", version = "0.0.1",
         author = "REGARDS Dream Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-@CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATASET })
+@CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin implements ISampleServicePlugin {
 
     /**
