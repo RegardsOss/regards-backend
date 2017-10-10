@@ -215,9 +215,9 @@ public class ScanJobIT {
                 .addScanDirectory(scanDir2).get());
 
         // Create a ChainGeneration and a MetaProduct
-        this.metaProduct = metaProductService
+        metaProduct = metaProductService
                 .save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
-        this.chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
+        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
                 .withMetaProduct(metaProduct).get());
     }
 
