@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -38,6 +42,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ErrorType;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -57,6 +62,8 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
 public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCheckStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionCheckStep.class);
+    
+    private static String SUFFIX_FOR_INVALID_FILE = ".inv";
 
     @Autowired
     IPluginService pluginService;
@@ -72,6 +79,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Autowired
     IProductService productService;
+
+    @Value("${regards.acquisition.invalid-data-folder:#{null}}")
+    private String invalidDataFolder;
 
     private ChainGeneration chainGeneration;
 
@@ -91,14 +101,14 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                     + this.chainGeneration.getLabel() + ">");
         }
 
-        // Lunch the scan plugin
+        // Lunch the check plugin
         try {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
             for (Map.Entry<String, String> entry : this.chainGeneration.getCheckAcquisitionParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Add <" + entry.getKey() + "> parameter " + entry.getValue() + " : ");
+                    LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
                 }
             }
 
@@ -108,6 +118,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             if (inProgressFileList != null) {
+                // for each AcquisitionFile
                 for (AcquisitionFile acqFile : inProgressFileList) {
                     File currentFile = null;
                     if (acqFile.getAcquisitionInformations() != null) {
@@ -122,11 +133,18 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                         currentFile = new File(acqFile.getFileName());
                     }
 
+                    Product product = null;
+
                     // execute the check plugin
                     if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
-                        // if the AcquisitionFile is check, update in database
-                        synchronizedDatabase(acqFile, checkPlugin);
+                        acqFile.setStatus(AcquisitionFileStatus.VALID);
+                    } else {
+                        acqFile.setStatus(AcquisitionFileStatus.INVALID);
                     }
+                    // Check file status and link the AcquisitionFile to the Product
+                    product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
+
+                    synchronizedDatabase(acqFile, product);
                 }
             }
 
@@ -136,28 +154,99 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     }
 
-    private void synchronizedDatabase(AcquisitionFile acqFile, ICheckFilePlugin checkPlugin) {
-        acqFile.setStatus(AcquisitionFileStatus.VALID);
-
+    private Product linkAcquisitionFileToProduct(AcquisitionFile acqFile, String productName) {
         // Get the product if it exists
-        Product currentProduct = productService.retrive(checkPlugin.getProductName());
+        Product currentProduct = productService.retrive(productName);
 
         if (currentProduct == null) {
             // It is a new Product,  create it
             currentProduct = new Product();
-            currentProduct.setProductName(checkPlugin.getProductName());
+            currentProduct.setProductName(productName);
             currentProduct.setStatus(ProductStatus.ACQUIRING);
             currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
         }
+
         currentProduct.addAcquisitionFile(acqFile);
         acqFile.setProduct(currentProduct);
-        
-        productService.save(currentProduct);
-        acquisitionFileService.save(acqFile);
-
         //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ virer 
         //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
 
+        return currentProduct;
+
+    }
+
+    private Product checkFileStatus(AcquisitionFile acqFile, File currentFile, String productName) throws ModuleException {
+        Product product = null;
+        if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+            LOGGER.info("Valid file {}", acqFile.getFileName());
+
+            // Report status
+            //            process_.addEventToReport(AcquisitionMessages.getInstance()
+            //                    .getMessage("ssalto.service.acquisition.run.step.check.valid.file", currentFile.getFileName()));
+
+            // Link valid file to product
+            product = linkAcquisitionFileToProduct(acqFile, productName);
+
+        } else if (acqFile.getStatus().equals(AcquisitionFileStatus.INVALID)) {
+
+            LOGGER.info("Invalid file {}", acqFile.getFileName());
+
+            // Report status
+            //                process_.addEventToReport(AcquisitionMessages
+            //                        .getInstance()
+            //                        .getMessage("ssalto.service.acquisition.run.step.check.invalid.file", currentFile.getFileName()));
+
+            // Set error
+            acqFile.getAcquisitionInformations().setError(ErrorType.ERROR);
+
+            // Set process status
+            // process.setProcessWarningStatus();
+
+            // Move invalid file in a dedicated directory
+            moveInvalidFile(acqFile, currentFile);
+
+        } else {
+            LOGGER.error("Invalid status for file {}", acqFile.getFileName());
+
+            //                // Report error
+            //                // Do not throw error : check step must not be blocked
+            //                process_.addErrorToReport(AcquisitionMessages.getInstance()
+            //                        .getMessage("ssalto.service.acquisitionun.step..rcheck.unexpected.status",
+            //                                    currentFile.getFileName()));
+        }
+        
+        return product;
+    }
+
+    private void moveInvalidFile(AcquisitionFile acqFile, File currentFile) throws ModuleException {
+
+        //            final String workingDirStr = SsaltoControlers.getControler(pSsaltoFile.getAcquisitionInformations())
+        //                    .getWorkingDirectory(pSsaltoFile.getAcquisitionInformations());
+        //
+        //            final File sourceFile = new File(workingDirStr, pSsaltoFile.getFileName());
+
+        // Create invalid folder (if necessary)
+        final File invalidFolder = new File(
+                this.invalidDataFolder + File.separator + acqFile.getMetaFile().getInvalidFolder());
+        // Rename file with suffix
+        final File targetFile = new File(invalidFolder, acqFile.getFileName() + SUFFIX_FOR_INVALID_FILE);
+
+        try {
+            Files.createParentDirs(targetFile);
+            Files.move(currentFile, targetFile);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+//            throw new ModuleException(e.getMessage());
+        }
+
+    }
+
+    private void synchronizedDatabase(AcquisitionFile acqFile, Product product) {
+        if (product != null) {
+            productService.save(product);
+        }
+
+        acquisitionFileService.save(acqFile);
     }
 
     @Override

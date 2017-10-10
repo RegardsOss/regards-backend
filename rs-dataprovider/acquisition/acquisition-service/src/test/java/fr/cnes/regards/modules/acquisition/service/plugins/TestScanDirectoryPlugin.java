@@ -78,6 +78,7 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXT"));
+        acqFileList.add(createBadAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXTXX"));
         acqFileList.add(createAcquisitionFile("data", EXISTING_PRODUCT));
 
         LOGGER.info("end scanning for the chain <{}> ", chainLabel);
@@ -92,6 +93,22 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getParent().toString()).get());
         af.setFileName(file.getName());
         af.setSize(file.length());
+        af.setAcqDate(OffsetDateTime.now());
+        af.setAlgorithm(CHECKUM_ALGO);
+        af.setChecksum(null);// TODO CMZ à compléter
+        af.setStatus(null);
+
+        MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
+        af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
+
+        return af;
+    }
+
+    private AcquisitionFile createBadAcquisitionFile(String dir, String name) {
+        AcquisitionFile af = new AcquisitionFile();
+        af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(dir).get());
+        af.setFileName(name);
+        af.setSize(123456L);
         af.setAcqDate(OffsetDateTime.now());
         af.setAlgorithm(CHECKUM_ALGO);
         af.setChecksum(null);// TODO CMZ à compléter

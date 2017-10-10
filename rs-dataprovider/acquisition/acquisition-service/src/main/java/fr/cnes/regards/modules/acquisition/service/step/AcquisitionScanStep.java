@@ -86,7 +86,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             for (Map.Entry<String, String> entry : this.chainGeneration.getScanAcquisitionParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Add <" + entry.getKey() + "> parameter " + entry.getValue() + " : ");
+                    LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
                 }
             }
 

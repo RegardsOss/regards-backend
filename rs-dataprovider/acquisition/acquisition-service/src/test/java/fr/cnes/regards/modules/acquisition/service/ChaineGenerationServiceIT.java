@@ -20,12 +20,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-
-import org.hibernate.engine.spi.PersistenceContext;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -91,14 +86,9 @@ public class ChaineGenerationServiceIT {
         tenantResolver.forceTenant(tenant);
     }
 
-//    @Before
-//    public void setUp() throws Exception {
-//        tenantResolver.forceTenant(tenant);
-//    }
-
     private Product addProduct(MetaProduct metaProduct, String productName) {
         Product product = productService.save(ProductBuilder.build(productName)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
+                .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
         metaProduct = metaProductService.save(metaProduct);

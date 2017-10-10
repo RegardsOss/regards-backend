@@ -23,7 +23,6 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
@@ -64,7 +63,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
     protected String nodeIdentifier;
 
     @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String dataSetId) {
 
         LOGGER.info("Start checking for the chain <{}> ", chainLabel);
 
@@ -83,7 +82,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
             productName = name;
             result = true;
         } else {
-            throw new ModuleException("Can't read file " + fileToCheck.getAbsolutePath());
+            LOGGER.info("Can't read file {}", fileToCheck.getAbsolutePath());
         }
 
         LOGGER.info("End checking for the chain <{}> ", chainLabel);

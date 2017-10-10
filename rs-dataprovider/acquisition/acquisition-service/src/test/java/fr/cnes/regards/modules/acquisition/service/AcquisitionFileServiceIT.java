@@ -94,7 +94,7 @@ public class AcquisitionFileServiceIT {
 
     private Product addProduct(MetaProduct metaProduct, String productName) {
         Product product = productService.save(ProductBuilder.build(productName)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
+                .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
         metaProduct = metaProductService.save(metaProduct);
@@ -120,11 +120,16 @@ public class AcquisitionFileServiceIT {
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
         aMetaFile = metaFileService.save(aMetaFile);
-        
+
         // Init Product and MetaProduct
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
                 .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
+
+        Assert.assertEquals(1, metaProductService.retrieveAll().size());
+        Assert.assertEquals(metaProduct, metaProductService.retrieve(metaProduct.getId()));
+        Assert.assertEquals(metaProduct, metaProductService.retrieve(metaProduct.getLabel()));
+        Assert.assertEquals(metaProduct, metaProductService.retrieveComplete(metaProduct.getId()));
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
@@ -154,10 +159,12 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(2, aProduct.getAcquisitionFile().size());
         Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(0).getProduct());
         Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(1).getProduct());
-        Assert.assertEquals(2,acqfileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
-        Assert.assertEquals(0,acqfileService.findByStatus(AcquisitionFileStatus.DELETED).size());
-        Assert.assertEquals(2,acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, aMetaFile).size());
-        Assert.assertEquals(0,acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.DELETED, aMetaFile).size());
+        Assert.assertEquals(2, acqfileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
+        Assert.assertEquals(0, acqfileService.findByStatus(AcquisitionFileStatus.DELETED).size());
+        Assert.assertEquals(2, acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, aMetaFile)
+                .size());
+        Assert.assertEquals(0, acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.DELETED, aMetaFile).size());
+        Assert.assertEquals(acqFile1, acqfileService.retrieve(acqFile1.getId()));
 
         // Remove a ScanDirectory
         aMetaFile.removeScanDirectory(scanDir2);
@@ -165,6 +172,7 @@ public class AcquisitionFileServiceIT {
 
         Assert.assertEquals(2, metaFileService.retrieve(aMetaFile.getId()).getScanDirectories().size());
         Assert.assertEquals(3, scandirService.retrieveAll().size());
+        Assert.assertEquals(scanDir2, scandirService.retrieve(scanDir2.getId()));
 
         // Get a specific ScanDirectory in the MetaFile 
         ScanDirectory scanDirFound = aMetaFile.getScanDirectory(scanDir3.getId());
@@ -175,7 +183,7 @@ public class AcquisitionFileServiceIT {
         aProduct.removeAcquisitionFile(acqFile1);
         Assert.assertEquals(1, aProduct.getAcquisitionFile().size());
     }
-    
+
     @Test
     public void testAcqFilesWithoutProduct() {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
@@ -236,7 +244,7 @@ public class AcquisitionFileServiceIT {
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();
         aMetaFile = metaFileService.save(aMetaFile);
-        
+
         metaProduct.addMetaFile(aMetaFile);
         metaProductService.save(metaProduct);
 

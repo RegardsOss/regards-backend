@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -98,11 +99,11 @@ public class ScanJobIT {
     @Value("${regards.tenant}")
     private String tenant;
 
-    private static final String CHAINE_LABEL = "chaine label";
+    private static final String CHAINE_LABEL = "the chain label";
 
-    private static final String DATASET_NAME = "dataset name";
+    private static final String DATASET_NAME = "the dataset name";
 
-    private static final String META_PRODUCT_NAME = "meta product name";
+    private static final String META_PRODUCT_NAME = "the meta product name";
 
     private static final String DEFAULT_USER = "John Doe";
 
@@ -232,7 +233,7 @@ public class ScanJobIT {
 
         // Create an existing Product
         Product product = productService.save(ProductBuilder.build(TestScanDirectoryPlugin.EXISTING_PRODUCT)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
+                .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
 
         PluginConfiguration plgConfScan = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                IAcquisitionScanDirectoryPlugin.class);
@@ -246,6 +247,7 @@ public class ScanJobIT {
         chain.setCheckAcquisitionPluginConf(plgConfCheck.getId());
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -258,7 +260,9 @@ public class ScanJobIT {
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
         Assert.assertEquals(1, metaFileService.retrieveAll().size());
-        Assert.assertEquals(2, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(3, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(2, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(2, productService.retrieveAll().size());
 
         chain = chainService.retrieve(chain.getId());
@@ -304,7 +308,8 @@ public class ScanJobIT {
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
         Assert.assertEquals(1, metaFileService.retrieveAll().size());
-        Assert.assertEquals(2, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(3, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
