@@ -158,7 +158,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
                                                         Matchers.containsInAnyOrder("MANY", "ONE")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
-                                                        Matchers.contains(EntityType.DATA)));
+                                                        Matchers.contains(EntityType.DATA.toString())));
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations,
