@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
@@ -45,8 +45,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  *
  */
 @RunWith(SpringRunner.class)
-@EnableAutoConfiguration
-@TestPropertySource(properties = { "spring.data.jpa.repositories.enabled=false" })
+@EnableAutoConfiguration(exclude = { JpaRepositoriesAutoConfiguration.class })
 public class SIPBuilderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderTest.class);

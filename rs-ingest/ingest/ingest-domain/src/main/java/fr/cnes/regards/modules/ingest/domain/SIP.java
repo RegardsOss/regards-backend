@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import javax.validation.Valid;
+
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.validator.CheckSIP;
+import fr.cnes.regards.modules.ingest.domain.validator.CheckSIPId;
 
 /**
  *
@@ -32,11 +36,14 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Marc Sordi
  *
  */
+@CheckSIP(message = "The SIP must be sent either by reference or by value")
+@CheckSIPId(message = "The SIP identifier is required")
 public class SIP extends AbstractInformationPackage<String> {
 
     /**
      * ref : extension attribute for SIP passed by reference. Should be null if SIP passed by value.
      */
+    @Valid
     private SIPReference ref;
 
     public SIPReference getRef() {

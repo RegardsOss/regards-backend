@@ -16,31 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain;
+package fr.cnes.regards.modules.ingest.domain.validator;
 
-import javax.validation.Valid;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
- * SIP collection representation based on GeoJson standard structure.
- *
- * To build a {@link SIPCollection}, you have to use a {@link SIPCollectionBuilder}.
+ * Check that a SIP has a valid SIP identifier
  *
  * @author Marc Sordi
  *
  */
-public class SIPCollection extends AbstractFeatureCollection<SIP> {
+public class CheckSIPIdValidator implements ConstraintValidator<CheckSIPId, SIP> {
 
-    @Valid
-    private final IngestMetadata metadata;
-
-    public SIPCollection() {
-        metadata = new IngestMetadata();
+    @Override
+    public void initialize(CheckSIPId constraintAnnotation) {
+        // Nothing to initialize
     }
 
-    public IngestMetadata getMetadata() {
-        return metadata;
+    @Override
+    public boolean isValid(SIP sip, ConstraintValidatorContext context) {
+        return (sip.getId() != null) && !sip.getId().isEmpty();
     }
 }

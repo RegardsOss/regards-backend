@@ -16,31 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain;
+package fr.cnes.regards.modules.ingest.domain.validator;
 
-import javax.validation.Valid;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 /**
- * SIP collection representation based on GeoJson standard structure.
- *
- * To build a {@link SIPCollection}, you have to use a {@link SIPCollectionBuilder}.
+ * Check that a SIP has a valid SIP identifier
  *
  * @author Marc Sordi
  *
  */
-public class SIPCollection extends AbstractFeatureCollection<SIP> {
+@Target({ ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = CheckSIPIdValidator.class)
+@Documented
+public @interface CheckSIPId {
 
-    @Valid
-    private final IngestMetadata metadata;
+    String message() default "{fr.cnes.regards.modules.ingest.domain.validator.CheckSIPId." + "message}";
 
-    public SIPCollection() {
-        metadata = new IngestMetadata();
-    }
+    Class<?>[] groups() default {};
 
-    public IngestMetadata getMetadata() {
-        return metadata;
-    }
+    Class<? extends Payload>[] payload() default {};
 }

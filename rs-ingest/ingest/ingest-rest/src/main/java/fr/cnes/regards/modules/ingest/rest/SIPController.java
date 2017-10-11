@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
  * SIP module controller
@@ -45,9 +46,9 @@ public class SIPController {
     public static final String TYPE_MAPPING = "/sips";
 
     @ResourceAccess(description = "SIP collections submission (bulk request)")
-    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8)
-    public ResponseEntity<String> submitSipCollection(@Valid @RequestBody SIPController sips) throws ModuleException {
-        // TODO
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    public ResponseEntity<String> submitSipCollection(@Valid @RequestBody SIPCollection sips) throws ModuleException {
+
         return ResponseEntity.ok("TODO");
     }
 }

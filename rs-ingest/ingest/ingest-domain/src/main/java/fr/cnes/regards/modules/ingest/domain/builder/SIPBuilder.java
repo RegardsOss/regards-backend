@@ -33,9 +33,13 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPReference;
 
 /**
- * {@link SIP} builder.
  *
- * This builder must be used to build SIP either by value or by reference.
+ * This {@link SIP} builder must be used to build SIP either by value or by reference.<br/>
+ *
+ * To build SIP by reference, use {@link #buildReference(Path, String, String)} or
+ * {@link #buildReference(URL, String, String)} directly.<br/>
+ * To build SIP by value, use all other methods to fill in the SIP part by part then call {@link #build()} to get it at
+ * the end.
  *
  * @author Marc Sordi
  *
@@ -69,7 +73,8 @@ public class SIPBuilder extends IPBuilder<SIP> {
     }
 
     /**
-     * Alias of method {@link #setReference(URL, String, String)} with a {@link Path} reference instead of {@link URL}.
+     * Alias of method {@link #buildReference(URL, String, String)} with a {@link Path} reference instead of
+     * {@link URL}.
      * @param filePath path to the SIP file
      * @param algorithm {@link MessageDigest} checksum algorithm
      * @param checksum checksum for current SIP file
@@ -84,5 +89,23 @@ public class SIPBuilder extends IPBuilder<SIP> {
             LOGGER.error(errorMessage, e);
             throw new IllegalArgumentException(errorMessage);
         }
+    }
+
+    /**
+     * Alias for method {@link #buildReference(URL, String, String)} with MD5 default checksum algorithm
+     * @param url URL of the SIP file
+     * @param checksum checksum for current SIP file
+     */
+    public SIP buildReference(URL url, String checksum) {
+        return buildReference(url, MD5_ALGORITHM, checksum);
+    }
+
+    /**
+     * Alias for method {@link #buildReference(Path, String, String) with MD5 default checksum algorithm
+     * @param filePath path to the SIP file
+     * @param checksum checksum for current SIP file
+     */
+    public SIP buildReference(Path filePath, String checksum) {
+        return buildReference(filePath, MD5_ALGORITHM, checksum);
     }
 }
