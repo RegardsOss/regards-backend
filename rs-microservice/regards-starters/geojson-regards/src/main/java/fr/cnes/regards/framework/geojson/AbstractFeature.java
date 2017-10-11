@@ -62,6 +62,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
      * <li>{@link Unlocated}</li>
      * </ul>
      */
+    @Valid
     protected IGeometry geometry = IGeometry.unlocated();
 
     @Valid

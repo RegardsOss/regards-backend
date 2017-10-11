@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
+import javax.validation.Valid;
+
 import fr.cnes.regards.framework.geojson.AbstractGeoJsonObject;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 
@@ -30,6 +32,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  */
 public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implements IGeometry {
 
+    @Valid
     protected T coordinates;
 
     public AbstractGeometry(GeoJsonType type) {

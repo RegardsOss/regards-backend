@@ -58,5 +58,4 @@ public final class GeoJsonMediaType {
     private GeoJsonMediaType() {
         // Nothing to do
     }
-
 }

@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.geojson;
 import java.util.Arrays;
 import java.util.Optional;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJsonObject common model
@@ -30,6 +32,7 @@ import java.util.Optional;
  */
 public abstract class AbstractGeoJsonObject {
 
+    @NotNull
     protected GeoJsonType type;
 
     /**
