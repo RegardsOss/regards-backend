@@ -141,10 +141,10 @@ public class DownloadUtils {
         return connection.getInputStream();
     }
 
-    public static Integer getContentLength(URL source, Integer pConnectTimeout) throws IOException {
+    public static Long getContentLength(URL source, Integer pConnectTimeout) throws IOException {
         URLConnection connection = source.openConnection();
         connection.setConnectTimeout(pConnectTimeout);
-        return connection.getContentLength();
+        return connection.getContentLengthLong();
     }
 
 }

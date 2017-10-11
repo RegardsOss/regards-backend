@@ -16,15 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais;
+package fr.cnes.regards.framework.geojson;
 
 /**
- * OAIS Fixity information object, empty at the moment as every information related to this has been transferred to OAISDataObject
+ * Utility class for registerd media type
  *
- * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  *
  */
-public class FixityInformation {
+public final class GeoJsonMediaType {
+
+    private GeoJsonMediaType() {
+        // Nothing to do
+    }
+
+    /**
+     * rfc7946 registered media type
+     */
+    public static final String APPLICATION_GEOJSON = "application/geo+json";
+
+    public static final String APPLICATION_GEOJSON_UTF8 = APPLICATION_GEOJSON + ";charset=UTF-8";
 
 }

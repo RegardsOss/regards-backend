@@ -36,12 +36,13 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
  * @author Marc Sordi
  *
  */
-@FunctionalInterface
 public interface IGeometry { // NOSONAR
 
     static final Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
 
     GeoJsonType getType();
+
+    void setCrs(String crs);
 
     /**
      * Define a GeoJson without geometry

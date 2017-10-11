@@ -18,22 +18,57 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.oais.*;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.RepresentationInformation;
+import fr.cnes.regards.framework.oais.Semantic;
+import fr.cnes.regards.framework.oais.Syntax;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  *
- * Content Information Builder
+ * Content Information Builder.<br/>
+ *
+ * A {@link ContentInformation} is composed of two objects :
+ * <ul>
+ * <li>An {@link OAISDataObject} containing physical file information</li>
+ * <li>A {@link RepresentationInformation} object describing how to handle,understand,etc. this data object.</li>
+ * </ul>
+ * <hr>
+ * This builder helps to fill in these objects.
+ * <br/>
+ * <br/>
+ * To define the data object, use :
+ * <ul>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, Path, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)}</li>
+ * <li>{@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)}</li>
+ * </ul>
+ * <br/>
+ * To set the representation information, use :
+ * <ul>
+ * <li>{@link ContentInformationBuilder#setSyntax(String, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#setSyntaxAndSemantic(String, String, String, String)}</li>
+ * <li>{@link ContentInformationBuilder#addHardwareEnvironmentProperty(String, Object)}</li>
+ * <li>{@link ContentInformationBuilder#addSoftwareEnvironmentProperty(String, Object)}</li>
+ * </ul>
+ * <br/>
  *
  * @author Marc Sordi
  *
  */
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContentInformationBuilder.class);
 
     private final ContentInformation ci = new ContentInformation();
 
@@ -47,8 +82,12 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param dataType {@link DataType}
      * @param url reference to the physical file
      * @param filename optional filename (may be null)
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     * @param fileSize file size
      */
-    public void setDataObject(DataType dataType, URL url, @Nullable String filename, String algorithm, String checksum, @Nullable Long fileSize) {
+    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
+            Long fileSize) {
         Assert.notNull(dataType, "Data type is required");
         Assert.notNull(url, "URL is required");
 
@@ -63,12 +102,49 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no filename and no filesize)
+     * Set <b>required</b> data object reference and information
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param filename optional filename (may be null)
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     * @param fileSize file size
+     */
+    public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
+            Long fileSize) {
+        Assert.notNull(filePath, "Data path is required");
+        try {
+            setDataObject(dataType, filePath.toUri().toURL(), filename, algorithm, checksum, fileSize);
+        } catch (MalformedURLException e) {
+            String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
+                                                filePath.toString());
+            LOGGER.error(errorMessage, e);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    /**
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no
+     * filename and no filesize)
      * @param dataType {@link DataType}
      * @param url reference to the physical file
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
         setDataObject(dataType, url, null, algorithm, checksum, null);
+    }
+
+    /**
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
+     * filename and no filesize)
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     */
+    public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
+        setDataObject(dataType, filePath, null, algorithm, checksum, null);
     }
 
     /**
@@ -109,13 +185,13 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         ci.getRepresentationInformation().setSemantic(semantic);
     }
 
-    public void addSoftwareEnvironment(String key, Object value) {
+    public void addSoftwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Software environment information key is required");
         Assert.notNull(value, "Software environment information value is required");
         ci.getRepresentationInformation().getEnvironmentDescription().getSoftwareEnvironment().put(key, value);
     }
 
-    public void addHardwareEnvironment(String key, Object value) {
+    public void addHardwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Hardware environment information key is required");
         Assert.notNull(value, "Hardware environment information value is required");
         ci.getRepresentationInformation().getEnvironmentDescription().getHardwareEnvironment().put(key, value);
