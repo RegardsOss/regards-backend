@@ -74,11 +74,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  */
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {
 
-    /**
-     * Default checksum algorithm
-     */
-    private static final String MD5_ALGORITHM = "MD5";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ContentInformationBuilder.class);
 
     private final ContentInformation ci = new ContentInformation();
@@ -143,7 +138,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param fileSize file size
      */
     public void setDataObject(DataType dataType, URL url, String filename, String checksum, Long fileSize) {
-        setDataObject(dataType, url, filename, MD5_ALGORITHM, checksum, fileSize);
+        setDataObject(dataType, url, filename, IPBuilder.MD5_ALGORITHM, checksum, fileSize);
     }
 
     /**
@@ -156,7 +151,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param fileSize file size
      */
     public void setDataObject(DataType dataType, Path filePath, String filename, String checksum, Long fileSize) {
-        setDataObject(dataType, filePath, filename, MD5_ALGORITHM, checksum, fileSize);
+        setDataObject(dataType, filePath, filename, IPBuilder.MD5_ALGORITHM, checksum, fileSize);
     }
 
     /**
@@ -191,7 +186,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, URL url, String checksum) {
-        setDataObject(dataType, url, null, MD5_ALGORITHM, checksum, null);
+        setDataObject(dataType, url, null, IPBuilder.MD5_ALGORITHM, checksum, null);
     }
 
     /**
@@ -202,7 +197,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String checksum) {
-        setDataObject(dataType, filePath, null, MD5_ALGORITHM, checksum, null);
+        setDataObject(dataType, filePath, null, IPBuilder.MD5_ALGORITHM, checksum, null);
     }
 
     /**
