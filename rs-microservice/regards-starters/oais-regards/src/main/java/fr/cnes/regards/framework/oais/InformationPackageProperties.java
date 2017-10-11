@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.oais;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -16,9 +17,11 @@ import com.google.common.collect.Sets;
 public class InformationPackageProperties {
 
     @NotEmpty
+    @Valid
     private Set<ContentInformation> contentInformations;
 
     @NotNull
+    @Valid
     private PreservationDescriptionInformation pdi = new PreservationDescriptionInformation();
 
     private Map<String, Object> descriptiveInformation;

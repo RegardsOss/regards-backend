@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.Valid;
+
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson base feature collection representation
@@ -35,6 +37,7 @@ import java.util.List;
  */
 public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>> extends AbstractGeoJsonObject {
 
+    @Valid
     private final List<F> features = new ArrayList<>();
 
     public AbstractFeatureCollection() {
