@@ -38,7 +38,7 @@ public class PluginServiceDtoTest {
 
     private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY);
 
-    private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.DATASET);
+    private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.DATA);
 
     @Before
     public void setUp() throws MalformedURLException {
