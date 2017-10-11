@@ -98,13 +98,13 @@ public class EmailController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Send an email to recipients")
-    public ResponseEntity<SimpleMailMessage> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
+    public ResponseEntity<Void> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
         IEmailService service = emailService;
         if (runtimeTenantResolver.isInstance()) {
             service = simpleEmailService;
         }
-        final SimpleMailMessage created = service.sendEmail(pMessage);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        service.sendEmail(pMessage);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**

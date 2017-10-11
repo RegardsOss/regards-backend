@@ -36,6 +36,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-data-regards</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-commons-regards</artifactId>
+		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
