@@ -16,11 +16,11 @@ import com.google.common.collect.Sets;
  */
 public class InformationPackageProperties {
 
-    @NotEmpty
+    @NotEmpty(message = "At least one content information is required")
     @Valid
     private Set<ContentInformation> contentInformations;
 
-    @NotNull
+    @NotNull(message = "Preservation description information is required")
     @Valid
     private PreservationDescriptionInformation pdi = new PreservationDescriptionInformation();
 

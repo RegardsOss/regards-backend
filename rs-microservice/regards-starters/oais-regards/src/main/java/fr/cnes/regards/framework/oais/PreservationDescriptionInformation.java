@@ -39,33 +39,28 @@ public class PreservationDescriptionInformation {
     public static final String CONTEXT_INFO_TAGS_KEY = "tags";
 
     /**
-     * should contains the tags too as a "special" key
+     * Should contains the tags too as a "special" key
      */
-    private Map<String, Object> contextInformation;
+    @NotNull
+    private final Map<String, Object> contextInformation = new HashMap<>();;
 
     @NotNull
-    private Map<String, String> referenceInformation;
+    private final Map<String, String> referenceInformation = new HashMap<>();
 
     @NotNull
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
 
     @NotNull
-    private Map<String, Object> fixityInformation;
+    private final Map<String, Object> fixityInformation = new HashMap<>();
 
     @NotNull
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
     public Map<String, String> getReferenceInformation() {
-        if (referenceInformation == null) {
-            referenceInformation = new HashMap<>();
-        }
         return referenceInformation;
     }
 
     public Map<String, Object> getContextInformation() {
-        if (contextInformation == null) {
-            contextInformation = new HashMap<>();
-        }
         return contextInformation;
     }
 
@@ -88,9 +83,6 @@ public class PreservationDescriptionInformation {
     }
 
     public Map<String, Object> getFixityInformation() {
-        if (fixityInformation == null) {
-            fixityInformation = new HashMap<>();
-        }
         return fixityInformation;
     }
 
@@ -103,38 +95,34 @@ public class PreservationDescriptionInformation {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
         PreservationDescriptionInformation that = (PreservationDescriptionInformation) o;
 
-        if (contextInformation != null ?
-                !contextInformation.equals(that.contextInformation) :
-                that.contextInformation != null) {
+        if (contextInformation != null ? !contextInformation.equals(that.contextInformation)
+                : that.contextInformation != null) {
             return false;
         }
-        if (provenanceInformation != null ?
-                !provenanceInformation.equals(that.provenanceInformation) :
-                that.provenanceInformation != null) {
+        if (provenanceInformation != null ? !provenanceInformation.equals(that.provenanceInformation)
+                : that.provenanceInformation != null) {
             return false;
         }
-        if (fixityInformation != null ?
-                !fixityInformation.equals(that.fixityInformation) :
-                that.fixityInformation != null) {
+        if (fixityInformation != null ? !fixityInformation.equals(that.fixityInformation)
+                : that.fixityInformation != null) {
             return false;
         }
-        return accessRightInformation != null ?
-                accessRightInformation.equals(that.accessRightInformation) :
-                that.accessRightInformation == null;
+        return accessRightInformation != null ? accessRightInformation.equals(that.accessRightInformation)
+                : that.accessRightInformation == null;
     }
 
     @Override
     public int hashCode() {
         int result = contextInformation != null ? contextInformation.hashCode() : 0;
-        result = 31 * result + (provenanceInformation != null ? provenanceInformation.hashCode() : 0);
-        result = 31 * result + (fixityInformation != null ? fixityInformation.hashCode() : 0);
-        result = 31 * result + (accessRightInformation != null ? accessRightInformation.hashCode() : 0);
+        result = (31 * result) + (provenanceInformation != null ? provenanceInformation.hashCode() : 0);
+        result = (31 * result) + (fixityInformation != null ? fixityInformation.hashCode() : 0);
+        result = (31 * result) + (accessRightInformation != null ? accessRightInformation.hashCode() : 0);
         return result;
     }
 }

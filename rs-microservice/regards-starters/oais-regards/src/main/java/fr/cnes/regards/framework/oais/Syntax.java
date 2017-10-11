@@ -22,13 +22,13 @@ import javax.validation.constraints.NotNull;
 
 public class Syntax {
 
-    @NotNull
+    @NotNull(message = "Description is required in syntax object")
     private String description;
 
-    @NotNull
+    @NotNull(message = "Mime type is required in syntax object")
     private String mimeType;
 
-    @NotNull
+    @NotNull(message = "Mime type name is required in syntax object")
     private String name;
 
     public String getDescription() {

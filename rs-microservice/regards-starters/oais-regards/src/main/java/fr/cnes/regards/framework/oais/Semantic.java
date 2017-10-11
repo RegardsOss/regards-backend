@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
  */
 public class Semantic {
 
-    @NotNull
+    @NotNull(message = "Description is required in optional semantic object")
     private String description;
 
     public String getDescription() {

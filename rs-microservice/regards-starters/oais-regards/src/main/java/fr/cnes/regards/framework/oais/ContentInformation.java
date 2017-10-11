@@ -34,7 +34,7 @@ public class ContentInformation {
     @Valid
     private RepresentationInformation representationInformation;
 
-    @NotNull
+    @NotNull(message = "A data object is required in content information")
     @Valid
     private OAISDataObject dataObject;
 

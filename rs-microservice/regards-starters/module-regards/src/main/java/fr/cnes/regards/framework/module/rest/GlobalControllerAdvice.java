@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
-import javax.validation.ValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
+
+import javax.validation.ValidationException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -175,7 +178,10 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ServerErrorResponse(ex.getMessage()));
+        List<String> messages = new ArrayList<>();
+        // Only return default messages at the moment
+        ex.getBindingResult().getAllErrors().forEach(objectError -> messages.add(objectError.getDefaultMessage()));
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ServerErrorResponse(messages));
     }
 
     /**
@@ -264,6 +270,5 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
                 pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
     }
-
 
 }

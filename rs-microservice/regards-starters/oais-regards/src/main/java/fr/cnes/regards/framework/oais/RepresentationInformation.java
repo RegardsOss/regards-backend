@@ -34,7 +34,7 @@ public class RepresentationInformation {
     @Valid
     private Semantic semantic;
 
-    @NotNull
+    @NotNull(message = "At least syntax is required in optional representation information")
     @Valid
     private Syntax syntax;
 
