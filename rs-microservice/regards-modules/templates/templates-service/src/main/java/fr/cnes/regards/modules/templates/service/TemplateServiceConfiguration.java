@@ -71,6 +71,11 @@ public class TemplateServiceConfiguration {
     public static final String PROJECT_USER_INACTIVATED_TEMPLATE_CODE = "PROJECT_USER_INACTIVATED_TEMPLATE";
 
     /**
+     * The order created template code
+     */
+    public static final String ORDER_CREATED_TEMPLATE_CODE = "ORDER_CREATED_TEMPLATE_CODE";
+
+    /**
      * The verification email template as html
      */
     private static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE = "template/email-account-validation-template.html";
@@ -100,6 +105,11 @@ public class TemplateServiceConfiguration {
      * The project user inactivated email template as html
      */
     private static final String PROJECT_USER_INACTIVATED_TEMPLATE = "template/project-user-inactivated-template.html";
+
+    /**
+     * The order created email template as html
+     */
+    private static final String ORDER_CREATED_TEMPLATE = "template/order-created-template.html";
 
     /**
      * Declare the template as bean
@@ -197,6 +207,17 @@ public class TemplateServiceConfiguration {
         }
     }
 
+    @Bean
+    public Template orderCreatedTemplate() throws IOException {
+        ClassPathResource resource = new ClassPathResource(ORDER_CREATED_TEMPLATE);
+        try (InputStream is = resource.getInputStream()) {
+            final String text = inputStreamToString(is);
+            final Map<String, String> dataStructure = new HashMap<>();
+            return new Template(ORDER_CREATED_TEMPLATE_CODE, text, dataStructure, "Order created");
+        } catch (FileNotFoundException fnfe) {
+            return null;
+        }
+    }
     /**
      * Writes an {@link InputStream} to a {@link String}.
      * @param is the input stream
