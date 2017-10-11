@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
+import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.plugins.utils.PluginUtils;
 
 /**
@@ -157,7 +158,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
                                                         Matchers.containsInAnyOrder("MANY", "ONE")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
-                                                        Matchers.contains("DATASET")));
+                                                        Matchers.contains(EntityType.DATA)));
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations,
