@@ -23,7 +23,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -52,6 +55,8 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  * @author oroussel
@@ -59,9 +64,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles("test")
-//@Transactional
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-//@DirtiesContext
 public class OrderServiceIT {
 
     @Autowired
@@ -81,6 +84,9 @@ public class OrderServiceIT {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IProjectsClient projectsClient;
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
@@ -105,6 +111,10 @@ public class OrderServiceIT {
         jobInfoRepos.deleteAll();
 
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
+        Project project = new Project();
+        project.setHost("regardsHost");
+        Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(new Resource<>(project), HttpStatus.OK));
     }
 
     @After

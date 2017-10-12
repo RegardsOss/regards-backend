@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.order.rest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -34,6 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -46,6 +49,9 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
+import fr.cnes.regards.modules.order.service.OrderService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.MalformedJwtException;
 
 /**
  * Order controller
@@ -54,8 +60,6 @@ import fr.cnes.regards.modules.order.service.IOrderService;
 @RestController
 @RequestMapping("")
 public class OrderController implements IResourceController<OrderDto> {
-
-    public static final String ORDER_ID_KEY = "ORDER_ID";
 
     @Autowired
     private IResourceService resourceService;
@@ -71,9 +75,6 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @Autowired
     private JWTService jwtService;
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -98,6 +99,8 @@ public class OrderController implements IResourceController<OrderDto> {
     public static final String ZIP_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/download";
 
     public static final String METALINK_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/metalink/download";
+
+    public static final String PUBLIC_METALINK_DOWNLOAD_PATH = USER_ROOT_PATH + "/metalink/download";
 
     @Value("${regards.order.secret}")
     private String secret;
@@ -198,24 +201,59 @@ public class OrderController implements IResourceController<OrderDto> {
         }
 
         // Stream the response
-        return new ResponseEntity<>(
-                os -> orderService.downloadOrderCurrentZip(availableFiles, os), HttpStatus.OK);
+        return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(availableFiles, os), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
-    public void downloadMetalinkFile(@PathVariable("orderId") Long orderId, HttpServletResponse response)
-            throws NotYetAvailableException, EntityNotFoundException {
+    public ResponseEntity<StreamingResponseBody> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
+            HttpServletResponse response) throws NotYetAvailableException, EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        String token = jwtService
-                .generateToken(tenantResolver.getTenant(), authResolver.getUser(), authResolver.getRole(),
-                               order.getExpirationDate(), Collections.singletonMap(ORDER_ID_KEY, orderId.toString()),
-                               secret, true);
-        orderService.downloadOrderMetalink(orderId, OrderDataFileController.ORDER_TOKEN + "=" + token, response);
+        return createMetalinkDownloadResponse(orderId, response);
     }
+
+    @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
+            role = DefaultRole.PUBLIC)
+    @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
+    public ResponseEntity<StreamingResponseBody> publicDownloadMetalinkFile(
+            @RequestParam(name = IOrderService.ORDER_TOKEN) String token, HttpServletResponse response)
+            throws NotYetAvailableException, EntityNotFoundException {
+        Long orderId;
+        try {
+            Claims claims = jwtService.parseToken(token, secret);
+            orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+        } catch (InvalidJwtException | MalformedJwtException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Order order = orderService.loadSimple(orderId);
+        if (order == null) {
+            throw new EntityNotFoundException(orderId.toString(), Order.class);
+        }
+
+        return createMetalinkDownloadResponse(orderId, response);
+    }
+
+    /**
+     * Fill Response headers and create streaming response
+     */
+    private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
+            HttpServletResponse response) {
+        response.addHeader("Content-disposition",
+                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".metalink");
+        response.setContentType("application/metalink+xml");
+
+        // Stream the response
+        return new ResponseEntity<>(os -> orderService.downloadOrderMetalink(orderId, os),
+                                    HttpStatus.OK);
+    }
+
+
+
+
 
     // TODO : add links
     @Override
