@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.utils.file.compression.AbstractRunnableCompression;
 import fr.cnes.regards.framework.utils.file.compression.CompressManager;
 import fr.cnes.regards.framework.utils.file.compression.CompressionException;
+import fr.cnes.regards.framework.utils.file.compression.CompressionRunImpl;
 import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistException;
 
@@ -34,6 +35,8 @@ import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistExceptio
  * de compression TAR, principalement la technique d'appel.
  */
 public class TarCompression extends AbstractRunnableCompression {
+    
+    private static Logger LOGGER = LoggerFactory.getLogger(TarCompression.class);
 
     /**
      * extension a ajouter
@@ -264,7 +267,7 @@ public class TarCompression extends AbstractRunnableCompression {
                         outputStream.close();
                     }
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage(),e);
                 }
             }
 
