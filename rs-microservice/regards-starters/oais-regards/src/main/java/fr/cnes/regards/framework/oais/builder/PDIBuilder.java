@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javax.annotation.Nullable;
-
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
@@ -94,7 +92,15 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  */
 public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformation> {
 
-    private final PreservationDescriptionInformation pdi = new PreservationDescriptionInformation();
+    private final PreservationDescriptionInformation pdi;
+
+    public PDIBuilder() {
+        this.pdi = new PreservationDescriptionInformation();
+    }
+
+    public PDIBuilder(PreservationDescriptionInformation pdi) {
+        this.pdi = pdi;
+    }
 
     @Override
     public PreservationDescriptionInformation build() {
@@ -107,9 +113,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
-        @SuppressWarnings("unchecked")
-        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
-                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked") Collection<String> existingTags = (Collection<String>) pdi
+                .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
             pdi.getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
@@ -157,7 +162,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * Set optional facility information
      */
     public void setFacility(String facility) {
-        Assert.hasLength(facility, "Facility cannot be empty");
         pdi.getProvenanceInformation().setFacility(facility);
     }
 
@@ -165,7 +169,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * Set optional instrument information
      */
     public void setInstrument(String instrument) {
-        Assert.hasLength(instrument, "Instrument cannot be empty");
         pdi.getProvenanceInformation().setInstrument(instrument);
     }
 
@@ -173,7 +176,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * Set optional filter information
      */
     public void setFilter(String filter) {
-        Assert.hasLength(filter, "Filter cannot be empty");
         pdi.getProvenanceInformation().setFilter(filter);
     }
 
@@ -181,7 +183,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * Set optional detector information
      */
     public void setDetector(String detector) {
-        Assert.hasLength(detector, "Detector cannot be empty");
         pdi.getProvenanceInformation().setDetector(detector);
     }
 
@@ -189,7 +190,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * Set optional proposal information
      */
     public void setProposal(String proposal) {
-        Assert.hasLength(proposal, "Proposal cannot be empty");
         pdi.getProvenanceInformation().setProposal(proposal);
     }
 
