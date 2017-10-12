@@ -162,7 +162,7 @@ public class PluginParameterType {
         /** 
          * Object type with parameters 
          */ 
-        PARAMETERIZED_OBJECT, 
+        CONFIGURED_OBJECT, 
         /** 
          * Object type 
          */ 
