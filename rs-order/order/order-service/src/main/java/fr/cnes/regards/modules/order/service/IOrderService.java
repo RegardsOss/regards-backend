@@ -25,6 +25,9 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
  * @author oroussel
  */
 public interface IOrderService {
+    String ORDER_TOKEN = "orderToken";
+
+    String ORDER_ID_KEY = "ORDER_ID";
 
     /**
      * Create an order
@@ -108,10 +111,8 @@ public interface IOrderService {
     /**
      * Create a metalink file with all files.
      * @param orderId concerned order id
-     * @param tokenRequestParam security token to be used with public download file url (request param version ie
-     * name=value)
      */
-    void downloadOrderMetalink(Long orderId, String tokenRequestParam, HttpServletResponse response);
+    void downloadOrderMetalink(Long orderId, OutputStream os);
 
     /**
      * Scheduled method to update all current running orders completions values into database

@@ -59,9 +59,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles("test")
-//@Transactional
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-//@DirtiesContext
 public class OrderServiceIT {
 
     @Autowired

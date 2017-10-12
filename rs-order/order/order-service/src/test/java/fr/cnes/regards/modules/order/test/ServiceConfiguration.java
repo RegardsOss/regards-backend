@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -115,4 +116,9 @@ public class ServiceConfiguration {
         return Mockito.mock(IAuthenticationResolver.class);
     }
 
+
+    @Bean
+    public IEmailClient mockEmailClient() {
+        return Mockito.mock(IEmailClient.class);
+    }
 }
