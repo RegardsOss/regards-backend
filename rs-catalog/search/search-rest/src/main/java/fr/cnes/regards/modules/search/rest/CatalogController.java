@@ -18,37 +18,16 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-
-import javax.validation.Valid;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.entities.domain.*;
 import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -64,7 +43,30 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
 import fr.cnes.regards.modules.search.rest.representation.IRepresentation;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.IFileEntityDescriptionHelper;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 /**
  * REST controller managing the research of REGARDS entities ({@link Collection}s, {@link Dataset}s, {@link DataObject}s
@@ -97,6 +99,8 @@ public class CatalogController {
 
     public static final String DATASETS_SEARCH = "/datasets/search";
 
+    public static final String DATASET_FILE = "/datasets/search";
+
     public static final String COLLECTIONS_SEARCH = "/collections/search";
 
     public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
@@ -123,6 +127,11 @@ public class CatalogController {
     private final ISearchService searchService;
 
     /**
+     * Service perfoming the ElasticSearch search directly. Autowired by Spring.
+     */
+    private final IFileEntityDescriptionHelper fileEntityDescriptionHelper;
+
+    /**
      * The resource service. Autowired by Spring.
      */
     private final IResourceService resourceService;
@@ -146,13 +155,14 @@ public class CatalogController {
      */
     public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService,
             final IResourceService pResourceService, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final OpenSearchDescriptionBuilder osDescriptorBuilder) {
+            final OpenSearchDescriptionBuilder osDescriptorBuilder, IFileEntityDescriptionHelper fileEntityDescriptionHelper) {
         super();
         catalogSearchService = pCatalogSearchService;
         searchService = pSearchService;
         resourceService = pResourceService;
         runtimeTenantResolver = pRuntimeTenantResolver;
         this.osDescriptorBuilder = osDescriptorBuilder;
+        this.fileEntityDescriptionHelper = fileEntityDescriptionHelper;
     }
 
     /**
@@ -265,7 +275,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the dataset of passed URN_COLLECTION.
+     * Return the dataset of passed dataset URN.
      *
      * @param pUrn
      *            the Uniform Resource Name of the dataset
@@ -275,21 +285,45 @@ public class CatalogController {
     @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Dataset>> getDataset(@Valid @PathVariable("urn") final UniformResourceName pUrn,
-            DatasetResourcesAssembler assembler) throws SearchException {
+                                                        DatasetResourcesAssembler assembler) throws SearchException {
         final Dataset dataset = searchService.get(pUrn);
         return new ResponseEntity<>(assembler.toResource(dataset), HttpStatus.OK);
     }
 
     /**
+     * Return the dataset file of passed dataset URN.
+     *
+     * @param pUrn the Uniform Resource Name of the dataset
+     * @return the dataset file
+     * @throws SearchException
+     */
+    @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
+    @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
+                                                                          @PathVariable("urn") String pUrn,
+                                                                          HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
+        final Response fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn), response);
+        // Return rs-dam headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, fileStream.headers().get(HttpHeaders.CONTENT_TYPE).stream().findFirst().get());
+        headers.add(HttpHeaders.CONTENT_LENGTH, fileStream.headers().get(HttpHeaders.CONTENT_LENGTH).stream().findFirst().get());
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, fileStream.headers().get(HttpHeaders.CONTENT_DISPOSITION).stream().findFirst().get());
+
+        // set the X-Frame-Options header value to ALLOW-FROM origin
+        if (origin != null) {
+            response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
+        }
+        final InputStream inputStream = fileStream.body().asInputStream();
+        return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
+    }
+
+    /**
      * Perform an OpenSearch request on datasets.
      *
-     * @param allParams
-     *            all query parameters
-     * @param pPageable
-     *            the page
+     * @param allParams all query parameters
+     * @param pPageable the page
      * @return the page of datasets matching the query
-     * @throws SearchException
-     *             when an error occurs while parsing the query
+     * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
@@ -312,7 +346,7 @@ public class CatalogController {
     }
 
     /**
-     * Return the dataobject of passed URN_COLLECTION.
+     * Return the dataobject of passed dataobject URN.
      *
      * @param pUrn
      *            the Uniform Resource Name of the dataobject
