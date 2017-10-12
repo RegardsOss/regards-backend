@@ -25,7 +25,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
@@ -53,8 +53,11 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
     @Autowired
     private IModuleService moduleService;
 
+    /**
+     * AMQP Message subscriber
+     */
     @Autowired
-    private ISubscriber subscriber;
+    private IInstanceSubscriber instanceSubscriber;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -62,7 +65,8 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         LOG.info("UiConfigurationServiceEventHandler subscribing to new TenantConnectionReady events.");
-        subscriber.subscribeTo(TenantConnectionReady.class, new UIConfigurationTenantConnectionReadyEventHandler());
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class,
+                                       new UIConfigurationTenantConnectionReadyEventHandler());
     }
 
     /**
