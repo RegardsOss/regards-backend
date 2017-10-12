@@ -43,11 +43,16 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     public static final String LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD = "Local_Occupied_Space_Threshold";
 
+    private static final String LOCAL_STORAGE_DELETE_OPTION = "Local_Delete_Option";
+
     @Autowired
     private Gson gson;
 
     @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
     private String baseStorageLocationAsString;
+
+    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true")
+    private Boolean canDelete;
 
 //    @PluginParameter(name = LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD)
 //    private Long occupiedSpaceThreshold;
@@ -63,6 +68,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     public Set<LocalWorkingSubset> prepare(Collection<DataFile> dataFiles, DataStorageAccessModeEnum mode) {
         // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at once
         return Sets.newHashSet(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
+    }
+
+    @Override
+    public boolean canDelete() {
+        return canDelete;
     }
 
     @Override

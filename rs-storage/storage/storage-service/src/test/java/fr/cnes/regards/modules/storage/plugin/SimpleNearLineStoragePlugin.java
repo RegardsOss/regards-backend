@@ -36,6 +36,11 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     }
 
     @Override
+    public boolean canDelete() {
+        return true;
+    }
+
+    @Override
     public void delete(Set<DataFile> pDataFiles, IProgressManager pProgressManager) {
         // TODO Auto-generated method stub
 

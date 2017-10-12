@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, String> {
+public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long> {
 
     /**
      * @param pState

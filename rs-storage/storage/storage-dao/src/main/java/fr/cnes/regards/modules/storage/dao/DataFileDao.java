@@ -94,7 +94,7 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public void remove(DataFile data) {
-        repository.delete(data);
+        repository.delete(data.getId());
     }
 
     private Optional<AIPDataBase> getAipDataBase(AIP aip) {

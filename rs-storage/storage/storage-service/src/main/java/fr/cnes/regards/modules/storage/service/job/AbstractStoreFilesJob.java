@@ -105,11 +105,14 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     public void run() {
         progressManager = new StorageJobProgressManager(publisher, this);
         // first lets check that all parameters are there and valid.
+        LOG.debug(String.format("[FILE JOB] Executing some checks before doing anything"));
         Map<String, JobParameter> parameterMap = beforeRun();
+        LOG.debug(String.format("[FILE JOB] Checks are all good. Let's do something"));
         // then lets store the files
         try {
             doRun(parameterMap);
         } finally {
+            LOG.debug(String.format("[FILE JOB] Executing some checks after execution"));
             // eventually, lets see if everything went as planned
             afterRun();
         }

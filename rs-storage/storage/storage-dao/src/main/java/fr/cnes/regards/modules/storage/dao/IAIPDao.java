@@ -115,4 +115,6 @@ public interface IAIPDao {
     void deleteAll();
 
     Set<AIP> findAllByStateInService(AIPState... states);
+
+    void remove(AIP associatedAIP);
 }

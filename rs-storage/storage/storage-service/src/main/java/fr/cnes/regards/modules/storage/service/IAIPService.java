@@ -107,9 +107,24 @@ public interface IAIPService {
 
     List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws EntityNotFoundException;
 
+    /**
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, create a new aip with a different version and use create method.
+     * @param ipId information package identifier of the aip
+     * @param updated object containing changes
+     * @return aip stored into the system after changes have been propagated
+     * @throws EntityNotFoundException if no aip with ipId as identifier can be found
+     * @throws EntityNotIdentifiableException if updated does not have any ipId specified
+     * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
+     * @throws EntityOperationForbiddenException if aip in the system is not in the right state
+     */
     AIP updateAip(String ipId, AIP updated)
             throws EntityNotFoundException, EntityNotIdentifiableException, EntityInconsistentIdentifierException,
             EntityOperationForbiddenException;
+
+    /**
+     * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
+     */
+    Set<UUID> deleteAip(String ipId) throws ModuleException;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
@@ -131,4 +146,5 @@ public interface IAIPService {
     Set<UpdatableMetadataFile> prepareUpdatedAIP(Path tenantWorkspace);
 
     Set<DataFile> prepareNotFullyStored(Path tenantWorkspace);
+
 }

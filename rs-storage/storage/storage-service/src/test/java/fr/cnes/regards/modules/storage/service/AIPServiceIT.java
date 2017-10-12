@@ -174,8 +174,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             Thread.sleep(1000);
             wait = wait + 1000;
         }
-        LOG.info("All waiting JOB succeeded");
         Assert.assertFalse("The job failed while it should not have", handler.isFailed());
+        LOG.info("All waiting JOB succeeded");
         Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
         // Wait for AIP set STORED status
         LOG.info("Waiting for AIP {} stored", aip.getId().toString());
@@ -261,11 +261,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets create the aip
         createSuccessTest();
         // now that it is correctly created, lets say it has been updated and add a tag
-        Optional<DataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
         aip = aipDao.findOneByIpId(aip.getId().toString()).get();
         aip.getTags().add("Exemple Tag For Fun");
-        aip.setState(AIPState.UPDATED);
-        aipDao.save(aip);
+        aipService.updateAip(aip.getId().toString(), aip);
+        Optional<DataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
         Assert.assertTrue("The old data file should exists !",
                           Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
         // now lets launch the method without scheduling
@@ -294,6 +293,36 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // After job is done, the new AIP metadata file should be present in local datastorage
         DataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
         Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrl().toURI())));
+    }
+
+    @Test
+    public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
+        createSuccessTest();
+        String aipIpId = aip.getId().toString();
+        //lets get all the dataFile before deleting them for further verification
+        Set<DataFile> aipFiles = dataFileDao.findAllByAip(aip);
+        Set<UUID> jobIds = aipService.deleteAip(aipIpId);
+        aip = aipDao.findOneByIpId(aipIpId).get();
+        Assert.assertEquals("AIP state should be DELETED now", AIPState.DELETED, aip.getState());
+        //now lets wait for the deletion job to be finished
+        jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
+        int wait = 0;
+        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
+            // lets wait for 1 sec before checking again if all our jobs has been done or not
+            Thread.sleep(1000);
+            wait = wait + 1000;
+        }
+        Assert.assertFalse("The job failed while it should not have", handler.isFailed());
+        LOG.info("All waiting JOB succeeded");
+
+        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        for(DataFile df : aipFiles) {
+            if(df.getDataType() == DataType.AIP) {
+                Assert.assertFalse("AIP metadata should not be on disk anymore", Files.exists(Paths.get(df.getUrl().toURI())));
+            } else {
+                Assert.assertFalse("AIP data should not be on disk anymore", Files.exists(Paths.get(df.getUrl().toURI())));
+            }
+        }
     }
 
     private AIP getAIP() throws MalformedURLException {

@@ -86,6 +86,7 @@ import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
+import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
@@ -581,7 +582,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             throw new EntityNotFoundException(ipId, AIP.class);
         }
         AIP oldAip = oldAipOpt.get();
-        if(oldAip.getState() != AIPState.UPDATED || oldAip.getState() != AIPState.STORED) {
+        if (oldAip.getState() != AIPState.UPDATED && oldAip.getState() != AIPState.STORED) {
             throw new EntityOperationForbiddenException(ipId, AIP.class, "update while aip metadata are being stored!");
         }
         if (updated.getId() == null) {
@@ -590,6 +591,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (!oldAip.getId().toString().equals(updated.getId().toString())) {
             throw new EntityInconsistentIdentifierException(ipId, updated.getId().toString(), AIP.class);
         }
+        LOG.debug(String.format("[METADATA UPDATE] updating metadata of aip %s", ipId));
         // now that requirement are meant, lets update the old one
         AIPBuilder updatingBuilder = new AIPBuilder(oldAip);
         // Only PDI and descriptive information can be updated
@@ -652,14 +654,78 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // descriptive information
         Map<String, Object> descriptiveInformationMap;
         if ((descriptiveInformationMap = updated.getProperties().getDescriptiveInformation()) != null) {
-            for(Map.Entry<String, Object> descriptiveEntry: descriptiveInformationMap.entrySet()) {
+            for (Map.Entry<String, Object> descriptiveEntry : descriptiveInformationMap.entrySet()) {
                 updatingBuilder.addDescriptiveInformation(descriptiveEntry.getKey(), descriptiveEntry.getValue());
             }
         }
-        //not that all updates are set into the builder, lets build and save the updatedAip
+        //not that all updates are set into the builder, lets build and save the updatedAip. Update event is added thanks once the metadata are stored
         AIP updatedAip = updatingBuilder.build();
         updatedAip.setState(AIPState.UPDATED);
+        LOG.debug(String.format("[METADATA UPDATE] Update of aip %s metadata done", ipId));
+        LOG.trace(String.format("[METADATA UPDATE] Updated aip : %s", gson.toJson(updatedAip)));
         return aipDao.save(updatedAip);
+    }
+
+    @Override
+    public Set<UUID> deleteAip(String ipId) throws ModuleException {
+        Optional<AIP> toBeDeleted = aipDao.findOneByIpId(ipId);
+        if (toBeDeleted.isPresent()) {
+            Set<DataFile> dataFilesToDelete = Sets.newHashSet();
+            // check if data file are use by any other aip
+            Set<DataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted.get());
+            for (DataFile dataFile : dataFiles) {
+                // we order deletion of a file if and only if no other aip references the same file
+                Set<DataFile> dataFilesWithSameFile = dataFileDao
+                        .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+                // well lets remove ourselves of course!
+                dataFilesWithSameFile.remove(dataFile);
+                if (dataFilesWithSameFile.isEmpty()) {
+                    // add to datafiles that should be removed
+                    dataFilesToDelete.add(dataFile);
+                } else {
+                    // if other datafiles are referencing a file, we just remove the data file from the database.
+                    dataFileDao.remove(dataFile);
+                }
+            }
+            // schedule removal of data and metadata
+            toBeDeleted.get().setState(AIPState.DELETED);
+            aipDao.save(toBeDeleted.get());
+            return scheduleDeletion(dataFilesToDelete);
+        }
+        return Sets.newHashSet();
+    }
+
+    private Set<UUID> scheduleDeletion(Set<DataFile> dataFilesToDelete) throws ModuleException {
+        IAllocationStrategy allocationStrategy = getAllocationStrategy();
+        // FIXME: should probably set the tenant into maintenance in case of module exception
+
+        Multimap<PluginConfiguration, DataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
+        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
+                  dataFilesToDelete.size(), deletionWorkingSetMap.keySet().size());
+        // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
+        checkDispatch(dataFilesToDelete, deletionWorkingSetMap);
+        Set<JobInfo> jobsToSchedule = Sets.newHashSet();
+        for (PluginConfiguration dataStorageConf : deletionWorkingSetMap.keySet()) {
+            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMap.get(dataStorageConf),
+                                                                   dataStorageConf);
+            LOG.trace("Preparing a job for each working subsets");
+            // lets instantiate every job for every DataStorage to use
+            for (IWorkingSubset workingSubset : workingSubSets) {
+                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for
+                // each of them
+                Set<JobParameter> parameters = Sets.newHashSet();
+                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
+                parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
+                jobsToSchedule
+                        .add(new JobInfo(0, parameters, authResolver.getUser(), DeleteDataFilesJob.class.getName()));
+
+            }
+        }
+        Set<UUID> jobIds = Sets.newHashSet();
+        for (JobInfo job : jobsToSchedule) {
+            jobIds.add(jobInfoService.createAsQueued(job).getId());
+        }
+        return jobIds;
     }
 
     /**
@@ -727,10 +793,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     // TODO: notify, probably should set the system into maintenance mode...
                 }
             }
+            LOG.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s", tenant));
             Set<UpdatableMetadataFile> metadataToUpdate = self.prepareUpdatedAIP(tenantWorkspace);
             if (!metadataToUpdate.isEmpty()) {
                 self.scheduleStorageMetadataUpdate(metadataToUpdate);
             }
+            LOG.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled", tenant));
         }
     }
 

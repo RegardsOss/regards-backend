@@ -35,7 +35,12 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
-import fr.cnes.regards.modules.storage.domain.event.*;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
+import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
+import fr.cnes.regards.modules.storage.domain.event.StorageAction;
+import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 
@@ -188,10 +193,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             AIP associatedAIP = optionalAssociatedAIP.get();
             Optional<DataFile> metadataAIPFile = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
             // If deleted file is not an AIP metadata file
-            // or if the AIP metadata file deleted is the current associated one
             // Set the AIP to UPDATED state.
-            if (!DataType.AIP.equals(dataFileDeleted.getDataType()) || !metadataAIPFile.isPresent() || !(metadataAIPFile
-                    .get().getId().equals(dataFileDeleted.getId()))) {
+            if (!DataType.AIP.equals(dataFileDeleted.getDataType())) {
                 // Get from the AIP all the content informations to remove. All content informations to remove are the content informations with the same checksum that
                 // the deleted DataFile.
                 // @formatter:off
@@ -202,19 +205,28 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                             .collect(Collectors.toSet());
                 // @formatter:on
                 associatedAIP.getProperties().getContentInformations().removeAll(cisToRemove);
-                associatedAIP.setState(AIPState.UPDATED);
-                associatedAIP.addEvent(EventType.DELETION.name(), String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName()));
+                associatedAIP.addEvent(EventType.DELETION.name(),
+                                       String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName()));
                 aipDao.save(associatedAIP);
                 LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                           dataFileDeleted.getAip().getId().toString());
                 dataFileDao.remove(dataFileDeleted);
             } else {
-                // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
-                // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
-                // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
-                LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
-                          dataFileDeleted.getAip().getId().toString());
-                associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
+                if (associatedAIP.getState() != AIPState.DELETED) {
+                    // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
+                    // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
+                    // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
+                    LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
+                              dataFileDeleted.getAip().getId().toString());
+                    associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
+                    // unless no other datafiles are linked to the metadata, in that case it means it
+                } else {
+                    // Deletion has been explicitly required, so lets remove all the dataFiles associated to this AIP...
+                    dataFileDao.findAllByAip(associatedAIP).forEach(df -> dataFileDao.remove(df));
+                    // ...and the aip itself
+                    aipDao.remove(associatedAIP);
+                    publisher.publish(new AIPEvent(associatedAIP));
+                }
             }
         }
     }
@@ -307,12 +319,15 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                         .findFirst();
             // @formatter:on
             if (ci.isPresent()) {
-                associatedAIP.getProperties().getPdi().getProvenanceInformation()
-                        .addEvent(EventType.STORAGE.name(), "File "+storedDataFile.getName()+" stored into REGARDS");
+                associatedAIP.getProperties().getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
+                                                                                           "File " + storedDataFile
+                                                                                                   .getName()
+                                                                                                   + " stored into REGARDS");
                 ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
                 ci.get().getDataObject().setUrl(storedDataFile.getUrl());
                 ci.get().getDataObject().setFilename(storedDataFile.getName());
-                associatedAIP.addEvent(EventType.STORAGE.name(), String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
+                associatedAIP.addEvent(EventType.STORAGE.name(),
+                                       String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
                 aipDao.save(associatedAIP);
             }
         }

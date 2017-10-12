@@ -48,4 +48,8 @@ public class AIPBuilder extends IPBuilder<AIP> {
         ip.setId(ipId);
         ip.setSipId(sipId);
     }
+
+    public AIPBuilder(AIP oldAip) {
+        super(oldAip);
+    }
 }

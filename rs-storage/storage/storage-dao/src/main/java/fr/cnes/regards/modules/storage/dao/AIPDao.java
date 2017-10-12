@@ -127,6 +127,14 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
+    public void remove(AIP associatedAIP) {
+        Optional<AIPDataBase> opt = repo.findOneByIpId(associatedAIP.getId().toString());
+        if(opt.isPresent()) {
+            repo.delete(opt.get());
+        }
+    }
+
+    @Override
     public Page<AIP> findAll(Pageable pPageable) {
         return repo.findAll(pPageable).map(this::buildAipFromAIPDataBase);
     }

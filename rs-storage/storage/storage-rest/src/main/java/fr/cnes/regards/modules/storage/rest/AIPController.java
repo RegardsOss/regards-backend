@@ -38,12 +38,16 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
@@ -146,8 +150,18 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = ID_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "allows to update a given aip metadata")
     @ResponseBody
-    public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated) {
+    public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
+            throws EntityNotIdentifiableException, EntityInconsistentIdentifierException,
+            EntityOperationForbiddenException, EntityNotFoundException {
         return new ResponseEntity<AIP>(aipService.updateAip(ipId, updated), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    @ResourceAccess(description = "allows to update a given aip metadata", role = DefaultRole.ADMIN)
+    @ResponseBody
+    public ResponseEntity<Void> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
+        aipService.deleteAip(ipId);
+        return (ResponseEntity<Void>) ResponseEntity.noContent();
     }
 
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
