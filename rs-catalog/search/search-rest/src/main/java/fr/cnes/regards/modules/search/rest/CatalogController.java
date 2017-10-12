@@ -299,8 +299,7 @@ public class CatalogController {
      */
     @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@RequestParam(name = "origin", required = false) String origin,
-                                                                          @PathVariable("urn") String pUrn,
+    public ResponseEntity<InputStreamResource> retrieveDatasetDescription(@PathVariable("urn") String pUrn,
                                                                           HttpServletResponse response) throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
         final Response fileStream = fileEntityDescriptionHelper.getFile(UniformResourceName.fromString(pUrn), response);
         // Return rs-dam headers
@@ -309,10 +308,11 @@ public class CatalogController {
         headers.add(HttpHeaders.CONTENT_LENGTH, fileStream.headers().get(HttpHeaders.CONTENT_LENGTH).stream().findFirst().get());
         headers.add(HttpHeaders.CONTENT_DISPOSITION, fileStream.headers().get(HttpHeaders.CONTENT_DISPOSITION).stream().findFirst().get());
 
-        // set the X-Frame-Options header value to ALLOW-FROM origin
-        if (origin != null) {
-            response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
-        }
+        // set the X-Frame-Options header value to SAMEORIGIN
+        // Because Chrome doesn't support ALLOW-FROM origin
+        // If you don't use a reverse proxy behind the gateway AND the front this feature may not work
+        headers.add(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
+
         final InputStream inputStream = fileStream.body().asInputStream();
         return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
     }
