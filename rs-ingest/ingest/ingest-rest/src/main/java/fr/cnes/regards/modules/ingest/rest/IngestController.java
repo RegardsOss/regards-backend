@@ -33,15 +33,16 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
- * SIP module controller
+ * This controller manages SIP submission.
+ *
  * @author Marc Sordi
  *
  */
 @RestController
 @ModuleInfo(name = "SIP management module", description = "SIP submission and management", version = "2.0.0-SNAPSHOT",
         author = "CSSI", legalOwner = "CNES", documentation = "TODO")
-@RequestMapping(SIPController.TYPE_MAPPING)
-public class SIPController {
+@RequestMapping(IngestController.TYPE_MAPPING)
+public class IngestController {
 
     public static final String TYPE_MAPPING = "/sips";
 
@@ -49,6 +50,7 @@ public class SIPController {
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     public ResponseEntity<String> submitSipCollection(@Valid @RequestBody SIPCollection sips) throws ModuleException {
 
+        // Compute checksum for each feature
         return ResponseEntity.ok("TODO");
     }
 }

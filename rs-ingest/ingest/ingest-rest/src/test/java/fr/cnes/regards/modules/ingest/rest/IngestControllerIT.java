@@ -45,9 +45,9 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  *
  */
 @MultitenantTransactional
-public class SIPControllerIT extends AbstractRegardsTransactionalIT {
+public class IngestControllerIT extends AbstractRegardsTransactionalIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestControllerIT.class);
 
     @Override
     protected Logger getLogger() {
@@ -80,7 +80,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         // expectations.add(MockMvcResultMatchers.jsonPath(JSON_ID, Matchers.notNullValue()));
 
-        performDefaultPostWithContentType(SIPController.TYPE_MAPPING, collectionBuilder.build(),
+        performDefaultPostWithContentType(IngestController.TYPE_MAPPING, collectionBuilder.build(),
                                           GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE, expectations,
                                           "SIP collection should be submitted.");
 
