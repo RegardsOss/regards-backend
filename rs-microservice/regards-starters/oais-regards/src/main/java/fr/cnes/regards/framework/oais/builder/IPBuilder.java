@@ -69,7 +69,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPBuilder.class);
 
-    private final InformationPackagePropertiesBuilder ipPropertiesBuilder = new InformationPackagePropertiesBuilder();
+    private final InformationPackagePropertiesBuilder ipPropertiesBuilder;
 
     protected final T ip;
 
@@ -78,11 +78,18 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         try {
             ip = clazz.newInstance();
             ip.setIpType(ipType);
+            ipPropertiesBuilder = new InformationPackagePropertiesBuilder();
         } catch (InstantiationException | IllegalAccessException e) {
             String errorMessage = "Cannot instanciate information package";
             LOGGER.error(errorMessage, e);
             throw new IllegalArgumentException(errorMessage);
         }
+    }
+
+    public IPBuilder(T toBeUpdated) {
+        Assert.notNull(toBeUpdated, "Given information package cannot be null!");
+        this.ip = toBeUpdated;
+        ipPropertiesBuilder = new InformationPackagePropertiesBuilder(toBeUpdated.getProperties());
     }
 
     @Override

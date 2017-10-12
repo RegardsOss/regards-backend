@@ -48,6 +48,11 @@ public interface ISamplePlugin {
      * constant pojo parameter
      */
     public static final String POJO = "pojo";
+    
+    /**
+     * constant pojo parameter
+     */
+    public static final String OFF_SET_DATE_TIME = "offset-date-time";
 
     /**
      * method echo

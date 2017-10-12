@@ -25,7 +25,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
@@ -38,15 +37,32 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  */
 public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {
 
-    private final InformationPackageProperties ip = new InformationPackageProperties();
+    private final InformationPackageProperties ip;
 
-    private final Set<ContentInformation> cis = Sets.newHashSet();
+    private final Set<ContentInformation> cis;
 
-    private ContentInformationBuilder contentInformationBuilder = new ContentInformationBuilder();
+    private ContentInformationBuilder contentInformationBuilder;
 
-    private final PDIBuilder pdiBuilder = new PDIBuilder();
+    private final PDIBuilder pdiBuilder;
 
-    private final Map<String, Object> descriptiveInformation = Maps.newHashMap();
+    private final Map<String, Object> descriptiveInformation;
+
+    public InformationPackagePropertiesBuilder() {
+        this.ip = new InformationPackageProperties();
+        this.cis = Sets.newHashSet();
+        this.contentInformationBuilder = new ContentInformationBuilder();
+        this.pdiBuilder = new PDIBuilder();
+        this.descriptiveInformation = Maps.newHashMap();
+    }
+
+    public InformationPackagePropertiesBuilder(InformationPackageProperties properties) {
+        this.ip = properties;
+        this.cis = properties.getContentInformations();
+        this.pdiBuilder = new PDIBuilder(properties.getPdi());
+        this.descriptiveInformation = properties.getDescriptiveInformation() == null ?
+                Maps.newHashMap() :
+                properties.getDescriptiveInformation();
+    }
 
     @Override
     public InformationPackageProperties build() {
