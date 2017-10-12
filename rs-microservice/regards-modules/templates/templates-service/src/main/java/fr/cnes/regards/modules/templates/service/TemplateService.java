@@ -132,6 +132,9 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template projectUserInactivatedTemplate;
 
+    @Autowired(required = false)
+    private Template orderCreatedTemplate;
+
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String noReplyAdress;
 
@@ -174,6 +177,7 @@ public class TemplateService implements ITemplateService {
         checkAndSaveIfNecessary(accountRefusedTemplate);
         checkAndSaveIfNecessary(projectUserActivatedTemplate);
         checkAndSaveIfNecessary(projectUserInactivatedTemplate);
+        checkAndSaveIfNecessary(orderCreatedTemplate);
     }
 
     private void checkAndSaveIfNecessary(Template template) {
@@ -197,10 +201,10 @@ public class TemplateService implements ITemplateService {
          * @since 1.0-SNAPSHOT
          */
         @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
+        public void handle(final TenantWrapper<TenantConnectionReady> wrapper) {
+            if (microserviceName.equals(wrapper.getContent().getMicroserviceName())) {
                 // Retrieve tenant
-                String tenant = pWrapper.getContent().getTenant();
+                String tenant = wrapper.getContent().getTenant();
                 // Set working tenant
                 runtimeTenantResolver.forceTenant(tenant);
                 // Init default templates for this tenant
@@ -209,70 +213,43 @@ public class TemplateService implements ITemplateService {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.templates.service.ITemplateService#findAll()
-     */
     @Override
     public List<Template> findAll() {
         return templateRepository.findAll();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.templates.service.ITemplateService#create(fr.cnes.regards.modules.templates.domain.
-     * Template)
-     */
     @Override
-    public Template create(final Template pTemplate) {
-        final Template toCreate = new Template(pTemplate.getCode(), pTemplate.getContent(),
-                pTemplate.getDataStructure(), pTemplate.getSubject());
+    public Template create(final Template template) {
+        final Template toCreate = new Template(template.getCode(), template.getContent(),
+                template.getDataStructure(), template.getSubject());
         return templateRepository.save(toCreate);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.templates.service.ITemplateService#findById(java.lang.Long)
-     */
     @Override
-    public Template findById(final Long pId) throws EntityNotFoundException {
-        final Optional<Template> template = Optional.ofNullable(templateRepository.findOne(pId));
-        return template.orElseThrow(() -> new EntityNotFoundException(pId, Template.class));
+    public Template findById(final Long id) throws EntityNotFoundException {
+        final Optional<Template> template = Optional.ofNullable(templateRepository.findOne(id));
+        return template.orElseThrow(() -> new EntityNotFoundException(id, Template.class));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.templates.service.ITemplateService#update(java.lang.Long,
-     * fr.cnes.regards.modules.templates.domain.Template)
-     */
     @Override
-    public void update(final Long pId, final Template pTemplate) throws EntityException {
-        if (!pId.equals(pTemplate.getId())) {
-            throw new EntityInconsistentIdentifierException(pId, pTemplate.getId(), Template.class);
+    public void update(final Long id, Template template) throws EntityException {
+        if (!id.equals(template.getId())) {
+            throw new EntityInconsistentIdentifierException(id, template.getId(), Template.class);
         }
-        final Template template = findById(pId);
-        template.setContent(pTemplate.getContent());
-        template.setDataStructure(pTemplate.getDataStructure());
-        template.setDescription(pTemplate.getDescription());
+        template = findById(id);
+        template.setContent(template.getContent());
+        template.setDataStructure(template.getDataStructure());
+        template.setDescription(template.getDescription());
 
         templateRepository.save(template);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.templates.service.ITemplateService#delete(java.lang.Long)
-     */
     @Override
-    public void delete(final Long pId) throws EntityNotFoundException {
-        if (!templateRepository.exists(pId)) {
-            throw new EntityNotFoundException(pId, Template.class);
+    public void delete(final Long id) throws EntityNotFoundException {
+        if (!templateRepository.exists(id)) {
+            throw new EntityNotFoundException(id, Template.class);
         }
-        templateRepository.delete(pId);
+        templateRepository.delete(id);
     }
 
     /**
@@ -290,15 +267,10 @@ public class TemplateService implements ITemplateService {
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.templates.service.ITemplateService#write(java.lang.String, java.util.Map,
-     * java.lang.String[])
-     */
+
     @Override
     public SimpleMailMessage writeToEmail(final String templateCode, final Map<String, String> dataModel,
-            final String[] recipients) throws EntityNotFoundException {
+            final String... recipients) throws EntityNotFoundException {
         // Retrieve the template of passed code
         Template template = null;
         if (!runtimeTenantResolver.isInstance()) {

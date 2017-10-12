@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.oais;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -15,10 +16,12 @@ import com.google.common.collect.Sets;
  */
 public class InformationPackageProperties {
 
-    @NotEmpty
+    @NotEmpty(message = "At least one content information is required")
+    @Valid
     private Set<ContentInformation> contentInformations;
 
-    @NotNull
+    @NotNull(message = "Preservation description information is required")
+    @Valid
     private PreservationDescriptionInformation pdi = new PreservationDescriptionInformation();
 
     private Map<String, Object> descriptiveInformation;

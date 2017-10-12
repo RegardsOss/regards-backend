@@ -18,7 +18,17 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import fr.cnes.regards.framework.geojson.geometry.*;
+import javax.validation.Valid;
+
+import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.LineString;
+import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
+import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
+import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
+import fr.cnes.regards.framework.geojson.geometry.Point;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.geojson.geometry.Unlocated;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -52,8 +62,10 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
      * <li>{@link Unlocated}</li>
      * </ul>
      */
+    @Valid
     protected IGeometry geometry = IGeometry.unlocated();
 
+    @Valid
     protected P properties;
 
     public AbstractFeature() {
@@ -105,6 +117,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
         if (getClass() != obj.getClass()) {
             return false;
         }
+        @SuppressWarnings("rawtypes")
         AbstractFeature other = (AbstractFeature) obj;
         if (geometry == null) {
             if (other.geometry != null) {

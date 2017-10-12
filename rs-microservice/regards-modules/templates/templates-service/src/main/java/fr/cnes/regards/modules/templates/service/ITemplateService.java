@@ -93,6 +93,6 @@ public interface ITemplateService {
      * @throws EntityNotFoundException
      *             when a {@link Template} of passed <code>code</code> could not be found
      */
-    SimpleMailMessage writeToEmail(String pTemplateCode, Map<String, String> pDataModel, String[] pRecipients)
+    SimpleMailMessage writeToEmail(String pTemplateCode, Map<String, String> pDataModel, String... pRecipients)
             throws EntityNotFoundException;
 }

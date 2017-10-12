@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,8 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  *
  */
 public abstract class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {
+
+    public static final String MD5_ALGORITHM = "MD5";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPBuilder.class);
 

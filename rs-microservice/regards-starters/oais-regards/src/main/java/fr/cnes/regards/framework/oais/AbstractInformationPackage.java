@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
@@ -37,7 +36,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  */
 public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
-    @NotNull
+    @NotNull(message = "Information package type is required")
     private EntityType ipType;
 
     public Collection<String> getTags() {
@@ -66,7 +65,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
                 .orElse(null);
     }
 
-    public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
+    public void addEvent(String type, String comment, OffsetDateTime date) {
         Event event = new Event();
         event.setType(type);
         event.setComment(comment);
@@ -74,8 +73,12 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         getHistory().add(event);
     }
 
-    public void addEvent(@Nullable String type, String comment) {
+    public void addEvent(String type, String comment) {
         addEvent(type, comment, OffsetDateTime.now());
+    }
+
+    public void addEvent(String comment) {
+        addEvent(null, comment, OffsetDateTime.now());
     }
 
     public EntityType getIpType() {

@@ -16,38 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais;
+package fr.cnes.regards.framework.jpa.converters;
 
-import javax.validation.constraints.NotNull;
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
+
+import com.google.common.base.Joiner;
 
 /**
- *
- * OAIS semantic
- *
- * @author Sylvain Vissiere-Guerinet
- * @author Marc Sordi
- *
+ * Simple String Array converter.
+ * <b>Beware : join character is ';'</b>
+ * @author oroussel
  */
-public class Semantic {
+@Converter
+public class StringArrayConverter implements AttributeConverter<String[], String> {
 
-    @NotNull(message = "Description is required in optional semantic object")
-    private String description;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String pDescription) {
-        description = pDescription;
+    @Override
+    public String convertToDatabaseColumn(String[] attribute) {
+        return (attribute == null) ? null : Joiner.on(';').skipNulls().join(attribute);
     }
 
     @Override
-    public boolean equals(Object pOther) {
-        return (pOther instanceof Semantic) && description.equals(((Semantic) pOther).description);
-    }
-
-    @Override
-    public int hashCode() {
-        return description.hashCode();
+    public String[] convertToEntityAttribute(String dbData) {
+        return (dbData == null) ? null : dbData.split(";");
     }
 }

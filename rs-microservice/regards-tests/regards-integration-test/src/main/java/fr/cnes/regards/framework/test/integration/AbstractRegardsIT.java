@@ -49,6 +49,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 
@@ -134,6 +135,18 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performRequest(authToken, HttpMethod.PUT, urlTemplate, content, matchers, errorMsg, urlVariables);
     }
 
+    protected ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
+            String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performRequestWithContentType(authToken, HttpMethod.POST, urlTemplate, content, contentType, matchers,
+                                             errorMsg, urlVariables);
+    }
+
+    protected ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
+            String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performRequestWithContentType(authToken, HttpMethod.PUT, urlTemplate, content, contentType, matchers,
+                                             errorMsg, urlVariables);
+    }
+
     protected ResultActions performDelete(String urlTemplate, String authToken, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
         return performRequest(authToken, HttpMethod.DELETE, urlTemplate, matchers, errorMsg, urlVariables);
@@ -180,6 +193,18 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performPut(urlTemplate, jwt, content, matchers, errorMsg, urlVariables);
     }
 
+    protected ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        return performPostWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performDefaultPutWithContentType(String urlTemplate, Object content, String contentType,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.PUT);
+        return performPutWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
+    }
+
     protected ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.DELETE);
@@ -218,21 +243,28 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * @param pHttpMethod HTTP method
      * @param urlTemplate URL template
      * @param content content for {@link HttpMethod#POST} and {@link HttpMethod#PUT} methods
+     * @param contentType media type
      * @param matchers expectations
      * @param errorMsg message if error occurs
      * @param urlVariables URL variables
      * @return result
      */
-    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate, Object content,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+    protected ResultActions performRequestWithContentType(String authToken, HttpMethod pHttpMethod, String urlTemplate,
+            Object content, String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
 
         Assert.assertTrue(HttpMethod.POST.equals(pHttpMethod) || HttpMethod.PUT.equals(pHttpMethod));
         MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
                                                                          urlVariables);
         String jsonContent = gson(content);
-        requestBuilder = requestBuilder.content(jsonContent)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        requestBuilder.content(jsonContent);
+        requestBuilder.contentType(contentType);
         return performRequest(requestBuilder, matchers, errorMsg);
+    }
+
+    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate, Object content,
+            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+        return performRequestWithContentType(authToken, pHttpMethod, urlTemplate, content,
+                                             MediaType.APPLICATION_JSON_VALUE, matchers, errorMsg, urlVariables);
     }
 
     protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
@@ -304,8 +336,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
             String urlTemplate, HttpHeaders headers, Object... pUrlVars) {
 
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
-                .request(pHttpMethod, urlTemplate, pUrlVars);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, urlTemplate,
+                                                                                      pUrlVars);
         addSecurityHeader(requestBuilder, pAuthToken);
 
         requestBuilder.headers(headers);
@@ -339,8 +371,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String pAuthToken,
             List<MockMultipartFile> pFiles, String urlTemplate, Object... pUrlVars) {
 
-        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders
-                .fileUpload(urlTemplate, pUrlVars);
+        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders.fileUpload(urlTemplate,
+                                                                                                           pUrlVars);
         for (MockMultipartFile file : pFiles) {
             multipartRequestBuilder.file(file);
         }
@@ -410,7 +442,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * Helper method to manage security with :
      * <ul>
      * <li>an email representing the user</li>
-     * <li>the user role </li>
+     * <li>the user role</li>
      * </ul>
      * The helper generates a JWT using its configuration and grants access to the endpoint for the specified role
      * role.

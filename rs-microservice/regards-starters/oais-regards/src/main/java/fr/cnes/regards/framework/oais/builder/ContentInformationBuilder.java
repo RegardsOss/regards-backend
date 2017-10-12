@@ -46,20 +46,26 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * This builder helps to fill in these objects.
  * <br/>
  * <br/>
- * To define the data object, use :
+ * To define the data object, use one of the following methods :
  * <ul>
- * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String)}</li>
- * <li>{@link ContentInformationBuilder#setDataObject(DataType, Path, String, String)}</li>
- * <li>{@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)}</li>
- * <li>{@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)}</li>
+ * <li>{@link #setDataObject(DataType, URL, String, String)}</li>
+ * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
+ * <li>{@link #setDataObject(DataType, URL, String, String, String, Long)}</li>
+ * <li>{@link #setDataObject(DataType, Path, String, String, String, Long)}</li>
+ * <li>{@link #setDataObject(DataType, Path, String)}</li>
+ * <li>{@link #setDataObject(DataType, URL, String)}</li>
+ * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
+ * <li>{@link #setDataObject(DataType, URL, String, String)}</li>
+ * <li>{@link #setDataObject(DataType, Path, String, String, Long)}</li>
+ * <li>{@link #setDataObject(DataType, URL, String, String, Long)</li>
  * </ul>
  * <br/>
  * To set the representation information, use :
  * <ul>
- * <li>{@link ContentInformationBuilder#setSyntax(String, String, String)}</li>
- * <li>{@link ContentInformationBuilder#setSyntaxAndSemantic(String, String, String, String)}</li>
- * <li>{@link ContentInformationBuilder#addHardwareEnvironmentProperty(String, Object)}</li>
- * <li>{@link ContentInformationBuilder#addSoftwareEnvironmentProperty(String, Object)}</li>
+ * <li>{@link #setSyntax(String, String, String)}</li>
+ * <li>{@link #setSyntaxAndSemantic(String, String, String, String)}</li>
+ * <li>{@link #addHardwareEnvironmentProperty(String, Object)}</li>
+ * <li>{@link #addSoftwareEnvironmentProperty(String, Object)}</li>
  * </ul>
  * <br/>
  *
@@ -124,6 +130,31 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
+     * Alias for {@link #setDataObject(DataType, URL, String, String, String, Long)} with MD5 default checksum algorithm
+     * @param dataType {@link DataType}
+     * @param url reference to the physical file
+     * @param filename optional filename (may be null)
+     * @param checksum the checksum
+     * @param fileSize file size
+     */
+    public void setDataObject(DataType dataType, URL url, String filename, String checksum, Long fileSize) {
+        setDataObject(dataType, url, filename, IPBuilder.MD5_ALGORITHM, checksum, fileSize);
+    }
+
+    /**
+     * Alias for {@link #setDataObject(DataType, Path, String, String, String, Long)} with MD5 default checksum
+     * algorithm
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param filename optional filename (may be null)
+     * @param checksum the checksum
+     * @param fileSize file size
+     */
+    public void setDataObject(DataType dataType, Path filePath, String filename, String checksum, Long fileSize) {
+        setDataObject(dataType, filePath, filename, IPBuilder.MD5_ALGORITHM, checksum, fileSize);
+    }
+
+    /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no
      * filename and no filesize)
      * @param dataType {@link DataType}
@@ -145,6 +176,28 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         setDataObject(dataType, filePath, null, algorithm, checksum, null);
+    }
+
+    /**
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, URL, String, String, String, Long)} (no
+     * filename, no filesize and MD5 default checksum algorithm)
+     * @param dataType {@link DataType}
+     * @param url reference to the physical file
+     * @param checksum the checksum
+     */
+    public void setDataObject(DataType dataType, URL url, String checksum) {
+        setDataObject(dataType, url, null, IPBuilder.MD5_ALGORITHM, checksum, null);
+    }
+
+    /**
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
+     * filename, no filesize and MD5 default checksum algorithm)
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param checksum the checksum
+     */
+    public void setDataObject(DataType dataType, Path filePath, String checksum) {
+        setDataObject(dataType, filePath, null, IPBuilder.MD5_ALGORITHM, checksum, null);
     }
 
     /**

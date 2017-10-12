@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -30,9 +31,11 @@ import javax.validation.constraints.NotNull;
  */
 public class ContentInformation {
 
+    @Valid
     private RepresentationInformation representationInformation;
 
-    @NotNull
+    @NotNull(message = "A data object is required in content information")
+    @Valid
     private OAISDataObject dataObject;
 
     public OAISDataObject getDataObject() {

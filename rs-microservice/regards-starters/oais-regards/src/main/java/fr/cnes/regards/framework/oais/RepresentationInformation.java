@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -30,9 +31,11 @@ import javax.validation.constraints.NotNull;
  */
 public class RepresentationInformation {
 
+    @Valid
     private Semantic semantic;
 
-    @NotNull
+    @NotNull(message = "At least syntax is required in optional representation information")
+    @Valid
     private Syntax syntax;
 
     private EnvironmentDescription environmentDescription;
