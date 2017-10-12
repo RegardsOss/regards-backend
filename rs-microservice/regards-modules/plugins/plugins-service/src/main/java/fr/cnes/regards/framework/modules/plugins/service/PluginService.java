@@ -25,10 +25,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.hibernate.boot.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -600,23 +602,32 @@ public class PluginService implements IPluginService {
         }
 
         // Get the PluginMetadata
-        List<PluginMetaData> metaDatas = this.getPluginsByType(interfacePluginType);
+        List<PluginMetaData> plgMetaDatas = this.getPluginsByType(interfacePluginType);
 
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
-                "Automatic plugin configuration for plugin id : " + pluginId);
-        pluginConfiguration.setPluginId(pluginId);
+        Optional<PluginMetaData> aPlgMetaData = plgMetaDatas.stream().filter(mtd -> mtd.getPluginId().equals(pluginId))
+                .findAny();
 
-        List<PluginParameter> plgParams = new ArrayList<>();
-        for (PluginParameterType param : metaDatas.get(0).getParameters()) {
-            PluginParameter plgParam = new PluginParameter(param.getName(), param.getDefaultValue());
-            plgParam.setName(param.getName());
-            plgParam.setValue(param.getDefaultValue());
-            plgParam.setIsDynamic(param.isOptional());
-            plgParams.add(plgParam);
+        if (aPlgMetaData.isPresent()) {
+
+            PluginConfiguration pluginConfiguration = new PluginConfiguration(aPlgMetaData.get(),
+                    "Automatic plugin configuration for plugin id : " + pluginId);
+            pluginConfiguration.setPluginId(pluginId);
+
+            List<PluginParameter> plgParams = new ArrayList<>();
+            for (PluginParameterType param : aPlgMetaData.get().getParameters()) {
+                PluginParameter plgParam = new PluginParameter(param.getName(), param.getDefaultValue());
+                plgParam.setName(param.getName());
+                plgParam.setValue(param.getDefaultValue());
+                plgParam.setIsDynamic(param.isOptional());
+                plgParams.add(plgParam);
+            }
+            pluginConfiguration.setParameters(plgParams);
+
+            return this.savePluginConfiguration(pluginConfiguration);
+        } else {
+            throw new ModuleException(
+                    "Unexpected error : the plugin id <" + pluginId + " > is found more that one time in a Plugin");
         }
-        pluginConfiguration.setParameters(plgParams);
-
-        return this.savePluginConfiguration(pluginConfiguration);
     }
 
     /**

@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.utils.plugins;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -90,29 +86,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     @Test
     public void getSamplePlugin() {
         SamplePlugin samplePlugin = null;
-        String stringPojoParamValue = "value_test";
 
         LOGGER.debug(STARTING + toString());
 
         List<String> values = new ArrayList<String>();
         values.add("test1");
         values.add("test2");
-        Date currentDate = new Date();
-        TestPojo pojoParam = new TestPojo();
-        pojoParam.setValue(stringPojoParamValue);
-        pojoParam.setValues(values);
-
-        pojoParam.setDate(currentDate);
-
-        Gson gson = new GsonBuilder().setDateFormat(PluginParameterUtils.DATE_TIME_FORMAT).create();
-        ;
         /*
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.COEFF, PluginUtilsTest.TROIS)
-                .addParameter(SamplePlugin.POJO, gson.toJson(pojoParam))
                 .addParameter(SamplePlugin.SUFFIXE, "chris_test_1").getParameters();
 
         // instantiate plugin
@@ -129,9 +114,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                             samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
                                              Integer.parseInt(PluginUtilsTest.CINQ)));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        Assert.assertEquals(samplePlugin.getPojo().getValue(), stringPojoParamValue);
-        Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
-        Assert.assertEquals(samplePlugin.getPojo().getDate(), currentDate);
         LOGGER.debug(ENDING + toString());
     }
 

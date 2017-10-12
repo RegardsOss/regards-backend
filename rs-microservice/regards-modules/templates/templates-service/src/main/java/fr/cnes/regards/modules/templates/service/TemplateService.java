@@ -52,7 +52,6 @@ import freemarker.template.Version;
 
 /**
  * {@link ITemplateService} implementation.
- *
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
  */
@@ -67,21 +66,18 @@ public class TemplateService implements ITemplateService {
 
     /**
      * Freemarker version-major number. Needed for configuring the Freemarker library.
-     *
      * @see {@link Configuration#Configuration(Version)}
      */
     private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR = 2;
 
     /**
      * Freemarker version-minor number. Needed for configuring the Freemarker library.
-     *
      * @see {@link Configuration#Configuration(Version)}
      */
     private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR = 3;
 
     /**
      * Freemarker version-micro number. Needed for configuring the Freemarker library.
-     *
      * @see {@link Configuration#Configuration(Version)}
      */
     private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO = 25;
@@ -132,7 +128,7 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template projectUserInactivatedTemplate;
 
-    @Autowired(required = false)
+    @Autowired
     private Template orderCreatedTemplate;
 
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
@@ -188,15 +184,12 @@ public class TemplateService implements ITemplateService {
 
     /**
      * Handle a new tenant connection to initialize default roles
-     *
      * @author Marc Sordi
-     *
      */
     private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
 
         /**
          * Initialize default roles in the new project connection
-         *
          * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
          * @since 1.0-SNAPSHOT
          */
@@ -220,8 +213,8 @@ public class TemplateService implements ITemplateService {
 
     @Override
     public Template create(final Template template) {
-        final Template toCreate = new Template(template.getCode(), template.getContent(),
-                template.getDataStructure(), template.getSubject());
+        final Template toCreate = new Template(template.getCode(), template.getContent(), template.getDataStructure(),
+                                               template.getSubject());
         return templateRepository.save(toCreate);
     }
 
@@ -254,41 +247,34 @@ public class TemplateService implements ITemplateService {
 
     /**
      * Configure the template loader
-     *
-     * @throws IOException
-     *             when error occurs during template loading
+     * @throws IOException when error occurs during template loading
      */
     private void configureTemplateLoader() throws IOException {
-        configuration = new Configuration(new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR,
-                INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
+        configuration = new Configuration(
+                new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR,
+                            INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
         loader = new StringTemplateLoader();
         configuration.setTemplateLoader(loader);
         configuration.setDefaultEncoding("UTF-8");
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     }
 
-
     @Override
     public SimpleMailMessage writeToEmail(final String templateCode, final Map<String, String> dataModel,
             final String... recipients) throws EntityNotFoundException {
-        // Retrieve the template of passed code
+        // Retrieve the template of given code
         Template template = null;
         if (!runtimeTenantResolver.isInstance()) {
             template = templateRepository.findOneByCode(templateCode)
                     .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
-        } else {
+        } else { // On instance, no access to project databases so templates are managed by hand
             if (accountUnlockTemplate.getCode().equals(templateCode)) {
                 template = accountUnlockTemplate;
-            }
-
-            if (passwordResetTemplate.getCode().equals(templateCode)) {
+            } else if (passwordResetTemplate.getCode().equals(templateCode)) {
                 template = passwordResetTemplate;
-            }
-
-            if (accountRefusedTemplate.getCode().equals(templateCode)) {
+            } else if (accountRefusedTemplate.getCode().equals(templateCode)) {
                 template = accountRefusedTemplate;
             }
-
             if (template == null) {
                 throw new EntityNotFoundException(templateCode, Template.class);
             }
@@ -304,11 +290,9 @@ public class TemplateService implements ITemplateService {
             // Retrieve the template (freemarker Template) and process it with the data model
             configuration.getTemplate(template.getCode()).process(dataModel, out);
             text = out.toString();
-        } catch (TemplateException |
-
-                IOException e) {
+        } catch (TemplateException | IOException e) {
             LOG.warn("Unable to process the data into the template of code " + template.getCode()
-                    + ". Falling back to the not templated content.", e);
+                             + ". Falling back to the not templated content.", e);
             text = template.getContent();
         }
 

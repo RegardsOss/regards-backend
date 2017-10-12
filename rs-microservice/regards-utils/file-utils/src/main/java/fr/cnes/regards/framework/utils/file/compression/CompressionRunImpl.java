@@ -7,6 +7,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * Class CompressionRunImpl
@@ -14,6 +17,8 @@ import java.util.List;
  * Classe représentant le traintement asynchrone d'une compression dans un thread.
  */
 public class CompressionRunImpl implements Runnable {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(CompressionRunImpl.class);
 
     private AbstractRunnableCompression compression_ = null;
 
@@ -47,13 +52,12 @@ public class CompressionRunImpl implements Runnable {
     public void run() {
 
         try {
-            System.out.println("Runnin compress thread");
+            System.out.println("Running thread compress");
             compressManager_.setThread(Thread.currentThread());
             compression_.runCompress(fileList_, compressedFile_, rootDirectory_, flatArchive_, charset_,
                                      compressManager_);
         } catch (CompressionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
 
     }

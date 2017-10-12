@@ -198,5 +198,15 @@ public class PluginMetaData {
             parameters = pParameters;
         }
     }
+    
+    @Override
+    public String toString() {
+        StringBuffer strBuffer = new StringBuffer(pluginId);
+        strBuffer.append(" : ");
+        strBuffer.append(pluginClassName);
+        strBuffer.append(" : ");
+        strBuffer.append(version);
+        return strBuffer.toString();
+    }
 
 }

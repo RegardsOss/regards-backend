@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins;
+package fr.cnes.regards.framework.utils.cycle.detection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,20 +24,27 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
 
 /**
  * SamplePlugin
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
+@Plugin(description = "Sample plugin test", id = "SamplePluginWithPojoCycleDetectedLevelThree", version = "0.0.1", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class SamplePlugin implements ISamplePlugin {
+public class SamplePluginWithPojoCycleDetectedLevelThree implements ISamplePlugin {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePluginWithPojoCycleDetectedLevelThree.class);
+
+    private static final int ONE = 3;
+
+    private static final int SECOND = 9;
+
+    private static final ColorStatus DEFAULT_COLOR = ColorStatus.BLUE;
 
     /**
      * A {@link String} parameter
@@ -56,6 +63,12 @@ public class SamplePlugin implements ISamplePlugin {
      */
     @PluginParameter(description = "boolean parameter", name = ACTIVE)
     private Boolean isActive;
+
+    /**
+     * A {@link TestPojo} parameter
+     */
+    @PluginParameter(description = "Pojo grand parameter", name = POJO)
+    private TestPojoGrandParent pojo;
 
     @Override
     public String echo(final String pMessage) {
@@ -83,6 +96,17 @@ public class SamplePlugin implements ISamplePlugin {
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
                 + "|coeff:" + coef);
+    }
+
+    public TestPojoGrandParent getPojo() {
+        return pojo;
+    }
+
+    private enum ColorStatus {
+        BLUE,
+        RED,
+        YELLOW,
+        BLACK;
     }
 
 }
