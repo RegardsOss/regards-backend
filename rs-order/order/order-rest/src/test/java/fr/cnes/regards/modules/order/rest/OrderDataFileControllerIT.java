@@ -126,6 +126,8 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
             resultFile.deleteOnExit();
 
             try (FileOutputStream fos = new FileOutputStream(resultFile)) {
+                // Wait for availability
+                resultActions.andReturn().getAsyncResult();
                 InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
                 ByteStreams.copy(is, fos);
                 is.close();

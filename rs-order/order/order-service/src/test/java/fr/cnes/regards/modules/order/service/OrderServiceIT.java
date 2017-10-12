@@ -269,7 +269,7 @@ public class OrderServiceIT {
 
         Thread.sleep(10_000);
 
-        // Associated jobInfo must be ever at SUCCEEDED OR ABROTED
+        // Associated jobInfo must be ever at SUCCEEDED OR ABORTED
         order = orderService.loadComplete(order.getId());
         Set<JobInfo> jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());

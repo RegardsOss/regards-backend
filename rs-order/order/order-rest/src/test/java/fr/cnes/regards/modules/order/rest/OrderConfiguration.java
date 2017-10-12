@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import feign.Response;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -101,5 +102,10 @@ public class OrderConfiguration {
     @Bean
     public IProjectsClient projectsClient() {
         return Mockito.mock(IProjectsClient.class);
+    }
+
+    @Bean
+    public IEmailClient emailClient()  {
+        return Mockito.mock(IEmailClient.class);
     }
 }

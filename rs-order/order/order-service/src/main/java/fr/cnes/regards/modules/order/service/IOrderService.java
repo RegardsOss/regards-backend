@@ -119,5 +119,8 @@ public interface IOrderService {
      */
     void updateCurrentOrdersCompletions();
 
+    /**
+     * Same method as previous one but for one tenant (ence transactionnal)
+     */
     void updateTenantCurrentOrdersCompletions();
 }
