@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.search.client;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -32,6 +34,8 @@ public interface ICatalogClient {
     String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
 
     String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects/searchwithoutfacets";
+
+    String ENTITY_GET_MAPPING = "/entities/{urn}";
 
     /**
      * Return dataset
@@ -54,4 +58,14 @@ public interface ICatalogClient {
     @RequestMapping(path = DATAOBJECTS_SEARCH_WITHOUT_FACETS, method = RequestMethod.GET)
     ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable);
+
+    /**
+     * Unified entity retrieval endpoint
+     * @param pUrn the entity URN
+     * @return an entity
+     */
+    @RequestMapping(path = ENTITY_GET_MAPPING, method = RequestMethod.GET)
+    @ResourceAccess(description = "Return the entity of passed URN.", role = DefaultRole.PUBLIC)
+    <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
+            @Valid @PathVariable("urn") final UniformResourceName pUrn);
 }
