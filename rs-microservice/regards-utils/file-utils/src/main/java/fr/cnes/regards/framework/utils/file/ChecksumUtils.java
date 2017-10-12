@@ -27,7 +27,7 @@ public class ChecksumUtils {
     }
 
     /**
-     * @return checksum compute from the input stream thanks to the algorithm as an hexadecimal string.
+     * @return checksum computed from the input stream thanks to the algorithm as an hexadecimal string.
      * @throws NoSuchAlgorithmException if checksumAlgorithm is not handled and known by the java process
      * @throws IOException see possible causes from InputStream
      */
