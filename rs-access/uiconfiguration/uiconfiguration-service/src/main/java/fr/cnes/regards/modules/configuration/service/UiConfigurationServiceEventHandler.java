@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -37,6 +39,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @Component
 public class UiConfigurationServiceEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(UiConfigurationServiceEventHandler.class);
+
     @Autowired
     private ILayoutService layoutService;
 
@@ -54,7 +61,8 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        subscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
+        LOG.info("UiConfigurationServiceEventHandler subscribing to new TenantConnectionReady events.");
+        subscriber.subscribeTo(TenantConnectionReady.class, new UIConfigurationTenantConnectionReadyEventHandler());
     }
 
     /**
@@ -62,12 +70,14 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
      *
      * @author Xavier-Alexandre Brochard
      */
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
+    private class UIConfigurationTenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
 
         @Override
         public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
             try {
-                String tenant = wrapper.getTenant();
+                LOG.info("New tenant ready, initializing default layout, themes and modules for tenant {}.",
+                         wrapper.getContent().getTenant());
+                String tenant = wrapper.getContent().getTenant();
                 runtimeTenantResolver.forceTenant(tenant);
                 AbstractUiConfigurationService layoutServiceAsAbstract = (AbstractUiConfigurationService) layoutService;
                 AbstractUiConfigurationService themeServiceAsAbstract = (AbstractUiConfigurationService) themeService;
@@ -75,6 +85,7 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
                 layoutServiceAsAbstract.initProjectUI(tenant);
                 themeServiceAsAbstract.initProjectUI(tenant);
                 moduleServiceAsAbstract.initProjectUI(tenant);
+                LOG.info("New tenant ready, default layout, themes and modules initialized successfully");
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

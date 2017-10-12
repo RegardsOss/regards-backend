@@ -22,6 +22,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -45,6 +47,11 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 @Service(value = "pluginService")
 public class UIPluginDefinitionService
         implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(UIPluginDefinitionService.class);
 
     @Autowired
     private IUIPluginDefinitionRepository repository;
@@ -75,6 +82,7 @@ public class UIPluginDefinitionService
      */
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+        LOG.info("UIPluginDefinitionService subscribing to new TenantConnectionReady events.");
         // Initialize subscriber for new tenant connection and initialize database if not already done
         instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
     }
@@ -83,9 +91,12 @@ public class UIPluginDefinitionService
 
         @Override
         public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
+            LOG.info("New tenant ready, initializing default plugins for tenant {}.",
+                     pWrapper.getContent().getTenant());
             runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
             initDefault();
             runtimeTenantResolver.clearTenant();
+            LOG.info("New tenant ready, default plugins initialized successfully.");
         }
     }
 
