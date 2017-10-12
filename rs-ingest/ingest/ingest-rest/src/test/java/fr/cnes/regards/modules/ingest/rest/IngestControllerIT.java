@@ -55,9 +55,9 @@ public class IngestControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirement("REGARDS_DSL_DAM_MOD_010")
-    @Purpose("Create data model")
-    public void submitSIPCollectionByValue() {
+    @Requirement("REGARDS_DSL_ING_PRO_110")
+    @Purpose("Ingest SIP")
+    public void ingestSips() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
 
@@ -77,7 +77,7 @@ public class IngestControllerIT extends AbstractRegardsTransactionalIT {
 
         // Define expectations
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.status().isCreated());
         // expectations.add(MockMvcResultMatchers.jsonPath(JSON_ID, Matchers.notNullValue()));
 
         performDefaultPostWithContentType(IngestController.TYPE_MAPPING, collectionBuilder.build(),

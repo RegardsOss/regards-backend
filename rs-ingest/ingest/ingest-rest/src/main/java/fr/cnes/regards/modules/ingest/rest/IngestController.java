@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import java.util.Collection;
+
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,9 +35,11 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.service.IIngestService;
 
 /**
- * This controller manages SIP submission.
+ * This controller manages SIP submission API.
  *
  * @author Marc Sordi
  *
@@ -46,11 +52,20 @@ public class IngestController {
 
     public static final String TYPE_MAPPING = "/sips";
 
+    @Autowired
+    private IIngestService ingestService;
+
+    /**
+     * Manage SIP bulk request
+     *
+     * @param sips {@link SIPCollection}
+     * @return {@link SIPEntity} collection
+     * @throws ModuleException if error occurs!
+     */
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<String> submitSipCollection(@Valid @RequestBody SIPCollection sips) throws ModuleException {
-
-        // Compute checksum for each feature
-        return ResponseEntity.ok("TODO");
+    public ResponseEntity<Collection<SIPEntity>> ingest(@Valid @RequestBody SIPCollection sips) throws ModuleException {
+        Collection<SIPEntity> sipEntities = ingestService.ingest(sips);
+        return ResponseEntity.status(HttpStatus.CREATED).body(sipEntities);
     }
 }

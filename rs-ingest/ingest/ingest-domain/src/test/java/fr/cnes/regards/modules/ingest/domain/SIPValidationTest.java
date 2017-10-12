@@ -42,6 +42,8 @@ import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
@@ -81,6 +83,8 @@ public class SIPValidationTest {
      * Check that SIP has to be passed either by reference or by regards. See {@link SIP} type constraints.
      */
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_130")
+    @Purpose("SIP validation")
     public void emptySIP() {
 
         SIP sip = new SIP();
@@ -97,6 +101,8 @@ public class SIPValidationTest {
      * Check validation on SIP passed by reference. See {@link SIPReference} for constraint list.
      */
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_140")
+    @Purpose("SIP validation")
     public void invalidSIPReference() {
 
         SIP sip = new SIP();
@@ -116,6 +122,8 @@ public class SIPValidationTest {
      * Check that builder properly build a SIP reference. See {@link #invalidSIPReference()} for required properties.
      */
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_140")
+    @Purpose("SIP validation")
     public void validSIPReference() {
 
         SIPBuilder builder = new SIPBuilder(SIP_ID);
@@ -130,6 +138,8 @@ public class SIPValidationTest {
      * Check validation on SIP passed by value. See {@link InformationPackageProperties} for constraint list.
      */
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_140")
+    @Purpose("SIP validation")
     public void invalidSIPValue() {
 
         SIP sip = new SIP();
@@ -149,6 +159,8 @@ public class SIPValidationTest {
      * Check that builder properly build a SIP value.
      */
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_140")
+    @Purpose("SIP validation")
     public void validSIPValue() {
 
         SIPBuilder sipBuilder = new SIPBuilder(SIP_ID);
