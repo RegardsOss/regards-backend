@@ -80,11 +80,12 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
@@ -125,6 +126,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * Class logger.
      */
     private static final Logger LOG = LoggerFactory.getLogger(AIPService.class);
+
+    private static final String AIP_ACCESS_FORBIDDEN = "You do not have suffisent access right to get this aip.";
 
     /**
      * DAO to access {@link AIP} entities through the {@link AIPDataBase} entities stored in db.
@@ -211,14 +214,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Set<UUID> create(Set<AIP> aips) throws ModuleException {
-        LOG.trace("Entering method create(Set<AIP>) with {} aips", aips.size());
+    public Set<UUID> store(Set<AIP> aips) throws ModuleException {
+        LOG.trace("Entering method store(Set<AIP>) with {} aips", aips.size());
         Set<AIP> aipsInDb = Sets.newHashSet();
         Set<DataFile> dataFilesToStore = Sets.newHashSet();
         // 1. Create each AIP into database with VALID state.
         // 2. Create each DataFile of each AIP into database with PENDING state.
         for (AIP aip : aips) {
-            // Can not create an existing AIP.
+            // Can not store an existing AIP.
             if (aipDao.findOneByIpId(aip.getId().toString()).isPresent()) {
                 throw new EntityAlreadyExistsException(
                         String.format("AIP with ip id %s already exists", aip.getId().toString()));
@@ -254,7 +257,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) {
+    public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException {
         Set<String> requestedChecksums = availabilityRequest.getChecksums();
         Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
         Set<String> errors = Sets.newHashSet();
@@ -267,12 +270,18 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             checksumNotFound.stream()
                     .forEach(cs -> LOG.error("File to restore with checksum {} is not stored by REGARDS.", cs));
         }
+
+        Set<DataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
+
+        errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
+                              .collect(Collectors.toSet()));
+
         Set<DataFile> onlineFiles = Sets.newHashSet();
         Set<DataFile> nearlineFiles = Sets.newHashSet();
 
         // 2. Check for online files. Online files doesn't need to be stored in the cache
         // they can be access directly where they are stored.
-        for (DataFile df : dataFiles) {
+        for (DataFile df : dataFilesWithAccess) {
             if (df.getDataStorageUsed() != null) {
                 if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
                     onlineFiles.add(df);
@@ -293,9 +302,23 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
     }
 
+    private Set<DataFile> checkLoadFilesAccessRights(Set<DataFile> dataFiles) throws ModuleException {
+        Set<DataFile> dataFilesWithAccess = Sets.newHashSet(dataFiles);
+        for (DataFile df : dataFiles) {
+            AIP aip = df.getAip();
+            if (!getSecurityDelegationPlugin().hasAccess(aip.getId().toString())) {
+                dataFilesWithAccess.remove(df);
+            }
+        }
+        return dataFilesWithAccess;
+    }
+
     @Override
-    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo,
-            Pageable pPageable) { // NOSONAR
+    public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable)
+            throws ModuleException { // NOSONAR
+        if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
+            throw new EntityOperationForbiddenException("Only Admins can access this feature.");
+        }
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {
@@ -325,9 +348,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException {
+    public Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
         if (aip.isPresent()) {
+            if(!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
+                throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
+            }
             Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
             return dataFiles.stream().map(df -> {
                 OAISDataObject dataObject = new OAISDataObject();
@@ -396,7 +422,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
-                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for
+                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets store a job for
                 // each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
@@ -419,7 +445,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to create
+     * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to store
      * {@link IWorkingSubset}
      * of {@link DataFile}s.
      * @param dataFilesToSubSet List of {@link DataFile} to prepare.
@@ -473,6 +499,23 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             throw e;
         }
         return pluginService.getPlugin(activeAllocationStrategies.get(0));
+    }
+
+    private ISecurityDelegation getSecurityDelegationPlugin() throws ModuleException {
+        // Lets retrieve active configurations of IAllocationStrategy
+        List<PluginConfiguration> securityDelegations = pluginService
+                .getPluginConfigurationsByType(ISecurityDelegation.class);
+        List<PluginConfiguration> activeSecurityDelegations = securityDelegations.stream().filter(pc -> pc.isActive())
+                .collect(Collectors.toList());
+        // System can only handle one active configuration of IAllocationStrategy
+        if (activeSecurityDelegations.size() != 1) {
+            IllegalStateException e = new IllegalStateException(
+                    "The application needs one and only one active configuration of " + ISecurityDelegation.class
+                            .getName());
+            LOG.error(e.getMessage(), e);
+            throw e;
+        }
+        return pluginService.getPlugin(activeSecurityDelegations.get(0));
     }
 
     @Override
@@ -563,9 +606,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws EntityNotFoundException {
+    public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(ipId.toString());
         if (aip.isPresent()) {
+            if(!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
+                throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
+            }
             return aip.get().getHistory();
         } else {
             throw new EntityNotFoundException(ipId.toString(), AIP.class);
@@ -711,7 +757,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
-                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for
+                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets store a job for
                 // each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
@@ -803,7 +849,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Prepare all AIP in UPDATED state in order to create and store the new AIP metadata file (descriptor file)
+     * Prepare all AIP in UPDATED state in order to store and store the new AIP metadata file (descriptor file)
      * asscoiated.<br/>
      * After an AIP is updated in database, this method write the new {@link DataFile} of the AIP metadata on disk
      * and return the list of created {@link DataFile} mapped to the old {@link DataFile} of the updated AIPs.
@@ -822,7 +868,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 DataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
                 DataFile newAIPMetadataFile;
                 try {
-                    // To ensure that at any time there is only one DataFile of AIP type, we do not create
+                    // To ensure that at any time there is only one DataFile of AIP type, we do not store
                     // a new DataFile for the newAIPMetadataFile.
                     // The newAIPMetadataFile get the id of the old one and so only replace it when it is stored.
                     newAIPMetadataFile = writeMetaToWorkspace(updatedAip, tenantWorkspace);
@@ -882,7 +928,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             throws ModuleException {
         // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to store
         // the file.
-        // Lets construct the Multimap<PluginConf, DataFile> allowing us to then create IWorkingSubSets
+        // Lets construct the Multimap<PluginConf, DataFile> allowing us to then store IWorkingSubSets
         Multimap<PluginConfiguration, DataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
             toPrepareMap.put(oldNew.getOldOne().getDataStorageUsed(), oldNew.getNewOne());
@@ -915,12 +961,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws EntityNotFoundException {
+    public Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException {
 
         // First find the AIP
         Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
         if (oaip.isPresent()) {
             AIP aip = oaip.get();
+            if(!getSecurityDelegationPlugin().hasAccess(pAipId)) {
+                throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
+            }
             // Now get requested DataFile
             Set<DataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
             Optional<DataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum())).findFirst();

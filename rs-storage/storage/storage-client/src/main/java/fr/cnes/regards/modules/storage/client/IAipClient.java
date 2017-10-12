@@ -13,7 +13,11 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
@@ -35,11 +39,11 @@ public interface IAipClient {
 
     String AIP_PATH = "/aips";
 
-    public static final String PREPARE_DATA_FILES = "/dataFiles";
+    String PREPARE_DATA_FILES = "/dataFiles";
 
-    public static final String ID_PATH = "/{ip_id}";
+    String ID_PATH = "/{ip_id}";
 
-    public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
+    String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
     String ID_OBJECT_LINK_PATH = OBJECT_LINK_PATH + "/{objectLinkid}";
 
@@ -55,13 +59,13 @@ public interface IAipClient {
 
     String THUMB_NAIL = ID_PATH + "/thumbnail";
 
-    public static final String TAGS_PATH = "/tags";
+    String TAGS_PATH = "/tags";
 
     String TAGS_VALUE_PATH = TAGS_PATH + "/{tag}";
 
-    public static final String OBJECT_LINKS_ID_PATH = "/objectLinks/{objectLinkid}";
+    String OBJECT_LINKS_ID_PATH = "/objectLinks/{objectLinkid}";
 
-    public static final String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
+    String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
@@ -71,7 +75,7 @@ public interface IAipClient {
             @RequestParam("size") int pSize);
 
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
-    public ResponseEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips);
+    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid Set<AIP> aips);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);

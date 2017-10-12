@@ -49,7 +49,6 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -63,9 +62,9 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.service.IAllocationStrategy;
 
@@ -151,7 +150,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
     private void initDb() throws ModuleException, IOException, URISyntaxException {
 
         cleanUp();
-        // second, lets create a plugin configuration for IAllocationStrategy
+        // second, lets store a plugin configuration for IAllocationStrategy
         pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
@@ -163,7 +162,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, "allocation");
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
-        // third, lets create a plugin configuration of IDataStorage with the highest priority
+        // third, lets store a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
                                                                       IOnlineDataStorage.class.getPackage().getName());

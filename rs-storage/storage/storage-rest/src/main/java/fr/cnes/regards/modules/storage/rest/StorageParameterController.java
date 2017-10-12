@@ -55,7 +55,7 @@ public class StorageParameterController implements IResourceController<StoragePa
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "endpoint allowing to create a new storage parameters")
+    @ResourceAccess(description = "endpoint allowing to store a new storage parameters")
     @ResponseBody
     public HttpEntity<Resource<StorageParameter>> create(@RequestBody StorageParameter storageParameter)
             throws EntityAlreadyExistsException {
@@ -90,7 +90,7 @@ public class StorageParameterController implements IResourceController<StoragePa
         resourceService.addLink(resource, this.getClass(), "updateById", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, pElement.getId()),
                                 MethodParamFactory.build(StorageParameter.class));
-        resourceService.addLink(resource, this.getClass(), "create", LinkRels.CREATE,
+        resourceService.addLink(resource, this.getClass(), "store", LinkRels.CREATE,
                                 MethodParamFactory.build(StorageParameter.class));
         return resource;
     }

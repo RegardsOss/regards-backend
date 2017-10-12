@@ -122,10 +122,10 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
     @ResponseBody
-    @ResourceAccess(description = "validate and create the specified AIP")
-    public ResponseEntity<Set<UUID>> createAIP(@RequestBody @Valid Set<AIP> aips)
+    @ResourceAccess(description = "validate and store the specified AIP")
+    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid Set<AIP> aips)
             throws ModuleException, NoSuchAlgorithmException {
-        Set<UUID> jobIds = aipService.create(aips);
+        Set<UUID> jobIds = aipService.store(aips);
         return new ResponseEntity<>(jobIds, HttpStatus.OK);
     }
 

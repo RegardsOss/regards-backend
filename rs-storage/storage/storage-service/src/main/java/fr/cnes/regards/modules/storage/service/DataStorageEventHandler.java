@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 
 /**

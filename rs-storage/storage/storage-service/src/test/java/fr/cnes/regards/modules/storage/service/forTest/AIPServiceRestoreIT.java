@@ -40,7 +40,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
-import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -54,11 +53,11 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
-import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.RestoreJobEventHandler;
 import fr.cnes.regards.modules.storage.service.TestConfig;
@@ -159,7 +158,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
-        // second, lets create a plugin configuration for IAllocationStrategy
+        // second, lets store a plugin configuration for IAllocationStrategy
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());

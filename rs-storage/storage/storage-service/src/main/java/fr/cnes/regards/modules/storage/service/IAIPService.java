@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 import fr.cnes.regards.modules.storage.service.scheduler.UpdateMetadataScheduler;
 
@@ -48,11 +48,11 @@ public interface IAIPService {
      * <li> Physical storage of each {@link DataFile} through {@link IDataStorage} plugins</li>
      * <li> Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage} plugins</li>
      * </ul>
-     * @param pAIP new {@link Set}<{@link AIP}> to create
+     * @param pAIP new {@link Set}<{@link AIP}> to store
      * @return {@link Set}<{@link UUID}> of scheduled store AIP Jobs.
      * @throws ModuleException
      */
-    Set<UUID> create(Set<AIP> pAIP) throws ModuleException;
+    Set<UUID> store(Set<AIP> pAIP) throws ModuleException;
 
     /**
      * Make asked files available into the cache file system if necessary.<br/>
@@ -63,7 +63,7 @@ public interface IAIPService {
      * files lifetime in cache.
      * @return checksums of files that are already available
      */
-    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest);
+    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException;
 
     /**
      * Retrieve pages of AIP filtered according to the parameters
@@ -74,14 +74,15 @@ public interface IAIPService {
      * @param pPageable {@link Pageable} Pagination information
      * @return {@link AIP}s corresponding to parameters given.
      */
-    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable);
+    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable)
+            throws ModuleException;
 
     /**
      * @param pIpId
      * @return
      * @throws EntityNotFoundException
      */
-    Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws EntityNotFoundException;
+    Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException;
 
     /**
      * @param pIpId
@@ -103,12 +104,12 @@ public interface IAIPService {
      * @return
      * @throw EntityNotFoundException if the request {@link DataFile} does not exists.
      */
-    Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws EntityNotFoundException;
+    Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException;
 
-    List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws EntityNotFoundException;
+    List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws ModuleException;
 
     /**
-     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, create a new aip with a different version and use create method.
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, store a new aip with a different version and use store method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
      * @return aip stored into the system after changes have been propagated

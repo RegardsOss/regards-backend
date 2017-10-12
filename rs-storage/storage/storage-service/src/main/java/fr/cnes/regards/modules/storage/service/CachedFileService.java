@@ -50,9 +50,9 @@ import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
-import fr.cnes.regards.modules.storage.plugin.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.RestorationJob;
 
@@ -430,7 +430,7 @@ public class CachedFileService implements ICachedFileService {
         // Initialize all files in cache
         for (DataFile dataFileToRestore : dataFilesToRestore) {
             Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(dataFileToRestore.getChecksum());
-            // If cached file already exists do not create a new one.
+            // If cached file already exists do not store a new one.
             if (!ocf.isPresent()) {
                 CachedFileState fileState = CachedFileState.QUEUED;
                 if (restorableFiles.contains(dataFileToRestore)) {
@@ -487,7 +487,7 @@ public class CachedFileService implements ICachedFileService {
         // lets instantiate every job for every DataStorage to use
         Set<JobInfo> jobs = Sets.newHashSet();
         for (IWorkingSubset workingSubset : workingSubsets) {
-            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets create a job for each
+            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets store a job for each
             // of them
             Set<JobParameter> parameters = Sets.newHashSet();
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConf));

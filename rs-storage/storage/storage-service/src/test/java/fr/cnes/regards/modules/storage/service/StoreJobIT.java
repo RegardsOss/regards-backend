@@ -54,9 +54,9 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.local.LocalDataStorage;
-import fr.cnes.regards.modules.storage.plugin.local.LocalWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
@@ -134,7 +134,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         df = new DataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
                 new MimeType("text", "plain"), aip, "data.txt");
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
-        // now that we have some parameters, lets create the job
+        // now that we have some parameters, lets store the job
         parameters = Sets.newHashSet();
         parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf));
         parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));

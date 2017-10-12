@@ -5,8 +5,8 @@ import java.util.Map;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storage.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
