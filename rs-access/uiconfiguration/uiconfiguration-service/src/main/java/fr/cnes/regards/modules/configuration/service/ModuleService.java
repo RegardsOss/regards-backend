@@ -165,7 +165,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             final Module menu = new Module();
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
-            menu.setContainer("header");
+            menu.setContainer("page-top-header");
             menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("%s menu", pTenant));
             menu.setType("menu");
@@ -180,7 +180,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             final Module catalog = new Module();
             catalog.setActive(true);
             catalog.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
-            catalog.setContainer("dynamic-content");
+            catalog.setContainer("page-content-module");
             catalog.setDefaultDynamicModule(true);
             catalog.setDescription("Catalog");
             catalog.setType("search-results");
