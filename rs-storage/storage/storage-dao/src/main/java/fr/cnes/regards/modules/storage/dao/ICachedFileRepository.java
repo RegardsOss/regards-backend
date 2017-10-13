@@ -55,6 +55,14 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
     Set<CachedFile> findByStateOrderByLastRequestDateAsc(CachedFileState pQueued);
 
     /**
+     * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} and {@link OffsetDateTime} last request date before the given one
+     * ordered by last request date.
+     * @param pQueued
+     * @return {@link Set}<{@link CachedFile}
+     */
+    Set<CachedFile> findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState pQueued, OffsetDateTime pLastRequestDate);
+
+    /**
      * Retrieve all {@link CachedFile}s with expiration date before the given {@link OffsetDateTime}
      * @param pEpirationDate {@link OffsetDateTime}
      * @return {@link Set}<{@link CachedFile}

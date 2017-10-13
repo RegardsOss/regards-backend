@@ -14,13 +14,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +73,7 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.service.IAllocationStrategy;
 
@@ -80,6 +89,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(AipClientIT.class);
+
+    private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AipClientIT";
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -119,6 +130,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     private static Path downloadDir = Paths.get("target/download");
 
+    private PluginConfiguration catalogSecuDelegConf;
+
     @BeforeClass
     public static void initAll() throws IOException {
         if (Paths.get(workspace).toFile().exists()) {
@@ -138,13 +151,13 @@ public class AipClientIT extends AbstractRegardsWebIT {
             FileUtils.deleteDirectory(downloadDir.toFile());
         }
         Files.createDirectories(downloadDir);
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IAipClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder
+                .build(new TokenClientProvider<>(IAipClient.class, "http://" + serverAddress + ":" + getPort(),
+                                                 feignSecurityManager), gson);
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         FeignSecurityManager.asSystem();
         initDb();
+
     }
 
     private void initDb() throws ModuleException, IOException, URISyntaxException {
@@ -156,21 +169,29 @@ public class AipClientIT extends AbstractRegardsWebIT {
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        PluginMetaData allocationMeta = PluginUtils
-                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
+        pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
+        pluginService.addPluginPackage(FalseSecurityDelegation.class.getPackage().getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FalseSecurityDelegation.class,
+                                                                               FalseSecurityDelegation.class
+                                                                                       .getPackage().getName(),
+                                                                               ISecurityDelegation.class.getPackage()
+                                                                                       .getName());
+        catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, CATALOG_SECURITY_DELEGATION_LABEL);
+        catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                                                         DefaultAllocationStrategyPlugin.class
+                                                                                 .getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, "allocation");
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
         // third, lets store a plugin configuration of IDataStorage with the highest priority
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils
+                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
+                                      IOnlineDataStorage.class.getPackage().getName());
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
+                              gson.toJson(baseStorageLocation)).getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, "dsLabel", parameters, 0);
         dataStorageConf.setIsActive(true);
         pluginService.savePluginConfiguration(dataStorageConf);
@@ -206,8 +227,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Test
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException {
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(),1),
-                                            "clientAipTest", EntityType.DATA);
+        AIPBuilder builder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                "clientAipTest", EntityType.DATA);
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 
@@ -215,14 +237,17 @@ public class AipClientIT extends AbstractRegardsWebIT {
         try (FileInputStream is = new FileInputStream(file.toFile())) {
             fileChecksum = ChecksumUtils.computeHexChecksum(is, "MD5");
         }
-        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()), "MD5", fileChecksum);
+        builder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()), "MD5",
+                               fileChecksum);
         builder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
         builder.addContentInformation();
 
         builder.addEvent(EventType.SUBMISSION.toString(), "Creation", OffsetDateTime.now());
         AIP aip = builder.build();
         Set<AIP> aips = Sets.newHashSet(aip);
-        Assert.assertFalse("AIP should not exists before test", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
+        Assert.assertFalse("AIP should not exists before test",
+                           aipDao.findOneByIpId(aip.getId().toString()).isPresent());
 
         // 1. Create new AIP
         ResponseEntity<Set<UUID>> resp = client.store(aips);
@@ -247,10 +272,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
         Assert.assertTrue("Http response should be OK adter retrieveAIPFiles.",
                           HttpStatus.OK.equals(resp3.getStatusCode()));
         Assert.assertTrue("There should be one DataObject from the AIP.", resp3.getBody() != null);
-        Assert.assertTrue(String.format(
-                                        "There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
-                                        resp3.getBody().size()),
-                          resp3.getBody().size() == 2);
+        Assert.assertTrue(
+                String.format("There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
+                              resp3.getBody().size()), resp3.getBody().size() == 2);
         // 4. Make file available for download
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(2), fileChecksum);
         ResponseEntity<AvailabilityResponse> response = client.makeFilesAvailable(request);

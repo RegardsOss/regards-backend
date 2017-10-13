@@ -436,11 +436,16 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void loadNearlineFilesWithFullCache() throws MalformedURLException, InterruptedException, ModuleException {
         LOG.info("Start test loadNearlineFilesWithFullCache ...");
+
+        // Data initialization :
+        // -> 6 DataFiles in db with checksum : 10, 20, 30, 100, 200, 300
+        // -> 3 files already in cache : 100, 200, 300
+        // The 3 files in cache have to simulate that the cache is full in order to test that a new load
         AIP aip = fillNearlineDataFileDb(50L, "");
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
         // Simulate cache size full by adding files with big size.
-        Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
+        Long fileSize = ((this.cacheSizeLimitKo * 1024) / 3);
         fillCache(aip, "test1", "100", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
                   "target/cache");
         fillCache(aip, "test2", "200", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
@@ -449,7 +454,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                   "target/cache");
 
         // All files to restore should be initialized in QUEUED state waiting for available size into cache
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "10", "20", "30");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
@@ -465,6 +470,10 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                           handler.getJobSucceeds().isEmpty());
         Assert.assertFalse("There shouldn't be a FAIL jobEvent. Cause : All files nearLine are available !",
                            handler.isFailed());
+
+        // Wait for clear cron proceed to ensure that the older files in cache are not deleted. Files minimum ttl is
+        // 2 hours. Files created in cache are created with last request date fixed to OffsetDatetime.now().
+        Thread.sleep(this.cleanCacheRate + 1000);
 
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("10");
         Assert.assertTrue("The nearLine file 10 should be present in db as a cachedFile", ocf.isPresent());
@@ -702,10 +711,13 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private void fillCache(AIP aip, String fileName, String checksum, Long fileSize, OffsetDateTime expiration,
             OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
-        CachedFile f = new CachedFile(
-                new DataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
-                             MimeType.valueOf("application/text"), aip, fileName), expiration,
-                CachedFileState.AVAILABLE);
+        // First create DataFile
+        DataFile df = new DataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
+                                  MimeType.valueOf("application/text"), aip, fileName);
+        df.setDataStorageUsed(nearLineConf);
+        dataFileDao.save(df);
+        // Then create cached file associated
+        CachedFile f = new CachedFile(df,expiration,CachedFileState.AVAILABLE);
         if (location != null) {
             f.setLocation(new URL("file://" + Paths.get(location, fileName).toString()));
         }
