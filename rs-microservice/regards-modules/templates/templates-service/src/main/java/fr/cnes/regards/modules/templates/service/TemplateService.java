@@ -260,7 +260,7 @@ public class TemplateService implements ITemplateService {
     }
 
     @Override
-    public SimpleMailMessage writeToEmail(final String templateCode, final Map<String, String> dataModel,
+    public SimpleMailMessage writeToEmail(final String templateCode, final Map<String, ? extends Object> dataModel,
             final String... recipients) throws EntityNotFoundException {
         // Retrieve the template of given code
         Template template = null;
