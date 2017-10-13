@@ -225,7 +225,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         Assert.assertFalse("AIP should not exists before test", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
 
         // 1. Create new AIP
-        ResponseEntity<Set<UUID>> resp = client.createAIP(aips);
+        ResponseEntity<Set<UUID>> resp = client.store(aips);
         // Wait for job ends.
         try {
             Thread.sleep(10000);

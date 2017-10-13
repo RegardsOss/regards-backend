@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -127,7 +126,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-        // this.cleanUp(); //comment if you are not interrupting tests during their execution
+         this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -363,12 +362,13 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         handler.reset();
     }
 
-    @After
+//    @After
     public void cleanUp() throws URISyntaxException, IOException {
         purgeAMQPqueues();
         unsubscribeAMQPEvents();
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
+        aipDao.deleteAll();
         pluginRepo.deleteAll();
         if (baseStorageLocation != null) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)

@@ -115,7 +115,7 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, final Pageable pPageable,
-            final PagedResourcesAssembler<AIP> pAssembler) {
+            final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
         Page<AIP> aips = aipService.retrieveAIPs(pState, pFrom, pTo, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
@@ -133,7 +133,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "send the list of files metadata of a specified aip")
     public ResponseEntity<Set<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
-            throws EntityNotFoundException {
+            throws ModuleException {
         Set<OAISDataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
@@ -143,7 +143,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(
             description = "allows to request that files are made available for downloading, return the list of file already available via their checksums")
     public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
-            @RequestBody AvailabilityRequest availabilityRequest) {
+            @RequestBody AvailabilityRequest availabilityRequest) throws ModuleException {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
 
@@ -168,7 +168,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send the history of event occured on each data file of the specified AIP")
     @ResponseBody
     public ResponseEntity<List<Event>> retrieveAIPHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId)
-            throws EntityNotFoundException {
+            throws ModuleException {
         List<Event> history = aipService.retrieveAIPHistory(pIpId);
         return new ResponseEntity<>(history, HttpStatus.OK);
     }
@@ -187,7 +187,7 @@ public class AIPController implements IResourceController<AIP> {
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResourceAccess(description = "Dowload one file from a given AIP by checksum.")
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
-            @PathVariable("checksum") String checksum) throws EntityNotFoundException, IOException {
+            @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path
         Optional<DataFile> dataFile = aipService.getAIPDataFile(aipId, checksum);
         if (dataFile.isPresent()) {

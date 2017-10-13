@@ -12,15 +12,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.util.Sets;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -30,6 +40,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -46,18 +57,27 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.entities.domain.Collection;
+import fr.cnes.regards.modules.models.domain.Model;
+import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.*;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.database.CachedFile;
+import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
+import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.RestoreJobEventHandler;
 import fr.cnes.regards.modules.storage.service.TestConfig;
@@ -67,12 +87,14 @@ import fr.cnes.regards.modules.storage.service.TestDataStorageEventHandler;
  * Class to test all AIP service restore functions.
  * @author Sébastien Binda
  */
-@ContextConfiguration(classes = { TestConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, MockedFeignClientConf.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
 public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceRestoreIT.class);
+
+    private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPServiceRestoreIT";
 
     @Autowired
     private IAIPService aipService;
@@ -131,7 +153,10 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Autowired
+    private ICatalogClient catalogClient;
 
+    private PluginConfiguration catalogSecuDelegConf;
 
     public void initCacheDir() throws IOException {
         if (cacheDir.toFile().exists()) {
@@ -144,7 +169,13 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void init() throws Exception {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
-        // this.cleanUp(); //comment if you are not interrupting tests during their execution
+         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        // as we are checking rights, lets mock the response from catalog: always ok for anything
+        Mockito.when(catalogClient.getEntity(Mockito.any())).thenReturn(
+                new ResponseEntity<>(new Resource<>(
+                        new Collection(Model.build("name", "desc", EntityType.COLLECTION), DEFAULT_TENANT,
+                                       "CatalogOK")), HttpStatus.OK));
+
         subscriber.subscribeTo(JobEvent.class, handler);
         subscriber.subscribeTo(DataFileEvent.class, dataHandler);
         initDb();
@@ -164,6 +195,15 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(SimpleNearLineStoragePlugin.class.getPackage().getName());
+        pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
+        pluginService.addPluginPackage(CatalogSecurityDelegation.class.getPackage().getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(CatalogSecurityDelegation.class,
+                                                                               CatalogSecurityDelegation.class
+                                                                                       .getPackage().getName(),
+                                                                               ISecurityDelegation.class.getPackage()
+                                                                                       .getName());
+        catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, CATALOG_SECURITY_DELEGATION_LABEL);
+        catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
 
         PluginMetaData dataStoMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
@@ -190,7 +230,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * Expected result : The {@link AvailabilityResponse} contains all files in error.
      */
     @Test
-    public void loadUnavailableFilesTest() {
+    public void loadUnavailableFilesTest() throws ModuleException {
         LOG.info("Start test loadUnavailableFilesTest ...");
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
@@ -209,7 +249,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws MalformedURLException
      */
     @Test
-    public void loadOnlineFilesTest() throws MalformedURLException {
+    public void loadOnlineFilesTest() throws MalformedURLException, ModuleException {
         LOG.info("Start test loadOnlineFilesTest ...");
         fillOnlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "1", "2", "3");
@@ -237,7 +277,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws InterruptedException
      */
     @Test
-    public void loadNearlineFilesTest() throws MalformedURLException, InterruptedException {
+    public void loadNearlineFilesTest() throws MalformedURLException, InterruptedException, ModuleException {
         LOG.info("Start test loadNearlineFilesTest ...");
         fillNearlineDataFileDb(50L, "");
 
@@ -307,7 +347,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws InterruptedException
      */
     @Test
-    public void loadNearlineFilesWithQueuedTest() throws MalformedURLException, InterruptedException {
+    public void loadNearlineFilesWithQueuedTest() throws MalformedURLException, InterruptedException, ModuleException {
         LOG.info("Start test loadNearlineFilesWithQueuedTest ...");
         // Force each file to restore to a big size to simulate cache overflow.
         fillNearlineDataFileDb((this.cacheSizeLimitKo * 1024) / 2, "");
@@ -394,7 +434,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws InterruptedException
      */
     @Test
-    public void loadNearlineFilesWithFullCache() throws MalformedURLException, InterruptedException {
+    public void loadNearlineFilesWithFullCache() throws MalformedURLException, InterruptedException, ModuleException {
         LOG.info("Start test loadNearlineFilesWithFullCache ...");
         AIP aip = fillNearlineDataFileDb(50L, "");
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
@@ -585,7 +625,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws InterruptedException
      */
     @Test
-    public void loadAlreadyQueuedFilesTest() throws IOException, InterruptedException {
+    public void loadAlreadyQueuedFilesTest() throws IOException, InterruptedException, ModuleException {
         LOG.info("Start test testStoreQueuedFiles ...");
 
         // Simulate fill cache with an old expiration date in order to be sure that files will be deleted
@@ -743,7 +783,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                 null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
 
@@ -781,12 +822,13 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         dataHandler.reset();
     }
 
-    @After
+//    @After
     public void cleanUp() throws URISyntaxException, IOException {
         purgeAMQPqueues();
         unsubscribeAMQPEvents();
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
+        aipDao.deleteAll();
         pluginRepo.deleteAll();
         cachedFileRepository.deleteAll();
         if (baseStorageLocation != null) {
