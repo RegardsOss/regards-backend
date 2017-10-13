@@ -131,6 +131,9 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template orderCreatedTemplate;
 
+    @Autowired
+    private Template asideOrdersNotificationTemplate;
+
     @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String noReplyAdress;
 
@@ -174,6 +177,7 @@ public class TemplateService implements ITemplateService {
         checkAndSaveIfNecessary(projectUserActivatedTemplate);
         checkAndSaveIfNecessary(projectUserInactivatedTemplate);
         checkAndSaveIfNecessary(orderCreatedTemplate);
+        checkAndSaveIfNecessary(asideOrdersNotificationTemplate);
     }
 
     private void checkAndSaveIfNecessary(Template template) {
