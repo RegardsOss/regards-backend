@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
@@ -46,7 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
- * TODO
+ * SIP management service
  *
  * @author Marc Sordi
  *
@@ -62,9 +63,12 @@ public class IngestService implements IIngestService {
 
     private final Gson gson;
 
-    public IngestService(IRuntimeTenantResolver runtimeTenantResolver, Gson gson) {
+    private final ISIPRepository sipRepository;
+
+    public IngestService(IRuntimeTenantResolver runtimeTenantResolver, Gson gson, ISIPRepository sipRepository) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.gson = gson;
+        this.sipRepository = sipRepository;
     }
 
     @Override
@@ -96,11 +100,13 @@ public class IngestService implements IIngestService {
 
         // Compute internal IP_ID
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        // TODO manage version
-        int version = 1;
+
+        // Manage version
+        Integer version = sipRepository.getNextVersion(entity.getSipId());
         UniformResourceName urn = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA,
                 runtimeTenantResolver.getTenant(), uuid, version);
         entity.setIpId(urn.toString());
+        entity.setVersion(version);
 
         // Compute checksum
         String jsonSip = gson.toJson(sip);
@@ -110,17 +116,31 @@ public class IngestService implements IIngestService {
             checksum = ChecksumUtils.computeHexChecksum(inputStream, MD5_ALGORITHM);
             entity.setChecksum(checksum);
 
-            // Entity is persisted only if all properties properly set
-            // TODO save entity
+            // Prevent SIP from being ingested twice
+            if (sipRepository.isAlreadyIngested(checksum)) {
+                entity.setState(SIPState.REJECTED);
+                entity.setReasonForRejection("SIP already submitted");
+                LOGGER.warn("SIP {} rejected cause already submitted", entity.getSipId());
+            } else {
+                // Entity is persisted only if all properties properly set
+                // And SIP not already stored with a same checksum
+                sipRepository.save(entity);
+                LOGGER.info("SIP {} saved, ready for asynchronous processing", entity.getSipId());
+            }
 
         } catch (NoSuchAlgorithmException | IOException e) {
             LOGGER.error("Cannot compute checksum for sip identified by {}", sip.getId());
             LOGGER.error("Exception occurs!", e);
-            // FIXME : est-ce le bon comportement si erreur de checksum?
             entity.setState(SIPState.REJECTED);
+            entity.setReasonForRejection("Not able to generate internal SIP checksum");
         }
 
         return entity;
+    }
+
+    @Override
+    public Collection<SIPEntity> getAllVersions(String sipId) {
+        return sipRepository.getAllVersions(sipId);
     }
 
 }

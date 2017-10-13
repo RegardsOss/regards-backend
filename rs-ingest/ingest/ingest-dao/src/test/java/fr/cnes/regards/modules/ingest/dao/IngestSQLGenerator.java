@@ -16,28 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.entity;
+package fr.cnes.regards.modules.ingest.dao;
+
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
- *
- * Manage SIP lifecycle
- *
- * <pre>
- * CREATED -> TODO
- * </pre>
- *
+ * Generate DDL with HBM2DDL
  * @author Marc Sordi
  *
  */
-public enum SIPState {
+public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
 
-    /**
-     * SIP is stored in database and has to be processed
-     */
-    CREATED,
-    /**
-     * Invalid SIP or error during its storage
-     */
-    REJECTED
-    // TODO
 }

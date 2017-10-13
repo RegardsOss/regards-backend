@@ -31,7 +31,10 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
@@ -50,10 +53,13 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  *
  */
 @Entity
-@Table(name = "t_sip",
-        indexes = { @Index(name = "idx_sip_id", columnList = "id"),
-                @Index(name = "idx_sip_ipId", columnList = "ipId") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_sip_ipId", columnNames = { "ipId" }))
+@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum") }, // PostgreSQL
+                                                                                                      // manage both
+                                                                                                      // single indexes
+                                                                                                      // and multiple
+                                                                                                      // ones
+        uniqueConstraints = { @UniqueConstraint(name = "uk_sip_ipId", columnNames = "ipId"),
+                @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity {
 
@@ -74,6 +80,7 @@ public class SIPEntity {
      * The SIP identifier = the feature ID
      */
     @NotBlank
+    @Column(length = 100)
     private String sipId;
 
     /**
@@ -84,9 +91,23 @@ public class SIPEntity {
     @Column(name = "ipId", length = MAX_URN_SIZE)
     private String ipId;
 
+    /**
+     * SIP version : this value is also reported in {@link #ipId} and must be the same
+     */
+    @NotNull
+    @Min(1)
+    @Max(999)
+    private Integer version;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private SIPState state;
+
+    /**
+     * Optional message when SIP is rejected / not persisted in database
+     */
+    @Transient
+    private String reasonForRejection;
 
     /**
      * Real SIP content checksum
@@ -107,11 +128,13 @@ public class SIPEntity {
      * Processing chain name from {@link IngestMetadata}
      */
     @NotBlank
+    @Column(length = 100)
     private String processing;
 
     /**
      * Session identifier from {@link IngestMetadata}
      */
+    @Column(length = 100)
     private String sessionId;
 
     public String getIpId() {
@@ -184,5 +207,21 @@ public class SIPEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public String getReasonForRejection() {
+        return reasonForRejection;
+    }
+
+    public void setReasonForRejection(String reasonForRejection) {
+        this.reasonForRejection = reasonForRejection;
     }
 }

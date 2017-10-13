@@ -39,4 +39,11 @@ public interface IIngestService {
      * @throws ModuleException if error occurs!
      */
     Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException;
+
+    /**
+     * Retrieve all submitted SIP with same sipId
+     * @param sipId SIP ID
+     * @return all version of related SIP with specified sipId
+     */
+    Collection<SIPEntity> getAllVersions(String sipId);
 }
