@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.order.service.job;
 import java.time.OffsetDateTime;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
  * Expiration date specific job parameter, it contains the pair "expirationDate" : date

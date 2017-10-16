@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.hibernate.annotations.SortNatural;
 
+import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
@@ -73,6 +74,16 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "status_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime statusDate = OffsetDateTime.now();
+
+    /**
+     * To be downloaded files count
+     */
+    @Column(name = "available_count", nullable = false)
+    private int availableFilesCount = 0;
+
+    @Column(name = "avail_count_update_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime availableUpdateDate;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", foreignKey = @ForeignKey(name = "fk_order"))
@@ -150,6 +161,27 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public OffsetDateTime getStatusDate() {
         return statusDate;
+    }
+
+    public int getAvailableFilesCount() {
+        return availableFilesCount;
+    }
+
+    public void setAvailableFilesCount(int availableFilesCount) {
+        this.availableFilesCount = availableFilesCount;
+        this.availableUpdateDate = OffsetDateTime.now();
+    }
+
+    /**
+     * Visible only for testing, please do not use.
+     * @see #setAvailableFilesCount(int) should be used instead
+     */
+    public void setAvailableUpdateDate(OffsetDateTime availableUpdateDate) {
+        this.availableUpdateDate = availableUpdateDate;
+    }
+
+    public OffsetDateTime getAvailableUpdateDate() {
+        return availableUpdateDate;
     }
 
     @Override

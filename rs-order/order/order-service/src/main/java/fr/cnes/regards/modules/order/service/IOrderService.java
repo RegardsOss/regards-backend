@@ -25,6 +25,9 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
  * @author oroussel
  */
 public interface IOrderService {
+    String ORDER_TOKEN = "orderToken";
+
+    String ORDER_ID_KEY = "ORDER_ID";
 
     /**
      * Create an order
@@ -108,15 +111,22 @@ public interface IOrderService {
     /**
      * Create a metalink file with all files.
      * @param orderId concerned order id
-     * @param tokenRequestParam security token to be used with public download file url (request param version ie
-     * name=value)
      */
-    void downloadOrderMetalink(Long orderId, String tokenRequestParam, HttpServletResponse response);
+    void downloadOrderMetalink(Long orderId, OutputStream os);
 
     /**
-     * Scheduled method to update all current running orders completions values into database
+     * Scheduled method to update all current running orders completions values and all order available files count
+     * values into database
      */
-    void updateCurrentOrdersCompletions();
+    void updateCurrentOrdersComputations();
 
-    void updateTenantCurrentOrdersCompletions();
+    /**
+     * Same method as previous one but for one tenant (hence transactionnal)
+     */
+    void updateTenantOrdersComputations();
+
+    /**
+     * Search for orders whom available files counts haven't been updated since a specific delay
+     */
+    void sendPeriodicNotifications();
 }

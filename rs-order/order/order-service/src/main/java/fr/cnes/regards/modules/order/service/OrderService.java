@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -8,19 +7,20 @@ import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -40,8 +40,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
@@ -49,18 +49,22 @@ import org.springframework.web.util.UriUtils;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -76,7 +80,6 @@ import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.FilesType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
@@ -88,6 +91,8 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.templates.service.TemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * @author oroussel
@@ -125,6 +130,9 @@ public class OrderService implements IOrderService {
     private ITenantResolver tenantResolver;
 
     @Autowired
+    private JWTService jwtService;
+
+    @Autowired
     private IProjectsClient projectClient;
 
     @Autowired
@@ -132,6 +140,9 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IOrderService self;
+
+    @Autowired
+    private TemplateService templateService;
 
     @Autowired
     private ISubscriber subscriber;
@@ -142,8 +153,17 @@ public class OrderService implements IOrderService {
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
 
+    @Value("${regards.order.days.before.considering.order.as.aside:}")
+    private int daysBeforeSendingNotifEmail;
+
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    @Value("${regards.order.secret}")
+    private String secret;
+
+    @Autowired
+    private IEmailClient emailClient;
 
     private final long bucketSize = bucketSizeMb * 1024l * 1024l;
 
@@ -204,8 +224,54 @@ public class OrderService implements IOrderService {
         // Order is ready to be taken into account
         order.setStatus(OrderStatus.RUNNING);
         order = repos.save(order);
+        sendOrderCreationEmail(order);
         orderJobService.manageUserOrderJobInfos(order.getOwner());
         return order;
+    }
+
+    /**
+     * Generate a token containing orderId and expiration date to be used with public download URL (of metalink file and
+     * order data files)
+     */
+    private String generateToken4PublicEndpoint(Order order) {
+        return jwtService
+                .generateToken(runtimeTenantResolver.getTenant(), authResolver.getUser(), authResolver.getRole(),
+                               order.getExpirationDate(),
+                               Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
+    }
+
+    private void sendOrderCreationEmail(Order order) {
+        // Generate token
+        String tokenRequestParam = ORDER_TOKEN + "=" + generateToken4PublicEndpoint(order);
+
+        FeignSecurityManager.asSystem();
+        Project project = projectClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent();
+        String host = project.getHost();
+        FeignSecurityManager.reset();
+
+        // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
+        String urlStart = host + "/api/v2/" + encode4Uri(microserviceName);
+
+        // Metalink file public url
+        Map<String, String> dataMap = new HashMap<>();
+        dataMap.put("expiration_date", order.getExpirationDate().toString());
+        dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam);
+        dataMap.put("regards_downloader_url", "http://perdu.com");
+        dataMap.put("orders_url", urlStart + "/orders");
+
+        // Create mail
+        SimpleMailMessage email;
+        try {
+            email = templateService
+                    .writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE, dataMap, order.getOwner());
+        } catch (EntityNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Send it
+        FeignSecurityManager.asSystem();
+        emailClient.sendEmail(email);
+        FeignSecurityManager.reset();
     }
 
     private DatasetTask createDatasetTask(BasketDatasetSelection dsSel) {
@@ -400,14 +466,11 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void downloadOrderMetalink(Long orderId, String tokenRequestParam, HttpServletResponse response) {
+    public void downloadOrderMetalink(Long orderId, OutputStream os) {
         Order order = repos.findSimpleById(orderId);
+        String tokenRequestParam = ORDER_TOKEN + "=" + generateToken4PublicEndpoint(order);
 
         List<OrderDataFile> files = dataFileService.findAll(orderId);
-
-        response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".metalink");
-        response.setContentType("application/metalink+xml");
 
         // Retrieve host for generating datafiles download urls
         FeignSecurityManager.asSystem();
@@ -429,10 +492,10 @@ public class OrderService implements IOrderService {
             }
             ResourcesType xmlResources = factory.createResourcesType();
             ResourcesType.Url xmlUrl = factory.createResourcesTypeUrl();
-            // Build URL to publi downloadFile
+            // Build URL to publicdownloadFile
             StringBuilder buff = new StringBuilder();
             buff.append(host);
-            // FIXME => Sylvain Vessière Guerinet
+            // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
             buff.append("/api/v2/").append(encode4Uri(microserviceName));
             buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
             buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
@@ -442,12 +505,11 @@ public class OrderService implements IOrderService {
             xmlFiles.getFile().add(xmlFile);
         }
         xmlMetalink.setFiles(xmlFiles);
-        createXmlAndSendResponse(response, factory, xmlMetalink);
+        createXmlAndSendResponse(os, factory, xmlMetalink);
 
     }
 
-    private void createXmlAndSendResponse(HttpServletResponse response, ObjectFactory factory,
-            MetalinkType xmlMetalink) {
+    private void createXmlAndSendResponse(OutputStream os, ObjectFactory factory, MetalinkType xmlMetalink) {
         // Create XML and send reponse
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(MetalinkType.class);
@@ -463,8 +525,8 @@ public class OrderService implements IOrderService {
                     .setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource));
 
             // Marshall data
-            jaxbMarshaller.marshal(factory.createMetalink(xmlMetalink), response.getOutputStream());
-            response.getOutputStream().close();
+            jaxbMarshaller.marshal(factory.createMetalink(xmlMetalink), os);
+            os.close();
         } catch (Throwable t) {
             LOGGER.error("Error while generating metalink order file", t);
             throw new RuntimeException(t);
@@ -483,20 +545,50 @@ public class OrderService implements IOrderService {
 
     @Override
     @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
-    @Scheduled(fixedDelayString = "${regards.order.completion.update.rate.ms:1000}")
-    public void updateCurrentOrdersCompletions() {
+    @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
+    public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            self.updateTenantCurrentOrdersCompletions();
+            self.updateTenantOrdersComputations();
         }
     }
 
     @Override
-    public void updateTenantCurrentOrdersCompletions() {
-        Set<Order> orders = dataFileService.updateCurrentOrdersCompletionValues();
+    public void updateTenantOrdersComputations() {
+        Set<Order> orders = dataFileService.updateCurrentOrdersComputedValues();
         if (!orders.isEmpty()) {
             repos.save(orders);
         }
+    }
 
+    @Override
+    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
+    public void sendPeriodicNotifications() {
+        List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
+
+        Multimap<String, Order> orderMultimap = TreeMultimap
+                .create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
+        asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
+
+        // For each owner
+        for (Map.Entry<String, Collection<Order>> entry : orderMultimap.asMap().entrySet()) {
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("orders", entry.getValue());
+            // Create mail
+            SimpleMailMessage email;
+            try {
+                email = templateService
+                        .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE, dataMap,
+                                      entry.getKey());
+            } catch (EntityNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Send it
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(email);
+            FeignSecurityManager.reset();
+        }
     }
 }

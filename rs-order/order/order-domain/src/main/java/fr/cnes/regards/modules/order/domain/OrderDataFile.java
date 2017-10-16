@@ -51,7 +51,12 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
                 query = "SELECT o.*, count(df.*) as count FROM t_data_file df, t_order o WHERE "
                         + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
                         + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
-                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates")
+                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
+        @NamedNativeQuery(
+                query = "SELECT o.*, count(df.*) as count FROM t_data_file df, t_order o WHERE "
+                        + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date) "
+                        + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
+                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders")
         })
 @SqlResultSetMappings({
         @SqlResultSetMapping(name = "sumMapping", columns = @ColumnResult(name = "size", type = Long.class),

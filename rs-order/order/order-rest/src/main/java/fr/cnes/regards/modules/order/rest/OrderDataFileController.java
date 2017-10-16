@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IDatasetTaskService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
+import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwt;
@@ -67,8 +68,6 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public static final String ORDERS_ORDER_ID_AIPS_AIP_ID_FILES_CHECKSUM = "/orders/{orderId}/aips/{aipId}/files/{checksum}";
 
     public static final String ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES = "/orders/{orderId}/dataset/{datasetId}/files";
-
-    public static final String ORDER_TOKEN = "orderToken";
 
     @Autowired
     private IResourceService resourceService;
@@ -130,13 +129,13 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_CHECKSUM)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
-            @PathVariable("checksum") String checksum, @RequestParam(name = ORDER_TOKEN) String token,
+            @PathVariable("checksum") String checksum, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException, IOException {
         OrderDataFile dataFile;
         try {
             Claims claims = jwtService.parseToken(token, secret);
-            Long orderId = Long.parseLong(claims.get(OrderController.ORDER_ID_KEY, String.class));
-            // Throws a NoSuchELementException if not found
+            Long orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+            // Throws a NoSuchElementException if not found
             dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
         } catch (InvalidJwtException | MalformedJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -153,6 +152,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 // Error from storage
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
+                // Stream the response
                 return new ResponseEntity<>(
                         os -> dataFileService.downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
         }
