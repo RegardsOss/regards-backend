@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
-@TestPropertySource(locations = "classpath:authentication-test.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=auth_it" })
 public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
