@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -27,6 +29,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -40,6 +43,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -49,6 +53,7 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
@@ -57,6 +62,7 @@ import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.templates.service.TemplateService;
 
 /**
  * @author oroussel
@@ -87,6 +93,12 @@ public class OrderServiceIT {
 
     @Autowired
     private IProjectsClient projectsClient;
+
+    @Autowired
+    private IEmailClient emailClient;
+
+    @Autowired
+    private TemplateService templateService;
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
@@ -124,6 +136,8 @@ public class OrderServiceIT {
         dataFileRepos.deleteAll();
 
         jobInfoRepos.deleteAll();
+
+        templateService.deleteAll();
     }
 
     @Test
@@ -288,6 +302,53 @@ public class OrderServiceIT {
                                   .allMatch(status -> status == JobStatus.SUCCEEDED));
         Assert.assertTrue(order.getPercentCompleted() == 100);
     }
+
+    @Test
+    public void testEmailNotifications()  {
+        Mockito.when(emailClient.sendEmail(Mockito.any())).thenAnswer(invocation -> {
+            mailMessage = (SimpleMailMessage) invocation.getArguments()[0];
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        });
+
+        // Create an order with no available files count and no availableUpdateDate (null)
+        Order order = new Order();
+        order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setOwner(USER_EMAIL);
+        order.setStatus(OrderStatus.PENDING);
+        order = orderRepos.save(order);
+
+        // No running order
+        orderService.sendPeriodicNotifications();
+        // No mail should have been sent (order hasn't even been started)
+        Assert.assertNull(mailMessage);
+
+        order.setAvailableFilesCount(10);
+        orderRepos.save(order);
+        // available files count has been updated, available Update date too
+        orderService.sendPeriodicNotifications();
+        // No mail should have been sent (it must have more than 3 days between last available update date and now)
+        Assert.assertNull(mailMessage);
+
+        // Change available update date (-4 days)
+        order.setAvailableUpdateDate(OffsetDateTime.now().minus(4, ChronoUnit.DAYS));
+        orderRepos.save(order);
+
+        orderService.sendPeriodicNotifications();
+
+        Assert.assertNotNull(mailMessage);
+        Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
+        // Check that email text has been interpreted before being sent
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
+        Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+
+        Assert.assertFalse(mailMessage.getText().contains("${order}"));
+
+
+    }
+
+    private static SimpleMailMessage mailMessage;
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, boolean online)
             throws URISyntaxException {

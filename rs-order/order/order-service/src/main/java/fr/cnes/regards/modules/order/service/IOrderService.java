@@ -115,12 +115,18 @@ public interface IOrderService {
     void downloadOrderMetalink(Long orderId, OutputStream os);
 
     /**
-     * Scheduled method to update all current running orders completions values into database
+     * Scheduled method to update all current running orders completions values and all order available files count
+     * values into database
      */
-    void updateCurrentOrdersCompletions();
+    void updateCurrentOrdersComputations();
 
     /**
-     * Same method as previous one but for one tenant (ence transactionnal)
+     * Same method as previous one but for one tenant (hence transactionnal)
      */
-    void updateTenantCurrentOrdersCompletions();
+    void updateTenantOrdersComputations();
+
+    /**
+     * Search for orders whom available files counts haven't been updated since a specific delay
+     */
+    void sendPeriodicNotifications();
 }

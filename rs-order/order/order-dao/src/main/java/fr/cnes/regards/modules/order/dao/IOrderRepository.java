@@ -1,9 +1,15 @@
 package fr.cnes.regards.modules.order.dao;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.order.domain.Order;
 
@@ -11,6 +17,7 @@ import fr.cnes.regards.modules.order.domain.Order;
  * Order repository
  * @author oroussel
  */
+@Repository
 public interface IOrderRepository extends JpaRepository<Order, Long> {
 
     /**
@@ -30,4 +37,18 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph("graph.order.simple")
     Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest);
+
+    @EntityGraph("graph.order.simple")
+    List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanOrderByOwner(int count,
+            OffsetDateTime date);
+
+    /**
+     * Find all orders considered as "aside" ie whom no associated daéta files have been downloaded since specified
+     * days count
+     * Orders are sorted by owner
+     */
+    default List<Order> findAsideOrders(int daysBeforeConsideringAside) {
+        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanOrderByOwner(0, OffsetDateTime.now()
+                .minus(daysBeforeConsideringAside, ChronoUnit.DAYS));
+    }
 }

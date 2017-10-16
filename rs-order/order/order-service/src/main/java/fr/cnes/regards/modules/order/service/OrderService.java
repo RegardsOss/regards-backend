@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -18,7 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,6 +49,7 @@ import org.springframework.web.util.UriUtils;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -150,6 +152,9 @@ public class OrderService implements IOrderService {
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
+
+    @Value("${regards.order.days.before.considering.order.as.aside:}")
+    private int daysBeforeSendingNotifEmail;
 
     @Value("${spring.application.name}")
     private String microserviceName;
@@ -540,20 +545,50 @@ public class OrderService implements IOrderService {
 
     @Override
     @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
-    @Scheduled(fixedDelayString = "${regards.order.completion.update.rate.ms:1000}")
-    public void updateCurrentOrdersCompletions() {
+    @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
+    public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            self.updateTenantCurrentOrdersCompletions();
+            self.updateTenantOrdersComputations();
         }
     }
 
     @Override
-    public void updateTenantCurrentOrdersCompletions() {
-        Set<Order> orders = dataFileService.updateCurrentOrdersCompletionValues();
+    public void updateTenantOrdersComputations() {
+        Set<Order> orders = dataFileService.updateCurrentOrdersComputedValues();
         if (!orders.isEmpty()) {
             repos.save(orders);
         }
+    }
 
+    @Override
+    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
+    public void sendPeriodicNotifications() {
+        List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
+
+        Multimap<String, Order> orderMultimap = TreeMultimap
+                .create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
+        asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
+
+        // For each owner
+        for (Map.Entry<String, Collection<Order>> entry : orderMultimap.asMap().entrySet()) {
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("orders", entry.getValue());
+            // Create mail
+            SimpleMailMessage email;
+            try {
+                email = templateService
+                        .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE, dataMap,
+                                      entry.getKey());
+            } catch (EntityNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Send it
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(email);
+            FeignSecurityManager.reset();
+        }
     }
 }

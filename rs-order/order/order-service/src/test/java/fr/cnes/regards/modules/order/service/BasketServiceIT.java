@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -71,7 +73,7 @@ public class BasketServiceIT {
     }
 
     /**
-     * BECAUSE OF OffsetDateTime.now() use from BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
+     * BECAUSE OF OffsetDateTime.now() used by BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
      */
     @Test
     public void test() throws EmptyBasketException {
@@ -167,14 +169,22 @@ public class BasketServiceIT {
 
         Order order = orderService.createOrder(basket);
 
+        // Email sending test
         Assert.assertNotNull(mailMessage);
         Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
         // Check that email text has been interpreted before being sent
-        Assert.assertTrue(mailMessage.getText().contains(order.getExpirationDate().toString()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
         Assert.assertFalse(mailMessage.getText().contains("${expiration_date}"));
         Assert.assertFalse(mailMessage.getText().contains("${metalink_download_url}"));
         Assert.assertFalse(mailMessage.getText().contains("${regards_downloader_url}"));
         Assert.assertFalse(mailMessage.getText().contains("${orders_url}"));
+        // Reset emailMessage
+        mailMessage = null;
+
+        // manage periodic email notifications
+        orderService.sendPeriodicNotifications();
+        //
     }
 
     static SimpleMailMessage mailMessage;

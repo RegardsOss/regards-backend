@@ -84,7 +84,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public Set<Order> updateCurrentOrdersCompletionValues() {
+    public Set<Order> updateCurrentOrdersComputedValues() {
         OffsetDateTime now = OffsetDateTime.now();
         // find not yet finished orders and their sum of data files sizes
         List<Object[]> totalOrderFiles = repos.findSumSizesByOrderId(now);
@@ -109,6 +109,11 @@ public class OrderDataFileService implements IOrderDataFileService {
         Map<Long, Long> errorCountMap = repos.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
                 .collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
+        // Map {order_id -> available files count }
+        Map<Long, Long> availableCountMap = repos
+                .selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE, FileState.ONLINE).stream()
+                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+
         // Update all orders completion values
         for (Order order : orders) {
             long totalSize = totalSizeMap.get(order.getId());
@@ -116,6 +121,13 @@ public class OrderDataFileService implements IOrderDataFileService {
             order.setPercentCompleted(Math.floorDiv(100 * (int) treatedSize, (int) totalSize));
             long errorCount = errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l;
             order.setFilesInErrorCount((int) errorCount);
+            long availableCount = availableCountMap.containsKey(order.getId()) ?
+                    availableCountMap.get(order.getId()) :
+                    0l;
+            // If number of available files has changed...
+            if (order.getAvailableFilesCount() != availableCount) {
+                order.setAvailableFilesCount((int) availableCount);
+            }
         }
         return orders;
     }

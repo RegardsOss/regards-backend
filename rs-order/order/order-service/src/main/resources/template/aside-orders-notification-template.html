@@ -1,0 +1,15 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+<h1>REGARDS - Aside orders</h1>
+<div>Yo Bro !
+    One or more orders wait for you to be downloaded.
+    <#list orders as order>
+        - Order created the ${order.creationDate?datetime.iso} will expire the ${order.expirationDate?datetime.iso}. It contains ${order.availableFilesCount}
+        available for download files since at least ${order.availableUpdateDate}.</br>
+    </#list>
+</div>
+<div>
+    Don't forget that order files are deleted as soon as expiration date is reached.
+</div>
+<div>
+    Cheers, Imhotep
+</div>
