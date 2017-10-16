@@ -132,11 +132,13 @@ public class SampleServicePlugin implements ISampleServicePlugin {
         HttpHeaders headers = new HttpHeaders();
         switch (responseType) {
             case RESPONSE_TYPE_JSON:
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleServiceResults.json");
                 // Simulate return of a JSON Object
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 return new ResponseEntity<>(respin, headers, HttpStatus.OK);
             case RESPONSE_TYPE_XML:
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleServiceResults.xml");
                 // Simulate return of a XML Object
                 headers.setContentType(MediaType.APPLICATION_XML);
                 response.setContentType(MediaType.APPLICATION_XML_VALUE);
@@ -166,6 +168,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
                 this.getClass().getClassLoader().getResourceAsStream("LogoCnes.png"));
         headers.setContentType(MediaType.IMAGE_PNG);
         response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleService.png");
         return new ResponseEntity<>(resource, headers, HttpStatus.OK);
     }
 
@@ -176,6 +179,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      */
     private ResponseEntity<InputStreamResource> retrieveOther(HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleService.other");
         InputStreamResource resource = new InputStreamResource(
                 this.getClass().getClassLoader().getResourceAsStream("result.other"));
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
