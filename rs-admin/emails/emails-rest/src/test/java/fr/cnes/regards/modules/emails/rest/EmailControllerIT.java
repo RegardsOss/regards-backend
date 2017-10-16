@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -50,6 +51,7 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  */
 @MultitenantTransactional
 @ContextConfiguration(classes = EmailConfiguration.class)
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=email_it" })
 public class EmailControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

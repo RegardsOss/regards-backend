@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @since 1.0-SNAPSHOT
  */
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -132,11 +134,11 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-    *
-    * Check that the microservice allow to retrieve all resource endpoints configurations as PROJECT_ADMIN
-    *
-    * @since 1.0-SNAPSHOT
-    */
+     *
+     * Check that the microservice allow to retrieve all resource endpoints configurations as PROJECT_ADMIN
+     *
+     * @since 1.0-SNAPSHOT
+     */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsProjectAdminTest() {

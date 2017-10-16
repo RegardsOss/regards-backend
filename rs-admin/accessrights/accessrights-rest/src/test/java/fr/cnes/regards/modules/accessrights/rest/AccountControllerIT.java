@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -70,6 +71,7 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { FeignClientConfiguration.class })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -397,14 +399,14 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_SYS_SEC_300")
     @Purpose("password respects a regular expression which is configurable by instance")
     public void checkPassword() {
-        //test valid password
+        // test valid password
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(true)));
         performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,
                            new AccountsController.Password(PASSWORD), expectations, errorMessage);
         expectations.clear();
-        //test invalid password
+        // test invalid password
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(false)));
         performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,

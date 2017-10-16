@@ -43,6 +43,12 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-dao</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.cnes.regards.framework</groupId>
+					<artifactId>jpa-instance-regards-starter</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>

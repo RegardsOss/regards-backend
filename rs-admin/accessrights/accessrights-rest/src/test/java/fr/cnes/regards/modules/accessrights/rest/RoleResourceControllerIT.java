@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  *
  */
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleResourceControllerIT.class);
@@ -78,7 +80,8 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Removing {@link DefaultRole#ADMIN} access from role inheriting ADMIN changes its parent to {@link DefaultRole#REGISTERED_USER}
+     * Removing {@link DefaultRole#ADMIN} access from role inheriting ADMIN changes its parent to
+     * {@link DefaultRole#REGISTERED_USER}
      * @throws EntityException if error occurs
      */
     @Test
@@ -87,7 +90,8 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Removing {@link DefaultRole#REGISTERED_USER} access from role inheriting ADMIN changes its parent to {@link DefaultRole#PUBLIC}
+     * Removing {@link DefaultRole#REGISTERED_USER} access from role inheriting ADMIN changes its parent to
+     * {@link DefaultRole#PUBLIC}
      * @throws EntityException if error occurs
      */
     @Test
