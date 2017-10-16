@@ -232,7 +232,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void loadUnavailableFilesTest() throws ModuleException {
         LOG.info("Start test loadUnavailableFilesTest ...");
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "1", "2", "3");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(
                 "No file should be directly available after AIPService::locafiles. Cause : files to load does not exists !",
@@ -252,7 +252,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void loadOnlineFilesTest() throws MalformedURLException, ModuleException {
         LOG.info("Start test loadOnlineFilesTest ...");
         fillOnlineDataFileDb(50L);
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "1", "2", "3");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(
                 "All files should be directly available after AIPService::locafiles. Cause : files to load are online.",
@@ -283,7 +283,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "10", "20", "30");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
@@ -354,7 +354,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "10", "20", "30");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
