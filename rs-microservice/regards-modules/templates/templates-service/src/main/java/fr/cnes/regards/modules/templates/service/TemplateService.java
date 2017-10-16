@@ -249,6 +249,11 @@ public class TemplateService implements ITemplateService {
         templateRepository.delete(id);
     }
 
+    @Override
+    public void deleteAll() {
+        templateRepository.deleteAll();
+    }
+
     /**
      * Configure the template loader
      * @throws IOException when error occurs during template loading
