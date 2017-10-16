@@ -43,7 +43,7 @@ public abstract class AbstractDaoTest {
     /**
      * Default tenant configured in dao.properties
      */
-    private static final String DEFAULT_TENANT = "PROJECT";
+    public static final String DEFAULT_TENANT = "PROJECT";
 
     /**
      * JPA entity manager : use it to flush context to prevent false positive

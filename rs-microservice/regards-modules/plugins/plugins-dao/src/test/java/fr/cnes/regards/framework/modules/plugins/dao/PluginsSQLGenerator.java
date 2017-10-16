@@ -16,27 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.jpa.multitenant.test;
+package fr.cnes.regards.framework.modules.plugins.dao;
 
-import org.junit.Test;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
- * Generate SQL script using hbm2ddl tool.<br/>
- * Extends this test class in dao layer, <b>remove ALL SCHEMAS and recreate only public one</b> from the target database
- * and run the
- * test.<br/>
- * A SQL script should be created in target.
- *
+ * Generate DDL with HBM2DDL
  * @author Marc Sordi
  *
  */
-@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
-        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql" })
-public class AbstractScriptGeneratorTest extends AbstractDaoTest {
+public class PluginsSQLGenerator extends AbstractScriptGeneratorTest {
 
-    @Test
-    public void generate() {
-        // Nothing to do
-    }
 }

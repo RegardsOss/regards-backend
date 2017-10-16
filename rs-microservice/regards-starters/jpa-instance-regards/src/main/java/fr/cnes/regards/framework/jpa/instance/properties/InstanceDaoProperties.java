@@ -85,7 +85,7 @@ public class InstanceDaoProperties {
     /**
      * Migration tool. Default to hbm2ddl.
      */
-    private MigrationTool migrationTool = MigrationTool.HBM2DDL;
+    private MigrationTool migrationTool = MigrationTool.FLYWAYDB;
 
     /**
      * Optional script output file for {@link MigrationTool#HBM2DDL}

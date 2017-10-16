@@ -61,18 +61,17 @@ public class DownloadUtils {
      */
     public static String downloadThroughProxy(URL source, Path destination, String checksumAlgorithm, Proxy proxy,
             Integer pConnectTimeout) throws NoSuchAlgorithmException, IOException {
-        OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
+        try(OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
         InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy, pConnectTimeout);
         // lets compute the checksum during the copy!
-        DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm));
-        ByteStreams.copy(dis, os);
-        os.close();
-        dis.close();
-        return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
+        DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm))) {
+            ByteStreams.copy(dis, os);
+            return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
+        }
     }
 
     /**
-     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy)} with {@link Proxy#NO_PROXY} as proxy
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Integer)} with {@link Proxy#NO_PROXY} as proxy
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
             String expectedChecksum, Integer pConnectionTimeout) throws IOException, NoSuchAlgorithmException {
@@ -81,7 +80,7 @@ public class DownloadUtils {
     }
 
     /**
-     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy)} with {@link Proxy#NO_PROXY} as proxy
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Integer)} with {@link Proxy#NO_PROXY} as proxy and default timeout
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
             String expectedChecksum) throws IOException, NoSuchAlgorithmException {

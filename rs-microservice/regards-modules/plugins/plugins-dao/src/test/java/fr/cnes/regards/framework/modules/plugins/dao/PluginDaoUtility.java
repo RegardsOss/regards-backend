@@ -147,8 +147,8 @@ public class PluginDaoUtility extends AbstractDaoTest {
     }
 
     protected void cleanDb() {
-        plgRepository.deleteAll();
         paramRepository.deleteAll();
+        plgRepository.deleteAll();
         resetId();
     }
 

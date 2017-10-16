@@ -61,6 +61,6 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
 
     @Override
     @Modifying
-    @Query(value = "TRUNCATE t_plugin_configuration CASCADE", nativeQuery = true)
+    @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)
     void deleteAll();
 }
