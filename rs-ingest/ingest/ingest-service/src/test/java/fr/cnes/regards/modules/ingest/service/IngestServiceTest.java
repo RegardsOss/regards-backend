@@ -49,8 +49,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "regards.jpa.multitenant.embedded=false",
-        "spring.jpa.properties.hibernate.default_schema=ingest1" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest1" })
 @ContextConfiguration(classes = { IngestServiceTest.IngestConfiguration.class })
 public class IngestServiceTest extends AbstractDaoTransactionalTest {
 
