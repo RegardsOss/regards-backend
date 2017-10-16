@@ -27,11 +27,14 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -41,6 +44,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -50,11 +54,12 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
 import fr.cnes.regards.modules.search.rest.plugin.MarkdownRepresentation;
-import fr.cnes.regards.plugins.utils.PluginUtils;
 
 @TestPropertySource(locations = { "classpath:test-representation.properties" })
 @ActiveProfiles("testAmqp")
@@ -92,6 +97,9 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
 
     private final Set<Long> pluginConfToDelete = Sets.newHashSet();
 
+    @Autowired
+    private IProjectUsersClient projectUserClient;
+
     @Before
     public void setUp() {
         pluginService.addPluginPackage(MarkdownRepresentation.class.getPackage().getName());
@@ -108,9 +116,10 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
     @After
     public void cleanUp() {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-        PluginConfiguration geoJson= null;
+        PluginConfiguration geoJson = null;
         try {
-            geoJson = pluginService.getPluginConfigurationByLabel(RepresentationConfiguration.DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
+            geoJson = pluginService
+                    .getPluginConfigurationByLabel(RepresentationConfiguration.DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
             pluginService.deletePluginConfiguration(geoJson.getId());
         } catch (ModuleException e) { // NOSONAR
         }
@@ -121,6 +130,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
     @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     @Test
     public void test() throws ModuleException, InterruptedException {
+        Mockito.when(projectUserClient.isAdmin(DEFAULT_USER_EMAIL)).thenReturn(new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK));
         // lets get a collection as geo+json
         acceptToUse = "application/geo+json; charset=UTF-8";
         final List<ResultMatcher> expectations = new ArrayList<>();

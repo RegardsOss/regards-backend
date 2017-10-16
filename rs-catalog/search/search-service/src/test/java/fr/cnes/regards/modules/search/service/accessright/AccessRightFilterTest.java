@@ -30,13 +30,11 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
@@ -66,7 +64,8 @@ public class AccessRightFilterTest {
     private AccessRightFilter accessRightFilter;
 
     /**
-     * The OpenSearch service building {@link ICriterion} from a request string.  Easier to build criterion then doing it manually.
+     * The OpenSearch service building {@link ICriterion} from a request string. Easier to build criterion then doing it
+     * manually.
      */
     private OpenSearchService openSearchService;
 
@@ -81,10 +80,16 @@ public class AccessRightFilterTest {
     private static final String TENANT = "tenant";
 
     /**
+     * Authentication resolver
+     */
+    private IAuthenticationResolver authResolver;
+
+    /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
+        authResolver = Mockito.mock(IAuthenticationResolver.class);
         ISubscriber subscriber = Mockito.mock(ISubscriber.class);
         IUserClient userClient = Mockito.mock(IUserClient.class);
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
@@ -103,7 +108,8 @@ public class AccessRightFilterTest {
         IAccessGroupCache accessGroupCache = new AccessGroupCache(userClient, Mockito.mock(IAccessGroupClient.class));
 
         openSearchService = new OpenSearchService(finder);
-        accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
+        accessRightFilter = new AccessRightFilter(authResolver, accessGroupCache, runtimeTenantResolver,
+                projectUsersClient);
     }
 
     @After
@@ -124,7 +130,8 @@ public class AccessRightFilterTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addAccessRights(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addAccessRights(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
      * @throws OpenSearchParseException
      * @throws UnsupportedEncodingException
      * @throws AccessRightFilterException
@@ -133,11 +140,7 @@ public class AccessRightFilterTest {
     public final void testAddUserGroups()
             throws OpenSearchParseException, UnsupportedEncodingException, AccessRightFilterException {
         // Mock authentication
-        final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setName(SampleDataUtils.EMAIL);
-        jwtAuth.setUser(details);
-        SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+        Mockito.when(authResolver.getUser()).thenReturn(SampleDataUtils.EMAIL);
 
         // Init the criterion we add groups to
         String q = "q=" + URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8");

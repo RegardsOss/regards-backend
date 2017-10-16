@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -37,7 +38,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.plugins.utils.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Configuration class used to initialiaze and set our custom http message converter using the different IRepresentation
@@ -46,8 +47,8 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
  * @author Sylvain Vissiere-Guerinet
  */
 @Component
-public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ implements BeanFactoryAware,
-        ApplicationListener<ApplicationReadyEvent> {
+public class RepresentationConfiguration
+        /* extends WebMvcConfigurerAdapter */ implements BeanFactoryAware, ApplicationListener<ApplicationReadyEvent> {
 
     protected static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
 
@@ -67,7 +68,8 @@ public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ imp
     @Autowired
     private ISubscriber subscriber;
 
-    public void configureRepresentationMessageConverter(RepresentationHttpMessageConverter representationHttpMessageConverter)
+    public void configureRepresentationMessageConverter(
+            RepresentationHttpMessageConverter representationHttpMessageConverter)
             throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         LOG.info("starting to configure http message converters");
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
@@ -104,12 +106,13 @@ public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ imp
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory=beanFactory;
+        this.beanFactory = beanFactory;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        RepresentationHttpMessageConverter representationHttpMessageConverter=(RepresentationHttpMessageConverter) beanFactory.getBean(RepresentationHttpMessageConverter.class);
+        RepresentationHttpMessageConverter representationHttpMessageConverter = beanFactory
+                .getBean(RepresentationHttpMessageConverter.class);
         try {
             configureRepresentationMessageConverter(representationHttpMessageConverter);
         } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
