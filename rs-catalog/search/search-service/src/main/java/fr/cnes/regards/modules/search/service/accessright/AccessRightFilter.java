@@ -79,13 +79,6 @@ public class AccessRightFilter implements IAccessRightFilter {
         this.projectUserClient = pProjectUserClient;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter#addGroupFilter(fr.cnes.regards.modules.
-     * indexer.domain.criterion.ICriterion)
-     */
     @Override
     public ICriterion addAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
 

@@ -160,7 +160,6 @@ public class CatalogController {
      * @param pRuntimeTenantResolver Get current tenant at runtime and allows tenant forcing. Autowired.
      */
     public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService,
-            // NOSONAR
             final IResourceService pResourceService,
             final FacettedPagedResourcesAssembler<AbstractEntity> pAbstractEntityResourcesAssembler,
             final FacettedPagedResourcesAssembler<DataObject> pDataobjectResourcesAssembler,
@@ -168,7 +167,6 @@ public class CatalogController {
             final PagedDatasetResourcesAssembler pPagedDatasetResourcesAssembler,
             final IRuntimeTenantResolver pRuntimeTenantResolver,
             final OpenSearchDescriptionBuilder osDescriptorBuilder) {
-        super();
         catalogSearchService = pCatalogSearchService;
         searchService = pSearchService;
         resourceService = pResourceService;
