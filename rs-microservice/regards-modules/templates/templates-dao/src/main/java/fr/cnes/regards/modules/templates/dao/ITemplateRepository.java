@@ -27,7 +27,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
- * Interface for a JPA auto-generated CRUD repository managing {@link Account}s.<br>
+ * Interface for a JPA auto-generated CRUD repository managing {@link Template}s.<br>
  * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  *
