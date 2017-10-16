@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@Ignore // need to be investigated when we have some time, for now launch the test with a rabbit in local and it should work
-public class TemplateSQLGenerator extends AbstractScriptGeneratorTest{
+@Ignore
+public class TemplateSQLGenerator extends AbstractScriptGeneratorTest {
 
 }

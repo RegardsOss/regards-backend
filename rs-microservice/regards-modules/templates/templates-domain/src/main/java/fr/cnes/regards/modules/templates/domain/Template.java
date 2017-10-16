@@ -27,6 +27,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -61,7 +62,7 @@ public class Template implements IIdentifiable<Long> {
      * A human readable code identifying the template
      */
     @NotBlank
-    @Column(name = "code", nullable = false)
+    @Column(name = "code", nullable = false, length = 100)
     private final String code;
 
     /**
@@ -78,6 +79,8 @@ public class Template implements IIdentifiable<Long> {
      */
     @NotNull
     @ElementCollection
+    @MapKeyColumn(name = "name", length = 48)
+    @Column(name = "value", length = 128)
     @CollectionTable(name = "t_template_data", joinColumns = @JoinColumn(name = "template_id"),
             foreignKey = @ForeignKey(name = "fk_template_data_template_id"))
     private Map<String, String> dataStructure;
@@ -86,11 +89,13 @@ public class Template implements IIdentifiable<Long> {
      * A subject if the template should be written to something with a subject, title...
      */
     @NotBlank
+    @Column(name = "subject", length = 100)
     private final String subject;
 
     /**
      * A description for the template
      */
+    @Column(name = "description", length = 100)
     private String description;
 
     /**

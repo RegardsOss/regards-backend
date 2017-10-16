@@ -73,7 +73,7 @@ public class TemplateServiceConfiguration {
     /**
      * The order created template code
      */
-    public static final String ORDER_CREATED_TEMPLATE_CODE = "ORDER_CREATED_TEMPLATE_TEMPLATE";
+    public static final String ORDER_CREATED_TEMPLATE_CODE = "ORDER_CREATED_TEMPLATE";
 
     /**
      * The aside orders notification template code
