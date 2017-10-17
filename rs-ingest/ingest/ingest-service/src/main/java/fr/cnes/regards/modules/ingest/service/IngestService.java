@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -53,6 +54,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *
  */
 @Service
+@MultitenantTransactional
 public class IngestService implements IIngestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);

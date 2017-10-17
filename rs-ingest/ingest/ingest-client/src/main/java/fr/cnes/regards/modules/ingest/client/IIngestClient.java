@@ -18,41 +18,32 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import java.util.Collection;
+
+import javax.validation.Valid;
+
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
 /**
+ * Ingest client API
  *
- * TODO Description
- *
- * @author TODO
+ * @author Marc Sordi
  *
  */
-@RestClient(name = "MyMicroServiceName") // TODO: change name
-@RequestMapping(value = "/api", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+@RestClient(name = "rs-ingest")
+@RequestMapping(value = "/sips", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public interface IGreetingsClient {
+public interface IIngestClient {
 
-    /**
-     * Rest resource /api/greeting/{name} Method GET
-     *
-     * @param name
-     * @return
-     */
-    // @RequestMapping(method = RequestMethod.GET, value = "/greeting")
-    // @ResponseBody
-    // public HttpEntity<Resource<Greeting>> greeting(String pName);
-
-    /**
-     * Rest resource /api/me/{name} Method GET
-     *
-     * @param name
-     * @return
-     */
-    // @RequestMapping(method = RequestMethod.GET, value = "/me")
-    // @ResponseBody
-    // public HttpEntity<Resource<Greeting>> me(String pName);
-
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    public ResponseEntity<Collection<SIPEntity>> ingest(@Valid @RequestBody SIPCollection sips);
 }

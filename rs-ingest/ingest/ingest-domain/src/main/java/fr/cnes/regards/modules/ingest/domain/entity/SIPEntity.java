@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
- * Internal POJO for storing SIP.
+ * System POJO for storing SIP.
  *
  * @author Marc Sordi
  *
