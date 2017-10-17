@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -100,6 +101,8 @@ public class OrderServiceIT {
     @Autowired
     private TemplateService templateService;
 
+    private static TemplateService staticTemplateService;
+
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
@@ -137,7 +140,12 @@ public class OrderServiceIT {
 
         jobInfoRepos.deleteAll();
 
-        templateService.deleteAll();
+        staticTemplateService = templateService;
+    }
+
+    @AfterClass
+    public static void cleanAfterAll() {
+        staticTemplateService.deleteAll();
     }
 
     @Test
@@ -289,7 +297,8 @@ public class OrderServiceIT {
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
                                   .allMatch(JobStatus::isCompatibleWithPause));
-        Assert.assertTrue(order.getPercentCompleted() < 100);
+        // Sometime, pause/resume has been asked toolate (and so percent is at 100 %)
+        Assert.assertTrue(order.getPercentCompleted() <= 100);
 
         orderService.resume(order.getId());
 

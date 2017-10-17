@@ -37,23 +37,23 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 @Table(name = "t_data_file",
         indexes = @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"))
 @NamedNativeQueries({
-        @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM t_data_file df, t_order o WHERE "
+        @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, t_order o WHERE "
                 + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
                 + "GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping",
                 name = "selectSumSizesByOrderId"),
         @NamedNativeQuery(
-                query = "SELECT o.*, sum(df.size) as size FROM t_data_file df, t_order o WHERE "
+                query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, t_order o WHERE "
                 + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
         @NamedNativeQuery(
-                query = "SELECT o.*, count(df.*) as count FROM t_data_file df, t_order o WHERE "
+                query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, t_order o WHERE "
                         + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
                         + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
         @NamedNativeQuery(
-                query = "SELECT o.*, count(df.*) as count FROM t_data_file df, t_order o WHERE "
+                query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, t_order o WHERE "
                         + "o.id IN (SELECT id FROM t_order WHERE ?1 <= expiration_date) "
                         + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders")
