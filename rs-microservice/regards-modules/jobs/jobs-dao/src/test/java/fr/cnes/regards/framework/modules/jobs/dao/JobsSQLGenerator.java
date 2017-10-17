@@ -22,6 +22,9 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
 
 /**
  * Generate DDL with HBM2DDL
+ * <b>BEWARE : this generator test is limited by the powerness of AbstractReliantTask. The human has overtaken the
+ * machine !!!</b>
+ * <b>Please, use generator from order-dao (for example) and stick relative script lines from it.</b>
  * @author Marc Sordi
  *
  */
