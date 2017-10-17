@@ -51,7 +51,8 @@ import fr.cnes.regards.framework.jpa.json.GsonUtil;
 public class JobInfo {
 
     /**
-     * JobInfo id
+     * JobInfo id. An UUID is used to be unique because job service manages several jobs from several multitenants
+     * so several databases
      */
     @Id
     @Column(name = "id")
