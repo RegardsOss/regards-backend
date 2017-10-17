@@ -57,8 +57,21 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
      * <code>
      * @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "{classname}") })
      * </code>
+     * @author Marc Sordi
      */
     public static final String ARG_TYPE = "fr.cnes.regards.ParameterType.argType";
+
+    /**
+     * Allows to specify argument type for key map to help for deserialization. For the value counter part, use {@link JsonTypeDescriptor#ARG_TYPE}<br/>
+     * Its value is ignored if no {@link JsonTypeDescriptor#ARG_TYPE} has been specified<br/>
+     * Must be set when declaring a jsonb field, which is a map : <br/>
+     * Its value corresponds to the target name class of the key that will be retrieved using {@link Class#forName(String)}<br/>
+     * <code>
+     * @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.KEY_ARG_TYPE, value = "{classname}") })
+     * </code>
+     * @author Sylvain Vissiere-Guerinet
+     */
+    public static final String KEY_ARG_TYPE = "fr.cnes.regards.ParameterType.keyArgType";
 
     /**
      * JAVA object type : may be simple class or parameterized type
@@ -82,6 +95,7 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
 
         // Check if argument type is specified for generics
         Object argTypeName = parameters.get(ARG_TYPE);
+        Object keyArgTypeName = parameters.get(KEY_ARG_TYPE);
 
         // Compute type to deserialize
         if (argTypeName != null) {
@@ -89,14 +103,29 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
             try {
                 argType = Class.forName((String) argTypeName);
             } catch (ClassNotFoundException e) {
-                String message = String.format(
-                                               "Argument type name %s does not correspond to a valid class on the classpath",
-                                               argTypeName);
+                String message = String
+                        .format("Argument type name %s does not correspond to a valid class on the classpath",
+                                argTypeName);
                 LOGGER.error(message, e);
                 throw new IllegalArgumentException(e);
             }
             // Define a parameterized type
-            type = new ParameterizedTypeImpl(null, rawType, argType);
+            if (keyArgTypeName == null) {
+                type = new ParameterizedTypeImpl(null, rawType, argType);
+            } else {
+                // In case it is a map, we need to construct a map type token
+                Type keyArgType;
+                try {
+                    keyArgType = Class.forName((String) keyArgTypeName);
+                } catch (ClassNotFoundException e) {
+                    String message = String
+                            .format("Key argument type name %s does not correspond to a valid class on the classpath",
+                                    keyArgTypeName);
+                    LOGGER.error(message, e);
+                    throw new IllegalArgumentException(e);
+                }
+                type = new ParameterizedTypeImpl(null, rawType, keyArgType, argType);
+            }
         } else {
             type = rawType;
         }

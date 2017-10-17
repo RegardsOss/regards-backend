@@ -19,7 +19,10 @@
 package fr.cnes.regards.framework.jpa.json;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
@@ -95,5 +98,22 @@ public final class GsonUtil {
      */
     public static void setGson(Gson gsonInstance) {
         gson = gsonInstance;
+    }
+
+    /**
+     * Create a {@link TypeToken} for a Map<K, V>, that can be used as a helper for deserialization
+     * @param keyArgType {@link Type} of the key type of the map
+     * @param argType {@link Type} of the value type of the map
+     * @return a TypeToken representing a Map<K,V>, K and V being dynamicly set
+     */
+    public static <K, V> TypeToken<Map<K, V>> createMapTypeToken(Type keyArgType, Type argType) {
+        final TypeToken<Map<K, V>> mapTypeToken = new TypeToken<Map<K, V>>() {
+
+        }.where(new TypeParameter<K>() {
+
+        }, (TypeToken<K>) TypeToken.of(keyArgType)).where(new TypeParameter<V>() {
+
+        }, (TypeToken<V>) TypeToken.of(argType));
+        return mapTypeToken;
     }
 }
