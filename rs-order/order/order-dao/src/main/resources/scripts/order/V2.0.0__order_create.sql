@@ -9,7 +9,6 @@ create table t_files_task (id int8 not null, primary key (id));
 
 create table t_order (id int8 not null, available_count int4 not null, avail_count_update_date timestamp, creation_date timestamp not null, expiration_date timestamp not null, files_in_error int4 not null, owner varchar(100) not null, percent_complete int4 not null, status varchar(20) not null, status_date timestamp not null, primary key (id));
 
-alter table t_basket drop constraint uk_basket_owner;
 alter table t_basket add constraint uk_basket_owner unique (owner);
 create index data_file_idx on t_data_file (checksum, order_id, state, data_objects_ip_id);
 create sequence seq_basket start 1 increment 50;
