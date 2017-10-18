@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
@@ -66,6 +67,7 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
  */
 @ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(locations = "classpath:test.properties")
+@DirtiesContext
 public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String LOCAL_STORAGE_LABEL = "StoreJobIT";

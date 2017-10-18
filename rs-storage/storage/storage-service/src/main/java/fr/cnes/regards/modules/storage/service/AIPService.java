@@ -56,6 +56,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -157,7 +158,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * Service to retrieve and use Plugins more specificly the {@link IDataStorage} plugins.
      */
     @Autowired
-    private PluginService pluginService;
+    private IPluginService pluginService;
 
     /**
      * The AIP service uses JOBS to run asynchronous store actions.

@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -73,6 +75,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 @ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
+@DirtiesContext
 public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
@@ -80,6 +83,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     private static final String ALLOCATION_CONF_LABEL = "AIPServiceIT_ALLOCATION";
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
+
+    private static final int MAX_WAIT_TEST = 10000;
 
     @Autowired
     private Gson gson;
@@ -126,7 +131,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-         this.cleanUp(); //comment if you are not interrupting tests during their execution
+//         this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -184,6 +189,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             Thread.sleep(1000);
             wait = wait + 1000;
         }
+        Assert.assertNotEquals(MAX_WAIT_TEST, wait);
         Assert.assertEquals(AIPState.STORED, aipFromDB.get().getState());
         LOG.info("AIP {} stored", aip.getId().toString());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
@@ -200,7 +206,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Set<UUID> jobIds = aipService.store(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
-        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
+        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
             wait = wait + 1000;
@@ -209,11 +215,12 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
         wait = 0;
         LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
-        while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < 10000)) {
+        while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < MAX_WAIT_TEST)) {
             aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             Thread.sleep(1000);
             wait = wait + 1000;
         }
+        Assert.assertNotEquals(MAX_WAIT_TEST, wait);
         Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
         LOG.info("AIP {} is in ERROR State", aip.getId().toString());
         Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
@@ -231,7 +238,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         try {
             Set<UUID> jobIds = aipService.store(Sets.newHashSet(aip));
             int wait = 0;
-            while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
+            while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
                 // lets wait for 1 sec before checking again if all our jobs has been done or not
                 Thread.sleep(1000);
                 wait = wait + 1000;
@@ -240,7 +247,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
             Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             wait = 0;
-            while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < 10000)) {
+            while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < MAX_WAIT_TEST)) {
                 aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
                 Thread.sleep(1000);
                 wait = wait + 1000;
@@ -306,7 +313,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         //now lets wait for the deletion job to be finished
         jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
         int wait = 0;
-        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
+        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
             wait = wait + 1000;
@@ -362,7 +369,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         handler.reset();
     }
 
-//    @After
+    @After
     public void cleanUp() throws URISyntaxException, IOException {
         purgeAMQPqueues();
         unsubscribeAMQPEvents();
