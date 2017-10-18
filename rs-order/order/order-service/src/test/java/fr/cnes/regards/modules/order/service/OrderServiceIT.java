@@ -268,6 +268,35 @@ public class OrderServiceIT {
     }
 
     @Test
+    public void testExpiredOrders() throws IOException, InterruptedException {
+        Basket basket = new Basket("tulavu@qui.fr");
+        SortedSet<BasketDatasetSelection> dsSelections = new TreeSet<>();
+        basket.setDatasetSelections(dsSelections);
+
+        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
+        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
+        dsSelection.setDatasetLabel("DS");
+        dsSelection.setObjectsCount(3);
+        dsSelection.setFilesCount(12);
+        dsSelection.setFilesSize(3_000_171l);
+        dsSelection.setOpenSearchRequest("ALL");
+        dsSelections.add(dsSelection);
+        basketRepos.save(basket);
+
+        Order order = orderService.createOrder(basket);
+        order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
+        orderRepos.save(order);
+
+        orderService.cleanExpiredOrders();
+
+        // No files should remain
+        List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
+        Assert.assertEquals(0, files.size());
+        order = orderService.loadSimple(order.getId());
+        Assert.assertTrue(order.getStatus() == OrderStatus.DELETED);
+    }
+
+    @Test
     public void testPauseResume() throws IOException, InterruptedException, CannotResumeOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");

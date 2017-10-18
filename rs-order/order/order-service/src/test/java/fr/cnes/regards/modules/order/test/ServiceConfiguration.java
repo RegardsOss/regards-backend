@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ICatalogClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
@@ -70,11 +71,6 @@ public class ServiceConfiguration {
             }
 
             @Override
-            public ResponseEntity<Set<UUID>> createAIP(Set<AIP> aips) {
-                return null;
-            }
-
-            @Override
             public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
                 return null;
             }
@@ -107,6 +103,11 @@ public class ServiceConfiguration {
                     e.printStackTrace();
                 }
                 return mockResp;
+            }
+
+            @Override
+            public ResponseEntity<Set<UUID>> store(AIPCollection aips) {
+                return null;
             }
         };
     }
