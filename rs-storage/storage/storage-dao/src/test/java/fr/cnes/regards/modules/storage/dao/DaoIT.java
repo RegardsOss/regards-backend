@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL", "spring.application.name=storage" })
+@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL", "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage" })
 public class DaoIT extends AbstractDaoTransactionalTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DaoIT.class);
