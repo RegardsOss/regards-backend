@@ -129,7 +129,6 @@ public class PluginService implements IPluginService {
         if (plugins == null) {
             plugins = PluginUtils.getPlugins(getPluginPackage());
         }
-        logPluginServiceState("getLoadedPlugins");
         return plugins;
     }
 
@@ -501,7 +500,6 @@ public class PluginService implements IPluginService {
             }
             plugins.putAll(newPlugins);
         }
-        logPluginServiceState("addPluginPackage");
     }
 
     @Override
