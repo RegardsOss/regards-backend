@@ -81,7 +81,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
                 publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
-            } catch (ExecutionException ee) {
+            } catch (ExecutionException ee) { // NOSONAR
                 t = ee.getCause();
                 jobInfo.updateStatus(JobStatus.FAILED);
                 StringWriter sw = new StringWriter();
@@ -138,4 +138,5 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             return t;
         }
     }
+
 }
