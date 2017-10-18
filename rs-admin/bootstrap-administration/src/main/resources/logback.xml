@@ -16,6 +16,7 @@
  
  You should have received a copy of the GNU General Public License
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+logback admin
 -->
 <configuration>
 
@@ -41,17 +42,6 @@
 		<port>514</port>
 	</appender>
 
-	<appender name="regardsAmqpAppender"
-		class="ch.qos.logback.ext.spring.DelegatingLogbackAppender">
-		<filter
-			class="fr.cnes.regards.framework.logbackappender.RegardsAmqpAppenderFilter">
-			<level>INFO</level>
-		</filter>
-	</appender>
-
-	<logger name="fr.cnes.regards" level="INFO" additivity="true">
-		<appender-ref ref="regardsAmqpAppender" />
-	</logger>
 
 	<!-- Log the user request authentication -->
 	<logger name="fr.cnes.regards.framework.authentication" level="INFO">
