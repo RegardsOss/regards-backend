@@ -109,14 +109,14 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(EntityDescriptionUnacceptableCharsetException.class)
-    public ResponseEntity<ServerErrorResponse> entityDescriptionUnaccesptableCharset(
+    public ResponseEntity<ServerErrorResponse> entityDescriptionUnacceptableCharset(
             final EntityDescriptionUnacceptableCharsetException pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(pException.getMessage()));
     }
 
     @ExceptionHandler(EntityDescriptionUnacceptableType.class)
-    public ResponseEntity<ServerErrorResponse> entityDescriptionUnaccesptableType(
+    public ResponseEntity<ServerErrorResponse> entityDescriptionUnacceptableType(
             final EntityDescriptionUnacceptableType pException) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(pException.getMessage()));

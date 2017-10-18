@@ -39,6 +39,10 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards</artifactId>
 			<exclusions>
 				<exclusion>
@@ -73,10 +77,6 @@
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
 			<artifactId>feign-gson</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.feign</groupId>
