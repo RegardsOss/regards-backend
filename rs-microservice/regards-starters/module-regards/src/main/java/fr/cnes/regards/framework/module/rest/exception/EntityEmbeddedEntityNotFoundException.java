@@ -27,6 +27,8 @@ package fr.cnes.regards.framework.module.rest.exception;
  * @author Sylvain Vissiere-Guerinet
  *
  */
+// Seems unused!
+@Deprecated
 public class EntityEmbeddedEntityNotFoundException extends RuntimeException {
 
     public EntityEmbeddedEntityNotFoundException(Throwable pCause) {
