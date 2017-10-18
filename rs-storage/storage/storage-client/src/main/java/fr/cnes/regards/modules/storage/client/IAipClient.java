@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
@@ -75,7 +76,7 @@ public interface IAipClient {
             @RequestParam("size") int pSize);
 
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
-    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid Set<AIP> aips);
+    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid AIPCollection aips);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);

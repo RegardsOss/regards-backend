@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -49,6 +50,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
@@ -123,9 +125,9 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "validate and store the specified AIP")
-    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid Set<AIP> aips)
+    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid AIPCollection aips)
             throws ModuleException, NoSuchAlgorithmException {
-        Set<UUID> jobIds = aipService.store(aips);
+        Set<UUID> jobIds = aipService.store(Sets.newHashSet(aips.getFeatures()));
         return new ResponseEntity<>(jobIds, HttpStatus.OK);
     }
 
