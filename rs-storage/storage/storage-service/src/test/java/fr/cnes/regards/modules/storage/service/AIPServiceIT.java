@@ -73,7 +73,6 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 @ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
-@Ignore
 public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
