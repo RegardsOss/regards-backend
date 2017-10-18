@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -35,12 +36,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.Assert;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -71,6 +72,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  *         TODO V3 : with hot plugin loading, be careful to properly clean the plugin cache when plugin version change
  */
 @MultitenantTransactional
+@Service
 public class PluginService implements IPluginService {
 
     /**
@@ -127,6 +129,7 @@ public class PluginService implements IPluginService {
         if (plugins == null) {
             plugins = PluginUtils.getPlugins(getPluginPackage());
         }
+        logPluginServiceState("getLoadedPlugins");
         return plugins;
     }
 
@@ -398,26 +401,7 @@ public class PluginService implements IPluginService {
         if (pluginMetadata == null) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
-
-                for (Entry<String, PluginMetaData> entry : plugins.entrySet()) {
-
-                    // Interfaces
-                    Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
-                    StringBuilder interfaceNamesBuilder = new StringBuilder();
-                    interfaceNamesBuilder.append("[");
-                    if (interfaceIt.hasNext()) {
-                        interfaceNamesBuilder.append(interfaceIt.next());
-                        while (interfaceIt.hasNext()) {
-                            interfaceNamesBuilder.append(",");
-                            interfaceNamesBuilder.append(interfaceIt.next());
-                        }
-                    }
-                    interfaceNamesBuilder.append("]");
-
-                    LOGGER.debug("Available plugins metadata : {} -> {} / {} / {}", entry.getKey(),
-                                 entry.getValue().getPluginId(), entry.getValue().getPluginClassName(),
-                                 interfaceNamesBuilder.toString());
-                }
+                logPluginServiceState("instanciatePluginAndCache");
             }
             throw new PluginMetadataNotFoundRuntimeException(
                     "Metadata not found for plugin configuration identifier " + pluginConf.getPluginId());
@@ -449,6 +433,38 @@ public class PluginService implements IPluginService {
         }
 
         return resultPlugin;
+    }
+
+    /**
+     * Allows to add logs on this class state.
+     * @param methodInvoquing method that invoques logPluginServiceState
+     */
+    private void logPluginServiceState(String methodInvoquing) {
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("logPluginServiceState invoqued by : {}", methodInvoquing);
+            LOGGER.debug("This identifier: {}", this.toString());
+            StringJoiner sj = new StringJoiner(" ,");
+            pluginPackage.forEach(p -> sj.add(p));
+            LOGGER.debug("List of plugin packages: {}", sj.toString());
+            for (Entry<String, PluginMetaData> entry : plugins.entrySet()) {
+
+                // Interfaces
+                Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
+                StringBuilder interfaceNamesBuilder = new StringBuilder();
+                interfaceNamesBuilder.append("[");
+                if (interfaceIt.hasNext()) {
+                    interfaceNamesBuilder.append(interfaceIt.next());
+                    while (interfaceIt.hasNext()) {
+                        interfaceNamesBuilder.append(",");
+                        interfaceNamesBuilder.append(interfaceIt.next());
+                    }
+                }
+                interfaceNamesBuilder.append("]");
+
+                LOGGER.debug("Available plugins metadata : {} -> {} / {} / {}", entry.getKey(), entry.getValue().getPluginId(), entry.getValue().getPluginClassName(),
+                             interfaceNamesBuilder.toString());
+            }
+        }
     }
 
     @Override
@@ -485,6 +501,7 @@ public class PluginService implements IPluginService {
             }
             plugins.putAll(newPlugins);
         }
+        logPluginServiceState("addPluginPackage");
     }
 
     @Override

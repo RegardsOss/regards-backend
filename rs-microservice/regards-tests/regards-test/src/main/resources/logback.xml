@@ -28,14 +28,13 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.springframework" level="INFO" />
-	<logger name="com.mchange.v2.c3p0" level="INFO" />
+	<logger name="fr.cnes.regards" level="DEBUG" />
+	<logger name="org.springframework.security.web" level="DEBUG" />
 	<!-- SQL statements and parameters -->
-	<logger name="org.hibernate" level="INFO"/>
 	<logger name="org.hibernate.SQL" level="DEBUG" />
 	<logger name="org.hibernate.type.descriptor.sql" level="TRACE" />
 
-	<root level="debug">
+	<root level="INFO">
 		<appender-ref ref="STDOUT" />
-	</root>
+	</root>/logback.xml
 </configuration>
