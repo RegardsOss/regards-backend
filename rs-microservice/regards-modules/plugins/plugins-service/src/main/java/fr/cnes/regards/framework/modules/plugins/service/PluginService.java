@@ -22,15 +22,16 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import org.hibernate.boot.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -394,6 +395,34 @@ public class PluginService implements IPluginService {
         // Get the plugin implementation associated
         final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
 
+        if (pluginMetadata == null) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
+
+                for (Entry<String, PluginMetaData> entry : plugins.entrySet()) {
+
+                    // Interfaces
+                    Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
+                    StringBuilder interfaceNamesBuilder = new StringBuilder();
+                    interfaceNamesBuilder.append("[");
+                    if (interfaceIt.hasNext()) {
+                        interfaceNamesBuilder.append(interfaceIt.next());
+                        while (interfaceIt.hasNext()) {
+                            interfaceNamesBuilder.append(",");
+                            interfaceNamesBuilder.append(interfaceIt.next());
+                        }
+                    }
+                    interfaceNamesBuilder.append("]");
+
+                    LOGGER.debug("Available plugins metadata : {} -> {} / {} / {}", entry.getKey(),
+                                 entry.getValue().getPluginId(), entry.getValue().getPluginClassName(),
+                                 interfaceNamesBuilder.toString());
+                }
+            }
+            throw new PluginMetadataNotFoundRuntimeException(
+                    "Metadata not found for plugin configuration identifier " + pluginConf.getPluginId());
+        }
+
         // When plugins are loaded from database, maybe dependant plugins aren't yet loaded
         // So :
         // For all pluginMetada parameters, find PLUGIN ones, get key
@@ -491,14 +520,14 @@ public class PluginService implements IPluginService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#addPluginToCache(java.lang.String,
      * java.lang.Long, java.lang.Object)
      */
     @Override
     public void addPluginToCache(Long pConfId, Object pPlugin) {
-        Assert.notNull(pConfId);
-        Assert.notNull(pPlugin);
+        Assert.notNull(pConfId, "Plugin configuration identifier is required");
+        Assert.notNull(pPlugin, "Plugin instance is required");
 
         ConcurrentMap<Long, Object> tenantCache = getPluginCache();
         if (tenantCache == null) {
@@ -511,13 +540,13 @@ public class PluginService implements IPluginService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#isPluginCached(java.lang.String,
      * java.lang.Long)
      */
     @Override
     public boolean isPluginCached(Long pConfId) {
-        Assert.notNull(pConfId);
+        Assert.notNull(pConfId, "Plugin configuration identifier is required");
 
         ConcurrentMap<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
@@ -528,13 +557,13 @@ public class PluginService implements IPluginService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#cleanPluginCache(java.lang.String,
      * java.lang.Long)
      */
     @Override
     public void cleanPluginCache(Long pConfId) {
-        Assert.notNull(pConfId);
+        Assert.notNull(pConfId, "Plugin configuration identifier is required");
 
         ConcurrentMap<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
@@ -549,26 +578,26 @@ public class PluginService implements IPluginService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#getPluginCache()
      */
     @Override
     public ConcurrentMap<Long, Object> getPluginCache() {
         // Resolve tenant
         String tenant = runtimeTenantResolver.getTenant();
-        Assert.notNull(tenant);
+        Assert.notNull(tenant, "Tenant is required");
 
         return instantiatePlugins.get(tenant);
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.modules.plugins.service.IPluginService#getCachedPlugin(java.lang.Long)
      */
     @Override
     public Object getCachedPlugin(Long pConfId) {
-        Assert.notNull(pConfId);
+        Assert.notNull(pConfId, "Plugin configuration identifier is required");
 
         ConcurrentMap<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
@@ -580,12 +609,12 @@ public class PluginService implements IPluginService {
     /**
      * Return a {@link PluginConfiguration} for a plugin identifier.
      * If it does not exists, the {@link PluginConfiguration} is created.
-     * 
+     *
      * @param pluginId a pluginidentifier
      * @param interfacePluginType the {@link PluginInterface}
      * @return a {@link PluginConfiguration}
      * @throws ModuleException
-     *     an error is trhown
+     *             an error is trhown
      */
     @Override
     public PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType)
@@ -632,9 +661,9 @@ public class PluginService implements IPluginService {
 
     /**
      * Return a {@link PluginConfiguration} for a pluginId
-     *  
+     *
      * @param pluginId the pluginid to search
-     * 
+     *
      * @return the found {@link PluginConfiguration}
      */
     private PluginConfiguration loadPluginConfiguration(String pluginId, List<PluginConfiguration> pluginConfs) {
