@@ -72,11 +72,6 @@ public class OrderConfiguration {
             }
 
             @Override
-            public ResponseEntity<Set<UUID>> createAIP(Set<AIP> aips) {
-                return null;
-            }
-
-            @Override
             public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
                 return null;
             }
