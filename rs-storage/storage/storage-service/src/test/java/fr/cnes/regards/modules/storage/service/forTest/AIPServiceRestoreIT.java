@@ -20,9 +20,9 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.util.Sets;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -91,7 +92,7 @@ import fr.cnes.regards.modules.storage.service.TestDataStorageEventHandler;
 @ContextConfiguration(classes = { TestConfig.class, MockedFeignClientConf.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
-@Ignore
+@DirtiesContext
 public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceRestoreIT.class);
@@ -171,7 +172,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void init() throws Exception {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
-         this.cleanUp(); //comment if you are not interrupting tests during their execution
+//         this.cleanUp(); //comment if you are not interrupting tests during their execution
         // as we are checking rights, lets mock the response from catalog: always ok for anything
         Mockito.when(catalogClient.getEntity(Mockito.any())).thenReturn(
                 new ResponseEntity<>(new Resource<>(
@@ -836,7 +837,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         dataHandler.reset();
     }
 
-//    @After
+    @After
     public void cleanUp() throws URISyntaxException, IOException {
         purgeAMQPqueues();
         unsubscribeAMQPEvents();

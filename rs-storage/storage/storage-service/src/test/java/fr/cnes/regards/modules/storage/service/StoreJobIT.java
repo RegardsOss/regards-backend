@@ -19,10 +19,10 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
@@ -32,7 +32,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -47,13 +46,13 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -68,7 +67,7 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
  */
 @ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(locations = "classpath:test.properties")
-@Ignore
+@DirtiesContext
 public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String LOCAL_STORAGE_LABEL = "StoreJobIT";
