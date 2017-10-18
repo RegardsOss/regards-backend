@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.search.service.accessright;
 
+import java.util.Set;
+
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
@@ -7,7 +9,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
  *
  * @author Xavier-Alexandre Brochard
  */
-@FunctionalInterface
 public interface IAccessRightFilter {
 
     /**
@@ -18,4 +19,11 @@ public interface IAccessRightFilter {
      * @throws AccessRightFilterException if access rights cannot be set
      */
     ICriterion addAccessRights(ICriterion criterion) throws AccessRightFilterException;
+
+    /**
+     * Retrieve current user access groups or null if superuser
+     * @return access groups names
+     * @throws AccessRightFilterException in case user has no group access
+     */
+    Set<String> getUserAccessGroups() throws AccessRightFilterException;
 }

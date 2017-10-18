@@ -21,14 +21,16 @@ package fr.cnes.regards.modules.search.service;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -50,7 +52,6 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**
  * Implementation of {@link ICatalogSearchService}
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -88,14 +89,10 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IFacetConverter facetConverter;
 
     /**
-     * Limit total hits for joined search
-     */
-    @Value("${regards.catalog.search.threshold:10000}")
-    private Long threshold;
-
-    /**
-     * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be null.
-     * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring. Must not be null.
+     * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
+     *            null.
+     * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by
+     *            Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
      * @param facetConverter manage facet conversion
      */
@@ -122,6 +119,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
             }
 
+            // Apply security filter
+            criterion = accessRightFilter.addAccessRights(criterion);
+
             // Build search facets from query facets
             Map<String, FacetType> searchFacets = facetConverter.convert(facets);
             // Optimisation: when searching for datasets via another searchType (ie searchKey is a
@@ -134,21 +134,22 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                     Searches.fromClass(searchKey.getResultClass()));
             }
 
-            // Apply security filter
-            criterion = accessRightFilter.addAccessRights(criterion);
-
             // Perform search
             if (searchKey instanceof SimpleSearchKey) {
                 return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
             } else {
-                // Threshold can be passed in query parameter
-                String thresholdParameter = null;
-                if (allParams != null) {
-                    thresholdParameter = allParams.get(THRESHOLD_QUERY_PARAMETER);
+                // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
+                // getting datasets on which user has no right
+                final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
+                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
+                        && (accessGroups != null)) { // accessGroups null means superuser
+                    Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
+                            .isEmpty();
+                    return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
+                                                (Predicate<R>) datasetGroupAccessFilter);
+                } else {
+                    return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
                 }
-                Long requestThreshold = thresholdParameter != null ? Long.valueOf(thresholdParameter) : threshold;
-                return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
-                                            requestThreshold);
             }
 
         } catch (OpenSearchParseException e) {
