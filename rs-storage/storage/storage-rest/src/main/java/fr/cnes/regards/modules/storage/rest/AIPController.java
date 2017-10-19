@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,6 +13,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +38,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.Event;
@@ -148,8 +149,8 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(
             description = "allows to request that files are made available for downloading, return the list of file already available via their checksums")
-    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
-            @RequestBody AvailabilityRequest availabilityRequest) throws ModuleException {
+    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest)
+            throws ModuleException {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
 
@@ -182,9 +183,9 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allows to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
-            throws EntityNotIdentifiableException, EntityInconsistentIdentifierException,
-            EntityOperationForbiddenException, EntityNotFoundException {
-        return new ResponseEntity<>(aipService.updateAip(ipId, updated), HttpStatus.OK);
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException,
+            EntityNotFoundException {
+        return new ResponseEntity<AIP>(aipService.updateAip(ipId, updated), HttpStatus.OK);
     }
 
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
