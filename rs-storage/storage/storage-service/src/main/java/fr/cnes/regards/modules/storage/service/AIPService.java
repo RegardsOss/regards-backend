@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,6 +75,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
@@ -591,7 +593,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     meta.setState(DataFileState.PENDING);
                     dataFileDao.save(meta);
                     metadataToStore.add(meta);
-                } catch (IOException e) {
+                } catch (IOException | FileCorruptedException e) {
                     // if we don't have a meta to store that means a problem happened and we set the aip to
                     // STORAGE_ERROR
                     LOG.error(e.getMessage(), e);
@@ -794,7 +796,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @return {@link DataFile} of the {@link AIP} metadata file.
      * @throws IOException Impossible to write {@link AIP} metadata file to disk.
      */
-    private DataFile writeMetaToWorkspace(AIP aip, Path tenantWorkspace) throws IOException {
+    private DataFile writeMetaToWorkspace(AIP aip, Path tenantWorkspace) throws IOException, FileCorruptedException {
 
         DataFile metadataAipFile = null;
         String checksumAlgorithm = "MD5";
@@ -822,6 +824,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 LOG.error(String.format(
                                         "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
                                         aip.getId().toString(), tenantWorkspace));
+                throw new FileCorruptedException(String.format("File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different", checksum, fileChecksum));
             }
         } catch (Exception e) {
             // Delete written file
@@ -888,7 +891,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     newAIPMetadataFile = writeMetaToWorkspace(updatedAip, tenantWorkspace);
                     newAIPMetadataFile.setId(existingAIPMetadataFile.getId());
                     result.add(new UpdatableMetadataFile(existingAIPMetadataFile, newAIPMetadataFile));
-                } catch (IOException e) {
+                } catch (IOException | FileCorruptedException e) {
                     LOG.error(e.getMessage(), e);
                     // if we don't have a meta to store that means a problem happened and we set the aip to
                     // STORAGE_ERROR
