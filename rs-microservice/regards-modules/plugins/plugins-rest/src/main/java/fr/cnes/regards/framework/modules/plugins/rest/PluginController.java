@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,13 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -38,7 +45,6 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -235,7 +241,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get all the plugin configuration for a specific type")
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurationsByType(
             @RequestParam(value = "pluginType", required = false) final String pPluginType)
-            throws EntityNotIdentifiableException {
+            throws EntityNotFoundException {
 
         List<PluginConfiguration> pluginConfs;
 
@@ -245,7 +251,7 @@ public class PluginController implements IResourceController<PluginConfiguration
                 pluginConfs = pluginService.getPluginConfigurationsByType(Class.forName(pPluginType));
             } catch (ClassNotFoundException e) {
                 LOGGER.error("Any class found for the plugin type :" + pPluginType, e);
-                throw new EntityNotIdentifiableException(e.getMessage());
+                throw new EntityNotFoundException(e.getMessage());
             }
         } else {
             // Get all the PluginConfiguration
@@ -356,7 +362,7 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         if (!pPluginId.equals(pPluginConfiguration.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pPluginId
-                                 + ">- config id= <" + pConfigId + ">");
+                    + ">- config id= <" + pConfigId + ">");
             throw new EntityNotFoundException(pPluginId, PluginConfiguration.class);
         }
 
