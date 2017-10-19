@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -58,6 +57,7 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
 import fr.cnes.regards.modules.search.rest.representation.IRepresentation;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
 /**

@@ -32,7 +32,6 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
