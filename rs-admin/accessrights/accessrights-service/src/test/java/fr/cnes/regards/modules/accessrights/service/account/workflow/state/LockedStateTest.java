@@ -216,7 +216,8 @@ public class LockedStateTest {
                 .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
                         runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
                         accountUnlockTokenService, accountService, templateService, emailClient));
-        Mockito.when(accountUnlockTokenService.findByToken(wrongToken)).thenThrow(new EntityNotFoundException(ID));
+        Mockito.when(accountUnlockTokenService.findByToken(wrongToken))
+                .thenThrow(new EntityNotFoundException(ID, AccountUnlockToken.class));
 
         // Trigger exception
         accountWorkflowManager.performUnlockAccount(account, wrongToken);
