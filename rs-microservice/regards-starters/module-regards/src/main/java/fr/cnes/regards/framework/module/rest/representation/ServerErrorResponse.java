@@ -26,7 +26,6 @@ import java.util.List;
  *
  * @author Marc Sordi
  *
- *         TODO : generalize this representation
  */
 public class ServerErrorResponse {
 

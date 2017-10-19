@@ -22,22 +22,19 @@ package fr.cnes.regards.framework.module.rest.exception;
  * Main module exception
  *
  * @author Marc Sordi
- *
  */
+@SuppressWarnings("serial")
 public class ModuleException extends Exception {
 
-    private static final long serialVersionUID = 100L;
-
-    public ModuleException(String pErrorMessage) {
-        super(pErrorMessage);
+    public ModuleException(String message) {
+        super(message);
     }
 
-    public ModuleException(Throwable pCause) {
-        super(pCause);
+    public ModuleException(Throwable cause) {
+        super(cause);
     }
 
-    public ModuleException(String pMessage, Throwable pCause) {
-        super(pMessage, pCause);
+    public ModuleException(String message, Throwable cause) {
+        super(message, cause);
     }
-
 }

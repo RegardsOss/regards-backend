@@ -19,43 +19,22 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- * Exception to indicate that the operation is forbidden on entity.
+ * Exception indicating a forbidden operation on an entity
  *
  * @author Xavier-Alexandre Brochard
  * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
+@SuppressWarnings("serial")
 public class EntityOperationForbiddenException extends EntityException {
 
-    /**
-     * Serial
-     */
-    private static final long serialVersionUID = 1056576133397279032L;
-
-    /**
-     * Creates a new {@link EntityOperationForbiddenException} with passed params.
-     *
-     * @param pEntityIdentifier
-     *            Entity identifier
-     * @param pEntityClass
-     *            Entity class
-     * @param pMessage
-     *            Message describing the forbidden operation
-     * @since 1.0-SNAPSHOT
-     */
-    public EntityOperationForbiddenException(final String pEntityIdentifier, final Class<?> pEntityClass,
+    public EntityOperationForbiddenException(final String entityIdentifier, final Class<?> entityClass,
             final String pMessage) {
-        super(String.format("Operation on entity %s with id: %s is forbidden: %s", pEntityClass.getName(),
-                            pEntityIdentifier, pMessage));
+        super(String.format("Operation on entity \"%s\" with id: \"%s\" is forbidden: %s", entityClass.getName(),
+                            entityIdentifier, pMessage));
     }
 
-    /**
-     * Creates a new EntityForbiddenException witht he given string as message
-     * 
-     * @param pString
-     */
-    public EntityOperationForbiddenException(String pString) {
-        super(pString);
+    public EntityOperationForbiddenException(String message) {
+        super(message);
     }
-
 }

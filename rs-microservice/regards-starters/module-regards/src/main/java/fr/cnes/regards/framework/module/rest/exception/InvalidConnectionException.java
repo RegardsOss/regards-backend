@@ -19,11 +19,9 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- *
- * Throws when connection to a datasource cannot be established
+ * Exception indicating an invalid datasource connection
  *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class InvalidConnectionException extends ModuleException {

@@ -19,15 +19,16 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- * Thrown if a joined search has too many results
+ *
+ * Exception indicating a request has too many results
  *
  * @author Marc Sordi
  *
  */
 @SuppressWarnings("serial")
-public class TooManyResultsException extends SearchException {
+public class TooManyResultsException extends ModuleException {
 
-    public TooManyResultsException(String pErrorMessage) {
-        super(pErrorMessage);
+    public TooManyResultsException(String message) {
+        super(message);
     }
 }

@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import javax.validation.ValidationException;
 
@@ -39,26 +37,65 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.util.WebUtils;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityCorruptByNetworkException;
-import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionTooLargeException;
-import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableCharsetException;
-import fr.cnes.regards.framework.module.rest.exception.EntityDescriptionUnacceptableType;
-import fr.cnes.regards.framework.module.rest.exception.EntityEmbeddedEntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.InvalidConnectionException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.SearchException;
 import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 
 /**
- * Global controller advice
+ * Global controller advice manages generic system exceptions handling<br/>
+ *
+ * Following generic exception can be used to manage business work flow. If no exception fits your need, create your own
+ * extending {@link ModuleException} and add a {@link RestControllerAdvice} in your rest layer handling this specific
+ * exception. Be careful to set an {@link Order} with highest precedence.<br/>
+ *
+ * <br/>
+ * To handle {@link HttpStatus#BAD_REQUEST} (400), you may throw :
+ * <ul>
+ * <li>{@link EntityInconsistentIdentifierException}</li>
+ * <li>{@link InvalidConnectionException}</li>
+ * </ul>
+ * <br/>
+ * To handle {@link HttpStatus#FORBIDDEN} (403), you may throw :
+ * <ul>
+ * <li>{@link EntityOperationForbiddenException}</li>
+ * <li>{@link EntityTransitionForbiddenException}</li>
+ * </ul>
+ * <br/>
+ * To handle {@link HttpStatus#NOT_FOUND} (404), you may throw :
+ * <ul>
+ * <li>{@link EntityNotFoundException}</li>
+ * </ul>
+ * <br/>
+ * To handle {@link HttpStatus#CONFLICT} (409), you may throw :
+ * <ul>
+ * <li>{@link EntityAlreadyExistsException}</li>
+ * <li>{@link EntityNotEmptyException}</li>
+ * </ul>
+ * <br/>
+ * To handle {@link HttpStatus#PAYLOAD_TOO_LARGE} (413), you may throw :
+ * <ul>
+ * <li>{@link TooManyResultsException}</li>
+ * </ul>
+ * <br/>
+ * To handle {@link HttpStatus#UNPROCESSABLE_ENTITY} (422), you may throw :
+ * <ul>
+ * <li>{@link EntityInvalidException}</li>
+ * </ul>
+ * Bean validation exceptions also generate {@link HttpStatus#UNPROCESSABLE_ENTITY} :
+ * <ul>
+ * <li>{@link ValidationException}</li>
+ * <li>{@link MethodArgumentNotValidException}</li>
+ * </ul>
+ * <br/>
+ * if no handler is specified for a {@link ModuleException}, an {@link HttpStatus#INTERNAL_SERVER_ERROR} response is
+ * sent.
  *
  * @author CS SI
  * @author Marc Sordi
@@ -68,6 +105,8 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE - 100)
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
+
+    private static final String CAUSE = ". Cause :";
 
     /**
      * Customize response body for spring managed exception
@@ -85,90 +124,146 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(responseBody, headers, status);
     }
 
+    // ***************************************************************************************************************
+    // HTTP 500
+    // ***************************************************************************************************************
+
+    /**
+     * Default {@link ModuleException} response fallback
+     * @param moduleException {@link ModuleException}
+     * @return response with {@link HttpStatus#INTERNAL_SERVER_ERROR}
+     */
     @ExceptionHandler(ModuleException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleException pEx) {
+    public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleException moduleException) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ServerErrorResponse("Internal server error"));
+                .body(new ServerErrorResponse(moduleException.getMessage()));
     }
 
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(final IOException pEx) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ServerErrorResponse("Internal server error"));
+    // ***************************************************************************************************************
+    // HTTP 400
+    // ***************************************************************************************************************
+
+    /**
+     * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
+     * body.
+     *
+     * @param exception {@link EntityInconsistentIdentifierException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(EntityInconsistentIdentifierException.class)
+    public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(
+            final EntityInconsistentIdentifierException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(exception.getMessage()));
     }
 
-    @ExceptionHandler(EntityAlreadyExistsException.class)
-    public ResponseEntity<ServerErrorResponse> handleModelException(final EntityAlreadyExistsException pEx) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pEx.getMessage()));
+    /**
+     * Exception returning 400 when a datasource connection is invalid
+     *
+     * @param exception {@link InvalidConnectionException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(InvalidConnectionException.class)
+    public ResponseEntity<ServerErrorResponse> connectionException(final InvalidConnectionException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ServerErrorResponse(exception.getMessage() + CAUSE + exception.getCause().getMessage()));
     }
 
-    @ExceptionHandler(EntityEmbeddedEntityNotFoundException.class)
-    public ResponseEntity<ServerErrorResponse> entityEmbeddedEntityNotFound(
-            final EntityEmbeddedEntityNotFoundException pException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    // ***************************************************************************************************************
+    // HTTP 403
+    // ***************************************************************************************************************
+
+    /**
+     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
+     *
+     * @param exception {@link EntityOperationForbiddenException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(EntityOperationForbiddenException.class)
+    public ResponseEntity<ServerErrorResponse> entityOperationForbidden(
+            final EntityOperationForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(exception.getMessage()));
     }
 
-    @ExceptionHandler(EntityDescriptionUnacceptableCharsetException.class)
-    public ResponseEntity<ServerErrorResponse> entityDescriptionUnacceptableCharset(
-            final EntityDescriptionUnacceptableCharsetException pException) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessage()));
+    /**
+     * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
+     *
+     * @param exception {@link EntityTransitionForbiddenException}
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler(EntityTransitionForbiddenException.class)
+    public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
+            final EntityTransitionForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(exception.getMessage()));
     }
 
-    @ExceptionHandler(EntityDescriptionUnacceptableType.class)
-    public ResponseEntity<ServerErrorResponse> entityDescriptionUnacceptableType(
-            final EntityDescriptionUnacceptableType pException) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    @ExceptionHandler(EntityDescriptionTooLargeException.class)
-    public ResponseEntity<ServerErrorResponse> entityDescriptionTooLargeCharset(
-            final EntityDescriptionTooLargeException pException) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessage()));
-    }
+    // ***************************************************************************************************************
+    // HTTP 404
+    // ***************************************************************************************************************
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotFound(final EntityNotFoundException pException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    public ResponseEntity<ServerErrorResponse> entityNotFound(final EntityNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(exception.getMessage()));
+    }
+
+    // ***************************************************************************************************************
+    // HTTP 409
+    // ***************************************************************************************************************
+
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public ResponseEntity<ServerErrorResponse> handleEntityAlreadyExistsException(
+            final EntityAlreadyExistsException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler(EntityNotEmptyException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotEmpty(final EntityNotEmptyException pException) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(pException.getMessage()));
+    public ResponseEntity<ServerErrorResponse> entityNotEmpty(final EntityNotEmptyException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(exception.getMessage()));
     }
 
-    @ExceptionHandler(EntityNotIdentifiableException.class)
-    public ResponseEntity<ServerErrorResponse> entityNotIdentifiable(final EntityNotIdentifiableException pException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
-    }
+    // ***************************************************************************************************************
+    // HTTP 413
+    // ***************************************************************************************************************
 
     /**
-     * Exception handler returning the code 404 when an element accessed does not exists (for example in a stream).
+     * Exception handler returning the code 413 when a search is cancelled due to too many results.
+     *
+     * @param pException {@link TooManyResultsException}
+     * @return {@link ResponseEntity}
      */
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ServerErrorResponse> noSuchElement(final NoSuchElementException pException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(pException.getMessage()));
+    @ExceptionHandler(TooManyResultsException.class)
+    public ResponseEntity<ServerErrorResponse> tooManyResultsException(final TooManyResultsException pException) {
+        String message = pException.getMessage();
+        if (pException.getCause() != null) {
+            message += CAUSE + pException.getCause().getMessage();
+        }
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(new ServerErrorResponse(message));
     }
+
+    // ***************************************************************************************************************
+    // HTTP 422
+    // ***************************************************************************************************************
 
     /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
+     * @param exception {@link EntityInvalidException}
+     * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityInvalidException.class)
-    public ResponseEntity<ServerErrorResponse> manualValidation(final EntityInvalidException pException) {
+    public ResponseEntity<ServerErrorResponse> manualValidation(final EntityInvalidException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessages()));
+                .body(new ServerErrorResponse(exception.getMessages()));
     }
 
     /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.<br>
      * Thrown by Hibernate.
+     * @param exception {@link ValidationException}
+     * @return {@link ResponseEntity}
      */
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ServerErrorResponse> hibernateValidation(final ValidationException pException) {
+    public ResponseEntity<ServerErrorResponse> hibernateValidation(final ValidationException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(pException.getMessage()));
+                .body(new ServerErrorResponse(exception.getMessage()));
     }
 
     /**
@@ -183,92 +278,4 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         ex.getBindingResult().getAllErrors().forEach(objectError -> messages.add(objectError.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ServerErrorResponse(messages));
     }
-
-    /**
-     * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
-     *
-     * @param pException {@link EntityOperationForbiddenException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(EntityOperationForbiddenException.class)
-    public ResponseEntity<ServerErrorResponse> entityOperationForbidden(
-            final EntityOperationForbiddenException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /**
-     * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
-     *
-     * @param pException {@link EntityTransitionForbiddenException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(EntityTransitionForbiddenException.class)
-    public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
-            final EntityTransitionForbiddenException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /**
-     * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
-     * body.<br>
-     *
-     * @param pException {@link EntityInconsistentIdentifierException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(EntityInconsistentIdentifierException.class)
-    public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(
-            final EntityInconsistentIdentifierException pException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    @ExceptionHandler(EntityCorruptByNetworkException.class)
-    public ResponseEntity<ServerErrorResponse> entityCorruptByNetworkException(
-            final EntityCorruptByNetworkException pException) {
-        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
-                .body(new ServerErrorResponse(pException.getMessage()));
-    }
-
-    /**
-     * Exception handler returning the code 400 when an error occurs while processing an OpenSearch request.<br>
-     *
-     * @param pException {@link SearchException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(SearchException.class)
-    public ResponseEntity<ServerErrorResponse> searchException(final SearchException pException) {
-        String message = pException.getMessage();
-        if (pException.getCause() != null) {
-            message += ". Cause: " + pException.getCause().getMessage();
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message));
-    }
-
-    // FIXME move this exception and advice on catalog
-    /**
-     * Exception handler returning the code 413 when a search is cancelled due to too many results.
-     *
-     * @param pException {@link TooManyResultsException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(TooManyResultsException.class)
-    public ResponseEntity<ServerErrorResponse> tooManyResultsException(final TooManyResultsException pException) {
-        String message = pException.getMessage();
-        if (pException.getCause() != null) {
-            message += ". Cause: " + pException.getCause().getMessage();
-        }
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(new ServerErrorResponse(message));
-    }
-
-    /**
-     * Exception returning 400 when a datasource connection is invalid
-     *
-     * @param pException {@link InvalidConnectionException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(InvalidConnectionException.class)
-    public ResponseEntity<ServerErrorResponse> connectionException(final InvalidConnectionException pException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(
-                pException.getMessage() + ". Cause: " + pException.getCause().getMessage()));
-    }
-
 }

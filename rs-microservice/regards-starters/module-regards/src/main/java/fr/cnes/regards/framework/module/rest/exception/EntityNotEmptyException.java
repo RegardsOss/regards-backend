@@ -20,15 +20,14 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  *
- * Exception may occur when trying to delete a parent entity already linked to child entities.
+ * Exception indicating a parent entity cannot be deleted cause children already exist
  *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  *
  */
+@SuppressWarnings("serial")
 public class EntityNotEmptyException extends EntityException {
-
-    private static final long serialVersionUID = 1642202168751223657L;
 
     public EntityNotEmptyException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
         super(String.format("Entity of type \"%s\" with id \"%s\" is not empty and cannot be removed.",

@@ -25,34 +25,13 @@ package fr.cnes.regards.framework.module.rest.exception;
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
+@SuppressWarnings("serial")
 public class EntityTransitionForbiddenException extends EntityOperationForbiddenException {
 
-    /**
-     * Serial version
-     *
-     * @since 1.1-SNAPSHOT
-     */
-    private static final long serialVersionUID = -7255117056559968468L;
-
-    /**
-     * Creates a new exception with passed params
-     *
-     * @param <T>
-     *
-     * @param pEntityIdentifier
-     *            Entity identifier
-     * @param pEntityClass
-     *            Entity class
-     * @param pState
-     *            the current entity's state
-     * @param pTransition
-     *            the illegally called transition
-     * @since 1.1-SNAPSHOT
-     */
-    public <T> EntityTransitionForbiddenException(final String pEntityIdentifier, final Class<?> pEntityClass,
-            final String pState, final String pTransition) {
-        super(pEntityIdentifier, pEntityClass, "The transition " + pTransition
-                + " called on this state-managed entity is illegal for its current state " + pState);
+    public <T> EntityTransitionForbiddenException(final String entityIdentifier, final Class<?> entityClass,
+            final String state, final String transition) {
+        super(entityIdentifier, entityClass, "The transition " + transition
+                + " called on this state-managed entity is illegal for its current state " + state);
     }
 
 }
