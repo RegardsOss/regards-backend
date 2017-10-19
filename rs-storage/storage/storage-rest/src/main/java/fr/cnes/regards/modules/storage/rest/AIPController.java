@@ -176,16 +176,16 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     public ResponseEntity<AIP> retrieveAip(@PathVariable(name = "ip_id") String ipId)
             throws EntityNotFoundException {
-        return new ResponseEntity<AIP>(aipService.retrieveAip(ipId), HttpStatus.OK);
+        return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
     }
 
     @RequestMapping(value = ID_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "allows to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException,
+            throws EntityInconsistentIdentifierException, EntityOperationForbiddenException,
             EntityNotFoundException {
-        return new ResponseEntity<AIP>(aipService.updateAip(ipId, updated), HttpStatus.OK);
+        return new ResponseEntity<>(aipService.updateAip(ipId, updated), HttpStatus.OK);
     }
 
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
