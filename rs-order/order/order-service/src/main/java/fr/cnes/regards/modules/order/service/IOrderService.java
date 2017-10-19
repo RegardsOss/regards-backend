@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotWaitForEffectivePauseException;
 import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 
 /**
@@ -46,6 +48,7 @@ public interface IOrderService {
     /**
      * Load an order.
      * Order is completely loaded
+     * <b>BEWARE : this method use systematically a new transaction</b>
      * @param id order id
      */
     Order loadComplete(Long id);
@@ -126,7 +129,28 @@ public interface IOrderService {
     void updateTenantOrdersComputations();
 
     /**
-     * Search for orders whom available files counts haven't been updated since a specific delay
+     * Scheduled method to search for orders whom available files counts haven't been updated since a specific delay
      */
     void sendPeriodicNotifications();
+
+    /**
+     * Same method as previous one but for one tenant (hence transactionnal)
+     */
+    void sendTenantPeriodicNotifications();
+
+    /**
+     * Search for expired orders, pause them then delete them
+     */
+    void cleanExpiredOrders();
+
+    /**
+     * Search for a pending, running or paused order that has reached its expiration date and change its status to
+     * EXPIRED.
+     */
+    Optional<Order> findOneOrderAndMarkAsExpired();
+
+    /**
+     * Clean expired order (pause, wait for end of pause then delete it)
+     */
+    void cleanExpiredOrder(Order order);
 }

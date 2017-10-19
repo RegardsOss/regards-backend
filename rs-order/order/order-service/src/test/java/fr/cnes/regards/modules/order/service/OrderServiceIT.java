@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -100,6 +101,8 @@ public class OrderServiceIT {
     @Autowired
     private TemplateService templateService;
 
+    private static TemplateService staticTemplateService;
+
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
@@ -137,8 +140,14 @@ public class OrderServiceIT {
 
         jobInfoRepos.deleteAll();
 
-        templateService.deleteAll();
+        staticTemplateService = templateService;
     }
+
+    // Reactivate this if you test template
+//    @AfterClass
+//    public static void cleanAfterAll() {
+//        staticTemplateService.deleteAll();
+//    }
 
     @Test
     public void test1() throws Exception {
@@ -260,6 +269,35 @@ public class OrderServiceIT {
     }
 
     @Test
+    public void testExpiredOrders() throws IOException, InterruptedException {
+        Basket basket = new Basket("tulavu@qui.fr");
+        SortedSet<BasketDatasetSelection> dsSelections = new TreeSet<>();
+        basket.setDatasetSelections(dsSelections);
+
+        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
+        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
+        dsSelection.setDatasetLabel("DS");
+        dsSelection.setObjectsCount(3);
+        dsSelection.setFilesCount(12);
+        dsSelection.setFilesSize(3_000_171l);
+        dsSelection.setOpenSearchRequest("ALL");
+        dsSelections.add(dsSelection);
+        basketRepos.save(basket);
+
+        Order order = orderService.createOrder(basket);
+        order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
+        orderRepos.save(order);
+
+        orderService.cleanExpiredOrders();
+
+        // No files should remain
+        List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
+        Assert.assertEquals(0, files.size());
+        order = orderService.loadSimple(order.getId());
+        Assert.assertTrue(order.getStatus() == OrderStatus.DELETED);
+    }
+
+    @Test
     public void testPauseResume() throws IOException, InterruptedException, CannotResumeOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");
@@ -289,7 +327,8 @@ public class OrderServiceIT {
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
                                   .allMatch(JobStatus::isCompatibleWithPause));
-        Assert.assertTrue(order.getPercentCompleted() < 100);
+        // Sometime, pause/resume has been asked toolate (and so percent is at 100 %)
+        Assert.assertTrue(order.getPercentCompleted() <= 100);
 
         orderService.resume(order.getId());
 

@@ -36,6 +36,11 @@ public enum OrderStatus {
      */
     PAUSED,
     /**
+     * Order has been detected as expired and soon will be paused (very intermediate status to avoid 2 transactions
+     * retrieving same order as 'expired' and try manage it)
+     */
+    EXPIRED,
+    /**
      * No data file is available, completion percentage is at 100%
      */
     FAILED,

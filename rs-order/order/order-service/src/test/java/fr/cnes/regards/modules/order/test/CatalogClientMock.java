@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -87,6 +88,11 @@ public class CatalogClientMock implements ICatalogClient {
     @Override
     public ResponseEntity<Resource<Dataset>> getDataset(UniformResourceName urn) {
         return new ResponseEntity<>(new Resource<>(DS_MAP.get(urn)), HttpStatus.OK);
+    }
+
+    @Override
+    public <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(UniformResourceName uniformResourceName) {
+        return null;
     }
 
     @Override

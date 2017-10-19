@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -153,7 +154,7 @@ public class OrderService implements IOrderService {
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
 
-    @Value("${regards.order.days.before.considering.order.as.aside:}")
+    @Value("${regards.order.days.before.considering.order.as.aside:7}")
     private int daysBeforeSendingNotifEmail;
 
     @Value("${spring.application.name}")
@@ -319,6 +320,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public Order loadComplete(Long id) {
         return repos.findCompleteById(id);
     }
@@ -337,8 +339,7 @@ public class OrderService implements IOrderService {
     public void resume(Long id) throws CannotResumeOrderException {
         Order order = repos.findCompleteById(id);
         // Look at all associated JobInfos : they must be at a paused compatible status
-        boolean inPause = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
+        boolean inPause = orderEffectivelyInPause(order);
         if (!inPause) {
             throw new CannotResumeOrderException();
         }
@@ -361,8 +362,7 @@ public class OrderService implements IOrderService {
                                   order.getStatus()));
         }
         // Look at all associated JobInfos : they must be at a paused compatible status
-        boolean inPause = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
+        boolean inPause = orderEffectivelyInPause(order);
         if (!inPause) {
             throw new CannotDeleteOrderException(
                     "Order is not completely stopped, some tasks are still running, please "
@@ -372,6 +372,14 @@ public class OrderService implements IOrderService {
         dataFileService.removeAll(order.getId());
         order.setStatus(OrderStatus.DELETED);
         repos.save(order);
+    }
+
+    /**
+     * Test if order is truely in pause (ie all its jobs are not run)
+     */
+    private boolean orderEffectivelyInPause(Order order) {
+        return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
     }
 
     @Override
@@ -565,6 +573,15 @@ public class OrderService implements IOrderService {
     @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
     public void sendPeriodicNotifications() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            self.sendTenantPeriodicNotifications();
+        }
+
+    }
+
+    @Override
+    public void sendTenantPeriodicNotifications() {
         List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
 
         Multimap<String, Order> orderMultimap = TreeMultimap
@@ -573,6 +590,7 @@ public class OrderService implements IOrderService {
 
         // For each owner
         for (Map.Entry<String, Collection<Order>> entry : orderMultimap.asMap().entrySet()) {
+            OffsetDateTime now = OffsetDateTime.now();
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("orders", entry.getValue());
             // Create mail
@@ -589,6 +607,67 @@ public class OrderService implements IOrderService {
             FeignSecurityManager.asSystem();
             emailClient.sendEmail(email);
             FeignSecurityManager.reset();
+            // Update order availableUpdateDate to avoid another microservice instance sending notification emails
+            entry.getValue().forEach(order -> order.setAvailableUpdateDate(now));
+            repos.save(entry.getValue());
+        }
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Scheduled(fixedDelayString = "${regards.order.clean.expired.rate.ms:3600000}")
+    public void cleanExpiredOrders() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            // In a transaction
+            Optional<Order> optional = findOneOrderAndMarkAsExpired();
+            while (optional.isPresent()) {
+                // in another transaction
+                self.cleanExpiredOrder(optional.get());
+                // and again
+                optional = findOneOrderAndMarkAsExpired();
+            }
+        }
+    }
+
+    @Override
+    public Optional<Order> findOneOrderAndMarkAsExpired() {
+        Optional<Order> optional = repos.findOneExpiredOrder();
+        optional.ifPresent(order -> {
+            order.setStatus(OrderStatus.EXPIRED);
+            repos.save(order);
+        });
+        return optional;
+    }
+
+
+
+    @Override
+    @Transactional(Transactional.TxType.NEVER)
+    // No transaction because :
+    // - loadComplete use a new one and so when delete is called, order state is at start of transaction (so with state
+    // EXPIRED)
+    // - loadComplete needs a new transaction each time it is called. If nothing is specified, it seems that the same
+    // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set a NEVER
+    // specified by Spring so it is cached in first level)
+    public void cleanExpiredOrder(Order order) {
+        // Pause
+        self.pause(order.getId());
+
+        order = self.loadComplete(order.getId());
+        while (!orderEffectivelyInPause(order)) {
+            try {
+                Thread.sleep(1_000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e); // NOSONAR
+            }
+            order = self.loadComplete(order.getId());
+        }
+        // Delete
+        try {
+            self.delete(order.getId());
+        } catch (CannotDeleteOrderException e) {
+            throw new RuntimeException(e); // NOSONAR
         }
     }
 }

@@ -173,7 +173,8 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     }
 
     /**
-     * Visible only for testing, please do not use.
+     * This method should mostly not be used except when available update date must ONLY be set (and not
+     * availableFilesCount.<br/>
      * @see #setAvailableFilesCount(int) should be used instead
      */
     public void setAvailableUpdateDate(OffsetDateTime availableUpdateDate) {
