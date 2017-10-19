@@ -143,10 +143,11 @@ public class OrderServiceIT {
         staticTemplateService = templateService;
     }
 
-    @AfterClass
-    public static void cleanAfterAll() {
-        staticTemplateService.deleteAll();
-    }
+    // Reactivate this if you test template
+//    @AfterClass
+//    public static void cleanAfterAll() {
+//        staticTemplateService.deleteAll();
+//    }
 
     @Test
     public void test1() throws Exception {

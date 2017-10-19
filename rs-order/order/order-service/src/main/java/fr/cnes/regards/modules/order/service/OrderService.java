@@ -154,7 +154,7 @@ public class OrderService implements IOrderService {
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
 
-    @Value("${regards.order.days.before.considering.order.as.aside:}")
+    @Value("${regards.order.days.before.considering.order.as.aside:7}")
     private int daysBeforeSendingNotifEmail;
 
     @Value("${spring.application.name}")
