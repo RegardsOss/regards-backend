@@ -35,6 +35,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import feign.Response;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -55,6 +56,11 @@ import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:test.properties")
 public class OrderConfiguration {
+    @Bean
+    public IAuthenticationResolver authResolver() {
+        return Mockito.mock(IAuthenticationResolver.class);
+    }
+
 
     @Bean
     public ICatalogClient catalogClient() {

@@ -84,7 +84,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
         // rate : current user jobs / current total jobs
         double rate = (currentTotal == 0l) ? 1. : (double) currentUser / (double) currentTotal;
         // a user PUBLIC cannot be here so there are two cases : REGISTERED_USER and all ADMIN roles (near a thousand)
-        if (role.equals(DefaultRole.REGISTERED_USER)) {
+        if (role.equals(DefaultRole.REGISTERED_USER.toString())) {
             // User : Priority between 0 and 80 depending on rate
             return (int) (80 * (1 - rate));
         }

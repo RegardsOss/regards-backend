@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -79,6 +81,10 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    @Requirements({
+            @Requirement("REGARDS_DSL_STO_CMD_020"),
+            @Requirement("REGARDS_DSL_STO_CMD_030"),
+    })
     public void testDownloadFile() throws URISyntaxException, IOException {
         Order order = new Order();
         order.setOwner(USER);

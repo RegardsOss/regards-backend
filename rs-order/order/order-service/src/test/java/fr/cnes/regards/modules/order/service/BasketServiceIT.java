@@ -21,6 +21,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -76,6 +78,7 @@ public class BasketServiceIT {
      * BECAUSE OF OffsetDateTime.now() used by BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
      */
     @Test
+    @Requirement("REGARDS_DSL_STO_CMD_100")
     public void test() throws EmptyBasketException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 

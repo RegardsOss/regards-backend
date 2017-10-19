@@ -44,6 +44,8 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
@@ -240,6 +242,8 @@ public class OrderServiceIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_CMD_050")
+    @Requirement("REGARDS_DSL_STO_CMD_050")
     public void testBucketsJobs() throws IOException, InterruptedException {
 
         Basket basket = new Basket("tulavu@qui.fr");
@@ -342,6 +346,9 @@ public class OrderServiceIT {
         Assert.assertTrue(order.getPercentCompleted() == 100);
     }
 
+    @Requirement("REGARDS_DSL_STO_CMD_140")
+    @Requirement("REGARDS_DSL_CMD_ARC_520")
+    @Requirement("REGARDS_DSL_CMD_ARC_530")
     @Test
     public void testEmailNotifications()  {
         Mockito.when(emailClient.sendEmail(Mockito.any())).thenAnswer(invocation -> {

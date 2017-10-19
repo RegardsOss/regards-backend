@@ -40,13 +40,17 @@ import org.xml.sax.SAXException;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -84,6 +88,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private IProjectsClient projectsClient;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
                                                                                 "ORDER", UUID.randomUUID(), 1);
@@ -125,8 +133,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(Matchers.anyString()))
                 .thenReturn(ResponseEntity.ok(new Resource<>(project)));
+        Mockito.when(authResolver.getUser()).thenReturn(DEFAULT_USER_EMAIL);
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
 
+    @Requirement("REGARDS_DSL_STO_CMD_450")
     @Test
     public void testActions() throws UnsupportedEncodingException {
         // Create an empty basket
@@ -205,6 +216,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
                            Lists.newArrayList(MockMvcResultMatchers.status().isNoContent()), "error");
     }
 
+    @Requirement("REGARDS_DSL_STO_CMD_010")
+    @Requirement("REGARDS_DSL_STO_CMD_040")
+    @Requirement("REGARDS_DSL_STO_CMD_120")
+    @Requirement("REGARDS_DSL_STO_CMD_400")
+    @Requirement("REGARDS_DSL_STO_CMD_410")
     @Test
     public void testDownloadFile()
             throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
@@ -340,6 +356,46 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     }
 
+    @Requirement("REGARDS_DSL_STO_CMD_420")
+    @Test
+    public void testFindAll() throws UnsupportedEncodingException {
+        Order order1 = new Order();
+        order1.setOwner("RIRI");
+        order1.setCreationDate(OffsetDateTime.now());
+        order1.setExpirationDate(order1.getCreationDate().plus(3, ChronoUnit.DAYS));
+        orderRepository.save(order1);
+
+        Order order2 = new Order();
+        order2.setOwner(DEFAULT_USER_EMAIL);
+        order2.setCreationDate(OffsetDateTime.now());
+        order2.setExpirationDate(order2.getCreationDate().plus(3, ChronoUnit.DAYS));
+
+        orderRepository.save(order2);
+
+        Order order3 = new Order();
+        order3.setOwner("FIFI");
+        order3.setCreationDate(OffsetDateTime.now());
+        order3.setExpirationDate(order3.getCreationDate().plus(3, ChronoUnit.DAYS));
+        orderRepository.save(order3);
+
+        // All orders
+        List<ResultMatcher> expects = okExpectations();
+        expects.add(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(3)));
+        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, expects, "errors");
+
+        // All specific user orders
+        expects = okExpectations();
+        expects.add(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
+        results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, expects, "errors", RequestParamBuilder.build().param("user", "FIFI"));
+
+        // Only owner orders
+        expects = okExpectations();
+        expects.add(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
+        results = performDefaultGet(OrderController.USER_ROOT_PATH, expects, "errors");
+        System.out.println(results.andReturn().getResponse().getContentAsString());
+    }
+
+
     @Test
     public void testCsv() throws URISyntaxException, UnsupportedEncodingException {
         Order order = new Order();
@@ -390,7 +446,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         headers.add(HttpConstants.ACCEPT, "text/csv");
         ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, okExpectations(), "error",
                                                   headers);
-        // Juste test headers are present and CSV format is ok
+        // Just test headers are present and CSV format is ok
         Assert.assertTrue(results.andReturn().getResponse().getContentAsString().startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
     }
 

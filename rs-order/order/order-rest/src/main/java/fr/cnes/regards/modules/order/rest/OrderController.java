@@ -251,10 +251,6 @@ public class OrderController implements IResourceController<OrderDto> {
                                     HttpStatus.OK);
     }
 
-
-
-
-
     // TODO : add links
     @Override
     public Resource<OrderDto> toResource(OrderDto order, Object... extras) {
