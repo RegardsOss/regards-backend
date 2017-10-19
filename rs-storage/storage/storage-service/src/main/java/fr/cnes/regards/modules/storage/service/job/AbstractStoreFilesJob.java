@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -34,6 +36,8 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     public static final String PLUGIN_TO_USE_PARAMETER_NAME = "pluginToUse";
 
     public static final String WORKING_SUB_SET_PARAMETER_NAME = "workingSubSet";
+
+    protected static final String NOT_HANDLED_MSG = "This data file has not been handled by the designated DataStorage";
 
     protected static final String FAILURE_CAUSES = "Storage failed due to the following reasons: %s";
 
@@ -114,7 +118,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         } finally {
             LOG.debug(String.format("[FILE JOB] Executing some checks after execution"));
             // eventually, lets see if everything went as planned
-            afterRun();
+            afterRun(parameterMap);
         }
     }
 
@@ -140,15 +144,30 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     /**
      * Decides if the job should fail or not
      */
-    protected void afterRun() {
+    protected void afterRun(Map<String, JobParameter> parameterMap) {
+        // before we make the job fail, lets check if all DataFile have been handled
+        Collection<DataFile> handled = progressManager.getHandledDataFile();
+        IWorkingSubset workingSubset = (IWorkingSubset) parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME);
+        if(!handled.containsAll(workingSubset.getDataFiles())) {
+            // not all data files have been handled, lets get the difference and make the not handled fail
+            Sets.SetView<DataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(), Sets.newHashSet(handled));
+            for(DataFile notHandled: notHandledFiles) {
+                handleNotHandledDataFile(notHandled);
+            }
+        }
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
             throw new StorageException(String
                     .format(FAILURE_CAUSES,
                             progressManager.getFailureCauses().stream().collect(Collectors.joining(", ", "[", " ]"))));
         }
-        //TODO getHandleDataFile from progressmanager and call storage failed on not handled ones
     }
+
+    /**
+     * Method called when the job detects files that have not been handled by the storage plugin.
+     * @param notHandled a data file that have not been handled by the storage plugin
+     */
+    protected abstract void handleNotHandledDataFile(DataFile notHandled);
 
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {
         // lets instantiate the plugin to use

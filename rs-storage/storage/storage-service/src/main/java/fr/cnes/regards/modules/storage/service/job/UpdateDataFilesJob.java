@@ -55,6 +55,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
                 df.setDataStorageUsed(confToUse);
             }
             storagePlugin.store(workingSubset, true, progressManager);
+            // manual call to after run here to globalize the code.
+            afterRun(parameterMap);
             // ... then we delete the old ones, that has been updated:
             // first lets get the all the data files that should have been updated
             Set<DataFile> oldDataFiles = Sets
@@ -70,6 +72,11 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             //throwing new runtime allows us to make the job fail.
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void handleNotHandledDataFile(DataFile notHandled) {
+        progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
     }
 
     @Override

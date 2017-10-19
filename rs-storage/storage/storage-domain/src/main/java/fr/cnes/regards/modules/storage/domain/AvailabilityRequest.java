@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.domain.database;
+package fr.cnes.regards.modules.storage.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Set;

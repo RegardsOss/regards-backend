@@ -46,19 +46,16 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
 
     @Override
     public void delete(Set<DataFile> pDataFiles, IProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void store(LocalWorkingSubset pWorkingSubset, Boolean pReplaceMode, IProgressManager pProgressManager) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public Set<DataStorageInfo> getMonitoringInfos() {
-        // TODO Auto-generated method stub
         return null;
     }
 

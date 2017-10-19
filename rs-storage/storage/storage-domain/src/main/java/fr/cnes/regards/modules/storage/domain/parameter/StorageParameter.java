@@ -1,12 +1,22 @@
 package fr.cnes.regards.modules.storage.domain.parameter;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_storage_parameter")
+@Table(name = "t_storage_parameter",
+        uniqueConstraints = { @UniqueConstraint(name = "uk_storage_parameter_name", columnNames = "name") },
+        indexes = { @Index(name = "idx_storage_parameter_name", columnList = "name") })
 public class StorageParameter {
 
     /**
@@ -19,7 +29,7 @@ public class StorageParameter {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "storageParameterSequence")
     private Long id;
 
-    @Column(unique = true)
+    @Column
     private String name;
 
     @Column(columnDefinition = "text")

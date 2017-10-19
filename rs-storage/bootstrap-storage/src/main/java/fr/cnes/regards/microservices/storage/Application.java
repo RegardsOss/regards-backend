@@ -14,11 +14,11 @@ import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVote
  *
  * Start microservice storage
  * 
- * @author TODO
+ * @author Sylvain Vissiere-Guerinet
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "storage", version = "1.0-SNAPSHOT")
+@MicroserviceInfo(name = "storage", version = "2.0.0-SNAPSHOT")
 public class Application {
 
     /**
@@ -31,8 +31,4 @@ public class Application {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
     }
 
-    @Bean
-    public IProjectAdminAccessVoter projectAdminVoter() {
-        return new AcceptProjectAdminVoter();
-    }
 }

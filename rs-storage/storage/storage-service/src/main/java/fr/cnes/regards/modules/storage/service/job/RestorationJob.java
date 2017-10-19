@@ -61,4 +61,9 @@ public class RestorationJob extends AbstractStoreFilesJob {
         }
     }
 
+    @Override
+    protected void handleNotHandledDataFile(DataFile notHandled) {
+        progressManager.restoreFailed(notHandled, NOT_HANDLED_MSG);
+    }
+
 }

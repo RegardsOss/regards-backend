@@ -57,7 +57,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.Event;
@@ -72,11 +71,11 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
@@ -352,7 +351,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
         if (aip.isPresent()) {
-            if(!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
+            if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
                 throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
             }
             Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
@@ -607,16 +606,31 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
+    public Set<AIP> retrieveAipsByTag(String tag) {
+        return aipDao.findAllByTags(tag);
+    }
+
+    @Override
     public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(ipId.toString());
         if (aip.isPresent()) {
-            if(!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
+            if (!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
                 throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
             }
             return aip.get().getHistory();
         } else {
             throw new EntityNotFoundException(ipId.toString(), AIP.class);
         }
+    }
+
+    @Override
+    public Set<AIP> retrieveAipsBulk(Set<String> ipIds) {
+        return aipDao.findAllByIpIdIn(ipIds);
+    }
+
+    @Override
+    public AIP retrieveAip(String ipId) throws EntityNotFoundException {
+        return aipDao.findOneByIpId(ipId).orElseThrow(()->new EntityNotFoundException(ipId, AIP.class));
     }
 
     @Override
@@ -822,8 +836,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return metadataAipFile;
     }
 
-    /**
-     * TODO COMMENTS !!!!!!!!!
+    /*
+     * Non javadoc, but explanatory: due to settings only interfaces are proxyfied by spring, so we need to use a self
+     * reference on the interface to profit from transaction management from spring. This is a self reference because
+     * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
@@ -968,7 +984,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
         if (oaip.isPresent()) {
             AIP aip = oaip.get();
-            if(!getSecurityDelegationPlugin().hasAccess(pAipId)) {
+            if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
                 throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
             }
             // Now get requested DataFile

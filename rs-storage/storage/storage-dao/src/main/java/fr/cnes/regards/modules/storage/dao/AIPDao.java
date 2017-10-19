@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -132,6 +133,16 @@ public class AIPDao implements IAIPDao {
         if(opt.isPresent()) {
             repo.delete(opt.get());
         }
+    }
+
+    @Override
+    public Set<AIP> findAllByIpIdIn(Collection<String> ipIds) {
+        return repo.findAllByIpIdIn(ipIds).stream().map(this::buildAipFromAIPDataBase).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<AIP> findAllByTags(String tag) {
+        return repo.findAllByTags(tag).stream().map(this::buildAipFromAIPDataBase).collect(Collectors.toSet());
     }
 
     @Override

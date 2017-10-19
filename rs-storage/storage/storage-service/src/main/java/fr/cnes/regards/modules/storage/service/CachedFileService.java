@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,14 +21,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -44,7 +49,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
-import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
@@ -77,7 +82,7 @@ import fr.cnes.regards.modules.storage.service.job.RestorationJob;
  * @author Sébastien Binda
  */
 @Service
-public class CachedFileService implements ICachedFileService {
+public class CachedFileService implements ICachedFileService, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(CachedFileService.class);
 
@@ -135,30 +140,37 @@ public class CachedFileService implements ICachedFileService {
     @Autowired
     private IPublisher publisher;
 
-    @PostConstruct
-    public void checkValidity() {
-        // TODO : Handle new tenant creation
+    @Autowired
+    private IInstanceSubscriber instanceSubscriber;
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            Path tenantCachePath = getTenantCachePath();
-            LOG.debug("Initilizing cache file system for tenant {} in repository {}", tenant, tenantCachePath);
-            // Check that the given cache storage path is available.
-            File cachedPathFile = tenantCachePath.toFile();
-            if (!cachedPathFile.exists()) {
-                try {
-                    Files.createDirectories(tenantCachePath);
-                } catch (IOException e) {
-                    throw new StorageException(e.getMessage(), e);
-                }
-            }
-            if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
-                    || !cachedPathFile.canWrite()) {
-                throw new StorageException(
-                        String.format("Error initializing storage cache directory. %s is not a valid directory",
-                                      tenantCachePath));
-            }
-            runtimeTenantResolver.clearTenant();
+            initCacheFileSystem(tenant);
         }
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyHandler());
+    }
+
+    protected void initCacheFileSystem(String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
+        Path tenantCachePath = getTenantCachePath();
+        LOG.debug("Initilizing cache file system for tenant {} in repository {}", tenant, tenantCachePath);
+        // Check that the given cache storage path is available.
+        File cachedPathFile = tenantCachePath.toFile();
+        if (!cachedPathFile.exists()) {
+            try {
+                Files.createDirectories(tenantCachePath);
+            } catch (IOException e) {
+                throw new StorageException(e.getMessage(), e);
+            }
+        }
+        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
+                || !cachedPathFile.canWrite()) {
+            throw new StorageException(
+                    String.format("Error initializing storage cache directory. %s is not a valid directory",
+                                  tenantCachePath));
+        }
+        runtimeTenantResolver.clearTenant();
     }
 
     @Override
@@ -488,7 +500,7 @@ public class CachedFileService implements ICachedFileService {
      * Do schedule @{link RestorationJob}s for each {@link IWorkingSubset} (more specialy for
      * the associated {@link DataFile}s) using the given {@link PluginConfiguration} to restore files.
      * @param workingSubsets Subsets containing {@link DataFile}s to restore.
-     * @param pluginConf {@link PluginConfiguration} Plugin to use to restore files.
+     * @param storageConf {@link PluginConfiguration} Plugin to use to restore files.
      * @return {@link JobInfo}s of the scheduled jobs
      */
     private Set<JobInfo> scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {
@@ -544,5 +556,14 @@ public class CachedFileService implements ICachedFileService {
             return null;
         }
         return Paths.get(globalCachePath, currentTenant);
+    }
+
+    private class TenantConnectionReadyHandler  implements IHandler<TenantConnectionReady> {
+
+        @Override
+        public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
+            // we just need to init the cache file system for this tenant:
+            initCacheFileSystem(wrapper.getTenant());
+        }
     }
 }

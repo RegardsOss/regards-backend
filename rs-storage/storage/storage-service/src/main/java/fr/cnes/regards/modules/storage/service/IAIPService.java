@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,8 +24,8 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
@@ -108,6 +109,12 @@ public interface IAIPService {
 
     List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws ModuleException;
 
+    Set<AIP> retrieveAipsBulk(Set<String> ipIds);
+
+    Set<AIP> retrieveAipsByTag(String tag);
+
+    AIP retrieveAip(String ipId) throws EntityNotFoundException;
+
     /**
      * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, store a new aip with a different version and use store method.
      * @param ipId information package identifier of the aip
@@ -147,5 +154,4 @@ public interface IAIPService {
     Set<UpdatableMetadataFile> prepareUpdatedAIP(Path tenantWorkspace);
 
     Set<DataFile> prepareNotFullyStored(Path tenantWorkspace);
-
 }

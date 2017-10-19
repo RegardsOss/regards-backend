@@ -318,6 +318,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             Thread.sleep(1000);
             wait = wait + 1000;
         }
+        Assert.assertNotEquals("Message from AMQP should have been received by now!", MAX_WAIT_TEST, wait);
         Assert.assertFalse("The job failed while it should not have", handler.isFailed());
         LOG.info("All waiting JOB succeeded");
 

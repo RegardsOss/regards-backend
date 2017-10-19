@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 
@@ -100,4 +102,10 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
 
     @EntityGraph("graph.aip.tags")
     Optional<AIPDataBase> findOneByIpId(String ipId);
+
+    @EntityGraph("graph.aip.tags")
+    Set<AIPDataBase> findAllByIpIdIn(Collection<String> ipIds);
+
+    @EntityGraph("graph.aip.tags")
+    Set<AIPDataBase> findAllByTags(String tag);
 }

@@ -1,9 +1,10 @@
-package fr.cnes.regards.modules.storage.domain.database;
+package fr.cnes.regards.modules.storage.domain;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
