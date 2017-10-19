@@ -38,8 +38,11 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -172,6 +175,34 @@ public class CatalogSearchService implements ICatalogSearchService {
             LOGGER.debug("Falling back to empty page", e);
             return new FacetPage<>(new ArrayList<>(), null);
         }
+    }
+
+    @Override
+    public <E extends AbstractEntity> E get(UniformResourceName urn)
+            throws EntityOperationForbiddenException, EntityNotFoundException {
+        Set<String> userGroups = null;
+        E entity = searchService.get(urn);
+        if (entity == null) {
+            throw new EntityNotFoundException(urn.toString(), AbstractEntity.class);
+        }
+        try {
+            userGroups = accessRightFilter.getUserAccessGroups();
+        } catch (AccessRightFilterException e) {
+            throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
+                    "You do not have access to this " + entity.getClass().getSimpleName());
+        }
+
+        if (userGroups == null) {
+            // According to the doc it means that current user is an admin, admins always has rights to access entities!
+            return entity;
+        }
+        // To know if we have access to the entity, lets intersect the entity groups with user group
+        if (!Sets.intersection(entity.getGroups(), userGroups).isEmpty()) {
+            // then we have access
+            return entity;
+        }
+        throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
+                "You do not have access to this " + entity.getClass().getSimpleName());
     }
 
     @Override

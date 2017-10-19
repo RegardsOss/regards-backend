@@ -22,6 +22,10 @@ import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
@@ -49,4 +53,14 @@ public interface ICatalogSearchService { // NOSONAR
 
     DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
             String datasetIpId, String[] fileTypes) throws SearchException;
+
+    /**
+     *
+     * @param urn identifier of the entity we are looking for
+     * @param <E> concrete type of AbstractEntity
+     * @return the entity
+     * @throws EntityOperationForbiddenException
+     */
+    <E extends AbstractEntity> E get(UniformResourceName urn)
+            throws EntityOperationForbiddenException, EntityNotFoundException;
 }
