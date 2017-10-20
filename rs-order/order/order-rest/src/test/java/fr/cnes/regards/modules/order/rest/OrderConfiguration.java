@@ -45,8 +45,8 @@ import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 
 /**
  * @author oroussel
