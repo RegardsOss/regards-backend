@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 @Entity
 @Table(name = "t_product")
+@NamedEntityGraph(name = "graph.acquisition.file.complete", attributeNodes = @NamedAttributeNode(value = "fileList"))
 public class Product implements IIdentifiable<Long> {
 
     /**
@@ -114,8 +115,7 @@ public class Product implements IIdentifiable<Long> {
      * Liste des fichiers composants les produits
      */
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "fk_product_id"))
+    @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"))
     private Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
 
     @Override
@@ -127,30 +127,29 @@ public class Product implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((productName == null) ? 0 : productName.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Product other = (Product) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
         if (productName == null) {
-            if (other.productName != null)
+            if (other.productName != null) {
                 return false;
-        } else if (!productName.equals(other.productName))
+            }
+        } else if (!productName.equals(other.productName)) {
             return false;
+        }
         return true;
     }
 

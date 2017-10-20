@@ -44,4 +44,6 @@ public interface IProductService {
     Product retrieve(Long id);
     
     void delete(Long id);
+    
+    Product retrive(String productName);
 }

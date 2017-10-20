@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
  * 
@@ -63,6 +65,20 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     @Override
     public void delete(Long id) {
         acqfileRepository.delete(id);
+    }
+    
+    public List<AcquisitionFile> findByMetaFile(MetaFile metaFile) {
+        return acqfileRepository.findByMetaFile(metaFile);
+    }
+
+    @Override
+    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status) {
+        return acqfileRepository.findByStatus(status);
+    }
+
+    @Override
+    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile) {
+        return acqfileRepository.findByStatusAndMetaFile(status, metaFile);
     }
 
 }

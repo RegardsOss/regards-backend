@@ -24,7 +24,6 @@ import java.util.List;
 
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 
-
 /**
  * Cette interface permet d'abstraire la relation d'une entite avec la valeur d'un attribut qui la compose.
  * 
@@ -140,12 +139,15 @@ public abstract class Attribute {
      * @return une cle
      */
     public String getAttributeKey() {
-        String key = metaAttribute.getName();
-        if (compositeAttribute != null) {
+        if (compositeAttribute == null) {
+            return metaAttribute.getName();
+        } else {
             // this is unique key as meta-attribut names doesn't contain space char
-            key = key + " " + compositeAttribute.getCompAttId();
+            StringBuffer strBuff = new StringBuffer(metaAttribute.getName());
+            strBuff.append(" ");
+            strBuff.append(compositeAttribute.getCompAttId());
+            return strBuff.toString();
         }
-        return key;
     }
 
     /**
@@ -165,8 +167,7 @@ public abstract class Attribute {
             for (Object o : valueList) {
                 localBuffer.append(" " + o);
             }
-        }
-        else {
+        } else {
             localBuffer.append(" none...");
         }
         return localBuffer.toString();

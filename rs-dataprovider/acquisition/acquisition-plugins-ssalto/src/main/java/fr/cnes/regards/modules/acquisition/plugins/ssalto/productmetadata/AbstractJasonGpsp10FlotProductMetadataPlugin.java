@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
-    protected final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public AbstractJasonGpsp10FlotProductMetadataPlugin() {
         super();
@@ -78,8 +78,7 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
     }
 
     @Override
-    protected List<OffsetDateTime> getStopDateValue(Collection<File> files)
-            throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         long longValue = 0;
         for (File file : files) {
             RinexFileHelper helper = new RinexFileHelper(file);
@@ -97,8 +96,7 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
     }
 
     @Override
-    protected List<OffsetDateTime> getCreationDateValue(Collection<File> files)
-            throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
         OffsetDateTime creationDate = null;
         for (File file : files) {

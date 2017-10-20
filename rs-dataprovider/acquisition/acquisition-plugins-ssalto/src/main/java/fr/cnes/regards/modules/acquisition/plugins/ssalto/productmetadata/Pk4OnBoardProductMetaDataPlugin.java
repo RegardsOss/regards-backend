@@ -57,7 +57,7 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
 
     private static final String DISK_ID_DEFAULT_VALUE = ".";
 
-    private final static String pathPattern_ = ".*/(Disk[0-9]*)/.*";
+    private static final String pathPattern_ = ".*/(Disk[0-9]*)/.*";
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;

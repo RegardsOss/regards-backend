@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.tools;
 
-
 /**
  * 
  * @author Christophe Mertz
@@ -26,19 +25,22 @@ package fr.cnes.regards.modules.acquisition.tools;
  */
 public class CalculusTypeEnum {
 
-    
-    private String name;
-    
-    public final static CalculusTypeEnum MIN = new CalculusTypeEnum("MIN");
-    public final static CalculusTypeEnum MAX = new CalculusTypeEnum("MAX");
-    public final static CalculusTypeEnum AVG = new CalculusTypeEnum("AVG");
-    public final static CalculusTypeEnum FIRST = new CalculusTypeEnum("FIRST");
-    public final static CalculusTypeEnum LAST = new CalculusTypeEnum("LAST");
-    
+    private final String name;
+
+    public static final CalculusTypeEnum MIN = new CalculusTypeEnum("MIN");
+
+    public static final CalculusTypeEnum MAX = new CalculusTypeEnum("MAX");
+
+    public static final CalculusTypeEnum AVG = new CalculusTypeEnum("AVG");
+
+    public static final CalculusTypeEnum FIRST = new CalculusTypeEnum("FIRST");
+
+    public static final CalculusTypeEnum LAST = new CalculusTypeEnum("LAST");
+
     private CalculusTypeEnum(String pName) {
-        name=pName;
+        name = pName;
     }
-    
+
     /**
      * renvoie l'instance de CalculusTypeEnum dont la valeur est pValue,
      * null, si aucune instance n'est trouvee.
@@ -49,22 +51,22 @@ public class CalculusTypeEnum {
     public static CalculusTypeEnum parse(String pName) {
         CalculusTypeEnum myEnum = null;
         pName = pName.toUpperCase();
-        if(pName.equals(MIN.name)) {
+        if (pName.equals(MIN.name)) {
             myEnum = MIN;
-        } else if(pName.equals(MAX.name)) {
+        } else if (pName.equals(MAX.name)) {
             myEnum = MAX;
-        } else if(pName.equals(AVG.name)) {
+        } else if (pName.equals(AVG.name)) {
             myEnum = AVG;
-        } else if(pName.equals(FIRST.name)) {
+        } else if (pName.equals(FIRST.name)) {
             myEnum = FIRST;
-        } else if(pName.equals(LAST.name)) {
+        } else if (pName.equals(LAST.name)) {
             myEnum = LAST;
         }
         return myEnum;
     }
 
     public String toString() {
-       return name;
+        return name;
     }
-    
+
 }

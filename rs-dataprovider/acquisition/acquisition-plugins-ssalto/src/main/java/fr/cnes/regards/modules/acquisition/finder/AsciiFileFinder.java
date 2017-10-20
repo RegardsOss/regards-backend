@@ -49,7 +49,7 @@ public class AsciiFileFinder extends DataFileFinder {
     /**
      * liste de groupe de capture a recupere dans la ligne pour construire la valeur de l'attribut
      */
-    private List<Integer> groupNumberList = new ArrayList<>();
+    private final List<Integer> groupNumberList = new ArrayList<>();
 
     /**
      * Attribut renseigne lorsqu'on a besoin de traiter un seul fichier pour un produit contenant plusieurs fichiers.

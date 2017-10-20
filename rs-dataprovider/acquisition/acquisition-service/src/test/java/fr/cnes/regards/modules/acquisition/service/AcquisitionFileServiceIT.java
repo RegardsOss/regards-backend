@@ -67,6 +67,9 @@ public class AcquisitionFileServiceIT {
 
     private static final String PRODUCT_NAME = "first product name";
 
+    /*
+     *  @see https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#MessageDigest
+     */
     private static final String CHECKUM_ALGO = "SHA-256";
 
     @Autowired
@@ -94,7 +97,7 @@ public class AcquisitionFileServiceIT {
 
     private Product addProduct(MetaProduct metaProduct, String productName) {
         Product product = productService.save(ProductBuilder.build(productName)
-                .withStatus(ProductStatus.INIT.toString()).withMetaProduct(metaProduct).get());
+                .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
         metaProduct = metaProductService.save(metaProduct);
@@ -105,11 +108,6 @@ public class AcquisitionFileServiceIT {
     @Test
     public void testAcqFiles() {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
-
-        // Init Product and MetaProduct
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
-                .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).get());
-        Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 3 ScanDirectory
         ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
@@ -125,6 +123,16 @@ public class AcquisitionFileServiceIT {
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
         aMetaFile = metaFileService.save(aMetaFile);
+
+        // Init Product and MetaProduct
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+                .withChecksumAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
+        Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
+
+        Assert.assertEquals(1, metaProductService.retrieveAll().size());
+        Assert.assertEquals(metaProduct, metaProductService.retrieve(metaProduct.getId()));
+        Assert.assertEquals(metaProduct, metaProductService.retrieve(metaProduct.getLabel()));
+        Assert.assertEquals(metaProduct, metaProductService.retrieveComplete(metaProduct.getId()));
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
@@ -154,6 +162,12 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(2, aProduct.getAcquisitionFile().size());
         Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(0).getProduct());
         Assert.assertEquals(aProduct, acqfileService.retrieveAll().get(1).getProduct());
+        Assert.assertEquals(2, acqfileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
+        Assert.assertEquals(0, acqfileService.findByStatus(AcquisitionFileStatus.DELETED).size());
+        Assert.assertEquals(2, acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, aMetaFile)
+                .size());
+        Assert.assertEquals(0, acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.DELETED, aMetaFile).size());
+        Assert.assertEquals(acqFile1, acqfileService.retrieve(acqFile1.getId()));
 
         // Remove a ScanDirectory
         aMetaFile.removeScanDirectory(scanDir2);
@@ -161,6 +175,7 @@ public class AcquisitionFileServiceIT {
 
         Assert.assertEquals(2, metaFileService.retrieve(aMetaFile.getId()).getScanDirectories().size());
         Assert.assertEquals(3, scandirService.retrieveAll().size());
+        Assert.assertEquals(scanDir2, scandirService.retrieve(scanDir2.getId()));
 
         // Get a specific ScanDirectory in the MetaFile 
         ScanDirectory scanDirFound = aMetaFile.getScanDirectory(scanDir3.getId());
@@ -173,10 +188,49 @@ public class AcquisitionFileServiceIT {
     }
 
     @Test
+    public void testAcqFilesWithoutProduct() {
+        Assert.assertEquals(0, scandirService.retrieveAll().size());
+
+        // Create 3 ScanDirectory
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
+                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02")
+                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03")
+                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
+
+        // Create a aMetaFile with the 3 ScanDirectory
+        MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
+                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
+                .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
+        aMetaFile = metaFileService.save(aMetaFile);
+
+        // Create 2 AcquisitionFile 
+        AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
+                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
+                .withActivationDate(OffsetDateTime.now().minusDays(5)).withErrorType(ErrorType.WARNING.toString())
+                .withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO).get();
+        acqFile1.setMetaFile(aMetaFile);
+        acqFile1 = acqfileService.save(acqFile1);
+
+        AcquisitionFile acqFile2 = AcquisitionFileBuilder.build("file two")
+                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(15686L)
+                .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).withActivationDate(OffsetDateTime.now()).get();
+        acqFile2.setMetaFile(aMetaFile);
+        acqFile2 = acqfileService.save(acqFile2);
+
+        Assert.assertEquals(3, scandirService.retrieveAll().size());
+        Assert.assertEquals(3, metaFileService.retrieve(aMetaFile.getId()).getScanDirectories().size());
+        Assert.assertEquals(2, acqfileService.retrieveAll().size());
+        Assert.assertEquals(0, productService.retrieveAll().size());
+    }
+
+    @Test
     public void getUnkonwScanDirectory() {
         // Init Product and MetaProduct
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
-                .withAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.TRUE).get());
+                .withChecksumAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.TRUE).get());
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 3 ScanDirectory
@@ -193,6 +247,9 @@ public class AcquisitionFileServiceIT {
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();
         aMetaFile = metaFileService.save(aMetaFile);
+
+        metaProduct.addMetaFile(aMetaFile);
+        metaProductService.save(metaProduct);
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")

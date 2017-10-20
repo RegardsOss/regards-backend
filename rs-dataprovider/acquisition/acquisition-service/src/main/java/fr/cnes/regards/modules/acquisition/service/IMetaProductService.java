@@ -49,7 +49,7 @@ public interface IMetaProductService {
     MetaProduct retrieve(String label);
 
     /**
-     * Retrieve one specified {@link MetaProduct} with all TODO
+     * Retrieve one specified {@link MetaProduct} with all LAZU attributes
      * @param id {@link MetaProduct}
      */
     MetaProduct retrieveComplete(Long id);

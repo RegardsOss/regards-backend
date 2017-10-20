@@ -27,7 +27,7 @@ public enum ProductStatus {
     /**
      * The {@link Product} is scanned
      */
-    INIT,
+    FINISHED,
     /**
      * The {@link Product} check is OK
      * TODO CMZ util ?

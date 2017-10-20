@@ -51,7 +51,6 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
-			<version>1.14</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.ucar</groupId>
@@ -85,18 +84,14 @@
     		<artifactId>junit</artifactId>
     		<scope>test</scope>
 		</dependency>
-
-<!-- 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency> -->
-
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>file-utils</artifactId>
+		</dependency>
 	</dependencies>
 </project>

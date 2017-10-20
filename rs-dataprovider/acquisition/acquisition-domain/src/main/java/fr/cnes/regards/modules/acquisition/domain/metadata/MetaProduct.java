@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain.metadata;
 
 import java.security.MessageDigest;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -74,28 +75,36 @@ public class MetaProduct implements IIdentifiable<Long> {
     private String label;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     private Set<Product> products = new HashSet<Product>();
 
     /**
      * Algorithm used to calculate the checksum
      * see {@link MessageDigest}
      */
-    @Column(name = "algorithm", length = 16)
-    private String algorithm;
-    
+    @Column(name = "checksumAlgorithm", length = 16)
+    private String checksumAlgorithm;
 
     /**
      * <code>true</code> clean the original file
+     * TODO CMZ : util ici ? non je ne pense pas
      */
     @NotNull
     @Column(name = "cleanOriginalFile")
-    private Boolean cleanOriginalFile = Boolean.TRUE;    
+    private Boolean cleanOriginalFile = Boolean.TRUE;
+
+    /**
+     * The {@link List} of {@link MetaFile} for this {@link MetaProduct}
+     */
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
+    private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
 
     //    /**
-    //     * La liste des type de fichiers composant ce produit (liste de MetaFile)
+    //     * The last activation date when an acquisition were running 
     //     */
-    //    private List<MetaFile> metaFileList;
+    //    @Transient
+    //    private OffsetDateTime lastAcqDate;
 
     //    /**
     //     * Les informations d'acquisition pour ce type de produit
@@ -170,39 +179,38 @@ public class MetaProduct implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MetaProduct other = (MetaProduct) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
         if (label == null) {
-            if (other.label != null)
+            if (other.label != null) {
                 return false;
-        } else if (!label.equals(other.label))
+            }
+        } else if (!label.equals(other.label)) {
             return false;
+        }
         return true;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public String getChecksumAlgorithm() {
+        return checksumAlgorithm;
     }
 
-    public void setAlgorithm(String algo) {
-        this.algorithm = algo;
+    public void setChecksumAlgorithm(String checksumAlgorithm) {
+        this.checksumAlgorithm = checksumAlgorithm;
     }
 
     public String getLabel() {
@@ -216,7 +224,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     public Boolean getCleanOriginalFile() {
         return cleanOriginalFile;
     }
-    
+
     public void setCleanOriginalFile(Boolean clean) {
         this.cleanOriginalFile = clean;
     }
@@ -233,9 +241,29 @@ public class MetaProduct implements IIdentifiable<Long> {
         this.products.remove(product);
     }
 
+    public Set<MetaFile> getMetaFiles() {
+        return metaFiles;
+    }
+
+    public void addMetaFile(MetaFile metaFile) {
+        this.metaFiles.add(metaFile);
+    }
+
+    public void removeMetaFile(MetaFile metaFile) {
+        this.metaFiles.remove(metaFile);
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
+
+    //    public OffsetDateTime getLastAcqDate() {
+    //        return lastAcqDate;
+    //    }
+    //
+    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+    //        this.lastAcqDate = lastAcqDate;
+    //    }
 
     @Override
     public String toString() {

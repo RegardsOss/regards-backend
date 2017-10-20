@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.util.List;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
  * 
@@ -32,15 +34,31 @@ public interface IAcquisitionFileService {
     AcquisitionFile save(AcquisitionFile acqFile);
 
     /**
-     * @return all {@link AcquisitionFile}
+     * @return a {@link List} of {@link AcquisitionFile}
      */
     List<AcquisitionFile> retrieveAll();
 
     /**
+     * Find the {@link AcquisitionFile} for a {@link MetaFile}
+     * @param metaFile
+     * @return a {@link List} of {@link AcquisitionFile}
+     */
+    public List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
+
+    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
+    
+    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
+
+    /**
      * Retrieve one specified {@link AcquisitionFile}
-     * @param id {@link AcquisitionFile}
+     * @param id of a {@link AcquisitionFile}
+     * @return the {@link AcquisitionFile} with the specified id
      */
     AcquisitionFile retrieve(Long id);
 
+    /**
+     * Delete a {@link AcquisitionFile}
+     * @param id of a {@link AcquisitionFile}
+     */
     void delete(Long id);
 }

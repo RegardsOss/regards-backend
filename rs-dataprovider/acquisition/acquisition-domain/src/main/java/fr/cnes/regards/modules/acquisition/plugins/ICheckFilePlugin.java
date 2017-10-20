@@ -33,13 +33,17 @@ public interface ICheckFilePlugin {
     // TODO CMZ à renommer c'est plutôt validate ou check
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException;
     
+    // TODO CMZ à voir mais je pense que c'est inutile
     public int getFileVersion();
 
+    // TODO CMZ util ?
     public String getLogFile();
 
     public String getProductName();
 
+    // TODO CMZ util ?
     public int getProductVersion();
 
+    // TODO CMZ util pour les tests pour générer descripteur ?
     public String getNodeIdentifier();
 }

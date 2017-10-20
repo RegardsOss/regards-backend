@@ -34,9 +34,12 @@ public class MetaProductDto {
 
     private String label;
 
-    private String algorithm;
+    private String checksumAlgorithm;
 
+    // TODO CMZ : util ?
     private Boolean cleanOriginalFile;
+
+    //    private OffsetDateTime lastAcqDate;
 
     public Long getId() {
         return id;
@@ -54,12 +57,12 @@ public class MetaProductDto {
         this.label = label;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public String getChecksumAlgorithm() {
+        return checksumAlgorithm;
     }
 
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
+    public void setChecksumAlgorithm(String checksumAlgorithm) {
+        this.checksumAlgorithm = checksumAlgorithm;
     }
 
     public Boolean getCleanOriginalFile() {
@@ -69,6 +72,14 @@ public class MetaProductDto {
     public void setCleanOriginalFile(Boolean cleanOriginalFile) {
         this.cleanOriginalFile = cleanOriginalFile;
     }
+
+    //    public OffsetDateTime getLastAcqDate() {
+    //        return lastAcqDate;
+    //    }
+    //
+    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+    //        this.lastAcqDate = lastAcqDate;
+    //    }
 
     public static MetaProductDto fromMetaProduct(MetaProduct metaProduct) {
         MetaProductDto dto = new MetaProductDto();

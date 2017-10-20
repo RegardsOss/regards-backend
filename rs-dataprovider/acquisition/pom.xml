@@ -54,11 +54,6 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>acquisition-plugins</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>acquisition-plugins-ssalto</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -78,7 +73,6 @@
 	<modules>
 		<module>acquisition-domain</module>
 		<module>acquisition-dao</module>
-		<module>acquisition-plugins</module>
 		<module>acquisition-rest</module>
 		<module>acquisition-service</module>
 		<module>acquisition-plugins-ssalto</module>

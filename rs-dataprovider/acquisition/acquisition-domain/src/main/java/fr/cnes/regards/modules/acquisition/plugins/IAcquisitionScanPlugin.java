@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
+import java.io.File;
 import java.util.Set;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -31,5 +32,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 public interface IAcquisitionScanPlugin {
 
     public Set<AcquisitionFile> getAcquisitionFiles();
+    
+    public Set<File> getBadFiles();
     
 }

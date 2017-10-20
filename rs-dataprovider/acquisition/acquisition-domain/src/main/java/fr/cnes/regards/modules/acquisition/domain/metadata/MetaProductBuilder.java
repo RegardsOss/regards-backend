@@ -53,9 +53,14 @@ public final class MetaProductBuilder {
         metaProduct.addProduct(product);
         return this;
     }
+    
+    public MetaProductBuilder addMetaFile(MetaFile metaFile) {
+        metaProduct.addMetaFile(metaFile);
+        return this;
+    }
 
-    public MetaProductBuilder withAlgorithm(String algo) {
-        metaProduct.setAlgorithm(algo);
+    public MetaProductBuilder withChecksumAlgorithm(String algo) {
+        metaProduct.setChecksumAlgorithm(algo);
         return this;
     }
 

@@ -72,9 +72,9 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
 
     private static final String CREATION_DATE = "FILE_CREATION_DATE";
 
-    private final static DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-    private final static DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
+    private static final DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
 
     private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 

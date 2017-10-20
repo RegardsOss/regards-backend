@@ -15,6 +15,7 @@ public class ChainGenerationJobParameter extends JobParameter {
         super(NAME, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ChainGeneration getValue() {
         return super.getValue();
