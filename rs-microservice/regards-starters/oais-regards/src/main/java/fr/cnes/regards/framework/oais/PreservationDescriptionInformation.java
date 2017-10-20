@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.validation.constraints.NotNull;
 
 import com.google.common.collect.Sets;
 
@@ -42,7 +41,7 @@ public class PreservationDescriptionInformation {
      * Should contains the tags too as a "special" key
      */
     @NotNull
-    private final Map<String, Object> contextInformation = new HashMap<>();;
+    private final Map<String, Object> contextInformation = new HashMap<>();
 
     @NotNull
     private final Map<String, String> referenceInformation = new HashMap<>();
@@ -65,8 +64,8 @@ public class PreservationDescriptionInformation {
     }
 
     public Collection<String> getTags() {
-        @SuppressWarnings("unchecked")
-        Collection<String> tags = (Collection<String>) getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked") Collection<String> tags = (Collection<String>) getContextInformation()
+                .get(CONTEXT_INFO_TAGS_KEY);
         if (tags == null) {
             tags = Sets.newHashSet();
             getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);
@@ -91,64 +90,38 @@ public class PreservationDescriptionInformation {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((accessRightInformation == null) ? 0 : accessRightInformation.hashCode());
-        result = (prime * result) + ((contextInformation == null) ? 0 : contextInformation.hashCode());
-        result = (prime * result) + ((fixityInformation == null) ? 0 : fixityInformation.hashCode());
-        result = (prime * result) + ((provenanceInformation == null) ? 0 : provenanceInformation.hashCode());
-        result = (prime * result) + ((referenceInformation == null) ? 0 : referenceInformation.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        PreservationDescriptionInformation that = (PreservationDescriptionInformation) o;
+
+        if (!contextInformation.equals(that.contextInformation)) {
+            return false;
+        }
+        if (!referenceInformation.equals(that.referenceInformation)) {
+            return false;
+        }
+        if (!provenanceInformation.equals(that.provenanceInformation)) {
+            return false;
+        }
+        if (!fixityInformation.equals(that.fixityInformation)) {
+            return false;
+        }
+        return accessRightInformation.equals(that.accessRightInformation);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        PreservationDescriptionInformation other = (PreservationDescriptionInformation) obj;
-        if (accessRightInformation == null) {
-            if (other.accessRightInformation != null) {
-                return false;
-            }
-        } else if (!accessRightInformation.equals(other.accessRightInformation)) {
-            return false;
-        }
-        if (contextInformation == null) {
-            if (other.contextInformation != null) {
-                return false;
-            }
-        } else if (!contextInformation.equals(other.contextInformation)) {
-            return false;
-        }
-        if (fixityInformation == null) {
-            if (other.fixityInformation != null) {
-                return false;
-            }
-        } else if (!fixityInformation.equals(other.fixityInformation)) {
-            return false;
-        }
-        if (provenanceInformation == null) {
-            if (other.provenanceInformation != null) {
-                return false;
-            }
-        } else if (!provenanceInformation.equals(other.provenanceInformation)) {
-            return false;
-        }
-        if (referenceInformation == null) {
-            if (other.referenceInformation != null) {
-                return false;
-            }
-        } else if (!referenceInformation.equals(other.referenceInformation)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        int result = contextInformation.hashCode();
+        result = 31 * result + referenceInformation.hashCode();
+        result = 31 * result + provenanceInformation.hashCode();
+        result = 31 * result + fixityInformation.hashCode();
+        result = 31 * result + accessRightInformation.hashCode();
+        return result;
     }
 }
