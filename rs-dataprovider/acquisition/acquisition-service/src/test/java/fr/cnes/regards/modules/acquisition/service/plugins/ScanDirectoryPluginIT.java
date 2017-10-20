@@ -94,10 +94,6 @@ public class ScanDirectoryPluginIT {
 
     private static final String META_PRODUCT_NAME = "the meta product name";
 
-    //    public static final String META_FILE_PARAM = "meta-file";
-    //
-    //    public static final String CHAIN_GENERATION_PARAM = "chain";
-
     private static final String DEFAULT_USER = "John Doe";
 
     public static final String PATTERN_FILTER = "[A-Z]{4}_MESURE_TC_([0-9]{8}_[0-9]{6}).TXT";
@@ -148,6 +144,9 @@ public class ScanDirectoryPluginIT {
 
     @Autowired
     private IMetaFileRepository metaFileRepository;
+    
+    @Autowired
+    private Gson gson;
 
     private ChainGeneration chain;
 
@@ -172,8 +171,8 @@ public class ScanDirectoryPluginIT {
     }
 
     public void initData() {
-        chain = chainService
-                .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
+        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
+                .lastActivation(OffsetDateTime.now().minusHours(2)).get());
     }
 
     @After
@@ -204,10 +203,12 @@ public class ScanDirectoryPluginIT {
         metaFiles.add(metaFile);
         PluginParametersFactory factory = PluginParametersFactory.build();
         factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_PRODUCT_PARAM,
-                                    new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct)));
+                                    gson.toJson(MetaProductDto.fromMetaProduct(metaProduct)));
         factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_FILE_PARAM,
-                                    new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
+                                    gson.toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
         factory.addParameterDynamic(AbstractAcquisitionScanPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.LAST_ACQ_DATE_PARAM,
+                                    gson.toJson(chain.getLastDateActivation()));
 
         IAcquisitionScanPlugin scanPlugin = pluginService
                 .getPlugin(pluginService
@@ -255,7 +256,7 @@ public class ScanDirectoryPluginIT {
         Set<File> badFiles = scanPlugin.getBadFiles();
         Assert.assertTrue(badFiles != null && badFiles.size() == 0);
     }
-    
+
     @Test
     public void scanPluginTestWrongChecksumAlgo() throws ModuleException {
         // Create a ScanDirectory

@@ -31,7 +31,9 @@ public abstract class AbstractAcquisitionScanPlugin {
 
     public static final String META_FILE_PARAM = "meta-file";
 
-    public static final String CHAIN_GENERATION_PARAM = "chain";
+    public static final String CHAIN_GENERATION_PARAM = "chain-label";
+    
+    public static final String LAST_ACQ_DATE_PARAM = "last-acquisition-date";
 
     /**
      * Transforme le pattern indique dans la fourniture en pattern Java.<br>

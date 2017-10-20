@@ -62,6 +62,9 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     String chainLabel;
+    
+    @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
+    String lastDateActivation;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     MetaProductDto metaProductDto;

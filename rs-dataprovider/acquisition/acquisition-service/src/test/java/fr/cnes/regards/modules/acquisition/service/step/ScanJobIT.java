@@ -51,6 +51,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -107,7 +109,7 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private static final long WAIT_TIME = 6_000;
+    private static final long WAIT_TIME = 10_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -159,6 +161,12 @@ public class ScanJobIT {
 
     @Autowired
     private IMetaFileRepository metaFileRepository;
+    
+    @Autowired
+    private IPluginParameterRepository pluginParameterRepository;
+    
+    @Autowired
+    private IPluginConfigurationRepository pluginConfigurationRepository;
 
     private ChainGeneration chain;
 
@@ -241,6 +249,7 @@ public class ScanJobIT {
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM, OffsetDateTime.now().minusDays(10).toString());
 
         PluginConfiguration plgConfCheck = pluginService.getPluginConfiguration("BasicCheckFilePlugin",
                                                                                 ICheckFilePlugin.class);
@@ -253,8 +262,8 @@ public class ScanJobIT {
 
         waitJob(WAIT_TIME);
 
-        Assert.assertTrue(!runnings.isEmpty());
-        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
@@ -285,14 +294,15 @@ public class ScanJobIT {
         chain.setScanAcquisitionPluginConf(plgConf.getId());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
 
         waitJob(WAIT_TIME);
 
-        Assert.assertTrue(!runnings.isEmpty());
-        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
@@ -301,8 +311,8 @@ public class ScanJobIT {
 
         waitJob(WAIT_TIME);
 
-        Assert.assertTrue(!runnings.isEmpty());
-        Assert.assertTrue(!succeededs.isEmpty());
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
@@ -415,6 +425,9 @@ public class ScanJobIT {
         chainGenerationRepository.deleteAll();
         metaProductRepository.deleteAll();
         metaFileRepository.deleteAll();
+        
+        pluginParameterRepository.deleteAll();
+        pluginConfigurationRepository.deleteAll();
     }
 
     private void waitJob(long millSecs) {
