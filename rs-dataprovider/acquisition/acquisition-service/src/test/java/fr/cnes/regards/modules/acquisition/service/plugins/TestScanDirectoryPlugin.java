@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
  * @since 1.0-SNAPSHOT
  */
 @Plugin(id = "TestScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Scan directories to detect incoming data files", author = "REGARDS Team",
+        description = "TestScanDirectoryPlugin", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
 
@@ -61,22 +61,22 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
     private static final String CHECKUM_ALGO = "SHA-256";
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
-    String chainLabel;
+    private String chainLabel;
     
     @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
-    String lastDateActivation;
+    private String lastDateActivation;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    MetaProductDto metaProductDto;
+    private MetaProductDto metaProductDto;
 
     // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
     @PluginParameter(name = META_FILE_PARAM, optional = true)
-    SetOfMetaFileDto metaFiles;
+    private SetOfMetaFileDto metaFiles;
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
 
-        LOGGER.info("start scanning for the chain <{}> ", chainLabel);
+        LOGGER.info("start checking for the chain <{}> ", chainLabel);
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
@@ -84,7 +84,7 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         acqFileList.add(createBadAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXTXX"));
         acqFileList.add(createAcquisitionFile("data", EXISTING_PRODUCT));
 
-        LOGGER.info("end scanning for the chain <{}> ", chainLabel);
+        LOGGER.info("end checking for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }

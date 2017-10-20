@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
@@ -277,6 +278,11 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
             throw new ModuleException(e1.toString());
         }
         return outputXml;
+    }
+    
+    // TODO CMZ attention à revoir
+    public String createMetaDataPlugin(AcquisitionFile acqFile) {
+        return null;
     }
 
     /**

@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
  */
 public class ScanDirectoryDto {
 
-    protected Long id;
+    private Long id;
 
     private String scanDir;
 

@@ -62,17 +62,17 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
     private IMetaFileService metaFileService;
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
-    String chainLabel;
+    private String chainLabel;
     
     @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
-    String lastDateActivation;
+    private String lastDateActivation;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    MetaProductDto metaProductDto;
+    private MetaProductDto metaProductDto;
 
     // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
     @PluginParameter(name = META_FILE_PARAM, optional = true)
-    SetOfMetaFileDto metaFiles;
+    private SetOfMetaFileDto metaFiles;
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {

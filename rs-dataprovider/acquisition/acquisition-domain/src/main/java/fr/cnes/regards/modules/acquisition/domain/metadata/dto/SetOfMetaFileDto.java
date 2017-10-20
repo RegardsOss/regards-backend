@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  */
 public class SetOfMetaFileDto {
 
-    Set<MetaFileDto> setOfMetaFiles = new HashSet<MetaFileDto>();
+    private Set<MetaFileDto> setOfMetaFiles = new HashSet<MetaFileDto>();
 
     public void addMetaFileDto(MetaFileDto dto) {
         setOfMetaFiles.add(dto);

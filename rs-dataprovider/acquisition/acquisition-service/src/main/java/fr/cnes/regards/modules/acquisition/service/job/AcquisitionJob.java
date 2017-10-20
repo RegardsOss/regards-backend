@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParamete
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionCheckStep;
 import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionScanStep;
+import fr.cnes.regards.modules.acquisition.service.step.IGenerateSipStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
@@ -49,13 +50,18 @@ public class AcquisitionJob extends AbstractJob<Void> {
     private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
-    private IAcquisitionScanStep scanStep;
+    private IAcquisitionScanStep scanStepImpl;
 
     @Autowired
-    private IAcquisitionCheckStep checkStep;
+    private IAcquisitionCheckStep checkStepImpl;
+
+    @Autowired
+    private IGenerateSipStep generateSIPStepImpl;
 
     @Override
     public void run() {
+        IStep checkStep = null;
+        IStep generateSipStep = null;
         Set<JobParameter> chains = getParameters();
         ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
@@ -70,18 +76,27 @@ public class AcquisitionJob extends AbstractJob<Void> {
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration);
 
         // IAcquisitionScanStep is the first step, it is mandatory
-        IStep firstStep = scanStep;
-        firstStep.setProcess(process);
-        beanFactory.autowireBean(firstStep);
-        process.setCurrentStep(firstStep);
+        IStep scanStep = scanStepImpl;
+        scanStep.setProcess(process);
+        beanFactory.autowireBean(scanStep);
+        process.setCurrentStep(scanStep);
 
         // IAcquisitionCheckStep is optional
         if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
-            IStep secundStep = checkStep;
-            secundStep.setProcess(process);
-            beanFactory.autowireBean(secundStep);
-            firstStep.setProcess(process);
-            firstStep.setNextStep(secundStep);
+            checkStep = checkStepImpl;
+            checkStep.setProcess(process);
+            beanFactory.autowireBean(checkStep);
+            scanStep.setNextStep(checkStep);
+        }
+
+        // IGenerateSIPStep is mandatory
+        generateSipStep = generateSIPStepImpl;
+        generateSipStep.setProcess(process);
+        beanFactory.autowireBean(generateSipStep);
+        if (checkStep != null) {
+            checkStep.setNextStep(generateSipStep);
+        } else {
+            scanStep.setNextStep(generateSipStep);
         }
 
         process.run();

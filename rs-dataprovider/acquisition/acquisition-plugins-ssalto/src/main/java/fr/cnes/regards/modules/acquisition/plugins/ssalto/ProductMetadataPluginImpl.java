@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
@@ -48,8 +49,8 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
      * Cree les metadata niveau produit
      */
     @Override
-    public String createMetadataPlugin(String productName, Map<File, ?> pFileMap, String datasetName,
-            String dicoName, String projectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, Map<File, ?> pFileMap, String datasetName, String dicoName,
+            String projectName) throws ModuleException {
 
         // return pProductName;
         String xmlString = null;
@@ -123,6 +124,12 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
             LOGGER.info("***** DO NOT compute PRODUCT xml descriptor");
         }
         return xmlString;
+    }
+
+    @Override
+    public String createMetaDataPlugin(AcquisitionFile acqFile) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

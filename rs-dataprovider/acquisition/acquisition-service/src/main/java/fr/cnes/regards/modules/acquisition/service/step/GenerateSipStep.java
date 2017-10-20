@@ -19,10 +19,9 @@
 
 package fr.cnes.regards.modules.acquisition.service.step;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,8 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
@@ -50,40 +50,45 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  */
 @MultitenantTransactional
 @Service
-public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep {
+public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanStep.class);
-
-    @Autowired
-    private IPluginService pluginService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSipStep.class);
 
     @Autowired
-    private IChainGenerationService chainGenerationService;
+    IPluginService pluginService;
 
     @Autowired
-    private IAcquisitionFileRepository acquisitionFileRepository;
+    IChainGenerationService chainGenerationService;
 
     @Autowired
-    private IAcquisitionFileService acquisitionFileService;
+    IAcquisitionFileRepository acquisitionFileRepository;
+
+    @Autowired
+    IAcquisitionFileService acquisitionFileService;
 
     private ChainGeneration chainGeneration;
+
+    /**
+     * {@link List} of {@link AcquisitionFile} that should be check
+     */
+    private List<AcquisitionFile> validFileList;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
 
         this.chainGeneration = process.getChainGeneration();
 
-        // A plugin for the scan configuration is required
-        if (this.chainGeneration.getScanAcquisitionPluginConf() == null) {
-            throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
+        // A plugin for the generate Sip configuration is required
+        if (this.chainGeneration.getGenerateSIPPluginConf() == null) {
+            throw new RuntimeException("The required IGenerateSipStep is missing for the ChainGeneration <"
                     + this.chainGeneration.getLabel() + ">");
         }
 
-        // Lunch the scan plugin
+        // Lunch the generate plugin
         try {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.chainGeneration.getScanAcquisitionParameter().entrySet()) {
+            for (Map.Entry<String, String> entry : this.chainGeneration.getGenerateSIPParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
@@ -91,18 +96,20 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             }
 
             // get an instance of the plugin
-            IAcquisitionScanPlugin scanPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getScanAcquisitionPluginConf(),
+            IGenerateSIPPlugin generateSipPlugin = pluginService
+                    .getPlugin(this.chainGeneration.getGenerateSIPPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
-            // launch the plugin to get the AcquisitionFile
-            // c'est le plugin qui met la Date d'acquisition du fichier
-            // c'est plugin qui calcule le checksum si c'est configuré dans la chaine   
-            Set<AcquisitionFile> acquisitionFiles = scanPlugin.getAcquisitionFiles();
+            if (validFileList != null) {
+                // for each AcquisitionFile
+                for (AcquisitionFile acqFile : validFileList) {
+                    //            generateSipPlugin.createMetadataPlugin("coucou", fileMap, datasetName, dicoName, projectName);
+                    generateSipPlugin.createMetaDataPlugin(acqFile);
+                }
 
-            synchronizedDatabase(acquisitionFiles);
+            }
 
-            reportBadFiles(scanPlugin.getBadFiles());
+
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -110,47 +117,13 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     }
 
-    private void synchronizedDatabase(Set<AcquisitionFile> acquisitionFiles) {
-        for (AcquisitionFile af : acquisitionFiles) {
-            List<AcquisitionFile> listAf = acquisitionFileService.findByMetaFile(af.getMetaFile());
-
-            if (listAf.contains(af)) {
-                // if the AcquisitionFile already exists in database
-                // update his status and his date acquisition
-                AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
-                afExisting.setAcqDate(af.getAcqDate());
-                afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                acquisitionFileService.save(afExisting);
-            } else {
-                af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                acquisitionFileService.save(af);
-            }
-
-            // for the first activation of the ChainGeneration
-            // set the last activation date with the activation date of the current AcquisitionFile
-            if (chainGeneration.getLastDateActivation() == null) {
-                chainGeneration.setLastDateActivation(af.getAcqDate());
-            } else {
-                if (chainGeneration.getLastDateActivation().isBefore(af.getAcqDate())) {
-                    chainGeneration.setLastDateActivation(af.getAcqDate());
-                }
-            }
-        }
-
-        // Save the ChainGeneration the last activation date as been modified 
-        chainGenerationService.save(chainGeneration);
-    }
-
-    private void reportBadFiles(Set<File> badFiles) {
-        if (badFiles == null || badFiles.isEmpty()) {
-            return;
-        }
-        badFiles.forEach(f -> LOGGER.info("Unexpected file <{}> for the chain <{}>", f.getAbsoluteFile(),
-                                          chainGeneration.getLabel()));
-    }
-
     @Override
     public void getResources() throws AcquisitionException {
+        validFileList = new ArrayList<>();
+        for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
+            validFileList
+                    .addAll(acquisitionFileRepository.findByStatusAndMetaFile(AcquisitionFileStatus.VALID, metaFile));
+        }
     }
 
     @Override

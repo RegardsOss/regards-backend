@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
@@ -129,6 +130,14 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
 
     public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName,
             String dicoName, String projectName) throws ModuleException {
+        // TODO CMZ à revoir
+        return null;
+    }
+
+
+    @Override
+    public String createMetaDataPlugin(AcquisitionFile acqFile) {
+        // TODO CMZ à revoir        
         return null;
     }
 
