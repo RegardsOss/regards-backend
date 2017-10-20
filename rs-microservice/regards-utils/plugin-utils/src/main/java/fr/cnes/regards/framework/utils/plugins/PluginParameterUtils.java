@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +115,11 @@ public final class PluginParameterUtils {
         /**
          * A primitive of {@link Boolean}
          */
-        BOOLEAN(Boolean.class);
+        BOOLEAN(Boolean.class),
+        
+        SET(Set.class)
+        
+        ;
 
         /**
          * Type
@@ -182,7 +187,6 @@ public final class PluginParameterUtils {
         ParamType fieldType = getFieldParameterType(field, prefixs);
 
         if (fieldType != ParamType.PRIMITIVE) {
-            field.hashCode();
             if (hierarchicalParentUsedTypes.contains(field.getType().getName())) {
                 LOGGER.warn("Cyclic parameter types detected !! for {}", field.getType().getName());
                 throw new PluginUtilsRuntimeException(

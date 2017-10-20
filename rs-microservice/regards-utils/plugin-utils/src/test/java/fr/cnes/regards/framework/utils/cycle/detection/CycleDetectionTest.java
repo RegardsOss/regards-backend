@@ -172,6 +172,40 @@ public class CycleDetectionTest {
         Assert.fail();
     }
 
+    @Test
+    public void cycleDetectedWithSet() {
+        TestPojoWithSet pojoParent = new TestPojoWithSet();
+
+        TestPojoChildWithSet pojoChild = new TestPojoChildWithSet();
+
+        TestPojo pojoParam = new TestPojo();
+        pojoParam.setValue("pojo");
+        pojoParam.addIntValues(1999);
+
+        pojoParent.addChild(pojoChild);
+        pojoChild.addPojo(pojoParam);
+
+        /*
+         * Set all parameters
+         */
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SamplePluginWithPojoCycleDetected.ACTIVE, "true")
+                .addParameter(SamplePluginWithPojoCycleDetected.COEFF, "12345")
+                .addParameter(SamplePluginWithPojoCycleDetected.POJO, gson.toJson(pojoParent)).getParameters();
+
+        // instantiate plugin
+        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
+                                                                         Arrays.asList(PLUGIN_PACKAGE),
+                                                                         new HashMap<>());
+
+        Assert.assertNotNull(samplePlugin);
+        
+        Assert.assertNotNull(samplePlugin.getPojo());
+        Assert.assertNotNull(samplePlugin.getPojo().getChilds());
+        Assert.assertEquals(samplePlugin.getPojo().getChilds().size(), pojoParent.getChilds().size());
+        Assert.assertEquals(samplePlugin.getPojo().getChilds(), pojoParent.getChilds());
+    }
+
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithThreeLevel() {
         List<String> values = new ArrayList<String>();
