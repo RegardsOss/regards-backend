@@ -147,7 +147,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     protected void afterRun(Map<String, JobParameter> parameterMap) {
         // before we make the job fail, lets check if all DataFile have been handled
         Collection<DataFile> handled = progressManager.getHandledDataFile();
-        IWorkingSubset workingSubset = (IWorkingSubset) parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME);
+        IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
         if(!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
             Sets.SetView<DataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(), Sets.newHashSet(handled));
