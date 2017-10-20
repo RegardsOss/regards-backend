@@ -18,8 +18,8 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.storage.client.IAipClient;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 
 /**
