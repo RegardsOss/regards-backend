@@ -22,6 +22,8 @@ import java.util.Collection;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +52,8 @@ import fr.cnes.regards.modules.ingest.service.IIngestService;
 @RequestMapping(IngestController.TYPE_MAPPING)
 public class IngestController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestController.class);
+
     public static final String TYPE_MAPPING = "/sips";
 
     @Autowired
@@ -65,7 +69,36 @@ public class IngestController {
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     public ResponseEntity<Collection<SIPEntity>> ingest(@Valid @RequestBody SIPCollection sips) throws ModuleException {
+
         Collection<SIPEntity> sipEntities = ingestService.ingest(sips);
-        return ResponseEntity.status(HttpStatus.CREATED).body(sipEntities);
+        HttpStatus status = computeStatus(sipEntities);
+        return ResponseEntity.status(status).body(sipEntities);
+    }
+
+    private HttpStatus computeStatus(Collection<SIPEntity> sipEntities) {
+        Boolean hasCreated = Boolean.FALSE;
+        Boolean hasRejected = Boolean.FALSE;
+        for (SIPEntity sipEntity : sipEntities) {
+            switch (sipEntity.getState()) {
+                case CREATED:
+                    hasCreated = Boolean.TRUE;
+                    break;
+                case REJECTED:
+                    hasRejected = Boolean.TRUE;
+                    break;
+                default:
+                    LOGGER.warn("Unexpected SIP state");
+                    break;
+            }
+        }
+        HttpStatus status;
+        if (hasCreated && hasRejected) {
+            status = HttpStatus.PARTIAL_CONTENT; // 206
+        } else if (hasRejected) {
+            status = HttpStatus.CONFLICT; // 409
+        } else {
+            status = HttpStatus.CREATED; // 201
+        }
+        return status;
     }
 }
