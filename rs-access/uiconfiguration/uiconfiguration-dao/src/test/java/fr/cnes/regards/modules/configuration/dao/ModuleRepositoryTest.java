@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.modules.configuration.domain.Module;
@@ -36,6 +37,7 @@ import fr.cnes.regards.modules.configuration.domain.Module;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
 public class ModuleRepositoryTest extends AbstractDaoTransactionalTest {
 
     @Autowired

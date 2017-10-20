@@ -154,7 +154,7 @@ public class LayoutService extends AbstractUiConfigurationService
     @Override
     public Layout updateLayout(final Layout pLayout) throws EntityException {
 
-        // Check layut json format
+        // Check layout json format
         final Gson gson = new Gson();
         try {
             gson.fromJson(pLayout.getLayout(), Object.class);
@@ -162,7 +162,7 @@ public class LayoutService extends AbstractUiConfigurationService
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Layout is not a valid json format.");
         }
-        if (!repository.exists(pLayout.getId())) {
+        if (!repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
             throw new EntityNotFoundException(pLayout.getId(), Layout.class);
         }
         return repository.save(pLayout);

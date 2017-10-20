@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.configuration.dao;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.modules.configuration.domain.Layout;
@@ -34,6 +35,7 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
 public class LayoutRepositoryTest extends AbstractDaoTransactionalTest {
 
     @Autowired

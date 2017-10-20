@@ -66,7 +66,7 @@ public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isUnprocessableEntity());
         final Layout layout = new Layout();
         layout.setId(1L);
-        layout.setApplicationId("USER");
+        layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         layout.setLayout("{}}");
         performDefaultPut("/layouts/{applicationId}", layout, expectations, "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
@@ -78,7 +78,7 @@ public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         final Layout layout = new Layout();
         layout.setId(1L);
-        layout.setApplicationId("USER");
+        layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         layout.setLayout("{\"test\":\"ok\"}");
         performDefaultPut("/layouts/{applicationId}", layout, expectations, "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
