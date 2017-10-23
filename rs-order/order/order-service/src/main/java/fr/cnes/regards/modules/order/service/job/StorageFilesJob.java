@@ -44,7 +44,9 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
     /**
      * Map { checksum -> dataFile } of data files.
      */
-    private Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
+    private final Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
+
+    private Set<JobParameter> parameters;
 
     @Override
     public void setParameters(Set<JobParameter> parameters)
@@ -70,7 +72,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                 expirationDate = param.getValue();
             }
         }
-        super.parameters = parameters;
+        this.parameters = parameters;
     }
 
     @Override
