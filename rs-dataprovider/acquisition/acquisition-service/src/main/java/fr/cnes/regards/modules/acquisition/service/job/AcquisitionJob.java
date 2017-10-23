@@ -19,7 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.Set;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +90,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
     }
 
     @Override
-    public void setParameters(Set<JobParameter> parameters)
+    public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         if (parameters.isEmpty()) {
             throw new JobParameterMissingException("No parameter provided");
@@ -98,7 +98,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
         if (parameters.size() != 1) {
             throw new JobParameterInvalidException("Only one parameter is expected.");
         }
-        JobParameter param = parameters.iterator().next();
+        JobParameter param = parameters.values().iterator().next();
         if (!ChainGenerationJobParameter.isCompatible(param)) {
             throw new JobParameterInvalidException(
                     "Please use ChainGenerationJobParameter in place of JobParameter (this "
