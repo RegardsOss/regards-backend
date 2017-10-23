@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
 import java.util.Set;
-import java.util.UUID;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -54,11 +53,6 @@ public interface IJob<R> extends Runnable {
     void setWorkspace(Path pPath);
 
     Path getWorkspace();
-
-    /**
-     * @param pJobInfoId save the jobInfo id inside the job
-     */
-    void setId(final UUID pJobInfoId);
 
     /**
      * Set the parameters and should check if all needed parameters are specified

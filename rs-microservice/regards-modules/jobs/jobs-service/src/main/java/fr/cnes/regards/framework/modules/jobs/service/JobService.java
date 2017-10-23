@@ -1,6 +1,5 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -14,6 +13,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -87,18 +89,19 @@ public class JobService implements IJobService {
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
      */
-    private BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
+    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
 
     /**
      * A set containing ids of Jobs asked to be stopped whereas they haven't still be launched
      */
-    private Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
+    private final Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
 
     @PostConstruct
     private void init() {
         threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
     }
 
+    @Override
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
         subscriber.subscribeTo(StopJobEvent.class, this::handleStopEvent);
@@ -117,9 +120,8 @@ public class JobService implements IJobService {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        LOGGER.error(
-                                "Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
-                                        + "for your soul", e);
+                        LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
+                                + "for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -134,7 +136,7 @@ public class JobService implements IJobService {
                 // No job to execute on any tenants, take a rest
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException e) { // NOSONAR
                     // Ok, i have no problem with that
                 }
             }
@@ -150,7 +152,7 @@ public class JobService implements IJobService {
         // Retrieve all jobInfos of which completion has changed
         Set<JobInfo> toUpdateJobInfos = Sets.filter(jobsMap.keySet(), j -> j.getStatus().hasCompletionChanged());
         if (!toUpdateJobInfos.isEmpty()) {
-            // Create a multimap { tenant, (jobInfos) }
+            // Create a multimap { tenant, (jobInfos) } // NOSONAR
             HashMultimap<String, JobInfo> tenantJobInfoMultimap = HashMultimap.create();
             for (JobInfo jobInfo : toUpdateJobInfos) {
                 tenantJobInfoMultimap.put(jobInfo.getTenant(), jobInfo);
@@ -172,6 +174,7 @@ public class JobService implements IJobService {
         statusInfo.setStackTrace(sw.toString());
     }
 
+    @SuppressWarnings("unchecked")
     public void execute(JobInfo jobInfo) {
         try {
             // Case expiration date reached
@@ -192,9 +195,9 @@ public class JobService implements IJobService {
                 return;
             }
             // First, instantiate job
+            @SuppressWarnings("rawtypes")
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
-            job.setId(jobInfo.getId());
             job.setParameters(jobInfo.getParameters());
             if (job.needWorkspace()) {
                 job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
@@ -231,7 +234,6 @@ public class JobService implements IJobService {
         }
     }
 
-
     /**
      * Ask for job abortion if current thread pool is responsible of job execution
      * @param jobId job id
@@ -250,7 +252,7 @@ public class JobService implements IJobService {
                     }
                     break;
                 case PENDING: // even a PENDING Job must be set at ABORTED status to avoid a third party service to
-                // set it at QUEUED
+                    // set it at QUEUED
                 case QUEUED:
                     // Update to ABORTED status (this avoids this job to be taken into account)
                     jobInfo.updateStatus(JobStatus.ABORTED);
