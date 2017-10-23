@@ -19,6 +19,11 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -32,10 +37,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.hibernate.annotations.Type;
 
@@ -216,6 +217,17 @@ public class PluginParameter implements IIdentifiable<Long> {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append(name);
+        strBuilder.append(" - ");
+        strBuilder.append(value);
+        strBuilder.append(" - ");
+        strBuilder.append(dynamic.toString());
+        return strBuilder.toString();
     }
 
 }

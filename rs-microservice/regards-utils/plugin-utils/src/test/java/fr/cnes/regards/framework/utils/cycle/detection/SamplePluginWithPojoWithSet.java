@@ -1,0 +1,114 @@
+/*
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.framework.utils.cycle.detection;
+
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
+
+/**
+ * SamplePlugin
+ *
+ * @author Christophe Mertz
+ */
+@Plugin(description = "Sample plugin test", id = "SamplePluginWithPojo", version = "0.0.1", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+public class SamplePluginWithPojoWithSet implements ISamplePlugin {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePluginWithPojoWithSet.class);
+
+    private static final int ONE = 3;
+
+    private static final int SECOND = 9;
+
+    private static final ColorStatus DEFAULT_COLOR = ColorStatus.BLUE;
+
+    /**
+     * A {@link String} parameter
+     */
+    @PluginParameter(description = "string parameter", name = SUFFIXE)
+    private String suffix;
+
+    /**
+     * A {@link Integer} parameter
+     */
+    @PluginParameter(description = "int parameter", name = COEFF, defaultValue = "-100")
+    private Integer coef;
+
+    /**
+     * A {@link Boolean} parameter
+     */
+    @PluginParameter(description = "boolean parameter", name = ACTIVE)
+    private Boolean isActive;
+
+    /**
+     * A {@link TestPojo} parameter
+     */
+    @PluginParameter(description = "Pojo parameter", name = POJO)
+    private TestPojoWithSet pojo;
+    
+    @Override
+    public String echo(final String pMessage) {
+        final StringBuffer str = new StringBuffer();
+        if (isActive) {
+            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
+        } else {
+
+            str.append(this.getClass().getName() + ":is not active");
+        }
+        return str.toString();
+    }
+
+    @Override
+    public int add(final int pFist, final int pSecond) {
+        final int res = coef * (pFist + pSecond);
+        LOGGER.info("add result : " + res);
+        return res;
+    }
+
+    /**
+     * Init method
+     */
+    @PluginInit
+    private void aInit() {
+        LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
+                + "|coeff:" + coef);
+    }
+
+    public TestPojoWithSet getPojo() {
+        return pojo;
+    }
+
+    private enum ColorStatus {
+        BLUE,
+        RED,
+        YELLOW,
+        BLACK;
+    }
+
+}
