@@ -12,6 +12,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
@@ -29,19 +30,20 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
     protected Map<String, JobParameter> checkParameters(Set<JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         Map<String, JobParameter> jobParamMap = super.checkParameters(parameters);
-        //lets see if old data files has been given or not
+        // lets see if old data files has been given or not
         JobParameter oldDataFiles;
         if (((oldDataFiles = jobParamMap.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
                 || !(oldDataFiles.getValue() instanceof DataFile[])) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), DataFile[].class.getName(),
                                   OLD_DATA_FILES_PARAMETER_NAME));
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             throw e;
         }
         return jobParamMap;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     protected void doRun(Map<String, JobParameter> parameterMap) {
         // lets instantiate the plugin to use
@@ -56,7 +58,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             }
             storagePlugin.store(workingSubset, true, progressManager);
             // manual call to after run here to globalize the code.
-            afterRun(parameterMap);
+            afterRun();
             // ... then we delete the old ones, that has been updated:
             // first lets get the all the data files that should have been updated
             Set<DataFile> oldDataFiles = Sets
@@ -69,8 +71,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
                 throw new StorageException("Update process failed");
             }
         } catch (ModuleException e) {
-            //throwing new runtime allows us to make the job fail.
-            throw new RuntimeException(e);
+            // throwing new runtime allows us to make the job fail.
+            throw new JobRuntimeException(e);
         }
     }
 
@@ -81,14 +83,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
 
     @Override
     public int getCompletionCount() {
-        try {
-            Map<String, JobParameter> paramMap = checkParameters(parameters);
-            return ((IWorkingSubset) paramMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
-                    + ((DataFile[]) paramMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
-        } catch (JobParameterMissingException | JobParameterInvalidException e) {
-            //it should not happens here!
-            LOG.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
+        return ((IWorkingSubset) parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
+                + ((DataFile[]) parameterMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
     }
 }

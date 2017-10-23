@@ -33,7 +33,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), Path.class.getName(),
                                   DESTINATION_PATH_PARAMETER_NAME));
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             throw e;
         }
         return jobParamMap;
@@ -52,7 +52,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
             for (DataFile data : workingSubset.getDataFiles()) {
                 data.setDataStorageUsed(confToUse);
             }
-            LOG.debug("Plugin {} - Running restoration for {}files", storagePlugin.getClass().getName(),
+            logger.debug("Plugin {} - Running restoration for {}files", storagePlugin.getClass().getName(),
                       workingSubset.getDataFiles().size());
             storagePlugin.retrieve(workingSubset, destination, progressManager);
         } catch (ModuleException e) {

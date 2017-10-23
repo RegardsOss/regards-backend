@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -163,11 +164,12 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
     protected IJob runJob(JobInfo jobInfo) {
         try {
 
-            /**JobInfo createJobInfo = jobInfoService.createAsQueued(jobInfo);
-            IJob job = createJobInfo.getJob();*/
+            /**
+             * JobInfo createJobInfo = jobInfoService.createAsQueued(jobInfo);
+             * IJob job = createJobInfo.getJob();
+             */
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
-            job.setId(jobInfo.getId());
             job.setParameters(jobInfo.getParameters());
             if (job.needWorkspace()) {
                 job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
