@@ -54,10 +54,10 @@ public class AcquisitionJob extends AbstractJob<Void> {
     @Autowired
     private IAcquisitionCheckStep checkStep;
 
+    private ChainGeneration chainGeneration;
+
     @Override
     public void run() {
-        Set<JobParameter> chains = getParameters();
-        ChainGeneration chainGeneration = chains.iterator().next().getValue();
 
         LOGGER.info("Start acquisition job for the chain <{}>", chainGeneration.getLabel());
 
@@ -104,7 +104,6 @@ public class AcquisitionJob extends AbstractJob<Void> {
                     "Please use ChainGenerationJobParameter in place of JobParameter (this "
                             + "class is here to facilitate your life so please use it.");
         }
-        super.parameters = parameters;
+        chainGeneration = param.getValue();
     }
-
 }
