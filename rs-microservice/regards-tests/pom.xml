@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.framework.test</groupId>
 	<artifactId>regards-tests</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<packaging>pom</packaging>
 	<name>REGARDS Tests</name>
 	<description>Aggregator project test-managing modules</description> 
@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 		<relativePath />
 	</parent>
 

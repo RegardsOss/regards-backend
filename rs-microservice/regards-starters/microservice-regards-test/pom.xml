@@ -22,7 +22,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>microservice-regards-test</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<name>Microservice REAGRDS Test</name>
 	<description>Test classes for Microservice REGARDS module</description> 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -49,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 	</parent>
 
 	<dependencies>

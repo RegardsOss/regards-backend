@@ -22,7 +22,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>hateoas-regards</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<name>HATEOAS REGARDS</name>
 	<description>Tools for integrating Spring HATEOAS to REGARDS</description> 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -49,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 	</parent>
 
 	<dependencies>

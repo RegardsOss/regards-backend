@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.framework.test</groupId>
 	<artifactId>regards-integration-test</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<name>REGARDS Integration Test</name>
 	<description>Tools for integration tests</description> 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -50,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 		<relativePath />
 	</parent>
 

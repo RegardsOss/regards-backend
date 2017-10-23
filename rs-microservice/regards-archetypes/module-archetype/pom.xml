@@ -5,7 +5,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>helloworld-module-archetype</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<packaging>maven-archetype</packaging>
 
 	<name>Module Archetype</name>
@@ -34,7 +34,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 		<relativePath />
 	</parent>
 
