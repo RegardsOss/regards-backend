@@ -4,7 +4,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>catalog-services</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<packaging>pom</packaging>
 
 	<name>Catalog Services</name>
@@ -33,7 +33,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 		<relativePath/>
 	</parent>
 

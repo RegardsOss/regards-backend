@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.catalog</groupId>
 	<artifactId>bootstrap-catalog</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 	
 	<name>Boostrap Catalog</name>
@@ -52,7 +52,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.1.0</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>catalog-services-rest</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
+			<version>1.1.0</version>
 		</dependency>
 	</dependencies>
 
