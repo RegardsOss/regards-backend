@@ -27,12 +27,12 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
     public static final String OLD_DATA_FILES_PARAMETER_NAME = "old_data_files";
 
     @Override
-    protected Map<String, JobParameter> checkParameters(Set<JobParameter> parameters)
+    protected void checkParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        Map<String, JobParameter> jobParamMap = super.checkParameters(parameters);
+        super.checkParameters(parameters);
         // lets see if old data files has been given or not
         JobParameter oldDataFiles;
-        if (((oldDataFiles = jobParamMap.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
+        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
                 || !(oldDataFiles.getValue() instanceof DataFile[])) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), DataFile[].class.getName(),
@@ -40,7 +40,6 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             logger.error(e.getMessage(), e);
             throw e;
         }
-        return jobParamMap;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -83,7 +82,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
 
     @Override
     public int getCompletionCount() {
-        return ((IWorkingSubset) parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
-                + ((DataFile[]) parameterMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
+        return ((IWorkingSubset) parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
+                + ((DataFile[]) parameters.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
     }
 }

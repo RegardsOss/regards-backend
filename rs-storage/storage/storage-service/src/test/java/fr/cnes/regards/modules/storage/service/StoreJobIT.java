@@ -170,7 +170,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
              */
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
-            job.setParameters(jobInfo.getParameters());
+            job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
                 job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
             }

@@ -5,14 +5,12 @@ package fr.cnes.regards.modules.storage.service.job;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -56,10 +54,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     protected StorageJobProgressManager progressManager;
 
-    /**
-     * Parameter map
-     */
-    Map<String, JobParameter> parameterMap;
+    protected Map<String, JobParameter> parameters;
 
     /**
      * Check that the given job parameters contains required parameters and that they are valid.
@@ -69,14 +64,12 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
      * @throws JobParameterMissingException
      * @throws JobParameterInvalidException
      */
-    protected Map<String, JobParameter> checkParameters(Set<JobParameter> parameters)
+    protected void checkParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        // lets sort parameters by name
-        Map<String, JobParameter> parametersMap = Maps.newHashMap();
-        parameters.forEach(jp -> parametersMap.put(jp.getName(), jp));
+
         // lets see if the plugin to use has been given through a plugin configuration.
         JobParameter pluginToUse;
-        if (((pluginToUse = parametersMap.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null)
+        if (((pluginToUse = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null)
                 || !(pluginToUse.getValue() instanceof PluginConfiguration)) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), PluginConfiguration.class.getName(),
@@ -95,7 +88,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             throw e;
         }
         JobParameter workingSubSet;
-        if (((workingSubSet = parametersMap.get(WORKING_SUB_SET_PARAMETER_NAME)) == null)
+        if (((workingSubSet = parameters.get(WORKING_SUB_SET_PARAMETER_NAME)) == null)
                 || !(workingSubSet.getValue() instanceof IWorkingSubset)) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), IWorkingSubset.class.getName(),
@@ -103,20 +96,20 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             logger.error(e.getMessage(), e);
             throw e;
         }
-        return parametersMap;
     }
 
     @Override
-    public void setParameters(Set<JobParameter> parameters)
+    public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        this.parameterMap = checkParameters(parameters);
+        checkParameters(parameters);
+        this.parameters = parameters;
     }
 
     @Override
     public void run() {
         progressManager = new StorageJobProgressManager(publisher, this);
         try {
-            doRun(parameterMap);
+            doRun(parameters);
         } finally {
             logger.debug("[FILE JOB] Executing some checks after execution");
             // eventually, lets see if everything went as planned
@@ -137,7 +130,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     protected void afterRun() {
         // before we make the job fail, lets check if all DataFile have been handled
         Collection<DataFile> handled = progressManager.getHandledDataFile();
-        IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
+        IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
         if (!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
             Sets.SetView<DataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
@@ -184,7 +177,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     @Override
     public int getCompletionCount() {
-        return ((IWorkingSubset) parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size();
+        return ((IWorkingSubset) parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size();
     }
 
     public StorageJobProgressManager getProgressManager() {
