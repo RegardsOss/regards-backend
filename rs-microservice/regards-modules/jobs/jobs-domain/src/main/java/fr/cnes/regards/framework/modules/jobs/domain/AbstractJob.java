@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 import java.nio.file.Path;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -36,11 +35,6 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * JobInfo id
      */
     private UUID id;
-
-    /**
-     * Job parameters
-     */
-    protected Set<JobParameter> parameters;
 
     protected R result;
 
@@ -60,13 +54,6 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     @Override
     public void setId(final UUID pJobInfoId) {
         id = pJobInfoId;
-    }
-
-    /**
-     * @return the parameters
-     */
-    public Set<JobParameter> getParameters() {
-        return parameters;
     }
 
     protected void setResult(R result) {

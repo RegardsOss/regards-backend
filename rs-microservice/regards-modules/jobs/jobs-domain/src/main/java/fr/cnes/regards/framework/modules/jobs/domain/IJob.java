@@ -65,7 +65,9 @@ public interface IJob<R> extends Runnable {
      * Beware : do nothing by default, this method must be overriden
      * @param pParameters set job parameters
      */
-    void setParameters(Set<JobParameter> pParameters) throws JobParameterMissingException, JobParameterInvalidException;
+    default void setParameters(Set<JobParameter> pParameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+    }
 
     /**
      * To manage completion estimated date and percentComplete property, a job should provide the number of times it
