@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
  */
 public class MetaFileDto {
 
-    protected Long id;
+    private Long id;
 
     private Boolean mandatory;
 

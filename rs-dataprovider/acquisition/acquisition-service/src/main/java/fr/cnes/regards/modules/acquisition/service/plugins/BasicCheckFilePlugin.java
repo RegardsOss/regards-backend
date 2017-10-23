@@ -46,17 +46,17 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     public static final String META_FILE_PARAM = "meta-file";
 
-    public static final String CHAIN_GENERATION_PARAM = "chain";
+    public static final String CHAIN_GENERATION_PARAM = "chain-label";
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
-    String chainLabel;
+    private String chainLabel;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    MetaProductDto metaProductDto;
+    private MetaProductDto metaProductDto;
 
     // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
     @PluginParameter(name = META_FILE_PARAM, optional = true)
-    SetOfMetaFileDto metaFiles;
+    private SetOfMetaFileDto metaFiles;
 
     protected String productName;
 

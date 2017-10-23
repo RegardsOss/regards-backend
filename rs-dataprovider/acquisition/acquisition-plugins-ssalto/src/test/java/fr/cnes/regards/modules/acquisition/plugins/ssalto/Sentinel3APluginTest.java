@@ -65,6 +65,7 @@ public class Sentinel3APluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
+        addPluginTestDef("DA_TC_SENT3A_DORIS_NAV", "sent3A/pltm");
     }
 
     @Override

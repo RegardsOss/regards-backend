@@ -48,4 +48,9 @@ public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return PROJECT_NAME;
     }
 
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/saralplugin.properties";
+    }
+
 }

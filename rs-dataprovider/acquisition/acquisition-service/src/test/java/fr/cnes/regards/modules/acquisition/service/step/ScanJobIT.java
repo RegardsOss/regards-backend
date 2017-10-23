@@ -53,7 +53,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -78,6 +77,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
@@ -86,6 +86,7 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
 
 /**
@@ -109,7 +110,7 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private static final long WAIT_TIME = 10_000;
+    private static final long WAIT_TIME = 15_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -161,10 +162,10 @@ public class ScanJobIT {
 
     @Autowired
     private IMetaFileRepository metaFileRepository;
-    
+
     @Autowired
     private IPluginParameterRepository pluginParameterRepository;
-    
+
     @Autowired
     private IPluginConfigurationRepository pluginConfigurationRepository;
 
@@ -224,8 +225,7 @@ public class ScanJobIT {
                 .addScanDirectory(scanDir2).get());
 
         // Create a ChainGeneration and a MetaProduct
-        metaProduct = metaProductService
-                .save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
+        metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
         chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
                 .withMetaProduct(metaProduct).get());
     }
@@ -243,20 +243,24 @@ public class ScanJobIT {
         Product product = productService.save(ProductBuilder.build(TestScanDirectoryPlugin.EXISTING_PRODUCT)
                 .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
 
-        PluginConfiguration plgConfScan = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
-                                                                               IAcquisitionScanDirectoryPlugin.class);
-        chain.setScanAcquisitionPluginConf(plgConfScan.getId());
+        chain.setScanAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("TestScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class).getId());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM, OffsetDateTime.now().minusDays(10).toString());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
 
-        PluginConfiguration plgConfCheck = pluginService.getPluginConfiguration("BasicCheckFilePlugin",
-                                                                                ICheckFilePlugin.class);
-        chain.setCheckAcquisitionPluginConf(plgConfCheck.getId());
+        chain.setCheckAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("BasicCheckFilePlugin", ICheckFilePlugin.class).getId());
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        chain.setGenerateSIPPluginConf(pluginService
+                .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -289,12 +293,16 @@ public class ScanJobIT {
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
-        PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
-                                                                           IAcquisitionScanDirectoryPlugin.class);
-        chain.setScanAcquisitionPluginConf(plgConf.getId());
+        chain.setScanAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("TestScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class).getId());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        chain.setGenerateSIPPluginConf(pluginService
+                .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         // Activate the chain
         Assert.assertTrue(chainService.run(chain));
@@ -425,7 +433,7 @@ public class ScanJobIT {
         chainGenerationRepository.deleteAll();
         metaProductRepository.deleteAll();
         metaFileRepository.deleteAll();
-        
+
         pluginParameterRepository.deleteAll();
         pluginConfigurationRepository.deleteAll();
     }

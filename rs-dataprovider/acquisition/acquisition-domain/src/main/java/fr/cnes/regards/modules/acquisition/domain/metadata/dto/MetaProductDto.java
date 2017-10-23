@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 public class MetaProductDto {
 
-    protected Long id;
+    private Long id;
 
     private String label;
 

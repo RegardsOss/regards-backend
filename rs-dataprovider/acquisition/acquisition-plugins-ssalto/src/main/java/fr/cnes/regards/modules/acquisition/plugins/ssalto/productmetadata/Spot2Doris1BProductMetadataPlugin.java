@@ -23,8 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
-@Plugin(description = "Spot2Doris1BProductMetadataPlugin", id = "Spot2Doris1BProductMetadataPlugin",
-        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Spot2Doris1BProductMetadataPlugin", id = "Spot2Doris1BProductMetadataPlugin", version = "1.0.0",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Spot2Doris1BProductMetadataPlugin extends AbstractDoris1BProductMetadataPlugin {
 
@@ -46,6 +46,11 @@ public class Spot2Doris1BProductMetadataPlugin extends AbstractDoris1BProductMet
         addDatasetNamePrexif("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS);
         addDatasetNamePrexif("DA_TC_SPOT2_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);
         addDatasetNamePrexif("DA_TC_SPOT2_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
+    }
+
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/spot2plugin.properties";
     }
 
 }
