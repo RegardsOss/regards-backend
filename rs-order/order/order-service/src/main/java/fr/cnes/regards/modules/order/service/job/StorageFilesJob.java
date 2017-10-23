@@ -46,8 +46,6 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
      */
     private final Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
 
-    private Set<JobParameter> parameters;
-
     @Override
     public void setParameters(Set<JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -72,7 +70,6 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                 expirationDate = param.getValue();
             }
         }
-        this.parameters = parameters;
     }
 
     @Override
