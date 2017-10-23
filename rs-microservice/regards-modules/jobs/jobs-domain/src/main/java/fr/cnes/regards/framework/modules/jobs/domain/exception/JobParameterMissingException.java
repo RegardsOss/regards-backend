@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * @author Sylvain Vissiere-Guerinet
  *
  */
+@SuppressWarnings("serial")
 public class JobParameterMissingException extends ModuleException {
 
     /**

@@ -1,5 +1,8 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -14,8 +17,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.util.HashSet;
-import java.util.Set;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -25,10 +26,12 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * <b>By default, equality between 2 entities uses id if both exist else they are considered as different</b>
  * @author oroussel
  */
+@SuppressWarnings("rawtypes")
 @Entity
 @Table(name = "t_task")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class AbstractReliantTask<K extends AbstractReliantTask> implements IIdentifiable<Long> {
+
     @Id
     @SequenceGenerator(name = "TaskSequence", initialValue = 1, sequenceName = "seq_task")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TaskSequence")
@@ -44,8 +47,9 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
 
     @ManyToMany(targetEntity = AbstractReliantTask.class, cascade = CascadeType.ALL)
     @JoinTable(name = "ta_tasks_reliant_tasks",
-               joinColumns = @JoinColumn(name = "task_id", foreignKey = @ForeignKey(name = "fk_task_2")),
-               inverseJoinColumns = @JoinColumn(name = "reliant_task_id", foreignKey = @ForeignKey(name = "fk_reliant_task")))
+            joinColumns = @JoinColumn(name = "task_id", foreignKey = @ForeignKey(name = "fk_task_2")),
+            inverseJoinColumns = @JoinColumn(name = "reliant_task_id",
+                    foreignKey = @ForeignKey(name = "fk_reliant_task")))
     protected Set<K> reliantTasks = new HashSet<>();
 
     @Override
@@ -81,7 +85,7 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

@@ -9,6 +9,7 @@ import java.util.Set;
  * task depends on nothing, to avoid lazy exceptions while retrieving reliant tasks, accessor method are bypassed.
  * @author oroussel
  */
+@SuppressWarnings("rawtypes")
 public class LeafTask extends AbstractReliantTask<AbstractReliantTask> {
 
     @Override

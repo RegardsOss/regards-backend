@@ -18,25 +18,24 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain.exception;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-
 /**
- * exception to be thrown when a parameter required for a job execution is not valid
+ * Utility exception to throw if job fails during its execution. Any {@link RuntimeException} leads to a failed job.
  *
- * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  *
  */
 @SuppressWarnings("serial")
-public class JobParameterInvalidException extends ModuleException {
+public class JobRuntimeException extends RuntimeException {
 
-    /**
-     * @param msg
-     */
-    public JobParameterInvalidException(String msg) {
-        super(msg);
+    public JobRuntimeException(String message) {
+        super(message);
     }
 
-    public JobParameterInvalidException(String msg, Throwable cause) {
-        super(msg, cause);
+    public JobRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public JobRuntimeException(Throwable cause) {
+        super(cause);
     }
 }
