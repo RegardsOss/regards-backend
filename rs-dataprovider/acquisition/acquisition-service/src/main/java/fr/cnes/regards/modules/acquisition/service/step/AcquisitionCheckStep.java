@@ -66,19 +66,19 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     private static String SUFFIX_FOR_INVALID_FILE = ".inv";
 
     @Autowired
-    IPluginService pluginService;
+    private IPluginService pluginService;
 
     @Autowired
-    IChainGenerationService chainGenerationService;
+    private IChainGenerationService chainGenerationService;
 
     @Autowired
-    IAcquisitionFileRepository acquisitionFileRepository;
+    private IAcquisitionFileRepository acquisitionFileRepository;
 
     @Autowired
-    IAcquisitionFileService acquisitionFileService;
+    private IAcquisitionFileService acquisitionFileService;
 
     @Autowired
-    IProductService productService;
+    private IProductService productService;
 
     @Value("${regards.acquisition.invalid-data-folder:#{null}}")
     private String invalidDataFolder;
@@ -133,8 +133,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                         currentFile = new File(acqFile.getFileName());
                     }
 
-                    Product product = null;
-
                     // execute the check plugin
                     if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
                         acqFile.setStatus(AcquisitionFileStatus.VALID);
@@ -143,7 +141,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                     }
 
                     // Check file status and link the AcquisitionFile to the Product
-                    product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
+                    Product product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
 
                     synchronizedDatabase(acqFile, product);
                 }

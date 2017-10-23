@@ -19,12 +19,13 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
-import java.util.Map;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
@@ -104,7 +105,6 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
         return dataStorageObject;
     }
 
-
     // TODO CMZ à confirmer
     //    /**
     //     * Calcul le chemin relatif a partir du chemin absolu et de l'archive locale.
@@ -127,8 +127,16 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //        pDataStorageObject.setOnlinePath(relativeOnlinePath);
     //    }
 
-    public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName,
-            String dicoName, String projectName) throws ModuleException {
+    @Override
+    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
+        // TODO CMZ à revoir        
+        return null;
+    }
+
+    @Override
+    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
+        // TODO CMZ à revoir        
         return null;
     }
 

@@ -77,6 +77,7 @@ public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
+        addPluginTestDef("DA_TC_SPOT2_LOGVOL_DORIS_1G", "spot2/logvol");
     }
 
     @Override

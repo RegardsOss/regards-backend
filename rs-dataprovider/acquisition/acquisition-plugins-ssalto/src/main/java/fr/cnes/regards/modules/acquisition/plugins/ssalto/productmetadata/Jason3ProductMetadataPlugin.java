@@ -48,4 +48,9 @@ public class Jason3ProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return PROJECT_NAME;
     }
 
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/jason2plugin.properties";
+    }
+
 }

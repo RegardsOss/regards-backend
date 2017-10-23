@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 
 /**
  * 
@@ -123,17 +124,26 @@ public class ChainGeneration implements IIdentifiable<Long> {
     @Column(name = "scan_plugin")
     private Long scanAcquisitionPluginConf;
 
+    /**
+     * A {@link PluginConfiguration} of a {@link ICheckFilePlugin}
+     */
+    @Column(name = "check_plugin")
+    private Long checkAcquisitionPluginConf;
+
+    /**
+     * A {@link PluginConfiguration} of a {@link IGenerateSIPPlugin}
+     */
+    @Column(name = "generate_sip_plugin")
+    private Long generateSIPPluginConf;
+
     @Transient
     private final Map<String, String> scanAcquisitionParameter = new HashMap<>();
 
     @Transient
     private final Map<String, String> checkAcquisitionParameter = new HashMap<>();
 
-    /**
-     * A {@link PluginConfiguration} of a {@link ICheckFilePlugin}
-     */
-    @Column(name = "check_plugin")
-    private Long checkAcquisitionPluginConf;
+    @Transient
+    private final Map<String, String> generateSIPParameter = new HashMap<>();
 
     @Override
     public int hashCode() {
@@ -250,6 +260,14 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.checkAcquisitionPluginConf = checkAcquisitionPluginConf;
     }
 
+    public Long getGenerateSIPPluginConf() {
+        return generateSIPPluginConf;
+    }
+
+    public void setGenerateSIPPluginConf(Long generateSIPPluginConf) {
+        this.generateSIPPluginConf = generateSIPPluginConf;
+    }
+
     public Map<String, String> getScanAcquisitionParameter() {
         return scanAcquisitionParameter;
     }
@@ -264,6 +282,14 @@ public class ChainGeneration implements IIdentifiable<Long> {
 
     public void addCheckAcquisitionParameter(String name, String value) {
         this.checkAcquisitionParameter.put(name, value);
+    }
+
+    public Map<String, String> getGenerateSIPParameter() {
+        return generateSIPParameter;
+    }
+
+    public void addGenerateSIPParameter(String name, String value) {
+        this.generateSIPParameter.put(name, value);
     }
 
     @Override

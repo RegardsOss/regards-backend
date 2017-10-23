@@ -49,4 +49,9 @@ public class SalpProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return PROJECT_NAME;
     }
 
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/salpplugin.properties";
+    }
+
 }

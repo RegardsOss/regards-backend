@@ -42,4 +42,9 @@ public class Spot5ProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return PROJECT_NAME;
     }
 
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/spot5plugin.properties";
+    }
+
 }

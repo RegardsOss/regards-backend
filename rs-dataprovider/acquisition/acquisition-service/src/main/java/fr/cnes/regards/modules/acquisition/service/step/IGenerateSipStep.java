@@ -16,25 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins;
-
-import java.util.List;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+package fr.cnes.regards.modules.acquisition.service.step;
 
 /**
+ * 
  * @author Christophe Mertz
- *
+ * 
  */
-@PluginInterface(description = "Plugin to create product and file metadata")
-public interface IGenerateSIPPlugin {
-
-    // TODO CMZ : à confirmer mais je pense pas que ça retourne une String
-    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException;
-
-    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles);
+public interface IGenerateSipStep extends IStep {
 
 }
