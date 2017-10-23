@@ -67,11 +67,11 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
     @Override
     public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
-        LOGGER.info("start create MetaData for the chain <{}> for the acquisition file {}", chainLabel,
-                    acqFiles.iterator().next().getFileName());
+        LOGGER.info("start create MetaData for the chain <{}> for the product {}", chainLabel,
+                    productName);
 
-        LOGGER.info("end create Metata for the chain <{}> for the acqusition file {}", chainLabel,
-                    acqFiles.iterator().next().getFileName());
+        LOGGER.info("end create Metata for the chain <{}> for the product {}", chainLabel,
+                    productName);
 
         return "coucou";
     }
