@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.Map;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -62,9 +62,9 @@ public interface IJob<R> extends Runnable {
      * if all needed parameters are specified</b> and <b>store them</b> for use in job execution.
      * <br/>
      * <b>Beware : do nothing by default, this method must be overridden.</b>
-     * @param parameters set job parameters
+     * @param parameters non null parameter map
      */
-    default void setParameters(Set<JobParameter> parameters) // NOSONAR
+    default void setParameters(Map<String, JobParameter> parameters) // NOSONAR
             throws JobParameterMissingException, JobParameterInvalidException {
     }
 

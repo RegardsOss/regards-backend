@@ -19,7 +19,9 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -206,6 +208,18 @@ public class JobInfo {
 
     public Set<JobParameter> getParameters() {
         return parameters;
+    }
+
+    /**
+     * @return a non null parameter {@link Map} with key representing the parameter name and value the
+     *         {@link JobParameter}
+     */
+    public Map<String, JobParameter> getParametersAsMap() {
+        Map<String, JobParameter> parameterMap = new HashMap<>();
+        if (parameters != null) {
+            parameters.forEach(param -> parameterMap.put(param.getName(), param));
+        }
+        return parameterMap;
     }
 
     public OffsetDateTime getExpirationDate() {

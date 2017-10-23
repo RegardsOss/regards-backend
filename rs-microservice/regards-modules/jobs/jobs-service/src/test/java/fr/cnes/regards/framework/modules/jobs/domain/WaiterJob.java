@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import java.util.Set;
+import java.util.Map;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -10,6 +10,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
  * @author oroussel
  */
 public class WaiterJob extends AbstractJob<Void> {
+
     public static final String WAIT_PERIOD_COUNT = "waitPeriodCount";
 
     public static final String WAIT_PERIOD = "waitPeriod";
@@ -22,9 +23,9 @@ public class WaiterJob extends AbstractJob<Void> {
     }
 
     @Override
-    public void setParameters(Set<JobParameter> parameters)
+    public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        for (JobParameter param : parameters) {
+        for (JobParameter param : parameters.values()) {
             switch (param.getName()) {
                 case WAIT_PERIOD:
                     try {
@@ -48,8 +49,6 @@ public class WaiterJob extends AbstractJob<Void> {
             throw new JobParameterMissingException(WAIT_PERIOD_COUNT);
         }
     }
-
-
 
     @Override
     public void run() {

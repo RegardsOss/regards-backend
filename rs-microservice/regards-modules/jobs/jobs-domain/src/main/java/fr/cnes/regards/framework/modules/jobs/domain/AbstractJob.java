@@ -19,7 +19,16 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Observable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Optional;
+
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 
 /**
  * Abstract job, all jobs must inherit this class
@@ -28,6 +37,8 @@ import java.util.Observable;
  * @author Léo Mieulet
  */
 public abstract class AbstractJob<R> extends Observable implements IJob<R> {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected R result;
 
@@ -69,5 +80,62 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
         this.completion++;
         super.setChanged();
         super.notifyObservers((this.completion * 100) / getCompletionCount());
+    }
+
+    /**
+     * Reject a job because <b>a parameter is missing</b>
+     * @param parameterName missing parameter name
+     * @throws JobParameterMissingException the related exception
+     */
+    protected void handleMissingParameter(String parameterName) throws JobParameterMissingException {
+        String message = String.format("Missing parameter \"%s\"", parameterName);
+        logger.error(message);
+        throw new JobParameterMissingException(message);
+    }
+
+    /**
+     * Reject a job because <b>a parameter is invalid</b>
+     * @param parameter related parameter
+     * @param reason reason for invalidity
+     * @throws JobParameterInvalidException the related exception
+     */
+    protected void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
+        String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason);
+        logger.error(errorMessage);
+        throw new JobParameterInvalidException(errorMessage);
+    }
+
+    /**
+     * Get a required non null parameter value
+     * @param parameters map of parameters
+     * @param parameterName parameter name to retrieve
+     * @return the parameter value
+     * @throws JobParameterMissingException if parameter does not exist
+     * @throws JobParameterInvalidException if parameter value is null
+     */
+    protected <T> T getValueFor(Map<String, JobParameter> parameters, String parameterName)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        JobParameter parameter = parameters.get(parameterName);
+        if (parameter == null) {
+            handleMissingParameter(parameterName);
+        }
+        if (parameter.getValue() == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
+            handleInvalidParameter(parameterName, "Null value");
+        }
+        return parameter.getValue();
+    }
+
+    /**
+     * Get an optional parameter value
+     * @param parameters map of parameters
+     * @param parameterName parameter name to retrieve
+     * @return an {@link java.util.Optional} parameter value
+     */
+    protected <T> Optional<T> getOptionalValueFor(Map<String, JobParameter> parameters, String parameterName) {
+        JobParameter parameter = parameters.get(parameterName);
+        if (parameter == null) {
+            return Optional.absent();
+        }
+        return Optional.fromNullable(parameter.getValue());
     }
 }
