@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.nio.file.Path;
 import java.util.Observable;
-import java.util.Set;
 
 /**
  * Abstract job, all jobs must inherit this class
@@ -29,11 +28,6 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 public abstract class AbstractJob<R> extends Observable implements IJob<R> {
-
-    /**
-     * Job parameters
-     */
-    protected Set<JobParameter> parameters;
 
     protected R result;
 
@@ -46,13 +40,6 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * Current completion count
      */
     private int completion = 0;
-
-    /**
-     * @return the parameters
-     */
-    public Set<JobParameter> getParameters() {
-        return parameters;
-    }
 
     protected void setResult(R result) {
         this.result = result;
