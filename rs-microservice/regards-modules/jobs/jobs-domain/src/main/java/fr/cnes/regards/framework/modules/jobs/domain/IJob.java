@@ -32,6 +32,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 public interface IJob<R> extends Runnable {
 
     /**
+     * Manage job result.
+     * <br/>
+     * <b>Override this method for the result to be stored in its {@link JobInfo}</b>
      * @return The Job result
      */
     default R getResult() {
@@ -48,18 +51,20 @@ public interface IJob<R> extends Runnable {
 
     /**
      * If the job needs a workspace, JobService create one for it before executing job and clean it after execution
-     * @param pPath set workspace path
+     * @param workspace set workspace path
      */
-    void setWorkspace(Path pPath);
+    void setWorkspace(Path workspace);
 
     Path getWorkspace();
 
     /**
-     * Set the parameters and should check if all needed parameters are specified
-     * Beware : do nothing by default, this method must be overriden
-     * @param pParameters set job parameters
+     * Manage job parameters (if there are any). Job implementation has <b>to check
+     * if all needed parameters are specified</b> and <b>store them</b> for use in job execution.
+     * <br/>
+     * <b>Beware : do nothing by default, this method must be overridden.</b>
+     * @param parameters set job parameters
      */
-    default void setParameters(Set<JobParameter> pParameters)
+    default void setParameters(Set<JobParameter> parameters) // NOSONAR
             throws JobParameterMissingException, JobParameterInvalidException {
     }
 
@@ -69,7 +74,7 @@ public interface IJob<R> extends Runnable {
      * @return 100 by default
      */
     default int getCompletionCount() {
-        return 100;
+        return 100; // NOSONAR
     }
 
     /**

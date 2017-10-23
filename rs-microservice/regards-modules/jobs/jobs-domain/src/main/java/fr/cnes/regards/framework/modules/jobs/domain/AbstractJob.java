@@ -41,6 +41,10 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      */
     private int completion = 0;
 
+    /**
+     * Set the result if necessary
+     * @param result the result
+     */
     protected void setResult(R result) {
         this.result = result;
     }
