@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
- * SIP management service
+ * Ingest management service
  *
  * @author Marc Sordi
  *
@@ -144,5 +144,4 @@ public class IngestService implements IIngestService {
     public Collection<SIPEntity> getAllVersions(String sipId) {
         return sipRepository.getAllVersions(sipId);
     }
-
 }
