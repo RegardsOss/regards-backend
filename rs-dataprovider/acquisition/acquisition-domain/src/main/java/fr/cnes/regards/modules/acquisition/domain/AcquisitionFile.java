@@ -375,4 +375,24 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     //        return result;
     //    }
 
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        if (id != null) {
+            strBuilder.append(id);
+            strBuilder.append(" - ");
+        }
+        strBuilder.append(fileName);
+        if (size != null) {
+            strBuilder.append(" - ");
+            strBuilder.append(size);
+        }
+        if (status != null) {
+            strBuilder.append(" - [");
+            strBuilder.append(status);
+            strBuilder.append("]");
+        }
+        return strBuilder.toString();
+    }
+
 }

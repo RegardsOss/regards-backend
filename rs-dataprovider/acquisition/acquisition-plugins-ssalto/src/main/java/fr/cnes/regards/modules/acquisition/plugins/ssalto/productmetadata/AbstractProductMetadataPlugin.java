@@ -43,6 +43,7 @@ import org.xml.sax.SAXException;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
@@ -85,6 +86,38 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * proprietes contenant la configuration du plugin, notamment, la liste des finder a utiliser pour chaque attribut.
      */
     protected PluginConfigurationProperties pluginConfProperties;
+
+    // Nom du projet
+    protected String projectName = null;
+
+    // Nom du dictionnaire
+    protected String dicoName = null;
+
+    // Nom du dictionnaire des types de base
+    protected String dicoBase = null;
+
+    /**
+         * Initialisation des proprietes
+         */
+    public void setUp() {
+        Properties properties;
+        String propertyFilePath = null;
+
+        LOGGER.info("Create context");
+
+        properties = new Properties();
+        propertyFilePath = getProjectProperties();
+
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
+            properties.load(stream);
+        } catch (Exception e) {
+            LOGGER.error("Unable to load file " + propertyFilePath, e);
+        }
+
+        dicoName = properties.getProperty("dico");
+        dicoBase = properties.getProperty("baseType");
+        projectName = properties.getProperty("project");
+    }
 
     /**
      * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
@@ -220,13 +253,15 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     }
 
     /**
-     * cree les meta donnees pour le produit pProductName, les fichier pFileList et le jeux de donnees pDataSetName
+     * cree les meta donnees pour le produit productName, les fichier acqFiles et le jeu de donnees dataSetName
      */
     @Override
-    public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName, String dicoName,
-            String projectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
         String outputXml = null;
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
+
+        Map<File, ?> fileMap = buildMapFile(acqFiles);
 
         loadDataSetConfiguration(datasetName);
 
@@ -261,10 +296,12 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
                 element.addAttribute(att);
             }
 
+            setUp();
+
             // init descriptor file
             DescriptorFile descFile = new DescriptorFile();
-            descFile.setDicoName(dicoName);
-            descFile.setProjectName(projectName);
+            descFile.setDicoName(this.dicoName);
+            descFile.setProjectName(this.projectName);
             descFile.addDescElementToDocument(element);
 
             // output the descriptorFile on a physical file
@@ -279,10 +316,42 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         }
         return outputXml;
     }
-    
+
     // TODO CMZ attention à revoir
-    public String createMetaDataPlugin(AcquisitionFile acqFile) {
+    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
+        setUp();
         return null;
+    }
+
+    private Map<File, ?> buildMapFile(List<AcquisitionFile> acqFiles) {
+        Map<File, File> fileMap = new HashMap<>();
+
+        for (AcquisitionFile acqFile : acqFiles) {
+            // get the original file from supplyDirectory
+            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
+                    acqFile.getFileName());
+
+            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
+                        acqFile.getFileName());
+                fileMap.put(newFile, originalFile);
+            }
+
+            // TODO CMZ à confirmer que la condition du if est toujours VRAI
+            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
+            //                File newFile = new File(
+            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
+            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
+            //                        ssaltoFile.getFileName());
+            //                fileMap.put(newFile, originalFile);
+            //            }
+        }
+
+        return fileMap;
     }
 
     /**
@@ -329,4 +398,6 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     protected PluginConfigurationProperties getProperties() {
         return pluginConfProperties;
     }
+
+    abstract public String getProjectProperties();
 }

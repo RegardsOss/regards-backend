@@ -508,10 +508,10 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             
             fc.close();
         } catch (FileNotFoundException e) {
-            LOGGER.equals(e.getMessage());
+            LOGGER.error(e.getMessage());
             throw e;
         } catch (IOException e) {
-            LOGGER.equals(e.getMessage());
+            LOGGER.error(e.getMessage());
             throw e;
         }
 

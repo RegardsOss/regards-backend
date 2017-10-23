@@ -19,8 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.File;
-import java.util.Map;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,19 +59,19 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
     private MetaProductDto metaProductDto;
 
     @Override
-    public String createMetadataPlugin(String productName, Map<File, ?> fileMap, String datasetName, String dicoName,
-            String projectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
         // TODO CMZ à revoir
         return null;
     }
 
     @Override
-    public String createMetaDataPlugin(AcquisitionFile acqFile) {
+    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
         LOGGER.info("start create MetaData for the chain <{}> for the acquisition file {}", chainLabel,
-                    acqFile.getFileName());
+                    acqFiles.iterator().next().getFileName());
 
         LOGGER.info("end create Metata for the chain <{}> for the acqusition file {}", chainLabel,
-                    acqFile.getFileName());
+                    acqFiles.iterator().next().getFileName());
 
         return "coucou";
     }

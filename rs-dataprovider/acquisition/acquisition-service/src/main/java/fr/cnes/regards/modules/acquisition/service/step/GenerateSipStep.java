@@ -102,10 +102,10 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
             if (validFileList != null) {
                 // for each AcquisitionFile
-                for (AcquisitionFile acqFile : validFileList) {
+//                for (AcquisitionFile acqFile : validFileList) {
                     //            generateSipPlugin.createMetadataPlugin("coucou", fileMap, datasetName, dicoName, projectName);
-                    generateSipPlugin.createMetaDataPlugin(acqFile);
-                }
+                    generateSipPlugin.createMetaDataPlugin("priduct name", validFileList);
+//                }
 
             }
 

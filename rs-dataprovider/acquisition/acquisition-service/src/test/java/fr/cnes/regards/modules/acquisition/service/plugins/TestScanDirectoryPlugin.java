@@ -69,7 +69,7 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     private MetaProductDto metaProductDto;
 
-    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
+    // TODO CMZ avec Set<MetaFileDto>
     @PluginParameter(name = META_FILE_PARAM, optional = true)
     private SetOfMetaFileDto metaFiles;
 

@@ -49,4 +49,9 @@ public class Jason3Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10Fl
         return PROJECT_NAME;
     }
 
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/jason2plugin.properties";
+    }
+
 }

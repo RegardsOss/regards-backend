@@ -47,4 +47,9 @@ public class Hy2AProductMetadataPlugin extends AbstractProductMetadataPlugin {
     protected String getProjectName() {
         return PROJECT_NAME;
     }
+
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/hy2aplugin.properties";
+    }
 }

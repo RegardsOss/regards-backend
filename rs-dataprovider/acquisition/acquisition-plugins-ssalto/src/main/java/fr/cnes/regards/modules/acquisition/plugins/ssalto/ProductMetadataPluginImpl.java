@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.xerces.dom.DocumentImpl;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
@@ -49,8 +51,8 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
      * Cree les metadata niveau produit
      */
     @Override
-    public String createMetadataPlugin(String productName, Map<File, ?> pFileMap, String datasetName, String dicoName,
-            String projectName) throws ModuleException {
+    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
 
         // return pProductName;
         String xmlString = null;
@@ -75,10 +77,15 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
 
         // Add data storage object identifier
         long fileSize = 0;
-        for (File file : pFileMap.keySet()) {
-            fileSize = fileSize + file.length();
-            dataObject.addDataStorageObjectIdentifier(file.getName());
+        File file;
+        for (AcquisitionFile acqFile : acqFiles) {
+            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                file = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(), acqFile.getFileName());
+                fileSize += file.length();
+                dataObject.addDataStorageObjectIdentifier(file.getName());
+            }
         }
+        
         dataObject.setFileSize(Long.toString(fileSize));
         // Add element to descriptor
         descriptorFile.addDescElementToDocument(dataObject);
@@ -127,8 +134,8 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
     }
 
     @Override
-    public String createMetaDataPlugin(AcquisitionFile acqFile) {
-        // TODO Auto-generated method stub
+    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
+        // TODO CMZ à revoir        
         return null;
     }
 

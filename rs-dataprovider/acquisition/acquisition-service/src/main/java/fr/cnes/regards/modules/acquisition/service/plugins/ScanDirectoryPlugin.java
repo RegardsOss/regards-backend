@@ -129,9 +129,9 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
                     acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, metaProductDto.getChecksumAlgorithm()));
                     acqFile.setChecksumAlgorithm(metaProductDto.getChecksumAlgorithm());
                 } catch (NoSuchAlgorithmException e) {
-                    LOGGER.error(e.getMessage());
+                    LOGGER.error(e.getMessage(),e);
                 } catch (IOException e) {
-                    LOGGER.error(e.getMessage());
+                    LOGGER.error(e.getMessage(),e);
                 }
             }
 

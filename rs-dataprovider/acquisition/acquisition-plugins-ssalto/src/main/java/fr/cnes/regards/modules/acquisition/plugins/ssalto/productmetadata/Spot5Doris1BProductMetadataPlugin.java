@@ -48,4 +48,9 @@ public class Spot5Doris1BProductMetadataPlugin extends AbstractDoris1BProductMet
         addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
     }
 
+    @Override
+    public String getProjectProperties() {
+        return "ssalto/domain/plugins/impl/spot5plugin.properties";
+    }
+
 }

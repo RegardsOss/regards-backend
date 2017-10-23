@@ -29,10 +29,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -101,9 +99,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     // ATTRIBUT
     // ****************************************************************************************
 
-    // Nom du projet
-    protected String projectName = null;
-
     // Nom du dictionnaire
     protected String dicoName = null;
 
@@ -144,7 +139,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         dicoName = properties.getProperty("dico");
         dicoBase = properties.getProperty("baseType");
-        projectName = properties.getProperty("project");
 
         try {
             Files.createDirectories(Paths.get(DESCRIPTOR_DIRECTORY));
@@ -259,7 +253,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     protected boolean createMetadataPlugIn(PluginTestDef pluginTestDef, List<String> errorList, List<String> sucessList)
             throws ModuleException {
         boolean isCreationOk = true;
-        List<AcquisitionFile> fileList = new ArrayList<>();
+        List<AcquisitionFile> acqFiles = new ArrayList<>();
 
         LOGGER.debug("Testing METADATA GENERATION FOR DATASET " + pluginTestDef.getDataSetName());
 
@@ -270,10 +264,10 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 File file = new File(
                         LOCAL_ARCH_DIR + File.separator + pluginTestDef.getFileDirectory() + File.separator + fileName);
                 if (!fileName.equals("") && file.exists()) {
-                    fileList.add(initSsaltoFile(file));
+                    acqFiles.add(initSsaltoFile(file));
                 }
             }
-            isCreationOk = isCreationOk && createAndValidate(pluginTestDef, plugin, fileList);
+            isCreationOk = isCreationOk && createAndValidate(pluginTestDef, plugin, acqFiles);
             if (!isCreationOk) {
                 errorList.add("product " + pluginTestDef.getProductName() + " FAILED");
             } else {
@@ -300,13 +294,13 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             }
             boolean allsucceed = true;
             for (File file : fileNameList) {
-                fileList = new ArrayList<>();
+                acqFiles = new ArrayList<>();
                 if (file.isFile()) {
-                    fileList.add(initSsaltoFile(file));
+                    acqFiles.add(initSsaltoFile(file));
                     LOGGER.info("[" + pluginTestDef.getDataSetName() + "] " + file.getName()
                             + " ... processing metadata");
                     pluginTestDef.setProductName(file.getName());
-                    isCreationOk = createAndValidate(pluginTestDef, plugin, fileList);
+                    isCreationOk = createAndValidate(pluginTestDef, plugin, acqFiles);
                     if (!isCreationOk) {
                         errorList.add("[" + pluginTestDef.getDataSetName() + "] " + file.getName()
                                 + " ... ERROR - metadata");
@@ -363,47 +357,27 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @param pluginTestDef
      * @param pluginGenerateSIP
-     * @param fileList
+     * @param acqFiles
      * @return
      */
     protected boolean createAndValidate(PluginTestDef pluginTestDef, IGenerateSIPPlugin pluginGenerateSIP,
-            List<AcquisitionFile> fileList) {
+            List<AcquisitionFile> acqFiles) {
         boolean isValidate = false;
-        Map<File, File> fileMap = new HashMap<>();
 
-        for (AcquisitionFile acqFile : fileList) {
+        for (AcquisitionFile acqFile : acqFiles) {
             // get the original file from supplyDirectory
             File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
                     acqFile.getFileName());
 
             // Mise a jour de la date de creation pour les plugins qui l'utilise afin qu'elle corresponde au fichier de référence
-            OffsetDateTime odt = OffsetDateTime.of(2009, 11, 9, 16, 59, 41, 0, ZoneOffset.UTC);
+            OffsetDateTime odt = OffsetDateTime.of(2005, 1, 1, 00, 00, 00, 0, ZoneOffset.UTC);
             originalFile.setLastModified(1000 * odt.toEpochSecond());
-
-            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
-                        acqFile.getFileName());
-                fileMap.put(newFile, originalFile);
-            }
-
-            // TODO CMZ à confirmer que la condition du if est toujours VRAI
-            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
-            //                File newFile = new File(
-            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
-            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
-            //                        ssaltoFile.getFileName());
-            //                fileMap.put(newFile, originalFile);
-            //            }
         }
 
-        if (!fileMap.isEmpty()) {
+        if (!acqFiles.isEmpty()) {
             try {
                 // Get metadata
-                String xml = createMetaData(pluginTestDef, pluginGenerateSIP, fileMap);
+                String xml = createMetaData(acqFiles, pluginTestDef, pluginGenerateSIP);
 
                 // Create the file descriptor
                 File descFile = new File(DESCRIPTOR_DIRECTORY, desc_product_ + pluginTestDef.getProductName() + ".xml");
@@ -449,24 +423,18 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     /**
      * Appel du plugin pour recuperer le descripteur
      *
+     * @param acqFiles
      * @param pluginTestDef
      * @param pluginGenerateSIP
-     * @param pFileMap
+     * 
      * @return
+     * 
      * @throws ModuleException
      */
-    protected String createMetaData(PluginTestDef pluginTestDef, IGenerateSIPPlugin pluginGenerateSIP,
-            Map<File, File> pFileMap) throws ModuleException {
-        String xml;
-        if (pluginTestDef.isMultipleFileTest()) {
-            xml = pluginGenerateSIP.createMetadataPlugin(pluginTestDef.getProductName(), pFileMap,
-                                                         pluginTestDef.getDataSetName(), dicoName, projectName);
-        } else {
-            // there is only one File in FileList.
-            String productName = pFileMap.keySet().iterator().next().getName();
-            xml = pluginGenerateSIP.createMetadataPlugin(productName, pFileMap, pluginTestDef.getDataSetName(),
-                                                         dicoName, projectName);
-        }
+    protected String createMetaData(List<AcquisitionFile> acqFiles, PluginTestDef pluginTestDef,
+            IGenerateSIPPlugin pluginGenerateSIP) throws ModuleException {
+        String xml = pluginGenerateSIP.createMetadataPlugin(pluginTestDef.getProductName(), acqFiles,
+                                                            pluginTestDef.getDataSetName());
 
         LOGGER.debug(xml);
 
@@ -479,11 +447,11 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @param descFile
      * @return
      */
-    protected boolean validate(File pdescFile) {
+    protected boolean validate(File descFile) {
         boolean isValid = false;
         String xmlString = "";
         try {
-            xmlString = FileUtils.readFileToString(pdescFile);
+            xmlString = FileUtils.readFileToString(descFile);
         } catch (IOException e1) {
             e1.printStackTrace();
             Assert.fail();
@@ -507,11 +475,11 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         }
 
         if (isValid) {
-            isValid = compare_to_reference(pdescFile);
+            isValid = compare_to_reference(descFile);
         }
 
         if (!isValid) {
-            LOGGER.error("INVALID " + pdescFile.getAbsolutePath());
+            LOGGER.error("INVALID " + descFile.getAbsolutePath());
         }
 
         return isValid;
