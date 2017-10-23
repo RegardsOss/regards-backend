@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.order.service.job;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
     private final Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
 
     @Override
-    public void setParameters(Set<JobParameter> parameters)
+    public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         if (parameters.isEmpty()) {
             throw new JobParameterMissingException("No parameter provided");
@@ -55,7 +54,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         if (parameters.size() != 2) {
             throw new JobParameterInvalidException("Two parameters are expected : 'files' and 'expirationDate'.");
         }
-        for (JobParameter param : parameters) {
+        for (JobParameter param : parameters.values()) {
             if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))) {
                 throw new JobParameterInvalidException(
                         "Please use FilesJobParameter and ExpirarionDateJobParameter in place of JobParameter (these "
