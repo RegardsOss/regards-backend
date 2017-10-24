@@ -53,4 +53,8 @@ public class SIP extends AbstractInformationPackage<String> {
     public void setRef(SIPReference ref) {
         this.ref = ref;
     }
+
+    public boolean isRef() {
+        return ref != null;
+    }
 }

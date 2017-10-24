@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -111,8 +113,8 @@ public class IngestProcessingChain {
         this.description = description;
     }
 
-    public PluginConfiguration getPreProcessingPlugin() {
-        return preProcessingPlugin;
+    public Optional<PluginConfiguration> getPreProcessingPlugin() {
+        return Optional.ofNullable(preProcessingPlugin);
     }
 
     public void setPreProcessingPlugin(PluginConfiguration preProcessingPlugin) {
@@ -135,16 +137,16 @@ public class IngestProcessingChain {
         this.generationPlugin = generationPlugin;
     }
 
-    public PluginConfiguration getTagPlugin() {
-        return tagPlugin;
+    public Optional<PluginConfiguration> getTagPlugin() {
+        return Optional.ofNullable(tagPlugin);
     }
 
     public void setTagPlugin(PluginConfiguration tagPlugin) {
         this.tagPlugin = tagPlugin;
     }
 
-    public PluginConfiguration getPostProcessingPlugin() {
-        return postProcessingPlugin;
+    public Optional<PluginConfiguration> getPostProcessingPlugin() {
+        return Optional.ofNullable(postProcessingPlugin);
     }
 
     public void setPostProcessingPlugin(PluginConfiguration postProcessingPlugin) {
