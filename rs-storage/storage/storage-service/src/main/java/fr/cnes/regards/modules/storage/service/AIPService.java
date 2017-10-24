@@ -457,7 +457,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     protected Set<IWorkingSubset> getWorkingSubsets(Collection<DataFile> dataFilesToSubSet,
             PluginConfiguration dataStorageConf) throws ModuleException {
         LOG.trace("Getting working subsets for data storage {}", dataStorageConf.getLabel());
-        IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConf);
+        IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConf.getId());
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
         LOG.trace("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                   workingSubSets.size());
@@ -499,7 +499,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.error(e.getMessage(), e);
             throw e;
         }
-        return pluginService.getPlugin(activeAllocationStrategies.get(0));
+        return pluginService.getPlugin(activeAllocationStrategies.get(0).getId());
     }
 
     private ISecurityDelegation getSecurityDelegationPlugin() throws ModuleException {

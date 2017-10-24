@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -54,14 +55,19 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true")
     private Boolean canDelete;
 
-//    @PluginParameter(name = LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD)
-//    private Long occupiedSpaceThreshold;
+    @PluginParameter(name = LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD)
+    private Integer occupiedSpaceThreshold;
 
     private URL baseStorageLocation;
 
     @PluginInit
     public void init() {
         baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
+        // Lets check that occupation threshold given represent a threshold
+        if (occupiedSpaceThreshold < 0 || occupiedSpaceThreshold > 100) {
+            throw new IllegalArgumentException(String.format("Parameter %s should be an integer between 0 and 100",
+                                                             LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD));
+        }
     }
 
     @Override
@@ -134,7 +140,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     private String getStorageLocation(DataFile data) throws IOException {
         String checksum = data.getChecksum();
         String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
-        if (!Files.exists(Paths.get(storageLocation))) {
+        if (!Paths.get(storageLocation).toFile().exists()) {
             Files.createDirectories(Paths.get(storageLocation));
         }
         // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url
@@ -166,7 +172,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 progressManager.deletionSucceed(data);
             } catch (IOException ioe) {
                 String failureCause = String
-                        .format("Storage of DataFile(%s) failed due to the following IOException: %s",
+                        .format("Deletion of DataFile(%s) failed due to the following IOException: %s",
                                 data.getChecksum(), ioe.getMessage());
                 LOG.error(failureCause, ioe);
                 progressManager.deletionFailed(data, failureCause);
@@ -175,9 +181,17 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public Set<DataStorageInfo> getMonitoringInfos() {
-        // TODO Auto-generated method stub
-        return null;
+    public Set<DataStorageInfo> getMonitoringInfos() throws IOException {
+        FileStore fileStore = Files.getFileStore(Paths.get(baseStorageLocationAsString));
+        long totalSpace = fileStore.getTotalSpace();
+        long usableSpace = fileStore.getUsableSpace();
+        DataStorageInfo info = new DataStorageInfo(fileStore.name(), totalSpace, totalSpace - usableSpace);
+        return Sets.newHashSet(info);
+    }
+
+    @Override
+    public Integer getOccupationThreshold() {
+        return occupiedSpaceThreshold;
     }
 
     @Override

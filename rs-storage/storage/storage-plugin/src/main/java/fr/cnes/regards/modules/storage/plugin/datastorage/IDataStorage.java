@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.plugin.datastorage;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
      * @throws IllegalStateException if this operation is forbidden due to the plugin configuration
      */
     default void safeDelete(Set<DataFile> dataFiles, IProgressManager progressManager) {
-        if(canDelete()) {
+        if (canDelete()) {
             delete(dataFiles, progressManager);
         } else {
             throw new IllegalStateException("Deletion is currently forbidden for this plugin!");
@@ -42,7 +43,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
 
     /**
      * Do the delete action for the given {@link T} working subset without checking if deletion is permitted by the configuration.
-     * @param workingSubset Subset of files to store.
+     * @param dataFiles Set of files to store.
      * @param progressManager {@link IProgressManager} object to inform global store process after each deletion succeed or fail.
      */
     void delete(Set<DataFile> dataFiles, IProgressManager progressManager);
@@ -56,8 +57,13 @@ public interface IDataStorage<T extends IWorkingSubset> {
     void store(T workingSubset, Boolean replaceMode, IProgressManager progressManager);
 
     /**
-     * Retreive informations about the storage system.
+     * Retreive informations about any storage system it handles.
      * @return {@link Set} of {@link DataStorageInfo} containing storage informations
      */
-    Set<DataStorageInfo> getMonitoringInfos();
+    Set<DataStorageInfo> getMonitoringInfos() throws IOException;
+
+    /**
+     * @return the threshold, in percent, above which users should be notified that this data storage starts to be full and the project should be set in maintenance.
+     */
+    Integer getOccupationThreshold();
 }
