@@ -17,6 +17,27 @@
 		<relativePath />
 	</parent>
 
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+	<inceptionYear>2016</inceptionYear>
+	<licenses>
+		<license>
+			<name>GNU General Public License (GNU GPL)</name>
+			<url>http://www.gnu.org/licenses/gpl.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<organization>
+		<name>CNES</name>
+		<url>https://cnes.fr/fr</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>REGARDS Team</name>
+			<organization>CS Systèmes d'Information</organization>
+			<organizationUrl>http://www.c-s.fr</organizationUrl>
+		</developer>
+	</developers>
+
 	<modules>
 		<module>amqp-monitoring-regards-starter</module>
 		<module>amqp-regards</module>
@@ -46,9 +67,9 @@
 		<module>feign-regards-starter</module>
 		<module>security-config</module>
 		<module>oais-starter</module>
-        <module>oais-regards</module>
-    	<module>staf</module>
-    	<module>staf-starter</module>
+		<module>oais-regards</module>
+		<module>staf</module>
+		<module>staf-starter</module>
 		<module>geojson-starter</module>
 		<module>geojson-regards</module>
 		<module>microservice-core-starter</module>
