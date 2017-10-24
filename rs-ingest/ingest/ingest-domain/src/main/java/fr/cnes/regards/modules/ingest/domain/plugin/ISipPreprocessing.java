@@ -18,25 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.SIPReference;
 
 /**
- * Second <b>required</b> step of the SIP processing chain
+ * First <b>optional</b> step of the SIP processing chain
  *
  * @author Marc Sordi
  *
  */
-@FunctionalInterface
-@PluginInterface(description = "SIP validation plugin contract")
-public interface IValidateSIP {
+@PluginInterface(description = "SIP preprocessing plugin contract")
+public interface ISipPreprocessing {
 
     /**
-     * Allows to validate SIP
-     * @param sip {@link SIP} to be validated
-     * @param errors list of validation errors
+     * Allows to make some action before SIP processing starts.
+     * @param sip {@link SIP} to be processed
      */
-    void validate(SIP sip, Errors errors);
+    void preprocess(final SIP sip);
+
+    /**
+     * Read a referenced {@link SIP} (only available for referenced SIP!)
+     * @param ref {@link SIPReference}
+     * @return a completely filled {@link SIP}
+     */
+    SIP read(final SIPReference ref);
 }

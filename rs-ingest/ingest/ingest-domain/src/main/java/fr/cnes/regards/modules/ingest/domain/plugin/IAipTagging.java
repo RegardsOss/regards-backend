@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 @FunctionalInterface
 @PluginInterface(description = "AIP tag plugin contract")
-public interface ITagAIP {
+public interface IAipTagging {
 
     /**
      * Tag AIP

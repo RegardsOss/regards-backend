@@ -29,11 +29,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.plugin.IValidateSIP;
+import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
 /**
- * Validation step is used to validate {@link SIP} calling {@link IValidateSIP#validate(SIP, Errors)}.
+ * Validation step is used to validate {@link SIP} calling {@link ISipValidation#validate(SIP, Errors)}.
  *
  * @author Marc Sordi
  *
@@ -50,7 +50,7 @@ public class ValidationStep extends AbstractProcessingStep<SIP, Void> {
     protected Void doExecute(SIP sip) throws ModuleException {
         LOGGER.debug("Validating SIP \"{}\"", sip.getId());
         PluginConfiguration conf = processingChain.getValidationPlugin();
-        IValidateSIP validation = pluginService.getPlugin(conf.getId());
+        ISipValidation validation = pluginService.getPlugin(conf.getId());
         Errors errors = new MapBindingResult(new HashMap<>(), sip.getId());
         validation.validate(sip, errors);
 

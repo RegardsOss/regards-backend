@@ -25,13 +25,15 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.plugin.IGenerateAIP;
+import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
- * Generation step is used to generate AIP(s) from specified SIP calling {@link IGenerateAIP#generate(SIP)}.
+ * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIP)}.
  *
  * @author Marc Sordi
  *
@@ -48,7 +50,14 @@ public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
     protected List<AIP> doExecute(SIP sip) throws ModuleException {
         LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sip.getId());
         PluginConfiguration conf = processingChain.getGenerationPlugin();
-        IGenerateAIP generation = pluginService.getPlugin(conf.getId());
-        return generation.generate(sip);
+        IAipGeneration generation = pluginService.getPlugin(conf.getId());
+
+        // Retrieve SIP URN from internal identifier
+        UniformResourceName sipUrn = UniformResourceName.fromString(job.getEntity().getIpId());
+        // Compute AIP URN from SIP one
+        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, sipUrn.getEntityType(),
+                sipUrn.getTenant(), sipUrn.getEntityId(), sipUrn.getVersion());
+        // Launch AIP generation
+        return generation.generate(sip, ipId, sipUrn.toString());
     }
 }

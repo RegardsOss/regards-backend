@@ -26,14 +26,14 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.plugin.IPreprocessSIP;
+import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
 /**
  * Preprocessing step is used to do something before starting real processing calling
- * {@link IPreprocessSIP#preprocess(SIP)}.<br/>
+ * {@link ISipPreprocessing#preprocess(SIP)}.<br/>
  * If {@link SIP} is passed as reference, this step then calls the
- * {@link IPreprocessSIP#read(fr.cnes.regards.modules.ingest.domain.SIPReference)} method to fulfill {@link SIP}
+ * {@link ISipPreprocessing#read(fr.cnes.regards.modules.ingest.domain.SIPReference)} method to fulfill {@link SIP}
  * properties.
  *
  * @author Marc Sordi
@@ -52,7 +52,7 @@ public class PreprocessingStep extends AbstractProcessingStep<SIP, SIP> {
         Optional<PluginConfiguration> conf = processingChain.getPreProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Preprocessing for SIP \"{}\"", sip.getId());
-            IPreprocessSIP preprocessing = pluginService.getPlugin(conf.get().getId());
+            ISipPreprocessing preprocessing = pluginService.getPlugin(conf.get().getId());
             preprocessing.preprocess(sip);
             if (sip.isRef()) {
                 LOGGER.debug("Reading referenced SIP \"{}\"", sip.getId());

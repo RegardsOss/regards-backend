@@ -18,29 +18,31 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
+import java.util.List;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPReference;
+import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
- * First <b>optional</b> step of the SIP processing chain
+ * Third <b>required</b> step of the SIP processing chain.
  *
  * @author Marc Sordi
  *
  */
-@PluginInterface(description = "SIP preprocessing plugin contract")
-public interface IPreprocessSIP {
+@FunctionalInterface
+@PluginInterface(description = "AIP generation plugin contract")
+public interface IAipGeneration {
 
     /**
-     * Allows to make some action before SIP processing starts.
-     * @param sip {@link SIP} to be processed
+     * Generate one or more {@link AIP} from passed {@link SIP}.
+     * @param sip {@link SIP}
+     * @param ipId the IP_ID of the generated {@link AIP} (or radical if multiple AIPs are generated. In that case, you
+     *            have to use
+     *            {@link UniformResourceName#setOrder(Long)} to differentiate each one.
+     * @param sipId the SIP_ID of the generated {@link AIP}
+     * @return generated {@link AIP}
      */
-    void preprocess(SIP sip);
-
-    /**
-     * Read a referenced {@link SIP} (only available for referenced SIP!)
-     * @param ref {@link SIPReference}
-     * @return a completely filled {@link SIP}
-     */
-    SIP read(SIPReference ref);
+    List<AIP> generate(SIP sip, UniformResourceName ipId, final String sipId);
 }

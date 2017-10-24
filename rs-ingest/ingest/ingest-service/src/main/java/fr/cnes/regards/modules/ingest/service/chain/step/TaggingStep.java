@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.plugin.ITagAIP;
+import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
- * Tagging step is used to tag {@link AIP}(s) calling {@link ITagAIP#tag(List)}.
+ * Tagging step is used to tag {@link AIP}(s) calling {@link IAipTagging#tag(List)}.
  *
  * @author Marc Sordi
  */
@@ -47,7 +47,7 @@ public class TaggingStep extends AbstractProcessingStep<List<AIP>, Void> {
     protected Void doExecute(List<AIP> aips) throws ModuleException {
         Optional<PluginConfiguration> conf = processingChain.getTagPlugin();
         if (conf.isPresent()) {
-            ITagAIP tagging = pluginService.getPlugin(conf.get().getId());
+            IAipTagging tagging = pluginService.getPlugin(conf.get().getId());
             aips.forEach(aip -> LOGGER.debug("Tagging AIP \"{}\" from SIP \"{}\"", aip.getId(), aip.getSipId()));
             tagging.tag(aips);
         } else {

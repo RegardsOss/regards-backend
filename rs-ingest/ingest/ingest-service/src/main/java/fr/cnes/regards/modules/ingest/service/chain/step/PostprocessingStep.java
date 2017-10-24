@@ -26,13 +26,13 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.plugin.IPostprocessSIP;
+import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * Postprocessing step is used to do something after {@link AIP}(s) generation calling
- * {@link IPostprocessSIP#postprocess(SIP)}
+ * {@link ISipPostprocessing#postprocess(SIP)}
  *
  * @author Marc Sordi
  */
@@ -49,7 +49,7 @@ public class PostprocessingStep extends AbstractProcessingStep<SIP, Void> {
         Optional<PluginConfiguration> conf = processingChain.getPostProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Postprocessing for SIP \"{}\"", sip.getId());
-            IPostprocessSIP postprocessing = pluginService.getPlugin(conf.get().getId());
+            ISipPostprocessing postprocessing = pluginService.getPlugin(conf.get().getId());
             postprocessing.postprocess(sip);
         } else {
             LOGGER.debug("No postprocessing for SIP \"{}\"", sip.getId());
