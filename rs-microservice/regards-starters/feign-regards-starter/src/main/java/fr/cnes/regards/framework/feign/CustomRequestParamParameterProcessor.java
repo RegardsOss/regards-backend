@@ -6,6 +6,7 @@ package fr.cnes.regards.framework.feign;
 import static feign.Util.emptyToNull;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import org.springframework.cloud.netflix.feign.AnnotatedParameterProcessor;
@@ -30,17 +31,17 @@ public class CustomRequestParamParameterProcessor implements AnnotatedParameterP
     }
 
     @Override
-    public boolean processArgument(AnnotatedParameterContext context, Annotation annotation) {
-        String name = ANNOTATION.cast(annotation).value();
+    public boolean processArgument(AnnotatedParameterContext pContext, Annotation pAnnotation, Method pMethod) {
+        String name = ANNOTATION.cast(pAnnotation).value();
         if (emptyToNull(name) != null) {
-            context.setParameterName(name);
+            pContext.setParameterName(name);
 
-            MethodMetadata data = context.getMethodMetadata();
-            Collection<String> query = context.setTemplateParameter(name, data.template().queries().get(name));
+            MethodMetadata data = pContext.getMethodMetadata();
+            Collection<String> query = pContext.setTemplateParameter(name, data.template().queries().get(name));
             data.template().query(name, query);
         } else {
-            MethodMetadata data = context.getMethodMetadata();
-            data.queryMapIndex(context.getParameterIndex());
+            MethodMetadata data = pContext.getMethodMetadata();
+            data.queryMapIndex(pContext.getParameterIndex());
         }
         return true;
     }
