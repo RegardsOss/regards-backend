@@ -21,11 +21,10 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Optional;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -134,8 +133,8 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     protected <T> Optional<T> getOptionalValueFor(Map<String, JobParameter> parameters, String parameterName) {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
-        return Optional.fromNullable(parameter.getValue());
+        return Optional.ofNullable(parameter.getValue());
     }
 }
