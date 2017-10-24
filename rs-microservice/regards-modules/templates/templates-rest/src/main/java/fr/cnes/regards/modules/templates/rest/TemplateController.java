@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
@@ -78,6 +80,7 @@ public class TemplateController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieves all email templates of the current project")
     public ResponseEntity<List<Resource<Template>>> findAll() {
         final List<Template> templates = templateService.findAll();
         return new ResponseEntity<>(toResources(templates), HttpStatus.OK);
@@ -90,6 +93,7 @@ public class TemplateController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
+    @ResourceAccess(description = "Saves the new given email template")
     public ResponseEntity<Resource<Template>> create(@Valid @RequestBody final Template pTemplate) {
         final Template template = templateService.create(pTemplate);
         return new ResponseEntity<>(toResource(template), HttpStatus.CREATED);
@@ -102,6 +106,7 @@ public class TemplateController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieves the email template of given id")
     public ResponseEntity<Resource<Template>> findById(@PathVariable("template_id") final Long pId)
             throws EntityNotFoundException {
         final Template template = templateService.findById(pId);
@@ -119,6 +124,7 @@ public class TemplateController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.PUT)
+    @ResourceAccess(description = "Update the email template with given id with given values")
     public ResponseEntity<Void> update(@PathVariable("template_id") final Long pId,
             @Valid @RequestBody final Template pTemplate) throws EntityException {
         templateService.update(pId, pTemplate);
@@ -133,6 +139,7 @@ public class TemplateController implements IResourceController<Template> {
      */
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.DELETE)
+    @ResourceAccess(description = "Delete the email template with given id")
     public ResponseEntity<Void> delete(@PathVariable("template_id") final Long pId) throws EntityNotFoundException {
         templateService.delete(pId);
         return new ResponseEntity<>(HttpStatus.OK);
