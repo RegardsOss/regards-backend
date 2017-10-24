@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +135,7 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template asideOrdersNotificationTemplate;
 
-    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
+    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
     private String noReplyAdress;
 
     @Value("${spring.application.name}")
@@ -218,7 +219,7 @@ public class TemplateService implements ITemplateService {
     @Override
     public Template create(final Template template) {
         final Template toCreate = new Template(template.getCode(), template.getContent(), template.getDataStructure(),
-                                               template.getSubject());
+                template.getSubject());
         return templateRepository.save(toCreate);
     }
 
@@ -259,9 +260,8 @@ public class TemplateService implements ITemplateService {
      * @throws IOException when error occurs during template loading
      */
     private void configureTemplateLoader() throws IOException {
-        configuration = new Configuration(
-                new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR,
-                            INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
+        configuration = new Configuration(new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR,
+                INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
         loader = new StringTemplateLoader();
         configuration.setTemplateLoader(loader);
         configuration.setDefaultEncoding("UTF-8");
@@ -301,7 +301,7 @@ public class TemplateService implements ITemplateService {
             text = out.toString();
         } catch (TemplateException | IOException e) {
             LOG.warn("Unable to process the data into the template of code " + template.getCode()
-                             + ". Falling back to the not templated content.", e);
+                    + ". Falling back to the not templated content.", e);
             text = template.getContent();
         }
 
