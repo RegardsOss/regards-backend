@@ -16,45 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.service.exception.ReadFileException;
 
-/**
- * plugin de verification des fichiers generic. Verifi uniquement la taille du nom du fichier
- * 
- * @author Christophe Mertz
- *
- */
-@Plugin(description = "GenericCheckingPlugin", id = "GenericCheckingPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
-public class GenericCheckingPlugin implements ICheckFilePlugin {
+@Plugin(description = "CheckInPlugin", id = "CheckInPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+public class CheckInPlugin implements ICheckFilePlugin {
 
-    private static final int PRODUCT_NAME_MAX_SIZE = 128;
+    protected static final int PRODUCT_NAME_MAX_SIZE = 128;
 
-    private String productName;
+    protected String productName;
 
-    private int productVersion;
+    protected int productVersion;
 
-    private int fileVersion_;
+    protected int fileVersion;
 
-    private String logFilePath;
+    protected String logFilePath;
 
-    private String nodeIdentifier;
+    protected String nodeIdentifier;
 
-    public GenericCheckingPlugin() {
+    public CheckInPlugin() {
         super();
     }
 
     @Override
     public int getFileVersion() {
-        return fileVersion_;
+        return fileVersion;
     }
 
     @Override
@@ -84,19 +77,23 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
 
         // Check file exists
         if (filetoCheck.exists() && filetoCheck.canRead()) {
+            String name = filetoCheck.getName();
 
             // Delete extension if any
-            String name = filetoCheck.getName();
-            // pFiletoCheck
+            int indexExtension = name.lastIndexOf('.');
+            if (indexExtension > 0) {
+                name = name.substring(0, indexExtension);
+            }
+
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
                 productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
             } else {
                 productName = name;
             }
-            nodeIdentifier = productName;
+            nodeIdentifier = filetoCheck.getName();
             productVersion = 1;
-            fileVersion_ = 1;
-            logFilePath = null; // TODO
+            fileVersion = 1;
+            logFilePath = null;
             result = true;
         } else {
             throw new ReadFileException(filetoCheck.getAbsolutePath());

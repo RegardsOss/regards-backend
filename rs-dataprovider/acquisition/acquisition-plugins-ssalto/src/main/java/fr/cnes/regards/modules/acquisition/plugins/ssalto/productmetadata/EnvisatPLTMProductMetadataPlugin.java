@@ -58,11 +58,6 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
-
     private static final String GEO_COORDINATES = "GEO_COORDINATES";
 
     private static final String LONGITUDE_MIN = "LONGITUDE_MIN";
@@ -84,6 +79,11 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     private List<Double> latitudeMin = null;
 
     private List<Double> latitudeMax = null;
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
+    }
 
     /**
      * 

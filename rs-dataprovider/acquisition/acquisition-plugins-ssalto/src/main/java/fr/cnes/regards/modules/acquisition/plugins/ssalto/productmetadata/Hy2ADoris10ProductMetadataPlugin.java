@@ -59,11 +59,6 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
-
     private static final String TIME_PERIOD = "TIME_PERIOD";
 
     private static final String START_DATE = "START_DATE";
@@ -88,6 +83,11 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
 
     public Hy2ADoris10ProductMetadataPlugin() {
         super();
+    }
+
+    @Override
+    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
+        return pluginsRepositoryProperties;
     }
 
     /**

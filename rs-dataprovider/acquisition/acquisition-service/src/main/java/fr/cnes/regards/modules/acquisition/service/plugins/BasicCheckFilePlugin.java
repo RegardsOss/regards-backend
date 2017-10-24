@@ -51,12 +51,12 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
 
-    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    private MetaProductDto metaProductDto;
+//    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
+//    private MetaProductDto metaProductDto;
 
-    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
-    @PluginParameter(name = META_FILE_PARAM, optional = true)
-    private SetOfMetaFileDto metaFiles;
+//    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
+//    @PluginParameter(name = META_FILE_PARAM, optional = true)
+//    private SetOfMetaFileDto metaFiles;
 
     protected String productName;
 

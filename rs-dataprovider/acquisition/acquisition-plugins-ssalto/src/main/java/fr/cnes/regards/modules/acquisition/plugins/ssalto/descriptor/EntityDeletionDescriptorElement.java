@@ -9,9 +9,9 @@ import java.util.List;
 
 public class EntityDeletionDescriptorElement extends EntityDescriptorElement {
 
-    private final List<String> dataObjectList_ = new ArrayList<>();
+    private final List<String> dataObjectList = new ArrayList<>();
 
-    private final List<String> dataStorageObjectList_ = new ArrayList<>();
+    private final List<String> dataStorageObjectList = new ArrayList<>();
 
     @Override
     public String getEntityId() {
@@ -33,18 +33,18 @@ public class EntityDeletionDescriptorElement extends EntityDescriptorElement {
     }
 
     public void addProductId(String pDOId) {
-        dataObjectList_.add(pDOId);
+        dataObjectList.add(pDOId);
     }
 
     public void addFileId(String pDSOId) {
-        dataStorageObjectList_.add(pDSOId);
+        dataStorageObjectList.add(pDSOId);
     }
 
     public List<String> getDataObjectList() {
-        return dataObjectList_;
+        return dataObjectList;
     }
 
     public List<String> getDataStorageObjectList() {
-        return dataStorageObjectList_;
+        return dataStorageObjectList;
     }
 }

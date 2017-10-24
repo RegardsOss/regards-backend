@@ -51,6 +51,10 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
 
     private static final String RADICAL = "RADICAL";
 
+    public AbstractJasonPltm1ProductMetadataPlugin() {
+        super();
+    }
+
     /**
      *
      * Méthode abstraite permettant de fournir le prefixe des patterns de fichier lié à la mission JASON. Exemple :
@@ -59,10 +63,6 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      * @return
      */
     protected abstract String getProjectPrefix();
-
-    public AbstractJasonPltm1ProductMetadataPlugin() {
-        super();
-    }
 
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)

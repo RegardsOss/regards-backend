@@ -86,13 +86,13 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
+    public SaralDoris10ProductMetadataPlugin() {
+        super();
+    }
+
     @Override
     protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
         return pluginsRepositoryProperties;
-    }
-
-    public SaralDoris10ProductMetadataPlugin() {
-        super();
     }
 
     /**

@@ -42,11 +42,11 @@ public class NetCdfFileHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetCdfFileHelper.class);
 
-    private NetcdfFile netCfdFile_;
+    private NetcdfFile netCfdFile;
 
     public NetCdfFileHelper(File pNetCdfFile) {
         try {
-            netCfdFile_ = NetcdfFile.open(pNetCdfFile.getAbsolutePath());
+            netCfdFile = NetcdfFile.open(pNetCdfFile.getAbsolutePath());
         } catch (IOException ioe) {
             LOGGER.error("trying to open " + pNetCdfFile.getAbsolutePath(), ioe);
         }
@@ -54,14 +54,14 @@ public class NetCdfFileHelper {
 
     public void release() {
         try {
-            netCfdFile_.close();
+            netCfdFile.close();
         } catch (IOException ioe) {
-            LOGGER.error("trying to close " + netCfdFile_.getLocation(), ioe);
+            LOGGER.error("trying to close " + netCfdFile.getLocation(), ioe);
         }
     }
 
     public String getGlobalAttributeStringValue(String pAttributeName, String pFormatRead) {
-        String attValue = netCfdFile_.findGlobalAttribute(pAttributeName).getStringValue();
+        String attValue = netCfdFile.findGlobalAttribute(pAttributeName).getStringValue();
         if (pFormatRead != null) {
             attValue = attValue.substring(0, pFormatRead.length());
         }
@@ -83,7 +83,7 @@ public class NetCdfFileHelper {
             pExceptionList = new ArrayList<>();
         }
         List<String> resultList = new ArrayList<>();
-        for (Variable element : netCfdFile_.getVariables()) {
+        for (Variable element : netCfdFile.getVariables()) {
             if (!pExceptionList.contains(element.getShortName())) {
                 Attribute att = element.findAttribute(pAttributeName);
                 resultList.add(att.getStringValue());
@@ -104,7 +104,7 @@ public class NetCdfFileHelper {
      * @return
      */
     public List<Object> getVariableValues(String pVariableName, AttributeTypeEnum pValueType) {
-        Variable longitude = netCfdFile_.findVariable(pVariableName);
+        Variable longitude = netCfdFile.findVariable(pVariableName);
         List<Object> valueList = new ArrayList<>();
         double scale = 1;
         if (longitude.findAttribute("scale_factor") != null) {
