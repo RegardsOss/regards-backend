@@ -54,6 +54,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Controller for REST Access to Plugin entities
@@ -144,7 +145,8 @@ public class PluginController implements IResourceController<PluginConfiguration
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(
-            description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType")
+            description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
             @RequestParam(value = "pluginType", required = false) final String pPluginType)
             throws EntityInvalidException {
@@ -198,7 +200,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Get the plugin Meta data for a specific plugin id")
+    @ResourceAccess(description = "Get the plugin Meta data for a specific plugin id", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(
             @PathVariable("pluginId") final String pPluginId) {
         final PluginMetaData metaData = pluginService.getPluginMetaDataById(pPluginId);
@@ -217,7 +219,8 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id")
+    @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
             @PathVariable("pluginId") final String pPluginId) {
         final List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurations(pPluginId);
@@ -238,7 +241,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PluginController.PLUGINS_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Get all the plugin configuration for a specific type")
+    @ResourceAccess(description = "Get all the plugin configuration for a specific type", role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurationsByType(
             @RequestParam(value = "pluginType", required = false) final String pPluginType)
             throws EntityNotFoundException {
@@ -306,7 +309,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Get a the plugin configuration of a specific plugin")
+    @ResourceAccess(description = "Get a the plugin configuration of a specific plugin", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId)
             throws ModuleException {
@@ -327,7 +330,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Get a the plugin configuration")
+    @ResourceAccess(description = "Get a the plugin configuration", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfigurationDirectAccess(
             @PathVariable("configId") final Long pConfigId) throws ModuleException {
         PluginConfiguration pluginConfig = pluginService.getPluginConfiguration(pConfigId);
