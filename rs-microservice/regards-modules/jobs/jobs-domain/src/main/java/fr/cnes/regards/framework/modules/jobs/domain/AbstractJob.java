@@ -112,7 +112,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @throws JobParameterMissingException if parameter does not exist
      * @throws JobParameterInvalidException if parameter value is null
      */
-    protected <T> T getValueFor(Map<String, JobParameter> parameters, String parameterName)
+    protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName)
             throws JobParameterMissingException, JobParameterInvalidException {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
@@ -130,7 +130,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @param parameterName parameter name to retrieve
      * @return an {@link java.util.Optional} parameter value
      */
-    protected <T> Optional<T> getOptionalValueFor(Map<String, JobParameter> parameters, String parameterName) {
+    protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName) {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
             return Optional.empty();
