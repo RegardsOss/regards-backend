@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -100,16 +102,13 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
                     .getPlugin(this.chainGeneration.getGenerateSIPPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
-            if (validFileList != null) {
-                // for each AcquisitionFile
-//                for (AcquisitionFile acqFile : validFileList) {
-                    //            generateSipPlugin.createMetadataPlugin("coucou", fileMap, datasetName, dicoName, projectName);
-                    generateSipPlugin.createMetaDataPlugin("priduct name", validFileList);
-//                }
-
+            if (validFileList != null && validFileList.size() > 0) {
+                
+                // TODO CMZ ici regrouper par produit
+                //
+                
+                generateSipPlugin.createMetaDataPlugin(validFileList);
             }
-
-
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);

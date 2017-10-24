@@ -49,6 +49,9 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
@@ -264,7 +267,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 File file = new File(
                         LOCAL_ARCH_DIR + File.separator + pluginTestDef.getFileDirectory() + File.separator + fileName);
                 if (!fileName.equals("") && file.exists()) {
-                    acqFiles.add(initSsaltoFile(file));
+                    acqFiles.add(initAcquisitionFile(file, pluginTestDef.getProductName()));
                 }
             }
             isCreationOk = isCreationOk && createAndValidate(pluginTestDef, plugin, acqFiles);
@@ -296,10 +299,10 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             for (File file : fileNameList) {
                 acqFiles = new ArrayList<>();
                 if (file.isFile()) {
-                    acqFiles.add(initSsaltoFile(file));
+                    pluginTestDef.setProductName(file.getName());
+                    acqFiles.add(initAcquisitionFile(file, pluginTestDef.getProductName()));
                     LOGGER.info("[" + pluginTestDef.getDataSetName() + "] " + file.getName()
                             + " ... processing metadata");
-                    pluginTestDef.setProductName(file.getName());
                     isCreationOk = createAndValidate(pluginTestDef, plugin, acqFiles);
                     if (!isCreationOk) {
                         errorList.add("[" + pluginTestDef.getDataSetName() + "] " + file.getName()
@@ -320,9 +323,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * Initialise un fichier a partir duquel est cree un descripteur
      *
      * @param aFile
-     * @return
+     * @return an {@link AcquisitionFile}
      */
-    protected AcquisitionFile initSsaltoFile(File aFile) {
+    protected AcquisitionFile initAcquisitionFile(File aFile, String productName) {
         AcquisitionFile ssaltoFile = new AcquisitionFile();
         ssaltoFile.setFileName(aFile.getName());
 
@@ -335,6 +338,15 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         ssaltoFile.setAcquisitionInformations(acqInfos);
         ssaltoFile.setStatus(AcquisitionFileStatus.VALID);
+        
+        MetaProduct metaProduct = new MetaProduct();
+        metaProduct.setLabel(productName);
+
+        Product product = new Product();
+        product.setProductName(productName);
+        product.setMetaProduct(metaProduct);
+        product.setStatus(ProductStatus.ACQUIRING);
+        ssaltoFile.setProduct(product);
 
         // TODO CMZ à confirmer
         // archivingDirectory
@@ -433,8 +445,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      */
     protected String createMetaData(List<AcquisitionFile> acqFiles, PluginTestDef pluginTestDef,
             IGenerateSIPPlugin pluginGenerateSIP) throws ModuleException {
-        String xml = pluginGenerateSIP.createMetadataPlugin(pluginTestDef.getProductName(), acqFiles,
-                                                            pluginTestDef.getDataSetName());
+        String xml = pluginGenerateSIP.createMetadataPlugin(acqFiles, pluginTestDef.getDataSetName());
 
         LOGGER.debug(xml);
 
@@ -529,7 +540,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     }
 
     /**
-     * Definit une liste de fichiers a traiter contenus dans le repertoire pFileDirectory et associe au dataset pDataSetName
+     * Definit une liste de fichiers a traiter contenus dans le repertoire fileDirectory et associe au dataset dataSetName
      *
      * @param dataSetName
      * @param fileDirectory

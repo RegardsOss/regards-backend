@@ -64,9 +64,6 @@ import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -110,7 +107,7 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private static final long WAIT_TIME = 15_000;
+    private static final long WAIT_TIME = 10_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -239,10 +236,6 @@ public class ScanJobIT {
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
-        // Create an existing Product
-        Product product = productService.save(ProductBuilder.build(TestScanDirectoryPlugin.EXISTING_PRODUCT)
-                .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
-
         chain.setScanAcquisitionPluginConf(pluginService
                 .getPluginConfiguration("TestScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class).getId());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
@@ -290,6 +283,7 @@ public class ScanJobIT {
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
+        //        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
@@ -298,13 +292,14 @@ public class ScanJobIT {
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
 
         chain.setGenerateSIPPluginConf(pluginService
                 .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
-        // Activate the chain
         Assert.assertTrue(chainService.run(chain));
 
         waitJob(WAIT_TIME);
@@ -386,11 +381,11 @@ public class ScanJobIT {
     public void runActiveChainGenerationWithoutScanPlugin() throws InterruptedException {
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(1_000);
+        waitJob(WAIT_TIME);
 
-        Assert.assertTrue(!runnings.isEmpty());
+        Assert.assertFalse(runnings.isEmpty());
         Assert.assertTrue(succeededs.isEmpty());
-        Assert.assertTrue(!faileds.isEmpty());
+        Assert.assertFalse(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
     }
 
@@ -400,7 +395,7 @@ public class ScanJobIT {
 
         Assert.assertFalse(chainService.run(chain));
 
-        waitJob(1_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertTrue(runnings.isEmpty());
         Assert.assertTrue(succeededs.isEmpty());

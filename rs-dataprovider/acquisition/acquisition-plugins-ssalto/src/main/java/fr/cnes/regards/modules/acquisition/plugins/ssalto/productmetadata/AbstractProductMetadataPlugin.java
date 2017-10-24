@@ -110,7 +110,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
             properties.load(stream);
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("Unable to load file " + propertyFilePath, e);
         }
 
@@ -256,9 +256,10 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * cree les meta donnees pour le produit productName, les fichier acqFiles et le jeu de donnees dataSetName
      */
     @Override
-    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
         String outputXml = null;
+        // TODO CMZ à confirmer que tous les AcquisitionFile sont sur le même produit
+        String productName = acqFiles.get(0).getProduct().getProductName();
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
 
         Map<File, ?> fileMap = buildMapFile(acqFiles);
@@ -318,7 +319,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     }
 
     // TODO CMZ attention à revoir
-    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
+    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
         setUp();
         return null;
     }

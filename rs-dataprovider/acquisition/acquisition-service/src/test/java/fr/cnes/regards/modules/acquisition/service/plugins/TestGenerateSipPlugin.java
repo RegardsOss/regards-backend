@@ -59,19 +59,23 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
     private MetaProductDto metaProductDto;
 
     @Override
-    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
         // TODO CMZ à revoir
         return null;
     }
 
     @Override
-    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
-        LOGGER.info("start create MetaData for the chain <{}> for the product {}", chainLabel,
-                    productName);
-
-        LOGGER.info("end create Metata for the chain <{}> for the product {}", chainLabel,
-                    productName);
+    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
+        LOGGER.info("start create MetaData for the chain <{}> ", chainLabel);
+        
+        
+        String productName = acqFiles.get(0).getProduct().getProductName();
+        
+        LOGGER.info("product namen <{}> ", productName);
+        
+        
+        // TOD CMZ à compléter
+        LOGGER.info("end create Metata for the chain <{}>", chainLabel);
 
         return "coucou";
     }

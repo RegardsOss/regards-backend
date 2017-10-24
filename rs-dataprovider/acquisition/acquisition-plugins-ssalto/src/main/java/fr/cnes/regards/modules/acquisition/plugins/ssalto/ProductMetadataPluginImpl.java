@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xml.serialize.OutputFormat;
@@ -51,11 +50,12 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
      * Cree les metadata niveau produit
      */
     @Override
-    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
 
         // return pProductName;
         String xmlString = null;
+
+        String productName = acqFiles.get(0).getProduct().getProductName();
 
         // Init descriptor
         DescriptorFile descriptorFile = new DescriptorFile(datasetName, productName);
@@ -85,7 +85,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
                 dataObject.addDataStorageObjectIdentifier(file.getName());
             }
         }
-        
+
         dataObject.setFileSize(Long.toString(fileSize));
         // Add element to descriptor
         descriptorFile.addDescElementToDocument(dataObject);
@@ -134,7 +134,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
     }
 
     @Override
-    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
+    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
         // TODO CMZ à revoir        
         return null;
     }

@@ -128,14 +128,13 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //    }
 
     @Override
-    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
         // TODO CMZ à revoir        
         return null;
     }
 
     @Override
-    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles) {
+    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
         // TODO CMZ à revoir        
         return null;
     }

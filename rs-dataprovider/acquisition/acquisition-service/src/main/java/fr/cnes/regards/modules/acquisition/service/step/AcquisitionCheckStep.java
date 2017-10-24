@@ -69,9 +69,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     private IPluginService pluginService;
 
     @Autowired
-    private IChainGenerationService chainGenerationService;
-
-    @Autowired
     private IAcquisitionFileRepository acquisitionFileRepository;
 
     @Autowired

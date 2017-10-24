@@ -32,9 +32,9 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 public interface IGenerateSIPPlugin {
 
     // TODO CMZ : à confirmer mais je pense pas que ça retourne une String
-    public String createMetadataPlugin(String productName, List<AcquisitionFile> acqFiles, String datasetName)
+    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
             throws ModuleException;
 
-    public String createMetaDataPlugin(String productName, List<AcquisitionFile> acqFiles);
+    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles);
 
 }
