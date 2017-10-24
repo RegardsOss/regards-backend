@@ -119,7 +119,7 @@ public abstract class AbstractAcquisitionScanPlugin {
         acqFile.setMetaFile(metaFile);
         acqFile.setStatus(AcquisitionFileStatus.IN_PROGRESS);
         acqFile.setFileName(baseFile.getName());
-        acqFile.setSize(new Long(baseFile.length()));
+        acqFile.setSize(baseFile.length());
         acqFile.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(baseFile.getParent().toString())
                 .get());
 

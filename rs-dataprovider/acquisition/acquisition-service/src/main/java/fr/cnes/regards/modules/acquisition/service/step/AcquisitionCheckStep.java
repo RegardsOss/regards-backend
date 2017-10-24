@@ -118,7 +118,11 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                 // for each AcquisitionFile
                 for (AcquisitionFile acqFile : inProgressFileList) {
                     File currentFile = null;
-                    if (acqFile.getAcquisitionInformations() != null) {
+                    
+                    if (acqFile.getAcquisitionInformations() == null) {
+                        currentFile = new File(acqFile.getFileName());
+                    }
+                    else {
                         String workingDir = acqFile.getAcquisitionInformations().getWorkingDirectory();
                         if (workingDir != null) {
                             currentFile = new File(workingDir, acqFile.getFileName());
@@ -126,8 +130,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                             currentFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
                                     acqFile.getFileName());
                         }
-                    } else {
-                        currentFile = new File(acqFile.getFileName());
                     }
 
                     // execute the check plugin

@@ -25,20 +25,18 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Abstra
 
 /**
  * 
- * @author CS
- * @version 5.0
- * @since 5.0
+ * @author Christophe Mertz
  */
 public class SalpProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     private static final String PROJECT_NAME = "SALP";
 
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
     public SalpProductMetadataPlugin() {
         super();
     }
-
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
     @Override
     protected PluginsRepositoryProperties getPluginsRepositoryProperties() {

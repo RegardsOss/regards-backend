@@ -70,12 +70,12 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
 
     protected Pattern patternp;
 
+    @Autowired
+    private PluginsRepositoryProperties pluginsRepositoryProperties;
+
     public Cryosat2Doris10ProductMetadataPlugin() {
         super();
     }
-
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
     @Override
     protected PluginsRepositoryProperties getPluginsRepositoryProperties() {

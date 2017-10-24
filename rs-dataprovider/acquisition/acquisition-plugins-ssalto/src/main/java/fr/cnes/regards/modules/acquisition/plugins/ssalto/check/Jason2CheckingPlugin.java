@@ -32,9 +32,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Jason2CheckingPlugin", id = "Jason2CheckingPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Jason2CheckingPlugin", id = "Jason2CheckingPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
@@ -47,7 +46,7 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
     private String logFilePath;
 
-    private String nodeIdentifier_;
+    private String nodeIdentifier;
 
     public Jason2CheckingPlugin() {
         super();
@@ -70,7 +69,7 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
     }
 
     public String getNodeIdentifier() {
-        return nodeIdentifier_;
+        return nodeIdentifier;
     }
 
     public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
@@ -88,7 +87,7 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
             } else {
                 productName = name;
             }
-            nodeIdentifier_ = productName;
+            nodeIdentifier = productName;
             productVersion = 1;
             fileVersion = 1;
             logFilePath = null;

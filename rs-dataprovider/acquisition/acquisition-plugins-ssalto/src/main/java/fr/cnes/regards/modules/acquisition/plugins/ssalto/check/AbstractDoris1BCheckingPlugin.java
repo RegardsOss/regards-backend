@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.IDoris1BPlugin;
 
+
 /**
  * Gere les prefixes pour les donnees Doris1B
  * 

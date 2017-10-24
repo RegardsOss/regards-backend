@@ -57,7 +57,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
     @Autowired
     private IGenerateSipStep generateSIPStepImpl;
-    
+
     private ChainGeneration chainGeneration;
 
     @Override
@@ -93,10 +93,11 @@ public class AcquisitionJob extends AbstractJob<Void> {
         generateSipStep = generateSIPStepImpl;
         generateSipStep.setProcess(process);
         beanFactory.autowireBean(generateSipStep);
-        if (checkStep != null) {
-            checkStep.setNextStep(generateSipStep);
-        } else {
+
+        if (checkStep == null) {
             scanStep.setNextStep(generateSipStep);
+        } else {
+            checkStep.setNextStep(generateSipStep);
         }
 
         process.run();
@@ -119,7 +120,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
                     "Please use ChainGenerationJobParameter in place of JobParameter (this "
                             + "class is here to facilitate your life so please use it.");
         }
-        
+
         chainGeneration = param.getValue();
     }
 }

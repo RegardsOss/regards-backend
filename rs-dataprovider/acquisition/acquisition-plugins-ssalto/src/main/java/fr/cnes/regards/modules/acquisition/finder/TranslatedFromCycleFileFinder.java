@@ -68,16 +68,16 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     private static final String STOP_DATE = "STOP_DATE";
 
     // Charset and decoder_ for ISO-8859-15
-    private static Charset charset_ = Charset.forName("ISO-8859-15");
+    private static Charset charset = Charset.forName("ISO-8859-15");
 
-    private final CharsetDecoder decoder_ = charset_.newDecoder();
+    private final CharsetDecoder decoder = charset.newDecoder();
 
     /**
      * Pattern de date dans un fichier de cycle
      */
     private static final String CYCLE_DATE_PATTERN = "\\d{2}-\\d{2}-\\d{4}";
 
-    // TODO change les \\s en \\{bla,k} et repasser les tests unitaires
+    // change les \\s en \\{blank} et repasser les tests unitaires
     /**
      * Pattern pour les lignes dans le fichier cycle
      */
@@ -504,7 +504,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             final MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
 
             // Decode the file into a char buffer
-            cb = decoder_.decode(bb);
+            cb = decoder.decode(bb);
             
             fc.close();
         } catch (FileNotFoundException e) {

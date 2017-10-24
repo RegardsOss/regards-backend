@@ -41,31 +41,24 @@ public class XMLErrorManager implements ErrorHandler {
      * Liste contenant les exceptions indiquant des warnings lors du parse. La liste contient des objets de la classe
      * <code>SAXParseException</code>.
      */
-    private List<SAXParseException> warnings_ = null;
+    private List<SAXParseException> warnings = null;
 
     /**
      * Liste contenant les exceptions indiquant des erreurs lors du parse. La liste contient des objets de la classe
      * <code>SAXParseException</code>.
      */
-    private List<SAXParseException> errors_ = null;
+    private List<SAXParseException> errors = null;
 
     /**
      * Liste contenant les exceptions indiquant des erreurs graves lors du parse. La liste contient des objets de la
      * classe <code>SAXParseException</code>.
      */
-    private List<SAXParseException> fatalErrors_ = null;
-
-    //    /**
-    //     * Parametre indiquant la mise en place ou non d'un log d'erreur specifique aux requetes de validation
-    //     * 
-    //     * @since 4.3
-    //     */
-    //    private boolean isValidationLoggerEnabled = false;
+    private List<SAXParseException> fatalErrors = null;
 
     public XMLErrorManager(boolean isValidationLoggerEnabled) {
-        warnings_ = new ArrayList<>();
-        errors_ = new ArrayList<>();
-        fatalErrors_ = new ArrayList<>();
+        warnings = new ArrayList<>();
+        errors = new ArrayList<>();
+        fatalErrors = new ArrayList<>();
         //        isValidationLoggerEnabled = pIsValidationLoggerEnabled;
     }
 
@@ -73,9 +66,9 @@ public class XMLErrorManager implements ErrorHandler {
      * Cette methode permet de reinitialiser l'objet.
      */
     public void reset() {
-        warnings_ = new ArrayList<>();
-        errors_ = new ArrayList<>();
-        fatalErrors_ = new ArrayList<>();
+        warnings = new ArrayList<>();
+        errors = new ArrayList<>();
+        fatalErrors = new ArrayList<>();
     }
 
     /**
@@ -92,13 +85,8 @@ public class XMLErrorManager implements ErrorHandler {
                                        Integer.toString(exception.getColumnNumber()), exception.getMessage());
         LOGGER.warn(message);
 
-        //        // Log validation message in validation logger
-        //        if (isValidationLoggerEnabled) {
-        //            ErrorReport.warn(message);
-        //        }
-
         // Do not throw any exception, but remember the warning
-        warnings_.add(exception);
+        warnings.add(exception);
     }
 
     /**
@@ -113,14 +101,9 @@ public class XMLErrorManager implements ErrorHandler {
                                        exception.getColumnNumber(), exception.getMessage());
         LOGGER.error(message);
 
-        //        // Log validation message in validation logger
-        //        if (isValidationLoggerEnabled) {
-        //            ErrorReport.error(message);
-        //        }
-
         // Do not throw any exception. Continue to parse
         // the rest of the document. However, remember the error
-        this.errors_.add(exception);
+        this.errors.add(exception);
     }
 
     /**
@@ -136,26 +119,21 @@ public class XMLErrorManager implements ErrorHandler {
                                        Integer.toString(exception.getColumnNumber()), exception.getMessage());
         LOGGER.error(message);
 
-        //        // Log validation message in validation logger
-        //        if (isValidationLoggerEnabled) {
-        //            ErrorReport.error(message);
-        //        }
-
         // Do not throw any exception. Continue to parse
         // the rest of the document. However, remember the error
-        this.fatalErrors_.add(exception);
+        this.fatalErrors.add(exception);
     }
 
     public List<SAXParseException> getErrors() {
-        return errors_;
+        return errors;
     }
 
     public List<SAXParseException> getFatalErrors() {
-        return fatalErrors_;
+        return fatalErrors;
     }
 
     public List<SAXParseException> getWarnings() {
-        return warnings_;
+        return warnings;
     }
 
 }
