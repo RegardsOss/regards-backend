@@ -20,15 +20,16 @@
 package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,6 +40,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
@@ -73,7 +75,9 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     /**
      * {@link List} of {@link AcquisitionFile} that should be check
      */
-    private List<AcquisitionFile> validFileList;
+    //    private List<AcquisitionFile> validFileList;
+
+    private Map<Long, List<AcquisitionFile>> afMap = new HashMap<Long, List<AcquisitionFile>>();
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
@@ -102,12 +106,9 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
                     .getPlugin(this.chainGeneration.getGenerateSIPPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
-            if (validFileList != null && validFileList.size() > 0) {
-                
-                // TODO CMZ ici regrouper par produit
-                //
-                
-                generateSipPlugin.createMetaDataPlugin(validFileList);
+            // create MetaData for each Product
+            if (!afMap.isEmpty()) {
+                afMap.forEach((k, v) -> generateSipPlugin.createMetaDataPlugin(v));
             }
 
         } catch (ModuleException e) {
@@ -118,10 +119,26 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void getResources() throws AcquisitionException {
-        validFileList = new ArrayList<>();
+        // Get the VALID AcquisitionFile
+        List<AcquisitionFile> validFileList = new ArrayList<>();
         for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
             validFileList
                     .addAll(acquisitionFileRepository.findByStatusAndMetaFile(AcquisitionFileStatus.VALID, metaFile));
+        }
+
+        // Get all the products from the VALID AcquisitionFile
+        Set<Product> products = new HashSet<Product>();
+        validFileList.forEach(af -> {
+            if (!products.contains(af.getProduct())) {
+                products.add(af.getProduct());
+            }
+        });
+
+        // Get the ACquisitionFiles for each Product
+        for (Product pr : products) {
+            List<AcquisitionFile> afs = new ArrayList<>();
+            validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));
+            afMap.put(pr.getId(), afs);
         }
     }
 

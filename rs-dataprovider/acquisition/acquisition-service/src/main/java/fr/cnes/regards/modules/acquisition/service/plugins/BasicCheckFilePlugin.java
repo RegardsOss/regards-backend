@@ -25,15 +25,12 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * 
+ * This {@link Plugin} checks that the {@link File} exists and can be read.<br>
  *
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @Plugin(id = "BasicCheckFilePlugin", version = "1.0.0-SNAPSHOT", description = "BasicCheckFilePlugin",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
@@ -51,25 +48,17 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
 
-//    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-//    private MetaProductDto metaProductDto;
-
-//    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
-//    @PluginParameter(name = META_FILE_PARAM, optional = true)
-//    private SetOfMetaFileDto metaFiles;
-
     protected String productName;
 
     protected String nodeIdentifier;
 
     @Override
     public boolean runPlugin(File fileToCheck, String dataSetId) {
-
-        LOGGER.info("Start checking for the chain <{}> ", chainLabel);
+        LOGGER.info("Start checking file {} for the chain <{}> ", fileToCheck.getAbsoluteFile(), chainLabel);
+        boolean result = false;
 
         productName = fileToCheck.getName();
         nodeIdentifier = dataSetId + " - " + productName;
-        boolean result = false;
 
         // Check file exists
         if (fileToCheck.exists() && fileToCheck.canRead()) {

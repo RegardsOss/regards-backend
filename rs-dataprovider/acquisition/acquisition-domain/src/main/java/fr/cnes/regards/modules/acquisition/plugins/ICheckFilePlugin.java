@@ -30,20 +30,19 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 @PluginInterface(description = "Plugin to validate a product")
 public interface ICheckFilePlugin {
     
-    // TODO CMZ à renommer c'est plutôt validate ou check
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException;
     
     // TODO CMZ à voir mais je pense que c'est inutile
     public int getFileVersion();
 
-    // TODO CMZ util ?
+    // TODO CMZ getLogFile util ?
     public String getLogFile();
 
     public String getProductName();
 
-    // TODO CMZ util ?
+    // TODO CMZ getProductVersion util ?
     public int getProductVersion();
 
-    // TODO CMZ util pour les tests pour générer descripteur ?
+    // TODO CMZ getNodeIdentifier util ?
     public String getNodeIdentifier();
 }

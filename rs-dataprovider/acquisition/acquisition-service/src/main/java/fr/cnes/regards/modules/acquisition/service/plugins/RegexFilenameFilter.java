@@ -37,8 +37,6 @@ public final class RegexFilenameFilter implements FilenameFilter {
 
     /**
      * Si <code>TRUE</code>, definit que les fichiers qui repondent au pattern doivent etre exclus.
-     * 
-     * @since 1.0
      */
     private Boolean patternExclusion = Boolean.FALSE;
 
@@ -66,10 +64,10 @@ public final class RegexFilenameFilter implements FilenameFilter {
      *            indique si l'expression est sensible a la case
      */
     public RegexFilenameFilter(final String regex, Boolean caseSensitive) {
-        if (!caseSensitive.booleanValue()) {
-            this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        } else {
+        if (caseSensitive) {
             this.pattern = Pattern.compile(regex);
+        } else {
+            this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         }
     }
 
@@ -87,10 +85,10 @@ public final class RegexFilenameFilter implements FilenameFilter {
 
         matchDirectoryToo = matchDir;
 
-        if (!caseSensitive.booleanValue()) {
-            this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        } else {
+        if (caseSensitive) {
             this.pattern = Pattern.compile(regex);
+        } else {
+            this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         }
     }
 

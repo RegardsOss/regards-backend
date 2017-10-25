@@ -30,7 +30,7 @@ public enum AcquisitionFileStatus {
      */
     INVALID,
     /**
-     * TODO CMZ à supprimer ?
+     * TODO CMZ DUPLICATE à supprimer ?
      */
     DUPLICATE,
     /**

@@ -56,12 +56,12 @@ public class ScanDirectory implements IIdentifiable<Long> {
     @Column(name = "scan_directory")
     private String scanDir;
 
-    /**
-     * Acquisition date of the last acquired file in the current directory
-     */
-    @Column(name = "last_acquisition_date")
-    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastAcqDate;
+//    /**
+//     * Acquisition date of the last acquired file in the current directory
+//     */
+//    @Column(name = "last_acquisition_date")
+//    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+//    private OffsetDateTime lastAcqDate;
 
     /**
      * Default constructor
@@ -117,12 +117,12 @@ public class ScanDirectory implements IIdentifiable<Long> {
         this.scanDir = scanDir;
     }
 
-    public OffsetDateTime getLastAcqDate() {
-        return lastAcqDate;
-    }
-
-    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
-        this.lastAcqDate = lastAcqDate;
-    }
+//    public OffsetDateTime getLastAcqDate() {
+//        return lastAcqDate;
+//    }
+//
+//    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+//        this.lastAcqDate = lastAcqDate;
+//    }
 
 }

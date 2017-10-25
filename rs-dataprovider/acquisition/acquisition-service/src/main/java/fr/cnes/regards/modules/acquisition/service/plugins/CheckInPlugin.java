@@ -20,24 +20,36 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.ReadFileException;
 
+/**
+ * This {@link Plugin} checks that the {@link File} exists and can be read.<br>
+ * The product name is the file name less the file extension and the product name length is 128 char maximum.
+ * 
+ * @author Christophe Mertz
+ *
+ */
 @Plugin(description = "CheckInPlugin", id = "CheckInPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class CheckInPlugin implements ICheckFilePlugin {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(CheckInPlugin.class);
+    
+    public static final String CHAIN_GENERATION_PARAM = "chain-label";
 
     protected static final int PRODUCT_NAME_MAX_SIZE = 128;
+    
+    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
+    private String chainLabel;
 
     protected String productName;
-
-    protected int productVersion;
-
-    protected int fileVersion;
-
-    protected String logFilePath;
 
     protected String nodeIdentifier;
 
@@ -47,12 +59,12 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     @Override
     public int getFileVersion() {
-        return fileVersion;
+        return 1;
     }
 
     @Override
     public String getLogFile() {
-        return logFilePath;
+        return null;
     }
 
     @Override
@@ -62,7 +74,7 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     @Override
     public int getProductVersion() {
-        return productVersion;
+        return 0;
     }
 
     @Override
@@ -71,13 +83,14 @@ public class CheckInPlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+        LOGGER.info("Start checking file {} for the chain <{}> ", fileToCheck.getAbsoluteFile(), chainLabel);
 
         boolean result = false;
 
         // Check file exists
-        if (filetoCheck.exists() && filetoCheck.canRead()) {
-            String name = filetoCheck.getName();
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
+            String name = fileToCheck.getName();
 
             // Delete extension if any
             int indexExtension = name.lastIndexOf('.');
@@ -90,14 +103,14 @@ public class CheckInPlugin implements ICheckFilePlugin {
             } else {
                 productName = name;
             }
-            nodeIdentifier = filetoCheck.getName();
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
+            
+            nodeIdentifier = fileToCheck.getName();
             result = true;
         } else {
-            throw new ReadFileException(filetoCheck.getAbsolutePath());
+            throw new ReadFileException(fileToCheck.getAbsolutePath());
         }
+        
+        LOGGER.info("End checking for the chain <{}> ", chainLabel);
 
         return result;
     }

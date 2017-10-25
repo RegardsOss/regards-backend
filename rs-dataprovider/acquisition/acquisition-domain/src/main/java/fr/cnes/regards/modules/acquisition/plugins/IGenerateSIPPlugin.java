@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 @PluginInterface(description = "Plugin to create product and file metadata")
 public interface IGenerateSIPPlugin {
 
-    // TODO CMZ : à confirmer mais je pense pas que ça retourne une String
+    // TODO CMZ : à confirmer que ça retourne une String
     public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
             throws ModuleException;
 

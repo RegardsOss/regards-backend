@@ -39,14 +39,13 @@ public class FileAcquisitionInformations extends FileProcessInformations {
     //     * ChainGeneration directory utilise pour acquerir le fichier. Cet attribut n'est utilise que pour l'acquisition de fichiers
     //     * afin de mettre a jour le supply dir utilise pour l'acquisition du fichier. Afin de recuperer le repertoire
     //     * d'acquisition du fichier, utiliser l'attribut acquisitionDirectory_.
-    //     * TODO CMZ util ?
+    //     * TODO CMZ ScanDirectory util ?
     //     */
     //    private ScanDirectory supplyDirectory = null;
 
     /**
      * Nom du repertoire de travail contenant le fichier associe<br>
      * Ce repertoire de travail est initialise lors de la detection d'un nouveau fichier.
-     * TODO CMZ util ?
      */
     @Column(name="working_directory")
     private String workingDirectory = null;

@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Strings;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -46,10 +48,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 
 /**
- * Class ScanDirectoryPlugin A default {@link Plugin} of type {@link IConnectionPlugin}. Allows to
+ * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
  *
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @Plugin(id = "ScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
@@ -63,22 +64,19 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
-    
+
     @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
     private String lastDateActivation;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     private MetaProductDto metaProductDto;
 
-    // TODO CMZ à voir si fonctionne avec Set<MetaFileDto>
     @PluginParameter(name = META_FILE_PARAM, optional = true)
     private SetOfMetaFileDto metaFiles;
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
-
         LOGGER.info("Start scanning for the chain <{}> ", chainLabel);
-
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
@@ -115,23 +113,23 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     private void addMatchedFile(File dirFile, ScanDirectory scanDir, RegexFilenameFilter filter, MetaFile metaFile,
             Set<AcquisitionFile> acqFileList) {
-        List<File> filteredFileList = filteredFileList(dirFile, filter, null);
-        // TODO CMZ à remettre, il faut la lastAcqDate
-        //        List<File> filteredFileList = filteredFileList(dirFile, filter, metaProductDto.getLastAcqDate());
+
+        List<File> filteredFileList = filteredFileList(dirFile, filter, Strings.isNullOrEmpty(lastDateActivation) ? null
+                : OffsetDateTime.parse(lastDateActivation));
 
         for (File baseFile : filteredFileList) {
             AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile);
 
-            // Calculate MD5 checksum with the specified algorithme            
+            // Calculate MD5 checksum with the specified algorithm
             if (!metaProductDto.getChecksumAlgorithm().isEmpty()) {
                 File tF = new File(dirFile, acqFile.getFileName());
                 try (FileInputStream fis = new FileInputStream(tF)) {
                     acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, metaProductDto.getChecksumAlgorithm()));
                     acqFile.setChecksumAlgorithm(metaProductDto.getChecksumAlgorithm());
                 } catch (NoSuchAlgorithmException e) {
-                    LOGGER.error(e.getMessage(),e);
+                    LOGGER.error(e.getMessage(), e);
                 } catch (IOException e) {
-                    LOGGER.error(e.getMessage(),e);
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
 
@@ -162,6 +160,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
     private Set<File> reportBadFile(MetaFile metaFile) {
         LOGGER.info("Start reporting bad files for the chain <{}> ", chainLabel);
         Set<File> badFiles = new HashSet<>();
+
         String filePattern = metaFile.getFileNamePattern();
         String adaptedPattern = getAdaptedPattern(filePattern);
         RegexFilenameFilter filter = new RegexFilenameFilter(adaptedPattern, Boolean.TRUE, Boolean.FALSE);
@@ -179,7 +178,6 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
                 // Add files to list : filter selects only files
                 for (int j = 0; j < fileArray.length; j++) {
-                    //   // Report
                     //   process_.addWarnToReport(msg);
                     LOGGER.info("Unexpected file <{}> for the chain <{}>", fileArray[j].getAbsolutePath(), chainLabel);
                     badFiles.add(fileArray[j]);

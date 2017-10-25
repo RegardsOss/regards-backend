@@ -110,12 +110,12 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02")
-                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03")
-                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a aMetaFile with the 3 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
@@ -192,12 +192,12 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01")
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02")
-                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03")
-                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a aMetaFile with the 3 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
@@ -234,12 +234,12 @@ public class AcquisitionFileServiceIT {
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input")
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input")
-                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input")
-                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a MetaFile with the 2 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
@@ -278,12 +278,12 @@ public class AcquisitionFileServiceIT {
     @Test
     public void removeUnkonwScanDirectory() {
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input")
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input")
-                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input")
-                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+//                .withDateAcquisition(OffsetDateTime.now().minusSeconds(1358)).get());
 
         // Create a MetaFile with the 2 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
