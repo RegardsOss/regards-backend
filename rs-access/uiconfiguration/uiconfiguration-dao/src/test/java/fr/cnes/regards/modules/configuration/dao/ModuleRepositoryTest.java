@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.configuration.domain.Module;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
+@TestPropertySource("classpath:test.properties")
 public class ModuleRepositoryTest extends AbstractDaoTransactionalTest {
 
     @Autowired

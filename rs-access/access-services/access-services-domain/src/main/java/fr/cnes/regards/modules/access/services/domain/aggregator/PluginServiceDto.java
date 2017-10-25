@@ -6,10 +6,10 @@ package fr.cnes.regards.modules.access.services.domain.aggregator;
 import java.net.URL;
 import java.util.Set;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  * DTO class representing either a {@link PluginConfigurationDto}, either a {@link UIPluginConfiguration}

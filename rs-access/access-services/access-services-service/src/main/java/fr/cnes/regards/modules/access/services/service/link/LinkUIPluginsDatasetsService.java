@@ -33,12 +33,12 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
-import fr.cnes.regards.modules.entities.domain.event.EventType;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
@@ -78,7 +78,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
 
         @Override
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+            if ((pWrapper.getContent() != null) && EventType.DELETION.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
                 for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
                     final LinkUIPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());

@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
+@TestPropertySource("classpath:test.properties")
 public class LayoutRepositoryTest extends AbstractDaoTransactionalTest {
 
     @Autowired
