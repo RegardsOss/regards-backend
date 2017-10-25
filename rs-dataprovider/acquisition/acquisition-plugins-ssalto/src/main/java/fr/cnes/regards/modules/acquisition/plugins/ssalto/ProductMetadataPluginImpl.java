@@ -38,7 +38,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorF
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 
 /**
- * TODO CMZ to delete
+ * TODO CMZ ProductMetadataPluginImpl à supprimer
+ * 
  * @author Christophe Mertz
  */
 
@@ -135,7 +136,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
 
     @Override
     public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
-        // TODO CMZ à revoir        
+        // TODO CMZ createMetaDataPlugin à compléter
         return null;
     }
 

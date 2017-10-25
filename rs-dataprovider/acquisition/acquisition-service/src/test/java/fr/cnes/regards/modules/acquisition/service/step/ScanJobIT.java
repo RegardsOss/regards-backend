@@ -83,7 +83,9 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.CheckInPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryOneProductWithMultipleFilesPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
 
 /**
@@ -211,10 +213,10 @@ public class ScanJobIT {
 
     public void initData() {
         // Create 2 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1")
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input2")
-                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
+        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1").get());
+        //                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input2").get());
+        //                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
 
         metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
@@ -276,6 +278,61 @@ public class ScanJobIT {
     }
 
     @Test
+    public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
+            throws ModuleException, InterruptedException {
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
+
+        //        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
+        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
+        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
+
+        // Scan plugin
+        chain.setScanAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("TestScanDirectoryOneProductWithMultipleFilesPlugin",
+                                        IAcquisitionScanDirectoryPlugin.class)
+                .getId());
+        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_PRODUCT_PARAM,
+                                          metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_FILE_PARAM,
+                                          metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
+                                          chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
+
+        // Check plugin
+        chain.setCheckAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("CheckInPlugin", ICheckFilePlugin.class).getId());
+        chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        // Generate SIP plugin
+        chain.setGenerateSIPPluginConf(pluginService
+                .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJob(WAIT_TIME);
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(1, metaFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(3, productService.retrieveAll().size());
+
+        chain = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chain.getLastDateActivation());
+    }
+
+    @Test
     public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
             throws ModuleException, InterruptedException {
         this.chain.setPeriodicity(1L);
@@ -327,55 +384,6 @@ public class ScanJobIT {
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
-
-    // @FIXME à revoir lorsque le calcul du checksum sera effectué
-    //    @Test
-    //    public void runActiveChainGenerationAcquireSameFilesWithDifferentChecksum()
-    //            throws ModuleException, InterruptedException {
-    //        this.chain.setPeriodicity(1L);
-    //
-    //        Set<MetaFile> metaFiles = new HashSet<>();
-    //        metaFiles.add(metaFile);
-    //
-    //        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-    //        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-    //
-    //        PluginConfiguration plgConf = pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
-    //                                                                           IAcquisitionScanDirectoryPlugin.class);
-    //        chain.setScanAcquisitionPluginConf(plgConf.getId());
-    //        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
-    //        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-    //
-    //        // Activate the chain
-    //        Assert.assertTrue(chainService.run(chain));
-    //
-    //        waitJob(WAIT_TIME);
-    //
-    //        Assert.assertTrue(!runnings.isEmpty());
-    //        Assert.assertTrue(!succeededs.isEmpty());
-    //        Assert.assertTrue(faileds.isEmpty());
-    //        Assert.assertTrue(aborteds.isEmpty());
-    //
-    //        // Repeat the activation of the same chain with an other Plugin
-    //        plgConf = pluginService.getPluginConfiguration("TestScanDirectorySameFileCheckSumDifferentPlugin",
-    //                                                       IAcquisitionScanDirectoryPlugin.class);
-    //        chain.setScanAcquisitionPluginConf(plgConf.getId());
-    //        Assert.assertTrue(chainService.run(chain));
-    //
-    //        waitJob(WAIT_TIME);
-    //
-    //        Assert.assertTrue(!runnings.isEmpty());
-    //        Assert.assertTrue(!succeededs.isEmpty());
-    //        Assert.assertTrue(faileds.isEmpty());
-    //        Assert.assertTrue(aborteds.isEmpty());
-    //
-    //        Assert.assertEquals(1, chainService.retrieveAll().size());
-    //        Assert.assertEquals(1, metaFileService.retrieveAll().size());
-    //        Assert.assertEquals(4, acquisitionFileService.retrieveAll().size());
-    //
-    //        chain = chainService.retrieve(chain.getId());
-    //        Assert.assertNotNull(chain.getLastDateActivation());
-    //    }
 
     @Test
     public void runActiveChainGenerationWithoutScanPlugin() throws InterruptedException {

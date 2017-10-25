@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 import java.io.File;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -96,7 +97,9 @@ public class ScanDirectoryPluginIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    public static final String PATTERN_FILTER = "[A-Z]{4}_MESURE_TC_([0-9]{8}_[0-9]{6}).TXT";
+    private static final String PATTERN_FILTER = "[A-Z]{4}_MESURE_TC_([0-9]{8}_[0-9]{6}).TXT";
+
+    private static final OffsetDateTime NOW = OffsetDateTime.now();
 
     /*
      *  @see https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#MessageDigest
@@ -144,11 +147,13 @@ public class ScanDirectoryPluginIT {
 
     @Autowired
     private IMetaFileRepository metaFileRepository;
-    
+
     @Autowired
     private Gson gson;
 
     private ChainGeneration chain;
+
+    private final URL dataPath = getClass().getResource("/data");
 
     @Before
     public void setUp() throws Exception {
@@ -172,7 +177,7 @@ public class ScanDirectoryPluginIT {
 
     public void initData() {
         chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
-                .lastActivation(OffsetDateTime.now().minusHours(2)).get());
+                .lastActivation(NOW.minusMinutes(75)).get());
     }
 
     @After
@@ -188,9 +193,15 @@ public class ScanDirectoryPluginIT {
     @Test
     public void scanPluginTest() throws ModuleException {
         // Create a ScanDirectory
-        URL dataPath = getClass().getResource("/data");
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath())
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        //        URL dataPath = getClass().getResource("/data");
+        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
+        //                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+
+        // Set the last modified date of the file mots recent that the last acquisition date  
+        File dir = new File(dataPath.getPath());
+        for (File ff : dir.listFiles()) {
+            ff.setLastModified(1000 * NOW.minusMinutes(70).toEpochSecond());
+        }
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
@@ -208,7 +219,7 @@ public class ScanDirectoryPluginIT {
                                     gson.toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
         factory.addParameterDynamic(AbstractAcquisitionScanPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         factory.addParameterDynamic(AbstractAcquisitionScanPlugin.LAST_ACQ_DATE_PARAM,
-                                    gson.toJson(chain.getLastDateActivation()));
+                                    chain.getLastDateActivation().format(DateTimeFormatter.ISO_DATE_TIME));
 
         IAcquisitionScanPlugin scanPlugin = pluginService
                 .getPlugin(pluginService
@@ -218,7 +229,7 @@ public class ScanDirectoryPluginIT {
         Assert.assertNotNull(scanPlugin);
 
         Set<AcquisitionFile> acqFiles = scanPlugin.getAcquisitionFiles();
-        Assert.assertTrue(acqFiles != null && acqFiles.size() == 1);
+        Assert.assertTrue(acqFiles != null && acqFiles.size() == 3);
         Assert.assertEquals(CHECKUM_ALGO, acqFiles.iterator().next().getChecksumAlgorithm());
         Assert.assertEquals("5b483e5260dc8f59bb1b57414b54ede8bc5344f1b2ef338e4463d9b4aa032f97",
                             acqFiles.iterator().next().getChecksum());
@@ -228,9 +239,50 @@ public class ScanDirectoryPluginIT {
     }
 
     @Test
+    public void scanPluginTestWithOutOfDateFiles() throws ModuleException {
+        // Create a ScanDirectory
+        //        URL dataPath = getClass().getResource("/data");
+        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
+
+        // Set the last modified date of the file mots recent that the last acquisition date
+        File dir = new File(dataPath.getPath());
+        for (File ff : dir.listFiles()) {
+            ff.setLastModified(1000 * NOW.minusMinutes(76).toEpochSecond());
+        }
+
+        MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
+
+        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+                .addMetaFile(metaFile).withChecksumAlgorithm(CHECKUM_ALGO).get());
+
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
+        PluginParametersFactory factory = PluginParametersFactory.build();
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_PRODUCT_PARAM,
+                                    gson.toJson(MetaProductDto.fromMetaProduct(metaProduct)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.META_FILE_PARAM,
+                                    gson.toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles)));
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        factory.addParameterDynamic(AbstractAcquisitionScanPlugin.LAST_ACQ_DATE_PARAM,
+                                    chain.getLastDateActivation().format(DateTimeFormatter.ISO_DATE_TIME));
+
+        IAcquisitionScanPlugin scanPlugin = pluginService
+                .getPlugin(pluginService
+                        .getPluginConfiguration("ScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class)
+                        .getId(), factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+
+        Assert.assertNotNull(scanPlugin);
+
+        Set<AcquisitionFile> acqFiles = scanPlugin.getAcquisitionFiles();
+        Assert.assertTrue(acqFiles != null && acqFiles.size() == 0);
+    }
+
+    @Test
     public void scanPluginTestUnknowDirectory() throws ModuleException {
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build("/tmp/regards/data/unknown")
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build("/tmp/regards/data/unknown").get());
+        //                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
@@ -259,10 +311,7 @@ public class ScanDirectoryPluginIT {
 
     @Test
     public void scanPluginTestWrongChecksumAlgo() throws ModuleException {
-        // Create a ScanDirectory
-        URL dataPath = getClass().getResource("/data");
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath())
-                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
+        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
@@ -288,7 +337,7 @@ public class ScanDirectoryPluginIT {
         Assert.assertNotNull(scanPlugin);
 
         Set<AcquisitionFile> acqFiles = scanPlugin.getAcquisitionFiles();
-        Assert.assertTrue(acqFiles != null && acqFiles.size() == 1);
+        Assert.assertTrue(acqFiles != null);
         Assert.assertNull(acqFiles.iterator().next().getChecksumAlgorithm());
         Assert.assertNull(acqFiles.iterator().next().getChecksum());
     }

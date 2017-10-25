@@ -105,7 +105,7 @@ public abstract class AbstractAcquisitionScanPlugin {
         for (File element : nameFileArray) {
 
             if (lastAcqDate == null || OffsetDateTime
-                    .ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC")).isAfter(lastAcqDate)) {
+                    .ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC")).isAfter(lastAcqDate.atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())) {
                 sortedFileList.add(element);
             } else {
                 LOGGER.info("File <{}> is too old", element.getName());

@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.acquisition.domain.metadata;
  *  
  * @author Christophe Mertz
  * 
- * TODO CMZ util ?
+ * TODO CMZ cleanOriginalFile util ? pas utilisé
  *
  */
 public class MetaProductAcquisitionInfos {

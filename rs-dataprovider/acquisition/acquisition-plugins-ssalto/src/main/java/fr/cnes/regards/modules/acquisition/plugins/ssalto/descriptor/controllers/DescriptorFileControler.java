@@ -36,7 +36,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescr
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement.ElementType;
 
 /**
- * TODO cmz to delete
+ * TODO CMZ à supprimer DescriptorFileControler
+ * 
  * represente un fichier descripteur
  * 
  * @author Christophe Mertz

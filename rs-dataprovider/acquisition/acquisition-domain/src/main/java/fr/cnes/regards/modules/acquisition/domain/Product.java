@@ -65,7 +65,7 @@ public class Product implements IIdentifiable<Long> {
     private static final int MAX_ENUM_LENGTH = 16;
 
     //    /**
-    //     * TODO CMZ à virer
+    //     * TODO CMZ IDENT_PRODUCT_PREFIX à virer
     //     * Prefixe d'identification des fichiers descripteurs de fichier
     //     */
     //    public static final String IDENT_PRODUCT_PREFIX = "PRODUCT_";

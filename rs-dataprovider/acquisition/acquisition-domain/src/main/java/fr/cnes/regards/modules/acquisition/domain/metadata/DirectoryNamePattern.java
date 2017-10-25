@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.domain.metadata;
 /**
  * 
  * @author Christophe Mertz
- * TODO CMZ utilité ici ?
+ * TODO CMZ DirectoryNamePattern pas utilisé
  *
  */
 public class DirectoryNamePattern {

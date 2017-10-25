@@ -87,7 +87,7 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     /**
      * <code>true</code> clean the original file
-     * TODO CMZ : util ici ? non je ne pense pas
+     * TODO CMZ : cleanOriginalFile util ici ? non je ne pense pas
      */
     @NotNull
     @Column(name = "cleanOriginalFile")
@@ -99,12 +99,6 @@ public class MetaProduct implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
-
-    //    /**
-    //     * The last activation date when an acquisition were running 
-    //     */
-    //    @Transient
-    //    private OffsetDateTime lastAcqDate;
 
     //    /**
     //     * Les informations d'acquisition pour ce type de produit
@@ -256,14 +250,6 @@ public class MetaProduct implements IIdentifiable<Long> {
     public void setId(Long id) {
         this.id = id;
     }
-
-    //    public OffsetDateTime getLastAcqDate() {
-    //        return lastAcqDate;
-    //    }
-    //
-    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
-    //        this.lastAcqDate = lastAcqDate;
-    //    }
 
     @Override
     public String toString() {

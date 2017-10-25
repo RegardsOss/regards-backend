@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
  */
 public abstract class AbstractStep implements IStep {
 
-    // TODO CMZ à utiliser
+    // TODO CMZ state à utiliser ?
     protected int state;
 
     protected IStep nextStep;
@@ -101,7 +101,7 @@ public abstract class AbstractStep implements IStep {
      */
     public abstract void sleep();
 
-    // TODO CMZ util ?
+    // TODO CMZ getName util ?
     public abstract String getName();
 
     public int getState() {

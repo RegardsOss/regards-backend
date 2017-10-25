@@ -84,7 +84,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     //    /**
     //     * identifiant dans le catalogue de diffusion
-    //     * TODO CMZ util ?
+    //     * TODO CMZ nodeIdentifier_ util ? pas utilisé
     //     */
     //    protected String nodeIdentifier_;
 

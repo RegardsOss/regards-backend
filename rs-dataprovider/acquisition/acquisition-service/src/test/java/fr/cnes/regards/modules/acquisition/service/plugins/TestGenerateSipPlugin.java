@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
  *
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
@@ -60,7 +59,7 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
     @Override
     public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
-        // TODO CMZ à revoir
+        // TODO CMZ createMetadataPlugin à compléter
         return null;
     }
 

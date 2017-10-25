@@ -318,7 +318,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         return outputXml;
     }
 
-    // TODO CMZ attention à revoir
+    // TODO CMZ createMetadataPlugin à compléter
     public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
         setUp();
         return null;
