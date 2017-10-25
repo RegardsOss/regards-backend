@@ -20,17 +20,15 @@ package fr.cnes.regards.modules.search.rest.assembler;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.search.rest.assembler.link.DatasetLinkAdder;
 
 /**
- * Custom {@link ResourcesAssembler} for {@link Dataset}s.
+ * Custom {@link ResourcesAssembler} for {@link Dataset}s using the {@link IResourceService} and adding links.
  * @author Xavier-Alexandre Brochard
  */
-@Component
 public class DatasetResourcesAssembler implements ResourceAssembler<Dataset, Resource<Dataset>> {
 
     /**

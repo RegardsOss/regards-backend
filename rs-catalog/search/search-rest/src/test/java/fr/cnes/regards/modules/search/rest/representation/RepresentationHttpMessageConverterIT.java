@@ -59,7 +59,6 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
-import fr.cnes.regards.modules.search.rest.plugin.MarkdownRepresentation;
 
 @TestPropertySource(locations = { "classpath:test-representation.properties" })
 @ActiveProfiles("testAmqp")
@@ -130,7 +129,8 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
     @Purpose("The system has a plugin Representation allowing to transform the result of a request search according to a MIME type")
     @Test
     public void test() throws ModuleException, InterruptedException {
-        Mockito.when(projectUserClient.isAdmin(DEFAULT_USER_EMAIL)).thenReturn(new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK));
+        Mockito.when(projectUserClient.isAdmin(DEFAULT_USER_EMAIL))
+                .thenReturn(new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK));
         // lets get a collection as geo+json
         acceptToUse = "application/geo+json; charset=UTF-8";
         final List<ResultMatcher> expectations = new ArrayList<>();

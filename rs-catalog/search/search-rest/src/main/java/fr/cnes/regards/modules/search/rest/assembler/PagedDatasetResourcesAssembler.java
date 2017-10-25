@@ -24,16 +24,15 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.search.rest.assembler.link.DatasetLinkAdder;
 
 /**
- * Custom {@link PagedResourcesAssembler} for {@link Dataset}s.
+ * Custom {@link PagedResourcesAssembler} for {@link Dataset}s using the {@link IResourceService} to convert to resource and adding links.
  * @author Xavier-Alexandre Brochard
  */
-@Component
 public class PagedDatasetResourcesAssembler extends PagedResourcesAssembler<Dataset> {
 
     /**
