@@ -121,7 +121,7 @@
 					<forceTags>true</forceTags>
 					<imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
 					<baseImage>${docker.registry.host}/rs-alpine-oraclejdk8</baseImage>
-					<entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs_rabbitmq:15672", "-t", "0", "--", "java", "-Xmx300m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</entryPoint>
+					<entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs_rabbitmq:15672", "-t", "0", "--", "./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--", "java", "-Xmx300m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</entryPoint>
 					<!-- We rewrite the entrypoint because rs-admin doesn't have to wait to itself -->
 					<resources>
 						<resource>
