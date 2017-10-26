@@ -60,11 +60,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-monitoring-regards-starter</artifactId>
 		</dependency>
-		<!-- Test -->
+		<!-- Modules -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
+			<groupId>fr.cnes.regards.modules.storage</groupId>
+			<artifactId>storage-rest</artifactId>
 		</dependency>
 	</dependencies>
 	
