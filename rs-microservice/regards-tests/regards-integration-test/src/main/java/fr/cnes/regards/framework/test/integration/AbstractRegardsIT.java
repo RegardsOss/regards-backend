@@ -25,9 +25,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -35,23 +38,31 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Snippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
 
 /**
  * Base class to realize integration tests using JWT and MockMvc and mocked Cots. Should hold all the configurations to
@@ -61,6 +72,7 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
  */
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
+@AutoConfigureRestDocs(outputDir = "target/generated-snippets")
 public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
@@ -110,6 +122,10 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     @Autowired
     protected MockMvc mvc;
 
+    protected static MultiValueMap<String, String> buildRequestParams() {
+        return new LinkedMultiValueMap<String, String>();
+    }
+
     protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
             String errorMsg, HttpHeaders headers, Object... urlVariables) {
         return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, headers, urlVariables);
@@ -137,31 +153,45 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     protected ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
             String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequestWithContentType(authToken, HttpMethod.POST, urlTemplate, content, contentType, matchers,
-                                             errorMsg, urlVariables);
+        return performRequestWithContentType(authToken,
+                                             HttpMethod.POST,
+                                             urlTemplate,
+                                             content,
+                                             contentType,
+                                             matchers,
+                                             errorMsg,
+                                             urlVariables);
     }
 
     protected ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
             String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequestWithContentType(authToken, HttpMethod.PUT, urlTemplate, content, contentType, matchers,
-                                             errorMsg, urlVariables);
+        return performRequestWithContentType(authToken,
+                                             HttpMethod.PUT,
+                                             urlTemplate,
+                                             content,
+                                             contentType,
+                                             matchers,
+                                             errorMsg,
+                                             urlVariables);
     }
+
+    // File upload
 
     protected ResultActions performDelete(String urlTemplate, String authToken, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
         return performRequest(authToken, HttpMethod.DELETE, urlTemplate, matchers, errorMsg, urlVariables);
     }
 
-    // File upload
+    // Automatic default security management methods
 
     protected ResultActions performFileUpload(String urlTemplate, String authToken, Path pFilePath,
             List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(authToken, pFilePath, urlTemplate,
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(authToken,
+                                                                                  pFilePath,
+                                                                                  urlTemplate,
                                                                                   urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg);
+        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
     }
-
-    // Automatic default security management methods
 
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             RequestParamBuilder requestParams, Object... urlVariables) {
@@ -224,17 +254,31 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate, Path filePath,
             List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, verb);
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, filePath, urlTemplate,
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt,
+                                                                                  filePath,
+                                                                                  urlTemplate,
                                                                                   urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg);
+        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
     }
 
     protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate,
             List<MockMultipartFile> pFileList, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, verb);
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt, pFileList, urlTemplate,
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt,
+                                                                                  pFileList,
+                                                                                  urlTemplate,
                                                                                   urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg);
+        return performRequest(requestBuilder, matchers, errorMsg, null, Lists.emptyList());
+    }
+
+    protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate,
+            List<MockMultipartFile> pFileList, List<ResultMatcher> matchers, String errorMsg, List<Snippet> documentationSnippets, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, verb);
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt,
+                                                                                  pFileList,
+                                                                                  urlTemplate,
+                                                                                  urlVariables);
+        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
     }
 
     /**
@@ -250,66 +294,75 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * @return result
      */
     protected ResultActions performRequestWithContentType(String authToken, HttpMethod pHttpMethod, String urlTemplate,
-            Object content, String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+            Object content, String contentType, List<ResultMatcher> matchers, String errorMsg,
+            List<Snippet> documentationSnippets, Object... urlVariables) {
 
         Assert.assertTrue(HttpMethod.POST.equals(pHttpMethod) || HttpMethod.PUT.equals(pHttpMethod));
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
+        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken,
+                                                                         pHttpMethod,
+                                                                         urlTemplate,
                                                                          urlVariables);
         String jsonContent = gson(content);
         requestBuilder.content(jsonContent);
         requestBuilder.contentType(contentType);
-        return performRequest(requestBuilder, matchers, errorMsg);
+        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
     }
 
     protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate, Object content,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequestWithContentType(authToken, pHttpMethod, urlTemplate, content,
-                                             MediaType.APPLICATION_JSON_VALUE, matchers, errorMsg, urlVariables);
+            List<ResultMatcher> matchers, String errorMsg, List<Snippet> documentationSnippets,
+            Object... urlVariables) {
+        return performRequestWithContentType(authToken,
+                                             pHttpMethod,
+                                             urlTemplate,
+                                             content,
+                                             MediaType.APPLICATION_JSON_VALUE,
+                                             matchers,
+                                             errorMsg,
+                                             documentationSnippets,
+                                             urlVariables);
     }
 
-    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
-            List<ResultMatcher> matchers, String errorMsg, RequestParamBuilder requestParams, Object... urlVariables) {
 
-        // Request parameters is only available on GET request AT THE MOMENT
-        Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod));
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
-                                                                         urlVariables);
-        requestBuilder.params(requestParams.getParameters());
-        return performRequest(requestBuilder, matchers, errorMsg);
-    }
-
-    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-
-        Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate,
-                                                                         urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg);
-    }
-
-    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate,
-            List<ResultMatcher> matchers, String errorMsg, HttpHeaders headers, Object... urlVariables) {
-
-        Assert.assertTrue(HttpMethod.GET.equals(pHttpMethod) || HttpMethod.DELETE.equals(pHttpMethod));
-
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, pHttpMethod, urlTemplate, headers,
-                                                                         urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg);
-    }
 
     /**
      * @param pRequestBuilder request builder
      * @param matchers expectations
      * @param errorMsg message if error occurs
+     * @param requestParamBuilder
+     * @param documentationSnippets
      * @return result
      */
     protected ResultActions performRequest(MockHttpServletRequestBuilder pRequestBuilder, List<ResultMatcher> matchers,
-            String errorMsg) {
+            String errorMsg, RequestParamBuilder requestParamBuilder, List<Snippet> documentationSnippets) {
         try {
+            Map<String, Object> queryParams = Maps.newHashMap();
+            List<ParameterDescriptor> queryParamDescriptors = Lists.newArrayList();
+            if (requestParamBuilder != null) {
+                // lets create the attributes and description for the documentation snippet
+                pRequestBuilder.params(requestParamBuilder.getParameters());
+                for (Map.Entry<String, List<String>> entry : requestParamBuilder.getParameters().entrySet()) {
+                    if (entry.getValue().size() == 1) {
+                        queryParams.put(entry.getKey(), entry.getValue().get(0));
+                    } else {
+                        queryParams.put(entry.getKey(), entry.getValue());
+                    }
+                    queryParamDescriptors.add(RequestDocumentation.parameterWithName(entry.getKey()).description(""));
+                }
+            }
             ResultActions request = mvc.perform(pRequestBuilder);
             for (ResultMatcher matcher : matchers) {
                 request = request.andExpect(matcher);
             }
+            request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
+                                                            preprocessRequest(prettyPrint(),
+                                                                              removeHeaders("Authorization",
+                                                                                            "Host",
+                                                                                            "Content-Length")),
+                                                            preprocessResponse(prettyPrint(),
+                                                                               removeHeaders("Content-Length")),
+                                                            documentationSnippets
+                                                                    .toArray(new Snippet[documentationSnippets
+                                                                            .size()])));
             return request;
             // CHECKSTYLE:OFF
         } catch (Exception e) {
@@ -317,73 +370,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
             getLogger().error(errorMsg, e);
             throw new AssertionError(errorMsg, e);
         }
-    }
-
-    /**
-     * With default accept et content-type (json both)
-     */
-    protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
-            String urlTemplate, Object... pUrlVars) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpConstants.CONTENT_TYPE, "application/json");
-        headers.add(HttpConstants.ACCEPT, "application/json");
-        return getRequestBuilder(pAuthToken, pHttpMethod, urlTemplate, headers, pUrlVars);
-    }
-
-    /**
-     * With specified headers
-     */
-    protected MockHttpServletRequestBuilder getRequestBuilder(String pAuthToken, HttpMethod pHttpMethod,
-            String urlTemplate, HttpHeaders headers, Object... pUrlVars) {
-
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, urlTemplate,
-                                                                                      pUrlVars);
-        addSecurityHeader(requestBuilder, pAuthToken);
-
-        requestBuilder.headers(headers);
-
-        return requestBuilder;
-    }
-
-    /**
-     * Build a multi-part request builder based on file {@link Path}
-     * @param pAuthToken authorization token
-     * @param pFilePath {@link Path}
-     * @param urlTemplate URL template
-     * @param pUrlVars URL vars
-     * @return {@link MockMultipartHttpServletRequestBuilder}
-     */
-    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String pAuthToken, Path pFilePath,
-            String urlTemplate, Object... pUrlVars) {
-
-        try {
-            MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(pFilePath));
-            List<MockMultipartFile> fileList = new ArrayList<>(1);
-            fileList.add(file);
-            return getMultipartRequestBuilder(pAuthToken, fileList, urlTemplate, pUrlVars);
-        } catch (IOException e) {
-            String message = String.format("Cannot create input stream for file %s", pFilePath.toString());
-            getLogger().error(message, e);
-            throw new AssertionError(message, e);
-        }
-    }
-
-    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String pAuthToken,
-            List<MockMultipartFile> pFiles, String urlTemplate, Object... pUrlVars) {
-
-        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = MockMvcRequestBuilders.fileUpload(urlTemplate,
-                                                                                                           pUrlVars);
-        for (MockMultipartFile file : pFiles) {
-            multipartRequestBuilder.file(file);
-        }
-        addSecurityHeader(multipartRequestBuilder, pAuthToken);
-        multipartRequestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        multipartRequestBuilder.header(HttpConstants.ACCEPT, "application/json");
-        return multipartRequestBuilder;
-    }
-
-    protected void addSecurityHeader(MockHttpServletRequestBuilder pRequestBuilder, String pAuthToken) {
-        pRequestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + pAuthToken);
     }
 
     /**
@@ -417,6 +403,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         MediaType current = MediaType.parseMediaType(response.getContentType());
         Assert.assertEquals(pMediaType, current);
     }
+    // CHECKSTYLE:ON
 
     // CHECKSTYLE:OFF
     protected String gson(Object pObject) {
@@ -426,7 +413,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         Gson gson = gsonBuilder.create();
         return gson.toJson(pObject);
     }
-    // CHECKSTYLE:ON
 
     /**
      * Set authorities for default tenant
@@ -492,10 +478,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected String manageDefaultSecurity(String userEmail, String pUrlPath, RequestMethod pMethod) {
         return manageSecurity(pUrlPath, pMethod, userEmail, getDefaultRole());
-    }
-
-    protected static MultiValueMap<String, String> buildRequestParams() {
-        return new LinkedMultiValueMap<String, String>();
     }
 
     /**
