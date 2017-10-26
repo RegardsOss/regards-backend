@@ -25,16 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -49,10 +44,9 @@ import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  */
-@Service(value = "themeService")
+@Service
 @RegardsTransactional
-public class ThemeService extends AbstractUiConfigurationService
-        implements IThemeService, ApplicationListener<ApplicationReadyEvent> {
+public class ThemeService extends AbstractUiConfigurationService implements IThemeService {
 
     /**
      * Class logger
@@ -71,29 +65,14 @@ public class ThemeService extends AbstractUiConfigurationService
     @Value("classpath:DefaultLightTheme.json")
     private Resource defaultLightThemeResource;
 
+    /**
+     * The default configuration for energy theme
+     */
+    @Value("classpath:DefaultEnergyTheme.json")
+    private Resource defaultEnergyThemeResource;
+
     @Autowired
     private IThemeRepository repository;
-
-    /**
-     * Perform initialization only when the whole application is ready
-     */
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        // Initialize subscriber for new tenant connection and initialize database if not already done
-        getInstanceSubscriber().subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
-    }
-
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            if (getMicroserviceName().equals(pWrapper.getContent().getMicroserviceName())) {
-                getRuntimeTenantResolver().forceTenant(pWrapper.getContent().getTenant());
-                initProjectUI(pWrapper.getContent().getTenant());
-            }
-        }
-
-    }
 
     @Override
     public Theme retrieveTheme(final Long pThemeId) throws EntityNotFoundException {
@@ -159,9 +138,8 @@ public class ThemeService extends AbstractUiConfigurationService
 
     @Override
     protected void initProjectUI(final String pTenant) {
-        final List<Theme> themes = repository.findAll();
-        if ((themes == null) || themes.isEmpty()) {
-            final Theme defaultTheme = new Theme();
+        if (!repository.findByName("Dark").isPresent()) {
+            Theme defaultTheme = new Theme();
             defaultTheme.setName("Dark");
             defaultTheme.setActive(true);
             try {
@@ -171,7 +149,9 @@ public class ThemeService extends AbstractUiConfigurationService
                 throw new InitUIException(e);
             }
             repository.save(defaultTheme);
+        }
 
+        if (!repository.findByName("Light").isPresent()) {
             final Theme defaultLightTheme = new Theme();
             defaultLightTheme.setName("Light");
             defaultLightTheme.setActive(false);
@@ -184,6 +164,18 @@ public class ThemeService extends AbstractUiConfigurationService
             repository.save(defaultLightTheme);
         }
 
+        if (!repository.findByName("Energy").isPresent()) {
+            final Theme defaultEnergyTheme = new Theme();
+            defaultEnergyTheme.setName("Energy");
+            defaultEnergyTheme.setActive(false);
+            try {
+                defaultEnergyTheme.setConfiguration(readDefaultFileResource(defaultEnergyThemeResource));
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                throw new InitUIException(e);
+            }
+            repository.save(defaultEnergyTheme);
+        }
     }
 
     @Override

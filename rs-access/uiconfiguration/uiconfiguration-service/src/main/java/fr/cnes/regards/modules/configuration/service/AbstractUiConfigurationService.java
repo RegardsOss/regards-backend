@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.configuration.service.exception.MissingResourceEx
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public abstract class AbstractUiConfigurationService {
+public abstract class AbstractUiConfigurationService implements ApplicationListener<ApplicationReadyEvent> {
 
     /**
      * Runtime tenant resolver
@@ -69,18 +69,16 @@ public abstract class AbstractUiConfigurationService {
     private String microserviceName;
 
     @Value("${regards.access.multitenant:true}")
-    private boolean isMultitenentMicroservice;
+    private boolean isMultitenantMicroservice;
 
-    /**
-     * Init
-     */
-    @PostConstruct
-    public void init() {
-        if (isMultitenentMicroservice) {
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+        if (isMultitenantMicroservice) {
             // Multitenant version of the microservice.
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 initProjectUI(tenant);
+                runtimeTenantResolver.clearTenant();
             }
         } else {
             // Initialize database if not already done
