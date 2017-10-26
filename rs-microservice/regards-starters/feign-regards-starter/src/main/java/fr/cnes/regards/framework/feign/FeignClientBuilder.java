@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.feign;
 
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
 
 import feign.Feign;
 import feign.Target;
@@ -48,6 +47,7 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget) {
         return Feign.builder() // Feign customization
                 .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new SpringMvcContract()).target(pTarget);
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get()).target(pTarget);
     }
+
 }

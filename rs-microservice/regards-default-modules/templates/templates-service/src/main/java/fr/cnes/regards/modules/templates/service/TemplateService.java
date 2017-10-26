@@ -126,7 +126,7 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template projectUserInactivatedTemplate;
 
-    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
+    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
     private String noReplyAdress;
 
     /**
