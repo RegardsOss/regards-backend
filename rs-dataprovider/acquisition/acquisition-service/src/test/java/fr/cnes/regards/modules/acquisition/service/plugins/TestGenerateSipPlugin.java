@@ -40,8 +40,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
 /**
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
