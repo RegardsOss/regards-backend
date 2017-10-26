@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,60 +25,62 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.IDoris1BPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 
 public abstract class AbstractDoris1BProductMetadataPlugin extends AbstractProductMetadataPlugin
         implements IDoris1BPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDoris1BProductMetadataPlugin.class);
 
+    // TODO CMZ à gérer les préfixes MOE_CCDIS, ...
+
     /**
      * Liste des correspondances DatasetName => Prexix
      */
     protected Map<String, String> prefixMap = null;
 
-    /**
-     * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
-     * des objets Methode adaptee aux plugins JASON1_DORIS1B_MOE_CDDIS, JASON1_DORIS1B_MOE_CDDIS_COM,
-     * JASON1_DORIS1B_POE_CDDIS_COM Les fichiers des jeux DA_TC_JASON1_DORIS1B_MOE_CDDIS,
-     * DA_TC_JASON1_DORIS1B_MOE_CDDIS_COM, DA_TC_JASON1_DORIS1B_POE_CDDIS_COM ont des nomenclatures identiques. Donc le
-     * DATA_STORAGE_OBJECT_IDENTIFIER doit etre differentie et donc prefixe respectivement par : MOE_CDDIS_,
-     * MOE_CDDIS_COM_, POE_CDDIS_COM_ NOTE : DATA_OBJECT_IDENTIFIER doit etre egalement differentie mais PAS DANS CETTE
-     * CLASSE. ( mais plutot dans la classe ...checkingPlugin )
-     * 
-     * @return un DataObjectDescriptionElement minimum.
-     * @param pProductName
-     *            , le nom du produit dont on cree les meta donnees
-     * @param pFileMap
-     *            la liste des fichiers composant le produit
-     * @param pDataSetName
-     *            le nom du dataSet auquel rattacher l'objet de donnees.
-     */
-    @Override
-    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap,
-            String pDataSetName) {
-
-        initPrefixMap();
-
-        DataObjectDescriptionElement element = new DataObjectDescriptionElement();
-        element.setAscendingNode(pDataSetName);
-
-        element.setDataObjectIdentifier(pProductName);
-
-        long size = 0;
-        for (File file : pFileMap.keySet()) {
-            size = size + file.length();
-
-            if ((prefixMap != null) && prefixMap.containsKey(pDataSetName)) {
-                String prefix = prefixMap.get(pDataSetName);
-                element.addDataStorageObjectIdentifier(prefix + file.getName());
-            } else {
-                LOGGER.error("Prefix for " + pDataSetName + "does not exist!");
-            }
-        }
-        element.setFileSize(Long.toString(size / 1024));
-        return element;
-    }
+    //    /**
+    //     * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
+    //     * des objets Methode adaptee aux plugins JASON1_DORIS1B_MOE_CDDIS, JASON1_DORIS1B_MOE_CDDIS_COM,
+    //     * JASON1_DORIS1B_POE_CDDIS_COM Les fichiers des jeux DA_TC_JASON1_DORIS1B_MOE_CDDIS,
+    //     * DA_TC_JASON1_DORIS1B_MOE_CDDIS_COM, DA_TC_JASON1_DORIS1B_POE_CDDIS_COM ont des nomenclatures identiques. Donc le
+    //     * DATA_STORAGE_OBJECT_IDENTIFIER doit etre differentie et donc prefixe respectivement par : MOE_CDDIS_,
+    //     * MOE_CDDIS_COM_, POE_CDDIS_COM_ NOTE : DATA_OBJECT_IDENTIFIER doit etre egalement differentie mais PAS DANS CETTE
+    //     * CLASSE. ( mais plutot dans la classe ...checkingPlugin )
+    //     * 
+    //     * @return un DataObjectDescriptionElement minimum.
+    //     * @param pProductName
+    //     *            , le nom du produit dont on cree les meta donnees
+    //     * @param pFileMap
+    //     *            la liste des fichiers composant le produit
+    //     * @param pDataSetName
+    //     *            le nom du dataSet auquel rattacher l'objet de donnees.
+    //     */
+    //    @Override
+    //    public DataObjectDescriptionElement createSkeleton(String pProductName, Map<File, ?> pFileMap,
+    //            String pDataSetName) {
+    //
+    //        initPrefixMap();
+    //
+    //        DataObjectDescriptionElement element = new DataObjectDescriptionElement();
+    //        element.setAscendingNode(pDataSetName);
+    //        element.setDataObjectIdentifier(pProductName);
+    //
+    //        long size = 0;
+    //        for (File file : pFileMap.keySet()) {
+    //            size = size + file.length();
+    //            if ((prefixMap != null) && prefixMap.containsKey(pDataSetName)) {
+    //                String prefix = prefixMap.get(pDataSetName);
+    //                element.addDataStorageObjectIdentifier(prefix + file.getName());
+    //            } else {
+    //                LOGGER.error("Prefix for " + pDataSetName + "does not exist!");
+    //            }
+    //        }
+    //
+    //        // la taille doit etre au minimum de 1
+    //        long displayedFileSize = Math.max(1, size / 1024);
+    //        element.setFileSize(String.valueOf(displayedFileSize));
+    //        return element;
+    //    }
 
     protected void addDatasetNamePrexif(String pDatasetName, String pPrefix) {
         if (prefixMap == null) {

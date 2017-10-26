@@ -402,12 +402,19 @@ public class ScanJobIT {
         this.chain.setActive(false);
 
         Assert.assertFalse(chainService.run(chain));
+    }
+    
+    @Test
+    public void runActiveChainGenerationWithoutMetaProduct() throws InterruptedException {
+        this.chain.setMetaProduct(null);
+
+        Assert.assertTrue(chainService.run(chain));
 
         waitJob(WAIT_TIME);
 
-        Assert.assertTrue(runnings.isEmpty());
+        Assert.assertFalse(runnings.isEmpty());
         Assert.assertTrue(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertFalse(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
     }
 
@@ -418,13 +425,6 @@ public class ScanJobIT {
         this.chain.setPeriodicity(3650L);
 
         Assert.assertFalse(chainService.run(chain));
-
-        waitJob(1_000);
-
-        Assert.assertTrue(runnings.isEmpty());
-        Assert.assertTrue(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
-        Assert.assertTrue(aborteds.isEmpty());
     }
 
     @After

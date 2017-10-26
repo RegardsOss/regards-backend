@@ -62,9 +62,6 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        IStep checkStep = null;
-        IStep generateSipStep = null;
-
         LOGGER.info("Start acquisition job for the chain <{}>", chainGeneration.getLabel());
 
         // The MetaProduct is required
@@ -82,7 +79,10 @@ public class AcquisitionJob extends AbstractJob<Void> {
         process.setCurrentStep(scanStep);
 
         // IAcquisitionCheckStep is optional
-        if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
+        IStep checkStep;
+        if (chainGeneration.getCheckAcquisitionPluginConf() == null) {
+            checkStep = null;
+        } else {
             checkStep = checkStepImpl;
             checkStep.setProcess(process);
             beanFactory.autowireBean(checkStep);
@@ -90,7 +90,7 @@ public class AcquisitionJob extends AbstractJob<Void> {
         }
 
         // IGenerateSIPStep is mandatory
-        generateSipStep = generateSIPStepImpl;
+        IStep generateSipStep = generateSIPStepImpl;
         generateSipStep.setProcess(process);
         beanFactory.autowireBean(generateSipStep);
 

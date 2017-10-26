@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,11 +30,17 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.SortedMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,8 +60,13 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
+import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
+import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
 import fr.cnes.regards.modules.acquisition.tools.xsd.IngestXsdResolver;
 import fr.cnes.regards.modules.acquisition.tools.xsd.XMLValidation;
@@ -107,6 +119,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     // Nom du dictionnaire des types de base
     protected String dicoBase = null;
+
+    // Nom du projet
+    protected String projectName = null;
 
     // Liste des tests
     protected List<PluginTestDef> pluginTestDefList = new ArrayList<>();
@@ -338,7 +353,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         ssaltoFile.setAcquisitionInformations(acqInfos);
         ssaltoFile.setStatus(AcquisitionFileStatus.VALID);
-        
+
         MetaProduct metaProduct = new MetaProduct();
         metaProduct.setLabel(productName);
 
@@ -445,8 +460,19 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      */
     protected String createMetaData(List<AcquisitionFile> acqFiles, PluginTestDef pluginTestDef,
             IGenerateSIPPlugin pluginGenerateSIP) throws ModuleException {
-        String xml = pluginGenerateSIP.createMetadataPlugin(acqFiles, pluginTestDef.getDataSetName());
 
+        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP.createMetadataPlugin(acqFiles,
+                                                                                        pluginTestDef.getDataSetName());
+
+        String xml;
+        try {
+            Map<File, ?> fileMap = buildMapFile(acqFiles);
+            xml = generateXmlDescriptor(acqFiles.get(0).getProduct().getProductName(), fileMap, pluginTestDef.getDataSetName(), attrMaps);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new ModuleException(e.getMessage());
+
+        }
         LOGGER.debug(xml);
 
         return xml;
@@ -602,4 +628,140 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         return foundPlgConf;
     }
 
+    private Map<File, ?> buildMapFile(List<AcquisitionFile> acqFiles) {
+        Map<File, File> fileMap = new HashMap<>();
+
+        for (AcquisitionFile acqFile : acqFiles) {
+            // get the original file from supplyDirectory
+            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
+                    acqFile.getFileName());
+
+            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
+                        acqFile.getFileName());
+                fileMap.put(newFile, originalFile);
+            }
+
+            // TODO CMZ à confirmer que la condition du if est toujours VRAI
+            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
+            //                File newFile = new File(
+            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
+            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
+            //                        ssaltoFile.getFileName());
+            //                fileMap.put(newFile, originalFile);
+            //            }
+        }
+
+        return fileMap;
+    }
+
+    /**
+     * Initialisation des proprietes
+     */
+    private void loadProperties() {
+        Properties properties;
+        String propertyFilePath = null;
+
+        LOGGER.info("Create context");
+
+        properties = new Properties();
+        propertyFilePath = getProjectProperties();
+
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
+            properties.load(stream);
+        } catch (IOException e) {
+            LOGGER.error("Unable to load file " + propertyFilePath, e);
+        }
+
+        dicoName = properties.getProperty("dico");
+        dicoBase = properties.getProperty("baseType");
+        projectName = properties.getProperty("project");
+    }
+
+    private String generateXmlDescriptor(String productName, Map<File, ?> fileMap, String datasetName,
+            SortedMap<Integer, Attribute> attributeMap) throws IOException, DescriptorException {
+        // add dataObject skeleton bloc
+        DataObjectDescriptionElement element = createSkeleton(productName, fileMap, datasetName);
+
+        // now get the attributeMap values to add the attribute ordered into
+        // the dataObjectDescriptionElement
+        for (Attribute att : attributeMap.values()) {
+            element.addAttribute(att);
+        }
+
+        loadProperties();
+
+        // init descriptor file
+        DescriptorFile descFile = new DescriptorFile();
+        descFile.setDicoName(this.dicoName);
+        descFile.setProjectName(this.projectName);
+        descFile.addDescElementToDocument(element);
+
+        // output the descriptorFile on a physical file
+        return writeXmlToString(descFile);
+    }
+
+    /**
+     * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
+     * des object
+     *
+     * @return un DataObjectDescriptionElement minimum.
+     * @param productName
+     *            , le nom du produit dont on cree les meta donnees
+     * @param fileMap
+     *            la liste des fichiers composant le produit
+     * @param dataSetName
+     *            le nom du dataSet auquel rattacher l'objet de donnees.
+     */
+    private DataObjectDescriptionElement createSkeleton(String productName, Map<File, ?> fileMap, String dataSetName) {
+        DataObjectDescriptionElement element = new DataObjectDescriptionElement();
+        element.setAscendingNode(dataSetName);
+        element.setDataObjectIdentifier(productName);
+        
+        long size = 0;
+        for (File file : fileMap.keySet()) {
+            size = size + file.length();
+            element.addDataStorageObjectIdentifier(file.getName());
+        }
+        
+        // la taille doit etre au minimum de 1
+        long displayedFileSize = Math.max(1, size / 1024);
+        element.setFileSize(String.valueOf(displayedFileSize));
+        return element;
+    }
+
+    /**
+     * Ecriture du descripteur
+     *
+     * @param descFile
+     *            Objet descripteur
+     *            
+     * @throws IOException
+     */
+    @SuppressWarnings("deprecation")
+    private String writeXmlToString(DescriptorFile descFile) throws IOException {
+
+        String xmlString = null;
+        // Write the description document to a String
+        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(descFile);
+        if (descDocumentToWrite != null) {
+            LOGGER.info("***** Computing FILE xml descriptor");
+            StringWriter out = new StringWriter();
+            // write the update document to the disk
+            OutputFormat format = new OutputFormat(descDocumentToWrite, "UTF-8", true);
+            format.setLineWidth(0);
+            XMLSerializer output = new XMLSerializer(out, format);
+            output.serialize(descDocumentToWrite);
+            out.flush();
+            out.close();
+            xmlString = out.getBuffer().toString();
+        } else {
+            LOGGER.info("***** DO NOT compute FILE xml descriptor");
+        }
+        return xmlString;
+    }
 }

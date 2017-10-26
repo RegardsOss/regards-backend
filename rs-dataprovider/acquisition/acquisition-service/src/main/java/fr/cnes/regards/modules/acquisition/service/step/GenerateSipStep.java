@@ -73,11 +73,9 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     private ChainGeneration chainGeneration;
 
     /**
-     * {@link List} of {@link AcquisitionFile} that should be check
+     * The {@link List} of {@link AcquisitionFile} that should be check grouped by {@link Product} id
      */
-    //    private List<AcquisitionFile> validFileList;
-
-    private Map<Long, List<AcquisitionFile>> afMap = new HashMap<Long, List<AcquisitionFile>>();
+    private final Map<Long, List<AcquisitionFile>> afMap = new HashMap<Long, List<AcquisitionFile>>();
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
@@ -105,7 +103,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             IGenerateSIPPlugin generateSipPlugin = pluginService
                     .getPlugin(this.chainGeneration.getGenerateSIPPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
-
+// TODO CMZ à compléter
             // create MetaData for each Product
             if (!afMap.isEmpty()) {
                 afMap.forEach((k, v) -> generateSipPlugin.createMetaDataPlugin(v));
@@ -134,7 +132,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             }
         });
 
-        // Get the ACquisitionFiles for each Product
+        // Get the AcquisitionFiles for each Product
         for (Product pr : products) {
             List<AcquisitionFile> afs = new ArrayList<>();
             validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));

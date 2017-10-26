@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
-import fr.cnes.regards.modules.acquisition.service.step.AbstractStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**

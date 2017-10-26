@@ -58,7 +58,7 @@ public class Spot2Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestList() {
-        // FIXME TEST, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
+        // TODO CMZ, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
         // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
         // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS_COM", "spot2/doris1b_moe_cddis_com");
         // addPluginTestDef("DA_TC_SPOT2_DORIS1B_POE_CDDIS_COM", "spot2/doris1b_poe_cddis_com");
@@ -67,6 +67,8 @@ public class Spot2Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
+        // TODO CMZ, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
+        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
     }
 
     @Override

@@ -20,12 +20,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
 import java.util.List;
+import java.util.SortedMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
@@ -128,13 +130,13 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //    }
 
     @Override
-    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
         // TODO CMZ createMetadataPlugin à compléter        
         return null;
     }
 
     @Override
-    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
+    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
         // TODO CMZ createMetaDataPlugin à compléter
         return null;
     }

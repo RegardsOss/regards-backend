@@ -45,6 +45,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
+import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
@@ -96,54 +97,61 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     // Nom du dictionnaire des types de base
     protected String dicoBase = null;
 
+    protected abstract String getProjectName();
+
+    protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
+
+    protected abstract String getProjectProperties();
+
     /**
-         * Initialisation des proprietes
-         */
-    public void setUp() {
-        Properties properties;
-        String propertyFilePath = null;
+     * cree les meta donnees pour le produit productName, les fichier acqFiles et le jeu de donnees dataSetName
+     */
+    @Override
+    public SortedMap<Integer, Attribute>  createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+        String productName = acqFiles.get(0).getProduct().getProductName();
+    
+        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
+    
+        Map<File, ?> fileMap = buildMapFile(acqFiles);
+    
+        loadDataSetConfiguration(datasetName);
+    
+        // add attribute from attribute finders
+        attributeValueMap = new HashMap<>();
+    
+        // find all attributeValue and add each one into attributeMap
+            // first do the specific attributes not depending from other
+            // attribute value
+            // or should be available for finders
+            doCreateIndependantSpecificAttributes(fileMap, attributeMap);
+    
+            if (pluginConfProperties.getFinderList() != null) {
+                Collection<AttributeFinder> finderList = pluginConfProperties.getFinderList();
+                for (AttributeFinder finder : finderList) {
+                    finder.setAttributProperties(pluginConfProperties);
+                    Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
+                    registerAttribute(finder.getName(), attributeMap, attribute);
+                }
+            }
 
-        LOGGER.info("Create context");
+            // then do specific attributs which can depend on other attribute value
+            doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
-        properties = new Properties();
-        propertyFilePath = getProjectProperties();
+//            try {
+//                String outputXml = generateXmlDescriptor(acqFiles.get(0).getProduct().getProductName(), fileMap, datasetName, attributeMap);
+//                LOGGER.info(outputXml);
+//            } catch (IOException e) {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            }
 
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
-            properties.load(stream);
-        } catch (IOException e) {
-            LOGGER.error("Unable to load file " + propertyFilePath, e);
-        }
 
-        dicoName = properties.getProperty("dico");
-        dicoBase = properties.getProperty("baseType");
-        projectName = properties.getProperty("project");
+        return attributeMap;
     }
 
-    /**
-     * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
-     * des object
-     *
-     * @return un DataObjectDescriptionElement minimum.
-     * @param productName
-     *            , le nom du produit dont on cree les meta donnees
-     * @param fileMap
-     *            la liste des fichiers composant le produit
-     * @param dataSetName
-     *            le nom du dataSet auquel rattacher l'objet de donnees.
-     */
-    public DataObjectDescriptionElement createSkeleton(String productName, Map<File, ?> fileMap, String dataSetName) {
-        DataObjectDescriptionElement element = new DataObjectDescriptionElement();
-        element.setAscendingNode(dataSetName);
-        element.setDataObjectIdentifier(productName);
-        long size = 0;
-        for (File file : fileMap.keySet()) {
-            size = size + file.length();
-            element.addDataStorageObjectIdentifier(file.getName());
-        }
-        // la taille doit etre au minimum de 1
-        long displayedFileSize = Math.max(1, size / 1024);
-        element.setFileSize(String.valueOf(displayedFileSize));
-        return element;
+    // TODO CMZ createMetadataPlugin à compléter
+    public SortedMap<Integer, Attribute>  createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
+        return null;
     }
 
     /**
@@ -154,7 +162,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      *             en cas d'erreur du parsing du fichier de configuration ou de la lecture du fichier d'ordonnancement
      *             des attributs.
      */
-    public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
+    protected void loadDataSetConfiguration(String dataSetName) throws ModuleException {
         // Get the path to the digester rules file
         URL ruleFile = getClass().getClassLoader().getResource(RULE_FILE);
         if (ruleFile == null) {
@@ -165,7 +173,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
         // Getting conf file from project configured directory
         String pluginConfDirectory = getPluginsRepositoryProperties().getPluginConfFilesDir();
-        //        String pluginConfDirectory = pluginsRepositoryProperties.getPluginConfFilesDir();
+        // TODO CMZ à virer : String pluginConfDirectory = pluginsRepositoryProperties.getPluginConfFilesDir();
         File pluginConfFile = new File(pluginConfDirectory, dataSetName + CONFIG_FILE_SUFFIX);
         URL confFile = null;
 
@@ -191,9 +199,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
         // The first action is to test if the property file exists
         try (InputStream in = confFile.openStream()) {
-
-            // create instance of digester that can handle the digester rule
-            // file
+            // create instance of digester that can handle the digester rule file
             Digester digester = DigesterLoader.createDigester(ruleFile);
             // Process the input file.
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
@@ -216,145 +222,6 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
     }
 
-    protected abstract String getProjectName();
-
-    protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
-
-    /**
-     * Ecriture du descripteur
-     *
-     * @param pTargetFile
-     *            Fichier physique dans lequel ecrire
-     * @param descFile
-     *            Objet descripteur
-     * @throws IOException
-     */
-    @SuppressWarnings("deprecation")
-    private String writeXmlToString(DescriptorFile descFile) throws IOException {
-
-        String xmlString = null;
-        // Write the description document to a String
-        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(descFile);
-        if (descDocumentToWrite != null) {
-            LOGGER.info("***** Computing FILE xml descriptor");
-            StringWriter out = new StringWriter();
-            // write the update document to the disk
-            OutputFormat format = new OutputFormat(descDocumentToWrite, "UTF-8", true);
-            format.setLineWidth(0);
-            XMLSerializer output = new XMLSerializer(out, format);
-            output.serialize(descDocumentToWrite);
-            out.flush();
-            out.close();
-            xmlString = out.getBuffer().toString();
-        } else {
-            LOGGER.info("***** DO NOT compute FILE xml descriptor");
-        }
-        return xmlString;
-    }
-
-    /**
-     * cree les meta donnees pour le produit productName, les fichier acqFiles et le jeu de donnees dataSetName
-     */
-    @Override
-    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
-        String outputXml = null;
-        // TODO CMZ à confirmer que tous les AcquisitionFile sont sur le même produit
-        String productName = acqFiles.get(0).getProduct().getProductName();
-        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
-
-        Map<File, ?> fileMap = buildMapFile(acqFiles);
-
-        loadDataSetConfiguration(datasetName);
-
-        // add dataObject skeleton bloc
-        DataObjectDescriptionElement element = createSkeleton(productName, fileMap, datasetName);
-
-        // add attribute from attribute finders
-        attributeValueMap = new HashMap<>();
-
-        // find all attributeValue and add each one into attributeMap
-        try {
-            // first do the specific attributes not depending from other
-            // attribute value
-            // or should be available for finders
-            doCreateIndependantSpecificAttributes(fileMap, attributeMap);
-
-            if (pluginConfProperties.getFinderList() != null) {
-                Collection<AttributeFinder> finderList = pluginConfProperties.getFinderList();
-                for (AttributeFinder finder : finderList) {
-                    finder.setAttributProperties(pluginConfProperties);
-                    Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
-                    registerAttribute(finder.getName(), attributeMap, attribute);
-                }
-            }
-
-            // then do specific attributs which can depend on other attribute value
-            doCreateDependantSpecificAttributes(fileMap, attributeMap);
-
-            // now get the attributeMap values to add the attribute ordered into
-            // the dataObjectDescriptionElement
-            for (Attribute att : attributeMap.values()) {
-                element.addAttribute(att);
-            }
-
-            setUp();
-
-            // init descriptor file
-            DescriptorFile descFile = new DescriptorFile();
-            descFile.setDicoName(this.dicoName);
-            descFile.setProjectName(this.projectName);
-            descFile.addDescElementToDocument(element);
-
-            // output the descriptorFile on a physical file
-            outputXml = writeXmlToString(descFile);
-
-        } catch (IOException e) {
-            // "Error writing xml"
-            throw new ModuleException(e);
-        } catch (PluginAcquisitionException e1) {
-            LOGGER.error(e1.getMessage(), e1);
-            throw new ModuleException(e1.toString());
-        }
-        return outputXml;
-    }
-
-    // TODO CMZ createMetadataPlugin à compléter
-    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
-        setUp();
-        return null;
-    }
-
-    private Map<File, ?> buildMapFile(List<AcquisitionFile> acqFiles) {
-        Map<File, File> fileMap = new HashMap<>();
-
-        for (AcquisitionFile acqFile : acqFiles) {
-            // get the original file from supplyDirectory
-            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
-                    acqFile.getFileName());
-
-            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
-                        acqFile.getFileName());
-                fileMap.put(newFile, originalFile);
-            }
-
-            // TODO CMZ à confirmer que la condition du if est toujours VRAI
-            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
-            //                File newFile = new File(
-            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
-            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
-            //                        ssaltoFile.getFileName());
-            //                fileMap.put(newFile, originalFile);
-            //            }
-        }
-
-        return fileMap;
-    }
-
     /**
      * enregistre l'attribut dans la map des attributs
      *
@@ -364,7 +231,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      *            l'attribut a enregistrer.
      */
     protected void registerAttribute(String attrName, Map<Integer, Attribute> attributeMap, Attribute attribute) {
-
+    
         attributeMap.put(new Integer(attributeOrderProperties.getProperty(attrName)), attribute);
     }
 
@@ -400,5 +267,138 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         return pluginConfProperties;
     }
 
-    abstract public String getProjectProperties();
+    private Map<File, ?> buildMapFile(List<AcquisitionFile> acqFiles) {
+        Map<File, File> fileMap = new HashMap<>();
+    
+        for (AcquisitionFile acqFile : acqFiles) {
+            // get the original file from supplyDirectory
+            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
+                    acqFile.getFileName());
+    
+            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
+                        acqFile.getFileName());
+                fileMap.put(newFile, originalFile);
+            }
+    
+            // TODO CMZ à confirmer que la condition du if est toujours VRAI
+            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
+            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
+            //                File newFile = new File(
+            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
+            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
+            //                        ssaltoFile.getFileName());
+            //                fileMap.put(newFile, originalFile);
+            //            }
+        }
+    
+        return fileMap;
+    }
+
+//    /**
+//     * Initialisation des proprietes
+//     */
+//    private void loadProperties() {
+//        Properties properties;
+//        String propertyFilePath = null;
+//    
+//        LOGGER.info("Create context");
+//    
+//        properties = new Properties();
+//        propertyFilePath = getProjectProperties();
+//    
+//        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
+//            properties.load(stream);
+//        } catch (IOException e) {
+//            LOGGER.error("Unable to load file " + propertyFilePath, e);
+//        }
+//    
+//        dicoName = properties.getProperty("dico");
+//        dicoBase = properties.getProperty("baseType");
+//        projectName = properties.getProperty("project");
+//    }
+//
+//    private String generateXmlDescriptor(String productName, Map<File, ?> fileMap, String datasetName,
+//            SortedMap<Integer, Attribute> attributeMap) throws IOException, DescriptorException {
+//        // add dataObject skeleton bloc
+//        DataObjectDescriptionElement element = createSkeleton(productName, fileMap, datasetName);
+//    
+//        // now get the attributeMap values to add the attribute ordered into
+//        // the dataObjectDescriptionElement
+//        for (Attribute att : attributeMap.values()) {
+//            element.addAttribute(att);
+//        }
+//    
+//        loadProperties();
+//    
+//        // init descriptor file
+//        DescriptorFile descFile = new DescriptorFile();
+//        descFile.setDicoName(this.dicoName);
+//        descFile.setProjectName(this.projectName);
+//        descFile.addDescElementToDocument(element);
+//    
+//        // output the descriptorFile on a physical file
+//        return writeXmlToString(descFile);
+//    }
+//
+//    /**
+//     * cree le squelette du fichier descripteur contenant les attributs minimums ascendingNode, fileSize, et la liste
+//     * des object
+//     *
+//     * @return un DataObjectDescriptionElement minimum.
+//     * @param productName
+//     *            , le nom du produit dont on cree les meta donnees
+//     * @param fileMap
+//     *            la liste des fichiers composant le produit
+//     * @param dataSetName
+//     *            le nom du dataSet auquel rattacher l'objet de donnees.
+//     */
+//    private DataObjectDescriptionElement createSkeleton(String productName, Map<File, ?> fileMap, String dataSetName) {
+//        DataObjectDescriptionElement element = new DataObjectDescriptionElement();
+//        element.setAscendingNode(dataSetName);
+//        element.setDataObjectIdentifier(productName);
+//        long size = 0;
+//        for (File file : fileMap.keySet()) {
+//            size = size + file.length();
+//            element.addDataStorageObjectIdentifier(file.getName());
+//        }
+//        // la taille doit etre au minimum de 1
+//        long displayedFileSize = Math.max(1, size / 1024);
+//        element.setFileSize(String.valueOf(displayedFileSize));
+//        return element;
+//    }
+//
+//    /**
+//     * Ecriture du descripteur
+//     *
+//     * @param descFile
+//     *            Objet descripteur
+//     *            
+//     * @throws IOException
+//     */
+//    @SuppressWarnings("deprecation")
+//    private String writeXmlToString(DescriptorFile descFile) throws IOException {
+//
+//        String xmlString = null;
+//        // Write the description document to a String
+//        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(descFile);
+//        if (descDocumentToWrite != null) {
+//            LOGGER.info("***** Computing FILE xml descriptor");
+//            StringWriter out = new StringWriter();
+//            // write the update document to the disk
+//            OutputFormat format = new OutputFormat(descDocumentToWrite, "UTF-8", true);
+//            format.setLineWidth(0);
+//            XMLSerializer output = new XMLSerializer(out, format);
+//            output.serialize(descDocumentToWrite);
+//            out.flush();
+//            out.close();
+//            xmlString = out.getBuffer().toString();
+//        } else {
+//            LOGGER.info("***** DO NOT compute FILE xml descriptor");
+//        }
+//        return xmlString;
+//    }
 }

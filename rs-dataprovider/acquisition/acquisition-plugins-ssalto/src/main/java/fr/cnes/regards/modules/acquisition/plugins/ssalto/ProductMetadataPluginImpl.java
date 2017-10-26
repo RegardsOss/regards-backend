@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.SortedMap;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xml.serialize.OutputFormat;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
@@ -51,91 +53,92 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
      * Cree les metadata niveau produit
      */
     @Override
-    public String createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
-
-        // return pProductName;
-        String xmlString = null;
-
-        String productName = acqFiles.get(0).getProduct().getProductName();
-
-        // Init descriptor
-        DescriptorFile descriptorFile = new DescriptorFile(datasetName, productName);
-
-        // Define object element
-        DataObjectDescriptionElement dataObject = new DataObjectDescriptionElement();
-        dataObject.setAscendingNode(datasetName);
-        dataObject.setDataObjectIdentifier(productName);
-        // Add other tags
-        dataObject.setCycleNumber("0");
-        dataObject.setFileCreationDate("2007-10-10T00:00:00");
-        dataObject.setLatitudeMax("60.0");
-        dataObject.setLatitudeMin("-60.0");
-        dataObject.setLongitudeMax("180.0");
-        dataObject.setLongitudeMin("-180.0");
-        dataObject.setObjectVersion("1");
-        dataObject.setStartDate("1950-01-01T00:00:00");
-        dataObject.setStopDate("2020-12-31T23:59:59");
-
-        // Add data storage object identifier
-        long fileSize = 0;
-        File file;
-        for (AcquisitionFile acqFile : acqFiles) {
-            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                file = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(), acqFile.getFileName());
-                fileSize += file.length();
-                dataObject.addDataStorageObjectIdentifier(file.getName());
-            }
-        }
-
-        dataObject.setFileSize(Long.toString(fileSize));
-        // Add element to descriptor
-        descriptorFile.addDescElementToDocument(dataObject);
-
-        // Write descriptor into a string
-        try {
-            xmlString = writeXmlToString(descriptorFile);
-        } catch (IOException e) {
-            LOGGER.error("Cannot create xml descriptor string for product " + productName, e);
-            throw new ModuleException(e.getMessage());
-        }
-
-        return xmlString;
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+//
+//        // return pProductName;
+//        String xmlString = null;
+//
+//        String productName = acqFiles.get(0).getProduct().getProductName();
+//
+//        // Init descriptor
+//        DescriptorFile descriptorFile = new DescriptorFile(datasetName, productName);
+//
+//        // Define object element
+//        DataObjectDescriptionElement dataObject = new DataObjectDescriptionElement();
+//        dataObject.setAscendingNode(datasetName);
+//        dataObject.setDataObjectIdentifier(productName);
+//        // Add other tags
+//        dataObject.setCycleNumber("0");
+//        dataObject.setFileCreationDate("2007-10-10T00:00:00");
+//        dataObject.setLatitudeMax("60.0");
+//        dataObject.setLatitudeMin("-60.0");
+//        dataObject.setLongitudeMax("180.0");
+//        dataObject.setLongitudeMin("-180.0");
+//        dataObject.setObjectVersion("1");
+//        dataObject.setStartDate("1950-01-01T00:00:00");
+//        dataObject.setStopDate("2020-12-31T23:59:59");
+//
+//        // Add data storage object identifier
+//        long fileSize = 0;
+//        File file;
+//        for (AcquisitionFile acqFile : acqFiles) {
+//            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+//                file = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(), acqFile.getFileName());
+//                fileSize += file.length();
+//                dataObject.addDataStorageObjectIdentifier(file.getName());
+//            }
+//        }
+//
+//        dataObject.setFileSize(Long.toString(fileSize));
+//        // Add element to descriptor
+//        descriptorFile.addDescElementToDocument(dataObject);
+//
+//        // Write descriptor into a string
+//        try {
+//            xmlString = writeXmlToString(descriptorFile);
+//        } catch (IOException e) {
+//            LOGGER.error("Cannot create xml descriptor string for product " + productName, e);
+//            throw new ModuleException(e.getMessage());
+//        }
+//
+//        return xmlString;
+        return null;
     }
 
-    /**
-     * Ecriture du descripteur
-     * 
-     * @param pTargetFile
-     *            Fichier physique dans lequel ecrire
-     * @param pDescFile
-     *            Objet descripteur
-     * @throws IOException
-     */
-    @SuppressWarnings("deprecation")
-    private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
-
-        String xmlString = null;
-        // Write the description document to a String
-        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(pDescFile);
-        if (descDocumentToWrite != null) {
-            LOGGER.info("***** Computing PRODUCT xml descriptor");
-            StringWriter out = new StringWriter();
-            // write the update document to the disk
-            OutputFormat format = new OutputFormat(descDocumentToWrite, "UTF-8", true);
-            format.setLineWidth(0);
-            XMLSerializer output = new XMLSerializer(out, format);
-            output.serialize(descDocumentToWrite);
-            out.flush();
-            out.close();
-            xmlString = out.getBuffer().toString();
-        } else {
-            LOGGER.info("***** DO NOT compute PRODUCT xml descriptor");
-        }
-        return xmlString;
-    }
+//    /**
+//     * Ecriture du descripteur
+//     * 
+//     * @param pTargetFile
+//     *            Fichier physique dans lequel ecrire
+//     * @param pDescFile
+//     *            Objet descripteur
+//     * @throws IOException
+//     */
+//    @SuppressWarnings("deprecation")
+//    private String writeXmlToString(DescriptorFile pDescFile) throws IOException {
+//
+//        String xmlString = null;
+//        // Write the description document to a String
+//        DocumentImpl descDocumentToWrite = DescriptorFileControler.getDescDocument(pDescFile);
+//        if (descDocumentToWrite != null) {
+//            LOGGER.info("***** Computing PRODUCT xml descriptor");
+//            StringWriter out = new StringWriter();
+//            // write the update document to the disk
+//            OutputFormat format = new OutputFormat(descDocumentToWrite, "UTF-8", true);
+//            format.setLineWidth(0);
+//            XMLSerializer output = new XMLSerializer(out, format);
+//            output.serialize(descDocumentToWrite);
+//            out.flush();
+//            out.close();
+//            xmlString = out.getBuffer().toString();
+//        } else {
+//            LOGGER.info("***** DO NOT compute PRODUCT xml descriptor");
+//        }
+//        return xmlString;
+//    }
 
     @Override
-    public String createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
+    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
         // TODO CMZ createMetaDataPlugin à compléter
         return null;
     }
