@@ -146,7 +146,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     protected ResultActions performGet(String urlTemplate, String authToken,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
+        return requestBuilderCustomizer.performGet(mvc, urlTemplate, authToken, errorMsg, urlVariables);
     }
 
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
