@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -87,6 +86,9 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
+import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
@@ -213,6 +215,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Subscribe to events on {@link DataFile} changes.
         subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler, WorkerMode.SINGLE, Target.MICROSERVICE);
+
+        pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
+        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
+        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(STAFDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(CatalogSecurityDelegation.class.getPackage().getName());
     }
 
     @Override
@@ -631,7 +642,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Override
     public AIP retrieveAip(String ipId) throws EntityNotFoundException {
-        return aipDao.findOneByIpId(ipId).orElseThrow(()->new EntityNotFoundException(ipId, AIP.class));
+        return aipDao.findOneByIpId(ipId).orElseThrow(() -> new EntityNotFoundException(ipId, AIP.class));
     }
 
     @Override
@@ -824,7 +835,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 LOG.error(String.format(
                                         "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
                                         aip.getId().toString(), tenantWorkspace));
-                throw new FileCorruptedException(String.format("File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different", checksum, fileChecksum));
+                throw new FileCorruptedException(
+                        String.format("File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different",
+                                      checksum, fileChecksum));
             }
         } catch (Exception e) {
             // Delete written file

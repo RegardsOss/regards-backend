@@ -39,6 +39,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -172,12 +173,15 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void init() throws Exception {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
-//         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        //         this.cleanUp(); //comment if you are not interrupting tests during their execution
         // as we are checking rights, lets mock the response from catalog: always ok for anything
         Mockito.when(catalogClient.getEntity(Mockito.any())).thenReturn(
-                new ResponseEntity<>(new Resource<>(
-                        new Collection(Model.build("name", "desc", EntityType.COLLECTION), DEFAULT_TENANT,
-                                       "CatalogOK")), HttpStatus.OK));
+                                                                        new ResponseEntity<>(
+                                                                                new Resource<>(new Collection(
+                                                                                        Model.build("name", "desc",
+                                                                                                    EntityType.COLLECTION),
+                                                                                        DEFAULT_TENANT, "CatalogOK")),
+                                                                                HttpStatus.OK));
 
         subscriber.subscribeTo(JobEvent.class, handler);
         subscriber.subscribeTo(DataFileEvent.class, dataHandler);
@@ -193,27 +197,21 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
         // second, lets store a plugin configuration for IAllocationStrategy
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(SimpleNearLineStoragePlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
-        pluginService.addPluginPackage(CatalogSecurityDelegation.class.getPackage().getName());
-        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(CatalogSecurityDelegation.class,
-                                                                               CatalogSecurityDelegation.class
-                                                                                       .getPackage().getName(),
-                                                                               ISecurityDelegation.class.getPackage()
-                                                                                       .getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils
+                .createPluginMetaData(CatalogSecurityDelegation.class,
+                                      CatalogSecurityDelegation.class.getPackage().getName(),
+                                      ISecurityDelegation.class.getPackage().getName());
         catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, CATALOG_SECURITY_DELEGATION_LABEL);
         catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
 
-        PluginMetaData dataStoMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation)).getParameters();
+                              gson.toJson(baseStorageLocation))
+                .getParameters();
         dataStorageConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
         dataStorageConf.setIsActive(true);
         pluginService.savePluginConfiguration(dataStorageConf);
@@ -237,12 +235,10 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         LOG.info("Start test loadUnavailableFilesTest ...");
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue(
-                "No file should be directly available after AIPService::locafiles. Cause : files to load does not exists !",
-                response.getAlreadyAvailable().isEmpty());
-        Assert.assertTrue(
-                "All files should be in error after AIPService::locafiles. Cause : files to load does not exists !",
-                response.getErrors().size() == 3);
+        Assert.assertTrue("No file should be directly available after AIPService::locafiles. Cause : files to load does not exists !",
+                          response.getAlreadyAvailable().isEmpty());
+        Assert.assertTrue("All files should be in error after AIPService::locafiles. Cause : files to load does not exists !",
+                          response.getErrors().size() == 3);
         LOG.info("End test loadUnavailableFilesTest ...");
     }
 
@@ -257,9 +253,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         fillOnlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue(
-                "All files should be directly available after AIPService::locafiles. Cause : files to load are online.",
-                response.getAlreadyAvailable().size() == 3);
+        Assert.assertTrue("All files should be directly available after AIPService::locafiles. Cause : files to load are online.",
+                          response.getAlreadyAvailable().size() == 3);
         Assert.assertTrue("No file should be in error after AIPService::locafiles. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineFilesTest ...");
@@ -294,8 +289,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                           response.getErrors().isEmpty());
         // Wait for jobs ends or fails
         int count = 0;
-        while (!handler.isFailed() && handler.getJobSucceeds().isEmpty() && (dataHandler.getRestoredChecksum().size()
-                < 3) && (count < 6)) {
+        while (!handler.isFailed() && handler.getJobSucceeds().isEmpty()
+                && (dataHandler.getRestoredChecksum().size() < 3) && (count < 6)) {
             count++;
             Thread.sleep(1000);
         }
@@ -306,21 +301,21 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("10");
         Assert.assertTrue("The nearLine file 10 should be present in db as a cachedFile", ocf.isPresent());
-        Assert.assertTrue(
-                String.format("The nearLine file 10 should be have status AVAILABLE not %s.", ocf.get().getState()),
-                ocf.get().getState().equals(CachedFileState.AVAILABLE));
+        Assert.assertTrue(String.format("The nearLine file 10 should be have status AVAILABLE not %s.",
+                                        ocf.get().getState()),
+                          ocf.get().getState().equals(CachedFileState.AVAILABLE));
 
         ocf = cachedFileRepository.findOneByChecksum("20");
         Assert.assertTrue("The nearLine file 20 should be present in db as a cachedFile", ocf.isPresent());
-        Assert.assertTrue(
-                String.format("The nearLine file 20 should be have status AVAILABLE not %s.", ocf.get().getState()),
-                ocf.get().getState().equals(CachedFileState.AVAILABLE));
+        Assert.assertTrue(String.format("The nearLine file 20 should be have status AVAILABLE not %s.",
+                                        ocf.get().getState()),
+                          ocf.get().getState().equals(CachedFileState.AVAILABLE));
 
         ocf = cachedFileRepository.findOneByChecksum("30");
         Assert.assertTrue("The nearLine file 30 should be present in db as a cachedFile", ocf.isPresent());
-        Assert.assertTrue(
-                String.format("The nearLine file 30 should be have status AVAILABLE not %s.", ocf.get().getState()),
-                ocf.get().getState().equals(CachedFileState.AVAILABLE));
+        Assert.assertTrue(String.format("The nearLine file 30 should be have status AVAILABLE not %s.",
+                                        ocf.get().getState()),
+                          ocf.get().getState().equals(CachedFileState.AVAILABLE));
 
         count = 0;
         while (dataHandler.getRestoredChecksum().isEmpty() && (count < 6)) {
@@ -519,9 +514,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
             count++;
             Thread.sleep(1000);
         }
-        Assert.assertTrue(
-                String.format("There should be 0 DataEvent recieved not %s", dataHandler.getRestoredChecksum().size()),
-                dataHandler.getRestoredChecksum().size() == 0);
+        Assert.assertTrue(String.format("There should be 0 DataEvent recieved not %s",
+                                        dataHandler.getRestoredChecksum().size()),
+                          dataHandler.getRestoredChecksum().size() == 0);
         LOG.info("End test loadNearlineFilesWithFullCache ...");
     }
 
@@ -562,7 +557,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Thread.sleep(2000);
         int size = cachedFileRepository.findByState(CachedFileState.AVAILABLE).size();
         Assert.assertTrue(String.format(
-                "After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.", size),
+                                        "After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
+                                        size),
                           size == 1);
 
         Assert.assertFalse("File should be deleted", file1.toFile().exists());
@@ -618,9 +614,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Thread.sleep(cleanCacheRate);
         Thread.sleep(2000);
         int size = cachedFileRepository.findByState(CachedFileState.AVAILABLE).size();
-        Assert.assertTrue(
-                String.format("After the cache clean process ran, there should be 2 AVAILABLE files remaining not %s.",
-                              size), size == 2);
+        Assert.assertTrue(String
+                .format("After the cache clean process ran, there should be 2 AVAILABLE files remaining not %s.", size),
+                          size == 2);
 
         Assert.assertTrue("File should not be deleted", file1.toFile().exists());
         Assert.assertFalse("File should be deleted", file2.toFile().exists());
@@ -663,12 +659,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         // Run a restore process (files should be set in QUEUED mode)
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "newOnes10",
-                                                              "newOnes20", "newOnes30");
+                "newOnes20", "newOnes30");
         aipService.loadFiles(request);
         Set<CachedFile> queuedFiles = cachedFileRepository.findByState(CachedFileState.QUEUED);
-        Assert.assertTrue(
-                String.format("After loadfiles process there should 3 files in QUEUED mode not %s", queuedFiles.size()),
-                queuedFiles.size() == 3);
+        Assert.assertTrue(String.format("After loadfiles process there should 3 files in QUEUED mode not %s",
+                                        queuedFiles.size()),
+                          queuedFiles.size() == 3);
         queuedFiles.forEach(f -> LOG.info("Queued File exp date={}", f.getExpiration()));
 
         // Wait from cache clean
@@ -716,11 +712,11 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create DataFile
         DataFile df = new DataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
-                                  MimeType.valueOf("application/text"), aip, fileName);
+                MimeType.valueOf("application/text"), aip, fileName);
         df.setDataStorageUsed(nearLineConf);
         dataFileDao.save(df);
         // Then create cached file associated
-        CachedFile f = new CachedFile(df,expiration,CachedFileState.AVAILABLE);
+        CachedFile f = new CachedFile(df, expiration, CachedFileState.AVAILABLE);
         if (location != null) {
             f.setLocation(new URL("file://" + Paths.get(location, fileName).toString()));
         }
@@ -743,17 +739,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Set<DataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         DataFile df = new DataFile(url, "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
-                                   aip, "file1.test");
+                aip, "file1.test");
         df.setDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new DataFile(url, "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
-                          "file2.test");
+                "file2.test");
         df.setDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new DataFile(url, "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
-                          "file3.test");
+                "file3.test");
         df.setDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
@@ -770,17 +766,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Set<DataFile> datafiles = Sets.newHashSet();
         URL url = new URL("file://PLOP/Node/file10.test");
         DataFile df = new DataFile(url, checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
-                                   MimeType.valueOf("application/text"), aip, "file10.test");
+                MimeType.valueOf("application/text"), aip, "file10.test");
         df.setDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
         df = new DataFile(url, checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
-                          MimeType.valueOf("application/text"), aip, "file20.test");
+                MimeType.valueOf("application/text"), aip, "file20.test");
         df.setDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
         df = new DataFile(url, checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
-                          MimeType.valueOf("application/text"), aip, "file30.test");
+                MimeType.valueOf("application/text"), aip, "file30.test");
         df.setDataStorageUsed(nearLineConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
@@ -798,15 +794,15 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                 null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
 
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
         AIP aip = aipBuilder.build();
         aip.addEvent(EventType.SUBMISSION.name(), "submission");
         return aip;
