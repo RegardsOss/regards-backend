@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 /**
  * Base class to realize integration tests using JWT and MockMvc and mocked Cots. Should hold all the configurations to
  * be considered by any of its children.
+ * TODO: doc
  * @author svissier
  * @author Sébastien Binda
  */
@@ -169,22 +170,28 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        return performDefaultPostWithContentType(urlTemplate,
-                                                 content,
-                                                 MediaType.APPLICATION_JSON_VALUE,
-                                                 matchers,
-                                                 errorMsg,
-                                                 urlVariables);
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        return performPost(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performPost(String urlTemplate, String token, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performPost(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
     protected ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        return performDefaultPutWithContentType(urlTemplate,
-                                         content,
-                                         MediaType.APPLICATION_JSON_VALUE,
-                                         matchers,
-                                         errorMsg,
-                                         urlVariables);
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.PUT);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        return performPut(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performPut(String urlTemplate, String token, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performPut(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
     protected ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,

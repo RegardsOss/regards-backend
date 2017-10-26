@@ -9,6 +9,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 
 /**
+ * Allows to customize MockMvc bean. <br/>
+ * Customization: <br/>
+ * <ul>
+ *     <li>usage of markdown to generate API documentation instead of Asciidoctor</li>
+ * </ul>
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
