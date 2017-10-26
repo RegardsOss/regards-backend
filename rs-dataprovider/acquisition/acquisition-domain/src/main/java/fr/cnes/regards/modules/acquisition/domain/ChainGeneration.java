@@ -110,6 +110,12 @@ public class ChainGeneration implements IIdentifiable<Long> {
      */
     @Column(length = MAX_STRING_LENGTH)
     private String dataSet;
+    
+    /**
+     * If a {@link ChainGeneration} is running, the current session identifier
+     */
+    @Column(length = MAX_STRING_LENGTH)
+    private String session;
 
     /**
      * A comment
@@ -292,14 +298,28 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.generateSIPParameter.put(name, value);
     }
 
+    
+    public String getSession() {
+        return session;
+    }
+
+    
+    public void setSession(String session) {
+        this.session = session;
+    }
+
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append(id);
         strBuilder.append(" - ");
         strBuilder.append(label);
-        strBuilder.append(" - ");
+        strBuilder.append(" - active=");
+        strBuilder.append(active.toString());
+        strBuilder.append(" - dataset=");
         strBuilder.append(dataSet);
+        strBuilder.append(" - session=");
+        strBuilder.append(session);
         strBuilder.append(" - [");
         strBuilder.append(metaProduct.toString());
         strBuilder.append("]");

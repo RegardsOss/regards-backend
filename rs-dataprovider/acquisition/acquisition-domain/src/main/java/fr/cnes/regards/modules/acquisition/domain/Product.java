@@ -93,6 +93,12 @@ public class Product implements IIdentifiable<Long> {
     private String productName;
 
     /**
+     * The session identifier that create the current product 
+     */
+    @Column(length = MAX_STRING_LENGTH)
+    private String session;
+
+    /**
      * The {@link MetaProduct}
      */
     @NotNull
@@ -191,6 +197,14 @@ public class Product implements IIdentifiable<Long> {
 
     public void removeAcquisitionFile(AcquisitionFile acqFile) {
         this.fileList.remove(acqFile);
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     @Override

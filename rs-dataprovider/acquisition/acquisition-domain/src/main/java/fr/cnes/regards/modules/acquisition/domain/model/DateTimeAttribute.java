@@ -40,7 +40,7 @@ public class DateTimeAttribute extends Attribute {
     }
 
     /**
-     * Ajoute une valeur ïa l'attribut La classe de l'objet en entree doit correspondre avec la classe de l'attribut
+     * Ajoute une valeur a l'attribut La classe de l'objet en entree doit correspondre avec la classe de l'attribut
      * 
      * @param value
      *            La nouvelle valeur de l'attribut

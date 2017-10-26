@@ -70,6 +70,10 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-client</artifactId>
+		</dependency>		
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

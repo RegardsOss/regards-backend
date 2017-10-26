@@ -136,7 +136,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     public abstract IGenerateSIPPlugin buildPlugin() throws ModuleException;
 
     /**
-     * Initialisation des proprietes
+     * Initialisation des proprietes et création du répertoire de travail
      */
     @Before
     public void setUp() {
@@ -467,7 +467,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         String xml;
         try {
             Map<File, ?> fileMap = buildMapFile(acqFiles);
-            xml = generateXmlDescriptor(acqFiles.get(0).getProduct().getProductName(), fileMap, pluginTestDef.getDataSetName(), attrMaps);
+            xml = generateXmlDescriptor(acqFiles.get(0).getProduct().getProductName(), fileMap,
+                                        pluginTestDef.getDataSetName(), attrMaps);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage());
@@ -721,13 +722,13 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         DataObjectDescriptionElement element = new DataObjectDescriptionElement();
         element.setAscendingNode(dataSetName);
         element.setDataObjectIdentifier(productName);
-        
+
         long size = 0;
         for (File file : fileMap.keySet()) {
             size = size + file.length();
             element.addDataStorageObjectIdentifier(file.getName());
         }
-        
+
         // la taille doit etre au minimum de 1
         long displayedFileSize = Math.max(1, size / 1024);
         element.setFileSize(String.valueOf(displayedFileSize));

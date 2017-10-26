@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.io.File;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
@@ -374,6 +375,21 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     //        //        }
     //        return result;
     //    }
+
+    public File getFile() {
+        File currentFile = null;
+        if (this.getAcquisitionInformations() == null) {
+            currentFile = new File(this.getFileName());
+        } else {
+            String workingDir = this.getAcquisitionInformations().getWorkingDirectory();
+            if (workingDir != null) {
+                currentFile = new File(workingDir, this.getFileName());
+            } else {
+                currentFile = new File(this.getAcquisitionInformations().getAcquisitionDirectory(), this.getFileName());
+            }
+        }
+        return currentFile;
+    }
 
     @Override
     public String toString() {

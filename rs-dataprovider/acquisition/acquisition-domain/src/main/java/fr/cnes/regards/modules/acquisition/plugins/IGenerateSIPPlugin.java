@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
  * @author Christophe Mertz
@@ -36,6 +37,10 @@ public interface IGenerateSIPPlugin {
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
             throws ModuleException;
 
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles);
+    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
+    
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException;
+    
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles) throws ModuleException;
 
 }

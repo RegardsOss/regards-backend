@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,6 +112,9 @@ public class ChaineGenerationService implements IChainGenerationService {
             LOGGER.warn(strBuilder.toString());
             return false;
         }
+
+        chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
+                + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
 
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();

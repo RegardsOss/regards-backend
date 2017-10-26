@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import java.net.MalformedURLException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.SortedMap;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
@@ -40,6 +42,10 @@ import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
 /**
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
@@ -67,12 +73,13 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
     private MetaProductDto metaProductDto;
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
         return createMetadataPlugin(acqFiles, datasetName);
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
+    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
         LOGGER.info("start create MetaData for the chain <{}> ", chainLabel);
 
         String productName = acqFiles.get(0).getProduct().getProductName();
@@ -84,11 +91,6 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
         attributeMap.put(0, createLongAttribute("ordre", 100));
         attributeMap.put(0, createStringAttribute("sipid", "coucou"));
         attributeMap.put(0, createDateAttribute("cretaion date", OffsetDateTime.now()));
-        
-//        SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
-//        SIPBuilder sipBuilder = new SIPBuilder(productName);
-//        sipBuilder.
-//        sipCollectionBuilder.build().
 
         LOGGER.info("end create Metata for the chain <{}>", chainLabel);
 
@@ -114,6 +116,37 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
         attr.setMetaAttribute(new MetaAttribute(name, AttributeTypeEnum.TYPE_DATE_TIME));
         attr.addValue(val);
         return attr;
+    }
+
+    @Override
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+        SIPCollection sipCollection = runPlugin(sessionId, acqFiles);
+        // TODO CMZ ajouter le tag vers le jeu datasetName
+        return sipCollection;
+    }
+
+    @Override
+    public SIPCollection runPlugin(String sessionId,List<AcquisitionFile> acqFiles) throws ModuleException {
+        SortedMap<Integer, Attribute> mm = this.createMetaDataPlugin(acqFiles);
+        
+        String productName = acqFiles.get(0).getProduct().getProductName();
+
+        SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
+
+        SIPBuilder sipBuilder = new SIPBuilder(productName);
+
+        try {
+            sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
+                                                                    acqFiles.get(0).getFile().toURI().toURL(),
+                                                                    acqFiles.get(0).getChecksum());
+        } catch (MalformedURLException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new AcquisitionException(e.getMessage());
+        }
+
+        sipCollectionBuilder.add(sipBuilder.build());
+
+        return sipCollectionBuilder.build();
     }
 
 }

@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
 
@@ -130,14 +131,28 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //    }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
         // TODO CMZ createMetadataPlugin à compléter        
         return null;
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) {
+    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
         // TODO CMZ createMetaDataPlugin à compléter
+        return null;
+    }
+
+    @Override
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles) throws ModuleException {
+        // TODO Auto-generated method stub
         return null;
     }
 

@@ -117,20 +117,20 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             if (inProgressFileList != null) {
                 // for each AcquisitionFile
                 for (AcquisitionFile acqFile : inProgressFileList) {
-                    File currentFile = null;
+                    File currentFile = acqFile.getFile();
                     
-                    if (acqFile.getAcquisitionInformations() == null) {
-                        currentFile = new File(acqFile.getFileName());
-                    }
-                    else {
-                        String workingDir = acqFile.getAcquisitionInformations().getWorkingDirectory();
-                        if (workingDir != null) {
-                            currentFile = new File(workingDir, acqFile.getFileName());
-                        } else {
-                            currentFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
-                                    acqFile.getFileName());
-                        }
-                    }
+//                    if (acqFile.getAcquisitionInformations() == null) {
+//                        currentFile = new File(acqFile.getFileName());
+//                    }
+//                    else {
+//                        String workingDir = acqFile.getAcquisitionInformations().getWorkingDirectory();
+//                        if (workingDir != null) {
+//                            currentFile = new File(workingDir, acqFile.getFileName());
+//                        } else {
+//                            currentFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
+//                                    acqFile.getFileName());
+//                        }
+//                    }
 
                     // execute the check plugin
                     if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
@@ -162,8 +162,10 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             currentProduct.setProductName(productName);
             currentProduct.setStatus(ProductStatus.ACQUIRING);
             currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
+            
         }
 
+        currentProduct.setSession(chainGeneration.getSession());
         currentProduct.addAcquisitionFile(acqFile);
         acqFile.setProduct(currentProduct);
         //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ virer 

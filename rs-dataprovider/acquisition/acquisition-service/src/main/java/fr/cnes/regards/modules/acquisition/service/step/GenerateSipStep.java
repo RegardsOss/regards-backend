@@ -103,14 +103,22 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             IGenerateSIPPlugin generateSipPlugin = pluginService
                     .getPlugin(this.chainGeneration.getGenerateSIPPluginConf(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
-// TODO CMZ à compléter
+
             // create MetaData for each Product
             if (!afMap.isEmpty()) {
-                afMap.forEach((k, v) -> generateSipPlugin.createMetaDataPlugin(v));
+                afMap.forEach((k, v) -> {
+                    try {
+                        generateSipPlugin.runPlugin(chainGeneration.getSession(), v);
+                    } catch (ModuleException e) {
+                        LOGGER.error(e.getMessage(),e);
+                        throw new AcquisitionRuntimeException(e.getMessage());
+                    }
+                });
             }
 
         } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(),e);
+            throw new AcquisitionRuntimeException(e.getMessage());
         }
 
     }
