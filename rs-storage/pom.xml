@@ -9,7 +9,6 @@
     <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-    <name>REGARDS Storage</name>
 	<description>Microservice providing long-term, perennial storage of the data through the CNES' storage system</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

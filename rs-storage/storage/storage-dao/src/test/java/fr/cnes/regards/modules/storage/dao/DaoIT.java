@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import javax.persistence.UniqueConstraint;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -39,7 +40,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@TestPropertySource("classpath:dao-storage.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage" })
 public class DaoIT extends AbstractDaoTransactionalTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DaoIT.class);
@@ -133,10 +134,10 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         // Init AIP builder
         AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA);
 
-        return aipBuilder.build(generateRandomInformationPackageProperties());
+        return aipBuilder.build(generateRandomInformationPackageProperties(ipId));
     }
 
-    public InformationPackageProperties generateRandomInformationPackageProperties()
+    public InformationPackageProperties generateRandomInformationPackageProperties(UniformResourceName ipId)
             throws NoSuchAlgorithmException, MalformedURLException {
 
         // Init Information object builder
@@ -148,7 +149,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
                                                                  "addition of this aip into our beautiful system!",
                                                                  OffsetDateTime.now());
         // - ContextInformation
-        ippBuilder.getPDIBuilder().addTags(generateRandomTags());
+        ippBuilder.getPDIBuilder().addTags(generateRandomTags(ipId));
         // - Provenance
         ippBuilder.getPDIBuilder().setFacility("TestPerf");
         // - Access right
@@ -194,13 +195,19 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         return sb.toString();
     }
 
-    private String[] generateRandomTags() {
+    /**
+     * generate random tags (length and content) but always have at least one tag which is the aip IP ID
+     * @param ipId
+     * @return
+     */
+    private String[] generateRandomTags(UniformResourceName ipId) {
         int listMaxSize = 15;
         int tagMaxSize = 10;
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         String[] tags = new String[listSize];
-        for (int i = 0; i < listSize; i++) {
+        tags[0] = ipId.toString();
+        for (int i = 1; i < listSize; i++) {
             tags[i] = generateRandomString(random, tagMaxSize);
         }
         return tags;
@@ -425,6 +432,50 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.contains(aip3));
         Assert.assertFalse(aips.contains(aip4));
         Assert.assertFalse(aips.contains(aip5));
+    }
+
+    @Test
+    public void testFindAllByTags() {
+        //aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets retrieve them according to there ipId
+        Set<AIP> aips = dao.findAllByTags(aip1.getId().toString());
+        Assert.assertTrue(aips.contains(aip1));
+        Assert.assertTrue(aips.contains(aip12));
+        Assert.assertFalse(aips.contains(aip2));
+        Assert.assertFalse(aips.contains(aip3));
+        Assert.assertFalse(aips.contains(aip4));
+        Assert.assertFalse(aips.contains(aip5));
+
+        aips = dao.findAllByTags(aip2.getId().toString());
+        Assert.assertFalse(aips.contains(aip1));
+        Assert.assertFalse(aips.contains(aip12));
+        Assert.assertTrue(aips.contains(aip2));
+        Assert.assertFalse(aips.contains(aip3));
+        Assert.assertFalse(aips.contains(aip4));
+        Assert.assertFalse(aips.contains(aip5));
+
+        aips = dao.findAllByTags(aip3.getId().toString());
+        Assert.assertFalse(aips.contains(aip1));
+        Assert.assertFalse(aips.contains(aip12));
+        Assert.assertFalse(aips.contains(aip2));
+        Assert.assertTrue(aips.contains(aip3));
+        Assert.assertFalse(aips.contains(aip4));
+        Assert.assertFalse(aips.contains(aip5));
+
+        aips = dao.findAllByTags(aip4.getId().toString());
+        Assert.assertFalse(aips.contains(aip1));
+        Assert.assertFalse(aips.contains(aip12));
+        Assert.assertFalse(aips.contains(aip2));
+        Assert.assertFalse(aips.contains(aip3));
+        Assert.assertTrue(aips.contains(aip4));
+        Assert.assertFalse(aips.contains(aip5));
+
+        aips = dao.findAllByTags(aip5.getId().toString());
+        Assert.assertFalse(aips.contains(aip1));
+        Assert.assertFalse(aips.contains(aip12));
+        Assert.assertFalse(aips.contains(aip2));
+        Assert.assertFalse(aips.contains(aip3));
+        Assert.assertFalse(aips.contains(aip4));
+        Assert.assertTrue(aips.contains(aip5));
     }
 
 }

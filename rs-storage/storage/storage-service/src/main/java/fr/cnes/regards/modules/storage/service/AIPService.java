@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +41,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -49,14 +51,13 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.Event;
@@ -71,11 +72,12 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
 import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
@@ -98,8 +100,8 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
  * Available data storage systems are defined by the available {@link IDataStorage} plugins<br/>
  * Stored files can be stored with :
  * <ul>
- * <li> Online data storage plugins {@link IOnlineDataStorage} : Files are directly accessible for download </li>
- * <li> Nearline data storage plugins {@link INearlineDataStorage} : Files needs to be cached before download </li>
+ * <li>Online data storage plugins {@link IOnlineDataStorage} : Files are directly accessible for download</li>
+ * <li>Nearline data storage plugins {@link INearlineDataStorage} : Files needs to be cached before download</li>
  * </ul>
  *
  * At startup, this service subscribe to all {@link DataStorageEvent}s to handle physical actions
@@ -157,7 +159,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * Service to retrieve and use Plugins more specificly the {@link IDataStorage} plugins.
      */
     @Autowired
-    private PluginService pluginService;
+    private IPluginService pluginService;
 
     /**
      * The AIP service uses JOBS to run asynchronous store actions.
@@ -274,7 +276,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<DataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
 
         errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
-                              .collect(Collectors.toSet()));
+                .collect(Collectors.toSet()));
 
         Set<DataFile> onlineFiles = Sets.newHashSet();
         Set<DataFile> nearlineFiles = Sets.newHashSet();
@@ -335,9 +337,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
         if (pFrom != null) {
             if (pTo != null) {
-                return aipDao
-                        .findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1), pTo.plusSeconds(1),
-                                                                            pPageable);
+                return aipDao.findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1),
+                                                                                 pTo.plusSeconds(1), pPageable);
             }
             return aipDao.findAllBySubmissionDateAfter(pFrom.minusNanos(1), pPageable);
         }
@@ -351,7 +352,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
         if (aip.isPresent()) {
-            if(!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
+            if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
                 throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
             }
             Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
@@ -432,7 +433,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                             .add(new JobInfo(0, parameters, authResolver.getUser(), StoreDataFilesJob.class.getName()));
                 } else {
                     jobsToSchedule.add(new JobInfo(0, parameters, authResolver.getUser(),
-                                                   StoreMetadataFilesJob.class.getName()));
+                            StoreMetadataFilesJob.class.getName()));
                 }
 
             }
@@ -493,8 +494,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeAllocationStrategies.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + IAllocationStrategy.class.getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -510,8 +511,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeSecurityDelegations.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + ISecurityDelegation.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + ISecurityDelegation.class.getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -592,7 +593,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     meta.setState(DataFileState.PENDING);
                     dataFileDao.save(meta);
                     metadataToStore.add(meta);
-                } catch (IOException e) {
+                } catch (IOException | FileCorruptedException e) {
                     // if we don't have a meta to store that means a problem happened and we set the aip to
                     // STORAGE_ERROR
                     LOG.error(e.getMessage(), e);
@@ -606,10 +607,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
+    public Set<AIP> retrieveAipsByTag(String tag) {
+        return aipDao.findAllByTags(tag);
+    }
+
+    @Override
     public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(ipId.toString());
         if (aip.isPresent()) {
-            if(!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
+            if (!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
                 throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
             }
             return aip.get().getHistory();
@@ -619,20 +625,29 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
+    public Set<AIP> retrieveAipsBulk(Set<String> ipIds) {
+        return aipDao.findAllByIpIdIn(ipIds);
+    }
+
+    @Override
+    public AIP retrieveAip(String ipId) throws EntityNotFoundException {
+        return aipDao.findOneByIpId(ipId).orElseThrow(()->new EntityNotFoundException(ipId, AIP.class));
+    }
+
+    @Override
     public AIP updateAip(String ipId, AIP updated)
-            throws EntityNotFoundException, EntityNotIdentifiableException, EntityInconsistentIdentifierException,
-            EntityOperationForbiddenException {
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
         Optional<AIP> oldAipOpt = aipDao.findOneByIpId(ipId);
         // first lets check for issues
         if (!oldAipOpt.isPresent()) {
             throw new EntityNotFoundException(ipId, AIP.class);
         }
         AIP oldAip = oldAipOpt.get();
-        if (oldAip.getState() != AIPState.UPDATED && oldAip.getState() != AIPState.STORED) {
+        if ((oldAip.getState() != AIPState.UPDATED) && (oldAip.getState() != AIPState.STORED)) {
             throw new EntityOperationForbiddenException(ipId, AIP.class, "update while aip metadata are being stored!");
         }
         if (updated.getId() == null) {
-            throw new EntityNotIdentifiableException("give updated AIP has no id!");
+            throw new EntityNotFoundException("give updated AIP has no id!");
         }
         if (!oldAip.getId().toString().equals(updated.getId().toString())) {
             throw new EntityInconsistentIdentifierException(ipId, updated.getId().toString(), AIP.class);
@@ -650,9 +665,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Map<String, Object> additionalProvenanceInfoMap;
         if ((additionalProvenanceInfoMap = updatedPdi.getProvenanceInformation().getAdditional()) != null) {
             for (Map.Entry<String, Object> additionalProvenanceEntry : additionalProvenanceInfoMap.entrySet()) {
-                updatingBuilder.getPDIBuilder().addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
-                                                                                   additionalProvenanceEntry
-                                                                                           .getValue());
+                updatingBuilder.getPDIBuilder()
+                        .addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
+                                                            additionalProvenanceEntry.getValue());
             }
         }
         // third lets handle those "special" provenance information
@@ -668,10 +683,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Map<String, Object> contextInformationMap;
         if ((contextInformationMap = updatedPdi.getContextInformation()) != null) {
             for (Map.Entry<String, Object> contextEntry : contextInformationMap.entrySet()) {
-                //tags have their specific handling
+                // tags have their specific handling
                 if (!contextEntry.getKey().equals(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY)) {
-                    updatingBuilder.getPDIBuilder()
-                            .addContextInformation(contextEntry.getKey(), contextEntry.getValue());
+                    updatingBuilder.getPDIBuilder().addContextInformation(contextEntry.getKey(),
+                                                                          contextEntry.getValue());
                 }
             }
         }
@@ -679,7 +694,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Map<String, String> referenceInformationMap;
         if ((referenceInformationMap = updatedPdi.getReferenceInformation()) != null) {
             for (Map.Entry<String, String> refEntry : referenceInformationMap.entrySet()) {
-                //tags have their specific handling
+                // tags have their specific handling
                 updatingBuilder.getPDIBuilder().addContextInformation(refEntry.getKey(), refEntry.getValue());
             }
         }
@@ -687,16 +702,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Map<String, Object> fixityInformationMap;
         if ((fixityInformationMap = updatedPdi.getFixityInformation()) != null) {
             for (Map.Entry<String, Object> fixityEntry : fixityInformationMap.entrySet()) {
-                //tags have their specific handling
+                // tags have their specific handling
                 updatingBuilder.getPDIBuilder().addContextInformation(fixityEntry.getKey(), fixityEntry.getValue());
             }
         }
         // Access Right information
-        updatingBuilder.getPDIBuilder().setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
-                                                                  updatedPdi.getAccessRightInformation()
-                                                                          .getDataRights(),
-                                                                  updatedPdi.getAccessRightInformation()
-                                                                          .getPublicReleaseDate());
+        updatingBuilder.getPDIBuilder()
+                .setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
+                                           updatedPdi.getAccessRightInformation().getDataRights(),
+                                           updatedPdi.getAccessRightInformation().getPublicReleaseDate());
         // descriptive information
         Map<String, Object> descriptiveInformationMap;
         if ((descriptiveInformationMap = updated.getProperties().getDescriptiveInformation()) != null) {
@@ -704,7 +718,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 updatingBuilder.addDescriptiveInformation(descriptiveEntry.getKey(), descriptiveEntry.getValue());
             }
         }
-        //not that all updates are set into the builder, lets build and save the updatedAip. Update event is added thanks once the metadata are stored
+        // not that all updates are set into the builder, lets build and save the updatedAip. Update event is added
+        // thanks once the metadata are stored
         AIP updatedAip = updatingBuilder.build();
         updatedAip.setState(AIPState.UPDATED);
         LOG.debug(String.format("[METADATA UPDATE] Update of aip %s metadata done", ipId));
@@ -781,7 +796,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @return {@link DataFile} of the {@link AIP} metadata file.
      * @throws IOException Impossible to write {@link AIP} metadata file to disk.
      */
-    private DataFile writeMetaToWorkspace(AIP aip, Path tenantWorkspace) throws IOException {
+    private DataFile writeMetaToWorkspace(AIP aip, Path tenantWorkspace) throws IOException, FileCorruptedException {
 
         DataFile metadataAipFile = null;
         String checksumAlgorithm = "MD5";
@@ -803,13 +818,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             if (fileChecksum.equals(checksum)) {
                 URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
                 metadataAipFile = new DataFile(urlToMetadata, checksum, checksumAlgorithm, DataType.AIP,
-                                               urlToMetadata.openConnection().getContentLengthLong(),
-                                               new MimeType("application", "json"), aip,
-                                               aip.getId().toString() + JSON_FILE_EXT);
+                        urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"), aip,
+                        aip.getId().toString() + JSON_FILE_EXT);
             } else {
                 LOG.error(String.format(
-                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                        aip.getId().toString(), tenantWorkspace));
+                                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
+                                        aip.getId().toString(), tenantWorkspace));
+                throw new FileCorruptedException(String.format("File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different", checksum, fileChecksum));
             }
         } catch (Exception e) {
             // Delete written file
@@ -821,8 +836,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         return metadataAipFile;
     }
 
-    /**
-     * TODO COMMENTS !!!!!!!!!
+    /*
+     * Non javadoc, but explanatory: due to settings only interfaces are proxyfied by spring, so we need to use a self
+     * reference on the interface to profit from transaction management from spring. This is a self reference because
+     * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
@@ -874,7 +891,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     newAIPMetadataFile = writeMetaToWorkspace(updatedAip, tenantWorkspace);
                     newAIPMetadataFile.setId(existingAIPMetadataFile.getId());
                     result.add(new UpdatableMetadataFile(existingAIPMetadataFile, newAIPMetadataFile));
-                } catch (IOException e) {
+                } catch (IOException | FileCorruptedException e) {
                     LOG.error(e.getMessage(), e);
                     // if we don't have a meta to store that means a problem happened and we set the aip to
                     // STORAGE_ERROR
@@ -946,8 +963,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                                                oldOneCorrespondingToWorkingSubset.toArray(
-                                                        new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
+                        oldOneCorrespondingToWorkingSubset
+                                .toArray(new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
                 jobsToSchedule
                         .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
             }
@@ -967,7 +984,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
         if (oaip.isPresent()) {
             AIP aip = oaip.get();
-            if(!getSecurityDelegationPlugin().hasAccess(pAipId)) {
+            if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
                 throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
             }
             // Now get requested DataFile

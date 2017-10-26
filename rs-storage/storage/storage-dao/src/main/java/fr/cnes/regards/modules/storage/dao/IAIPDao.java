@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public interface IAIPDao {
     /**
      * Create or update an {@link AIP}
      * @param toSave {@link AIP}
-     * @return saved {@link AI}
+     * @return saved {@link AIP}
      */
     AIP save(AIP toSave);
 
@@ -117,4 +118,8 @@ public interface IAIPDao {
     Set<AIP> findAllByStateInService(AIPState... states);
 
     void remove(AIP associatedAIP);
+
+    Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
+
+    Set<AIP> findAllByTags(String tag);
 }

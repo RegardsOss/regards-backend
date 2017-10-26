@@ -8,10 +8,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -24,7 +29,7 @@ import fr.cnes.regards.modules.storage.domain.parameter.StorageParameter;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Service
-public class StorageParameterService implements IStorageParameterService, ApplicationListener<ApplicationReadyEvent> {
+public class StorageParameterService implements IStorageParameterService, ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -37,6 +42,9 @@ public class StorageParameterService implements IStorageParameterService, Applic
 
     @Autowired
     private IStorageParameterRepository repository;
+
+    @Autowired
+    private IInstanceSubscriber instanceSubscriber;
 
     @Override
     public StorageParameter create(StorageParameter storageParameter) throws EntityAlreadyExistsException {
@@ -84,13 +92,13 @@ public class StorageParameterService implements IStorageParameterService, Applic
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS)
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        // TODO : Handle new tenant creation
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             initDefaultParameters();
             runtimeTenantResolver.clearTenant();
         }
+        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyHandler());
     }
 
     private void initDefaultParameters() {
@@ -100,6 +108,16 @@ public class StorageParameterService implements IStorageParameterService, Applic
             } catch (EntityAlreadyExistsException e) {
                 //cannot happen as we are checking that the parameter does not already exists
             }
+        }
+    }
+
+    private class TenantConnectionReadyHandler implements IHandler<TenantConnectionReady> {
+
+        @Override
+        public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
+            runtimeTenantResolver.forceTenant(wrapper.getTenant());
+            initDefaultParameters();
+            runtimeTenantResolver.clearTenant();
         }
     }
 }

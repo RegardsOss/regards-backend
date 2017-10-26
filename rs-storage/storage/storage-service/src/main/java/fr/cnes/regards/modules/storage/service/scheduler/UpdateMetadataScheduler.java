@@ -57,7 +57,7 @@ public class UpdateMetadataScheduler implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(updateMetadataTaskExecutor());
-        // TODO : Handle new tenants.
+        // FIXME : Some heavy bullshit here, method called into AIPService already treats each and every active tenants!
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             LOG.debug(" ----------------------------------------> Initialize new UpdateMetadata scheduled Tasks for tenant {}.",
                       tenant);

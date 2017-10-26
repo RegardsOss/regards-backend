@@ -68,8 +68,9 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -250,7 +251,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
                            aipDao.findOneByIpId(aip.getId().toString()).isPresent());
 
         // 1. Create new AIP
-        ResponseEntity<Set<UUID>> resp = client.store(aips);
+        AIPCollection aipCollection = new AIPCollection();
+        aipCollection.addAll(aips);
+        ResponseEntity<Set<UUID>> resp = client.store(aipCollection);
         // Wait for job ends.
         try {
             Thread.sleep(10000);

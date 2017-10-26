@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotIdentifiableException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.Event;
@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
@@ -43,10 +43,11 @@ public interface IAIPService {
      * Run asynchronous jobs to handle new {@link AIP}s creation.<br/>
      * This process handle :
      * <ul>
-     * <li> Storage in db of {@link AIP}</li>
-     * <li> Storage in db of each {@link DataFile} associated </li>
-     * <li> Physical storage of each {@link DataFile} through {@link IDataStorage} plugins</li>
-     * <li> Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage} plugins</li>
+     * <li>Storage in db of {@link AIP}</li>
+     * <li>Storage in db of each {@link DataFile} associated</li>
+     * <li>Physical storage of each {@link DataFile} through {@link IDataStorage} plugins</li>
+     * <li>Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage}
+     * plugins</li>
      * </ul>
      * @param pAIP new {@link Set}<{@link AIP}> to store
      * @return {@link Set}<{@link UUID}> of scheduled store AIP Jobs.
@@ -60,7 +61,7 @@ public interface IAIPService {
      * to make them available. As soon as a file is available, a {@link DataFileEvent} is published into the
      * system message queue.
      * @param {@link AvailabilityRequest} containing request informations. Files checksum to make available and
-     * files lifetime in cache.
+     *            files lifetime in cache.
      * @return checksums of files that are already available
      */
     AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException;
@@ -97,7 +98,8 @@ public interface IAIPService {
     void updateAlreadyStoredMetadata();
 
     /**
-     * Retrieve the local {@link Path} of the {@link DataFile} associated to the given {@link AIP} and matching the given checksum.<br/>
+     * Retrieve the local {@link Path} of the {@link DataFile} associated to the given {@link AIP} and matching the
+     * given checksum.<br/>
      * Return Optional.empty if the {@link DataFile} is not accesible localy.<br/>
      * @param pAipId
      * @param pChecksum
@@ -108,19 +110,24 @@ public interface IAIPService {
 
     List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws ModuleException;
 
+    Set<AIP> retrieveAipsBulk(Set<String> ipIds);
+
+    Set<AIP> retrieveAipsByTag(String tag);
+
+    AIP retrieveAip(String ipId) throws EntityNotFoundException;
+
     /**
-     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, store a new aip with a different version and use store method.
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, store a
+     * new aip with a different version and use store method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
      * @return aip stored into the system after changes have been propagated
      * @throws EntityNotFoundException if no aip with ipId as identifier can be found
-     * @throws EntityNotIdentifiableException if updated does not have any ipId specified
      * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
      * @throws EntityOperationForbiddenException if aip in the system is not in the right state
      */
     AIP updateAip(String ipId, AIP updated)
-            throws EntityNotFoundException, EntityNotIdentifiableException, EntityInconsistentIdentifierException,
-            EntityOperationForbiddenException;
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
@@ -147,5 +154,4 @@ public interface IAIPService {
     Set<UpdatableMetadataFile> prepareUpdatedAIP(Path tenantWorkspace);
 
     Set<DataFile> prepareNotFullyStored(Path tenantWorkspace);
-
 }

@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**

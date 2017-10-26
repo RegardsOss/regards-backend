@@ -1,6 +1,22 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -22,9 +38,11 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_aip", indexes = {
-                @Index(name = "idx_aip_ip_id", columnList = "ip_id")
-})
+@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_ip_id", columnList = "ip_id"),
+        @Index(name = "idx_aip_state", columnList = "state"),
+        @Index(name = "idx_aip_submission_date", columnList = "submissionDate"),
+        @Index(name = "idx_aip_last_event_date", columnList = "date") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "ip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
 public class AIPDataBase {
@@ -45,13 +63,15 @@ public class AIPDataBase {
      * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
      * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
-    @Column(name = "ip_id", length = MAX_URN_SIZE, unique = true)
+    @Column(name = "ip_id", length = MAX_URN_SIZE)
     private String ipId;
 
     @Column(name = "sip_id", length = MAX_URN_SIZE)
     private String sipId;
 
     @ElementCollection
+    @CollectionTable(name = "t_aip_tag", joinColumns = @JoinColumn(name = "aip_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_aip_tag_aip_id"))
     private Set<String> tags;
 
     /**
@@ -156,10 +176,12 @@ public class AIPDataBase {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         AIPDataBase that = (AIPDataBase) o;
 

@@ -1,8 +1,5 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import java.net.URL;
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,15 +7,21 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.time.OffsetDateTime;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_cached_file")
+@Table(name = "t_cached_file", indexes = { @Index(name = "idx_cached_file_checksum", columnList = "checksum"),
+        @Index(name = "idx_cached_file_state", columnList = "state") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_cached_file_checksum", columnNames = "checksum") })
 public class CachedFile {
 
     /**
@@ -30,7 +33,7 @@ public class CachedFile {
     private Long id;
 
     @NotNull
-    @Column(unique = true)
+    @Column
     private String checksum;
 
     @Column

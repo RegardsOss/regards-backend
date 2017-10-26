@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.util.Sets;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -65,8 +67,8 @@ import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.database.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
+import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
@@ -90,6 +92,7 @@ import fr.cnes.regards.modules.storage.service.TestDataStorageEventHandler;
 @ContextConfiguration(classes = { TestConfig.class, MockedFeignClientConf.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
+@DirtiesContext
 public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceRestoreIT.class);
@@ -169,7 +172,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void init() throws Exception {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
-         this.cleanUp(); //comment if you are not interrupting tests during their execution
+//         this.cleanUp(); //comment if you are not interrupting tests during their execution
         // as we are checking rights, lets mock the response from catalog: always ok for anything
         Mockito.when(catalogClient.getEntity(Mockito.any())).thenReturn(
                 new ResponseEntity<>(new Resource<>(
@@ -232,7 +235,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void loadUnavailableFilesTest() throws ModuleException {
         LOG.info("Start test loadUnavailableFilesTest ...");
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "1", "2", "3");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(
                 "No file should be directly available after AIPService::locafiles. Cause : files to load does not exists !",
@@ -252,7 +255,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void loadOnlineFilesTest() throws MalformedURLException, ModuleException {
         LOG.info("Start test loadOnlineFilesTest ...");
         fillOnlineDataFileDb(50L);
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "1", "2", "3");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(
                 "All files should be directly available after AIPService::locafiles. Cause : files to load are online.",
@@ -283,7 +286,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "10", "20", "30");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
@@ -354,7 +357,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now(), "10", "20", "30");
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
@@ -834,7 +837,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         dataHandler.reset();
     }
 
-//    @After
+    @After
     public void cleanUp() throws URISyntaxException, IOException {
         purgeAMQPqueues();
         unsubscribeAMQPEvents();
