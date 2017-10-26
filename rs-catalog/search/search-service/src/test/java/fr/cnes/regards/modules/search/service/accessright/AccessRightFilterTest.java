@@ -20,14 +20,23 @@ package fr.cnes.regards.modules.search.service.accessright;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -89,20 +98,36 @@ public class AccessRightFilterTest {
         IUserClient userClient = Mockito.mock(IUserClient.class);
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(SampleDataUtils.USER_CLIENT_RESPONSE);
+
         IProjectUsersClient projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
                 .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
-        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
+
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
         Mockito.when(attributeModelClient.getAttributes(null, null))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(SampleDataUtils.LIST), HttpStatus.OK));
+
+
+        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
-        IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
-        IAccessGroupCache accessGroupCache = new AccessGroupCache(userClient, Mockito.mock(IAccessGroupClient.class));
 
+        IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
         openSearchService = new OpenSearchService(finder);
+
+        IAccessGroupClient accessGroupMock = Mockito.mock(IAccessGroupClient.class);
+        IAccessGroupCache accessGroupCache = new AccessGroupCache(userClient, accessGroupMock);
+
+        // Build accessGroupMock mock
+        final PageMetadata md = new PageMetadata(0, 0, 0);
+        final PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+                new ArrayList<>());
+        final ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity
+                .ok(pagedResources);
+        Mockito.when(accessGroupMock.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(pageResponseEntity);
+
         accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
     }
 
