@@ -23,46 +23,29 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Snippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
 
 /**
  * Base class to realize integration tests using JWT and MockMvc and mocked Cots. Should hold all the configurations to
@@ -126,101 +109,82 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return new LinkedMultiValueMap<String, String>();
     }
 
-    protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
-            String errorMsg, HttpHeaders headers, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, headers, urlVariables);
-    }
-
-    protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, urlVariables);
-    }
-
-    protected ResultActions performGet(String urlTemplate, String authToken, List<ResultMatcher> matchers,
-            String errorMsg, RequestParamBuilder requestParams, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.GET, urlTemplate, matchers, errorMsg, requestParams, urlVariables);
-    }
-
-    protected ResultActions performPost(String urlTemplate, String authToken, Object content,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.POST, urlTemplate, content, matchers, errorMsg, urlVariables);
-    }
-
-    protected ResultActions performPut(String urlTemplate, String authToken, Object content,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.PUT, urlTemplate, content, matchers, errorMsg, urlVariables);
-    }
-
     protected ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
             String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequestWithContentType(authToken,
-                                             HttpMethod.POST,
-                                             urlTemplate,
-                                             content,
-                                             contentType,
-                                             matchers,
-                                             errorMsg,
-                                             urlVariables);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
+        return requestBuilderCustomizer.performPost(mvc, urlTemplate, authToken, content, errorMsg, urlVariables);
     }
 
     protected ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
             String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performRequestWithContentType(authToken,
-                                             HttpMethod.PUT,
-                                             urlTemplate,
-                                             content,
-                                             contentType,
-                                             matchers,
-                                             errorMsg,
-                                             urlVariables);
-    }
-
-    // File upload
-
-    protected ResultActions performDelete(String urlTemplate, String authToken, List<ResultMatcher> matchers,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(authToken, HttpMethod.DELETE, urlTemplate, matchers, errorMsg, urlVariables);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
+        return requestBuilderCustomizer.performPut(mvc, urlTemplate, authToken, content, errorMsg, urlVariables);
     }
 
     // Automatic default security management methods
 
-    protected ResultActions performFileUpload(String urlTemplate, String authToken, Path pFilePath,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(authToken,
-                                                                                  pFilePath,
-                                                                                  urlTemplate,
-                                                                                  urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
-    }
-
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             RequestParamBuilder requestParams, Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
-        return performGet(urlTemplate, jwt, matchers, errorMsg, requestParams, urlVariables);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
+            requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(),
+                                                                   requestParam.getValue()
+                                                                           .toArray(new String[requestParam.getValue()
+                                                                                   .size()]));
+        }
+        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performGet(String urlTemplate, String authToken,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
     }
 
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
-        return performGet(urlTemplate, jwt, matchers, errorMsg, urlVariables);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             HttpHeaders headers, Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
-        return performGet(urlTemplate, jwt, matchers, errorMsg, headers, urlVariables);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
+            requestBuilderCustomizer.customizeHeaders().put(header.getKey(), header.getValue());
+        }
+        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
-        return performPost(urlTemplate, jwt, content, matchers, errorMsg, urlVariables);
+        return performDefaultPostWithContentType(urlTemplate,
+                                                 content,
+                                                 MediaType.APPLICATION_JSON_VALUE,
+                                                 matchers,
+                                                 errorMsg,
+                                                 urlVariables);
     }
 
     protected ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.PUT);
-        return performPut(urlTemplate, jwt, content, matchers, errorMsg, urlVariables);
+        return performDefaultPutWithContentType(urlTemplate,
+                                         content,
+                                         MediaType.APPLICATION_JSON_VALUE,
+                                         matchers,
+                                         errorMsg,
+                                         urlVariables);
     }
 
     protected ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,
@@ -238,138 +202,40 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.DELETE);
-        return performDelete(urlTemplate, jwt, matchers, errorMsg, urlVariables);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        return performDelete(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultFileUploadPost(String urlTemplate, Path pFilePath,
+    protected ResultActions performDelete(String urlTemplate, String authToken,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath, List<ResultMatcher> matchers,
+            String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performFileUpload(String urlTemplate, String jwt, Path pFilePath,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFilePath, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
             List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performDefaultFileUpload(RequestMethod.POST, urlTemplate, pFilePath, matchers, errorMsg, urlVariables);
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(matchers);
+        return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
-    protected ResultActions performDefaultFileUploadPost(String urlTemplate, List<MockMultipartFile> pFileList,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        return performDefaultFileUpload(RequestMethod.POST, urlTemplate, pFileList, matchers, errorMsg, urlVariables);
-    }
-
-    protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate, Path filePath,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, verb);
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt,
-                                                                                  filePath,
-                                                                                  urlTemplate,
-                                                                                  urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
-    }
-
-    protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate,
-            List<MockMultipartFile> pFileList, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, verb);
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt,
-                                                                                  pFileList,
-                                                                                  urlTemplate,
-                                                                                  urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg, null, Lists.emptyList());
-    }
-
-    protected ResultActions performDefaultFileUpload(RequestMethod verb, String urlTemplate,
-            List<MockMultipartFile> pFileList, List<ResultMatcher> matchers, String errorMsg, List<Snippet> documentationSnippets, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, verb);
-        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(jwt,
-                                                                                  pFileList,
-                                                                                  urlTemplate,
-                                                                                  urlVariables);
-        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
-    }
-
-    /**
-     * Perform a REST request and control expectations
-     * @param authToken JWT token
-     * @param pHttpMethod HTTP method
-     * @param urlTemplate URL template
-     * @param content content for {@link HttpMethod#POST} and {@link HttpMethod#PUT} methods
-     * @param contentType media type
-     * @param matchers expectations
-     * @param errorMsg message if error occurs
-     * @param urlVariables URL variables
-     * @return result
-     */
-    protected ResultActions performRequestWithContentType(String authToken, HttpMethod pHttpMethod, String urlTemplate,
-            Object content, String contentType, List<ResultMatcher> matchers, String errorMsg,
-            List<Snippet> documentationSnippets, Object... urlVariables) {
-
-        Assert.assertTrue(HttpMethod.POST.equals(pHttpMethod) || HttpMethod.PUT.equals(pHttpMethod));
-        MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken,
-                                                                         pHttpMethod,
-                                                                         urlTemplate,
-                                                                         urlVariables);
-        String jsonContent = gson(content);
-        requestBuilder.content(jsonContent);
-        requestBuilder.contentType(contentType);
-        return performRequest(requestBuilder, matchers, errorMsg, null, documentationSnippets);
-    }
-
-    protected ResultActions performRequest(String authToken, HttpMethod pHttpMethod, String urlTemplate, Object content,
-            List<ResultMatcher> matchers, String errorMsg, List<Snippet> documentationSnippets,
-            Object... urlVariables) {
-        return performRequestWithContentType(authToken,
-                                             pHttpMethod,
-                                             urlTemplate,
-                                             content,
-                                             MediaType.APPLICATION_JSON_VALUE,
-                                             matchers,
-                                             errorMsg,
-                                             documentationSnippets,
-                                             urlVariables);
-    }
-
-
-
-    /**
-     * @param pRequestBuilder request builder
-     * @param matchers expectations
-     * @param errorMsg message if error occurs
-     * @param requestParamBuilder
-     * @param documentationSnippets
-     * @return result
-     */
-    protected ResultActions performRequest(MockHttpServletRequestBuilder pRequestBuilder, List<ResultMatcher> matchers,
-            String errorMsg, RequestParamBuilder requestParamBuilder, List<Snippet> documentationSnippets) {
-        try {
-            Map<String, Object> queryParams = Maps.newHashMap();
-            List<ParameterDescriptor> queryParamDescriptors = Lists.newArrayList();
-            if (requestParamBuilder != null) {
-                // lets create the attributes and description for the documentation snippet
-                pRequestBuilder.params(requestParamBuilder.getParameters());
-                for (Map.Entry<String, List<String>> entry : requestParamBuilder.getParameters().entrySet()) {
-                    if (entry.getValue().size() == 1) {
-                        queryParams.put(entry.getKey(), entry.getValue().get(0));
-                    } else {
-                        queryParams.put(entry.getKey(), entry.getValue());
-                    }
-                    queryParamDescriptors.add(RequestDocumentation.parameterWithName(entry.getKey()).description(""));
-                }
-            }
-            ResultActions request = mvc.perform(pRequestBuilder);
-            for (ResultMatcher matcher : matchers) {
-                request = request.andExpect(matcher);
-            }
-            request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
-                                                            preprocessRequest(prettyPrint(),
-                                                                              removeHeaders("Authorization",
-                                                                                            "Host",
-                                                                                            "Content-Length")),
-                                                            preprocessResponse(prettyPrint(),
-                                                                               removeHeaders("Content-Length")),
-                                                            documentationSnippets
-                                                                    .toArray(new Snippet[documentationSnippets
-                                                                            .size()])));
-            return request;
-            // CHECKSTYLE:OFF
-        } catch (Exception e) {
-            // CHECKSTYLE:ON
-            getLogger().error(errorMsg, e);
-            throw new AssertionError(errorMsg, e);
-        }
+    protected ResultActions performFileUpload(String urlTemplate, String jwt, List<MockMultipartFile> pFileList,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFileList, errorMsg, urlVariables);
     }
 
     /**
@@ -403,16 +269,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         MediaType current = MediaType.parseMediaType(response.getContentType());
         Assert.assertEquals(pMediaType, current);
     }
+
+    protected RequestBuilderCustomizer getRequestBuilderCustomizer() {
+        return new RequestBuilderCustomizer(gsonBuilder);
+    }
     // CHECKSTYLE:ON
 
     // CHECKSTYLE:OFF
-    protected String gson(Object pObject) {
-        if (pObject instanceof String) {
-            return (String) pObject;
-        }
-        Gson gson = gsonBuilder.create();
-        return gson.toJson(pObject);
-    }
 
     /**
      * Set authorities for default tenant
