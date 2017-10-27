@@ -27,13 +27,13 @@ public class DataStorageInfo {
      * This field contains the value and the unit. For example, 1234567925B ~= 1.177GiB ~= 1.235GB.
      */
     @FileSize
-    private String totalSpace;
+    private String totalSize;
 
     /**
      * This field contains the value and the unit. For example, 1234567925B ~= 1.177GiB ~= 1.235GB.
      */
     @FileSize
-    private String usedSpace;
+    private String usedSize;
 
     /**
      * Occupation ratio in percent
@@ -44,15 +44,15 @@ public class DataStorageInfo {
      * Default constructor assuming that all numerical value given are expressed in Bytes.
      *
      * @param storagePhysicalId {@link DataStorageInfo#storagePhysicalId}
-     * @param totalSpace {@link DataStorageInfo#totalSpace}
-     * @param usedSpace {@link DataStorageInfo#usedSpace}
+     * @param totalSize {@link DataStorageInfo#totalSize}
+     * @param usedSize {@link DataStorageInfo#usedSize}
      */
-    public DataStorageInfo(@NotEmpty String storagePhysicalId, long totalSpace, long usedSpace) {
+    public DataStorageInfo(@NotEmpty String storagePhysicalId, long totalSize, long usedSize) {
         super();
         this.storagePhysicalId = storagePhysicalId;
-        this.totalSpace = totalSpace + BYTES_UNIT;
-        this.usedSpace = usedSpace + BYTES_UNIT;
-        this.ratio = (new Double(usedSpace) / totalSpace) * 100;
+        this.totalSize = totalSize + BYTES_UNIT;
+        this.usedSize = usedSize + BYTES_UNIT;
+        this.ratio = (new Double(usedSize) / totalSize) * 100;
     }
 
     public String getStoragePhysicalId() {
@@ -63,20 +63,20 @@ public class DataStorageInfo {
         this.storagePhysicalId = storagePhysicalId;
     }
 
-    public String getTotalSpace() {
-        return totalSpace;
+    public String getTotalSize() {
+        return totalSize;
     }
 
-    public void setTotalSpace(@FileSize String pTotalSize) {
-        totalSpace = pTotalSize;
+    public void setTotalSize(@FileSize String pTotalSize) {
+        totalSize = pTotalSize;
     }
 
-    public String getUsedSpace() {
-        return usedSpace;
+    public String getUsedSize() {
+        return usedSize;
     }
 
-    public void setUsedSpace(@FileSize String pUsedSize) {
-        usedSpace = pUsedSize;
+    public void setUsedSize(@FileSize String pUsedSize) {
+        usedSize = pUsedSize;
     }
 
     public Double getRatio() {

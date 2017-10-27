@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -46,7 +47,8 @@ public class StorageMonitoringController implements IResourceController<PluginSt
     @RequestMapping(value = PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of all active data storage monitoring information")
-    public ResponseEntity<List<Resource<PluginStorageInfo>>> retrieveMonitoringInfos() throws ModuleException {
+    public ResponseEntity<List<Resource<PluginStorageInfo>>> retrieveMonitoringInfos()
+            throws ModuleException, IOException {
         return new ResponseEntity<>(toResources(dataStorageService.getMonitoringInfos()), HttpStatus.OK);
     }
 

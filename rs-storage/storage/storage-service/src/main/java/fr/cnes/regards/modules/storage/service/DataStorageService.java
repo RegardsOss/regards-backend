@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
@@ -41,6 +42,9 @@ public class DataStorageService implements IDataStorageService {
     @Autowired
     private ITenantResolver tenantResolver;
 
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Override
     public Collection<PluginStorageInfo> getMonitoringInfos() throws ModuleException, IOException {
         Set<PluginStorageInfo> monitoringInfos = Sets.newHashSet();
@@ -58,7 +62,7 @@ public class DataStorageService implements IDataStorageService {
                                                                      activeDataStorageMeta.getDescription(),
                                                                      activeDataStorageConf.getLabel());
             //now lets get the data storage monitoring information from the plugin
-            monitoringInfo.getStorageInfos()
+            monitoringInfo.getStorageInfo()
                     .addAll(((IDataStorage) pluginService.getPlugin(activeDataStorageConf.getId()))
                                     .getMonitoringInfos());
 
@@ -72,6 +76,7 @@ public class DataStorageService implements IDataStorageService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
             List<PluginConfiguration> dataStorageConfigurations = pluginService
                     .getPluginConfigurationsByType(IDataStorage.class);
             //lets take only the activated ones
@@ -80,9 +85,8 @@ public class DataStorageService implements IDataStorageService {
             // lets instantiate those data storage and check if their occupation is above their configured threshold
             for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
                 //lets initialize the monitoring information for this data storage configuration by getting plugin informations
-                IDataStorage activeDataStorage = null;
                 try {
-                    activeDataStorage = pluginService.getPlugin(activeDataStorageConf.getId());
+                    IDataStorage<?> activeDataStorage = pluginService.getPlugin(activeDataStorageConf.getId());
 
                     Set<DataStorageInfo> dataStorageInfos = activeDataStorage.getMonitoringInfos();
                     for (DataStorageInfo dataStorageInfo : dataStorageInfos) {
@@ -106,6 +110,7 @@ public class DataStorageService implements IDataStorageService {
                     //TODO notify. maintenance mode or desactivate the plugin??
                 }
             }
+            runtimeTenantResolver.clearTenant();
         }
     }
 

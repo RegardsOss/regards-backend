@@ -83,7 +83,9 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     public static final String STAF_WORKSPACE_PATH = "workspaceDirectory";
 
-    private static final String STAF_STORAGE_DELETE_OPTION = "stafDeleteOption";
+    public static final String STAF_STORAGE_DELETE_OPTION = "stafDeleteOption";
+
+    public static final String STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD = "stafOccupiedSpaceThreshold";
 
     /**
      * STAF connections manager
@@ -99,6 +101,9 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     @PluginParameter(name = STAF_STORAGE_DELETE_OPTION, defaultValue = "true")
     private Boolean canDelete;
+
+    @PluginParameter(name = STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD)
+    private Integer occupiedSpaceThreshold;
 
     /**
      * STAF Controller to handle file preparation
@@ -121,6 +126,11 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             stafController.initializeWorkspaceDirectories();
         } catch (IOException e) {
             LOG.error("[STAFDataStorage Plugin] Error during plugin initialization", e);
+        }
+        // Lets check that occupiedSpaceThreshold is between 0 and 100
+        if (occupiedSpaceThreshold < 0 || occupiedSpaceThreshold > 100) {
+            throw new IllegalArgumentException(String.format("Parameter %s should be an integer between 0 and 100",
+                                                             STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD));
         }
     }
 
@@ -210,6 +220,11 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public Set<DataStorageInfo> getMonitoringInfos() {
         // TODO
         return Sets.newHashSet();
+    }
+
+    @Override
+    public Integer getOccupationThreshold() {
+        return occupiedSpaceThreshold;
     }
 
     @Override

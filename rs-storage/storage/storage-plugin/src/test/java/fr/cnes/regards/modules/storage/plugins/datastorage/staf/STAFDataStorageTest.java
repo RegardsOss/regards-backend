@@ -179,7 +179,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
@@ -240,7 +241,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
@@ -286,7 +288,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         String fileName = "file.txt";
@@ -366,7 +369,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         String fileName = "file.txt";
@@ -448,7 +452,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         // Add error in the file name simulate a restoration error in the restorationMock from
@@ -529,7 +534,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         String fileName = "file.txt";

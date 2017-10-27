@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.storage.service.parameter.IStorageParameterServic
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestController
-@RequestMapping(StorageParameterController.ROOT_PATH)
+@RequestMapping(value = StorageParameterController.ROOT_PATH)
 public class StorageParameterController implements IResourceController<StorageParameter> {
 
     public static final String ROOT_PATH = "/storage/parameters";
@@ -90,7 +90,7 @@ public class StorageParameterController implements IResourceController<StoragePa
         resourceService.addLink(resource, this.getClass(), "updateById", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, pElement.getId()),
                                 MethodParamFactory.build(StorageParameter.class));
-        resourceService.addLink(resource, this.getClass(), "store", LinkRels.CREATE,
+        resourceService.addLink(resource, this.getClass(), "create", LinkRels.CREATE,
                                 MethodParamFactory.build(StorageParameter.class));
         return resource;
     }

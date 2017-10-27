@@ -11,45 +11,45 @@ import org.assertj.core.util.Sets;
  */
 public class PluginStorageInfo {
 
-    private Long pluginConfId;
+    private Long confId;
 
-    private String pluginDesc;
+    private String description;
 
-    private String pluginConfLabel;
+    private String label;
 
-    private final Set<DataStorageInfo> storageInfos = Sets.newHashSet();
+    private final Set<DataStorageInfo> storageInfo = Sets.newHashSet();
 
-    public PluginStorageInfo(Long pluginConfId, String pluginDesc, String pluginConfLabel) {
-        this.pluginConfId = pluginConfId;
-        this.pluginDesc = pluginDesc;
-        this.pluginConfLabel = pluginConfLabel;
+    public PluginStorageInfo(Long confId, String description, String label) {
+        this.confId = confId;
+        this.description = description;
+        this.label = label;
     }
 
-    public Long getPluginConfId() {
-        return pluginConfId;
+    public Long getConfId() {
+        return confId;
     }
 
-    public void setPluginConfId(Long pluginConfId) {
-        this.pluginConfId = pluginConfId;
+    public void setConfId(Long confId) {
+        this.confId = confId;
     }
 
-    public String getPluginDesc() {
-        return pluginDesc;
+    public String getDescription() {
+        return description;
     }
 
-    public void setPluginDesc(String pluginDesc) {
-        this.pluginDesc = pluginDesc;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getPluginConfLabel() {
-        return pluginConfLabel;
+    public String getLabel() {
+        return label;
     }
 
-    public void setPluginConfLabel(String pluginConfLabel) {
-        this.pluginConfLabel = pluginConfLabel;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
-    public Set<DataStorageInfo> getStorageInfos() {
-        return storageInfos;
+    public Set<DataStorageInfo> getStorageInfo() {
+        return storageInfo;
     }
 }

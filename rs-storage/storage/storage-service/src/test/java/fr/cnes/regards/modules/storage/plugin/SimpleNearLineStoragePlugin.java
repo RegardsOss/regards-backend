@@ -60,6 +60,11 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     }
 
     @Override
+    public Integer getOccupationThreshold() {
+        return 90;
+    }
+
+    @Override
     public void retrieve(LocalWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
         for (DataFile file : pWorkingSubset.getDataFiles()) {
             LOG.info("FILE REstored id : {} cs : {}", file.getId(), file.getChecksum());
