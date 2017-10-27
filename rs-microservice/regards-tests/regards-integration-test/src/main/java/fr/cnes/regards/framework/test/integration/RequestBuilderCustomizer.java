@@ -54,6 +54,8 @@ public class RequestBuilderCustomizer {
 
     private final List<ResultMatcher> expectations = Lists.newArrayList();
 
+    private boolean skipDocumentation = false;
+
     private GsonBuilder gsonBuilder;
 
     {
@@ -64,6 +66,11 @@ public class RequestBuilderCustomizer {
 
     public RequestBuilderCustomizer(GsonBuilder gsonBuilder) {
         this.gsonBuilder = gsonBuilder;
+    }
+
+    public RequestBuilderCustomizer skipDocumentation() {
+        skipDocumentation = true;
+        return this;
     }
 
     /**
@@ -106,11 +113,9 @@ public class RequestBuilderCustomizer {
                               errorMsg);
     }
 
-    protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, List<MockMultipartFile> files,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getMultipartRequestBuilder(authToken, files, urlTemplate, urlVariables),
-                              errorMsg);
+    protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken,
+            List<MockMultipartFile> files, String errorMsg, Object... urlVariables) {
+        return performRequest(mvc, getMultipartRequestBuilder(authToken, files, urlTemplate, urlVariables), errorMsg);
     }
 
     protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, Path filePath,
@@ -192,16 +197,18 @@ public class RequestBuilderCustomizer {
             for (ResultMatcher matcher : expectations) {
                 request = request.andExpect(matcher);
             }
-            request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
-                                                            preprocessRequest(prettyPrint(),
-                                                                              removeHeaders("Authorization",
-                                                                                            "Host",
-                                                                                            "Content-Length")),
-                                                            preprocessResponse(prettyPrint(),
-                                                                               removeHeaders("Content-Length")),
-                                                            documentationSnippets
-                                                                    .toArray(new Snippet[documentationSnippets
-                                                                            .size()])));
+            if (!skipDocumentation) {
+                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
+                                                                preprocessRequest(prettyPrint(),
+                                                                                  removeHeaders("Authorization",
+                                                                                                "Host",
+                                                                                                "Content-Length")),
+                                                                preprocessResponse(prettyPrint(),
+                                                                                   removeHeaders("Content-Length")),
+                                                                documentationSnippets
+                                                                        .toArray(new Snippet[documentationSnippets
+                                                                                .size()])));
+            }
             return request;
             // CHECKSTYLE:OFF
         } catch (Exception e) {
@@ -278,7 +285,7 @@ public class RequestBuilderCustomizer {
             case DELETE:
             case PUT:
             case POST:
-                if(!requestParamBuilder.getParameters().isEmpty()) {
+                if (!requestParamBuilder.getParameters().isEmpty()) {
                     throw new IllegalStateException(String.format("Method %s cannot have request parameters"));
                 }
                 break;
