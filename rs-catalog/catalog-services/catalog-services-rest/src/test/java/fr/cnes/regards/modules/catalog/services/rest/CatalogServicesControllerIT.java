@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -29,18 +29,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -51,6 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -74,8 +71,6 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     private static final String DATA_SET_NAME = "test";
 
-    private ArrayList<ResultMatcher> expectations;
-
     @Autowired
     private IPluginService pluginService;
 
@@ -93,7 +88,6 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Before
     public void init() throws ModuleException {
-        expectations = new ArrayList<>();
         final PluginParameter parameter = new PluginParameter("para", "never used");
         parameter.setIsDynamic(true);
         final PluginMetaData metaData = new PluginMetaData();
@@ -110,12 +104,13 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameterDynamic(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
-                                     SampleServicePlugin.RESPONSE_TYPE_JSON)
-                .getParameters();
-        samplePlgConf = new PluginConfiguration(
-                PluginUtils.createPluginMetaData(SampleServicePlugin.class,
-                                                 Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
-                "SampleServicePlugin", parameters);
+                                     SampleServicePlugin.RESPONSE_TYPE_JSON).getParameters();
+        samplePlgConf = new PluginConfiguration(PluginUtils.createPluginMetaData(SampleServicePlugin.class,
+                                                                                 Arrays.asList(SampleServicePlugin.class
+                                                                                                       .getPackage()
+                                                                                                       .getName())),
+                                                "SampleServicePlugin",
+                                                parameters);
         pluginService.savePluginConfiguration(samplePlgConf);
 
         linkService.updateLink(DATA_SET_NAME,
@@ -124,65 +119,87 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void testRetrieveServicesQuery() {
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.MANY.toString());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
+        performDefaultGet(CatalogServicesController.PATH_SERVICES,
+                          requestBuilderCustomizer,
+                          "there should not be any error",
                           builder);
     }
 
     @Test
     public void testRetrieveServicesOne() {
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations, "there should not be any error",
+        performDefaultGet(CatalogServicesController.PATH_SERVICES,
+                          requestBuilderCustomizer,
+                          "there should not be any error",
                           builder);
     }
 
     @Test
     public void retrieveServices_shouldHaveMeta() {
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId", Matchers.is("tata")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes",
-                                                        Matchers.containsInAnyOrder("MANY", "ONE")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes",
-                                                        Matchers.contains("DATA")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
-                                                        Matchers.is("aSampleServicePlugin")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
-                                                        Matchers.containsInAnyOrder("MANY", "ONE")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
-                                                        Matchers.contains(EntityType.DATA.toString())));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
+                                                                               Matchers.is("tata")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes",
+                                                                  Matchers.containsInAnyOrder("MANY", "ONE")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes",
+                                                                  Matchers.contains("DATA")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
+                                                                               Matchers.is("aSampleServicePlugin")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
+                                                                  Matchers.containsInAnyOrder("MANY", "ONE")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
+                                                                  Matchers.contains(EntityType.DATA.toString())));
         RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES, expectations,
-                          "There should be plugin configurations augmented with meta data", builder);
+        performDefaultGet(CatalogServicesController.PATH_SERVICES,
+                          requestBuilderCustomizer,
+                          "There should be plugin configurations augmented with meta data",
+                          builder);
     }
 
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_030")
     @Requirement("REGARDS_DSL_DAM_ARC_010")
-    @Purpose("System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
+    @Purpose(
+            "System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
     public void testApplyService() {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", TestService.EXPECTED_VALUE);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
-                dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         dynamicParameters);
 
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, expectations, "there should not be any error", conf.getId());
+                           parameters,
+                           requestBuilderCustomizer,
+                           "there should not be any error",
+                           conf.getId());
     }
 
     @Test
@@ -192,14 +209,21 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", "HelloWorld");
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$").isEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isEmpty());
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
-                dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         dynamicParameters);
 
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, expectations, "there should not be any error", conf.getId());
+                           parameters,
+                           requestBuilderCustomizer,
+                           "there should not be any error",
+                           conf.getId());
     }
 
     @Test
@@ -208,14 +232,22 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
-                dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         dynamicParameters);
 
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.value").value("ENTITY_ID"));
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.value").value("ENTITY_ID"));
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
+                           parameters,
+                           requestBuilderCustomizer,
+                           "there should not be any error",
+                           samplePlgConf.getId());
     }
 
     @Test
@@ -224,13 +256,20 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_XML);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
-                dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         dynamicParameters);
 
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
+                           parameters,
+                           requestBuilderCustomizer,
+                           "there should not be any error",
+                           samplePlgConf.getId());
     }
 
     @Test
@@ -239,13 +278,20 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_IMG);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
-                dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         dynamicParameters);
 
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
+                           parameters,
+                           requestBuilderCustomizer,
+                           "there should not be any error",
+                           samplePlgConf.getId());
     }
 
     @Test
@@ -254,31 +300,30 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_OTHER);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
-                dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         dynamicParameters);
 
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, expectations, "there should not be any error", samplePlgConf.getId());
+                           parameters,
+                           requestBuilderCustomizer,
+                           "there should not be any error",
+                           samplePlgConf.getId());
     }
 
-    /**
-     * If you find why it works...
-    */
-    @Override
-    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final Object... pUrlVars) {
+    protected Map<String, List<String>> getHeadersToApply() {
+        Map<String, List<String>> headers = Maps.newHashMap();
+        headers.put(HttpConstants.CONTENT_TYPE, Lists.newArrayList("application/json"));
+        headers.put(HttpConstants.ACCEPT,
+                    Lists.newArrayList(MediaType.APPLICATION_JSON_UTF8_VALUE, MediaType.TEXT_PLAIN_VALUE));
 
-        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
-                                                                                            pUrlVars);
-        addSecurityHeader(requestBuilder, pAuthToken);
-
-        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        requestBuilder.header(HttpConstants.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-        requestBuilder.header(HttpConstants.ACCEPT, MediaType.TEXT_PLAIN_VALUE);
-
-        return requestBuilder;
+        return headers;
     }
 
 }

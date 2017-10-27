@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest.representation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,18 +31,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -69,6 +67,31 @@ import fr.cnes.regards.modules.search.rest.assembler.link.DatasetLinkAdder;
 @TestPropertySource(locations = { "classpath:dao.properties", "classpath:test-representation.properties" })
 @MultitenantTransactional
 public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
+
+    /**
+     * A dummy collection
+     */
+    public static final Collection COLLECTION = new Collection(null, DEFAULT_TENANT, "mycollection");
+
+    /**
+     * A dummy dataobject
+     */
+    public static final DataObject DATAOBJECT = new DataObject(null, DEFAULT_TENANT, "mydataobject");
+
+    /**
+     * A dummy dataset
+     */
+    public static final Dataset DATASET = new Dataset(null, DEFAULT_TENANT, "mydataset");
+
+    /**
+     * An other dummy dataset
+     */
+    public static final Dataset DATASET_1 = new Dataset(null, DEFAULT_TENANT, "mydataset");
+
+    /**
+     * A dummy document
+     */
+    public static final Document DOCUMENT = new Document(null, DEFAULT_TENANT, "mydocument");
 
     /**
      * Class logger
@@ -104,31 +127,6 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IProjectUsersClient projectUserClient;
-
-    /**
-     * A dummy collection
-     */
-    public static final Collection COLLECTION = new Collection(null, DEFAULT_TENANT, "mycollection");
-
-    /**
-     * A dummy dataobject
-     */
-    public static final DataObject DATAOBJECT = new DataObject(null, DEFAULT_TENANT, "mydataobject");
-
-    /**
-     * A dummy dataset
-     */
-    public static final Dataset DATASET = new Dataset(null, DEFAULT_TENANT, "mydataset");
-
-    /**
-     * An other dummy dataset
-     */
-    public static final Dataset DATASET_1 = new Dataset(null, DEFAULT_TENANT, "mydataset");
-
-    /**
-     * A dummy document
-     */
-    public static final Document DOCUMENT = new Document(null, DEFAULT_TENANT, "mydocument");
 
     /**
      * @throws java.lang.Exception
@@ -183,11 +181,13 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de réaliser une recherche par critères sur l’ensemble du catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_510")
     public final void testSearchAll() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
-        performDefaultGet("/search", expectations, "Error searching all entities", builder);
+        performDefaultGet("/search", requestBuilderCustomizer, "Error searching all entities", builder);
     }
 
     /**
@@ -197,34 +197,47 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de fournir des facettes pour toute recherche dans le catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_610")
     public final void testSearchAll_withFacets() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
-                                                        Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
-                                                        Matchers.hasItem(Matchers.hasEntry("type", "STRING"))));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                                               Matchers.hasItem(Matchers.hasEntry(
+                                                                                       "attributeName",
+                                                                                       "label"))));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                                               Matchers.hasItem(Matchers.hasEntry("type",
+                                                                                                                  "STRING"))));
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q)
                 .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
-        performDefaultGet("/searchwithfacets", expectations, "Error searching all entities", builder);
+        performDefaultGet("/searchwithfacets", requestBuilderCustomizer, "Error searching all entities", builder);
     }
 
     /**
      * Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.
      */
     @Test
-    @Purpose("Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.")
+    @Purpose(
+            "Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.")
     @Requirement("REGARDS_DSL_DAM_COL_310")
     public final void testGetCollection() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mycollection")));
-        performDefaultGet("/collections/{urn}", expectations, "Error retrieving a collection", COLLECTION.getIpId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label",
+                                                                               Matchers.is("mycollection")));
+        performDefaultGet("/collections/{urn}",
+                          requestBuilderCustomizer,
+                          "Error retrieving a collection",
+                          COLLECTION.getIpId());
     }
 
     /**
@@ -232,20 +245,25 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      * éléments du modèle de données.
      */
     @Test
-    @Purpose("Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
+    @Purpose(
+            "Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_COL_410")
     public final void testSearchCollections_shouldFindOneWithoutFacets() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
-                                                        Matchers.is("mycollection")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].content.label", Matchers.is("mycollection")));
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_COLLECTION);
-        performDefaultGet("/collections/search", expectations, "Error searching collections", builder);
+        performDefaultGet("/collections/search", requestBuilderCustomizer, "Error searching collections", builder);
     }
 
     /**
@@ -253,13 +271,17 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testGetDataset() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydataset")));
-        performDefaultGet("/datasets/{urn}", expectations, "Error retrieving a dataset", DATASET.getIpId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label",
+                                                                               Matchers.is("mydataset")));
+        performDefaultGet("/datasets/{urn}", requestBuilderCustomizer, "Error retrieving a dataset", DATASET.getIpId());
     }
 
     /**
@@ -268,19 +290,23 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDatasets_shouldFindTwoWithoutFacets() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
-                                                        Matchers.is("mydataset")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[1].content.label",
-                                                        Matchers.is("mydataset")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].content.label", Matchers.is("mydataset")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[1].content.label", Matchers.is("mydataset")));
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
-        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
+        performDefaultGet("/datasets/search", requestBuilderCustomizer, "Error searching datasets", builder);
     }
 
     /**
@@ -290,14 +316,20 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de consulter les métadonnées d’un objet de données du catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_470")
     public final void testGetDataobject() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydataobject")));
-        performDefaultGet("/dataobjects/{urn}", expectations, "Error retrieving a dataobject", DATAOBJECT.getIpId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label",
+                                                                               Matchers.is("mydataobject")));
+        performDefaultGet("/dataobjects/{urn}",
+                          requestBuilderCustomizer,
+                          "Error retrieving a dataobject",
+                          DATAOBJECT.getIpId());
     }
 
     /**
@@ -306,22 +338,29 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjects_shouldFindOneWithFacets() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
-                                                        Matchers.is("mydataobject")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
-                                                        Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
-                                                        Matchers.hasItem(Matchers.hasEntry("type", "STRING"))));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].content.label", Matchers.is("mydataobject")));
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                                               Matchers.hasItem(Matchers.hasEntry(
+                                                                                       "attributeName",
+                                                                                       "label"))));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                                               Matchers.hasItem(Matchers.hasEntry("type",
+                                                                                                                  "STRING"))));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT)
                 .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
-        performDefaultGet("/dataobjects/search", expectations, "Error searching dataobjects", builder);
+        performDefaultGet("/dataobjects/search", requestBuilderCustomizer, "Error searching dataobjects", builder);
     }
 
     /**
@@ -330,11 +369,15 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
         RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
-        performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
+        performDefaultGet("/dataobjects/datasets/search",
+                          requestBuilderCustomizer,
+                          "Error searching datasets via dataobjects",
                           builder);
     }
 
@@ -345,13 +388,20 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de manière synchrone d’accéder aux informations d’un document via son IP_ID.")
     @Requirement("REGARDS_DSL_DAM_DOC_310")
     public final void testGetDocument() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydocument")));
-        performDefaultGet("/documents/{urn}", expectations, "Error retrieving a document", DOCUMENT.getIpId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label",
+                                                                               Matchers.is("mydocument")));
+        performDefaultGet("/documents/{urn}",
+                          requestBuilderCustomizer,
+                          "Error retrieving a document",
+                          DOCUMENT.getIpId());
     }
 
     /**
@@ -359,19 +409,23 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      * éléments du modèle de données.
      */
     @Test
-    @Purpose("Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
+    @Purpose(
+            "Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
     public final void testSearchDocuments() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
-                                                        Matchers.is("mydocument")));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].content.label", Matchers.is("mydocument")));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DOCUMENT);
-        performDefaultGet("/documents/search", expectations, "Error searching documents", builder);
+        performDefaultGet("/documents/search", requestBuilderCustomizer, "Error searching documents", builder);
     }
 
     /**
@@ -381,18 +435,21 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system can return a sorted page of results.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
     public final void testSearch_withSort() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].content.label",
-                                                        Matchers.is("mydataset")));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].content.label", Matchers.is("mydataset")));
 
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS)
                 .param("sort", CatalogControllerTestUtils.SORT);
-        performDefaultGet("/datasets/search", expectations, "Error searching documents", builder);
+        performDefaultGet("/datasets/search", requestBuilderCustomizer, "Error searching documents", builder);
     }
 
     /**
@@ -405,19 +462,22 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         // Prepare authorization
         setAuthorities("/datasets/{urn}", RequestMethod.GET, DEFAULT_ROLE);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
-                                                        Matchers.is("self")));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
-                                                    Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].links.[0].rel", Matchers.is("self")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
+                Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
-        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
+        performDefaultGet("/datasets/search", requestBuilderCustomizer, "Error searching datasets", builder);
     }
 
     /**
@@ -425,27 +485,31 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      * query.
      */
     @Test
-    @Purpose("Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
+    @Purpose(
+            "Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     public final void testSearchDatasets_shouldHaveLinkNavigatingToDataobjects() {
         // Prepare authorization
         setAuthorities("/dataobjects/search", RequestMethod.GET, DEFAULT_ROLE);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
-                          Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS)).or(Matchers.is("self"))));
-        expectations.add(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
-                          Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
-                                  .or(Matchers.startsWith("http://localhost/datasets/"))));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(GeoJsonRepresentation.MEDIA_TYPE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.features",
+                                                                               Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].links.[0].rel",
+                Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS)).or(Matchers.is("self"))));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
+                Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
+                        .or(Matchers.startsWith("http://localhost/datasets/"))));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
-        performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
+        performDefaultGet("/datasets/search", requestBuilderCustomizer, "Error searching datasets", builder);
     }
 
     /*
@@ -457,18 +521,12 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         return LOG;
     }
 
-    @Override
-    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final Object... pUrlVars) {
+    protected Map<String, List<String>> getHeadersToApply() {
+        Map<String, List<String>> headers = Maps.newHashMap();
+        headers.put(HttpConstants.CONTENT_TYPE, Lists.newArrayList("application/json"));
+        headers.put(HttpConstants.ACCEPT, Lists.newArrayList("application/geo+json"));
 
-        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
-                                                                                            pUrlVars);
-        addSecurityHeader(requestBuilder, pAuthToken);
-
-        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        requestBuilder.header(HttpConstants.ACCEPT, "application/geo+json");
-
-        return requestBuilder;
+        return headers;
     }
 
 }

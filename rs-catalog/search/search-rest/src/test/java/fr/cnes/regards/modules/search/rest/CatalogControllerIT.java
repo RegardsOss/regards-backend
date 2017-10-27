@@ -37,11 +37,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -74,36 +74,6 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(CatalogControllerIT.class);
-
-    /**
-     * The mock attribute model client
-     */
-    @Autowired
-    private IAttributeModelClient attributeModelClient;
-
-    /**
-     * The mock user client providing access groups
-     */
-    @Autowired
-    private IUserClient userClient;
-
-    @Autowired
-    private IProjectUsersClient projectUserClient;
-
-    /**
-     * ElasticSearch repository
-     */
-    @Autowired
-    private IEsRepository esRepository;
-
-    /**
-     * Get current tenant at runtime and allows tenant forcing
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private MultitenantFlattenedAttributeAdapterFactory factory;
 
     /**
      * A dummy collection
@@ -140,6 +110,36 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     private static final String ADMIN_USER_EMAIL = "admin.user@regards.fr";
 
     /**
+     * The mock attribute model client
+     */
+    @Autowired
+    private IAttributeModelClient attributeModelClient;
+
+    /**
+     * The mock user client providing access groups
+     */
+    @Autowired
+    private IUserClient userClient;
+
+    @Autowired
+    private IProjectUsersClient projectUserClient;
+
+    /**
+     * ElasticSearch repository
+     */
+    @Autowired
+    private IEsRepository esRepository;
+
+    /**
+     * Get current tenant at runtime and allows tenant forcing
+     */
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private MultitenantFlattenedAttributeAdapterFactory factory;
+
+    /**
      * @throws java.lang.Exception
      */
     @Before
@@ -151,7 +151,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         // Order is important : wider first, then specific cases
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(CatalogControllerTestUtils.USER_CLIENT_RESPONSE);
-        Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.eq(OTHER_USER_EMAIL), Mockito.anyInt(),
+        Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.eq(OTHER_USER_EMAIL),
+                                                           Mockito.anyInt(),
                                                            Mockito.anyInt()))
                 .thenReturn(CatalogControllerTestUtils.USER_CLIENT_OTHER_RESPONSE);
 
@@ -232,7 +233,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.
      */
     @Test
-    @Purpose("Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.")
+    @Purpose(
+            "Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.")
     @Requirement("REGARDS_DSL_DAM_COL_310")
     public final void testGetCollection() {
         final List<ResultMatcher> expectations = new ArrayList<>();
@@ -249,7 +251,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * éléments du modèle de données.
      */
     @Test
-    @Purpose("Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
+    @Purpose(
+            "Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_COL_410")
     @Requirement("REGARDS_DSL_DAM_ARC_810")
     @Requirement("REGARDS_DSL_DAM_ARC_820")
@@ -258,8 +261,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mycollection")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mycollection")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_COLLECTION);
@@ -274,47 +277,54 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public final void testSearchCollectionsByTwoUsersWithDifferentsGroups() {
         // Default user should retrieve only collection with accessGroup0 and accessGroup1
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mycollection")));
-        expectations.add(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content.[0].content.groups.[0]",
-                          Matchers.either(Matchers.is(CatalogControllerTestUtils.ACCESS_GROUP_NAME_0))
-                                  .or(Matchers.is(CatalogControllerTestUtils.ACCESS_GROUP_NAME_1))));
-        final RequestParamBuilder builder = RequestParamBuilder.build()
-                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_COLLECTION);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+                                                                  Matchers.is("mycollection")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + ".content.[0].content.groups.[0]",
+                                                                  Matchers.either(Matchers.is(CatalogControllerTestUtils.ACCESS_GROUP_NAME_0))
+                                                                          .or(Matchers.is(CatalogControllerTestUtils.ACCESS_GROUP_NAME_1))));
+        requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q_FINDS_ONE_COLLECTION);
         // Search collection with default user
-        performDefaultGet("/collections/search", expectations, "Error searching collections", builder);
+        performDefaultGet("/collections/search", requestBuilderCustomizer, "Error searching collections");
 
         // Other user should retrieve only collection with accessGroup2
-        final List<ResultMatcher> expectations2 = new ArrayList<>();
-        expectations2.add(MockMvcResultMatchers.status().isOk());
-        expectations2.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations2.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations2.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                         Matchers.is("mycollection")));
-        expectations2.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.groups.[0]",
-                                                         Matchers.is(CatalogControllerTestUtils.ACCESS_GROUP_NAME_2)));
-
+        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
+                                                                  Matchers.is("mycollection")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                                                        .jsonPath(JSON_PATH_ROOT + ".content.[0].content.groups.[0]",
+                                                                  Matchers.is(CatalogControllerTestUtils.ACCESS_GROUP_NAME_2)));
+        requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q_FINDS_ONE_COLLECTION);
         // Search collection with second user
         performGet("/collections/search",
-                   manageDefaultSecurity(OTHER_USER_EMAIL, "/collections/search", RequestMethod.GET), expectations2,
-                   "Error searching collections", builder);
+                   manageDefaultSecurity(OTHER_USER_EMAIL, "/collections/search", RequestMethod.GET),
+                   requestBuilderCustomizer,
+                   "Error searching collections");
 
         // Admin user whould retrieve the two previous collections (the one with 2 groups and the one with only one)
-        final List<ResultMatcher> expectations3 = new ArrayList<>();
-        expectations3.add(MockMvcResultMatchers.status().isOk());
-        expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations3.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.length()", Matchers.is(2)));
+        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.length()", Matchers.is(2)));
+        requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q_FINDS_ONE_COLLECTION);
 
         // Search collection with admin user
         performGet("/collections/search",
-                   manageDefaultSecurity(ADMIN_USER_EMAIL, "/collections/search", RequestMethod.GET), expectations3,
-                   "Error searching collections", builder);
+                   manageDefaultSecurity(ADMIN_USER_EMAIL, "/collections/search", RequestMethod.GET),
+                   requestBuilderCustomizer,
+                   "Error searching collections");
     }
 
     /**
@@ -340,7 +350,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mydataset")));
-        performDefaultGet(CatalogController.ENTITY_GET_MAPPING, expectations, "Error retrieving a dataset",
+        performDefaultGet(CatalogController.ENTITY_GET_MAPPING,
+                          expectations,
+                          "Error retrieving a dataset",
                           DATASET.getIpId());
     }
 
@@ -357,10 +369,10 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mydataset")));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[1].content.label",
-                                                        Matchers.is("mydataset")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mydataset")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[1].content.label", Matchers.is("mydataset")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets").doesNotExist());
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
@@ -395,13 +407,15 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mydataobject")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mydataobject")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                         Matchers.hasItem(Matchers.hasEntry("attributeName", "label"))));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.hasItem(Matchers
-                .hasEntry("attributeName", "properties." + CatalogControllerTestUtils.EXTRA_ATTRIBUTE_NAME))));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
+                                                        Matchers.hasItem(Matchers.hasEntry("attributeName",
+                                                                                           "properties."
+                                                                                                   + CatalogControllerTestUtils.EXTRA_ATTRIBUTE_NAME))));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                         Matchers.hasItem(Matchers.hasEntry("type", "STRING"))));
         final RequestParamBuilder builder = RequestParamBuilder.build()
@@ -422,8 +436,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mydataobject")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mydataobject")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.empty()));
         final RequestParamBuilder builder = RequestParamBuilder.build()
@@ -443,8 +457,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mydataobject")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mydataobject")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.notNullValue()));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets", Matchers.empty()));
         final RequestParamBuilder builder = RequestParamBuilder.build();
@@ -457,14 +471,18 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        final RequestParamBuilder builder = RequestParamBuilder.build()
-                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT);
-        String projectAdminJwt = manageSecurity(CatalogController.DATAOBJECTS_DATASETS_SEARCH, RequestMethod.GET,
-                                                DEFAULT_USER_EMAIL, DefaultRole.PROJECT_ADMIN.name());
-        performGet(CatalogController.DATAOBJECTS_DATASETS_SEARCH, projectAdminJwt, expectations,
-                   "Error searching datasets via dataobjects", builder);
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT);
+        String projectAdminJwt = manageSecurity(CatalogController.DATAOBJECTS_DATASETS_SEARCH,
+                                                RequestMethod.GET,
+                                                DEFAULT_USER_EMAIL,
+                                                DefaultRole.PROJECT_ADMIN.name());
+
+        performGet(CatalogController.DATAOBJECTS_DATASETS_SEARCH,
+                   projectAdminJwt,
+                   requestBuilderCustomizer,
+                   "Error searching datasets via dataobjects");
     }
 
     @Test
@@ -472,7 +490,9 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         final RequestParamBuilder builder = RequestParamBuilder.build();
-        performDefaultGet("/dataobjects/datasets/search", expectations, "Error searching datasets via dataobjects",
+        performDefaultGet("/dataobjects/datasets/search",
+                          expectations,
+                          "Error searching datasets via dataobjects",
                           builder);
     }
 
@@ -496,7 +516,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * éléments du modèle de données.
      */
     @Test
-    @Purpose("Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
+    @Purpose(
+            "Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
     @Requirement("REGARDS_DSL_DAM_ARC_810")
     @Requirement("REGARDS_DSL_DAM_ARC_820")
@@ -505,8 +526,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mydocument")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mydocument")));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DOCUMENT);
         performDefaultGet("/documents/search", expectations, "Error searching documents", builder);
@@ -525,8 +546,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].content.label",
-                                                        Matchers.is("mydataset")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].content.label", Matchers.is("mydataset")));
 
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS)
@@ -550,11 +571,10 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
-                                                        Matchers.is("self")));
-        expectations
-                .add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
-                                                    Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
+        expectations.add(MockMvcResultMatchers
+                                 .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel", Matchers.is("self")));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+                                                        Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
@@ -565,7 +585,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      * query.
      */
     @Test
-    @Purpose("Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
+    @Purpose(
+            "Check that the system adds a hateoas link on datasets pointing their dataobjects via a search with the pre-filled query.")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Requirement("REGARDS_DSL_DAM_ARC_810")
     @Requirement("REGARDS_DSL_DAM_ARC_820")
@@ -577,13 +598,13 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        expectations.add(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
-                          Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS)).or(Matchers.is("self"))));
-        expectations.add(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
-                          Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
-                                  .or(Matchers.startsWith("http://localhost/datasets/"))));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel",
+                                                        Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS))
+                                                                .or(Matchers.is("self"))));
+        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
+                                                        Matchers.either(Matchers.startsWith(
+                                                                "http://localhost/dataobjects/search?q"))
+                                                                .or(Matchers.startsWith("http://localhost/datasets/"))));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet(CatalogController.DATASETS_SEARCH, expectations, "Error searching datasets", builder);
