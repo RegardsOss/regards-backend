@@ -1,0 +1,39 @@
+* **URL**:
+
+  {{path}}
+
+* **Method:**
+
+  {{method}}
+
+* **Headers**
+
+  {{#headers}}
+  {{name}}: {{value}}\
+  {{/headers}}
+
+* **URL Params**
+
+  {{^urlParams}}
+  None.
+  {{/urlParams}}
+  {{#urlParams}}
+  {{name}}: {{type}}
+  {{/urlParams}}
+
+* **Query Params**
+
+  {{^queryParams}}
+  None.
+  {{/queryParams}}
+  {{#queryParams}}
+  {{key}}: {{value}}
+  {{/queryParams}}
+
+* **Data Params**
+
+  **Required:**
+
+```json
+  {{requestBody}}
+```

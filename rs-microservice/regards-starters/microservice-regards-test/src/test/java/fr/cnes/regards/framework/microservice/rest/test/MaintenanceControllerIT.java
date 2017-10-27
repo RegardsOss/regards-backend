@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -205,7 +206,8 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         String token = jwtService.generateToken(TENANT, DEFAULT_USER_EMAIL, DEFAULT_ROLE);
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isCreated());
-        performPost(TestController.MAINTENANCE_TEST_URL, token, null, expectations, ERROR_MSG);
+        performPostWithContentType(TestController.MAINTENANCE_TEST_URL, token, null,
+                                   MediaType.APPLICATION_JSON_VALUE, expectations, ERROR_MSG);
 
         resetMaintenanceMode();
     }
