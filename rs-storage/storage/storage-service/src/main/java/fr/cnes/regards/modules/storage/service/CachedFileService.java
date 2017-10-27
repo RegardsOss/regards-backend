@@ -25,6 +25,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -146,6 +148,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Autowired
     private IInstanceSubscriber instanceSubscriber;
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -237,6 +240,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * Periodicly check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every 5minutes.
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Scheduled(fixedRateString = "${regards.cache.cleanup.rate.ms:300000}")
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -253,6 +257,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * Periodicly tries to restore all {@link CachedFile}s in {@link CachedFileState#QUEUED} status.
      * Default : scheduled to be run every 2minutes.
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Scheduled(fixedRateString = "${regards.cache.restore.queued.rate.ms:120000}")
     public void hanleQueuedFiles() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

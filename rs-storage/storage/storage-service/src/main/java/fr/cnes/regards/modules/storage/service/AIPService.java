@@ -46,7 +46,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -123,7 +123,7 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
  * @author Sébastien Binda
  */
 @Service
-@RegardsTransactional
+@MultitenantTransactional
 public class AIPService implements IAIPService, ApplicationListener<ApplicationReadyEvent> {
 
     /**
