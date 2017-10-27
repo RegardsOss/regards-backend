@@ -213,9 +213,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public List<ProjectConnection> retrieveProjectConnection(final String pMicroService)
-            throws EntityNotFoundException {
-        return projectConnectionRepository.findByMicroservice(pMicroService);
+    public List<ProjectConnection> retrieveProjectConnection(final String microservice) throws EntityNotFoundException {
+        return projectConnectionRepository.getMicroserviceConnections(microservice);
     }
 
     /*

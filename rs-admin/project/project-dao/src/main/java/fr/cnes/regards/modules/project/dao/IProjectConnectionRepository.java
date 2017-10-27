@@ -43,12 +43,12 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
 
     /**
      * Retrieve all tenant connections for a specified microservice
-     * 
+     *
      * @param microservice
      *            microservice name
      * @return all tenant connections
      */
-    List<ProjectConnection> findByMicroservice(String microservice);
+    List<ProjectConnection> findByMicroserviceAndProjectIsDeletedFalse(String microservice);
 
     ProjectConnection findOneByProjectNameAndMicroservice(final String pProjectName, final String pMicroService);
 
@@ -61,4 +61,13 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
      * @return A {@link Page} of found {@link ProjectConnection}s
      */
     Page<ProjectConnection> findByProjectName(String pProjectName, Pageable pPageable);
+
+    /**
+     * List all active connections for specified microservice. Connections from deleted projects are rejected.
+     * @param microservice microservice
+     * @return list of {@link ProjectConnection}
+     */
+    default List<ProjectConnection> getMicroserviceConnections(String microservice) {
+        return findByMicroserviceAndProjectIsDeletedFalse(microservice);
+    }
 }
