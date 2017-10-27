@@ -35,6 +35,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -131,7 +132,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-//         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        //         this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -141,28 +142,24 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets store a plugin configuration for IAllocationStrategy
-        pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
-        pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                         DefaultAllocationStrategyPlugin.class
-                                                                                 .getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils
+                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
         // third, lets store a plugin configuration of IDataStorage with the highest priority
-        PluginMetaData dataStoMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation)).getParameters();
+                              gson.toJson(baseStorageLocation))
+                .getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
-                                                                      0);
+                0);
         dataStorageConf.setIsActive(true);
         pluginService.savePluginConfiguration(dataStorageConf);
     }
@@ -201,8 +198,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets change the data location to be sure it fails
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
-                .setUrl(new URL("file", "", Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
-                        .getAbsolutePath()));
+                        .setUrl(new URL("file", "", Paths.get("src/test/resources/data_that_does_not_exists.txt")
+                                .toFile().getAbsolutePath()));
         Set<UUID> jobIds = aipService.store(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -323,11 +320,13 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         LOG.info("All waiting JOB succeeded");
 
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
-        for(DataFile df : aipFiles) {
-            if(df.getDataType() == DataType.AIP) {
-                Assert.assertFalse("AIP metadata should not be on disk anymore", Files.exists(Paths.get(df.getUrl().toURI())));
+        for (DataFile df : aipFiles) {
+            if (df.getDataType() == DataType.AIP) {
+                Assert.assertFalse("AIP metadata should not be on disk anymore",
+                                   Files.exists(Paths.get(df.getUrl().toURI())));
             } else {
-                Assert.assertFalse("AIP data should not be on disk anymore", Files.exists(Paths.get(df.getUrl().toURI())));
+                Assert.assertFalse("AIP data should not be on disk anymore",
+                                   Files.exists(Paths.get(df.getUrl().toURI())));
             }
         }
     }
@@ -339,14 +338,14 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
 
         return aipBuilder.build();
     }

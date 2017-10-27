@@ -115,8 +115,6 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         // first lets get some parameters for the job ...
         // ... dataStorage ...
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/StoreJobIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> pluginParameters = PluginParametersFactory.build()
