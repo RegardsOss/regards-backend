@@ -42,6 +42,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
@@ -144,6 +145,15 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
+    protected ResultActions performDefaultGet(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
+            String errorMsg, Object... urlVariables) {
+        return performGet(urlTemplate,
+                          manageDefaultSecurity(urlTemplate, RequestMethod.GET),
+                          requestBuilderCustomizer,
+                          errorMsg,
+                          urlVariables);
+    }
+
     protected ResultActions performGet(String urlTemplate, String authToken,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performGet(mvc, urlTemplate, authToken, errorMsg, urlVariables);
@@ -176,6 +186,16 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performPost(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
+    protected ResultActions performDefaultPost(String urlTemplate, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return performPost(urlTemplate,
+                           manageDefaultSecurity(urlTemplate, RequestMethod.POST),
+                           content,
+                           requestBuilderCustomizer,
+                           errorMsg,
+                           urlVariables);
+    }
+
     protected ResultActions performPost(String urlTemplate, String token, Object content,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performPost(mvc, urlTemplate, token, content, errorMsg, urlVariables);
@@ -187,6 +207,16 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performPut(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performDefaultPut(String urlTemplate, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return performPut(urlTemplate,
+                           manageDefaultSecurity(urlTemplate, RequestMethod.PUT),
+                           content,
+                           requestBuilderCustomizer,
+                           errorMsg,
+                           urlVariables);
     }
 
     protected ResultActions performPut(String urlTemplate, String token, Object content,
@@ -214,6 +244,15 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performDelete(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
+    protected ResultActions performDefaultDelete(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
+            String errorMsg, Object... urlVariables) {
+        return performDelete(urlTemplate,
+                          manageDefaultSecurity(urlTemplate, RequestMethod.DELETE),
+                          requestBuilderCustomizer,
+                          errorMsg,
+                          urlVariables);
+    }
+
     protected ResultActions performDelete(String urlTemplate, String authToken,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
@@ -227,6 +266,12 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
+    protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
     protected ResultActions performFileUpload(String urlTemplate, String jwt, Path pFilePath,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFilePath, errorMsg, urlVariables);
@@ -237,6 +282,12 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
         RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
+        return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
         return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
@@ -373,5 +424,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
             getLogger().error(message);
             throw new AssertionError(message);
         }
+    }
+
+    protected String gson(Object object) {
+        if (object instanceof String) {
+            return (String) object;
+        }
+        Gson gson = gsonBuilder.create();
+        return gson.toJson(object);
     }
 }
