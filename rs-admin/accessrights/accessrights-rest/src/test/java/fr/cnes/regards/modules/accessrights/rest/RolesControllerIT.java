@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -215,19 +216,19 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() throws JwtException {
         Assert.assertEquals(roleRepository.count(), 6);
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(5)));
+        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(5)));
         // 6 = 5 roles and the added role TEST_ROLE has two permissions
         // Updated : Permissions are ignore in roles results requests to avoid lazy load.
         // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
         // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
 
         // Use PROJECT ADMIN
         String projectAdminJwt = manageSecurity(RoleController.TYPE_MAPPING, RequestMethod.GET, DEFAULT_USER_EMAIL,
                                                 DefaultRole.PROJECT_ADMIN.name());
-        performGet(RoleController.TYPE_MAPPING, projectAdminJwt, expectations, "TODO Error message");
+        performGet(RoleController.TYPE_MAPPING, projectAdminJwt, requestBuilderCustomizer, "TODO Error message");
     }
 
     @Test
