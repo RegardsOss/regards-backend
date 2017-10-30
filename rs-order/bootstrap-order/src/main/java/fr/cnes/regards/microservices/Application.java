@@ -13,7 +13,7 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
  * @author oroussel
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "order", version = "1.0-SNAPSHOT")
+@MicroserviceInfo(name = "order", version = "2.0.0-SNAPSHOT")
 public class Application {
 
     /**
