@@ -574,7 +574,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers
                                  .jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].rel", Matchers.is("self")));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
-                                                        Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
+                                                        Matchers.startsWith("http://localhost:8080/datasets/URN:AIP:DATASET:")));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet("/datasets/search", expectations, "Error searching datasets", builder);
@@ -603,8 +603,8 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
                                                                 .or(Matchers.is("self"))));
         expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.[0].links.[0].href",
                                                         Matchers.either(Matchers.startsWith(
-                                                                "http://localhost/dataobjects/search?q"))
-                                                                .or(Matchers.startsWith("http://localhost/datasets/"))));
+                                                                "http://localhost:8080/dataobjects/search?q"))
+                                                                .or(Matchers.startsWith("http://localhost:8080/datasets/"))));
         final RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet(CatalogController.DATASETS_SEARCH, expectations, "Error searching datasets", builder);

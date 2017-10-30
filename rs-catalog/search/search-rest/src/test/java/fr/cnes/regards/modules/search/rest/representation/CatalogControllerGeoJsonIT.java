@@ -211,9 +211,9 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                                                Matchers.hasItem(Matchers.hasEntry("type",
                                                                                                                   "STRING"))));
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q)
+        requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q)
                 .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
-        performDefaultGet("/searchwithfacets", requestBuilderCustomizer, "Error searching all entities", builder);
+        performDefaultGet("/searchwithfacets", requestBuilderCustomizer, "Error searching all entities");
     }
 
     /**
@@ -357,10 +357,9 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".facets",
                                                                                Matchers.hasItem(Matchers.hasEntry("type",
                                                                                                                   "STRING"))));
-        RequestParamBuilder builder = RequestParamBuilder.build()
-                .param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT)
+        requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT)
                 .param("facets", CatalogControllerTestUtils.FACETS_AS_ARRAY);
-        performDefaultGet("/dataobjects/search", requestBuilderCustomizer, "Error searching dataobjects", builder);
+        performDefaultGet("/dataobjects/search", requestBuilderCustomizer, "Error searching dataobjects");
     }
 
     /**
@@ -474,7 +473,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
                 JSON_PATH_ROOT + ".content.features.[0].links.[0].rel", Matchers.is("self")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
                 JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
-                Matchers.startsWith("http://localhost/datasets/URN:AIP:DATASET:")));
+                Matchers.startsWith("http://localhost:8080/datasets/URN:AIP:DATASET:")));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet("/datasets/search", requestBuilderCustomizer, "Error searching datasets", builder);
@@ -505,8 +504,8 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
                 Matchers.either(Matchers.is(DatasetLinkAdder.LINK_TO_DATAOBJECTS)).or(Matchers.is("self"))));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
                 JSON_PATH_ROOT + ".content.features.[0].links.[0].href",
-                Matchers.either(Matchers.startsWith("http://localhost/dataobjects/search?q"))
-                        .or(Matchers.startsWith("http://localhost/datasets/"))));
+                Matchers.either(Matchers.startsWith("http://localhost:8080/dataobjects/search?q"))
+                        .or(Matchers.startsWith("http://localhost:8080/datasets/"))));
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", CatalogControllerTestUtils.Q_FINDS_TWO_DATASETS);
         performDefaultGet("/datasets/search", requestBuilderCustomizer, "Error searching datasets", builder);
