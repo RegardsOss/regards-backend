@@ -300,6 +300,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     @Test
+    @Ignore
     public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
         createSuccessTest();
         String aipIpId = aip.getId().toString();
@@ -366,6 +367,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             subscriber.unsubscribeFrom(JobEvent.class);
         } catch (Exception e) {
             // Nothing to do
+            LOG.error("ERROR DURING UNSUBSCRIBE", e);
         }
         handler.reset();
     }

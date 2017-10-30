@@ -417,7 +417,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * This method scheduls {@link StoreDataFilesJob} or {@link StoreMetadataFilesJob} to store given
+     * This method schedules {@link StoreDataFilesJob} or {@link StoreMetadataFilesJob} to store given
      * {@link DataFile}s.<br/>
      * A Job is scheduled for each {@link IWorkingSubset} of each {@link PluginConfiguration}.<br/>
      * @param storageWorkingSetMap List of {@link DataFile} to store per {@link PluginConfiguration}.
