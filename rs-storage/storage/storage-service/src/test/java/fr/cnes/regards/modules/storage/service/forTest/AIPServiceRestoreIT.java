@@ -74,6 +74,7 @@ import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
@@ -81,6 +82,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.RestoreJobEventHandler;
 import fr.cnes.regards.modules.storage.service.TestConfig;
@@ -816,6 +818,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         try {
             amqpAdmin.purgeQueue(JobEvent.class, RestoreJobEventHandler.class, true);
             amqpAdmin.purgeQueue(DataFileEvent.class, TestDataStorageEventHandler.class, true);
+            amqpAdmin.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class, true);
         } catch (Exception e) {
             // Nothing to do
         }
