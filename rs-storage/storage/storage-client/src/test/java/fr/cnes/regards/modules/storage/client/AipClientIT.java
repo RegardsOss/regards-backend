@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,6 +227,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
      * @throws NoSuchAlgorithmException
      */
     @Test
+    @Ignore
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException {
         // Create new AIP
         AIPBuilder builder = new AIPBuilder(
