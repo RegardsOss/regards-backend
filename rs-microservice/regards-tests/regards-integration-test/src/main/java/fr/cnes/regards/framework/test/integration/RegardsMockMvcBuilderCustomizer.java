@@ -1,6 +1,7 @@
 package fr.cnes.regards.framework.test.integration;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcBuilderCustomizer;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
+@ConditionalOnBean(value = { RestDocumentationContextProvider.class })
 public class RegardsMockMvcBuilderCustomizer implements MockMvcBuilderCustomizer {
 
     @Autowired
@@ -24,7 +26,7 @@ public class RegardsMockMvcBuilderCustomizer implements MockMvcBuilderCustomizer
 
     @Override
     public void customize(ConfigurableMockMvcBuilder<?> builder) {
-        builder.apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation)
-                              .snippets().withTemplateFormat(TemplateFormats.markdown()));
+        builder.apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation).snippets()
+                              .withTemplateFormat(TemplateFormats.markdown()));
     }
 }
