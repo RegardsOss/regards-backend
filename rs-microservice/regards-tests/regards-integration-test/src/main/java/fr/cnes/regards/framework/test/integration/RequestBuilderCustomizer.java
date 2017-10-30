@@ -73,25 +73,11 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
-    /**
-     *
-     * @param urlTemplate
-     * @param errorMsg
-     * @param urlVariables
-     * @return
-     */
     protected ResultActions performGet(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
         return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.GET, urlTemplate, urlVariables), errorMsg);
     }
 
-    /**
-     *
-     * @param urlTemplate
-     * @param errorMsg
-     * @param urlVariables
-     * @return
-     */
     protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
         return performRequest(mvc,
@@ -125,15 +111,6 @@ public class RequestBuilderCustomizer {
                               errorMsg);
     }
 
-    /**
-     *
-     * @param authToken authorization token
-     * @param method should be one of: {@link HttpMethod#POST} or {@link HttpMethod#PUT}
-     * @param content body of the request
-     * @param urlTemplate
-     * @param urlVariables
-     * @return
-     */
     private MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod method, Object content,
             String urlTemplate, Object... urlVariables) {
         MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, method, urlTemplate, urlVariables);
@@ -150,32 +127,49 @@ public class RequestBuilderCustomizer {
         return gson.toJson(object);
     }
 
+    /**
+     * Grants access to the {@link RequestParamBuilder} used to add request parameters to the request
+     * @return requestParamBuilder for further customization
+     */
     public RequestParamBuilder customizeRequestParam() {
         return requestParamBuilder;
     }
 
+    /**
+     * Grants access to the {@link HttpHeaders} used to add request parameters to the request
+     * @return http headers for further customization
+     */
     public HttpHeaders customizeHeaders() {
         return headers;
     }
 
+    /**
+     * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use {@link RequestBuilderCustomizer#addExpectation(ResultMatcher)}.
+     * @param matchers list of matcher to be matched after by the server response
+     */
     public void addExpectations(List<ResultMatcher> matchers) {
         expectations.addAll(matchers);
     }
 
+    /**
+     * Add {@link ResultMatcher} to the already present matchers
+     * @param matcher
+     */
     public void addExpectation(ResultMatcher matcher) {
         expectations.add(matcher);
     }
 
+    /**
+     * Add snippets to be used to generate specific documentation.
+     * For exemple, request parameters and path parameters require too much specific information to be generalized. <br/>
+     * Request parameters can be documented thanks to {@link org.springframework.restdocs.request.RequestParametersSnippet} <br/>
+     * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet} <br/>
+     * @param snippet documentation snippet to be added.
+     */
     public void addDocumentationSnippet(Snippet snippet) {
         documentationSnippets.add(snippet);
     }
 
-    /**
-     * @param mvc {@link MockMvc} to use for the request
-     * @param requestBuilder request builder
-     * @param errorMsg message if error occurs
-     * @return result
-     */
     private ResultActions performRequest(MockMvc mvc, MockHttpServletRequestBuilder requestBuilder, String errorMsg) {
         Assert.assertTrue("At least one expectation is required", expectations.size() > 0);
         try {
