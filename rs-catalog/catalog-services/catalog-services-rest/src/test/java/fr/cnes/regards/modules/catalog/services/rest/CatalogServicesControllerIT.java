@@ -123,12 +123,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+        requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.MANY.toString());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES,
                           requestBuilderCustomizer,
-                          "there should not be any error",
-                          builder);
+                          "there should not be any error");
     }
 
     @Test
@@ -137,12 +137,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+        requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES,
                           requestBuilderCustomizer,
-                          "there should not be any error",
-                          builder);
+                          "there should not be any error");
     }
 
     @Test
@@ -166,12 +166,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
                                                         .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
                                                                   Matchers.contains(EntityType.DATA.toString())));
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", DATA_SET_NAME)
+        requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES,
                           requestBuilderCustomizer,
-                          "There should be plugin configurations augmented with meta data",
-                          builder);
+                          "There should be plugin configurations augmented with meta data");
     }
 
     @Test
@@ -195,6 +195,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters,
                            requestBuilderCustomizer,
@@ -219,6 +220,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          null,
                                                                          dynamicParameters);
 
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters,
                            requestBuilderCustomizer,
@@ -243,6 +245,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.value").value("ENTITY_ID"));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters,
                            requestBuilderCustomizer,
@@ -265,6 +268,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters,
                            requestBuilderCustomizer,
@@ -287,6 +291,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters,
                            requestBuilderCustomizer,
@@ -310,6 +315,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
                            parameters,
                            requestBuilderCustomizer,
