@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -119,7 +118,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void testRetrieveServicesQuery() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
@@ -133,7 +132,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void testRetrieveServicesOne() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
@@ -147,7 +146,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void retrieveServices_shouldHaveMeta() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
@@ -191,7 +190,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          null,
                                                                          dynamicParameters);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
@@ -210,7 +209,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", "HelloWorld");
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isEmpty());
 
@@ -240,7 +239,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          null,
                                                                          dynamicParameters);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.value").value("ENTITY_ID"));
         requestBuilderCustomizer
@@ -265,7 +264,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          null,
                                                                          dynamicParameters);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
@@ -288,7 +287,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          null,
                                                                          dynamicParameters);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
@@ -311,7 +310,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          null,
                                                                          dynamicParameters);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));

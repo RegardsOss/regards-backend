@@ -277,7 +277,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public final void testSearchCollectionsByTwoUsersWithDifferentsGroups() {
         // Default user should retrieve only collection with accessGroup0 and accessGroup1
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer
@@ -294,7 +294,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet("/collections/search", requestBuilderCustomizer, "Error searching collections");
 
         // Other user should retrieve only collection with accessGroup2
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer
@@ -313,7 +313,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
                    "Error searching collections");
 
         // Admin user whould retrieve the two previous collections (the one with 2 groups and the one with only one)
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
@@ -471,7 +471,7 @@ public class CatalogControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.customizeRequestParam().param("q", CatalogControllerTestUtils.Q_FINDS_ONE_DATAOBJECT);
         String projectAdminJwt = manageSecurity(CatalogController.DATAOBJECTS_DATASETS_SEARCH,

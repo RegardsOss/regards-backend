@@ -181,7 +181,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de réaliser une recherche par critères sur l’ensemble du catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_510")
     public final void testSearchAll() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -197,7 +197,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de fournir des facettes pour toute recherche dans le catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_610")
     public final void testSearchAll_withFacets() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -224,7 +224,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
             "Le système doit permettre de manière synchrone d’accéder aux informations d’une collection via son IP_ID.")
     @Requirement("REGARDS_DSL_DAM_COL_310")
     public final void testGetCollection() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -249,7 +249,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
             "Le système doit permettre de manière synchrone de rechercher des collections à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_COL_410")
     public final void testSearchCollections_shouldFindOneWithoutFacets() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -271,7 +271,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testGetDataset() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -290,7 +290,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDatasets_shouldFindTwoWithoutFacets() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -316,7 +316,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de consulter les métadonnées d’un objet de données du catalogue.")
     @Requirement("REGARDS_DSL_DAM_CAT_470")
     public final void testGetDataobject() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -338,7 +338,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjects_shouldFindOneWithFacets() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -368,7 +368,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public final void testSearchDataobjectsReturnDatasets() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -387,7 +387,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Le système doit permettre de manière synchrone d’accéder aux informations d’un document via son IP_ID.")
     @Requirement("REGARDS_DSL_DAM_DOC_310")
     public final void testGetDocument() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -412,7 +412,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
             "Le système doit permettre de manière synchrone de rechercher des documents à partir de critères basés sur des éléments du modèle de données.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
     public final void testSearchDocuments() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -434,7 +434,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system can return a sorted page of results.")
     @Requirement("REGARDS_DSL_DAM_DOC_510")
     public final void testSearch_withSort() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -461,7 +461,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         // Prepare authorization
         setAuthorities("/datasets/{urn}", RequestMethod.GET, DEFAULT_ROLE);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -491,7 +491,7 @@ public class CatalogControllerGeoJsonIT extends AbstractRegardsTransactionalIT {
         // Prepare authorization
         setAuthorities("/dataobjects/search", RequestMethod.GET, DEFAULT_ROLE);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer

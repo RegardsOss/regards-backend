@@ -101,7 +101,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
@@ -131,7 +131,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
@@ -157,7 +157,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
@@ -183,7 +183,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
@@ -209,7 +209,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
@@ -235,7 +235,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
