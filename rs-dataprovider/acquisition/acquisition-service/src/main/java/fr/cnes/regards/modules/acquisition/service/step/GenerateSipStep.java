@@ -29,6 +29,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -47,6 +48,7 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
  * @author Christophe Mertz
@@ -71,6 +73,11 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     IAcquisitionFileService acquisitionFileService;
 
     private ChainGeneration chainGeneration;
+
+    @Value("${regards.acquisition.sip.max.bulk.size:5000}")
+    private int sipCollectionBulkMaxSize;
+
+    private Set<SIPCollection> sipCollections = new HashSet<>();
 
     /**
      * The {@link List} of {@link AcquisitionFile} that should be check grouped by {@link Product} id
@@ -106,21 +113,46 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
             // create MetaData for each Product
             if (!afMap.isEmpty()) {
-                afMap.forEach((k, v) -> {
+                afMap.forEach((k, af) -> {
                     try {
-                        generateSipPlugin.runPlugin(chainGeneration.getSession(), v);
+                        processSipCollection(generateSipPlugin.runPlugin(chainGeneration.getSession(), af));
                     } catch (ModuleException e) {
-                        LOGGER.error(e.getMessage(),e);
+                        LOGGER.error(e.getMessage(), e);
                         throw new AcquisitionRuntimeException(e.getMessage());
                     }
                 });
             }
 
+            publishSipCollections();
+
         } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(),e);
+            LOGGER.error(e.getMessage(), e);
             throw new AcquisitionRuntimeException(e.getMessage());
         }
 
+    }
+
+    /**
+     * Send {@link SIPCollection} to 
+     * @param sipCollection
+     */
+    private void processSipCollection(SIPCollection sipCollection) {
+
+        sipCollections.add(sipCollection);
+
+        if (sipCollections.size() > sipCollectionBulkMaxSize) {
+            publishSipCollections();
+        }
+
+    }
+
+    private void publishSipCollections() {
+        // TODO CMZ send sipCollections to Ingest
+        LOGGER.info("Start publish SIP Collections");
+
+        sipCollections.clear();
+        
+        LOGGER.info("End publish SIP Collections");
     }
 
     @Override

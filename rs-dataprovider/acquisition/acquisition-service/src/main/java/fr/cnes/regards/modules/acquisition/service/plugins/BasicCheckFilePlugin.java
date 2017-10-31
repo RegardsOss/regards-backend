@@ -54,7 +54,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     @Override
     public boolean runPlugin(File fileToCheck, String dataSetId) {
-        LOGGER.info("Start checking file {} for the chain <{}> ", fileToCheck.getAbsoluteFile(), chainLabel);
+        LOGGER.info("Start check file {} for the chain <{}> ", fileToCheck.getAbsoluteFile(), chainLabel);
         boolean result = false;
 
         productName = fileToCheck.getName();
@@ -74,7 +74,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
             LOGGER.info("Can't read file {}", fileToCheck.getAbsolutePath());
         }
 
-        LOGGER.info("End checking for the chain <{}> ", chainLabel);
+        LOGGER.info("End check for the chain <{}> ", chainLabel);
 
         return result;
     }

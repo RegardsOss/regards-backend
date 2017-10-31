@@ -109,7 +109,7 @@ public class ScanJobIT {
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private static final long WAIT_TIME = 10_000;
+    private static final long WAIT_TIME = 15_000;
 
     @Autowired
     private IChainGenerationService chainService;
@@ -256,6 +256,7 @@ public class ScanJobIT {
                 .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -268,10 +269,10 @@ public class ScanJobIT {
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
         Assert.assertEquals(1, metaFileService.retrieveAll().size());
-        Assert.assertEquals(3, acquisitionFileService.retrieveAll().size());
-        Assert.assertEquals(2, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(2, productService.retrieveAll().size());
+        Assert.assertEquals(5, productService.retrieveAll().size());
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -311,6 +312,7 @@ public class ScanJobIT {
                 .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -356,6 +358,7 @@ public class ScanJobIT {
                 .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -378,8 +381,8 @@ public class ScanJobIT {
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
         Assert.assertEquals(1, metaFileService.retrieveAll().size());
-        Assert.assertEquals(3, acquisitionFileService.retrieveAll().size());
-        Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
+        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(7, acquisitionFileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());

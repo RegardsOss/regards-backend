@@ -31,5 +31,5 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 @PluginInterface(description = "Plugin to process treatement after the SIP generation is done")
 public interface IPostProcessSIP {
 
-    public void runPlugin(List<AcquisitionFile> acquiredFiles, String sipDirectory) throws ModuleException;
+    void runPlugin(List<AcquisitionFile> acquiredFiles, String sipDirectory) throws ModuleException;
 }

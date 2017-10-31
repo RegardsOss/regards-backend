@@ -73,7 +73,7 @@ public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends Abstract
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
-        LOGGER.info("Start scanning for the chain <{}> ", chainLabel);
+        LOGGER.info("Start scan for the chain <{}> ", chainLabel);
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.DBL"));
@@ -85,7 +85,7 @@ public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends Abstract
 
         
         
-        LOGGER.info("End scanning for the chain <{}> ", chainLabel);
+        LOGGER.info("End scan for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
@@ -110,7 +110,7 @@ public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends Abstract
 
     @Override
     public Set<File> getBadFiles() {
-        LOGGER.info("Start reporting bad files for the chain <{}> ", chainLabel);
+        LOGGER.info("Start report bad files for the chain <{}> ", chainLabel);
         return new HashSet<>();
     }
 

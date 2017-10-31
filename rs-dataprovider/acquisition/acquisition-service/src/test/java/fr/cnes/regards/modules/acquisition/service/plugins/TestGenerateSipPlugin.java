@@ -28,6 +28,8 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -43,6 +45,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
@@ -61,6 +64,8 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
     public static final String CHAIN_GENERATION_PARAM = "chain-label";
 
+    public static final String SESSION_PARAM = "session-param";
+
     public static final String META_PRODUCT_PARAM = "meta-produt";
 
     //    @Autowired
@@ -68,6 +73,9 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
+
+    @PluginParameter(name = SESSION_PARAM, optional = true)
+    private String session;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     private MetaProductDto metaProductDto;
@@ -80,7 +88,7 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
     @Override
     public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        LOGGER.info("start create MetaData for the chain <{}> ", chainLabel);
+        LOGGER.info("Start create MetaData for the chain <{}> ", chainLabel);
 
         String productName = acqFiles.get(0).getProduct().getProductName();
 
@@ -88,11 +96,11 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
         attributeMap.put(0, createLongAttribute("orbit", 100));
-        attributeMap.put(0, createLongAttribute("ordre", 100));
-        attributeMap.put(0, createStringAttribute("sipid", "coucou"));
-        attributeMap.put(0, createDateAttribute("cretaion date", OffsetDateTime.now()));
+        attributeMap.put(0, createLongAttribute("order", 133));
+        attributeMap.put(0, createStringAttribute("comment", "Hello Toulouse"));
+        attributeMap.put(0, createDateAttribute("creation date", OffsetDateTime.now()));
 
-        LOGGER.info("end create Metata for the chain <{}>", chainLabel);
+        LOGGER.info("End create Metata for the chain <{}>", chainLabel);
 
         return attributeMap;
     }
@@ -119,32 +127,46 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
     }
 
     @Override
-    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException {
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
         SIPCollection sipCollection = runPlugin(sessionId, acqFiles);
         // TODO CMZ ajouter le tag vers le jeu datasetName
         return sipCollection;
     }
 
     @Override
-    public SIPCollection runPlugin(String sessionId,List<AcquisitionFile> acqFiles) throws ModuleException {
-        SortedMap<Integer, Attribute> mm = this.createMetaDataPlugin(acqFiles);
-        
+    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles) throws ModuleException {
         String productName = acqFiles.get(0).getProduct().getProductName();
 
-        SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
+        LOGGER.info("Start SIP generation for product <{}>", productName);
+
+        // TODO CMZ il faut avoir récupérer le processingChain au microservice Ingest
+        SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder("processingChain", this.session);
 
         SIPBuilder sipBuilder = new SIPBuilder(productName);
 
-        try {
-            sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
-                                                                    acqFiles.get(0).getFile().toURI().toURL(),
-                                                                    acqFiles.get(0).getChecksum());
-        } catch (MalformedURLException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new AcquisitionException(e.getMessage());
+        for (AcquisitionFile af : acqFiles) {
+            try {
+                sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
+                                                                        af.getChecksum(), af.getChecksumAlgorithm());
+                sipBuilder.addContentInformation();
+            } catch (MalformedURLException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new AcquisitionException(e.getMessage());
+            }
         }
 
-        sipCollectionBuilder.add(sipBuilder.build());
+        SortedMap<Integer, Attribute> mm = this.createMetaDataPlugin(acqFiles);
+
+        SIP aSip = sipBuilder.build();
+        if (LOGGER.isDebugEnabled()) {
+            Gson gson = new Gson();
+            LOGGER.debug(gson.toJson(aSip));
+        }
+
+        sipCollectionBuilder.add(aSip);
+
+        LOGGER.info("End SIP generation for product <{}>", productName);
 
         return sipCollectionBuilder.build();
     }

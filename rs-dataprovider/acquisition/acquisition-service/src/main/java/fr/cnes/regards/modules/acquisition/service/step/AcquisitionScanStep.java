@@ -131,7 +131,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             if (chainGeneration.getLastDateActivation() == null) {
                 chainGeneration.setLastDateActivation(af.getAcqDate());
             } else {
-                if (chainGeneration.getLastDateActivation().isBefore(af.getAcqDate())) {
+                if (af.getAcqDate() != null && chainGeneration.getLastDateActivation().isBefore(af.getAcqDate())) {
                     chainGeneration.setLastDateActivation(af.getAcqDate());
                 }
             }

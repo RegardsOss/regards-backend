@@ -76,7 +76,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
-        LOGGER.info("Start scanning for the chain <{}> ", chainLabel);
+        LOGGER.info("Start scan for the chain <{}> ", chainLabel);
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
@@ -87,7 +87,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             scanDirectories(metaFile, acqFileList);
         }
 
-        LOGGER.info("End scanning for the chain <{}> ", chainLabel);
+        LOGGER.info("End scan for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
@@ -118,26 +118,10 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
                 : OffsetDateTime.parse(lastDateActivation));
 
         for (File baseFile : filteredFileList) {
-            AcquisitionFile acqFile = initAcquisitionFile(metaFile, baseFile);
-
-            // Calculate MD5 checksum with the specified algorithm
-            if (!metaProductDto.getChecksumAlgorithm().isEmpty()) {
-                File tF = new File(dirFile, acqFile.getFileName());
-                try (FileInputStream fis = new FileInputStream(tF)) {
-                    acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, metaProductDto.getChecksumAlgorithm()));
-                    acqFile.setChecksumAlgorithm(metaProductDto.getChecksumAlgorithm());
-                } catch (NoSuchAlgorithmException e) {
-                    LOGGER.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }
-
+            AcquisitionFile acqFile = initAcquisitionFile(baseFile, metaFile, metaProductDto.getChecksumAlgorithm());
             acqFile.setAcqDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(baseFile.lastModified()),
                                                         ZoneId.of("UTC")));
-
             acqFileList.add(acqFile);
-
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("new file to acquire : {}", acqFile.getFileName());
             }
@@ -158,7 +142,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
     }
 
     private Set<File> reportBadFile(MetaFile metaFile) {
-        LOGGER.info("Start reporting bad files for the chain <{}> ", chainLabel);
+        LOGGER.info("Start report bad files for the chain <{}> ", chainLabel);
         Set<File> badFiles = new HashSet<>();
 
         String filePattern = metaFile.getFileNamePattern();
@@ -185,7 +169,7 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             }
         }
 
-        LOGGER.info("End reporting bad files for the chain <{}> ", chainLabel);
+        LOGGER.info("End report bad files for the chain <{}> ", chainLabel);
         return badFiles;
 
     }

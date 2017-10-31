@@ -1,6 +1,10 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -9,9 +13,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CalcChainDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
@@ -32,8 +38,31 @@ public abstract class AbstractAcquisitionScanPlugin {
     public static final String META_FILE_PARAM = "meta-file";
 
     public static final String CHAIN_GENERATION_PARAM = "chain-label";
-    
+
     public static final String LAST_ACQ_DATE_PARAM = "last-acquisition-date";
+
+    /**
+     * Process the checksum of the {@link File} inside the {@link AcquisitionFile}.
+     *  
+     * @param acqFile the {@link AcquisitionFile}
+     * @param algorithm the algorithm to used, {@link MessageDigest} for the possible values
+     */
+    protected void calcCheckSum(AcquisitionFile acqFile, String algorithm) {
+        if (algorithm == null) {
+            acqFile.setChecksum(null);
+            acqFile.setChecksumAlgorithm(null);
+            return;
+        }
+        try (FileInputStream fis = new FileInputStream(acqFile.getFile())) {
+            acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, algorithm));
+            acqFile.setChecksumAlgorithm(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error(e.getMessage(), e);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+    }
 
     /**
      * Transforme le pattern indique dans la fourniture en pattern Java.<br>
@@ -71,50 +100,55 @@ public abstract class AbstractAcquisitionScanPlugin {
     }
 
     /**
-     * Remplace la chaine "pattern" par la chaine "replacement" dans "result"
+     * Replace a pattern by a replacement value in a {@link String}
      * 
-     * @param strPattern
+     * @param patternToReplace the {@link String} to replace
      * @param replacement
-     * @param result
-     * @return
+     * @param target
+     * @return a new {@link String} where the pattern is replaced by a replacement value
      */
-    protected String replacePattern(String strPattern, String replacement, String result) {
-
-        Pattern pattern = Pattern.compile(strPattern);
-        Matcher matcher = pattern.matcher(result);
+    protected String replacePattern(String patternToReplace, String replacement, String target) {
+        Pattern pattern = Pattern.compile(patternToReplace);
+        Matcher matcher = pattern.matcher(target);
         return matcher.replaceAll(replacement);
     }
 
     /**
-     * Liste les fichiers dont le nom correspond au filtre et dont la date de derniere modification est posterieure a la
-     * date de derniere acquisition
+     * {@link List} the files of a directory that match a {@link RegexFilenameFilter} and that the last modification date is after a {@link OffsetDateTime} 
      *
-     * @param dirFile
-     *            Le repertoire contenant les fichiers
-     * @param filter
-     *            Le filtre pour les noms de fichiers
-     * @param lastAcqDate
-     *            La date de derniere acquisition
-     * @return List<File> La liste des fichiers correspondant aux filtres
+     * @param dirFile the directory where to get the files 
+     * @param filter the {@link RegexFilenameFilter} to apply
+     * @param lastAcqDate the {@link OffsetDateTime} to apply to filer the file
+     * @return List<File> the {@link List} of {@link File} that match the {@link RegexFilenameFilter} and the {@link OffsetDateTime}
      */
     protected List<File> filteredFileList(File dirFile, RegexFilenameFilter filter, OffsetDateTime lastAcqDate) {
-
-        // Look for files with right pattern
+        // Look for files with match the pattern
         File[] nameFileArray = dirFile.listFiles(filter);
+        
         List<File> sortedFileList = new ArrayList<>(nameFileArray.length);
         for (File element : nameFileArray) {
 
-            if (lastAcqDate == null || OffsetDateTime
-                    .ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC")).isAfter(lastAcqDate.atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())) {
+            if (lastAcqDate == null
+                    || OffsetDateTime.ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC"))
+                            .isAfter(lastAcqDate.atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())) {
                 sortedFileList.add(element);
             } else {
                 LOGGER.info("File <{}> is too old", element.getName());
             }
+
         }
+        
         return sortedFileList;
     }
 
-    protected AcquisitionFile initAcquisitionFile(MetaFile metaFile, File baseFile) {
+    /**
+     * Create an {@link AcquisitionFile} and process the checksum of the {@link File}
+     * @param baseFile the {@link File} for which to create an {@link AcquisitionFile}
+     * @param metaFile the {@link MetaFile}
+     * @param algorithm the algorithm to used for the checksum, {@link MessageDigest} for the possible values
+     * @return
+     */
+    protected AcquisitionFile initAcquisitionFile(File baseFile, MetaFile metaFile, String algorithm) {
         AcquisitionFile acqFile = new AcquisitionFile();
         acqFile.setMetaFile(metaFile);
         acqFile.setStatus(AcquisitionFileStatus.IN_PROGRESS);
@@ -122,6 +156,7 @@ public abstract class AbstractAcquisitionScanPlugin {
         acqFile.setSize(baseFile.length());
         acqFile.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(baseFile.getParent().toString())
                 .get());
+        calcCheckSum(acqFile, algorithm);
 
         return acqFile;
     }

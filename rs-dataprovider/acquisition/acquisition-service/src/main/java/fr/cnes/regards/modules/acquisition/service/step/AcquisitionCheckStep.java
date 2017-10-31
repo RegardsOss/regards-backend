@@ -77,6 +77,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     @Autowired
     private IProductService productService;
 
+    // TODO CMZ à revoir invalidDataFolder peut être différent par chaine de génération
     @Value("${regards.acquisition.invalid-data-folder:#{null}}")
     private String invalidDataFolder;
 
@@ -119,19 +120,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                 for (AcquisitionFile acqFile : inProgressFileList) {
                     File currentFile = acqFile.getFile();
                     
-//                    if (acqFile.getAcquisitionInformations() == null) {
-//                        currentFile = new File(acqFile.getFileName());
-//                    }
-//                    else {
-//                        String workingDir = acqFile.getAcquisitionInformations().getWorkingDirectory();
-//                        if (workingDir != null) {
-//                            currentFile = new File(workingDir, acqFile.getFileName());
-//                        } else {
-//                            currentFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
-//                                    acqFile.getFileName());
-//                        }
-//                    }
-
                     // execute the check plugin
                     if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
                         acqFile.setStatus(AcquisitionFileStatus.VALID);

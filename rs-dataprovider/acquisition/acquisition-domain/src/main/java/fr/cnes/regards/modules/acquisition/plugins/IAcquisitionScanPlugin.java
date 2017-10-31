@@ -31,8 +31,8 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 @PluginInterface(description = "Plugin to detect file to acquire")
 public interface IAcquisitionScanPlugin {
 
-    public Set<AcquisitionFile> getAcquisitionFiles();
+    Set<AcquisitionFile> getAcquisitionFiles();
     
-    public Set<File> getBadFiles();
+    Set<File> getBadFiles();
     
 }

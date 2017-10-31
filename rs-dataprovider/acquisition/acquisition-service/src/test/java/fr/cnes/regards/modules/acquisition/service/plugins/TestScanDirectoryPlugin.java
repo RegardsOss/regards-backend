@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
+import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,9 +45,9 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
  */
-@Plugin(id = "TestScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
-        description = "TestScanDirectoryPlugin", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "TestScanDirectoryPlugin", version = "1.0.0-SNAPSHOT", description = "TestScanDirectoryPlugin",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestScanDirectoryPlugin.class);
@@ -58,11 +59,14 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
 
     private static final String DIR_DATA = "data";
 
+    /**
+     * @see MessageDigest for the possible values 
+     */
     private static final String CHECKUM_ALGO = "SHA-256";
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
-    
+
     @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
     private String lastDateActivation;
 
@@ -75,33 +79,31 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
 
-        LOGGER.info("start checking for the chain <{}> ", chainLabel);
+        LOGGER.info("Start check for the chain <{}> ", chainLabel);
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXT"));
+        acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_103715.TXT"));
+        acqFileList.add(createAcquisitionFile("data/income",
+                                              "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.DBL"));
+        acqFileList.add(createAcquisitionFile("data/income",
+                                              "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.HDR"));
+
+        acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_105909.TXT"));
         acqFileList.add(createBadAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXTXX"));
         acqFileList.add(createAcquisitionFile("data", EXISTING_PRODUCT));
 
-        LOGGER.info("end checking for the chain <{}> ", chainLabel);
+        LOGGER.info("End check for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
 
     private AcquisitionFile createAcquisitionFile(String dir, String name) {
-        File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
-
-        AcquisitionFile af = new AcquisitionFile();
-        af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getParent().toString()).get());
-        af.setFileName(file.getName());
-        af.setSize(file.length());
-        af.setAcqDate(OffsetDateTime.now());
-        af.setChecksumAlgorithm(CHECKUM_ALGO);
-        af.setChecksum(null);// TODO CMZ à compléter
-        af.setStatus(null);
-
         MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
-        af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
+        File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
+        AcquisitionFile af = initAcquisitionFile(file, metaFileService.retrieve(metaFileDto.getId()), CHECKUM_ALGO);
+        af.setAcqDate(OffsetDateTime.now());
 
         return af;
     }
@@ -124,13 +126,13 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
 
     @Override
     public Set<File> getBadFiles() {
-        LOGGER.info("Start reporting bad files for the chain <{}> ", chainLabel);
+        LOGGER.info("Start report bad files for the chain <{}> ", chainLabel);
         Set<File> badFiles = new HashSet<>();
         badFiles.add(new File(getClass().getClassLoader()
                 .getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_XXXXX.TXT").getFile()));
         badFiles.add(new File(getClass().getClassLoader()
                 .getResource(DIR_DATA + "/" + "PAUB_MESURE_TC_20130701_YYYYY.TXT").getFile()));
-        LOGGER.info("End reporting bad files for the chain <{}> ", chainLabel);
+        LOGGER.info("End report bad files for the chain <{}> ", chainLabel);
         return badFiles;
     }
 

@@ -34,13 +34,14 @@ import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 @PluginInterface(description = "Plugin to create product and file metadata")
 public interface IGenerateSIPPlugin {
 
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
             throws ModuleException;
 
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
-    
-    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName) throws ModuleException;
-    
-    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles) throws ModuleException;
+    SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
+
+    SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException;
+
+    SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles) throws ModuleException;
 
 }
