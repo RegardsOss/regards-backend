@@ -95,11 +95,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
     public ResponseEntity<Page<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
             @PathVariable("datasetId") Long datasetId, Pageable pageRequest) throws TooManyResultsException {
-        DatasetTask dsTask = datasetTaskService.loadSimple(datasetId);
-        if (dsTask.getFilesCount() > maximumDisplayableDataFiles) {
-            throw new TooManyResultsException(String.format("Too many files (> to %d files)", dsTask.getFilesCount()));
-        }
-        dsTask = datasetTaskService.loadComplete(datasetId);
+        DatasetTask dsTask = datasetTaskService.loadComplete(datasetId);
         int cpt = 0;
         List<Resource<OrderDataFile>> dataFiles = new ArrayList<>();
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
