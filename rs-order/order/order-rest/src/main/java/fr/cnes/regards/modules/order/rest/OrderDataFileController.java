@@ -18,6 +18,10 @@ import java.util.zip.ZipOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -89,26 +93,32 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Find all files from order for specified dataset", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
-    public ResponseEntity<List<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
-            @PathVariable("datasetId") Long datasetId) throws TooManyResultsException {
+    public ResponseEntity<Page<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
+            @PathVariable("datasetId") Long datasetId, Pageable pageRequest) throws TooManyResultsException {
         DatasetTask dsTask = datasetTaskService.loadSimple(datasetId);
         if (dsTask.getFilesCount() > maximumDisplayableDataFiles) {
             throw new TooManyResultsException(String.format("Too many files (> to %d files)", dsTask.getFilesCount()));
         }
         dsTask = datasetTaskService.loadComplete(datasetId);
+        int cpt = 0;
         List<Resource<OrderDataFile>> dataFiles = new ArrayList<>();
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
             for (OrderDataFile dataFile : filesTask.getFiles()) {
-                Resource<OrderDataFile> resource = toResource(dataFile);
-                resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
-                                        MethodParamFactory.build(Long.class, orderId),
-                                        MethodParamFactory.build(Long.class, datasetId),
-                                        MethodParamFactory.build(String.class, dataFile.getIpId().toString()),
-                                        MethodParamFactory.build(String.class, dataFile.getChecksum()));
-                dataFiles.add(resource);
+                if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
+                    Resource<OrderDataFile> resource = toResource(dataFile);
+                    resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
+                                            MethodParamFactory.build(Long.class, orderId),
+                                            MethodParamFactory.build(Long.class, datasetId),
+                                            MethodParamFactory.build(String.class, dataFile.getIpId().toString()),
+                                            MethodParamFactory.build(String.class, dataFile.getChecksum()));
+                    dataFiles.add(resource);
+                } else if (cpt >= pageRequest.getOffset() + pageRequest.getPageSize()) {
+                    return ResponseEntity.ok(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()));
+                }
+                cpt++;
             }
         }
-        return ResponseEntity.ok(dataFiles);
+        return ResponseEntity.ok(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()));
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
