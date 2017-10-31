@@ -59,7 +59,6 @@ public class ScheduledIngestTasks {
     @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
-        tenantResolver.getAllActiveTenants().forEach(t -> LOG.debug("Tenant {}", t));
         LOG.debug("Process new SIPs ingest for all active tenants");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

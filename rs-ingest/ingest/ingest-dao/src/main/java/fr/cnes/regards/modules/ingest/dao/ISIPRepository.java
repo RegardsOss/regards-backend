@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
@@ -55,6 +58,19 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long> {
      * @return {@link SIPEntity}s
      */
     Collection<SIPEntity> findAllByState(SIPState state);
+
+    /**
+     * Find all {@link SIPEntity}s by given {@link SIPState}.
+     * Unlike findAllByState, the possibly huge parameter rawSip is not loaded.
+     * @param state {@link SIPState}
+     * @return {@link SIPEntity}s
+     */
+    @Query("select s.id, s.processing from SIPEntity s where s.state = ?1")
+    List<Object[]> findIdAndProcessingByState(SIPState state);
+
+    @Modifying
+    @Query("update SIPEntity s set s.state = ?1 where s.id = ?2")
+    int updateSIPEntityState(SIPState state, Long id);
 
     /**
      * Check if SIP already ingested

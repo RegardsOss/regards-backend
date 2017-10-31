@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -75,24 +75,24 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public void ingest() {
         // Retrieve all created sips
-        Collection<SIPEntity> sipsToProcess = sipRepository.findAllByState(SIPState.CREATED);
-        sipsToProcess.forEach(this::scheduleIngestProcessingJob);
+        // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing parameters of SIPEntity
+        List<Object[]> sips = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
+        sips.forEach(sip -> this.scheduleIngestProcessingJob((Long) sip[0], (String) sip[1]));
     }
 
     /**
      * Schedule a new {@link IngestProcessingJob} to ingest given {@link SIPEntity}
      * @param pSipToProcess {@link SIPEntity} to ingest
      */
-    private void scheduleIngestProcessingJob(SIPEntity pSipToProcess) {
-        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", pSipToProcess.getId(),
-                     pSipToProcess.getProcessing());
+    private void scheduleIngestProcessingJob(Long sipIdToProcess, String processingChain) {
+        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", sipIdToProcess,
+                     processingChain);
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, pSipToProcess.getId()));
-        jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, pSipToProcess.getProcessing()));
+        jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdToProcess));
+        jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, processingChain));
         JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
-        pSipToProcess.setState(SIPState.QUEUED);
-        sipRepository.save(pSipToProcess);
+        sipRepository.updateSIPEntityState(SIPState.QUEUED, sipIdToProcess);
     }
 
 }

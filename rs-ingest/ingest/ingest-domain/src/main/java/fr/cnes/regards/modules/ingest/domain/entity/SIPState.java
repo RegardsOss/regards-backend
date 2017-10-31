@@ -23,7 +23,19 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  * Manage SIP lifecycle
  *
  * <pre>
- * CREATED -> TODO
+ * CREATED
+ *   |_______ REJECTED
+ *   |
+ * QUEUED
+ *   |_______ INVALID
+ *   |
+ * VALID
+ *   |_______ AIP_GEN_ERROR
+ *   |             |
+ * AIP_GENERATED   |
+ *   |_____________|
+ *   |
+ * AIP_CREATED
  * </pre>
  *
  * @author Marc Sordi
