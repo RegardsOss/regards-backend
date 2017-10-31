@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 
 /**
  * Step interface
@@ -27,10 +27,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * @param <0> output object
  *
  * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
 @FunctionalInterface
 public interface IProcessingStep<I, O> {
 
-    O execute(I in) throws ModuleException;
+    O execute(I in) throws ProcessingStepException;
 }

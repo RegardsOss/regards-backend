@@ -21,12 +21,15 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
 /**
  * Common ingest processing step
  *
  * @author Marc Sordi
+ * @auhtor Sébastien Binda
  */
 public abstract class AbstractProcessingStep<I, O> implements IProcessingStep<I, O> {
 
@@ -43,15 +46,38 @@ public abstract class AbstractProcessingStep<I, O> implements IProcessingStep<I,
     }
 
     @Override
-    public O execute(I in) throws ModuleException {
-        O out = doExecute(in);
-        doAfter();
-        return out;
+    public O execute(I in) throws ProcessingStepException {
+        try {
+            O out = doExecute(in);
+            doAfter(in);
+            return out;
+        } catch (ProcessingStepException e) {
+            doAfterStepError(in);
+            throw e;
+        }
     }
 
-    protected abstract O doExecute(I in) throws ModuleException;
+    protected abstract O doExecute(I in) throws ProcessingStepException;
 
-    protected void doAfter() throws ModuleException {
+    protected abstract void doAfterStepError(I in);
+
+    protected void doAfter(I in) throws ProcessingStepException {
         job.advanceCompletion();
+        this.doAfterStepSuccess(in);
+    }
+
+    protected abstract void doAfterStepSuccess(I in);
+
+    protected void updateSIPEntityState(SIPState newEntitySIPState) {
+        this.job.getEntity().setState(newEntitySIPState);
+        this.job.getSIPRepository().save(this.job.getEntity());
+    }
+
+    protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {
+        try {
+            return pluginService.getPlugin(confId);
+        } catch (ModuleException e) {
+            throw new ProcessingStepException(e);
+        }
     }
 }

@@ -89,6 +89,19 @@ public class IngestProcessingChain {
     @JoinColumn(name = "postprocessing_conf_id", foreignKey = @ForeignKey(name = "fk_postprocessing_conf_id"))
     private PluginConfiguration postProcessingPlugin;
 
+    public IngestProcessingChain(String pName, String pDescription, PluginConfiguration pValidationPlugin,
+            PluginConfiguration pGenerationPlugin) {
+        super();
+        name = pName;
+        description = pDescription;
+        validationPlugin = pValidationPlugin;
+        generationPlugin = pGenerationPlugin;
+    }
+
+    public IngestProcessingChain() {
+        super();
+    }
+
     public Long getId() {
         return id;
     }

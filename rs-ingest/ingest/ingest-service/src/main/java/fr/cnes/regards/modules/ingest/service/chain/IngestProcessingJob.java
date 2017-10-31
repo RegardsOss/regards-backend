@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.ingest.service.chain;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.IProcessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PostprocessingStep;
@@ -50,6 +51,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * This job manages processing chain for AIP generation from a SIP
  *
  * @author Marc Sordi
+ * @author Sébastien Binda
  */
 public class IngestProcessingJob extends AbstractJob<Void> {
 
@@ -80,10 +82,12 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         String processingChainName = getValue(parameters, CHAIN_NAME_PARAMETER);
 
         // Load processing chain
-        processingChain = processingChainRepository.findByName(processingChainName);
-        if (processingChain == null) {
+        Optional<IngestProcessingChain> chain = processingChainRepository.findOneByName(processingChainName);
+        if (!chain.isPresent()) {
             String message = String.format("No related chain has been found for value \"%s\"", processingChainName);
             handleInvalidParameter(CHAIN_NAME_PARAMETER, message);
+        } else {
+            processingChain = chain.get();
         }
 
         // Load SIPEntity
@@ -122,7 +126,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             // Step 6 : optional postprocessing
             IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this);
             postprocessingStep.execute(sip);
-        } catch (ModuleException e) {
+        } catch (ProcessingStepException e) {
             LOGGER.error("Business error", e);
             throw new JobRuntimeException(e);
         }
@@ -143,5 +147,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public SIPEntity getEntity() {
         return entity;
+    }
+
+    public ISIPRepository getSIPRepository() {
+        return sipRepository;
     }
 }

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.plugin;
 import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
@@ -37,5 +38,5 @@ public interface IAipTagging {
      * Tag AIP
      * @param aips {@link AIP} to tag
      */
-    void tag(List<AIP> aips);
+    void tag(List<AIP> aips) throws TagAIPException;
 }

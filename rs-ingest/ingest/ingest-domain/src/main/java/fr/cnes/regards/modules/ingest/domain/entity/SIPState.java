@@ -38,6 +38,30 @@ public enum SIPState {
     /**
      * Invalid SIP or error during its storage
      */
-    REJECTED
-    // TODO
+    REJECTED,
+    /**
+     * SIP is queued to be processed.
+     */
+    QUEUED,
+    /**
+     * SIP has been validated by the ValidationStep successfully
+     */
+    VALID,
+    /**
+     * SIP is invalid (ValidationStep error)
+     */
+    INVALID,
+    /**
+     * AIP(s) associated to the SIP has been successfully generated and are waiting to be stored
+     */
+    AIP_GENERATED,
+    /**
+     * Error during AIP geneation
+     */
+    AIP_GEN_ERROR,
+    /**
+     * AIP(s) associated to the SIP has been successfully localy stored and are waiting to be handle by storage microservice.
+     */
+    AIP_CREATED;
+
 }

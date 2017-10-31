@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * {@link SIPEntity} repository
@@ -47,6 +48,13 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long> {
      * @return all SIP versions of a sipId
      */
     Collection<SIPEntity> findAllBySipIdOrderByVersionAsc(String sipId);
+
+    /**
+     * Find all {@link SIPEntity}s by given {@link SIPState}
+     * @param state {@link SIPState}
+     * @return {@link SIPEntity}s
+     */
+    Collection<SIPEntity> findAllByState(SIPState state);
 
     /**
      * Check if SIP already ingested

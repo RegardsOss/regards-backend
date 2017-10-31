@@ -24,8 +24,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -34,9 +35,13 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * Tagging step is used to tag {@link AIP}(s) calling {@link IAipTagging#tag(List)}.
  *
  * @author Marc Sordi
+ * @author Sébastien Binda
  */
 public class TaggingStep extends AbstractProcessingStep<List<AIP>, Void> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(TaggingStep.class);
 
     public TaggingStep(IngestProcessingJob job) {
@@ -44,16 +49,26 @@ public class TaggingStep extends AbstractProcessingStep<List<AIP>, Void> {
     }
 
     @Override
-    protected Void doExecute(List<AIP> aips) throws ModuleException {
+    protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
         Optional<PluginConfiguration> conf = processingChain.getTagPlugin();
         if (conf.isPresent()) {
-            IAipTagging tagging = pluginService.getPlugin(conf.get().getId());
+            IAipTagging tagging = this.getStepPlugin(conf.get().getId());
             aips.forEach(aip -> LOGGER.debug("Tagging AIP \"{}\" from SIP \"{}\"", aip.getId(), aip.getSipId()));
             tagging.tag(aips);
         } else {
             LOGGER.debug("No AIP tagging for SIP \"{}\"", aips.get(0).getSipId());
         }
         return null;
+    }
+
+    @Override
+    protected void doAfterStepError(List<AIP> pIn) {
+        this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+    }
+
+    @Override
+    protected void doAfterStepSuccess(List<AIP> pIn) {
+        // Nothing to do
     }
 
 }

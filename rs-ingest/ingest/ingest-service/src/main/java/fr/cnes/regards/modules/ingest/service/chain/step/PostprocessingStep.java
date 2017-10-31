@@ -23,9 +23,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -35,9 +35,13 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * {@link ISipPostprocessing#postprocess(SIP)}
  *
  * @author Marc Sordi
+ * @author Sébastien Binda
  */
 public class PostprocessingStep extends AbstractProcessingStep<SIP, Void> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PostprocessingStep.class);
 
     public PostprocessingStep(IngestProcessingJob job) {
@@ -45,16 +49,28 @@ public class PostprocessingStep extends AbstractProcessingStep<SIP, Void> {
     }
 
     @Override
-    protected Void doExecute(SIP sip) throws ModuleException {
+    protected Void doExecute(SIP sip) throws ProcessingStepException {
         Optional<PluginConfiguration> conf = processingChain.getPostProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Postprocessing for SIP \"{}\"", sip.getId());
-            ISipPostprocessing postprocessing = pluginService.getPlugin(conf.get().getId());
+            ISipPostprocessing postprocessing = this.getStepPlugin(conf.get().getId());
             postprocessing.postprocess(sip);
         } else {
             LOGGER.debug("No postprocessing for SIP \"{}\"", sip.getId());
         }
         return null;
+    }
+
+    @Override
+    protected void doAfterStepError(SIP sip) {
+        LOGGER.error("Error during post processing for SIP \"{}\"", sip.getId());
+        // Nothing to do.
+
+    }
+
+    @Override
+    protected void doAfterStepSuccess(SIP sip) {
+        // Nothing to do
     }
 
 }

@@ -18,14 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+
 /**
  * Ingest processing service interface
  *
  * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
 public interface IIngestProcessingService {
 
-    // Asynchronous SIP ingestion
+    /**
+     * Schedule {@link IngestProcessingJob}s for all {@link SIPEntity} with {@link SIPState#CREATED} Status.
+     */
     void ingest();
 }

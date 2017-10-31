@@ -16,28 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
-
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+package fr.cnes.regards.modules.ingest.domain.exception;
 
 /**
- * {@link IngestProcessingChain} repository
- *
- * @author Marc Sordi
- *
+ * ProcessingStepException thrown by PreprocessingStep
+ * @author Sébastien Binda
  */
-@Repository
-public interface IIngestProcessingChainRepository extends JpaRepository<IngestProcessingChain, Long> {
+@SuppressWarnings("serial")
+public class InvalidSIPReferenceException extends ProcessingStepException {
 
-    /**
-     * Retrieve chain with specified name
-     * @param name processing chain name
-     * @return {@link IngestProcessingChain}
-     */
-    Optional<IngestProcessingChain> findOneByName(String name);
+    public InvalidSIPReferenceException(String pMessage, Throwable pCause) {
+        super(pMessage, pCause);
+    }
+
+    public InvalidSIPReferenceException(String pMessage) {
+        super(pMessage);
+    }
+
+    public InvalidSIPReferenceException(Throwable pCause) {
+        super(pCause);
+    }
+
 }

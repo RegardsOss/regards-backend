@@ -23,11 +23,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -36,7 +37,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIP)}.
  *
  * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
 public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
 
@@ -47,10 +48,10 @@ public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
     }
 
     @Override
-    protected List<AIP> doExecute(SIP sip) throws ModuleException {
+    protected List<AIP> doExecute(SIP sip) throws ProcessingStepException {
         LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sip.getId());
         PluginConfiguration conf = processingChain.getGenerationPlugin();
-        IAipGeneration generation = pluginService.getPlugin(conf.getId());
+        IAipGeneration generation = this.getStepPlugin(conf.getId());
 
         // Retrieve SIP URN from internal identifier
         UniformResourceName sipUrn = UniformResourceName.fromString(job.getEntity().getIpId());
@@ -59,5 +60,16 @@ public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
                 sipUrn.getTenant(), sipUrn.getEntityId(), sipUrn.getVersion());
         // Launch AIP generation
         return generation.generate(sip, ipId, sipUrn.toString());
+    }
+
+    @Override
+    protected void doAfterStepError(SIP sip) {
+        LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
+        this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+    }
+
+    @Override
+    protected void doAfterStepSuccess(SIP pIn) {
+        this.updateSIPEntityState(SIPState.AIP_GENERATED);
     }
 }

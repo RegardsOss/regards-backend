@@ -23,9 +23,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
@@ -37,10 +38,13 @@ import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
  * properties.
  *
  * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
 public class PreprocessingStep extends AbstractProcessingStep<SIP, SIP> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PreprocessingStep.class);
 
     public PreprocessingStep(IngestProcessingJob job) {
@@ -48,11 +52,11 @@ public class PreprocessingStep extends AbstractProcessingStep<SIP, SIP> {
     }
 
     @Override
-    public SIP doExecute(SIP sip) throws ModuleException {
+    public SIP doExecute(SIP sip) throws ProcessingStepException {
         Optional<PluginConfiguration> conf = processingChain.getPreProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Preprocessing for SIP \"{}\"", sip.getId());
-            ISipPreprocessing preprocessing = pluginService.getPlugin(conf.get().getId());
+            ISipPreprocessing preprocessing = this.getStepPlugin(conf.get().getId());
             preprocessing.preprocess(sip);
             if (sip.isRef()) {
                 LOGGER.debug("Reading referenced SIP \"{}\"", sip.getId());
@@ -63,5 +67,16 @@ public class PreprocessingStep extends AbstractProcessingStep<SIP, SIP> {
             LOGGER.debug("No preprocessing for SIP \"{}\"", sip.getId());
         }
         return sip;
+    }
+
+    @Override
+    protected void doAfterStepError(SIP sip) {
+        LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
+        this.updateSIPEntityState(SIPState.INVALID);
+    }
+
+    @Override
+    protected void doAfterStepSuccess(SIP pIn) {
+        // Nothing to do
     }
 }

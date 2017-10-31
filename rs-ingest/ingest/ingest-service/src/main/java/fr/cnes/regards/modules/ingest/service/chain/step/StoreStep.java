@@ -23,14 +23,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * TODO
  * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
 public class StoreStep extends AbstractProcessingStep<List<AIP>, Void> {
 
@@ -42,9 +43,19 @@ public class StoreStep extends AbstractProcessingStep<List<AIP>, Void> {
     }
 
     @Override
-    protected Void doExecute(List<AIP> in) throws ModuleException {
+    protected Void doExecute(List<AIP> in) throws ProcessingStepException {
         // TODO store locally to make a bulk request to storage later
         return null;
+    }
+
+    @Override
+    protected void doAfterStepError(List<AIP> pIn) {
+        this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+    }
+
+    @Override
+    protected void doAfterStepSuccess(List<AIP> pIn) {
+        this.updateSIPEntityState(SIPState.AIP_CREATED);
     }
 
 }

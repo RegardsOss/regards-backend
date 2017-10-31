@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPReference;
+import fr.cnes.regards.modules.ingest.domain.exception.InvalidSIPReferenceException;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 
 /**
  * First <b>optional</b> step of the SIP processing chain
@@ -34,13 +36,15 @@ public interface ISipPreprocessing {
     /**
      * Allows to make some action before SIP processing starts.
      * @param sip {@link SIP} to be processed
+     * @throws {@link ProcessingStepException} for a unrecoverable error
      */
-    void preprocess(final SIP sip);
+    void preprocess(final SIP sip) throws ProcessingStepException;
 
     /**
      * Read a referenced {@link SIP} (only available for referenced SIP!)
      * @param ref {@link SIPReference}
      * @return a completely filled {@link SIP}
+     * @throws {@link InvalidSIPReferenceException} for a unrecoverable error during SIP reading
      */
-    SIP read(final SIPReference ref);
+    SIP read(final SIPReference ref) throws InvalidSIPReferenceException;
 }

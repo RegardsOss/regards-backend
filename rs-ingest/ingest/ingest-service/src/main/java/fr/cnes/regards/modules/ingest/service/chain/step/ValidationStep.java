@@ -25,10 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
@@ -36,10 +36,13 @@ import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
  * Validation step is used to validate {@link SIP} calling {@link ISipValidation#validate(SIP, Errors)}.
  *
  * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
 public class ValidationStep extends AbstractProcessingStep<SIP, Void> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationStep.class);
 
     public ValidationStep(IngestProcessingJob job) {
@@ -47,18 +50,29 @@ public class ValidationStep extends AbstractProcessingStep<SIP, Void> {
     }
 
     @Override
-    protected Void doExecute(SIP sip) throws ModuleException {
+    protected Void doExecute(SIP sip) throws ProcessingStepException {
         LOGGER.debug("Validating SIP \"{}\"", sip.getId());
         PluginConfiguration conf = processingChain.getValidationPlugin();
-        ISipValidation validation = pluginService.getPlugin(conf.getId());
+        ISipValidation validation = this.getStepPlugin(conf.getId());
         Errors errors = new MapBindingResult(new HashMap<>(), sip.getId());
         validation.validate(sip, errors);
 
         if (errors.hasErrors()) {
-            errors.getAllErrors().forEach(error -> LOGGER.error("SIP \"{}\" validation error : {}", sip.getId(),
-                                                                error.getDefaultMessage()));
-            throw new JobRuntimeException(String.format("Invalid SIP \"%s\"", sip.getId()));
+            errors.getAllErrors()
+                    .forEach(error -> LOGGER.error("SIP \"{}\" validation error : {}", sip.getId(), error.toString()));
+            throw new ProcessingStepException(String.format("Invalid SIP \"%s\"", sip.getId()));
         }
         return null;
+    }
+
+    @Override
+    protected void doAfterStepError(SIP sip) {
+        LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
+        this.updateSIPEntityState(SIPState.INVALID);
+    }
+
+    @Override
+    protected void doAfterStepSuccess(SIP pIn) {
+        this.updateSIPEntityState(SIPState.VALID);
     }
 }

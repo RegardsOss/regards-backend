@@ -16,28 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.ingest.service.chain;
 
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import org.springframework.stereotype.Component;
 
 /**
- * {@link IngestProcessingChain} repository
- *
- * @author Marc Sordi
- *
+ * Component used by all test plugins used by processing chain to simulate errors during a given plugin.
+ * @author Sébastien Binda
  */
-@Repository
-public interface IIngestProcessingChainRepository extends JpaRepository<IngestProcessingChain, Long> {
+@Component
+public class ProcessingChainTestErrorSimulator {
 
-    /**
-     * Retrieve chain with specified name
-     * @param name processing chain name
-     * @return {@link IngestProcessingChain}
-     */
-    Optional<IngestProcessingChain> findOneByName(String name);
+    private Class<?> simulateErrorForStep;
+
+    public Class<?> getSimulateErrorForStep() {
+        return simulateErrorForStep;
+    }
+
+    public void setSimulateErrorForStep(Class<?> pSimulateErrorForStepClasses) {
+        simulateErrorForStep = pSimulateErrorForStepClasses;
+    }
+
 }

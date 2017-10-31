@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
@@ -49,9 +51,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest1" })
+@TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { IngestServiceTest.IngestConfiguration.class })
 public class IngestServiceTest extends AbstractDaoTransactionalTest {
+
+    @Autowired
+    private ISIPRepository sipRepository;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
@@ -60,6 +65,11 @@ public class IngestServiceTest extends AbstractDaoTransactionalTest {
 
     @Autowired
     private IIngestService ingestService;
+
+    @Before
+    public void init() {
+        sipRepository.deleteAll();
+    }
 
     /**
      * Check if service properly store SIP and prevent to store a SIP twice
