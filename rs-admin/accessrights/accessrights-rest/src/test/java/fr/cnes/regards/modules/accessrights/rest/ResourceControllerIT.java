@@ -123,7 +123,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsPublicTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
@@ -142,7 +142,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsProjectAdminTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
@@ -161,7 +161,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations for instance admin")
     public void getAllResourceAccessesAsInstanceAdminTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
@@ -190,7 +190,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         adminRole.addPermission(resource);
         roleRepository.save(adminRole);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet(ResourceController.TYPE_MAPPING + ResourceController.RESOURCE_MAPPING,

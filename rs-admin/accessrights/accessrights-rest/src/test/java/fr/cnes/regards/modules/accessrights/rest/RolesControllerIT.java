@@ -216,7 +216,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() throws JwtException {
         Assert.assertEquals(roleRepository.count(), 6);
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(5)));
         // 6 = 5 roles and the added role TEST_ROLE has two permissions

@@ -120,7 +120,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to all projects database connections and Hateoas returned links")
     @Test
     public void getAllProjectConnectionsTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer
@@ -150,7 +150,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to get a project connection and Hateoas returned links")
     @Test
     public void getProjectConnectionTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performGet(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
                    instanceAdmintoken,
@@ -178,7 +178,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                                                                    "newPassword",
                                                                    "newDriver",
                                                                    "newUrl");
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performPost(ProjectConnectionController.TYPE_MAPPING,
                     instanceAdmintoken,
@@ -201,7 +201,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     public void updateProjectConnectionTest() {
         final ProjectConnection connection = projectConnRepo
                 .findOneByProjectNameAndMicroservice(PROJECT_TEST, MICROSERVICE_TEST);
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performPut(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
                    instanceAdmintoken,
@@ -222,7 +222,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
     public void deleteProjectConnectionTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         performDelete(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
                       instanceAdmintoken,

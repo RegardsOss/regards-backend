@@ -115,7 +115,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
                 "/endpoint/test3", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
                 CONFIGURED_ENDPOINT_URL, DEFAULT_CONTROLLER, RequestMethod.GET));
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performPost(MicroserviceResourceController.TYPE_MAPPING, instanceToken, mapping, requestBuilderCustomizer,
                     "Error during registring endpoints", DEFAULT_MICROSERVICE);
@@ -134,7 +134,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
     public void retrieveMicroserviceControllerEndpointsTest() {
 
         // Check that the microservice return the initialized endpoit.
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
@@ -143,7 +143,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
                    DEFAULT_MICROSERVICE, DEFAULT_CONTROLLER);
 
         // Check that no endpoint is returned for an unknown controller name
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
@@ -152,7 +152,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
                    DEFAULT_MICROSERVICE, "unknown-controller");
 
         // Check that no endpoint is returned for an unknown microservice name
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
@@ -173,7 +173,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
     public void retrieveMicroserviceControllersTest() {
 
         // Check that the microservice return is controllers names from is initialized resources.
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
@@ -182,7 +182,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
                    DEFAULT_MICROSERVICE);
 
         // Check that no controllers are returned for an unknown controller name
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());

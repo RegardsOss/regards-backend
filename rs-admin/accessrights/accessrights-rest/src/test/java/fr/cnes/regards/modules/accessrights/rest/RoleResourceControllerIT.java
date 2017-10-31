@@ -138,7 +138,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull("Cannot find an ADMIN resources", resourceToRemove);
 
         // Remove resource access
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().is(expectedStatus.value()));
         // Delete resource with PROJECT ADMIN
         String projectAdminJwt = manageSecurity(
@@ -187,7 +187,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull("Cannot find an ADMIN resources", resourceToRemove);
 
         // Remove resource access
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         // Delete resource with PROJECT ADMIN
         String projectAdminJwt = manageSecurity(
@@ -206,7 +206,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue(DefaultRole.REGISTERED_USER.name().equals(newRole.getParentRole().getName()));
 
         // Add resource to admin group
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         // Add resource with ADMIN
         String adminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING,
@@ -246,7 +246,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         roleRepository.save(adminRole);
 
         // Remove resource access
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         // Delete resource with PROJECT ADMIN
         String projectAdminJwt = manageSecurity(

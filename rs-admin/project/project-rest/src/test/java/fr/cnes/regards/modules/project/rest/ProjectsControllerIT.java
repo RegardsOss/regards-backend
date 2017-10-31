@@ -91,7 +91,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrievePublicProjectsTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet("/projects/public", publicToken, requestBuilderCustomizer, "error");
@@ -108,7 +108,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrieveAllProjectsByPage() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer
@@ -137,7 +137,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrieveAllProjects() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer
@@ -161,7 +161,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resource and Hateoas returned links")
     @Test
     public void retrieveProjectTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet("/projects/test1", publicToken, requestBuilderCustomizer, "Error there must be project results");
@@ -179,7 +179,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Test
     public void createProjectTest() {
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         Project project = new Project("description", "icon", true, "create-project");
@@ -194,7 +194,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Test
     public void createTwoProjectWithDifferentCase() {
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         Project project = new Project("description", "icon", true, "create-project");
@@ -205,7 +205,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
                     requestBuilderCustomizer,
                     "Error there must be project results");
 
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isConflict());
         project = new Project("description", "icon", true, "creAte-project");
         project.setLabel("create-project");
@@ -229,7 +229,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Test
     public void updateProjectTest() {
         final Project project = projectRepo.findOneByNameIgnoreCase("test1");
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performPut("/projects/" + project.getName(),
