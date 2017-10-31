@@ -94,7 +94,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @ResourceAccess(description = "Find all files from order for specified dataset", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
     public ResponseEntity<Page<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
-            @PathVariable("datasetId") Long datasetId, Pageable pageRequest) throws TooManyResultsException {
+            @PathVariable("datasetId") Long datasetId, Pageable pageRequest) {
         DatasetTask dsTask = datasetTaskService.loadComplete(datasetId);
         int cpt = 0;
         List<Resource<OrderDataFile>> dataFiles = new ArrayList<>();
