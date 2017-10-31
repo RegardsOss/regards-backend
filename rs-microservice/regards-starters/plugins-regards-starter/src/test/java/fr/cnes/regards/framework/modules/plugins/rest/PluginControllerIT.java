@@ -120,7 +120,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void getAllPlugins() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(3)));
         performGet(PluginController.PLUGINS, token, requestBuilderCustomizer, "unable to load all plugins");
@@ -174,7 +174,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get all the PluginConfiguration with the a specific ID
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         // expectations.add(MockMvcResultMatchers.jsonPath("$..content.pluginId", Matchers.hasToString(PLUGIN_ID)));
@@ -194,7 +194,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get the added PluginConfiguration
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$..content.active", Matchers.hasToString("[true]")));
@@ -216,7 +216,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         createPluginConfiguration(LABEL + " - second");
 
         // Get the added PluginConfiguration
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.[0].content.active", Matchers.hasToString(TRUE)));
@@ -233,7 +233,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get the added PluginConfiguration
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.[0].content.pluginId",
@@ -250,7 +250,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get the added PluginConfiguration
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
@@ -261,7 +261,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void getPluginConfigurationError() {
         // Get an unknown PluginConfiguration
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
         performGet(PluginController.PLUGINS_PLUGINID_CONFIGID, token, requestBuilderCustomizer,
                    "unable to load a plugin configuration", "PLUGIN_ID_FAKE", 157L);
@@ -272,7 +272,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("When a HTTP request GET an unknown plugin configuration, the HTTP return code is 404")
     public void getPluginConfigurationErrorWithoutPluginId() {
         // Get an unknown PluginConfiguration
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
         performGet(PluginController.PLUGINS_CONFIGID, token, requestBuilderCustomizer, "unable to load a plugin configuration",
                    156L);
@@ -284,7 +284,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     public void updatePluginConfiguration() throws ModuleException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
@@ -304,7 +304,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     public void updatePluginConfigurationErrorId() throws ModuleException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
 
         // Update the added PluginConfiguration
@@ -347,7 +347,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isCreated());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
@@ -368,7 +368,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
                 pluginParameters, 0);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isCreated());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",

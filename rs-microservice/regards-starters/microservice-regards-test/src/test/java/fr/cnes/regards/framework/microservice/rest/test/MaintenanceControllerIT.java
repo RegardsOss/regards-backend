@@ -143,7 +143,7 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         performDefaultGet(TestController.MAINTENANCE_TEST_URL, expectations, ERROR_MSG);
 
         // try a POST request : the service is unavailable
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.status().is(MaintenanceFilter.MAINTENANCE_HTTP_STATUS));
         // we skip documentation because status code 515 is not standard and Spring does not handle it.
