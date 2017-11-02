@@ -122,7 +122,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
         final ProjectConnection connection;
         final Project project = pProjectConnection.getProject();
         // Check referenced project exists
-        if ((project.getId() != null) && projectRepository.exists(project.getId())) {
+        if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
             // Check project connection to create doesn't already exists
             if (projectConnectionRepository
                     .findOneByProjectNameAndMicroservice(project.getName(),
@@ -180,7 +180,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
         if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
             final Project project = pProjectConnection.getProject();
             // Check that the referenced project exists
-            if ((project.getId() != null) && projectRepository.exists(project.getId())) {
+            if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
                 // Disable connection : new configuration may be incorrect
                 // Multitenant starter is reponsible for enabling data source
                 pProjectConnection.setEnabled(false);
@@ -213,9 +213,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public List<ProjectConnection> retrieveProjectConnection(final String pMicroService)
-            throws EntityNotFoundException {
-        return projectConnectionRepository.findByMicroservice(pMicroService);
+    public List<ProjectConnection> retrieveProjectConnection(final String microservice) throws EntityNotFoundException {
+        return projectConnectionRepository.getMicroserviceConnections(microservice);
     }
 
     /*

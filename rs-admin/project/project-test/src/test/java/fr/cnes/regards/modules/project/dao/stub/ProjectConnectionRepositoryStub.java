@@ -69,8 +69,8 @@ public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectCo
     }
 
     @Override
-    public List<ProjectConnection> findByMicroservice(String pMicroservice) {
-        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(pMicroservice))
+    public List<ProjectConnection> findByMicroserviceAndProjectIsDeletedFalse(String microservice) {
+        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(microservice))
                 .collect(Collectors.toList());
         return list;
     }

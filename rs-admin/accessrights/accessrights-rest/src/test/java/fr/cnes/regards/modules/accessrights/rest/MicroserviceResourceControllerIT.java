@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -114,9 +115,9 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
                 "/endpoint/test3", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
                 CONFIGURED_ENDPOINT_URL, DEFAULT_CONTROLLER, RequestMethod.GET));
-        final List<ResultMatcher> expectations = new ArrayList<>(3);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performPost(MicroserviceResourceController.TYPE_MAPPING, instanceToken, mapping, expectations,
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performPost(MicroserviceResourceController.TYPE_MAPPING, instanceToken, mapping, requestBuilderCustomizer,
                     "Error during registring endpoints", DEFAULT_MICROSERVICE);
 
     }
@@ -133,30 +134,30 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
     public void retrieveMicroserviceControllerEndpointsTest() {
 
         // Check that the microservice return the initialized endpoit.
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
-                   instanceToken, expectations, "Error retrieving endpoints for microservice and controller",
+                   instanceToken, requestBuilderCustomizer, "Error retrieving endpoints for microservice and controller",
                    DEFAULT_MICROSERVICE, DEFAULT_CONTROLLER);
 
         // Check that no endpoint is returned for an unknown controller name
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
-                   instanceToken, expectations, "Error retrieving endpoints for microservice and controller",
+                   instanceToken, requestBuilderCustomizer, "Error retrieving endpoints for microservice and controller",
                    DEFAULT_MICROSERVICE, "unknown-controller");
 
         // Check that no endpoint is returned for an unknown microservice name
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
-                   instanceToken, expectations, "Error retrieving endpoints for microservice and controller",
+                   instanceToken, requestBuilderCustomizer, "Error retrieving endpoints for microservice and controller",
                    "unkonwon-microservice", DEFAULT_CONTROLLER);
     }
 
@@ -172,21 +173,21 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
     public void retrieveMicroserviceControllersTest() {
 
         // Check that the microservice return is controllers names from is initialized resources.
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLERS_MAPPING,
-                   instanceToken, expectations, "Error retrieving endpoints controllers names for microservice",
+                   instanceToken, requestBuilderCustomizer, "Error retrieving endpoints controllers names for microservice",
                    DEFAULT_MICROSERVICE);
 
         // Check that no controllers are returned for an unknown controller name
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isEmpty());
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLERS_MAPPING,
-                   instanceToken, expectations, "Error retrieving endpoints controllers names for microservice",
+                   instanceToken, requestBuilderCustomizer, "Error retrieving endpoints controllers names for microservice",
                    "unkonwon-microservice");
     }
 

@@ -51,4 +51,14 @@ public interface IProjectRepository extends JpaRepository<Project, Long> {
      * @since 1.0-SNAPSHOT
      */
     List<Project> findByIsDeletedFalse();
+
+    /**
+     * Check if a project exists and is not deleted
+     * @param id project identifier
+     * @return true if it's active
+     */
+    default boolean isActiveProject(Long id) {
+        Project one = getOne(id);
+        return (one != null) && !one.isDeleted();
+    }
 }
