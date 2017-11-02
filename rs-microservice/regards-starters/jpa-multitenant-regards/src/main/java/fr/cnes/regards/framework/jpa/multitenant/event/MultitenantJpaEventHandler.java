@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.jpa.multitenant.event;
 
 import java.beans.PropertyVetoException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -30,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+
+import com.mchange.v2.c3p0.DataSources;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
@@ -124,23 +125,6 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     }
 
     /**
-     * Test connection
-     *
-     * @param dataSource
-     *            related data source
-     * @throws JpaMultitenantException
-     *             if connection fails
-     */
-    private void testConnection(DataSource dataSource) throws JpaMultitenantException {
-        try (Connection connection = dataSource.getConnection()) {
-            LOGGER.debug("Successful data source connection test");
-        } catch (SQLException e) {
-            LOGGER.debug("Data source connection fails.", e);
-            throw new JpaMultitenantException(e);
-        }
-    }
-
-    /**
      * Handle a new {@link TenantConnection} if the related microservice is exactly the same.
      *
      * @param eventMicroserviceName
@@ -153,12 +137,10 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
             try {
                 // Init data source
                 DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
-                // Test data source
-                testConnection(dataSource);
                 // Remove existing one
                 DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
                 if (oldDataSource != null) {
-                    oldDataSource.getConnection().close();
+                    DataSources.destroy(oldDataSource);
                 }
                 // Update schema
                 datasourceSchemaHelper.migrate(dataSource);
@@ -174,8 +156,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 LOGGER.error("Cannot handle datasource for tenant {}. Creation fails.", tenantConnection.getTenant());
                 LOGGER.error(e.getMessage(), e);
             } catch (SQLException e) {
-                LOGGER.error("Cannot release datasource for tenant {}. Update fails while closing old connection.",
-                             tenantConnection.getTenant());
+                LOGGER.error("Problem with datasource for tenant {}.", tenantConnection.getTenant());
                 LOGGER.error(e.getMessage(), e);
             } catch (JpaMultitenantException e) {
                 LOGGER.error("Cannot enable datasource for tenant {}. Update fails.", tenantConnection.getTenant());

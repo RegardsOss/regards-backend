@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.jpa.utils;
 
 import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -28,6 +30,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.c3p0.DataSources;
 
 /**
  *
@@ -163,9 +166,28 @@ public final class DataSourceHelper {
         cpds.setMaxPoolSize(pMaxPoolSize);
         cpds.setDriverClass(pDriverClassName);
         cpds.setPreferredTestQuery(pPreferredTestQuery);
-
         LOGGER.info("\n{}\nCreating a POOLED datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
 
         return cpds;
+    }
+
+    /**
+     * Test connection
+     *
+     * @param dataSource data source to test
+     * @param destroyOnFail if true, destroy datasource if connection test fails.
+     * @throws SQLException if connection fails
+     */
+    public static void testConnection(DataSource dataSource, boolean destroyOnFail) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            LOGGER.debug("Successful data source connection test");
+        } catch (SQLException e) {
+            LOGGER.error("Data source connection fails.", e);
+            if (destroyOnFail) {
+                LOGGER.error("Destroying data source", dataSource.toString());
+                DataSources.destroy(dataSource);
+            }
+            throw e;
+        }
     }
 }
