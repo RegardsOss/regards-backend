@@ -40,6 +40,7 @@ public final class AIPEntityBuilder {
         aipEntity.setAip(aip);
         aipEntity.setState(state);
         aipEntity.setSip(sip);
+        aipEntity.setIpId(aip.getId().toString());
         aipEntity.setCreationDate(OffsetDateTime.now());
         return aipEntity;
     }

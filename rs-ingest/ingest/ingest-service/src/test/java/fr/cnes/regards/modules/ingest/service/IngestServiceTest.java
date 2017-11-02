@@ -27,16 +27,12 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -51,21 +47,15 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 /**
  * @author Marc Sordi
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(classes = { IngestServiceTest.IngestConfiguration.class })
-public class IngestServiceTest extends AbstractDaoTransactionalTest {
+@ContextConfiguration(classes = { TestConfiguration.class })
+public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private ISIPRepository sipRepository;
 
     @Autowired
     private IAIPRepository aipRepository;
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class IngestConfiguration {
-    }
 
     @Autowired
     private IIngestService ingestService;

@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
 /**
@@ -33,5 +37,13 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     Set<AIPEntity> findBySip(SIPEntity sip);
+
+    Optional<AIPEntity> findByIpId(String ipId);
+
+    Set<Long> findIdByState(AIPState state);
+
+    @Modifying
+    @Query("UPDATE AIPEntity a set a.state = ?1 where a.id = ?2")
+    int updateAIPEntityState(AIPState state, Long id);
 
 }

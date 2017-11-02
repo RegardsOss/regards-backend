@@ -28,20 +28,15 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -52,6 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
@@ -66,6 +62,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
+import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPTaggingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
@@ -77,20 +74,14 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
  * Test class to verify {@link IngestProcessingJob}.
  * @author Sébastien Binda
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(classes = { IngestProcessingJobTest.IngestConfiguration.class })
-public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
+@ContextConfiguration(classes = { TestConfiguration.class })
+public class IngestProcessingJobTest extends AbstractRegardsServiceTransactionalIT {
 
     /**
      * Class logger.
      */
     private static final Logger LOG = LoggerFactory.getLogger(IngestProcessingJobTest.class);
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class IngestConfiguration {
-    }
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;

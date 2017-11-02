@@ -32,10 +32,12 @@ create
 	TABLE
 		t_aip(
 			id int8 not null,
+			ipId VARCHAR(128),
 			rawaip jsonb,
 			creation_date timestamp,
 			state varchar(255),
 			sip_id int8,
+			error_message varchar(256),
 			primary key (id)
 		);
 
@@ -54,6 +56,7 @@ CREATE
 	INDEX idx_aip_id ON
 	t_aip (
 		id,
+		ipId,
 		sip_id
 	);
 

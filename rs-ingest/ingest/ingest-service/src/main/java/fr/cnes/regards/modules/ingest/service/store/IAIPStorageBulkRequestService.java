@@ -16,27 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.entity;
+package fr.cnes.regards.modules.ingest.service.store;
 
-public enum AIPState {
-    /**
-     * AIP is ready to be stored
-     */
-    CREATED,
-    /**
-     * AIP is handled by storage.
-     */
-    QUEUED,
-    /**
-     * AIP has been rejected by storage
-     */
-    STORE_REJECTED,
-    /**
-     * Error during store process.
-     */
-    STORE_ERROR,
-    /**
-     * AIP is stored
-     */
-    STORED;
+public interface IAIPStorageBulkRequestService {
+
+    void postAIPStorageBulkRequest();
+
 }

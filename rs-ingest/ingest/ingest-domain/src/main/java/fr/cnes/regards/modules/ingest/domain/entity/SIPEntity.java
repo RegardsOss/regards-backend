@@ -66,7 +66,7 @@ public class SIPEntity {
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
-    private static final int MAX_URN_SIZE = 128;
+    public static final int MAX_URN_SIZE = 128;
 
     @Id
     @SequenceGenerator(name = "SipSequence", initialValue = 1, sequenceName = "seq_sip")
@@ -81,7 +81,7 @@ public class SIPEntity {
     private String sipId;
 
     /**
-     * The internal SIP identifier. If two SIP are ingested with same id, this idIp will distinguish them as 2 different
+     * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish them as 2 different
      * versions
      */
     @NotBlank

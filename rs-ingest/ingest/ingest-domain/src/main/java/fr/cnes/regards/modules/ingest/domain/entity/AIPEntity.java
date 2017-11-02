@@ -21,12 +21,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 @Entity
-@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,sip_id") })
+@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,ipId,sip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPEntity {
 
@@ -34,6 +35,14 @@ public class AIPEntity {
     @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
     private Long id;
+
+    /**
+     * The AIP Internal identifier (generated URN)
+     * versions
+     */
+    @NotBlank
+    @Column(name = "ipId", length = SIPEntity.MAX_URN_SIZE)
+    private String ipId;
 
     /**
      * The SIP identifier which generate the current AIP
@@ -50,6 +59,9 @@ public class AIPEntity {
     @NotNull
     @Column(name = "creation_date")
     private OffsetDateTime creationDate;
+
+    @Column(name = "error_message", length = 256)
+    private String errorMessage;
 
     @NotNull
     @Column(columnDefinition = "jsonb", name = "rawaip")
@@ -90,6 +102,22 @@ public class AIPEntity {
 
     public void setAip(AIP aip) {
         this.aip = aip;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public String getIpId() {
+        return ipId;
+    }
+
+    public void setIpId(String ipId) {
+        this.ipId = ipId;
     }
 
 }

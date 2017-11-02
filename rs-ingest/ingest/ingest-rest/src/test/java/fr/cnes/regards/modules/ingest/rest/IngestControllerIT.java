@@ -30,7 +30,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  * @author Marc Sordi
  *
  */
-@MultitenantTransactional
+@RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it" })
 public class IngestControllerIT extends AbstractRegardsTransactionalIT {
 

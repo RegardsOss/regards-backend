@@ -23,21 +23,17 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -57,11 +53,10 @@ import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
  * Test class to check scheduled tasks to handle created SIP to be processed by processing chains.
  * @author Sébastien Binda
  */
-@RunWith(SpringRunner.class)
 @TestPropertySource(properties = { "regards.ingest.process.new.sips.delay:3000" },
         locations = "classpath:test.properties")
-@ContextConfiguration(classes = { ScheduledIngestTaskTest.IngestConfiguration.class })
-public class ScheduledIngestTaskTest extends AbstractDaoTest {
+@ContextConfiguration(classes = { TestConfiguration.class })
+public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -87,11 +82,6 @@ public class ScheduledIngestTaskTest extends AbstractDaoTest {
     public static final String DEFAULT_PROCESSING_CHAIN_TEST = "defaultProcessingChain";
 
     public static final String SIP_ID_TEST = "SIP_001";
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class IngestConfiguration {
-    }
 
     @Before
     public void init() throws ModuleException {

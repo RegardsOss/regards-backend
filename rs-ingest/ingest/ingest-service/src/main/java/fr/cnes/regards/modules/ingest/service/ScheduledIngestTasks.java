@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
+import fr.cnes.regards.modules.ingest.service.store.IAIPStorageBulkRequestService;
 
 /**
  * Scheduled actions to process new CREATED SIPS by applying the associated processing chain
@@ -56,6 +57,9 @@ public class ScheduledIngestTasks {
     @Autowired
     private IIngestProcessingService ingestProcessingService;
 
+    @Autowired
+    private IAIPStorageBulkRequestService aipBulkRequestService;
+
     @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
@@ -63,6 +67,17 @@ public class ScheduledIngestTasks {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             ingestProcessingService.ingest();
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:60000}")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void processNewAipsBulkRequest() {
+        LOG.debug("Process new AIP bulk request to archival storage for all active tenants");
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            aipBulkRequestService.postAIPStorageBulkRequest();
             runtimeTenantResolver.clearTenant();
         }
     }
