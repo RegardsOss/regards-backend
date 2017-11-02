@@ -38,7 +38,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -46,24 +45,17 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
-import fr.cnes.regards.modules.search.client.ISearchAllClient;
-import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
-import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsReturnDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
+import fr.cnes.regards.modules.search.client.IJsonSearchClient;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
- *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
 @ModuleInfo(name = "search", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(path = SearchController.ROOT_PATH)
-public class SearchController {
+@RequestMapping(path = AccessSearchController.ROOT_PATH)
+public class AccessSearchController {
 
     /**
      * Function converting a {@link JsonArray} into a {@link Stream}
@@ -75,25 +67,7 @@ public class SearchController {
     private IServiceAggregatorClient serviceAggregatorClient;
 
     @Autowired
-    private ISearchAllClient searchAllClient;
-
-    @Autowired
-    private ISearchAllWithFacetsClient searchAllWithFacetsClient;
-
-    @Autowired
-    private ISearchCollectionsClient searchCollectionsClient;
-
-    @Autowired
-    private ISearchDatasetsClient searchDatasetsClient;
-
-    @Autowired
-    private ISearchDataobjectsClient searchDataobjectsClient;
-
-    @Autowired
-    private ISearchDataobjectsReturnDatasetsClient searchDataobjectsReturnDatasetsClient;
-
-    @Autowired
-    private ISearchDocumentsClient searchDocumentsClient;
+    private IJsonSearchClient searchClient;
 
     @Autowired
     private Gson gson;
@@ -122,19 +96,15 @@ public class SearchController {
      * collection, dataset, dataobject and document.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
+     * @param allParams all query parameters
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams) {
-        JsonObject entities = searchAllClient.searchAll(allParams).getBody();
+        JsonObject entities = searchClient.searchAll(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -144,21 +114,16 @@ public class SearchController {
      * collection, dataset, dataobject and document. Allows usage of facets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pFacets
-     *            facets to apply as a list of strings
+     * @param allParams all query parameters
+     * @param pFacets facets to apply as a list of strings
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = SEARCH_WITH_FACETS, method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document. Injects applicable UI Services and Catalog Services.")
     public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) {
-        JsonObject entities = searchAllWithFacetsClient.searchAll(allParams, pFacets).getBody();
+        JsonObject entities = searchClient.searchAll(allParams, pFacets).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -167,19 +132,15 @@ public class SearchController {
      * Perform an OpenSearch request on collections.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
+     * @param allParams all query parameters
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams) {
-        JsonObject entities = searchCollectionsClient.searchCollections(allParams).getBody();
+        JsonObject entities = searchClient.searchCollections(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -188,19 +149,15 @@ public class SearchController {
      * Perform an OpenSearch request on datasets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
+     * @param allParams all query parameters
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams) {
-        JsonObject entities = searchDatasetsClient.searchDatasets(allParams).getBody();
+        JsonObject entities = searchClient.searchDatasets(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -209,14 +166,9 @@ public class SearchController {
      * Perform an OpenSearch request on dataobjects. Only return required facets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pFacets
-     *            the facets to apply
+     * @param allParams all query parameters
+     * @param pFacets the facets to apply
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
@@ -224,7 +176,7 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets) {
-        JsonObject entities = searchDataobjectsClient.searchDataobjects(allParams, pFacets).getBody();
+        JsonObject entities = searchClient.searchDataobjects(allParams, pFacets).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -234,14 +186,9 @@ public class SearchController {
      * associated datasets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
-     * @param pFacets
-     *            the facets to apply
+     * @param allParams all query parameters
+     * @param pFacets the facets to apply
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
@@ -249,7 +196,7 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) {
-        JsonObject entities = searchDataobjectsReturnDatasetsClient.searchDataobjectsReturnDatasets(allParams, pFacets)
+        JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams, pFacets)
                 .getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
@@ -259,26 +206,21 @@ public class SearchController {
      * Perform an OpenSearch request on documents.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     *
-     * @param allParams
-     *            all query parameters
+     * @param allParams all query parameters
      * @return the search result with services injected
-     * @throws SearchException
-     *             when an error occurs while parsing the query
      */
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on documents. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams) {
-        JsonObject entities = searchDocumentsClient.searchDocuments(allParams).getBody();
+        JsonObject entities = searchClient.searchDocuments(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
      * Inject applicable Ui Services and Catalog Services into given entities
-     *
      * @param pEntities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
      */
     private void injectApplicableServices(JsonObject pEntities) {
@@ -295,7 +237,6 @@ public class SearchController {
 
     /**
      * Returns the applicable services of the given entity
-     *
      * @param pEntity The entity, represented as a {@link JsonObject}
      * @return The list of applicable services, represented as a {@link JsonObject}
      */

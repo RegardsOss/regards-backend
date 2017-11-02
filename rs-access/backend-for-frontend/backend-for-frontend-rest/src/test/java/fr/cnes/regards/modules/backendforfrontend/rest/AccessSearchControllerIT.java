@@ -38,18 +38,18 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- * Integration Test for {@link SearchController}
+ * Integration Test for {@link AccessSearchController}
  *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
-public class SearchControllerIT extends AbstractRegardsTransactionalIT {
+public class AccessSearchControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(SearchControllerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccessSearchControllerIT.class);
 
     @Test
     @Requirement("REGARDS_DSL_ACC_USE_700")
@@ -73,7 +73,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.SEARCH, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.SEARCH, expectations,
                           "Error searching all entities", builder);
     }
 
@@ -99,7 +99,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.SEARCH_WITH_FACETS, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.SEARCH_WITH_FACETS, expectations,
                           "Error searching all entities with facets", builder);
     }
 
@@ -118,7 +118,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.COLLECTIONS_SEARCH, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.COLLECTIONS_SEARCH, expectations,
                           "Error searching collections", builder);
     }
 
@@ -142,7 +142,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.DATASETS_SEARCH, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATASETS_SEARCH, expectations,
                           "Error searching datasets", builder);
     }
 
@@ -164,7 +164,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.DATAOBJECTS_SEARCH, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_SEARCH, expectations,
                           "Error searching datasets", builder);
     }
 
@@ -184,7 +184,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.DOCUMENTS_SEARCH, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DOCUMENTS_SEARCH, expectations,
                           "Error searching datasets", builder);
     }
 
@@ -208,7 +208,7 @@ public class SearchControllerIT extends AbstractRegardsTransactionalIT {
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(SearchController.ROOT_PATH + SearchController.DATAOBJECTS_DATASETS_SEARCH, expectations,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_DATASETS_SEARCH, expectations,
                           "Error searching datasets", builder);
     }
 

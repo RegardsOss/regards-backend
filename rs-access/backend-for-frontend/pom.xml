@@ -69,10 +69,6 @@
 	</dependencyManagement>
 
   <modules>
-    <module>backend-for-frontend-domain</module>
-    <module>backend-for-frontend-client</module>
-    <module>backend-for-frontend-dao</module>
     <module>backend-for-frontend-rest</module>
-    <module>backend-for-frontend-service</module>
   </modules>
 </project>

@@ -25,13 +25,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
-import fr.cnes.regards.modules.search.client.ISearchAllClient;
-import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
-import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsReturnDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
+import fr.cnes.regards.modules.search.client.IJsonSearchClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -54,64 +48,16 @@ public class BackendForFrontendTestConfiguration {
     }
 
     @Bean
-    @Primary
-    public ISearchAllClient searchAllClient() {
-        ISearchAllClient mock = Mockito.mock(ISearchAllClient.class);
+    public IJsonSearchClient searchClient() {
+        IJsonSearchClient mock = Mockito.mock(IJsonSearchClient.class);
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchAllWithFacetsClient searchAllWithFacetsClient() {
-        ISearchAllWithFacetsClient mock = Mockito.mock(ISearchAllWithFacetsClient.class);
-        Mockito.when(mock.searchAll(Mockito.any(), Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchCollectionsClient searchCollectionsClient() {
-        ISearchCollectionsClient mock = Mockito.mock(ISearchCollectionsClient.class);
-        Mockito.when(mock.searchCollections(Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDatasetsClient searchDatasetsClient() {
-        ISearchDatasetsClient mock = Mockito.mock(ISearchDatasetsClient.class);
+        Mockito.when(mock.searchAll(Mockito.any(), Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
+        Mockito.when(mock.searchCollections(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
         Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
+        Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
+        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
+        Mockito.when(mock.searchDocuments(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DOCUMENTS_RESULT);
+
         return mock;
     }
-
-    @Bean
-    @Primary
-    public ISearchDataobjectsClient searchDataobjectsClient() {
-        ISearchDataobjectsClient mock = Mockito.mock(ISearchDataobjectsClient.class);
-        Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDataobjectsReturnDatasetsClient searchDataobjectsReturnDatasetsClient() {
-        ISearchDataobjectsReturnDatasetsClient mock = Mockito.mock(ISearchDataobjectsReturnDatasetsClient.class);
-        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDocumentsClient searchDocumentsClient() {
-        ISearchDocumentsClient mock = Mockito.mock(ISearchDocumentsClient.class);
-        Mockito.when(mock.searchDocuments(Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_DOCUMENTS_RESULT);
-        return mock;
-    }
-
 }
