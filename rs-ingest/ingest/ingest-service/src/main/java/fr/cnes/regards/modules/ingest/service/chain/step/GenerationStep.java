@@ -59,7 +59,6 @@ public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
         UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, sipUrn.getEntityType(),
                 sipUrn.getTenant(), sipUrn.getEntityId(), sipUrn.getVersion());
         // Launch AIP generation
-        // TODO : Add a tool method to allow plugins to clone URN if there is more than one AIP generated.
         return generation.generate(sip, ipId, sipUrn.toString());
     }
 

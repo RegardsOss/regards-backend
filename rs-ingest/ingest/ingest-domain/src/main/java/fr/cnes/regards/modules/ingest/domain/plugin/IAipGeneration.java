@@ -41,7 +41,7 @@ public interface IAipGeneration {
      * @param sip {@link SIP}
      * @param ipId the IP_ID of the generated {@link AIP} (or radical if multiple AIPs are generated. In that case, you
      *            have to use
-     *            {@link UniformResourceName#setOrder(Long)} to differentiate each one.
+     *            {@link UniformResourceName#clone(UniformResourceName, Long)} to differentiate each one with a unique order.
      * @param sipId the SIP_ID of the generated {@link AIP}
      * @return generated {@link AIP}
      */
