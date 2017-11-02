@@ -58,7 +58,7 @@ public class TenantService implements ITenantService {
     @Override
     public Set<String> getAllTenants() {
         Set<String> tenants = new HashSet<>();
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findByIsDeletedFalse();
         if (projects != null) {
             projects.forEach(project -> tenants.add(project.getName()));
         }
@@ -69,14 +69,14 @@ public class TenantService implements ITenantService {
      * Retrieve all tenants fully configured : i.e. tenants that have a database configuration
      */
     @Override
-    public Set<String> getAllActiveTenants(String pMicroserviceName) {
-        Assert.notNull(pMicroserviceName);
+    public Set<String> getAllActiveTenants(String microserviceName) {
+        Assert.notNull(microserviceName, "Microservice name is required");
         Set<String> tenants = new HashSet<>();
         // Retrieve all projects
         List<Project> projects = projectRepository.findByIsDeletedFalse();
         for (Project project : projects) {
             ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
-                                                                                                   pMicroserviceName);
+                                                                                                   microserviceName);
             if ((pc != null) && pc.isEnabled()) {
                 tenants.add(project.getName());
             }
