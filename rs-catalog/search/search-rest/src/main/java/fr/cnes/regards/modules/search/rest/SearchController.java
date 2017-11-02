@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Preconditions;
 import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -96,81 +98,69 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @RestController
 @ModuleInfo(name = "search", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(path = CatalogController.PATH)
-public class CatalogController {
+@RequestMapping(path = SearchController.PATH)
+public class SearchController {
+    /**
+     * The main path
+     */
+    public static final String PATH = "/search";
 
-    public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
+    public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets";
 
-    public static final String DOCUMENTS_SEARCH = "/documents/search";
+    public static final String DOCUMENTS_SEARCH = "/documents";
 
-    public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
+    public static final String DATAOBJECTS_SEARCH_WITH_FACETS = "/dataobjects/withfacets";
 
     public static final String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
 
-    public static final String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects/searchwithoutfacets";
+    public static final String DATAOBJECTS_SEARCH = "/dataobjects";
 
-    public static final String DATASETS_SEARCH = "/datasets/search";
+    public static final String DATASETS_SEARCH = "/datasets";
 
-    public static final String DATASET_FILE = "/datasets/search";
+    public static final String COLLECTIONS_SEARCH = "/collections";
 
-    public static final String COLLECTIONS_SEARCH = "/collections/search";
-
-    public static final String SEARCH_WITH_FACETS = "/searchwithfacets";
-
-    public static final String SEARCH = "/search";
+    public static final String SEARCH_WITH_FACETS = "/withfacets";
 
     public static final String DESCRIPTOR = "/descriptor.xml";
 
     public static final String ENTITY_GET_MAPPING = "/entities/{urn}";
 
-    /**
-     * The main path
-     */
-    static final String PATH = "";
+    public static final String COLLECTIONS_URN = "/collections/{urn}";
+
+    public static final String DATASETS_URN = "/datasets/{urn}";
+
+    public static final String DATASETS_URN_FILE = "/datasets/{urn}/file";
+
+    public static final String DATAOBJECTS_URN = "/dataobjects/{urn}";
+
+    public static final String DOCUMENTS_URN = "/documents/{urn}";
 
     /**
      * Service performing the search from the query string. Autowired by Spring.
      */
-    private final ICatalogSearchService catalogSearchService;
+    @Autowired
+    private ICatalogSearchService catalogSearchService;
 
     /**
      * The resource service. Autowired by Spring.
      */
-    private final IFileEntityDescriptionHelper fileEntityDescriptionHelper;
+    @Autowired
+    private IFileEntityDescriptionHelper fileEntityDescriptionHelper;
 
     /**
      * The resource service. Autowired by Spring.
      */
-    private final IResourceService resourceService;
+    @Autowired
+    private IResourceService resourceService;
 
     /**
      * Get current tenant at runtime and allows tenant forcing. Autowired.
      */
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final OpenSearchDescriptionBuilder osDescriptorBuilder;
-
-    /**
-     * @param pCatalogSearchService
-     *            Service performing the search from the query string. Autowired by Spring.
-     * @param pSearchService
-     *            Service perfoming the ElasticSearch search directly. Autowired by Spring.
-     * @param pResourceService
-     *            The resource service. Autowired by Spring.
-     * @param pRuntimeTenantResolver
-     *            Get current tenant at runtime and allows tenant forcing. Autowired.
-     */
-    public CatalogController(final ICatalogSearchService pCatalogSearchService, final ISearchService pSearchService,
-            final IResourceService pResourceService, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final OpenSearchDescriptionBuilder osDescriptorBuilder,
-            IFileEntityDescriptionHelper fileEntityDescriptionHelper) {
-        super();
-        catalogSearchService = pCatalogSearchService;
-        resourceService = pResourceService;
-        runtimeTenantResolver = pRuntimeTenantResolver;
-        this.osDescriptorBuilder = osDescriptorBuilder;
-        this.fileEntityDescriptionHelper = fileEntityDescriptionHelper;
-    }
+    @Autowired
+    private OpenSearchDescriptionBuilder osDescriptorBuilder;
 
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
@@ -180,10 +170,9 @@ public class CatalogController {
      * @return the page of entities matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
-    @RequestMapping(path = SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The "
-                    + "returned objects can be any mix of collection, dataset, dataobject and document.",
+    @RequestMapping(method = RequestMethod.GET)
+    @ResourceAccess(description = "Perform an OpenSearch request on all indexed data, regardless of the type. The "
+            + "returned objects can be any mix of collection, dataset, dataobject and document.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
@@ -193,13 +182,12 @@ public class CatalogController {
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
 
-    @RequestMapping(path = SEARCH + DESCRIPTOR, method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+    @RequestMapping(path = DESCRIPTOR, method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on every type of entities",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchAllDescriptor() throws UnsupportedEncodingException {
-        return new ResponseEntity<>(osDescriptorBuilder.build(null, CatalogController.PATH + CatalogController.SEARCH),
-                HttpStatus.OK);
+        return new ResponseEntity<>(osDescriptorBuilder.build(null, SearchController.PATH), HttpStatus.OK);
     }
 
     /**
@@ -227,10 +215,10 @@ public class CatalogController {
      * Return the collection of passed URN_COLLECTION.
      * @param pUrn the Uniform Resource Name of the collection
      * @return the collection
-     * @throws EntityNotFoundException if no collection with identifier provided can be found
+     * @throws EntityNotFoundException           if no collection with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
-    @RequestMapping(path = "/collections/{urn}", method = RequestMethod.GET)
+    @RequestMapping(path = COLLECTIONS_URN, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the collection of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Collection>> getCollection(
             @Valid @PathVariable("urn") final UniformResourceName pUrn)
@@ -253,8 +241,8 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
             final PagedResourcesAssembler<Collection> pAssembler) throws SearchException {
-        final SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                              EntityType.COLLECTION);
+        final SimpleSearchKey<Collection> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.COLLECTION);
         final FacetPage<Collection> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
@@ -265,17 +253,17 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
      * Return the dataset of passed URN_COLLECTION.
      * @param pUrn the Uniform Resource Name of the dataset
      * @return the dataset
-     * @throws EntityNotFoundException if no dataset with identifier provided can be found
+     * @throws EntityNotFoundException           if no dataset with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
-    @RequestMapping(path = "/datasets/{urn}", method = RequestMethod.GET)
+    @RequestMapping(path = DATASETS_URN, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Dataset>> getDataset(@Valid @PathVariable("urn") final UniformResourceName pUrn,
             DatasetResourcesAssembler assembler) throws EntityOperationForbiddenException, EntityNotFoundException {
@@ -285,12 +273,10 @@ public class CatalogController {
 
     /**
      * Return the dataset file of passed dataset URN.
-     *
      * @param pUrn the Uniform Resource Name of the dataset
      * @return the dataset file
-     * @throws SearchException
      */
-    @RequestMapping(path = "/datasets/{urn}/file", method = RequestMethod.GET)
+    @RequestMapping(path = DATASETS_URN_FILE, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> retrieveDatasetDescription(
             @RequestParam(name = "origin", required = false) String origin, @PathVariable("urn") String pUrn,
@@ -326,8 +312,8 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
             PagedDatasetResourcesAssembler pAssembler) throws SearchException {
-        final SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                           EntityType.DATASET);
+        final SimpleSearchKey<Dataset> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATASET);
         final FacetPage<Dataset> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
@@ -338,17 +324,17 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDatasetsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATASET, PATH + DATASETS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
      * Return the dataobject of passed URN_COLLECTION.
      * @param pUrn the Uniform Resource Name of the dataobject
      * @return the dataobject
-     * @throws EntityNotFoundException if no dataobject with identifier provided can be found
+     * @throws EntityNotFoundException           if no dataobject with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
-    @RequestMapping(path = "/dataobjects/{urn}", method = RequestMethod.GET)
+    @RequestMapping(path = DATAOBJECTS_URN, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the dataobject of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<DataObject>> getDataobject(
             @Valid @PathVariable("urn") final UniformResourceName pUrn)
@@ -366,15 +352,15 @@ public class CatalogController {
      * @return the page of dataobjects matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
-    @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
+    @RequestMapping(path = DATAOBJECTS_SEARCH_WITH_FACETS, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<FacettedPagedResources<Resource<DataObject>>> searchDataobjects(
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets, final Pageable pPageable,
             FacettedPagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        final SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                              EntityType.DATA);
+        final SimpleSearchKey<DataObject> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
         final FacetPage<DataObject> result = catalogSearchService.search(allParams, searchKey, pFacets, pPageable);
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
@@ -386,25 +372,25 @@ public class CatalogController {
      * @return the page of dataobjects matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
-    @RequestMapping(path = DATAOBJECTS_SEARCH_WITHOUT_FACETS, method = RequestMethod.GET)
+    @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject without facets",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
             FacettedPagedResourcesAssembler<DataObject> pAssembler) throws SearchException {
-        final SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                              EntityType.DATA);
+        final SimpleSearchKey<DataObject> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
         final Page<DataObject> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
 
-    @RequestMapping(path = DATAOBJECTS_SEARCH + DESCRIPTOR, method = RequestMethod.GET,
+    @RequestMapping(path = DATAOBJECTS_SEARCH_WITH_FACETS + DESCRIPTOR, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(description = "endpoint allowing to get the OpenSearch descriptor for searches on data",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
-        return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH),
-                HttpStatus.OK);
+        return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH_WITH_FACETS),
+                                    HttpStatus.OK);
     }
 
     /**
@@ -418,10 +404,9 @@ public class CatalogController {
      * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
-                    + "but will return the associated datasets.",
-            role = DefaultRole.PUBLIC)
+    @ResourceAccess(description =
+            "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
+                    + "but will return the associated datasets.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets, final Pageable pPageable,
@@ -437,22 +422,21 @@ public class CatalogController {
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned "
-                    + "are datasets",
-            role = DefaultRole.PUBLIC)
+                    + "are datasets", role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
      * Return the document of passed URN_COLLECTION.
      * @param pUrn the Uniform Resource Name of the document
      * @return the document
-     * @throws EntityNotFoundException if no document with identifier provided can be found
+     * @throws EntityNotFoundException           if no document with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
-    @RequestMapping(path = "/documents/{urn}", method = RequestMethod.GET)
+    @RequestMapping(path = DOCUMENTS_URN, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the document of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Document>> getDocument(@Valid @PathVariable("urn") final UniformResourceName pUrn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
@@ -465,7 +449,7 @@ public class CatalogController {
      * Unified entity retrieval endpoint
      * @param pUrn the entity URN
      * @return an entity
-     * @throws EntityNotFoundException if no entity with identifier provided can be found
+     * @throws EntityNotFoundException           if no entity with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
     @SuppressWarnings("unchecked")
@@ -499,8 +483,8 @@ public class CatalogController {
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(
             @RequestParam final Map<String, String> allParams, final Pageable pPageable,
             final PagedResourcesAssembler<Document> pAssembler) throws SearchException {
-        final SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                            EntityType.DOCUMENT);
+        final SimpleSearchKey<Document> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DOCUMENT);
         final FacetPage<Document> result = catalogSearchService.search(allParams, searchKey, null, pPageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
@@ -512,7 +496,7 @@ public class CatalogController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDocumentsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescriptorBuilder.build(EntityType.DOCUMENT, PATH + DOCUMENTS_SEARCH),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -529,10 +513,10 @@ public class CatalogController {
     public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "datasetIpId", required = false) final String datasetIpId,
             @RequestParam(value = "fileTypes") final String[] fileTypes) throws SearchException {
-        final SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(runtimeTenantResolver.getTenant(),
-                                                                              EntityType.DATA);
-        DocFilesSummary summary = catalogSearchService.computeDatasetsSummary(allParams, searchKey, datasetIpId,
-                                                                              fileTypes);
+        final SimpleSearchKey<DataObject> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DATA);
+        DocFilesSummary summary = catalogSearchService
+                .computeDatasetsSummary(allParams, searchKey, datasetIpId, fileTypes);
         return new ResponseEntity<>(summary, HttpStatus.OK);
     }
 
@@ -544,7 +528,7 @@ public class CatalogController {
      */
     private <T> PagedResources<Resource<T>> toPagedResources(final Page<T> pElements,
             final PagedResourcesAssembler<T> pAssembler) {
-        Assert.notNull(pElements);
+        Preconditions.checkNotNull(pElements);
         final PagedResources<Resource<T>> pageResources = pAssembler.toResource(pElements);
         pageResources.forEach(resource -> resource.add(toResource(resource.getContent()).getLinks()));
         return pageResources;

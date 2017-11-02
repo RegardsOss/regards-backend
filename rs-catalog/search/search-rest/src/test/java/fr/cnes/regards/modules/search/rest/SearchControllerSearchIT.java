@@ -59,27 +59,25 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.models.domain.attributes.Fragment;
+import static fr.cnes.regards.modules.search.rest.SearchController.DATAOBJECTS_SEARCH_WITH_FACETS;
+import static fr.cnes.regards.modules.search.rest.SearchController.PATH;
 
 /**
- *
  * Query search
  *
  * Lucene special characters must be escaped :
  * + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
- *
- *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(locations = { "classpath:test.properties" })
 @ContextConfiguration(classes = { CatalogITConfiguration.class })
 @MultitenantTransactional
-public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
+public class SearchControllerSearchIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogControllerSearchIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchControllerSearchIT.class);
 
     private static final String OPENSEARCH_COLON = ":";
 
@@ -121,10 +119,9 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
 
-        RequestParamBuilder builder = RequestParamBuilder.build()
-                .param("q",
-                       "(tags:(URN\\:AIP\\:DATASET\\:project1\\:3874e16e\\-f729\\-49c0\\-bae0\\-2c6903ec64e4\\:V1))");
-        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q",
+                                                                        "(tags:(URN\\:AIP\\:DATASET\\:project1\\:3874e16e\\-f729\\-49c0\\-bae0\\-2c6903ec64e4\\:V1))");
+        performDefaultGet(PATH + DATAOBJECTS_SEARCH_WITH_FACETS, expectations, "Error searching dataobjects", builder);
     }
 
     @Test
@@ -136,7 +133,7 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
 
         RequestParamBuilder builder = RequestParamBuilder.build()
                 .param("q", "(tags:\"URN:AIP:DATASET:project1:3874e16e-f729-49c0-bae0-2c6903ec64e4:V1\")");
-        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
+        performDefaultGet(PATH + DATAOBJECTS_SEARCH_WITH_FACETS, expectations, "Error searching dataobjects", builder);
     }
 
     @Test
@@ -159,10 +156,10 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
                 .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(attModels)));
 
-        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "("
-                + attModel.buildJsonPath(StaticProperties.PROPERTIES)
+        RequestParamBuilder builder = RequestParamBuilder.build().param("q", "(" + attModel
+                .buildJsonPath(StaticProperties.PROPERTIES)
                 + ":\"lmlml*\" AND (tags:(URN\\:AIP\\:DATASET\\:project1\\:3874e16e\\-f729\\-49c0\\-bae0\\-2c6903ec64e4\\:V1)))");
-        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
+        performDefaultGet(PATH + DATAOBJECTS_SEARCH_WITH_FACETS, expectations, "Error searching dataobjects", builder);
     }
 
     @Test
@@ -201,7 +198,7 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         // builder.param("facets", attModel.buildJsonPath(StaticProperties.PROPERTIES));
         builder.param("facets", "creationDate");
         builder.param("facets", attModel.buildJsonPath(StaticProperties.PROPERTIES));
-        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
+        performDefaultGet(PATH + DATAOBJECTS_SEARCH_WITH_FACETS, expectations, "Error searching dataobjects", builder);
     }
 
     @Test
@@ -246,16 +243,10 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Utility method to build and launch query
      *
      * {@link https://lucene.apache.org/core/6_6_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description}
      * {@link https://lucene.apache.org/core/6_6_0/queryparser/index.html}
-     *
-     * @param dynAttModels
-     * @param facets
-     * @param data
-     * @param openSearchQuery
      */
     private final void doSearchDataObjects(List<AttributeModel> dynAttModels, List<DataObject> data,
             List<AttributeModel> facets, String openSearchQuery) {
@@ -294,7 +285,8 @@ public class CatalogControllerSearchIT extends AbstractRegardsTransactionalIT {
         }
 
         // Launch request
-        performDefaultGet(CatalogController.DATAOBJECTS_SEARCH, expectations, "Error searching dataobjects", builder);
+        performDefaultGet(SearchController.PATH + DATAOBJECTS_SEARCH_WITH_FACETS, expectations,
+                          "Error searching dataobjects", builder);
     }
 
     @Override
