@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -14,8 +14,8 @@ import fr.cnes.regards.modules.search.client.ICatalogClient;
 public class MockedFeignClientConf {
 
     @Bean
-    public ICatalogClient catalogClient() {
-        return Mockito.mock(ICatalogClient.class);
+    public ISearchClient searchClient() {
+        return Mockito.mock(ISearchClient.class);
     }
 
     @Bean

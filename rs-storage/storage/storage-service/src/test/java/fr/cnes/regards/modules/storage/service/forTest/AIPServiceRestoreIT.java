@@ -39,7 +39,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -62,7 +61,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransact
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.models.domain.Model;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -160,7 +159,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private ICatalogClient catalogClient;
+    private ISearchClient searchClient;
 
     private PluginConfiguration catalogSecuDelegConf;
 
@@ -177,7 +176,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         initCacheDir();
         //         this.cleanUp(); //comment if you are not interrupting tests during their execution
         // as we are checking rights, lets mock the response from catalog: always ok for anything
-        Mockito.when(catalogClient.getEntity(Mockito.any())).thenReturn(
+        Mockito.when(searchClient.getEntity(Mockito.any())).thenReturn(
                                                                         new ResponseEntity<>(
                                                                                 new Resource<>(new Collection(
                                                                                         Model.build("name", "desc",
