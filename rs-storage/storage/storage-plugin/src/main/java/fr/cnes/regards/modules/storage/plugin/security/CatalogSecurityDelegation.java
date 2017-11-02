@@ -15,7 +15,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.dao.AIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 public class CatalogSecurityDelegation implements ISecurityDelegation {
 
     @Autowired
-    private ICatalogClient catalogClient;
+    private ISearchClient searchClient;
 
     @Autowired
     private IProjectUsersClient projectUsersClient;
@@ -43,7 +43,8 @@ public class CatalogSecurityDelegation implements ISecurityDelegation {
     public boolean hasAccess(String ipId) throws EntityNotFoundException {
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<Resource<AbstractEntity>> catalogResponse = catalogClient.getEntity(UniformResourceName.fromString(ipId));
+            ResponseEntity<Resource<AbstractEntity>> catalogResponse = searchClient
+                    .getEntity(UniformResourceName.fromString(ipId));
             if (!HttpUtils.isSuccess(catalogResponse.getStatusCode()) && !catalogResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                 // either there was an error or it was forbidden
                 return false;
