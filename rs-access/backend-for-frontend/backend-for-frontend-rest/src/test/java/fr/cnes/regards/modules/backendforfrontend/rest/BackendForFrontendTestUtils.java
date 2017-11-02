@@ -29,7 +29,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -45,11 +44,6 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.search.client.ISearchAllClient;
-import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
-import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
 
 /**
  * Declare static variables for tests.
@@ -109,7 +103,7 @@ public class BackendForFrontendTestUtils {
     }
 
     /**
-     * The result a call to {@link ISearchAllClient#searchAll(java.util.Map)}
+     * The result a call to IJsonSearchClient#searchAll
      */
     public static final ResponseEntity<JsonObject> SEARCH_ALL_RESULT;
     static {
@@ -121,7 +115,7 @@ public class BackendForFrontendTestUtils {
     }
 
     /**
-     * The result a call to {@link ISearchCollectionsClient#searchCollections(java.util.Map)}
+     * The result a call to IJsonSearchClient#searchCollections
      */
     public static final ResponseEntity<JsonObject> SEARCH_COLLECTIONS_RESULT;
     static {
@@ -132,7 +126,7 @@ public class BackendForFrontendTestUtils {
     }
 
     /**
-     * The result a call to {@link ISearchDatasetsClient#searchDatasets(java.util.Map)}
+     * The result a call to IJsonSearchClient#searchDatasets
      */
     public static final ResponseEntity<JsonObject> SEARCH_DATASETS_RESULT;
     static {
@@ -144,7 +138,7 @@ public class BackendForFrontendTestUtils {
     }
 
     /**
-     * The result a call to {@link ISearchDataobjectsClient#searchDataobjects(java.util.Map, String[])}
+     * The result a call to IJsonSearchClient#searchDataobjects
      */
     public static final ResponseEntity<JsonObject> SEARCH_DATAOBJECTS_RESULT;
     static {
@@ -155,7 +149,7 @@ public class BackendForFrontendTestUtils {
     }
 
     /**
-     * The result a call to {@link ISearchDocumentsClient#searchDocuments(java.util.Map)}
+     * The result a call to IJsonSearchClient#searchDocuments
      */
     public static final ResponseEntity<JsonObject> SEARCH_DOCUMENTS_RESULT;
     static {
