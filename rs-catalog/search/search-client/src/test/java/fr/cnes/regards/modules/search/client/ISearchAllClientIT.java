@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -30,7 +32,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 
 /**
- * Integration tests for {@link ISearchAllClient}.
+ * Integration tests for {@link IJsonSearchClient#searchAll}.
  *
  * @author Xavier-Alexandre Brochard
  */
