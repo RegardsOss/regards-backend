@@ -45,14 +45,14 @@ public interface IJsonSearchClient {
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams);
 
-    @RequestMapping(value = "withfacets", method = RequestMethod.GET)
+    @RequestMapping(value = "/withfacets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets);
 
-    @RequestMapping(value = "collections", method = RequestMethod.GET)
+    @RequestMapping(value = "/collections", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams);
 
-    @RequestMapping(value = "/dataobjects", method = RequestMethod.GET)
+    @RequestMapping(value = "/dataobjects/withfacets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets);
 
