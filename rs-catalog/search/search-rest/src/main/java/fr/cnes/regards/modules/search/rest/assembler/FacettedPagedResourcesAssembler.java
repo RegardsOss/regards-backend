@@ -55,7 +55,8 @@ public class FacettedPagedResourcesAssembler<T extends IIndexable>
     }
 
     /**
-     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
+     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a
+     * {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
      * Will add pagination links based on the given the self link.
      *
      * @param pFacetPage must not be {@literal null}.
@@ -70,9 +71,6 @@ public class FacettedPagedResourcesAssembler<T extends IIndexable>
         return new FacettedPagedResources<>(facets, content, metaData, links);
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
-     */
     @Override
     public PagedResources<Resource<T>> toResource(Page<T> pEntity) {
         return delegate.toResource(pEntity);

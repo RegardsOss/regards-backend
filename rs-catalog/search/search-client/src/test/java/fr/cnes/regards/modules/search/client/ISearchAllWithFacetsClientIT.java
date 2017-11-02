@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -30,13 +32,13 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 
 /**
- * Integration tests for {@link ISearchAllWithFacetsClient}.
+ * Integration tests for {@link IJsonSearchClient#searchAll(Map, String[])}.
  *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchAllWithFacetsClientIT extends AbstractSearchClientIT<ISearchAllWithFacetsClient> {
+public class ISearchAllWithFacetsClientIT extends AbstractSearchClientIT<IJsonSearchClient> {
 
     /**
      * Check that the Feign Client responds with a 200
@@ -46,10 +48,4 @@ public class ISearchAllWithFacetsClientIT extends AbstractSearchClientIT<ISearch
         ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap(), new String[] {});
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
-
-    @Override
-    protected Class<ISearchAllWithFacetsClient> getClazz() {
-        return ISearchAllWithFacetsClient.class;
-    }
-
 }

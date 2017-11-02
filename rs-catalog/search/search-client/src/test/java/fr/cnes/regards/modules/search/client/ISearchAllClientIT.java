@@ -36,7 +36,7 @@ import com.google.gson.JsonObject;
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchAllClientIT extends AbstractSearchClientIT<ISearchAllClient> {
+public class ISearchAllClientIT extends AbstractSearchClientIT<IJsonSearchClient> {
 
     /**
      * Check that the Feign Client responds with a 200
@@ -45,11 +45,6 @@ public class ISearchAllClientIT extends AbstractSearchClientIT<ISearchAllClient>
     public void search() {
         ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap());
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
-    }
-
-    @Override
-    protected Class<ISearchAllClient> getClazz() {
-        return ISearchAllClient.class;
     }
 
 }

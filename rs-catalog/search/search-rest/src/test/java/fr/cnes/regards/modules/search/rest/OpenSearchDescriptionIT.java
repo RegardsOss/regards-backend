@@ -105,7 +105,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.SEARCH + CatalogController.DESCRIPTOR,
+        performDefaultGet(SearchController.PATH + SearchController.DESCRIPTOR,
                           requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
@@ -135,7 +135,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.COLLECTIONS_SEARCH + CatalogController.DESCRIPTOR,
+        performDefaultGet(SearchController.PATH + SearchController.COLLECTIONS_SEARCH + SearchController.DESCRIPTOR,
                           requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
@@ -161,7 +161,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DATASETS_SEARCH + CatalogController.DESCRIPTOR,
+        performDefaultGet(SearchController.PATH + SearchController.DATASETS_SEARCH + SearchController.DESCRIPTOR,
                           requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
@@ -176,7 +176,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         ModelAttrAssoc assocData = new ModelAttrAssoc(attrData, modData);
         assocs.add(assocData);
         Mockito.when(modelAttrAssocClient.getModelAttrAssocsFor(EntityType.DATA))
-                .thenReturn(new ResponseEntity<java.util.Collection<ModelAttrAssoc>>(assocs, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(assocs, HttpStatus.OK));
 
         Project project = new Project("pDesc", "pIcon", true, DEFAULT_TENANT);
         project.setHost("http://test.test:120/");
@@ -187,7 +187,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DATAOBJECTS_SEARCH + CatalogController.DESCRIPTOR,
+        performDefaultGet(SearchController.PATH + SearchController.DATAOBJECTS_SEARCH_WITH_FACETS + SearchController.DESCRIPTOR,
                           requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
@@ -213,8 +213,8 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DATAOBJECTS_DATASETS_SEARCH
-                + CatalogController.DESCRIPTOR, requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.DATAOBJECTS_DATASETS_SEARCH
+                + SearchController.DESCRIPTOR, requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Test
@@ -239,7 +239,7 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DOCUMENTS_SEARCH + CatalogController.DESCRIPTOR,
+        performDefaultGet(SearchController.PATH + SearchController.DOCUMENTS_SEARCH + SearchController.DESCRIPTOR,
                           requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 

@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.rest.CatalogControllerTestUtils;
+import fr.cnes.regards.modules.search.rest.SearchController;
 
 @TestPropertySource(locations = { "classpath:test-representation.properties" })
 @ActiveProfiles("testAmqp")
@@ -139,22 +140,18 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content", Matchers.notNullValue()));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label",
-                                                                               Matchers.is("mycollection")));
-        String jwt = manageDefaultSecurity("/collections/{urn}", RequestMethod.GET);
-        performGet("/collections/{urn}", jwt, requestBuilderCustomizer, "Error retrieving a collection", COLLECTION.getIpId());
+        requestBuilderCustomizer.addExpectation(
+                MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content.label", Matchers.is("mycollection")));
+        String jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
+        performGet(SearchController.PATH + SearchController.COLLECTIONS_URN, jwt, requestBuilderCustomizer,
+                   "Error retrieving a collection", COLLECTION.getIpId());
         // now lets try again with a newly created puglin configuration
         acceptToUse = new MediaType("text", "markdown").toString();
         requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         // create a pluginConfiguration for GeoJson
-        PluginMetaData markdownMeta = PluginUtils.createPluginMetaData(MarkdownRepresentation.class,
-                                                                       Lists.newArrayList(IRepresentation.class
-                                                                                                  .getPackage()
-                                                                                                  .getName(),
-                                                                                          MarkdownRepresentation.class
-                                                                                                  .getPackage()
-                                                                                                  .getName()));
+        PluginMetaData markdownMeta = PluginUtils.createPluginMetaData(MarkdownRepresentation.class, Lists.newArrayList(
+                IRepresentation.class.getPackage().getName(), MarkdownRepresentation.class.getPackage().getName()));
 
         PluginConfiguration markdownConf = new PluginConfiguration(markdownMeta, "dummy reprensentation plugin conf");
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
@@ -169,8 +166,9 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MarkdownRepresentation.MEDIA_TYPE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().bytes(expectedContent));
-        jwt = manageDefaultSecurity("/collections/{urn}", RequestMethod.GET);
-        performGet("/collections/{urn}", jwt, requestBuilderCustomizer, "Error retrieving a collection", COLLECTION.getIpId());
+        jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
+        performGet(SearchController.PATH + SearchController.COLLECTIONS_URN, jwt, requestBuilderCustomizer,
+                   "Error retrieving a collection", COLLECTION.getIpId());
         // now that we have seen that the creation of the plugin was taken into account lets desactivate it and take the
         // exception!
         markdownConf.setIsActive(false);
@@ -180,8 +178,9 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotAcceptable());
-        jwt = manageDefaultSecurity("/collections/{urn}", RequestMethod.GET);
-        performGet("/collections/{urn}", jwt, requestBuilderCustomizer, "Error retrieving a collection", COLLECTION.getIpId());
+        jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
+        performGet(SearchController.PATH + SearchController.COLLECTIONS_URN, jwt, requestBuilderCustomizer, "Error retrieving a collection",
+                   COLLECTION.getIpId());
         // now lets reactivate it
         markdownConf.setIsActive(true);
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
@@ -193,8 +192,9 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MarkdownRepresentation.MEDIA_TYPE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().bytes(expectedContent));
-        jwt = manageDefaultSecurity("/collections/{urn}", RequestMethod.GET);
-        performGet("/collections/{urn}", jwt, requestBuilderCustomizer, "Error retrieving a collection", COLLECTION.getIpId());
+        jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
+        performGet(SearchController.PATH + SearchController.COLLECTIONS_URN, jwt, requestBuilderCustomizer, "Error retrieving a collection",
+                   COLLECTION.getIpId());
         // now lets delete it
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.deletePluginConfiguration(markdownConf.getId());
@@ -202,8 +202,9 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         requestBuilderCustomizer = getRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotAcceptable());
-        jwt = manageDefaultSecurity("/collections/{urn}", RequestMethod.GET);
-        performGet("/collections/{urn}", jwt, requestBuilderCustomizer, "Error retrieving a collection", COLLECTION.getIpId());
+        jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
+        performGet(SearchController.PATH + SearchController.COLLECTIONS_URN, jwt, requestBuilderCustomizer, "Error retrieving a collection",
+                   COLLECTION.getIpId());
     }
 
     @Test
@@ -213,9 +214,9 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // \" and \" are to be added because the body is "..." and not just the string
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content()
-                                                        .bytes(("\"" + TestController.TEST_BODY + "\"").getBytes()));
-        String jwt = manageDefaultSecurity("/collections/{urn}", RequestMethod.GET);
+        requestBuilderCustomizer.addExpectation(
+                MockMvcResultMatchers.content().bytes(("\"" + TestController.TEST_BODY + "\"").getBytes()));
+        String jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
         performGet(TestController.TEST_PATH, jwt, requestBuilderCustomizer, "error getting the test hello world");
     }
 

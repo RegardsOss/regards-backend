@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import java.lang.reflect.ParameterizedType;
+
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -28,6 +30,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -94,5 +97,7 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         return LOG;
     }
 
-    protected abstract Class<T> getClazz();
+    protected Class<T> getClazz() {
+        return (Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
 }
