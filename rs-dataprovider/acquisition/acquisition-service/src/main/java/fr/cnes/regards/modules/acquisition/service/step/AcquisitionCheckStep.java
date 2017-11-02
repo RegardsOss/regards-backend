@@ -156,7 +156,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
         currentProduct.setSession(chainGeneration.getSession());
         currentProduct.addAcquisitionFile(acqFile);
         acqFile.setProduct(currentProduct);
-        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ virer 
+        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ à virer 
         //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
 
         return currentProduct;

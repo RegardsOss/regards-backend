@@ -144,14 +144,14 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     }
 
     @Override
-    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles, String datasetName)
+    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, String datasetName)
             throws ModuleException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public SIPCollection runPlugin(String sessionId, List<AcquisitionFile> acqFiles) throws ModuleException {
+    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
         // TODO Auto-generated method stub
         return null;
     }

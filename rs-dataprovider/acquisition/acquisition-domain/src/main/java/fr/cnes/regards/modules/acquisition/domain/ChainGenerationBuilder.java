@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain;
 
 import java.time.OffsetDateTime;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
@@ -85,7 +86,7 @@ public final class ChainGenerationBuilder {
         return this;
     }
     
-    public ChainGenerationBuilder withScanAcquisitionPluginConf(Long  pluginconfId) {
+    public ChainGenerationBuilder withScanAcquisitionPluginConf(PluginConfiguration  pluginconfId) {
         chain.setScanAcquisitionPluginConf(pluginconfId);
         return this;
     }

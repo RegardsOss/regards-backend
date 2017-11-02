@@ -238,22 +238,22 @@ public class ScanJobIT {
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
-        chain.setScanAcquisitionPluginConf(pluginService
-                .getPluginConfiguration("TestScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class).getId());
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
                                           OffsetDateTime.now().minusDays(10).toString());
 
-        chain.setCheckAcquisitionPluginConf(pluginService
-                .getPluginConfiguration("BasicCheckFilePlugin", ICheckFilePlugin.class).getId());
+        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
+                                                                                 ICheckFilePlugin.class));
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
-        chain.setGenerateSIPPluginConf(pluginService
-                .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
+        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+                                                                            IGenerateSIPPlugin.class));
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
@@ -289,10 +289,9 @@ public class ScanJobIT {
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
         // Scan plugin
-        chain.setScanAcquisitionPluginConf(pluginService
-                .getPluginConfiguration("TestScanDirectoryOneProductWithMultipleFilesPlugin",
-                                        IAcquisitionScanDirectoryPlugin.class)
-                .getId());
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
+                                                                                "TestScanDirectoryOneProductWithMultipleFilesPlugin",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
         chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_PRODUCT_PARAM,
                                           metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_FILE_PARAM,
@@ -303,13 +302,13 @@ public class ScanJobIT {
                                           OffsetDateTime.now().minusDays(10).toString());
 
         // Check plugin
-        chain.setCheckAcquisitionPluginConf(pluginService
-                .getPluginConfiguration("CheckInPlugin", ICheckFilePlugin.class).getId());
+        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
+                                                                                 ICheckFilePlugin.class));
         chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         // Generate SIP plugin
-        chain.setGenerateSIPPluginConf(pluginService
-                .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
+        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+                                                                            IGenerateSIPPlugin.class));
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
@@ -346,16 +345,16 @@ public class ScanJobIT {
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
-        chain.setScanAcquisitionPluginConf(pluginService
-                .getPluginConfiguration("TestScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class).getId());
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
                                           OffsetDateTime.now().minusDays(10).toString());
 
-        chain.setGenerateSIPPluginConf(pluginService
-                .getPluginConfiguration("TestGenerateSipPlugin", IGenerateSIPPlugin.class).getId());
+        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+                                                                            IGenerateSIPPlugin.class));
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
@@ -406,7 +405,7 @@ public class ScanJobIT {
 
         Assert.assertFalse(chainService.run(chain));
     }
-    
+
     @Test
     public void runActiveChainGenerationWithoutMetaProduct() throws InterruptedException {
         this.chain.setMetaProduct(null);

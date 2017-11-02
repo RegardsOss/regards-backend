@@ -115,7 +115,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             if (!afMap.isEmpty()) {
                 afMap.forEach((k, af) -> {
                     try {
-                        processSipCollection(generateSipPlugin.runPlugin(chainGeneration.getSession(), af));
+                        processSipCollection(generateSipPlugin.runPlugin(af, chainGeneration.getDataSet()));
                     } catch (ModuleException e) {
                         LOGGER.error(e.getMessage(), e);
                         throw new AcquisitionRuntimeException(e.getMessage());
@@ -151,7 +151,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
         LOGGER.info("Start publish SIP Collections");
 
         sipCollections.clear();
-        
+
         LOGGER.info("End publish SIP Collections");
     }
 

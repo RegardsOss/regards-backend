@@ -32,6 +32,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -106,11 +107,11 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private MetaProduct metaProduct;
 
     /**
-     * The dataset for which the acquired files are set  
+     * The ipId of the dataset for which the acquired files are set
      */
     @Column(length = MAX_STRING_LENGTH)
     private String dataSet;
-    
+
     /**
      * If a {@link ChainGeneration} is running, the current session identifier
      */
@@ -127,20 +128,23 @@ public class ChainGeneration implements IIdentifiable<Long> {
     /**
      * A {@link PluginConfiguration} of a {@link IAcquisitionScanPlugin}
      */
-    @Column(name = "scan_plugin")
-    private Long scanAcquisitionPluginConf;
+    @ManyToOne
+    @JoinColumn(name = "scan_conf_id", foreignKey = @ForeignKey(name = "fk_scan_conf_id"))
+    private PluginConfiguration scanAcquisitionPluginConf;
 
     /**
      * A {@link PluginConfiguration} of a {@link ICheckFilePlugin}
      */
-    @Column(name = "check_plugin")
-    private Long checkAcquisitionPluginConf;
+    @ManyToOne
+    @JoinColumn(name = "checkfile_conf_id", foreignKey = @ForeignKey(name = "fk_checkfile_conf_id"))
+    private PluginConfiguration checkAcquisitionPluginConf;
 
     /**
      * A {@link PluginConfiguration} of a {@link IGenerateSIPPlugin}
      */
-    @Column(name = "generate_sip_plugin")
-    private Long generateSIPPluginConf;
+    @ManyToOne
+    @JoinColumn(name = "generatesip_conf_id", foreignKey = @ForeignKey(name = "fk_generatesip_conf_id"))
+    private PluginConfiguration generateSIPPluginConf;
 
     @Transient
     private final Map<String, String> scanAcquisitionParameter = new HashMap<>();
@@ -250,27 +254,27 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.comment = comment;
     }
 
-    public Long getScanAcquisitionPluginConf() {
+    public PluginConfiguration getScanAcquisitionPluginConf() {
         return scanAcquisitionPluginConf;
     }
 
-    public void setScanAcquisitionPluginConf(Long scanAcquisitionPluginConf) {
+    public void setScanAcquisitionPluginConf(PluginConfiguration scanAcquisitionPluginConf) {
         this.scanAcquisitionPluginConf = scanAcquisitionPluginConf;
     }
 
-    public Long getCheckAcquisitionPluginConf() {
+    public PluginConfiguration getCheckAcquisitionPluginConf() {
         return checkAcquisitionPluginConf;
     }
 
-    public void setCheckAcquisitionPluginConf(Long checkAcquisitionPluginConf) {
+    public void setCheckAcquisitionPluginConf(PluginConfiguration checkAcquisitionPluginConf) {
         this.checkAcquisitionPluginConf = checkAcquisitionPluginConf;
     }
 
-    public Long getGenerateSIPPluginConf() {
+    public PluginConfiguration getGenerateSIPPluginConf() {
         return generateSIPPluginConf;
     }
 
-    public void setGenerateSIPPluginConf(Long generateSIPPluginConf) {
+    public void setGenerateSIPPluginConf(PluginConfiguration generateSIPPluginConf) {
         this.generateSIPPluginConf = generateSIPPluginConf;
     }
 
@@ -298,12 +302,10 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.generateSIPParameter.put(name, value);
     }
 
-    
     public String getSession() {
         return session;
     }
 
-    
     public void setSession(String session) {
         this.session = session;
     }
