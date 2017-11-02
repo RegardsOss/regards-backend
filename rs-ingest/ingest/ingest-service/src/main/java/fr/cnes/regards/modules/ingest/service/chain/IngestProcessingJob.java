@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
@@ -65,12 +64,12 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     private IIngestProcessingChainRepository processingChainRepository;
 
     @Autowired
-    private ISIPRepository sipRepository;
-
-    @Autowired
     private IPluginService pluginService;
 
     private IngestProcessingChain processingChain;
+
+    @Autowired
+    private IIngestProcessingService ingestProcessingService;
 
     private SIPEntity entity;
 
@@ -92,7 +91,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         // Load SIPEntity
         Long id = getValue(parameters, SIP_PARAMETER);
-        entity = sipRepository.findOne(id);
+        entity = ingestProcessingService.getSIPEntity(id);
         if (entity == null) {
             String message = String.format("No sip found for id \"%s\"", id);
             handleInvalidParameter(SIP_PARAMETER, message);
@@ -149,7 +148,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         return entity;
     }
 
-    public ISIPRepository getSIPRepository() {
-        return sipRepository;
+    public IIngestProcessingService getIngestProcessingService() {
+        return ingestProcessingService;
     }
+
 }

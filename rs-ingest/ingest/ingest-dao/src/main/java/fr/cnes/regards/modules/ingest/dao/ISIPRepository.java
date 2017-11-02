@@ -24,7 +24,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -35,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Marc Sordi
  *
  */
-@Repository
 public interface ISIPRepository extends JpaRepository<SIPEntity, Long> {
 
     /**
@@ -69,7 +67,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long> {
     List<Object[]> findIdAndProcessingByState(SIPState state);
 
     @Modifying
-    @Query("update SIPEntity s set s.state = ?1 where s.id = ?2")
+    @Query("UPDATE SIPEntity s set s.state = ?1 where s.id = ?2")
     int updateSIPEntityState(SIPState state, Long id);
 
     /**

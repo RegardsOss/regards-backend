@@ -41,6 +41,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
@@ -72,6 +73,9 @@ public class ScheduledIngestTaskTest extends AbstractDaoTest {
     private ISIPRepository sipRepository;
 
     @Autowired
+    private IAIPRepository aipRepository;
+
+    @Autowired
     private IIngestService ingestService;
 
     @Autowired
@@ -92,6 +96,7 @@ public class ScheduledIngestTaskTest extends AbstractDaoTest {
     @Before
     public void init() throws ModuleException {
         pluginConfRepo.deleteAll();
+        aipRepository.deleteAll();
         sipRepository.deleteAll();
         initDefaultProcessingChain();
     }

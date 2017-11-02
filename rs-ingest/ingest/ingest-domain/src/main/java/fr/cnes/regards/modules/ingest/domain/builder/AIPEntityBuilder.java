@@ -16,48 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.chain;
+package fr.cnes.regards.modules.ingest.domain.builder;
+
+import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
- * Ingest processing service interface
- *
- * @author Marc Sordi
+ * Build {@link AIPEntity}
  * @author Sébastien Binda
+ *
  */
-public interface IIngestProcessingService {
+public final class AIPEntityBuilder {
 
-    /**
-     * Schedule {@link IngestProcessingJob}s for all {@link SIPEntity} with {@link SIPState#CREATED} Status.
-     */
-    void ingest();
+    private AIPEntityBuilder() {
+    }
 
-    /**
-     * Update state of given SIPEntity
-     * @param id of {@link SIPEntity} to update
-     * @param newState new {@link SIPState}
-     * @return updated {@link SIPEntity}
-     */
-    SIPEntity updateSIPEntityState(Long id, SIPState newState);
+    public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
+        AIPEntity aipEntity = new AIPEntity();
+        aipEntity.setAip(aip);
+        aipEntity.setState(state);
+        aipEntity.setSip(sip);
+        aipEntity.setCreationDate(OffsetDateTime.now());
+        return aipEntity;
+    }
 
-    /**
-     * Return {@link SIPEntity} for the given id
-     * @param id
-     * @return
-     */
-    SIPEntity getSIPEntity(Long id);
-
-    /**
-     *
-     * @param sipEntityId
-     * @param aipState
-     * @param aip
-     * @return
-     */
-    AIPEntity createAIP(Long sipEntityId, AIPState aipState, AIP aip);
 }

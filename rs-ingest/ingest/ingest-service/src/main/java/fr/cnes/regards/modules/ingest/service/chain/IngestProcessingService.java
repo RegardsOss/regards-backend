@@ -36,11 +36,16 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.builder.AIPEntityBuilder;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
+import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * Ingest processing service
@@ -56,6 +61,9 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Autowired
     private ISIPRepository sipRepository;
+
+    @Autowired
+    private IAIPRepository aipRepository;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -78,6 +86,25 @@ public class IngestProcessingService implements IIngestProcessingService {
         // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing parameters of SIPEntity
         List<Object[]> sips = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
         sips.forEach(sip -> this.scheduleIngestProcessingJob((Long) sip[0], (String) sip[1]));
+    }
+
+    @Override
+    public SIPEntity updateSIPEntityState(Long pId, SIPState pNewState) {
+        SIPEntity sip = sipRepository.findOne(pId);
+        sip.setState(pNewState);
+        return sipRepository.save(sip);
+    }
+
+    @Override
+    public SIPEntity getSIPEntity(Long pId) {
+        return sipRepository.findOne(pId);
+    }
+
+    @Override
+    public AIPEntity createAIP(Long pSipEntityId, AIPState pAipState, AIP pAip) {
+        SIPEntity sip = sipRepository.findOne(pSipEntityId);
+        AIPEntity aip = aipRepository.save(AIPEntityBuilder.build(sip, AIPState.CREATED, pAip));
+        return aip;
     }
 
     /**

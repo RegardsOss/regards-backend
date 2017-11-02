@@ -53,11 +53,8 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  *
  */
 @Entity
-@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum") }, // PostgreSQL
-                                                                                                      // manage both
-                                                                                                      // single indexes
-                                                                                                      // and multiple
-                                                                                                      // ones
+@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum") },
+        // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_ipId", columnNames = "ipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -203,10 +200,6 @@ public class SIPEntity {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Integer getVersion() {

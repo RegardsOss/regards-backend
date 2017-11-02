@@ -18,24 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
 /**
- * {@link IngestProcessingChain} repository
- *
- * @author Marc Sordi
+ * JPA Repository to access {@link AIPEntity}
+ * @author Sébastien Binda
  *
  */
-public interface IIngestProcessingChainRepository extends JpaRepository<IngestProcessingChain, Long> {
+public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
-    /**
-     * Retrieve chain with specified name
-     * @param name processing chain name
-     * @return {@link IngestProcessingChain}
-     */
-    Optional<IngestProcessingChain> findOneByName(String name);
+    Set<AIPEntity> findBySip(SIPEntity sip);
+
 }

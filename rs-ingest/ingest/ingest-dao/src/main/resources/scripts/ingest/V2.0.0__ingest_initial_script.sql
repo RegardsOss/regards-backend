@@ -27,6 +27,17 @@ CREATE
 			version int4,
 			PRIMARY KEY(id)
 		);
+		
+create
+	TABLE
+		t_aip(
+			id int8 not null,
+			rawaip jsonb,
+			creation_date timestamp,
+			state varchar(255),
+			sip_id int8,
+			primary key (id)
+		);
 
 ALTER TABLE
 	t_ingest_processing_chain ADD CONSTRAINT uk_ingest_chain_name UNIQUE(name);
@@ -37,6 +48,13 @@ CREATE
 		sipId,
 		ipId,
 		checksum
+	);
+	
+CREATE
+	INDEX idx_aip_id ON
+	t_aip (
+		id,
+		sip_id
 	);
 
 ALTER TABLE
@@ -50,6 +68,9 @@ CREATE
 
 CREATE
 	SEQUENCE seq_sip START 1 INCREMENT 50;
+	
+CREATE
+	SEQUENCE seq_aip start 1 increment 50;
 
 ALTER TABLE
 	t_ingest_processing_chain ADD CONSTRAINT fk_generation_conf_id FOREIGN KEY(generation_conf_id) REFERENCES t_plugin_configuration;
@@ -65,3 +86,6 @@ ALTER TABLE
 
 ALTER TABLE
 	t_ingest_processing_chain ADD CONSTRAINT fk_validation_conf_id FOREIGN KEY(validation_conf_id) REFERENCES t_plugin_configuration;
+	
+ALTER TABLE
+	t_aip ADD CONSTRAINT fk_sip FOREIGN KEY (sip_id) REFERENCES t_sip;

@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
@@ -58,6 +59,9 @@ public class IngestServiceTest extends AbstractDaoTransactionalTest {
     @Autowired
     private ISIPRepository sipRepository;
 
+    @Autowired
+    private IAIPRepository aipRepository;
+
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class IngestConfiguration {
@@ -68,6 +72,7 @@ public class IngestServiceTest extends AbstractDaoTransactionalTest {
 
     @Before
     public void init() {
+        aipRepository.deleteAll();
         sipRepository.deleteAll();
     }
 

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
@@ -47,13 +48,17 @@ public abstract class AbstractProcessingStep<I, O> implements IProcessingStep<I,
 
     @Override
     public O execute(I in) throws ProcessingStepException {
+        boolean error = true;
         try {
             O out = doExecute(in);
-            doAfter(in);
+            error = false;
             return out;
-        } catch (ProcessingStepException e) {
-            doAfterStepError(in);
-            throw e;
+        } finally {
+            if (error) {
+                doAfterStepError(in);
+            } else {
+                doAfter(in);
+            }
         }
     }
 
@@ -68,9 +73,10 @@ public abstract class AbstractProcessingStep<I, O> implements IProcessingStep<I,
 
     protected abstract void doAfterStepSuccess(I in);
 
-    protected void updateSIPEntityState(SIPState newEntitySIPState) {
-        this.job.getEntity().setState(newEntitySIPState);
-        this.job.getSIPRepository().save(this.job.getEntity());
+    protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
+        SIPEntity entity = this.job.getIngestProcessingService().updateSIPEntityState(this.job.getEntity().getId(),
+                                                                                      newEntitySIPState);
+        return entity;
     }
 
     protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {

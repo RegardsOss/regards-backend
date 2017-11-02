@@ -16,26 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.ingest.domain.entity;
 
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-
-/**
- * {@link IngestProcessingChain} repository
- *
- * @author Marc Sordi
- *
- */
-public interface IIngestProcessingChainRepository extends JpaRepository<IngestProcessingChain, Long> {
-
+public enum AIPState {
     /**
-     * Retrieve chain with specified name
-     * @param name processing chain name
-     * @return {@link IngestProcessingChain}
+     * AIP is waiting to be handled for storage
      */
-    Optional<IngestProcessingChain> findOneByName(String name);
+    CREATED,
+    /**
+     * AIP storage is scheduled
+     */
+    QUEUED,
+    /**
+     * AIP is stored
+     */
+    STORED;
 }

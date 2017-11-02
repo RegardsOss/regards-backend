@@ -54,11 +54,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -99,6 +102,9 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
     private ISIPRepository sipRepository;
 
     @Autowired
+    private IAIPRepository aipRepository;
+
+    @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
 
     @Autowired
@@ -130,6 +136,7 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
     public void init() throws ModuleException {
 
         pluginConfRepo.deleteAll();
+        aipRepository.deleteAll();
         sipRepository.deleteAll();
 
         initFullPRocessingChain();
@@ -217,8 +224,8 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
         SIPEntity resultSip = sipRepository.findOne(sipIdDefaultChainTest);
         Assert.assertTrue("SIP should be the one generated in the test initialization.",
                           SIP_DEFAULT_CHAIN_ID_TEST.equals(resultSip.getSip().getId()));
-        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
-                          SIPState.AIP_CREATED.equals(resultSip.getState()));
+        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process not "
+                + resultSip.getState().toString(), SIPState.AIP_CREATED.equals(resultSip.getState()));
     }
 
     @Purpose("Test fully configured process chain to ingest a new SIP provided by value")
@@ -228,19 +235,9 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, PROCESSING_CHAIN_TEST));
         parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdTest));
 
-        // Simulate a full process without error
-        JobInfo toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
-        runJob(toTest);
-        // Assert that SIP is in AIP_CREATED state
-        SIPEntity resultSip = sipRepository.findOne(sipIdTest);
-        Assert.assertTrue("SIP should be the one generated in the test initialization.",
-                          SIP_ID_TEST.equals(resultSip.getSip().getId()));
-        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
-                          SIPState.AIP_CREATED.equals(resultSip.getState()));
-
         // Simulate an error during PreprocessingStep
         stepErrorSimulator.setSimulateErrorForStep(PreprocessingTestPlugin.class);
-        toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        JobInfo toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
         try {
             runJob(toTest);
             Assert.fail("A runtime exception should thrown here");
@@ -248,8 +245,12 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in INVALID state
+        SIPEntity resultSip = sipRepository.findOne(sipIdTest);
         Assert.assertTrue("State of SIP should be INVALID after a error during PreprocessingTestPlugin",
                           SIPState.INVALID.equals(resultSip.getState()));
+        // Assert that no AIP is generated
+        Set<AIPEntity> aips = aipRepository.findBySip(resultSip);
+        Assert.assertTrue("No AIP should be generated after error", aips.isEmpty());
 
         // Simulate an error during ValidationStep
         stepErrorSimulator.setSimulateErrorForStep(ValidationTestPlugin.class);
@@ -261,9 +262,12 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in INVALID state
+        resultSip = sipRepository.findOne(sipIdTest);
         Assert.assertTrue("State of SIP should be INVALID after a error during ValidationStep",
                           SIPState.INVALID.equals(resultSip.getState()));
-        // Assert that SIP is in INVALID state
+        // Assert that no AIP is generated
+        aips = aipRepository.findBySip(resultSip);
+        Assert.assertTrue("No AIP should be generatedafter error", aips.isEmpty());
 
         // Simulate an error during GenerationStep
         stepErrorSimulator.setSimulateErrorForStep(AIPGenerationTestPlugin.class);
@@ -275,8 +279,12 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in AIP_GEN_ERROR state
+        resultSip = sipRepository.findOne(sipIdTest);
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
                           SIPState.AIP_GEN_ERROR.equals(resultSip.getState()));
+        // Assert that no AIP is generated
+        aips = aipRepository.findBySip(resultSip);
+        Assert.assertTrue("No AIP should be generatedafter error", aips.isEmpty());
 
         // Simulate an error during TaggingStep
         stepErrorSimulator.setSimulateErrorForStep(AIPTaggingTestPlugin.class);
@@ -288,12 +296,28 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in AIP_GEN_ERROR state
+        resultSip = sipRepository.findOne(sipIdTest);
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
                           SIPState.AIP_GEN_ERROR.equals(resultSip.getState()));
+        // Assert that no AIP is generated
+        aips = aipRepository.findBySip(resultSip);
+        Assert.assertTrue("No AIP should be generatedafter error", aips.isEmpty());
 
-        // Simulate an error during StoreStep
-        // TODO
-        // Assert that SIP is in AIP_GEN_ERROR state
+        // Simulate a full process without error
+        stepErrorSimulator.setSimulateErrorForStep(null);
+        toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        runJob(toTest);
+        // Assert that SIP is in AIP_CREATED state
+        resultSip = sipRepository.findOne(sipIdTest);
+        Assert.assertTrue("SIP should be the one generated in the test initialization.",
+                          SIP_ID_TEST.equals(resultSip.getSip().getId()));
+        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
+                          SIPState.AIP_CREATED.equals(resultSip.getState()));
+        // Assert that te AIP generated is in db and in state CREATED
+        aips = aipRepository.findBySip(resultSip);
+        Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
+        Assert.assertTrue("The AIP generated should be in CREATED state",
+                          AIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
 
     }
 
@@ -313,6 +337,11 @@ public class IngestProcessingJobTest extends AbstractDaoTransactionalTest {
                           SIP_REF_ID_TEST.equals(resultSip.getSip().getId()));
         Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
                           SIPState.AIP_CREATED.equals(resultSip.getState()));
+        // Assert that te AIP generated is in db and in state CREATED
+        Set<AIPEntity> aips = aipRepository.findBySip(resultSip);
+        Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
+        Assert.assertTrue("The AIP generated should be in CREATED state",
+                          AIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
 
     }
 

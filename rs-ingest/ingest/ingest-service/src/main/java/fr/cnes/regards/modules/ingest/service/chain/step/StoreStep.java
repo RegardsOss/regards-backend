@@ -23,13 +23,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
- * TODO
+ * Store generated AIP into database to be handled by scheduled process and sent to storage microservice
  * @author Marc Sordi
  * @author Sébastien Binda
  */
@@ -44,7 +45,10 @@ public class StoreStep extends AbstractProcessingStep<List<AIP>, Void> {
 
     @Override
     protected Void doExecute(List<AIP> in) throws ProcessingStepException {
-        // TODO store locally to make a bulk request to storage later
+        // Store generated aips in db with raw object.
+        // Created AIPEntities will be handled by a scheduled task to be sent to archival storage microservice
+        in.forEach(aip -> this.job.getIngestProcessingService().createAIP(this.job.getEntity().getId(),
+                                                                          AIPState.CREATED, aip));
         return null;
     }
 
