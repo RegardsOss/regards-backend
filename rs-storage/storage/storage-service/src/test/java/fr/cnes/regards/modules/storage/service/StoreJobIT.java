@@ -115,13 +115,12 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         // first lets get some parameters for the job ...
         // ... dataStorage ...
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/StoreJobIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> pluginParameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               gson.toJson(baseStorageLocation))
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90")
                 .getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils

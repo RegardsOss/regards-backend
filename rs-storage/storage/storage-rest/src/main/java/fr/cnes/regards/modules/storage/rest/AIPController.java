@@ -240,7 +240,6 @@ public class AIPController implements IResourceController<AIP> {
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachement", dataFile.get().getName());
             return new ResponseEntity<>(isr, headers, HttpStatus.OK);
-
         } else {
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         }

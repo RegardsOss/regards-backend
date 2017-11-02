@@ -18,7 +18,11 @@ import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,7 @@ import org.springframework.util.MimeTypeUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.oais.EventType;
@@ -75,75 +80,77 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     public void init() throws IOException {
 
         if (WORKSPACE.toFile().exists()) {
-            Files.setPosixFilePermissions(WORKSPACE, Sets.newHashSet(PosixFilePermission.OWNER_READ,
-                                                                     PosixFilePermission.OWNER_WRITE,
-                                                                     PosixFilePermission.OWNER_EXECUTE));
+            Files.setPosixFilePermissions(WORKSPACE,
+                                          Sets.newHashSet(PosixFilePermission.OWNER_READ,
+                                                          PosixFilePermission.OWNER_WRITE,
+                                                          PosixFilePermission.OWNER_EXECUTE));
             FileUtils.deleteDirectory(WORKSPACE.toFile());
         }
 
         if (RESTORATION_PATH.toFile().exists()) {
-            Files.setPosixFilePermissions(RESTORATION_PATH, Sets.newHashSet(PosixFilePermission.OWNER_READ,
-                                                                            PosixFilePermission.OWNER_WRITE,
-                                                                            PosixFilePermission.OWNER_EXECUTE));
+            Files.setPosixFilePermissions(RESTORATION_PATH,
+                                          Sets.newHashSet(PosixFilePermission.OWNER_READ,
+                                                          PosixFilePermission.OWNER_WRITE,
+                                                          PosixFilePermission.OWNER_EXECUTE));
             FileUtils.deleteDirectory(RESTORATION_PATH.toFile());
         }
         Files.createDirectories(RESTORATION_PATH);
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
-        builder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
+                EntityType.DATA);
+        builder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent",
+                                                              OffsetDateTime.now());
         AIP aip = builder.build();
 
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
-                                                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA,
-                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_1.txt"));
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file_test_1.txt"));
 
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt"),
-                                                        "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA,
-                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_2.txt"));
+                "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file_test_2.txt"));
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt"),
-                                                        "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA,
-                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_3.txt"));
+                "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file_test_3.txt"));
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt"),
-                                                        "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA,
-                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_4.txt"));
+                "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file_test_4.txt"));
         filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt"),
-                                                        "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA,
-                                                        3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_5.txt"));
-        filesToArchiveWithoutInvalides
-                .add(new DataFile(new URL("http", "172.26.47.52", 9020, "/conf/staticConfiguration.js"),
-                                  "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L,
-                                  MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
+                "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file_test_5.txt"));
+        filesToArchiveWithoutInvalides.add(new DataFile(
+                new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js"), "eadcc622739d58e8a78170b67c6ff9f3",
+                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
         filesToArchive.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt"),
-                                        "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L,
-                                        MimeTypeUtils.TEXT_PLAIN, aip, "invalid_test_file.txt"));
+                "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "invalid_test_file.txt"));
         filesToArchive
                 .add(new DataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"), "eadcc622739d58e8a78170b67c6ff9f1",
-                                  "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file.txt"));
+                        "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file.txt"));
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
         filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt"),
-                                                     "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA,
-                                                     29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_1.txt"));
+                "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "big_file_test_1.txt"));
         filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt"),
-                                                     "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA,
-                                                     29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_2.txt"));
+                "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "big_file_test_2.txt"));
         filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt"),
-                                                     "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA,
-                                                     29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_3.txt"));
+                "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "big_file_test_3.txt"));
 
         filesToArchiveMultiplesMode
                 .add(new DataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt"),
-                                  "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L,
-                                  MimeTypeUtils.TEXT_PLAIN, aip, "normal_file_test_1.txt"));
+                        "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "normal_file_test_1.txt"));
         filesToArchiveMultiplesMode
                 .add(new DataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt"),
-                                  "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L,
-                                  MimeTypeUtils.TEXT_PLAIN, aip, "normal_file_test_2.txt"));
+                        "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "normal_file_test_2.txt"));
     }
 
     /**
@@ -172,14 +179,15 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        Set<STAFWorkingSubset> subsets = plugin
-                .prepare(filesToArchiveMultiplesMode, DataStorageAccessModeEnum.STORE_MODE);
+        Set<STAFWorkingSubset> subsets = plugin.prepare(filesToArchiveMultiplesMode,
+                                                        DataStorageAccessModeEnum.STORE_MODE);
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 
@@ -233,7 +241,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
@@ -279,7 +288,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         String fileName = "file.txt";
@@ -288,14 +298,15 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
-        builder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
+                EntityType.DATA);
+        builder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent",
+                                                              OffsetDateTime.now());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                                            "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L,
-                                            MimeTypeUtils.TEXT_PLAIN, aip, fileName));
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName));
         dataFilesToRestore.add(new DataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
@@ -358,7 +369,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         String fileName = "file.txt";
@@ -369,14 +381,15 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
-        builder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
+                EntityType.DATA);
+        builder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent",
+                                                              OffsetDateTime.now());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                                            "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L,
-                                            MimeTypeUtils.TEXT_PLAIN, aip, fileName));
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName));
         dataFilesToRestore.add(new DataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
@@ -439,7 +452,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         // Add error in the file name simulate a restoration error in the restorationMock from
@@ -450,14 +464,15 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
-        builder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
+                EntityType.DATA);
+        builder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent",
+                                                              OffsetDateTime.now());
         AIP aip = builder.build();
 
         dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                                            "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L,
-                                            MimeTypeUtils.TEXT_PLAIN, aip, fileName));
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName));
         dataFilesToRestore.add(new DataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
@@ -519,7 +534,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Init plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson.toJson(archive)).getParameters();
+                .addParameter("archiveParameters", gson.toJson(archive))
+                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
 
         // Init Files to restore
         String fileName = "file.txt";
@@ -528,14 +544,15 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         Set<DataFile> dataFilesToDelete = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null, EntityType.DATA);
-        builder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent", OffsetDateTime.now());
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
+                EntityType.DATA);
+        builder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent",
+                                                              OffsetDateTime.now());
         AIP aip = builder.build();
 
         dataFilesToDelete.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                                           "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L,
-                                           MimeTypeUtils.TEXT_PLAIN, aip, fileName));
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName));
         dataFilesToDelete.add(new DataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
@@ -565,9 +582,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     @AfterClass
     public static void postTest() throws IOException {
         if (WORKSPACE.toFile().exists()) {
-            Files.setPosixFilePermissions(WORKSPACE, Sets.newHashSet(PosixFilePermission.OWNER_READ,
-                                                                     PosixFilePermission.OWNER_WRITE,
-                                                                     PosixFilePermission.OWNER_EXECUTE));
+            Files.setPosixFilePermissions(WORKSPACE,
+                                          Sets.newHashSet(PosixFilePermission.OWNER_READ,
+                                                          PosixFilePermission.OWNER_WRITE,
+                                                          PosixFilePermission.OWNER_EXECUTE));
         }
     }
 

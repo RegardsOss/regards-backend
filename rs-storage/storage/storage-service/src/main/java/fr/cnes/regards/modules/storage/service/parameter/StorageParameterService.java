@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +16,7 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -29,7 +29,8 @@ import fr.cnes.regards.modules.storage.domain.parameter.StorageParameter;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Service
-public class StorageParameterService implements IStorageParameterService, ApplicationListener<ContextRefreshedEvent> {
+@MultitenantTransactional
+public class StorageParameterService implements IStorageParameterService, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -92,7 +93,7 @@ public class StorageParameterService implements IStorageParameterService, Applic
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS)
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             initDefaultParameters();
