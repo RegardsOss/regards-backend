@@ -22,8 +22,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,19 +41,37 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  *
  */
 @RestController
-@RequestMapping(path = SearchEnginesController.TYPE_MAPPING)
-public class SearchEnginesController {
+public class SearchEngineController {
 
-    public static final String TYPE_MAPPING = "/datasets/{datasetId}/searchengines/{engineType}";
+    public static final String ENGINE_MAPPING = "/engines/{engineType}";
 
+    // TODO gérer le path parameter optionnel soit dans RequestMapping value auquel cas, il faut revoir le starter
+    // sécurité pour gérer plusieurs path soit en doublant les méthodes
     public static final String EXTRA_MAPPING = "/{extra}";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEnginesController.class);
+    // Search endpoints
+
+    public static final String SEARCH_ALL_MAPPING = ENGINE_MAPPING;
+
+    public static final String SEARCH_COLLECTIONS_MAPPING = "/collections" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DOCUMENTS_MAPPING = "/documents" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DATAOBJECTS_MAPPING = "/dataobjects" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DATAOBJECTS_DATASETS_MAPPING = "/dataobjects/datasets" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DATASETS_MAPPING = "/datasets" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DATASET_MAPPING = "/datasets/{datasetId}" + ENGINE_MAPPING;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineController.class);
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search engines dispatcher")
     public ResponseEntity<?> search(@PathVariable final String datasetId, @PathVariable final String engineType,
-            @RequestParam final Map<String, String> allParams) throws ModuleException {
+            @RequestParam final Map<String, String> allParams, @RequestHeader HttpHeaders headers)
+            throws ModuleException {
         // Delegate search to related search engine
         // To retrieve plugin configuration, use both datasetId and engineType (i.e. the search engine plugin type)
         // So only one single conf is authorized by datasetId for an engineType

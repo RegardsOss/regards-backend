@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.search.rest.SearchEnginesController;
+import fr.cnes.regards.modules.search.rest.SearchEngineController;
 
 /**
  * TODO
@@ -40,10 +40,10 @@ import fr.cnes.regards.modules.search.rest.SearchEnginesController;
 // "regards.elasticsearch.address=@regards.IT.elasticsearch.host@", "regards.elasticsearch.cluster.name=regards",
 // "regards.elasticsearch.tcp.port=@regards.IT.elasticsearch.port@" })
 @TestPropertySource(locations = { "classpath:test.properties" })
-public class SearchEnginesControllerIT extends AbstractRegardsTransactionalIT {
+public class SearchEngineControllerIT extends AbstractRegardsTransactionalIT {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEnginesControllerIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineControllerIT.class);
 
     private static final String DATASET_ID = "datatest";
 
@@ -55,7 +55,7 @@ public class SearchEnginesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
 
         // RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
-        performDefaultGet(SearchEnginesController.TYPE_MAPPING, expectations, "Error searching", DATASET_ID,
+        performDefaultGet(SearchEngineController.TYPE_MAPPING, expectations, "Error searching", DATASET_ID,
                           ENGINE_TYPE);
     }
 
@@ -65,7 +65,7 @@ public class SearchEnginesControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isOk());
 
         // RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
-        performDefaultGet(SearchEnginesController.TYPE_MAPPING + SearchEnginesController.EXTRA_MAPPING, expectations,
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.EXTRA_MAPPING, expectations,
                           "Error searching", DATASET_ID, ENGINE_TYPE, "opensearchdescription.xml");
     }
 }
