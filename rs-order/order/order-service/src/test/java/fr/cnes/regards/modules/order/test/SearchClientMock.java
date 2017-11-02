@@ -38,14 +38,14 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 
 /**
- * Mock of ICatalogClient to be used by ServiceConfiguration
+ * Mock of ISearchClient to be used by ServiceConfiguration
  * @author oroussel
  */
-public class CatalogClientMock implements ICatalogClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogClientMock.class);
+public class SearchClientMock implements ISearchClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchClientMock.class);
 
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,

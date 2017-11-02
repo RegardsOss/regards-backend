@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
@@ -63,8 +63,8 @@ public class OrderConfiguration {
 
 
     @Bean
-    public ICatalogClient catalogClient() {
-        return Mockito.mock(ICatalogClient.class);
+    public ISearchClient searchClient() {
+        return Mockito.mock(ISearchClient.class);
     }
 
     @Bean

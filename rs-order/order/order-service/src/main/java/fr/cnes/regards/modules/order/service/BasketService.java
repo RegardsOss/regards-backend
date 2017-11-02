@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 
 /**
  * @author oroussel
@@ -37,7 +37,7 @@ public class BasketService implements IBasketService {
     private IBasketRepository repos;
 
     @Autowired
-    private ICatalogClient catalogClient;
+    private ISearchClient searchClient;
 
     @Override
     public Basket findOrCreate(String user) {
@@ -82,7 +82,7 @@ public class BasketService implements IBasketService {
         openSearchRequest += "creationDate:[* TO " + nowStr + "]";
         // Compute summary for this selection
         Map<String, String> queryMap = new ImmutableMap.Builder<String, String>().put("q", openSearchRequest).build();
-        DocFilesSummary summary = catalogClient
+        DocFilesSummary summary = searchClient
                 .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
         // Create a map to find more easiely a basket dataset selection from dataset IpId
         Map<String, BasketDatasetSelection> basketDsSelectionMap = basket.getDatasetSelections().stream()
@@ -92,7 +92,7 @@ public class BasketService implements IBasketService {
             BasketDatasetSelection datasetSelection = basketDsSelectionMap.get(entry.getKey());
             // Manage basket dataset selection
             if (datasetSelection == null) {
-                Dataset dataset = catalogClient.getDataset(UniformResourceName.fromString(entry.getKey())).getBody()
+                Dataset dataset = searchClient.getDataset(UniformResourceName.fromString(entry.getKey())).getBody()
                         .getContent();
                 datasetSelection = new BasketDatasetSelection();
                 datasetSelection.setDatasetIpid(entry.getKey());
@@ -180,7 +180,7 @@ public class BasketService implements IBasketService {
         // a "OR" between previous one and nes item selection
         Map<String, String> dsQueryMap = new ImmutableMap.Builder<String, String>()
                 .put("q", datasetSelection.getOpenSearchRequest()).build();
-        DocFilesSummary curDsSelectionSummary = catalogClient
+        DocFilesSummary curDsSelectionSummary = searchClient
                 .computeDatasetsSummary(dsQueryMap, datasetSelection.getDatasetIpid(),
                                         DataTypeSelection.ALL.getFileTypes()).getBody();
         // Take into account only asked datasetIpId (sub-)summary

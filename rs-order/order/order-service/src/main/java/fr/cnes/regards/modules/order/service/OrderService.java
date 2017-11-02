@@ -90,7 +90,7 @@ import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.search.client.ICatalogClient;
+import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
@@ -119,7 +119,7 @@ public class OrderService implements IOrderService {
     private IOrderJobService orderJobService;
 
     @Autowired
-    private ICatalogClient catalogClient;
+    private ISearchClient searchClient;
 
     @Autowired
     private IAipClient aipClient;
@@ -308,7 +308,7 @@ public class OrderService implements IOrderService {
     private List<DataObject> searchDataObjects(String openSearchRequest, int page) {
         Map<String, String> requestMap = Collections.singletonMap("q", openSearchRequest);
 
-        ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = catalogClient
+        ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
                 .searchDataobjects(requestMap, new PageRequest(page, 10_000));
         return pagedResourcesResponseEntity.getBody().getContent().stream().map(r -> r.getContent())
                 .collect(Collectors.toList());
