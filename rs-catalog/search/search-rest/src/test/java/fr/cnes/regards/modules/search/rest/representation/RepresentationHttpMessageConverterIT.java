@@ -133,7 +133,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
                 .thenReturn(new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK));
         // lets get a collection as geo+json
         acceptToUse = "application/geo+json; charset=UTF-8";
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(acceptToUse));
@@ -147,7 +147,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
                    "Error retrieving a collection", COLLECTION.getIpId());
         // now lets try again with a newly created puglin configuration
         acceptToUse = new MediaType("text", "markdown").toString();
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         // create a pluginConfiguration for GeoJson
         PluginMetaData markdownMeta = PluginUtils.createPluginMetaData(MarkdownRepresentation.class, Lists.newArrayList(
@@ -175,7 +175,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.updatePluginConfiguration(markdownConf);
         Thread.sleep(5000);
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotAcceptable());
         jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
@@ -186,7 +186,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.updatePluginConfiguration(markdownConf);
         Thread.sleep(5000);
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
@@ -199,7 +199,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         pluginService.deletePluginConfiguration(markdownConf.getId());
         Thread.sleep(5000);
-        requestBuilderCustomizer = getRequestBuilderCustomizer();
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotAcceptable());
         jwt = manageDefaultSecurity(SearchController.PATH + SearchController.COLLECTIONS_URN, RequestMethod.GET);
@@ -210,7 +210,7 @@ public class RepresentationHttpMessageConverterIT extends AbstractRegardsIT {
     @Test
     public void testNotActivatedForNonAbstractEntity() {
         acceptToUse = "application/geo+json";
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // \" and \" are to be added because the body is "..." and not just the string
