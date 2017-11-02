@@ -70,6 +70,11 @@ public class ProjectRepositoryStub extends JpaRepositoryStub<Project> implements
 
     @Override
     public List<Project> findByIsDeletedFalse() {
-        return entities.stream().filter(e->!e.isDeleted()).collect(Collectors.toList());
+        return entities.stream().filter(e -> !e.isDeleted()).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isActiveProject(Long id) {
+        return true;
     }
 }
