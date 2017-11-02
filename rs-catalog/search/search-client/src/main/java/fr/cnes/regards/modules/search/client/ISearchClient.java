@@ -26,14 +26,15 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
  * @author oroussel
  */
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = ICatalogClient.PATH, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public interface ICatalogClient {
+@RequestMapping(value = ISearchClient.PATH, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+public interface ISearchClient {
+    String PATH = "/search";
 
-    String DATASET_PATH = "/datasets";
+    String DATASET_URN_PATH = "/datasets/{urn}";
 
     String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
 
-    String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects/searchwithoutfacets";
+    String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects";
 
     String ENTITY_GET_MAPPING = "/entities/{urn}";
 
@@ -42,13 +43,9 @@ public interface ICatalogClient {
      * @param urn dataset IP_ID
      * @return the dataset
      */
-    @RequestMapping(path = DATASET_PATH + "/{urn}", method = RequestMethod.GET)
+    @RequestMapping(path = DATASET_URN_PATH, method = RequestMethod.GET)
     ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") final UniformResourceName urn);
 
-    /**
-     * The main path
-     */
-    String PATH = "";
 
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam final Map<String, String> allParams,
