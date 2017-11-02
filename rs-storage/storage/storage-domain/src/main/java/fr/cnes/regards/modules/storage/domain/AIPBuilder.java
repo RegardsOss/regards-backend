@@ -19,12 +19,7 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import javax.annotation.Nullable;
-import java.time.OffsetDateTime;
-import java.util.Collection;
 
-import org.springframework.util.Assert;
-
-import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
