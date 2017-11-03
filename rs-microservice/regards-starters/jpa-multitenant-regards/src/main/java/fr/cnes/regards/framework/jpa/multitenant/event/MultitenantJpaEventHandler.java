@@ -216,7 +216,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     // Remove existing datasource
                     DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
                     if (oldDataSource != null) {
-                        oldDataSource.getConnection().close();
+                        DataSources.destroy(oldDataSource);
                     }
                     // Broadcast connection ready
                     instancePublisher.publish(new TenantConnectionDiscarded(tenantConnection.getTenant(),
@@ -247,7 +247,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     // Remove existing datasource
                     DataSource oldDataSource = dataSources.remove(tcf.getTenant());
                     if (oldDataSource != null) {
-                        oldDataSource.getConnection().close();
+                        DataSources.destroy(oldDataSource);
                     }
                     // Disable connection
                     multitenantResolver.disableTenantConnection(tcf.getMicroserviceName(), tcf.getTenant());
