@@ -24,27 +24,18 @@ package fr.cnes.regards.modules.acquisition.domain;
  *
  */
 public enum AcquisitionFileStatus {
-
+    /**
+     * valid
+     */
+    VALID,
     /**
      * invalid
      */
     INVALID,
     /**
-     * TODO CMZ DUPLICATE à supprimer ?
-     */
-    DUPLICATE,
-    /**
      * in progress
      */
-    IN_PROGRESS,
-    /**
-     * deleted
-     */
-    DELETED,
-    /**
-     * valid
-     */
-    VALID;
+    IN_PROGRESS;
 
     @Override
     public String toString() {

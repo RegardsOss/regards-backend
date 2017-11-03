@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 
 /**
  * 
@@ -66,8 +67,13 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product retrive(String productName) {
+    public Product retrieve(String productName) {
         return productRepository.findCompleteByProductName(productName);
+    }
+
+    @Override
+    public List<Product> findByStatus(ProductStatus status) {
+        return productRepository.findByStatus(status);
     }
 
 }

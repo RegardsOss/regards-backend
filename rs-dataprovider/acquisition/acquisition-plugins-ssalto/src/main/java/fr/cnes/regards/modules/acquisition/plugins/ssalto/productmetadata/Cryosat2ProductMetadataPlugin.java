@@ -51,4 +51,5 @@ public class Cryosat2ProductMetadataPlugin extends AbstractProductMetadataPlugin
         return "ssalto/domain/plugins/impl/cryosat2plugin.properties";
     }
 
+
 }

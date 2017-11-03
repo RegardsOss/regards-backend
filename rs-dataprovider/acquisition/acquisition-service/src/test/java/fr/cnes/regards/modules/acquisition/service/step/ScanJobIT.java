@@ -20,6 +20,8 @@
 package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +38,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -55,6 +61,7 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
@@ -64,6 +71,7 @@ import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -82,18 +90,26 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
+import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.CheckInPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryOneProductWithMultipleFilesPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.ingest.client.IIngestClient;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * @author Christophe Mertz
  *
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
+@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
+@ActiveProfiles({ "test" })
 public class ScanJobIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
@@ -103,13 +119,20 @@ public class ScanJobIT {
 
     private static final String CHAINE_LABEL = "the chain label";
 
-    private static final String DATASET_NAME = "the dataset name";
+    private static final String DATASET_IP_ID = "URN:DATASET:the dataset internal identifier";
 
     private static final String META_PRODUCT_NAME = "the meta product name";
 
     private static final String DEFAULT_USER = "John Doe";
 
-    private static final long WAIT_TIME = 15_000;
+    private static final long WAIT_TIME = 20_000;
+
+    protected static final String DEFAULT_TENANT = "PROJECT";
+
+    /**
+     * Default user role
+     */
+    protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
 
     @Autowired
     private IChainGenerationService chainService;
@@ -168,6 +191,18 @@ public class ScanJobIT {
     @Autowired
     private IPluginConfigurationRepository pluginConfigurationRepository;
 
+    @Autowired
+    private IIngestClient ingestClient;
+
+    @Autowired
+    private IDatasetClient datasetClient;
+
+    @Autowired
+    private JWTService jwtService;
+
+    @Autowired
+    private ISubscriber subscriber;
+
     private ChainGeneration chain;
 
     private MetaFile metaFile;
@@ -182,12 +217,10 @@ public class ScanJobIT {
 
     private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
 
-    @Autowired
-    private ISubscriber subscriber;
-
     @Before
     public void setUp() throws Exception {
         tenantResolver.forceTenant(tenant);
+        jwtService.injectMockToken(tenant, DEFAULT_ROLE);
 
         cleanDb();
 
@@ -196,6 +229,11 @@ public class ScanJobIT {
         initData();
 
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
+
+        Dataset dataSet = new Dataset();
+        dataSet.setLabel("dataset-hello-CSSI");
+        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
     }
 
     public void initAmqp() {
@@ -214,9 +252,7 @@ public class ScanJobIT {
     public void initData() {
         // Create 2 ScanDirectory
         ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1").get());
-        //                .withDateAcquisition(OffsetDateTime.now().minusDays(5)).get());
         ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input2").get());
-        //                .withDateAcquisition(OffsetDateTime.now().minusMinutes(15)).get());
 
         metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
@@ -225,16 +261,17 @@ public class ScanJobIT {
 
         // Create a ChainGeneration and a MetaProduct
         metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFile).get());
-        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
-                .withMetaProduct(metaProduct).get());
+        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_IP_ID)
+                .withMetaProduct(metaProduct).withDataIngestProcessingChain("the-ingest-processing-to-used").get());
     }
 
     @Test
     public void runActiveChainGeneration() throws ModuleException, InterruptedException {
+        mockIngestClientResponseOK();
+
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
-        //        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
@@ -255,8 +292,115 @@ public class ScanJobIT {
         chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
                                                                             IGenerateSIPPlugin.class));
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
+                                      chain.getIngestProcessingChain());
+
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJob(WAIT_TIME);
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(1, metaFileService.retrieveAll().size());
+        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(5, productService.retrieveAll().size());
+        Assert.assertEquals(5, productService.findByStatus(ProductStatus.FINISHED).size());
+        Assert.assertEquals(0, productService.findByStatus(ProductStatus.ERROR).size());
+
+        chain = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chain.getLastDateActivation());
+    }
+
+    @Test
+    public void runActiveChainGenerationPartialContent() throws ModuleException, InterruptedException {
+        mockIngestClientResponsePartialContent();
+
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
+
+        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
+        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
+
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
+
+        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
+                                                                                 ICheckFilePlugin.class));
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+                                                                            IGenerateSIPPlugin.class));
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
+                                      chain.getIngestProcessingChain());
+
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJob(WAIT_TIME);
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(1, metaFileService.retrieveAll().size());
+        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(5, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
+        Assert.assertEquals(2, productService.findByStatus(ProductStatus.ERROR).size());
+
+        chain = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chain.getLastDateActivation());
+    }
+
+    @Test
+    public void runActiveChainGenerationUnauthorized() throws ModuleException, InterruptedException {
+        mockIngestClientResponseUnauthorized();
+
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFile);
+
+        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
+        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
+
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
+
+        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
+                                                                                 ICheckFilePlugin.class));
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+                                                                            IGenerateSIPPlugin.class));
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
+                                      chain.getIngestProcessingChain());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -284,7 +428,6 @@ public class ScanJobIT {
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
-        //        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
@@ -310,8 +453,8 @@ public class ScanJobIT {
         chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
                                                                             IGenerateSIPPlugin.class));
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
+                                      chain.getIngestProcessingChain());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -341,7 +484,6 @@ public class ScanJobIT {
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
-        //        metaProduct.setLastAcqDate(OffsetDateTime.now().minusMonths(1));
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
@@ -356,12 +498,13 @@ public class ScanJobIT {
         chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
                                                                             IGenerateSIPPlugin.class));
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
+                                      chain.getIngestProcessingChain());
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(WAIT_TIME);
+        waitJob(45_000);
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
@@ -441,6 +584,44 @@ public class ScanJobIT {
 
         pluginParameterRepository.deleteAll();
         pluginConfigurationRepository.deleteAll();
+    }
+
+    private void mockIngestClientResponseOK() {
+        Collection<SIPEntity> sips = new ArrayList<>();
+        SIPEntity sipEntity = new SIPEntity();
+        sipEntity.setState(SIPState.CREATED);
+        sips.add(sipEntity);
+
+        Mockito.when(ingestClient.ingest(Mockito.any()))
+                .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.CREATED));
+    }
+
+    private void mockIngestClientResponseUnauthorized() {
+        Collection<SIPEntity> sips = new ArrayList<>();
+        SIPEntity sipEntity = new SIPEntity();
+        sipEntity.setState(SIPState.REJECTED);
+        sips.add(sipEntity);
+
+        Mockito.when(ingestClient.ingest(Mockito.any()))
+                .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.UNAUTHORIZED));
+    }
+
+    private void mockIngestClientResponsePartialContent() {
+        Collection<SIPEntity> sips = new ArrayList<>();
+        SIPEntity sipEntity = new SIPEntity();
+        sipEntity.setReasonForRejection("bad SIP format");
+        sipEntity.setState(SIPState.REJECTED);
+        sipEntity.setSipId("PAUB_MESURE_TC_20130701_103715");
+        sips.add(sipEntity);
+
+        sipEntity = new SIPEntity();
+        sipEntity.setReasonForRejection("access AIP error");
+        sipEntity.setState(SIPState.REJECTED);
+        sipEntity.setSipId("PAUB_MESURE_TC_20130701_105909");
+        sips.add(sipEntity);
+
+        Mockito.when(ingestClient.ingest(Mockito.any()))
+                .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.PARTIAL_CONTENT));
     }
 
     private void waitJob(long millSecs) {

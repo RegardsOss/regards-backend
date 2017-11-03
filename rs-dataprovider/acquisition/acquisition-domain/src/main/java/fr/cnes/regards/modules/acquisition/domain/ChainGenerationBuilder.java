@@ -85,9 +85,14 @@ public final class ChainGenerationBuilder {
         chain.setDataSet(dataSet);
         return this;
     }
-    
-    public ChainGenerationBuilder withScanAcquisitionPluginConf(PluginConfiguration  pluginconfId) {
+
+    public ChainGenerationBuilder withScanAcquisitionPluginConf(PluginConfiguration pluginconfId) {
         chain.setScanAcquisitionPluginConf(pluginconfId);
+        return this;
+    }
+
+    public ChainGenerationBuilder withDataIngestProcessingChain(String ingesProcessing) {
+        chain.setIngestProcessingChain(ingesProcessing);
         return this;
     }
 

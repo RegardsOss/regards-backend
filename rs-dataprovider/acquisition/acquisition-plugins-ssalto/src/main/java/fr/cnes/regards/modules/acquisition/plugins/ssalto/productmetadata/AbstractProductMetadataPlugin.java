@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -92,13 +93,19 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * cree les attributs pour le {@link Product} contenant la liste des {@link AcquisitionFile}, pour le jeu de donnees dataSetName
      */
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
+            Optional<String> datasetName) throws ModuleException {
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
+
+        if (!datasetName.isPresent()) {
+            ModuleException ex = new ModuleException("The dataset name is required");
+            LOGGER.error(ex.getMessage());
+            throw ex;
+        }
 
         Map<File, ?> fileMap = buildMapFile(acqFiles);
 
-        loadDataSetConfiguration(datasetName);
+        loadDataSetConfiguration(datasetName.get());
 
         // add attribute from attribute finders
         attributeValueMap = new HashMap<>();
@@ -128,15 +135,10 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     }
 
     @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
             throws ModuleException {
         // TODO CMZ createMetaDataPlugin à compléter
-        return null;
-    }
 
-    @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        // TODO CMZ createMetaDataPlugin à compléter
         return null;
     }
 

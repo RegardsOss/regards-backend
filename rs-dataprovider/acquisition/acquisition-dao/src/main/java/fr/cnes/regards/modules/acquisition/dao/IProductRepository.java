@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 
 /**
  * {@link Product} repository
@@ -31,8 +34,10 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  */
 @Repository
 public interface IProductRepository extends CrudRepository<Product, Long> {
-    
+
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
+
+    List<Product> findByStatus(ProductStatus status);
 
 }

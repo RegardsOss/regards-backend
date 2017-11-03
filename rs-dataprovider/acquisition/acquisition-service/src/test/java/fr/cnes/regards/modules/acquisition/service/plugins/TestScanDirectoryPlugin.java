@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
@@ -115,8 +116,8 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         af.setSize(123456L);
         af.setAcqDate(OffsetDateTime.now());
         af.setChecksumAlgorithm(CHECKUM_ALGO);
-        af.setChecksum(null);// TODO CMZ à compléter
-        af.setStatus(null);
+        af.setChecksum(null); // TODO CMZ setChecksum à compléter
+        af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
 
         MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
         af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));

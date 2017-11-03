@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,17 +32,12 @@ import fr.cnes.regards.modules.ingest.domain.SIPCollection;
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to create product and file metadata")
+@PluginInterface(description = "Plugin to generate SIP with product and file metadata")
 public interface IGenerateSIPPlugin {
 
-    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetIpId)
+    SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException;
+
+    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetName)
             throws ModuleException;
-
-    SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
-
-    SIPCollection runPlugin(List<AcquisitionFile> acqFiles, String datasetIpId)
-            throws ModuleException;
-
-    SIPCollection runPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
 
 }

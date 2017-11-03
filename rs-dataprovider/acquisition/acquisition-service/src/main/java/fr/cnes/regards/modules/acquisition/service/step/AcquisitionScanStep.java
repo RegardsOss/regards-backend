@@ -92,7 +92,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
             // get an instance of the plugin
             IAcquisitionScanPlugin scanPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getScanAcquisitionPluginConf(),
+                    .getPlugin(this.chainGeneration.getScanAcquisitionPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // launch the plugin to get the AcquisitionFile

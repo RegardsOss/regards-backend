@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
  * 
@@ -110,13 +111,19 @@ public class ChainGeneration implements IIdentifiable<Long> {
      * The ipId of the dataset for which the acquired files are set
      */
     @Column(length = MAX_STRING_LENGTH)
-    private String dataSet;
+    private String dataSetIpId;
 
     /**
-     * If a {@link ChainGeneration} is running, the current session identifier
+     * If a {@link ChainGeneration} is running, the current session identifier must be defined and unique
      */
     @Column(length = MAX_STRING_LENGTH)
     private String session;
+
+    /**
+     * The name of {@link IngestProcessingChain} used to send the SIP to the ingest microservice
+     */
+    @Column(length = MAX_STRING_LENGTH)
+    private String ingestProcessingChain;
 
     /**
      * A comment
@@ -159,7 +166,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((dataSet == null) ? 0 : dataSet.hashCode());
+        result = prime * result + ((dataSetIpId == null) ? 0 : dataSetIpId.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         return result;
     }
@@ -176,11 +183,11 @@ public class ChainGeneration implements IIdentifiable<Long> {
             return false;
         }
         ChainGeneration other = (ChainGeneration) obj;
-        if (dataSet == null) {
-            if (other.dataSet != null) {
+        if (dataSetIpId == null) {
+            if (other.dataSetIpId != null) {
                 return false;
             }
-        } else if (!dataSet.equals(other.dataSet)) {
+        } else if (!dataSetIpId.equals(other.dataSetIpId)) {
             return false;
         }
         if (label == null) {
@@ -239,11 +246,11 @@ public class ChainGeneration implements IIdentifiable<Long> {
     }
 
     public String getDataSet() {
-        return dataSet;
+        return dataSetIpId;
     }
 
     public void setDataSet(String dataSet) {
-        this.dataSet = dataSet;
+        this.dataSetIpId = dataSet;
     }
 
     public String getComment() {
@@ -310,6 +317,14 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.session = session;
     }
 
+    public String getIngestProcessingChain() {
+        return ingestProcessingChain;
+    }
+
+    public void setIngestProcessingChain(String ingestProcessingChain) {
+        this.ingestProcessingChain = ingestProcessingChain;
+    }
+
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
@@ -319,7 +334,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
         strBuilder.append(" - active=");
         strBuilder.append(active.toString());
         strBuilder.append(" - dataset=");
-        strBuilder.append(dataSet);
+        strBuilder.append(dataSetIpId);
         strBuilder.append(" - session=");
         strBuilder.append(session);
         strBuilder.append(" - [");

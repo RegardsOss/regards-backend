@@ -112,7 +112,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
             // get an instance of the plugin
             ICheckFilePlugin checkPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getCheckAcquisitionPluginConf(),
+                    .getPlugin(this.chainGeneration.getCheckAcquisitionPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             if (inProgressFileList != null) {
@@ -142,7 +142,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     private Product linkAcquisitionFileToProduct(AcquisitionFile acqFile, String productName) {
         // Get the product if it exists
-        Product currentProduct = productService.retrive(productName);
+        Product currentProduct = productService.retrieve(productName);
 
         if (currentProduct == null) {
             // It is a new Product,  create it

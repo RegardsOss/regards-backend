@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
-import fr.cnes.regards.modules.acquisition.service.step.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 
 /**
  * @author Christophe Mertz

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedMap;
 
 import org.slf4j.Logger;
@@ -131,28 +132,16 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     //    }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
+            Optional<String> datasetName) throws ModuleException {
         // TODO CMZ createMetadataPlugin à compléter        
         return null;
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        // TODO CMZ createMetaDataPlugin à compléter
-        return null;
-    }
-
-    @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
             throws ModuleException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        // TODO Auto-generated method stub
+        // TODO CMZ à compléter
         return null;
     }
 

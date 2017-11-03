@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.util.List;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 
 /**
  * 
@@ -42,8 +42,10 @@ public interface IProductService {
      * @param id {@link Product}
      */
     Product retrieve(Long id);
-    
+
     void delete(Long id);
-    
-    Product retrive(String productName);
+
+    Product retrieve(String productName);
+
+    public List<Product> findByStatus(ProductStatus status);
 }

@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 import java.net.MalformedURLException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -29,15 +30,11 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.netflix.servo.util.Strings;
-
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
-import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
@@ -52,8 +49,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.entities.domain.geometry.Crs;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
@@ -65,15 +60,9 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 @Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
+public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestGenerateSipPlugin.class);
-
-    public static final String CHAIN_GENERATION_PARAM = "chain-label";
-
-    public static final String SESSION_PARAM = "session-param";
-
-    public static final String META_PRODUCT_PARAM = "meta-produt";
 
     private static final String MISSION_ATTRIBUE = "Mission";
 
@@ -85,24 +74,69 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
 
     private static final Random random = new Random();
 
-    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
-    private String chainLabel;
-
     @PluginParameter(name = SESSION_PARAM, optional = true)
-    private String session;
+    private String sessionId;
+    
+    @PluginParameter(name = INGEST_PROCESSING_CHAIN_PARAM, optional = true)
+    private String ingestProcessindChain;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
     private MetaProductDto metaProductDto;
 
-    @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
-        return createMetadataPlugin(acqFiles, datasetName);
+    @PluginInit
+    private void setUp() {
+        LOGGER.info("setUp");
+        // TODO CMZ mettre les 2 paramètres en param du Plugin
+        this.sipCollectionBuilder = new SIPCollectionBuilder(ingestProcessindChain, sessionId);
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        LOGGER.info("Start create MetaData for the chain <{}> ", chainLabel);
+    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
+            throws AcquisitionException {
+        for (AcquisitionFile af : acqFiles) {
+            try {
+                // TODO CMZ à voir pas forcément des RAWDATA et peut-etre identique dans tous les cas
+                sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
+                                                                        af.getChecksumAlgorithm(), af.getChecksum());
+                sipBuilder.addContentInformation();
+            } catch (MalformedURLException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new AcquisitionException(e.getMessage());
+            }
+        }
+
+    }
+
+    protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+            throws AcquisitionException {
+        mapAttrs.forEach((k, v) -> {
+            switch (v.getAttributeKey()) {
+                case MISSION_ATTRIBUE:
+                    sipBuilder.getPDIBuilder().addAdditionalProvenanceInformation(v.getAttributeKey(),
+                                                                                  v.getValueList().get(0));
+                    break;
+                case INSTRUMENT_ATTRIBUE:
+                    sipBuilder.getPDIBuilder().setInstrument((String) v.getValueList().get(0));
+                    break;
+                case CREATION_DATE_ATTRIBUE:
+                    sipBuilder.getPDIBuilder().addProvenanceInformationEvent(CREATION_DATE_ATTRIBUE, "creation",
+                                                                             (OffsetDateTime) v.getValueList().get(0));
+                    break;
+                case GEO_POINT_ATTRIBUTE:
+                    sipBuilder.setGeometry((Point) v.getValueList().get(0));
+                    break;
+                default:
+                    sipBuilder.getPDIBuilder().addContextInformation(v.getAttributeKey(), v.getValueList().get(0));
+                    break;
+            }
+        });
+    }
+
+    @Override
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
+            Optional<String> datasetName) throws ModuleException {
+
+        LOGGER.info("Start create MetaData for the session <{}> ", sessionId);
 
         String productName = acqFiles.get(0).getProduct().getProductName();
 
@@ -113,7 +147,7 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
         attributeMap.put(n++, createLongAttribute("orbit", 100));
         attributeMap.put(n++, createLongAttribute("order", 133));
         attributeMap.put(n++, createStringAttribute(MISSION_ATTRIBUE, "Viking"));
-        attributeMap.put(n++, createStringAttribute(INSTRUMENT_ATTRIBUE, "instrument de la mesure"));
+        attributeMap.put(n++, createStringAttribute(INSTRUMENT_ATTRIBUE, "instrument used for the measure"));
         attributeMap.put(n++, createStringAttribute("comment", "Hello Toulouse"));
         attributeMap.put(n++, createDateAttribute(CREATION_DATE_ATTRIBUE, OffsetDateTime.now()));
         attributeMap.put(n++, createDateAttribute("start date", OffsetDateTime.now().minusMinutes(45)));
@@ -122,7 +156,7 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
                 .put(n++,
                      createPointAttribute(GEO_POINT_ATTRIBUTE, -90 * random.nextDouble(), 90 * random.nextDouble()));
 
-        LOGGER.info("End create Metata for the chain <{}>", chainLabel);
+        LOGGER.info("End create Metata for the session <{}>", sessionId);
 
         return attributeMap;
     }
@@ -159,88 +193,6 @@ public class TestGenerateSipPlugin implements IGenerateSIPPlugin {
         attr.setMetaAttribute(new MetaAttribute(name, AttributeTypeEnum.TYPE_GEO_LOCATION));
         attr.addValue(pp);
         return attr;
-    }
-
-    @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, String datasetIpId) throws ModuleException {
-        SIPCollection sipCollection = runPlugin(acqFiles);
-
-        // If a  is defined, add a tag to the PreservationDescriptionInformation
-        if (!Strings.isNullOrEmpty(datasetIpId)) {
-            sipCollection.getFeatures().forEach(sip -> {
-                PDIBuilder pdiBuilder = new PDIBuilder(sip.getProperties().getPdi());
-                pdiBuilder.addTags(datasetIpId);
-                sip.getProperties().setPdi(pdiBuilder.build());
-                
-                if (LOGGER.isDebugEnabled()) {
-                    Gson gson = new Gson();
-                    LOGGER.debug(gson.toJson(sip));
-                }
-                
-            });
-        }
-
-        return sipCollection;
-    }
-
-    @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        String productName = acqFiles.get(0).getProduct().getProductName();
-
-        LOGGER.info("Start SIP generation for product <{}>", productName);
-
-        // TODO CMZ il faut avoir récupérer le processingChain auprès du microservice Ingest
-        SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder("processingChain", this.session);
-
-        SIPBuilder sipBuilder = new SIPBuilder(productName);
-
-        // Add all AcquisistionFile to the content information
-        for (AcquisitionFile af : acqFiles) {
-            try {
-                sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
-                                                                        af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.addContentInformation();
-            } catch (MalformedURLException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new AcquisitionException(e.getMessage());
-            }
-        }
-
-        // Add the meta-attributes
-        SortedMap<Integer, Attribute> mm = this.createMetaDataPlugin(acqFiles);
-
-        mm.forEach((k, v) -> {
-            switch (v.getAttributeKey()) {
-                case MISSION_ATTRIBUE:
-                    sipBuilder.getPDIBuilder().addAdditionalProvenanceInformation(v.getAttributeKey(),
-                                                                                  v.getValueList().get(0));
-                    break;
-                case INSTRUMENT_ATTRIBUE:
-                    sipBuilder.getPDIBuilder().setInstrument((String) v.getValueList().get(0));
-                    break;
-                case CREATION_DATE_ATTRIBUE:
-                    sipBuilder.getPDIBuilder().addProvenanceInformationEvent(CREATION_DATE_ATTRIBUE, "creation",
-                                                                             (OffsetDateTime) v.getValueList().get(0));
-                    break;
-                case GEO_POINT_ATTRIBUTE:
-                    sipBuilder.setGeometry((Point) v.getValueList().get(0));
-                    break;
-                default:
-                    sipBuilder.getPDIBuilder().addContextInformation(v.getAttributeKey(), v.getValueList().get(0));
-                    break;
-            }
-        });
-
-        SIP aSip = sipBuilder.build();
-        if (LOGGER.isDebugEnabled()) {
-            Gson gson = new Gson();
-            LOGGER.debug(gson.toJson(aSip));
-        }
-        sipCollectionBuilder.add(aSip);
-
-        LOGGER.info("End SIP generation for product <{}>", productName);
-
-        return sipCollectionBuilder.build();
     }
 
 }
