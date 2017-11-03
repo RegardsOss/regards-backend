@@ -109,7 +109,7 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
                 LOGGER.error(message, e);
                 throw new IllegalArgumentException(e);
             }
-            // Define a parameterized type
+            // Define a parametrized type
             if (keyArgTypeName == null) {
                 type = new ParameterizedTypeImpl(null, rawType, argType);
             } else {
