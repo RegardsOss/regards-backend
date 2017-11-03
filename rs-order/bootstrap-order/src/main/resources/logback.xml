@@ -29,6 +29,10 @@
 		<appender-ref ref="regardsAmqpAppender" />
 	</logger>
 
+	<!-- SQL statements and parameters -->
+	<logger name="org.hibernate.SQL" level="DEBUG" />
+	<logger name="org.hibernate.type.descriptor.sql" level="TRACE" />
+
 	<root level="info">
 		<appender-ref ref="SYSLOG" />
 		<appender-ref ref="STDOUT" />
