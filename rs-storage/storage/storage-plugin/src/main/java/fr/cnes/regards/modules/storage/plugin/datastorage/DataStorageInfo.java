@@ -36,7 +36,7 @@ public class DataStorageInfo {
     private String usedSize;
 
     /**
-     * Occupation ratio in percent
+     * Disk usage ratio in percent
      */
     private Double ratio;
 

@@ -65,5 +65,5 @@ public interface IDataStorage<T extends IWorkingSubset> {
     /**
      * @return the threshold, in percent, above which users should be notified that this data storage starts to be full and the project should be set in maintenance.
      */
-    Integer getOccupationThreshold();
+    Integer getDiskUsageThreshold();
 }

@@ -18,16 +18,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -40,9 +44,13 @@ public interface IAipClient {
 
     String AIP_PATH = "/aips";
 
+    String RETRY_STORE_PATH = "/retry";
+
     String PREPARE_DATA_FILES = "/dataFiles";
 
     String ID_PATH = "/{ip_id}";
+
+    String IP_ID_RETRY_STORE_PATH = ID_PATH + RETRY_STORE_PATH;
 
     String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
@@ -75,8 +83,17 @@ public interface IAipClient {
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid AIPCollection aips);
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    public ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips);
+
+    @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
+    public ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds);
+
+    @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
+    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId);
+
+    @RequestMapping(method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteAipFromSip(@RequestParam("sip_ip_id") String sipIpId);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);

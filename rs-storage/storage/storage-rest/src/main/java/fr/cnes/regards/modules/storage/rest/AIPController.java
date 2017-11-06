@@ -152,8 +152,14 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
     @ResponseBody
     @ResourceAccess(description = "Retry to store given aip, threw its ip id")
-    public ResponseEntity<List<RejectedAip>> storeRetryUnit(@PathVariable("ip_id") String ipId) throws ModuleException {
-        return storeRetry(Sets.newHashSet(ipId));
+    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId) throws ModuleException {
+        //we ask for one AIP to be stored, so we can only have one rejected aip in counter part
+        ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
+        if (listResponse.getBody().isEmpty()) {
+            return new ResponseEntity<>(listResponse.getStatusCode());
+        } else {
+            return new ResponseEntity<>(listResponse.getBody().get(0), listResponse.getStatusCode());
+        }
     }
 
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
@@ -183,9 +189,9 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id")
-    public ResponseEntity<Void> delete(@RequestParam("sip_ip_id") String sipIpId) {
+    public ResponseEntity<Void> deleteAipFromSip(@RequestParam("sip_ip_id") String sipIpId) throws ModuleException {
         aipService.deleteAipFromSip(sipIpId);
-        return ResponseEntity.noContent();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
@@ -310,8 +316,11 @@ public class AIPController implements IResourceController<AIP> {
                                 "retrieveAIP",
                                 LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService
-                .addLink(resource, this.getClass(), "storeRetryUnit", "retry", MethodParamFactory.build(String.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "storeRetryUnit",
+                                "retry",
+                                MethodParamFactory.build(String.class, pElement.getId().toString()));
         return resource;
     }
 

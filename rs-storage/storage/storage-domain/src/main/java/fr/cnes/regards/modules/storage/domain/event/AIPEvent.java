@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.domain.event;
 
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -30,15 +28,30 @@ public class AIPEvent implements ISubscribable {
 
     private String failureCause;
 
+    private String sipId;
+
+    private AIPEvent() {
+    }
+
     public AIPEvent(AIP aip) {
         ipId = aip.getId().toString();
         aipState = aip.getState();
+        sipId = aip.getSipId();
     }
 
     public AIPEvent(AIP aip, String dataFileUrl, Long pluginConfId) {
         ipId = aip.getId().toString();
         aipState = aip.getState();
+        sipId = aip.getSipId();
         failureCause = String.format(FAILURE_CAUSE_TEMPLATE, dataFileUrl, pluginConfId);
+    }
+
+    public String getSipId() {
+        return sipId;
+    }
+
+    public void setSipId(String sipId) {
+        this.sipId = sipId;
     }
 
     public String getIpId() {

@@ -50,9 +50,6 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     private IAIPDao dao;
 
-    @Autowired
-    private IDataFileDao dataFileDao;
-
     /**
      * last submitted and last updated
      */

@@ -20,7 +20,7 @@ public interface IDataStorageService {
     Collection<PluginStorageInfo> getMonitoringInfos() throws ModuleException, IOException;
 
     /**
-     * Periodically scheduled task that monitor {@link IDataStorage}s and notify users when a data storage reaches its occupation threshold. This method go threw all active tenants.
+     * Periodically scheduled task that monitor {@link IDataStorage}s and notify users when a data storage reaches its disk usage threshold. This method go threw all active tenants.
      */
     void monitorDataStorages();
 }

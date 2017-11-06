@@ -154,13 +154,45 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     public void testStore() {
         // make requirements
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
         performDefaultPost(AIPController.AIP_PATH,
                            new AIPCollection(aip),
                            requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
+    }
+
+    @Test
+    public void testStoreTotalFail() {
+        testStore();
+        // now just try to store the same aip
+        // make requirements
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
+        // perform request
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
+                           "Same AIP cannot be stored twice");
+    }
+
+    @Test
+    public void testStoreFailPartial() throws MalformedURLException {
+        testStore();
+        // now just try to store the same aip
+        // make requirements
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
+        AIP aip2 = getAIP();
+
+        // perform request
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip, aip2),
+                           requestBuilderCustomizer,
+                           "Success should be partial, aip cannot be re stored but aip2 can be stored");
     }
 
     private Map<String, List<String>> getHeaders() {

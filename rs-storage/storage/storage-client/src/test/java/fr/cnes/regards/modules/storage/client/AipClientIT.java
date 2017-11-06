@@ -71,12 +71,13 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.plugin.datastorage.DefaultAllocationStrategyPlugin;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DefaultAllocationStrategyPlugin;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IAllocationStrategy;
 
 /**
  * Run client IT scenario tests for storeAndCreate and restore files from rs-storage microservice.
@@ -93,10 +94,14 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AipClientIT";
 
+    private final static String workspace = "target/workspace";
+
+    private static URL baseStorageLocation = null;
+
+    private static Path downloadDir = Paths.get("target/download");
+
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-
-    private final static String workspace = "target/workspace";
 
     private IAipClient client;
 
@@ -127,10 +132,6 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    private static URL baseStorageLocation = null;
-
-    private static Path downloadDir = Paths.get("target/download");
-
     private PluginConfiguration catalogSecuDelegConf;
 
     @BeforeClass
@@ -152,9 +153,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
             FileUtils.deleteDirectory(downloadDir.toFile());
         }
         Files.createDirectories(downloadDir);
-        client = FeignClientBuilder
-                .build(new TokenClientProvider<>(IAipClient.class, "http://" + serverAddress + ":" + getPort(),
-                                                 feignSecurityManager), gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IAipClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         FeignSecurityManager.asSystem();
         initDb();
@@ -186,9 +187,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
         // third, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
-        PluginMetaData dataStoMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
@@ -229,9 +230,11 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Test
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException {
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                "clientAipTest", EntityType.DATA);
+        AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
+                                                                    EntityType.DATASET,
+                                                                    DEFAULT_TENANT,
+                                                                    UUID.randomUUID(),
+                                                                    1), "clientAipTest", EntityType.DATA);
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 
@@ -239,9 +242,10 @@ public class AipClientIT extends AbstractRegardsWebIT {
         try (FileInputStream is = new FileInputStream(file.toFile())) {
             fileChecksum = ChecksumUtils.computeHexChecksum(is, "MD5");
         }
-        builder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file://" + file.toFile().getAbsolutePath()), "MD5",
-                               fileChecksum);
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
+                                                             new URL("file://" + file.toFile().getAbsolutePath()),
+                                                             "MD5",
+                                                             fileChecksum);
         builder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
         builder.addContentInformation();
 
@@ -254,14 +258,14 @@ public class AipClientIT extends AbstractRegardsWebIT {
         // 1. Create new AIP
         AIPCollection aipCollection = new AIPCollection();
         aipCollection.addAll(aips);
-        ResponseEntity<Set<UUID>> resp = client.store(aipCollection);
+        ResponseEntity<List<RejectedAip>> resp = client.store(aipCollection);
         // Wait for job ends.
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             // Nothing to do
         }
-        Assert.assertTrue("Http response should be OK after createAIP.", HttpStatus.OK.equals(resp.getStatusCode()));
+        Assert.assertTrue("Http response should be CREATED after createAIP.", HttpStatus.CREATED.equals(resp.getStatusCode()));
         Assert.assertTrue("AIP is not created", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
         // 2. Retrieve it
         ResponseEntity<PagedResources<Resource<AIP>>> resp2 = client.retrieveAIPs(null, null, null, 0, 10);
@@ -276,9 +280,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
         Assert.assertTrue("Http response should be OK adter retrieveAIPFiles.",
                           HttpStatus.OK.equals(resp3.getStatusCode()));
         Assert.assertTrue("There should be one DataObject from the AIP.", resp3.getBody() != null);
-        Assert.assertTrue(
-                String.format("There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
-                              resp3.getBody().size()), resp3.getBody().size() == 2);
+        Assert.assertTrue(String.format(
+                "There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
+                resp3.getBody().size()), resp3.getBody().size() == 2);
         // 4. Make file available for download
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(2), fileChecksum);
         ResponseEntity<AvailabilityResponse> response = client.makeFilesAvailable(request);

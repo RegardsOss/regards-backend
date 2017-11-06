@@ -940,7 +940,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:60000}")
+    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:7200000}") // 2 hours, by default
     @Override
     public void updateAlreadyStoredMetadata() {
         // Then lets get AIP that should be stored again after an update
