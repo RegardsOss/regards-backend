@@ -97,8 +97,13 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
-
+        
         this.chainGeneration = process.getChainGeneration();
+
+        if (afMap.isEmpty()) {
+            LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
+            return;
+        }
 
         // A plugin for the generate SIP configuration is required
         if (this.chainGeneration.getGenerateSIPPluginConf() == null) {
@@ -124,17 +129,15 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // create MetaData for each Product
-            if (!afMap.isEmpty()) {
-                afMap.forEach((k, af) -> {
-                    try {
-                        this.sipCollection = generateSipPlugin.runPlugin(af, Optional.of(chainGeneration.getDataSet()));
-                        processSipCollection();
-                    } catch (ModuleException e) {
-                        LOGGER.error(e.getMessage(), e);
-                        throw new AcquisitionRuntimeException(e.getMessage());
-                    }
-                });
-            }
+            afMap.forEach((k, af) -> {
+                try {
+                    this.sipCollection = generateSipPlugin.runPlugin(af, Optional.of(chainGeneration.getDataSet()));
+                    processSipCollection();
+                } catch (ModuleException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw new AcquisitionRuntimeException(e.getMessage());
+                }
+            });
 
             publishSipCollections();
 

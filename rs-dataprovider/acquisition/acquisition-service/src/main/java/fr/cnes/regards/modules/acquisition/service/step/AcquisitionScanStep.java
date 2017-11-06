@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -59,9 +58,6 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     @Autowired
     private IChainGenerationService chainGenerationService;
-
-    @Autowired
-    private IAcquisitionFileRepository acquisitionFileRepository;
 
     @Autowired
     private IAcquisitionFileService acquisitionFileService;

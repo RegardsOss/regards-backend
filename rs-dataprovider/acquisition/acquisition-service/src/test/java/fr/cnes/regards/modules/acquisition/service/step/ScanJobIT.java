@@ -425,6 +425,8 @@ public class ScanJobIT {
     @Test
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
             throws ModuleException, InterruptedException {
+        mockIngestClientResponseOK();
+        
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile);
 
@@ -479,6 +481,8 @@ public class ScanJobIT {
     @Test
     public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
             throws ModuleException, InterruptedException {
+        mockIngestClientResponseOK();
+        
         this.chain.setPeriodicity(1L);
 
         Set<MetaFile> metaFiles = new HashSet<>();
@@ -504,7 +508,7 @@ public class ScanJobIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-        waitJob(45_000);
+        waitJob(WAIT_TIME);
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());

@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -48,7 +47,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -69,9 +67,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     private IPluginService pluginService;
 
     @Autowired
-    private IAcquisitionFileRepository acquisitionFileRepository;
-
-    @Autowired
     private IAcquisitionFileService acquisitionFileService;
 
     @Autowired
@@ -86,12 +81,16 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     /**
      * {@link List} of {@link AcquisitionFile} that should be check
      */
-    private List<AcquisitionFile> inProgressFileList;
+    private List<AcquisitionFile> inProgressFileList = new ArrayList<>();;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
-
         this.chainGeneration = process.getChainGeneration();
+
+        if (inProgressFileList.isEmpty()) {
+            LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
+            return;
+        }
 
         // A plugin for the scan configuration is required
         if (this.chainGeneration.getCheckAcquisitionPluginConf() == null) {
@@ -119,7 +118,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                 // for each AcquisitionFile
                 for (AcquisitionFile acqFile : inProgressFileList) {
                     File currentFile = acqFile.getFile();
-                    
+
                     // execute the check plugin
                     if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
                         acqFile.setStatus(AcquisitionFileStatus.VALID);
@@ -150,7 +149,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             currentProduct.setProductName(productName);
             currentProduct.setStatus(ProductStatus.ACQUIRING);
             currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
-            
+
         }
 
         currentProduct.setSession(chainGeneration.getSession());
@@ -233,10 +232,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void getResources() throws AcquisitionException {
-        inProgressFileList = new ArrayList<>();
         for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
-            inProgressFileList.addAll(acquisitionFileRepository
-                    .findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, metaFile));
+            inProgressFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS,
+                                                                                     metaFile));
         }
     }
 
