@@ -58,7 +58,7 @@ public interface IProjectRepository extends JpaRepository<Project, Long> {
      * @return true if it's active
      */
     default boolean isActiveProject(Long id) {
-        Project one = getOne(id);
+        Project one = findOne(id);
         return (one != null) && !one.isDeleted();
     }
 }
