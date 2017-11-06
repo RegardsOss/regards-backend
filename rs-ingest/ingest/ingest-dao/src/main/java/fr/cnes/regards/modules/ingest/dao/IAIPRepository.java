@@ -62,6 +62,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      * @param state {@link AIPState}
      * @return optional {@link AIPEntity}
      */
+    @Query("select id from AIPEntity a where a.state= ?1")
     Set<Long> findIdByState(AIPState state);
 
     /**

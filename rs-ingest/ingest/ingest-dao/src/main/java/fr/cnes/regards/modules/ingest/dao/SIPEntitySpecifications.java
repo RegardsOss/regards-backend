@@ -47,7 +47,7 @@ public final class SIPEntitySpecifications {
      * @param state
      * @return
      */
-    public static Specification<SIPEntity> search(String sesssionId, String owner, OffsetDateTime from,
+    public static Specification<SIPEntity> search(String sipId, String sesssionId, String owner, OffsetDateTime from,
             SIPState state) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
@@ -62,6 +62,9 @@ public final class SIPEntitySpecifications {
             }
             if (state != null) {
                 predicates.add(cb.equal(root.get("state"), state));
+            }
+            if (sipId != null) {
+                predicates.add(cb.equal(root.get("sipId"), sipId));
             }
             query.orderBy(cb.desc(root.get("ingestDate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
