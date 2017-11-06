@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -70,6 +71,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private IIngestProcessingService ingestProcessingService;
+
+    @Autowired
+    private IPublisher publisher;
 
     private SIPEntity entity;
 
@@ -150,6 +154,10 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public IIngestProcessingService getIngestProcessingService() {
         return ingestProcessingService;
+    }
+
+    public IPublisher getPublisher() {
+        return publisher;
     }
 
 }

@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -34,7 +36,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Marc Sordi
  *
  */
-public interface ISIPRepository extends JpaRepository<SIPEntity, Long> {
+public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpecificationExecutor<SIPEntity> {
 
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
@@ -56,6 +58,13 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long> {
      * @return {@link SIPEntity}s
      */
     Collection<SIPEntity> findAllByState(SIPState state);
+
+    /**
+     * Find one {@link SIPEntity} by is unique ipId
+     * @param ipId
+     * @return
+     */
+    Optional<SIPEntity> findOneByIpId(String ipId);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}.

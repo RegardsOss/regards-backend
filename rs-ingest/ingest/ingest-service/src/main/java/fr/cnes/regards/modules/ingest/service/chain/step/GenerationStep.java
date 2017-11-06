@@ -27,7 +27,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
@@ -64,12 +66,15 @@ public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
 
     @Override
     protected void doAfterStepError(SIP sip) {
+        SIPEntity sipEntity = this.job.getEntity();
+        sipEntity.setState(SIPState.AIP_GEN_ERROR);
         LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
         this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+        this.job.getPublisher().publish(new SIPEvent(sipEntity));
     }
 
     @Override
     protected void doAfterStepSuccess(SIP pIn) {
-        this.updateSIPEntityState(SIPState.AIP_GENERATED);
+        // Nothing to do
     }
 }

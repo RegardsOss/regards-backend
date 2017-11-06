@@ -36,14 +36,41 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
  */
 public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
+    /**
+     * Retrieve all {@link AIPEntity}s associated to the given {@link SIPEntity}
+     * @param sip {@link SIPEntity}
+     * @return {@link AIPEntity}s
+     */
     Set<AIPEntity> findBySip(SIPEntity sip);
 
+    /**
+     * Retrieve all {@link AIPEntity}s associated to the given {@link SIPEntity}
+     * @param sip {@link SIPEntity}
+     * @return {@link AIPEntity}s
+     */
+    Set<AIPEntity> findBySipIpId(String sipIpId);
+
+    /**
+     * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getIpId()}
+     * @param ipId {@link String}
+     * @return optional {@link AIPEntity}
+     */
     Optional<AIPEntity> findByIpId(String ipId);
 
+    /**
+     * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
+     * @param state {@link AIPState}
+     * @return optional {@link AIPEntity}
+     */
     Set<Long> findIdByState(AIPState state);
 
+    /**
+     * Update state of the given {@link AIPEntity}
+     * @param state New state
+     * @param id {@link AIPEntity} to update
+     */
     @Modifying
     @Query("UPDATE AIPEntity a set a.state = ?1 where a.id = ?2")
-    int updateAIPEntityState(AIPState state, Long id);
+    void updateAIPEntityState(AIPState state, Long id);
 
 }

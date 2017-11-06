@@ -28,6 +28,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -60,6 +62,11 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IIngestService ingestService;
 
+    @Autowired
+    private ISIPService sipService;
+
+    private final static String SESSION_ID = "sessionId";
+
     @Before
     public void init() {
         aipRepository.deleteAll();
@@ -72,11 +79,12 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
      */
     @Requirement("REGARDS_DSL_ING_PRO_240")
     @Requirement("REGARDS_DSL_ING_PRO_250")
+    @Requirement("REGARDS_DSL_ING_PRO_710")
     @Purpose("Store SIP checksum and prevent from submitting twice")
     @Test
     public void ingestWithCollision() throws ModuleException {
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder("processingChain", SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder("SIP_001");
@@ -97,6 +105,9 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
         SIPEntity two = results.iterator().next();
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
+
+        Page<SIPEntity> page = sipService.getSIPEntities(SESSION_ID, null, null, null, new PageRequest(0, 10));
+        Assert.assertTrue(page.getNumberOfElements() == 1);
     }
 
     /**
@@ -119,9 +130,18 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
         }
 
         // Check sipNb SIP are stored
-        Collection<SIPEntity> sips = ingestService.getAllVersions(sipId);
+        Collection<SIPEntity> sips = sipService.getAllVersions(sipId);
         Assert.assertNotNull(sips);
         Assert.assertTrue(sips.size() == sipNb);
+
+        Page<SIPEntity> page = sipService.getSIPEntities(null, null, null, null, new PageRequest(0, 10));
+        Assert.assertTrue(page.getNumberOfElements() == sipNb);
+    }
+
+    @Purpose("Manage ingestion retry after error")
+    @Test
+    public void retryIngest() {
+        // TODO : Check retry
     }
 
     private void ingestNextVersion(String sipId, Integer version)

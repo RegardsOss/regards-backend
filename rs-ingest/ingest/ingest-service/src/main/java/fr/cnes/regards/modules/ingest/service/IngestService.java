@@ -25,15 +25,20 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -61,27 +66,58 @@ public class IngestService implements IIngestService {
 
     public static final String MD5_ALGORITHM = "MD5";
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final Gson gson;
+    @Autowired
+    private Gson gson;
 
-    private final ISIPRepository sipRepository;
+    @Autowired
+    private ISIPRepository sipRepository;
 
-    public IngestService(IRuntimeTenantResolver runtimeTenantResolver, Gson gson, ISIPRepository sipRepository) {
-        this.runtimeTenantResolver = runtimeTenantResolver;
-        this.gson = gson;
-        this.sipRepository = sipRepository;
-    }
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Override
     public Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException {
-
         Collection<SIPEntity> entities = new ArrayList<>();
         IngestMetadata metadata = sips.getMetadata();
         for (SIP sip : sips.getFeatures()) {
             entities.add(store(sip, metadata));
         }
         return entities;
+    }
+
+    @Override
+    public SIPEntity retryIngest(String ipId) throws ModuleException {
+        Optional<SIPEntity> oSip = sipRepository.findOneByIpId(ipId);
+        if (oSip.isPresent()) {
+            SIPEntity sip = oSip.get();
+            switch (sip.getState()) {
+                case AIP_GEN_ERROR:
+                case INVALID:
+                case DELETED:
+                    sipRepository.updateSIPEntityState(SIPState.CREATED, sip.getId());
+                    break;
+                case STORE_ERROR:
+                case STORED:
+                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class,
+                            "SIP ingest process is already successully done");
+                case REJECTED:
+                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class, "SIP format is not valid");
+                case VALID:
+                case QUEUED:
+                case CREATED:
+                case AIP_CREATED:
+                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class, "SIP ingest is already running");
+                default:
+                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class,
+                            "SIP is in undefined state for ingest retry");
+            }
+            return sipRepository.findOne(sip.getId());
+        } else {
+            throw new EntityNotFoundException(ipId, SIPEntity.class);
+        }
     }
 
     /**
@@ -99,6 +135,7 @@ public class IngestService implements IIngestService {
         entity.setIngestDate(OffsetDateTime.now());
         entity.setProcessing(metadata.getProcessing());
         entity.setSessionId(metadata.getSessionId().orElse(null));
+        entity.setOwner(authResolver.getUser());
 
         // Compute internal IP_ID
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
@@ -138,10 +175,5 @@ public class IngestService implements IIngestService {
         }
 
         return entity;
-    }
-
-    @Override
-    public Collection<SIPEntity> getAllVersions(String sipId) {
-        return sipRepository.getAllVersions(sipId);
     }
 }

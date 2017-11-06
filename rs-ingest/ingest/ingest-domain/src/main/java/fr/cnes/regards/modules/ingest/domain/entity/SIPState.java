@@ -20,9 +20,10 @@ package fr.cnes.regards.modules.ingest.domain.entity;
 
 /**
  *
- * Manage SIP lifecycle
+ * SIP lifecycle
  *
  * <pre>
+ *
  * CREATED
  *   |_______ REJECTED
  *   |
@@ -31,11 +32,12 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  *   |
  * VALID
  *   |_______ AIP_GEN_ERROR
- *   |             |
- * AIP_GENERATED   |
- *   |_____________|
  *   |
  * AIP_CREATED
+ *   |________STORE_ERROR
+ *   |
+ * STORED
+ *
  * </pre>
  *
  * @author Marc Sordi
@@ -64,16 +66,23 @@ public enum SIPState {
      */
     INVALID,
     /**
-     * AIP(s) associated to the SIP has been successfully generated and are waiting to be stored
-     */
-    AIP_GENERATED,
-    /**
-     * Error during AIP geneation
+     * Error during AIP generation
      */
     AIP_GEN_ERROR,
     /**
      * AIP(s) associated to the SIP has been successfully localy stored and are waiting to be handle by storage microservice.
      */
-    AIP_CREATED;
-
+    AIP_CREATED,
+    /**
+     * AIP(s) has been successfully stored by storage microservice
+     */
+    STORED,
+    /**
+     * One or many AIP(s) failed to be stored by storage microservice
+     */
+    STORE_ERROR,
+    /**
+     * SIP deleted
+     */
+    DELETED;
 }

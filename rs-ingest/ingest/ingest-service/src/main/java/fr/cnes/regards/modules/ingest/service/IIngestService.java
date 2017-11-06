@@ -41,9 +41,10 @@ public interface IIngestService {
     Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException;
 
     /**
-     * Retrieve all submitted SIP with same sipId
-     * @param sipId SIP ID
-     * @return all version of related SIP with specified sipId
+     * Retry to store a SIP already submitted previously.
+     * @param ipId {@link String} ipId of the SIP to retry
+     * @return updated {@link SIPEntity}
+     * @throws ModuleException
      */
-    Collection<SIPEntity> getAllVersions(String sipId);
+    SIPEntity retryIngest(String ipId) throws ModuleException;
 }

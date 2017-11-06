@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
@@ -201,6 +202,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         processingChainRepository.save(defaultChain);
     }
 
+    @Requirement("REGARDS_DSL_ING_PRO_160")
     @Purpose("Test default process chain to ingest a new SIP provided by value")
     @Test
     public void testDefaultProcessingChain() {
@@ -219,6 +221,11 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
                 + resultSip.getState().toString(), SIPState.AIP_CREATED.equals(resultSip.getState()));
     }
 
+    @Requirement("REGARDS_DSL_ING_PRO_160")
+    @Requirement("REGARDS_DSL_ING_PRO_170")
+    @Requirement("REGARDS_DSL_ING_PRO_180")
+    @Requirement("REGARDS_DSL_ING_PRO_300")
+    @Requirement("REGARDS_DSL_ING_PRO_400")
     @Purpose("Test fully configured process chain to ingest a new SIP provided by value")
     @Test
     public void testProcessingChain() throws JobParameterMissingException, JobParameterInvalidException {

@@ -31,7 +31,6 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -88,6 +87,10 @@ public class SIPEntity {
     @Column(name = "ipId", length = MAX_URN_SIZE)
     private String ipId;
 
+    @NotBlank
+    @Column(name = "owner", length = 128)
+    private String owner;
+
     /**
      * SIP version : this value is also reported in {@link #ipId} and must be the same
      */
@@ -101,9 +104,9 @@ public class SIPEntity {
     private SIPState state;
 
     /**
-     * Optional message when SIP is rejected / not persisted in database
+     * Optional message when SIP is rejected
      */
-    @Transient
+    @Column(name = "rejection_reason", length = 256)
     private String reasonForRejection;
 
     /**
@@ -120,6 +123,8 @@ public class SIPEntity {
 
     @NotNull
     private OffsetDateTime ingestDate;
+
+    private OffsetDateTime lastUpdateDate;
 
     /**
      * Processing chain name from {@link IngestMetadata}
@@ -217,4 +222,21 @@ public class SIPEntity {
     public void setReasonForRejection(String reasonForRejection) {
         this.reasonForRejection = reasonForRejection;
     }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public OffsetDateTime getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
 }

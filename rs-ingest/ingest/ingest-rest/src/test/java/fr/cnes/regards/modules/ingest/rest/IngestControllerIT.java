@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +86,11 @@ public class IngestControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultPostWithContentType(IngestController.TYPE_MAPPING, collectionBuilder.build(),
                                           GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE, expectations,
                                           "SIP collection should be submitted.");
+
+        expectations.clear();
+        expectations.add(MockMvcResultMatchers.status().isOk());
+        expectations.add(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
+        performDefaultGet(IngestController.TYPE_MAPPING, expectations, "Error retrieving SIPs");
 
     }
 }
