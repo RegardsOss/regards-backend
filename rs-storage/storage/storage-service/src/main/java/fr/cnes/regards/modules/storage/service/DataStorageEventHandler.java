@@ -277,7 +277,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             dataStorageUsed = pluginService.getPluginConfiguration(dataStoragePluginConfId);
         } catch (ModuleException e) {
             LOG.error(
-                    "You should not have this issue here! That means that the plugin used to store the dataFile just has been removed from the application",
+                    "You should not have this issue here! That means that the plugin used to storeAndCreate the dataFile just has been removed from the application",
                     e);
             // TODO : notify admin for invalid configuration.
             return;

@@ -5,7 +5,6 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -22,9 +21,11 @@ import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
@@ -40,7 +41,7 @@ import fr.cnes.regards.modules.storage.service.scheduler.UpdateMetadataScheduler
 public interface IAIPService {
 
     /**
-     * Run asynchronous jobs to handle new {@link AIP}s creation.<br/>
+     * Schedule asynchronous jobs to handle new {@link AIP}s creation.<br/>
      * This process handle :
      * <ul>
      * <li>Storage in db of {@link AIP}</li>
@@ -53,14 +54,41 @@ public interface IAIPService {
      * @return {@link Set}<{@link UUID}> of scheduled store AIP Jobs.
      * @throws ModuleException
      */
-    Set<UUID> store(Set<AIP> pAIP) throws ModuleException;
+    Set<UUID> storeAndCreate(Set<AIP> pAIP) throws ModuleException;
+
+    /**
+     * Schedule asynchronous jobs to handle failed storage of existing {@link AIP}.<br/>
+     * @param aipIpIds collection of aip ip ids to try to store back
+     */
+    Set<UUID> storeRetry(Set<String> aipIpIds) throws ModuleException;
+
+    /**
+     * Apply creation validation on each {@link AIP}:
+     * <ul>
+     *     <li>Aip does not already exists in the database</li>
+     *     <li>Aip is valid</li>
+     * </ul>
+     * @param aips
+     * @return Rejected aips, threw their ip id, with the rejection cause.
+     */
+    List<RejectedAip> applyCreationChecks(AIPCollection aips);
+
+    /**
+     * Apply retry validation on each {@link AIP} represented by their ipId:
+     * <ul>
+     *     <li>Aip is known in the system</li>
+     * </ul>
+     * @param aipIpIds
+     * @return
+     */
+    List<RejectedAip> applyRetryChecks(Set<String> aipIpIds);
 
     /**
      * Make asked files available into the cache file system if necessary.<br/>
      * Files that are already available are return in the response. For other ones, asynchronous jobs are scheduled
      * to make them available. As soon as a file is available, a {@link DataFileEvent} is published into the
      * system message queue.
-     * @param {@link AvailabilityRequest} containing request informations. Files checksum to make available and
+     * @param availabilityRequest {@link AvailabilityRequest} containing request informations. Files checksum to make available and
      *            files lifetime in cache.
      * @return checksums of files that are already available
      */
@@ -117,8 +145,8 @@ public interface IAIPService {
     AIP retrieveAip(String ipId) throws EntityNotFoundException;
 
     /**
-     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, store a
-     * new aip with a different version and use store method.
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, storeAndCreate a
+     * new aip with a different version and use storeAndCreate method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
      * @return aip stored into the system after changes have been propagated
@@ -133,6 +161,12 @@ public interface IAIPService {
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
      */
     Set<UUID> deleteAip(String ipId) throws ModuleException;
+
+    /**
+     * Remove {@link AIP}s associated the given sip, threw its ip id
+     * @param sipIpId
+     */
+    void deleteAipFromSip(String sipIpId) throws ModuleException;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices

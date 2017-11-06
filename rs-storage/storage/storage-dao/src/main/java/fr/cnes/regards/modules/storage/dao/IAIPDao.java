@@ -122,4 +122,6 @@ public interface IAIPDao {
     Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
 
     Set<AIP> findAllByTags(String tag);
+
+    Set<AIP> findAllBySipId(String sipIpId);
 }

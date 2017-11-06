@@ -47,11 +47,6 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
 public class AIPDataBase {
 
-    /**
-     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
-     */
-    public static final int CHECKSUM_MAX_LENGTH = 128;
-
     private static final int MAX_URN_SIZE = 128;
 
     @Id

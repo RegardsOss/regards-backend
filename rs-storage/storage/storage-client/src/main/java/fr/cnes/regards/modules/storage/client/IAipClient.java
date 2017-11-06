@@ -68,14 +68,14 @@ public interface IAipClient {
 
     String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
-    @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
-    @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Set<UUID>> store(@RequestBody @Valid AIPCollection aips);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)

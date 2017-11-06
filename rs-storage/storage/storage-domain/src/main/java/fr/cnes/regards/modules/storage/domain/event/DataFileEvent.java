@@ -5,6 +5,8 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
+ * Events mainly for rs-order, gives information on DataFile granularity, not AIP.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Event(target = Target.ALL)

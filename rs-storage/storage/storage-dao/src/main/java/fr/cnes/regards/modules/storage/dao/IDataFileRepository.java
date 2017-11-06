@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,4 +31,7 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
 
     @EntityGraph(value = "graph.datafile.full")
     Set<DataFile> findAllByChecksumIn(Set<String> checksums);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Set<DataFile> findAllByStateAndAipDataBaseIn(DataFileState dataFileState, Collection<AIPDataBase> aipDataBases);
 }

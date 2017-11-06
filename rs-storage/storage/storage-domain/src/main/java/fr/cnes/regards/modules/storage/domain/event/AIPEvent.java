@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.event;
 
+import org.springframework.util.Assert;
+
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -10,11 +12,14 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * Biggest granularity information event on what's happening on an AIP. If you need ionformations on each DataFile, {@link DataFileEvent}.
  *
+ * @author Sylvain Vissiere-Guerinet
  */
 @Event(target = Target.ALL)
 public class AIPEvent implements ISubscribable {
+
+    private static final String FAILURE_CAUSE_TEMPLATE = "File %s could not be stored by IDataStorage( plugin configuration id: %s)";
 
     private AIPState aipState;
 
@@ -23,10 +28,17 @@ public class AIPEvent implements ISubscribable {
      */
     private String ipId;
 
+    private String failureCause;
 
     public AIPEvent(AIP aip) {
         ipId = aip.getId().toString();
         aipState = aip.getState();
+    }
+
+    public AIPEvent(AIP aip, String dataFileUrl, Long pluginConfId) {
+        ipId = aip.getId().toString();
+        aipState = aip.getState();
+        failureCause = String.format(FAILURE_CAUSE_TEMPLATE, dataFileUrl, pluginConfId);
     }
 
     public String getIpId() {
@@ -43,5 +55,13 @@ public class AIPEvent implements ISubscribable {
 
     public void setAipState(AIPState aipState) {
         this.aipState = aipState;
+    }
+
+    public String getFailureCause() {
+        return failureCause;
+    }
+
+    public void setFailureCause(String failureCause) {
+        this.failureCause = failureCause;
     }
 }

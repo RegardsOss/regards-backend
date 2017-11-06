@@ -38,6 +38,22 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public Set<DataFile> findAllByStateAndAipIn(DataFileState dataFileState, Collection<AIP> aips) {
+        Set<AIPDataBase> aipDataBases = Sets.newHashSet();
+        for(AIP aip: aips) {
+            Optional<AIPDataBase> aipDatabase = getAipDataBase(aip);
+            if (aipDatabase.isPresent()) {
+                aipDataBases.add(aipDatabase.get());
+            }
+        }
+        if(aipDataBases.isEmpty()) {
+            return Sets.newHashSet();
+        } else {
+            return repository.findAllByStateAndAipDataBaseIn(dataFileState, aipDataBases);
+        }
+    }
+
+    @Override
     public Set<DataFile> findAllByAip(AIP aip) {
         Optional<AIPDataBase> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {

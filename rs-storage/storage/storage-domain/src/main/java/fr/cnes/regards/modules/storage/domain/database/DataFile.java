@@ -51,6 +51,11 @@ import fr.cnes.regards.modules.storage.domain.AIP;
                 attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
 public class DataFile {
 
+    /**
+     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
+     */
+    public static final int CHECKSUM_MAX_LENGTH = 128;
+
     @Id
     @SequenceGenerator(name = "dataFileSequence", initialValue = 1, sequenceName = "seq_data_file")
     @GeneratedValue(generator = "dataFileSequence", strategy = GenerationType.SEQUENCE)
@@ -62,7 +67,7 @@ public class DataFile {
     @Column
     private String name;
 
-    @Column(length = AIPDataBase.CHECKSUM_MAX_LENGTH, nullable = false)
+    @Column(length = CHECKSUM_MAX_LENGTH, nullable = false)
     private String checksum;
 
     @Column(nullable = false)

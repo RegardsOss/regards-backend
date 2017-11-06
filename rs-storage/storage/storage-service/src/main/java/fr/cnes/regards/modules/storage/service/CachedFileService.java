@@ -454,7 +454,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Initialize all files in cache
         for (DataFile dataFileToRestore : dataFilesToRestore) {
             Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(dataFileToRestore.getChecksum());
-            // If cached file already exists do not store a new one.
+            // If cached file already exists do not storeAndCreate a new one.
             if (!ocf.isPresent()) {
                 CachedFileState fileState = CachedFileState.QUEUED;
                 if (restorableFiles.contains(dataFileToRestore)) {
@@ -511,7 +511,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // lets instantiate every job for every DataStorage to use
         Set<JobInfo> jobs = Sets.newHashSet();
         for (IWorkingSubset workingSubset : workingSubsets) {
-            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets store a job for each
+            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job for each
             // of them
             Set<JobParameter> parameters = Sets.newHashSet();
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConf));
@@ -543,7 +543,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             notSubSetDataFiles.removeAll(subSetDataFiles);
             notSubSetDataFiles.stream()
                     .peek(df -> LOG.error(
-                                          String.format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it!",
+                                          String.format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to storeAndCreate it!",
                                                         df.getId(), df.getChecksum())))
                     .forEach(result::add);
         }

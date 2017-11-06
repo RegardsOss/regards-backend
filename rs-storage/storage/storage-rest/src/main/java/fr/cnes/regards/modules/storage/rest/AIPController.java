@@ -3,18 +3,15 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +35,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Sets;
-
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -57,6 +56,7 @@ import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
@@ -72,10 +72,7 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
 @RequestMapping(AIPController.AIP_PATH)
 public class AIPController implements IResourceController<AIP> {
 
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(AIPController.class);
+    public static final String RETRY_STORE_PATH = "/retry";
 
     public static final String AIP_PATH = "/aips";
 
@@ -84,6 +81,8 @@ public class AIPController implements IResourceController<AIP> {
     public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     public static final String ID_PATH = "/{ip_id}";
+
+    public static final String IP_ID_RETRY_STORE_PATH = ID_PATH + RETRY_STORE_PATH;
 
     public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
@@ -109,13 +108,18 @@ public class AIPController implements IResourceController<AIP> {
 
     public static final String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(AIPController.class);
+
     @Autowired
     private IResourceService resourceService;
 
     @Autowired
     private IAIPService aipService;
 
-    @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of all aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
@@ -127,13 +131,61 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
-    @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
     @ResponseBody
-    @ResourceAccess(description = "validate and store the specified AIP")
-    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid AIPCollection aips)
-            throws ModuleException, NoSuchAlgorithmException {
-        Set<UUID> jobIds = aipService.store(Sets.newHashSet(aips.getFeatures()));
-        return new ResponseEntity<>(jobIds, HttpStatus.OK);
+    @ResourceAccess(description = "Retry to store given aips, threw their ip id")
+    public ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds)
+            throws ModuleException {
+        List<RejectedAip> rejectedAips = aipService.applyRetryChecks(aipIpIds);
+        if (!rejectedAips.isEmpty()) {
+            rejectedAips.forEach(ra -> aipIpIds.remove(ra.getIpId()));
+            if (aipIpIds.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            aipService.storeRetry(aipIpIds);
+            return new ResponseEntity<>(rejectedAips, HttpStatus.PARTIAL_CONTENT);
+        }
+        aipService.storeRetry(aipIpIds);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
+    @ResponseBody
+    @ResourceAccess(description = "Retry to store given aip, threw its ip id")
+    public ResponseEntity<List<RejectedAip>> storeRetryUnit(@PathVariable("ip_id") String ipId) throws ModuleException {
+        return storeRetry(Sets.newHashSet(ipId));
+    }
+
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    @ResponseBody
+    @ResourceAccess(description = "validate and storeAndCreate the specified AIP")
+    public ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips) throws ModuleException {
+        //lets validate the inputs and get those in error
+        List<RejectedAip> rejectedAips = aipService.applyCreationChecks(aips);
+        //if there is some errors, lets handle the issues
+        if (!rejectedAips.isEmpty()) {
+            //now lets remove the inputs in error from aips to store
+            Set<String> rejectedIpIds = rejectedAips.stream().map(ra -> ra.getIpId()).collect(Collectors.toSet());
+            Set<AIP> aipNotToBeStored = aips.getFeatures().stream()
+                    .filter(aip -> rejectedIpIds.contains(aip.getId().toString())).collect(Collectors.toSet());
+            aips.getFeatures().removeAll(aipNotToBeStored);
+            //if there is nothing more to be stored, UNPROCESABLE ENTITY
+            if (aips.getFeatures().isEmpty()) {
+                return new ResponseEntity<>(rejectedAips, HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            aipService.storeAndCreate(Sets.newHashSet(aips.getFeatures()));
+            return new ResponseEntity<>(rejectedAips, HttpStatus.PARTIAL_CONTENT);
+        }
+        aipService.storeAndCreate(Sets.newHashSet(aips.getFeatures()));
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE)
+    @ResponseBody
+    @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id")
+    public ResponseEntity<Void> delete(@RequestParam("sip_ip_id") String sipIpId) {
+        aipService.deleteAipFromSip(sipIpId);
+        return ResponseEntity.noContent();
     }
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
@@ -158,12 +210,12 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allows to retrieve a collection of aip corresponding to the given set of ids")
     @ResponseBody
     public ResponseEntity<AIPCollection> retrieveAipsBulk(@RequestBody @Valid @RegardsOaisUrnAsString Set<String> ipIds)
-           throws EntityNotFoundException {
+            throws EntityNotFoundException {
         Set<AIP> aips = aipService.retrieveAipsBulk(ipIds);
         AIPCollection aipCollection = new AIPCollection();
         aipCollection.addAll(aips);
         // if we have everything, then we return HttpStatus OK(200)
-        if(aips.stream().map(aip->aip.getId().toString()).collect(Collectors.toSet()).containsAll(ipIds)) {
+        if (aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()).containsAll(ipIds)) {
             return new ResponseEntity<>(aipCollection, HttpStatus.OK);
         } else {
             //Otherwise, HttpStatus PARTIAL_CONTENT(206)
@@ -174,8 +226,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "allows to retrieve a given aip metadata thabnks to its ipId")
     @ResponseBody
-    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = "ip_id") String ipId)
-            throws EntityNotFoundException {
+    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = "ip_id") String ipId) throws EntityNotFoundException {
         return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
     }
 
@@ -183,8 +234,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allows to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
-            throws EntityInconsistentIdentifierException, EntityOperationForbiddenException,
-            EntityNotFoundException {
+            throws EntityInconsistentIdentifierException, EntityOperationForbiddenException, EntityNotFoundException {
         return new ResponseEntity<>(aipService.updateAip(ipId, updated), HttpStatus.OK);
     }
 
@@ -247,8 +297,22 @@ public class AIPController implements IResourceController<AIP> {
 
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
-        // TODO add hateoas links
-        return resourceService.toResource(pElement);
+        Resource<AIP> resource = resourceService.toResource(pElement);
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIPs",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(AIPState.class),
+                                MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(OffsetDateTime.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIP",
+                                LinkRels.SELF,
+                                MethodParamFactory.build(String.class, pElement.getId().toString()));
+        resourceService
+                .addLink(resource, this.getClass(), "storeRetryUnit", "retry", MethodParamFactory.build(String.class));
+        return resource;
     }
 
 }

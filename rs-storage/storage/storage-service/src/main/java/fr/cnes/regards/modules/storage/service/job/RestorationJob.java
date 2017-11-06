@@ -47,7 +47,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to
             // do the storage
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-            // before storage on file system, lets update the DataFiles by setting which data storage is used to store
+            // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
             // them.
             for (DataFile data : workingSubset.getDataFiles()) {
                 data.setDataStorageUsed(confToUse);

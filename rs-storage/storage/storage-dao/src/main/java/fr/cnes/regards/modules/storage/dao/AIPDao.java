@@ -146,6 +146,11 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
+    public Set<AIP> findAllBySipId(String sipIpId) {
+        return repo.findAllBySipId(sipIpId).stream().map(this::buildAipFromAIPDataBase).collect(Collectors.toSet());
+    }
+
+    @Override
     public Page<AIP> findAll(Pageable pPageable) {
         return repo.findAll(pPageable).map(this::buildAipFromAIPDataBase);
     }

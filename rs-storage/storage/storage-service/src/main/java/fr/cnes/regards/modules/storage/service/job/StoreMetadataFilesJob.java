@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 /**
  * This job is executed by JobService while its scheduling is handled by an IAIPService. This means that the job context is prepared by an IAIPService.
  *
- * This job aims to store the metadata of an AIP.
+ * This job aims to storeAndCreate the metadata of an AIP.
  *
  * @author Sylvain Vissiere-Guerinet
  *

@@ -28,7 +28,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +75,11 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
-import fr.cnes.regards.modules.storage.service.DefaultAllocationStrategyPlugin;
-import fr.cnes.regards.modules.storage.service.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.plugin.datastorage.DefaultAllocationStrategyPlugin;
+import fr.cnes.regards.modules.storage.plugin.datastorage.IAllocationStrategy;
 
 /**
- * Run client IT scenario tests for store and restore files from rs-storage microservice.
+ * Run client IT scenario tests for storeAndCreate and restore files from rs-storage microservice.
  * @author Sébastien Binda
  */
 @TestPropertySource("classpath:test.properties")
@@ -165,7 +164,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
     private void initDb() throws ModuleException, IOException, URISyntaxException {
 
         cleanUp();
-        // second, lets store a plugin configuration for IAllocationStrategy
+        // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
         pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
@@ -186,7 +185,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, "allocation");
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
-        // third, lets store a plugin configuration of IDataStorage with the highest priority
+        // third, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
                                       IOnlineDataStorage.class.getPackage().getName());
