@@ -75,37 +75,37 @@ public interface IAipClient {
     String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
+    ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips);
+    ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips);
 
     @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
-    public ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds);
+    ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds);
 
     @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
-    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId);
+    ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId);
 
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestParam("sip_ip_id") Set<String> sipIpIds);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
-    public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
+    ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
 
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
-    public ResponseEntity<List<String>> retrieveAIPVersionHistory(
+    ResponseEntity<List<String>> retrieveAIPVersionHistory(
             @PathVariable("ip_id") @Valid UniformResourceName pIpId, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
-    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
+    ResponseEntity<AvailabilityResponse> makeFilesAvailable(
             @RequestBody AvailabilityRequest availabilityRequest);
 
     @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
+    Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
 }
